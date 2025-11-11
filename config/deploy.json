@@ -1,0 +1,7 @@
+{
+  "siteBucketName": "memeon.ai",
+  "cloudfrontDistributionId": "EMLGLTTNC62L0",
+  "lambdaFunctionName": "memeon-api",
+  "apiGatewayId": "mdv6q8qv28"
+}
+
