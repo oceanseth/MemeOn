@@ -1,0 +1,66 @@
+:root {
+  color-scheme: light dark;
+  font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-synthesis: none;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #0f172a, #020617);
+  color: #e2e8f0;
+  display: flex;
+}
+
+#app {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.container {
+  max-width: 640px;
+  width: 100%;
+  background: rgba(15, 23, 42, 0.75);
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(12px);
+}
+
+h1 {
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  margin: 0 0 0.75rem;
+}
+
+.description {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #cbd5f5;
+}
+
+.api-section {
+  margin-top: 2rem;
+}
+
+.api-section h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.4rem;
+}
+
+#api-result {
+  margin: 0;
+  padding: 1.25rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+  overflow-x: auto;
+}

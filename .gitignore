@@ -1,0 +1,27 @@
+# Node
+node_modules/
+*.log
+
+# Frontend build
+web/dist/
+
+# API build artifacts
+api/dist/
+api/lambda.zip
+
+# IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+
+# Environment
+.env
+.env.*
+
