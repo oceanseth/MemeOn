@@ -75,10 +75,10 @@ Certificate validation requires DNS. Terraform creates the CNAME records automat
 
 ## Deployment workflow
 
-A GitHub Actions workflow (`.github/workflows/deploy.yml`) builds the frontend, uploads assets to S3, invalidates the CloudFront cache, and updates the Lambda function code using AWS CLI commands. Static deployment identifiers live in `config/deploy.json`. Configure the following repository secrets before running the workflow:
+A GitHub Actions workflow (`.github/workflows/deploy.yml`) builds the frontend, uploads assets to S3, invalidates the CloudFront cache, and updates the Lambda function code using AWS CLI commands. Static deployment identifiers (including the AWS region) live in `config/deploy.json`. Configure the following repository secrets before running the workflow:
 
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
-- `AWS_REGION`
+- `AWS_REGION` *(optional if `awsRegion` is present in `config/deploy.json`)*
 
 Trigger the workflow with pushes to `main` or manually from the Actions tab.

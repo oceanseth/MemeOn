@@ -1,4 +1,5 @@
 {
+  "awsRegion": "us-west-2",
   "siteBucketName": "memeon.ai",
   "cloudfrontDistributionId": "EMLGLTTNC62L0",
   "lambdaFunctionName": "memeon-api",
