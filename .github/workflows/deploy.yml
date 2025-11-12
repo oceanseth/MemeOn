@@ -83,5 +83,5 @@ jobs:
           API_GATEWAY_ID: ${{ steps.deploy_config.outputs.api_gateway_id }}
           AWS_REGION: ${{ steps.deploy_config.outputs.aws_region || secrets.AWS_REGION || vars.AWS_REGION }}
         run: |
-          curl --fail "https://${API_GATEWAY_ID}.execute-api.${AWS_REGION}.amazonaws.com/helloworld"
+          curl --fail "https://${API_GATEWAY_ID}.execute-api.${AWS_REGION}.amazonaws.com/api/helloworld"
 
