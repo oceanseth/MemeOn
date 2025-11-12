@@ -104,6 +104,22 @@ resource "aws_cloudfront_cache_policy" "api" {
   }
 }
 
+resource "aws_cloudfront_origin_request_policy" "api" {
+  name = "memeon-api-origin-request-policy"
+
+  cookies_config {
+    cookie_behavior = "none"
+  }
+
+  headers_config {
+    header_behavior = "none"
+  }
+
+  query_strings_config {
+    query_string_behavior = "all"
+  }
+}
+
 resource "aws_cloudfront_origin_access_control" "site" {
   name                              = "memeon-site-oac"
   description                       = "Origin access control for MemeOn static site"
@@ -215,7 +231,7 @@ resource "aws_cloudfront_distribution" "site" {
     target_origin_id = "api-gateway"
     viewer_protocol_policy = "https-only"
     cache_policy_id        = aws_cloudfront_cache_policy.api.id
-    origin_request_policy_id = "216adef6-5c7f-47e4-b989-5492eafa07d3" # Managed-AllViewer
+    origin_request_policy_id = aws_cloudfront_origin_request_policy.api.id
     response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
   }
 
