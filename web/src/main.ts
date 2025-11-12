@@ -46,7 +46,7 @@ function renderAbout() {
       <div class="founders-grid">
         <div class="founder-card">
           <div class="founder-image-wrapper">
-            <img src="https://upload.wikimedia.org/wikipedia/en/9/9a/Wayne_Campbell.jpg" alt="Wayne Campbell" class="founder-image" onerror="this.src='https://via.placeholder.com/200/1e293b/60a5fa?text=Wayne'" />
+            <img src="/wayne.jpg" alt="Wayne Campbell" class="founder-image" />
           </div>
           <h2>John Brennan</h2>
           <p class="founder-description">
@@ -59,7 +59,7 @@ function renderAbout() {
         </div>
         <div class="founder-card">
           <div class="founder-image-wrapper">
-            <img src="https://upload.wikimedia.org/wikipedia/en/0/0c/Garth_Algar.jpg" alt="Garth Algar" class="founder-image" onerror="this.src='https://via.placeholder.com/200/1e293b/34d399?text=Garth'" />
+            <img src="/garth.jpg" alt="Garth Algar" class="founder-image" />
           </div>
           <h2>Seth Caldwell</h2>
           <p class="founder-description">
