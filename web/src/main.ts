@@ -81,6 +81,8 @@ function renderAbout() {
 }
 
 function render() {
+  if (!app) return
+  
   const currentRoute = getCurrentRoute()
   app.innerHTML = renderHeader() + (currentRoute === 'about' ? renderAbout() : renderHome())
   
