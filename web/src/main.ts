@@ -7,11 +7,13 @@ if (!app) {
 }
 
 // Simple router
-type Route = 'home' | 'about'
+type Route = 'home' | 'about' | 'wtf'
 
 function getCurrentRoute(): Route {
   const hash = window.location.hash.slice(1)
-  return hash === 'about' ? 'about' : 'home'
+  if (hash === 'about') return 'about'
+  if (hash === 'wtf') return 'wtf'
+  return 'home'
 }
 
 function renderHeader() {
@@ -20,6 +22,7 @@ function renderHeader() {
     <header class="header">
       <nav class="nav">
         <a href="#home" class="nav-link ${currentRoute === 'home' ? 'active' : ''}">Home</a>
+        <a href="#wtf" class="nav-link ${currentRoute === 'wtf' ? 'active' : ''}">WTF</a>
         <a href="#about" class="nav-link ${currentRoute === 'about' ? 'active' : ''}">About</a>
       </nav>
     </header>
@@ -31,6 +34,13 @@ function renderHome() {
     <main class="container">
       <h1>Hello MemeOn.ai</h1>
       <p class="description">This page is powered by Vite and backed by a serverless API.</p>
+      <div class="wtf-link-section">
+        <a href="#wtf" class="wtf-link">
+          <span class="wtf-link-icon">🤔</span>
+          <span class="wtf-link-text">WTF?</span>
+          <span class="wtf-link-subtitle">What the fuck is this project about?</span>
+        </a>
+      </div>
       <section class="api-section">
         <h2>API Response</h2>
         <pre id="api-result">Loading…</pre>
@@ -136,11 +146,114 @@ function renderAbout() {
   `
 }
 
+function renderWTF() {
+  return `
+    <main class="wtf-container">
+      <div class="curatorial-statement">
+        <h3>Curatorial Statement</h3>
+        <p>A visual exploration of mind as multitudes—where fighting personas, debate teams, and enlightenment assemblies converge. Memes become the battlefield where minds make up their minds. MemeOn governs the fight and mints the message.</p>
+      </div>
+      
+      <div class="whiteboard">
+        <div class="brainstorm-section">
+          <div class="concept-card sketch-card" style="top: 5%; left: 3%;">
+            <div class="sketch-icon">🧠</div>
+            <div class="annotation">THEORY OF MIND</div>
+            <div class="sketch-label">Multitudes</div>
+          </div>
+          
+          <div class="concept-card sketch-card" style="top: 15%; left: 25%;">
+            <div class="sketch-icon">👥</div>
+            <div class="annotation">Unruly Crowd</div>
+            <div class="sketch-label">Fighting Personas</div>
+          </div>
+          
+          <div class="concept-card sketch-card" style="top: 8%; right: 15%;">
+            <div class="sketch-icon">🥊</div>
+            <div class="annotation">Fight Club</div>
+            <div class="sketch-label">Debate Teams</div>
+          </div>
+          
+          <div class="concept-card sketch-card" style="top: 25%; left: 50%;">
+            <div class="sketch-icon">🏛️</div>
+            <div class="annotation">Enlightenment</div>
+            <div class="sketch-label">Representative Assembly</div>
+          </div>
+          
+          <div class="concept-card sketch-card" style="top: 35%; left: 10%;">
+            <div class="sketch-icon">💬</div>
+            <div class="annotation">Emotional Pleas</div>
+            <div class="sketch-label">Braveheart Speeches</div>
+          </div>
+          
+          <div class="concept-card sketch-card" style="top: 45%; left: 35%;">
+            <div class="sketch-icon">🤔</div>
+            <div class="annotation">Mind Making</div>
+            <div class="sketch-label">Up Its Mind</div>
+          </div>
+          
+          <div class="concept-card sketch-card highlight-card" style="top: 55%; left: 60%;">
+            <div class="sketch-icon">🎭</div>
+            <div class="annotation">THE FIGHT</div>
+            <div class="sketch-label">Takes Place With</div>
+            <div class="sketch-label large">MEMES</div>
+          </div>
+          
+          <div class="concept-card sketch-card" style="top: 70%; left: 20%;">
+            <div class="sketch-icon">💡</div>
+            <div class="annotation">A Message</div>
+            <div class="sketch-label">Emerges</div>
+          </div>
+          
+          <div class="concept-card sketch-card highlight-card" style="top: 75%; left: 50%;">
+            <div class="sketch-icon">⚙️</div>
+            <div class="annotation">MEMEON</div>
+            <div class="sketch-label">Governs the Fight</div>
+            <div class="sketch-label">Mints the Message</div>
+          </div>
+          
+          <div class="concept-card sketch-card" style="top: 60%; right: 10%;">
+            <div class="sketch-icon">🗣️</div>
+            <div class="annotation">How Crowds</div>
+            <div class="sketch-label">Speak</div>
+          </div>
+          
+          <div class="concept-card sketch-card" style="top: 85%; left: 40%;">
+            <div class="sketch-icon">🧩</div>
+            <div class="annotation">How Minds</div>
+            <div class="sketch-label">Make Up Their Minds</div>
+          </div>
+        </div>
+        
+        <div class="connection-lines">
+          <svg class="sketch-lines" viewBox="0 0 1000 800" preserveAspectRatio="none">
+            <path d="M 50 80 Q 200 100 250 200" stroke="#60a5fa" stroke-width="2" fill="none" opacity="0.4" stroke-dasharray="5,5"/>
+            <path d="M 250 200 Q 400 250 500 350" stroke="#34d399" stroke-width="2" fill="none" opacity="0.4" stroke-dasharray="5,5"/>
+            <path d="M 500 350 Q 600 400 650 550" stroke="#fbbf24" stroke-width="2" fill="none" opacity="0.4" stroke-dasharray="5,5"/>
+            <path d="M 650 550 Q 700 600 750 700" stroke="#60a5fa" stroke-width="2" fill="none" opacity="0.4" stroke-dasharray="5,5"/>
+            <path d="M 100 400 Q 300 450 500 550" stroke="#34d399" stroke-width="2" fill="none" opacity="0.4" stroke-dasharray="5,5"/>
+            <path d="M 800 150 Q 850 300 900 500" stroke="#fbbf24" stroke-width="2" fill="none" opacity="0.4" stroke-dasharray="5,5"/>
+          </svg>
+        </div>
+      </div>
+    </main>
+  `
+}
+
 function render() {
   if (!app) return
   
   const currentRoute = getCurrentRoute()
-  app.innerHTML = renderHeader() + (currentRoute === 'about' ? renderAbout() : renderHome())
+  let content = ''
+  if (currentRoute === 'about') {
+    content = renderAbout()
+  } else if (currentRoute === 'wtf') {
+    content = renderWTF()
+  } else {
+    content = renderHome()
+  }
+  
+  app.innerHTML = renderHeader() + content
   
   // Load API data if on home page
   if (currentRoute === 'home') {
