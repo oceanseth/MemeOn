@@ -90,6 +90,53 @@ h1 {
   color: #cbd5f5;
 }
 
+.wtf-link-section {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.wtf-link {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.5rem 2.5rem;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%);
+  border: 2px solid rgba(96, 165, 250, 0.4);
+  border-radius: 16px;
+  text-decoration: none;
+  color: #e2e8f0;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(96, 165, 250, 0.2);
+}
+
+.wtf-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(96, 165, 250, 0.4);
+  border-color: rgba(96, 165, 250, 0.6);
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.3) 0%, rgba(147, 51, 234, 0.3) 100%);
+}
+
+.wtf-link-icon {
+  font-size: 3rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.wtf-link-text {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #60a5fa;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.wtf-link-subtitle {
+  font-size: 0.9rem;
+  color: #cbd5f5;
+  font-style: italic;
+  margin-top: 0.25rem;
+}
+
 .api-section {
   margin-top: 2rem;
 }
@@ -203,6 +250,168 @@ h1 {
   font-style: italic;
 }
 
+/* WTF / Whiteboard Page Styles */
+.wtf-container {
+  flex: 1;
+  position: relative;
+  padding: 2rem;
+  overflow: hidden;
+  min-height: calc(100vh - 80px);
+}
+
+.curatorial-statement {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  max-width: 280px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 1.25rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  border: 2px solid #1e293b;
+  font-family: 'Courier New', monospace;
+}
+
+.curatorial-statement h3 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 2px solid #1e293b;
+  padding-bottom: 0.5rem;
+}
+
+.curatorial-statement p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #334155;
+}
+
+.whiteboard {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 120px);
+  background: 
+    linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px),
+    linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px),
+    #f8f9fa;
+  background-size: 20px 20px;
+  border: 3px solid #1e293b;
+  border-radius: 4px;
+  box-shadow: 
+    inset 0 0 0 1px rgba(0,0,0,0.1),
+    0 8px 24px rgba(0,0,0,0.2);
+  padding: 2rem;
+  overflow: visible;
+}
+
+.brainstorm-section {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 800px;
+}
+
+.concept-card {
+  position: absolute;
+  background: white;
+  border: 3px solid #1e293b;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  box-shadow: 
+    2px 2px 0 rgba(0,0,0,0.1),
+    4px 4px 0 rgba(0,0,0,0.05);
+  transform: rotate(-1deg);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 5;
+}
+
+.concept-card:nth-child(even) {
+  transform: rotate(1deg);
+}
+
+.concept-card:hover {
+  transform: rotate(0deg) scale(1.05);
+  box-shadow: 
+    4px 4px 0 rgba(0,0,0,0.15),
+    8px 8px 0 rgba(0,0,0,0.1);
+  z-index: 20;
+}
+
+.sketch-card {
+  min-width: 140px;
+  text-align: center;
+}
+
+.sketch-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.2));
+}
+
+.annotation {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid #1e293b;
+  padding-bottom: 0.25rem;
+}
+
+.sketch-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: #334155;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+.sketch-label.large {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #1e293b;
+  margin-top: 0.5rem;
+}
+
+.highlight-card {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #f59e0b;
+  border-width: 4px;
+  box-shadow: 
+    3px 3px 0 rgba(245, 158, 11, 0.3),
+    6px 6px 0 rgba(245, 158, 11, 0.15);
+}
+
+.highlight-card .annotation {
+  color: #92400e;
+  border-color: #f59e0b;
+}
+
+.highlight-card .sketch-label {
+  color: #78350f;
+}
+
+.connection-lines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.sketch-lines {
+  width: 100%;
+  height: 100%;
+}
+
 @media (max-width: 768px) {
   .founders-grid {
     grid-template-columns: 1fr;
@@ -215,5 +424,35 @@ h1 {
   .nav-link {
     font-size: 1rem;
     padding: 0.5rem;
+  }
+  
+  .curatorial-statement {
+    position: relative;
+    top: auto;
+    right: auto;
+    max-width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .whiteboard {
+    min-height: auto;
+    padding: 1rem;
+  }
+  
+  .brainstorm-section {
+    min-height: 600px;
+  }
+  
+  .concept-card {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    margin: 1rem 0;
+    transform: rotate(0deg) !important;
+  }
+  
+  .connection-lines {
+    display: none;
   }
 }
