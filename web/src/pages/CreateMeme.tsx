@@ -3,7 +3,21 @@ import { useNavigate } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
 import type { Meme } from '../lib/types'
 
-type Mode = 'generate' | 'video' | 'url'
+type Mode = 'generate' | 'video' | 'url' | 'upload'
+
+async function uploadFile(file: File): Promise<string> {
+  const { uploadUrl, publicUrl } = await post<{ uploadUrl: string; publicUrl: string }>(
+    '/api/uploads',
+    { contentType: file.type },
+  )
+  const put = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: { 'content-type': file.type },
+    body: file,
+  })
+  if (!put.ok) throw new Error(`upload failed (${put.status})`)
+  return publicUrl
+}
 
 export default function CreateMeme() {
   const navigate = useNavigate()
@@ -78,11 +92,12 @@ export default function CreateMeme() {
     setBusy('Minting…')
     setErr(null)
     try {
+      const isVideo = mode === 'video' || (mode === 'upload' && !!videoUrl)
       const body = {
         title,
         imageUrl,
-        mediaType: mode === 'video' ? 'video' : 'image',
-        videoUrl: mode === 'video' ? videoUrl : null,
+        mediaType: isVideo ? 'video' : 'image',
+        videoUrl: isVideo ? videoUrl : null,
         tags: tags
           .split(',')
           .map((t) => t.trim())
@@ -111,6 +126,9 @@ export default function CreateMeme() {
           </button>
           <button className={mode === 'video' ? 'primary' : ''} onClick={() => setMode('video')}>
             🎬 Generate video
+          </button>
+          <button className={mode === 'upload' ? 'primary' : ''} onClick={() => setMode('upload')}>
+            📤 Upload
           </button>
           <button className={mode === 'url' ? 'primary' : ''} onClick={() => setMode('url')}>
             🔗 From URL
@@ -141,6 +159,49 @@ export default function CreateMeme() {
               placeholder="https://…/meme.png"
             />
           </label>
+        ) : mode === 'upload' ? (
+          <>
+            <label>
+              Image (the card art{videoUrl ? ' / video thumbnail' : ''})
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/gif,image/webp"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0]
+                  if (!f) return
+                  setBusy('Uploading image…')
+                  setErr(null)
+                  try {
+                    setImageUrl(await uploadFile(f))
+                  } catch (er) {
+                    setErr(er instanceof Error ? er.message : 'upload failed')
+                  } finally {
+                    setBusy(null)
+                  }
+                }}
+              />
+            </label>
+            <label>
+              Video (optional — makes it a video meme)
+              <input
+                type="file"
+                accept="video/mp4,video/quicktime,video/webm"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0]
+                  if (!f) return
+                  setBusy('Uploading video…')
+                  setErr(null)
+                  try {
+                    setVideoUrl(await uploadFile(f))
+                  } catch (er) {
+                    setErr(er instanceof Error ? er.message : 'upload failed')
+                  } finally {
+                    setBusy(null)
+                  }
+                }}
+              />
+            </label>
+          </>
         ) : (
           <>
             <label>

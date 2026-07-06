@@ -21,6 +21,8 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { RootStackParamList } from '../../App'
+import { tierHasSheen, Sheen } from '../components/FoilCard'
+import { MemeMedia } from '../components/MemeMedia'
 import { useAuth } from '../context/AuthContext'
 import { apiFetch, post } from '../lib/api'
 import { colors } from '../lib/theme'
@@ -30,6 +32,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>
 
 export default function FeedScreen() {
   const { user } = useAuth()
+  const navigation = useNavigation<Nav>()
   const insets = useSafeAreaInsets()
   const { height } = useWindowDimensions()
   const [items, setItems] = useState<FeedItem[]>([])
@@ -94,7 +97,29 @@ export default function FeedScreen() {
       />
       <View style={[styles.topbar, { top: insets.top + 6 }]}>
         <Text style={styles.logo}>MemeOn</Text>
-        <Text style={styles.coins}>🪙 {user?.coins.toLocaleString() ?? ''}</Text>
+        <View style={styles.topActions}>
+          <Text style={styles.coins}>🪙 {user?.coins.toLocaleString() ?? ''}</Text>
+          <Pressable onPress={() => navigation.navigate('Trades')}>
+            <Text style={{ fontSize: 21 }}>🔁</Text>
+          </Pressable>
+          <Pressable onPress={() => navigation.navigate('Alerts')}>
+            <Text style={{ fontSize: 21 }}>🔔</Text>
+            {(user?.unreadAlerts ?? 0) > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{user!.unreadAlerts}</Text>
+              </View>
+            )}
+          </Pressable>
+          {user && (
+            <Pressable onPress={() => navigation.navigate('Creator', { sub: user.sub })}>
+              {user.picture ? (
+                <Image source={{ uri: user.picture }} style={styles.miniAvatar} />
+              ) : (
+                <View style={[styles.miniAvatar, { backgroundColor: colors.raised }]} />
+              )}
+            </Pressable>
+          )}
+        </View>
       </View>
       <View style={[styles.hint, { bottom: insets.bottom + 10 }]}>
         <Text style={styles.hintText}>← swipe to pass · swipe to invest →</Text>
@@ -181,7 +206,8 @@ function FeedCard({
   return (
     <GestureDetector gesture={Gesture.Exclusive(doubleTap, pan)}>
       <Animated.View style={[{ height }, styles.card, cardStyle]}>
-        <Image source={{ uri: item.imageUrl }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        <MemeMedia meme={item} style={StyleSheet.absoluteFill} />
+        {tierHasSheen(item.tier.key) && <Sheen width={width} />}
         <View style={styles.shade} />
         {burst && (
           <View style={styles.burst} pointerEvents="none">
@@ -248,7 +274,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: { color: colors.accent, fontWeight: '800', fontSize: 20 },
+  topActions: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   coins: { color: colors.gold, fontWeight: '700', fontSize: 15 },
+  miniAvatar: { width: 30, height: 30, borderRadius: 15, borderWidth: 1, borderColor: colors.border },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -8,
+    backgroundColor: colors.danger,
+    borderRadius: 999,
+    paddingHorizontal: 4,
+    minWidth: 16,
+    alignItems: 'center',
+  },
+  badgeText: { color: '#fff', fontSize: 10, fontWeight: '800' },
   hint: { position: 'absolute', alignSelf: 'center' },
   hintText: { color: 'rgba(255,255,255,0.45)', fontSize: 12 },
   friendChip: {

@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native'
 import type { RootStackParamList } from '../../App'
+import { FoilCard } from '../components/FoilCard'
 import { apiFetch, post } from '../lib/api'
 import { colors } from '../lib/theme'
 import type { CreatorProfile, Meme } from '../lib/types'
@@ -114,19 +115,21 @@ export default function CreatorScreen({ route, navigation }: Props) {
         </View>
       }
       renderItem={({ item }) => (
-        <Pressable
-          style={[styles.gridCard, { borderColor: item.tier.color }]}
-          onPress={() => navigation.push('Invest', { memeId: item.id })}
-        >
-          <Image source={{ uri: item.imageUrl }} style={styles.gridImg} />
-          <Text numberOfLines={1} style={styles.gridTitle}>
-            {item.title}
-          </Text>
-          <Text style={[styles.gridTier, { color: item.tier.color }]}>
-            {item.tier.name}
-            {item.shares !== undefined ? ` · ${item.shares}/100` : ''} · 🪙{item.value}
-          </Text>
-        </Pressable>
+        <FoilCard tierKey={item.tier.key} radius={12} style={{ flex: 1 }}>
+          <Pressable
+            style={styles.gridCard}
+            onPress={() => navigation.push('Invest', { memeId: item.id })}
+          >
+            <Image source={{ uri: item.imageUrl }} style={styles.gridImg} />
+            <Text numberOfLines={1} style={styles.gridTitle}>
+              {item.title}
+            </Text>
+            <Text style={[styles.gridTier, { color: item.tier.color }]}>
+              {item.tier.name}
+              {item.shares !== undefined ? ` · ${item.shares}/100` : ''} · 🪙{item.value}
+            </Text>
+          </Pressable>
+        </FoilCard>
       )}
       ListEmptyComponent={
         <Text style={{ color: colors.dim, textAlign: 'center', padding: 30 }}>Nothing here yet.</Text>
@@ -154,11 +157,7 @@ const styles = StyleSheet.create({
   tab: { color: colors.dim, fontWeight: '700', fontSize: 15 },
   tabActive: { color: colors.accent },
   gridCard: {
-    flex: 1,
     backgroundColor: colors.card,
-    borderRadius: 12,
-    borderWidth: 2,
-    overflow: 'hidden',
     paddingBottom: 8,
   },
   gridImg: { width: '100%', aspectRatio: 1 },

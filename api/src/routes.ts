@@ -5,7 +5,7 @@ import { authed, HttpError, html, json, maskyToken, redirect, requireString, rou
 import { issueSession } from './session'
 import { mintFirebaseToken } from './firebase'
 import { ensureOgImage, frameKey, memePageHtml, tierFrameList } from './og'
-import { assetUrl, putAsset } from './s3'
+import { assetUrl, presignUpload, putAsset } from './s3'
 import { memeValue, TIERS, tierFor, tierIndexFor } from '../../shared/tiers'
 import type { Meme, Trade, TradeSide } from './types'
 
@@ -390,6 +390,27 @@ authed('POST /api/alerts/read', async (req) => {
     : []
   await db.markAlertsRead(req.user.sub, ids)
   return json(200, { ok: true })
+})
+
+// ---------- uploads (mint from your own file) ----------
+
+const UPLOAD_TYPES: Record<string, string> = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/gif': 'gif',
+  'image/webp': 'webp',
+  'video/mp4': 'mp4',
+  'video/quicktime': 'mov',
+  'video/webm': 'webm',
+}
+
+authed('POST /api/uploads', async (req) => {
+  const contentType = requireString(req.body, 'contentType', 100)
+  const ext = UPLOAD_TYPES[contentType]
+  if (!ext) throw new HttpError(400, `unsupported content type (${Object.keys(UPLOAD_TYPES).join(', ')})`)
+  const key = `uploads/${req.user.sub}/${randomUUID()}.${ext}`
+  const out = await presignUpload(key, contentType)
+  return json(200, out)
 })
 
 // ---------- likes / dislikes ----------
