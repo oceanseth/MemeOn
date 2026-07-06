@@ -28,6 +28,14 @@ export interface Meme {
   isCreator?: boolean
   remixOf?: string | null
   private?: boolean
+  source?: { provider: string; id: string; url: string; author: string | null } | null
+}
+
+export interface Memeplex {
+  original: Meme | null
+  ancestors: Meme[]
+  remixes: Meme[]
+  related: Meme[]
 }
 
 export interface Position {

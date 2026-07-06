@@ -33,3 +33,6 @@ mobile/dist/
 # Expo generated native projects (CNG - app.json is the source of truth)
 mobile/ios/
 mobile/android/
+
+# jimp fonts staged for lambda packaging
+api/fonts/

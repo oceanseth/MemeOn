@@ -210,7 +210,8 @@ authed('GET /api/memes', async (req) => {
 })
 
 authed('POST /api/memes', async (req) => {
-  const title = requireString(req.body, 'title', 120)
+  // titles must fit the og card's banner: hard 20-char cap
+  const title = requireString(req.body, 'title', 20)
   const imageUrl = requireString(req.body, 'imageUrl', 2000)
   const mediaType = req.body.mediaType === 'video' ? 'video' : 'image'
   const videoUrl = typeof req.body.videoUrl === 'string' ? req.body.videoUrl : null
@@ -242,6 +243,7 @@ authed('POST /api/memes', async (req) => {
   }
   await db.putMeme(meme)
   await db.putPosition(meme.id, req.user.sub, 100)
+  if (remixOf) await db.addPlexEdge(meme.id, remixOf, req.user.sub).catch(() => {})
   await awardQuest(req.user.sub, 'mint')
   return json(201, { meme: publicMeme(meme) })
 })
@@ -754,6 +756,98 @@ authed('GET /api/users/:sub/profile', async (req) => {
   })
 })
 
+// ---------- creator claims (archive memes) ----------
+
+/**
+ * Archive-seeded memes (owned by the Meme Archive house account) can be
+ * claimed by their real creators. Claims are recorded for review; approval
+ * happens via api/scripts/approve-claim.ts (transfers creatorship + shares).
+ */
+authed('POST /api/memes/:id/claim', async (req) => {
+  const meme = await db.getMeme(req.params.id)
+  if (!meme) throw new HttpError(404, 'meme not found')
+  if (meme.creatorId !== db.ARCHIVE_SUB)
+    throw new HttpError(400, 'this meme already has a creator')
+  const note = typeof req.body.note === 'string' ? req.body.note.slice(0, 500) : ''
+  const fresh = await db.putClaim({
+    memeId: meme.id,
+    userId: req.user.sub,
+    userName: req.user.name,
+    note,
+    status: 'pending',
+    createdAt: new Date().toISOString(),
+  })
+  if (!fresh) return json(200, { ok: true, already: true })
+  await db.addAlert(
+    req.user.sub,
+    'friend',
+    `📼 Creator claim filed for "${meme.title}" — we'll review it and transfer the card if it checks out.`,
+    meme.id,
+  )
+  return json(200, { ok: true })
+})
+
+// ---------- memeplex ----------
+
+/**
+ * The memeplex: a meme's family — its remix ancestry back to the original,
+ * memes remixed from it, and manually linked relatives.
+ */
+route('GET /api/memes/:id/memeplex', async (req) => {
+  const meme = await db.getMeme(req.params.id)
+  if (!meme) throw new HttpError(404, 'meme not found')
+
+  // walk remixOf ancestry up to the original (cycle/depth guarded)
+  const ancestors: Meme[] = []
+  let cursor: Meme | null = meme
+  const seen = new Set([meme.id])
+  while (cursor?.remixOf && ancestors.length < 10) {
+    const parent: Meme | null = await db.getMeme(cursor.remixOf)
+    if (!parent || seen.has(parent.id)) break
+    seen.add(parent.id)
+    ancestors.unshift(parent)
+    cursor = parent
+  }
+
+  const [allMemes, plexIds] = await Promise.all([db.listMemes(), db.listPlex(meme.id)])
+  const remixes = allMemes.filter((m) => m.remixOf === meme.id && !m.private)
+  const plexSet = new Set(plexIds)
+  const related = allMemes.filter(
+    (m) => plexSet.has(m.id) && !m.private && m.remixOf !== meme.id && !seen.has(m.id),
+  )
+
+  return json(200, {
+    original: ancestors.length > 0 ? publicMeme(ancestors[0]) : null,
+    ancestors: ancestors.map(publicMeme),
+    remixes: remixes.map(publicMeme),
+    related: related.map(publicMeme),
+  })
+})
+
+/** Creator or any shareholder of a meme can add relatives to its memeplex. */
+authed('POST /api/memes/:id/memeplex', async (req) => {
+  const meme = await db.getMeme(req.params.id)
+  if (!meme) throw new HttpError(404, 'meme not found')
+  const otherId = requireString(req.body, 'memeId', 40)
+  if (otherId === meme.id) throw new HttpError(400, 'a meme is already in its own memeplex')
+  const other = await db.getMeme(otherId)
+  if (!other) throw new HttpError(404, 'related meme not found')
+  const positions = await db.getPositions(meme.id)
+  const canEdit =
+    meme.creatorId === req.user.sub || positions.some((p) => p.userId === req.user.sub)
+  if (!canEdit) throw new HttpError(403, 'only the creator or shareholders can edit the memeplex')
+  await db.addPlexEdge(meme.id, other.id, req.user.sub)
+  if (other.ownerId !== req.user.sub) {
+    await db.addAlert(
+      other.ownerId,
+      'friend',
+      `🕸️ "${other.title}" was added to the memeplex of "${meme.title}"`,
+      other.id,
+    )
+  }
+  return json(200, { ok: true })
+})
+
 // ---------- value history ----------
 
 route('GET /api/memes/:id/history', async (req) => {
@@ -802,8 +896,8 @@ export function framePrompt(tierName: string, tierIdx: number): string {
     `${styles[tierIdx] ?? styles[0]}. ` +
     `A completely EMPTY dark charcoal square art window occupying the middle of the card ` +
     `(leave the center blank — no artwork inside the window). ` +
-    `The word "${tierName.toUpperCase()}" in small capitals at the bottom of the frame. ` +
-    `Ornate corners, high detail, studio quality, no other text.`
+    `A wide EMPTY dark banner strip along the bottom of the frame for a title to be added later. ` +
+    `Ornate corners, high detail, studio quality, absolutely NO text, letters, or words anywhere.`
   )
 }
 

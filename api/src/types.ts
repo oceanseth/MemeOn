@@ -40,6 +40,17 @@ export interface Meme {
   remixOf?: string | null
   /** hidden from marketplace/feed/others (sole-owner soft delete) */
   private?: boolean
+  /** external origin attribution (e.g. seeded from Giphy) */
+  source?: { provider: string; id: string; url: string; author: string | null } | null
+}
+
+export interface CreatorClaim {
+  memeId: string
+  userId: string
+  userName: string
+  note: string
+  status: 'pending' | 'approved' | 'rejected'
+  createdAt: string
 }
 
 export interface Position {
