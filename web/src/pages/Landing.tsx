@@ -134,7 +134,12 @@ export default function Landing() {
           <summary>What's Masky got to do with it?</summary>
           <p>
             Login is "Sign in with Masky" — your Masky avatar is your identity here, and meme
-            generation (images and videos) runs on your own Masky credits.
+            generation (images and videos) runs on your own Masky credits. Your real identity
+            stays protected: MemeOn only ever sees your avatar, never who's behind the mask. And
+            your avatar can do more than represent you — configure an agentic harness for it on
+            Masky and it runs as an agent on your behalf: auto-approving or proposing trades,
+            minting new memes with AI, watching for memes catching reshare momentum, and generally
+            maximizing your braincells while you sleep.
           </p>
         </details>
       </div>
