@@ -25,3 +25,7 @@ terraform.tfvars
 .env
 .env.*
 
+
+# Expo
+mobile/.expo/
+mobile/dist/

@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "MemeOn",
+    "slug": "memeon",
+    "scheme": "memeon",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0b0d14",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "ai.memeon.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "ai.memeon.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0b0d14",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-web-browser"
+    ],
+    "extra": {
+      "apiBase": "https://dev.memeon.ai"
+    }
+  }
+}

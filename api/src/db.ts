@@ -10,7 +10,7 @@ import {
 } from '@aws-sdk/lib-dynamodb'
 import { randomUUID } from 'node:crypto'
 import { env } from './env'
-import { tierFor } from '../../shared/tiers'
+import { memeValue, tierFor } from '../../shared/tiers'
 import type {
   Alert,
   AlertType,
@@ -183,6 +183,7 @@ export async function recordReshare(
     await updateMemeFields(id, { tierKey: tier.key })
     meme.tierKey = tier.key
   }
+  await sampleValueHistory(id, meme.reshares, memeValue(meme.reshares))
   return { meme, tieredUp }
 }
 
@@ -460,6 +461,197 @@ export async function executeTrade(trade: Trade): Promise<void> {
   for (const m of trade.ask.memes) await moveShares(trade.toId, trade.fromId, m.memeId, m.shares)
 
   await ddb.send(new TransactWriteCommand({ TransactItems: items }))
+}
+
+// ---------- likes / dislikes (feed signals) ----------
+
+export async function setLike(userId: string, memeId: string): Promise<boolean> {
+  try {
+    await ddb.send(
+      new PutCommand({
+        TableName: T(),
+        Item: {
+          PK: `USER#${userId}`,
+          SK: `LIKE#${memeId}`,
+          GSI1PK: `LIKERS#${memeId}`,
+          GSI1SK: userId,
+          userId,
+          memeId,
+          createdAt: new Date().toISOString(),
+        },
+        ConditionExpression: 'attribute_not_exists(PK)',
+      }),
+    )
+  } catch {
+    return false // already liked
+  }
+  await bumpLikeCount(memeId, 1)
+  return true
+}
+
+export async function removeLike(userId: string, memeId: string): Promise<boolean> {
+  const res = await ddb.send(
+    new DeleteCommand({
+      TableName: T(),
+      Key: { PK: `USER#${userId}`, SK: `LIKE#${memeId}` },
+      ReturnValues: 'ALL_OLD',
+    }),
+  )
+  if (!res.Attributes) return false
+  await bumpLikeCount(memeId, -1)
+  return true
+}
+
+async function bumpLikeCount(memeId: string, delta: number): Promise<void> {
+  await ddb
+    .send(
+      new UpdateCommand({
+        TableName: T(),
+        Key: { PK: `MEME#${memeId}`, SK: 'META' },
+        UpdateExpression: 'ADD likes :d',
+        ConditionExpression: 'attribute_exists(PK)',
+        ExpressionAttributeValues: { ':d': delta },
+      }),
+    )
+    .catch(() => {})
+}
+
+export async function listLikes(userId: string): Promise<string[]> {
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName: T(),
+      KeyConditionExpression: 'PK = :pk AND begins_with(SK, :sk)',
+      ExpressionAttributeValues: { ':pk': `USER#${userId}`, ':sk': 'LIKE#' },
+    }),
+  )
+  return (res.Items ?? []).map((i) => i.memeId as string)
+}
+
+export async function setDislike(userId: string, memeId: string): Promise<void> {
+  await ddb.send(
+    new PutCommand({
+      TableName: T(),
+      Item: {
+        PK: `USER#${userId}`,
+        SK: `DISLIKE#${memeId}`,
+        userId,
+        memeId,
+        createdAt: new Date().toISOString(),
+      },
+    }),
+  )
+  await removeLike(userId, memeId)
+}
+
+export async function listDislikes(userId: string): Promise<string[]> {
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName: T(),
+      KeyConditionExpression: 'PK = :pk AND begins_with(SK, :sk)',
+      ExpressionAttributeValues: { ':pk': `USER#${userId}`, ':sk': 'DISLIKE#' },
+    }),
+  )
+  return (res.Items ?? []).map((i) => i.memeId as string)
+}
+
+// ---------- follows ----------
+
+export async function setFollow(userId: string, creatorId: string): Promise<boolean> {
+  try {
+    await ddb.send(
+      new PutCommand({
+        TableName: T(),
+        Item: {
+          PK: `USER#${userId}`,
+          SK: `FOLLOW#${creatorId}`,
+          GSI1PK: `FOLLOWERS#${creatorId}`,
+          GSI1SK: userId,
+          userId,
+          creatorId,
+          createdAt: new Date().toISOString(),
+        },
+        ConditionExpression: 'attribute_not_exists(PK)',
+      }),
+    )
+  } catch {
+    return false
+  }
+  await bumpFollowerCount(creatorId, 1)
+  return true
+}
+
+export async function removeFollow(userId: string, creatorId: string): Promise<boolean> {
+  const res = await ddb.send(
+    new DeleteCommand({
+      TableName: T(),
+      Key: { PK: `USER#${userId}`, SK: `FOLLOW#${creatorId}` },
+      ReturnValues: 'ALL_OLD',
+    }),
+  )
+  if (!res.Attributes) return false
+  await bumpFollowerCount(creatorId, -1)
+  return true
+}
+
+async function bumpFollowerCount(creatorId: string, delta: number): Promise<void> {
+  await ddb
+    .send(
+      new UpdateCommand({
+        TableName: T(),
+        Key: { PK: `USER#${creatorId}`, SK: 'PROFILE' },
+        UpdateExpression: 'ADD followers :d',
+        ConditionExpression: 'attribute_exists(PK)',
+        ExpressionAttributeValues: { ':d': delta },
+      }),
+    )
+    .catch(() => {})
+}
+
+export async function isFollowing(userId: string, creatorId: string): Promise<boolean> {
+  const res = await ddb.send(
+    new GetCommand({ TableName: T(), Key: { PK: `USER#${userId}`, SK: `FOLLOW#${creatorId}` } }),
+  )
+  return !!res.Item
+}
+
+// ---------- value history (hourly samples, written on reshares) ----------
+
+export async function sampleValueHistory(memeId: string, reshares: number, value: number) {
+  const hour = new Date().toISOString().slice(0, 13) // e.g. 2026-07-06T19
+  await ddb
+    .send(
+      new PutCommand({
+        TableName: T(),
+        Item: {
+          PK: `MEME#${memeId}`,
+          SK: `HIST#${hour}`,
+          at: `${hour}:00:00Z`,
+          reshares,
+          value,
+        },
+        ConditionExpression: 'attribute_not_exists(PK)', // one sample per hour
+      }),
+    )
+    .catch(() => {})
+}
+
+export async function listHistory(
+  memeId: string,
+  limit = 500,
+): Promise<{ at: string; reshares: number; value: number }[]> {
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName: T(),
+      KeyConditionExpression: 'PK = :pk AND begins_with(SK, :sk)',
+      ExpressionAttributeValues: { ':pk': `MEME#${memeId}`, ':sk': 'HIST#' },
+      Limit: limit,
+    }),
+  )
+  return (res.Items ?? []).map((i) => ({
+    at: i.at as string,
+    reshares: i.reshares as number,
+    value: i.value as number,
+  }))
 }
 
 // ---------- alerts ----------
