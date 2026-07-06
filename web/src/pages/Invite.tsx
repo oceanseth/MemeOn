@@ -91,7 +91,7 @@ export default function Invite() {
           <span className="grad">{inviter.name}</span> invited you to MemeOn
         </h1>
         <p>
-          📚 {inviter.collectionSize} memes collected · 🪙 {inviter.portfolioValue.toLocaleString()}{' '}
+          📚 {inviter.collectionSize} memes collected · 🧠 {inviter.portfolioValue.toLocaleString()}{' '}
           portfolio · ⭐ {inviter.followers} followers
         </p>
         <p>

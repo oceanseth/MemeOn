@@ -40,7 +40,7 @@ export function ValueChart({
   return (
     <View>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
-        <Text style={{ color: colors.text, fontSize: 26, fontWeight: '800' }}>🪙 {last.toLocaleString()}</Text>
+        <Text style={{ color: colors.text, fontSize: 26, fontWeight: '800' }}>🧠 {last.toLocaleString()}</Text>
         <Text style={{ color: delta >= 0 ? colors.ok : colors.danger, fontWeight: '700' }}>
           {delta >= 0 ? '▲' : '▼'} {Math.abs(delta).toLocaleString()} ({deltaPct}%)
         </Text>

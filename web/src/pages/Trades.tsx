@@ -100,7 +100,7 @@ function SideSummary({ side, owner }: { side: TradeSide; owner: string }) {
           {m.shares} shares of <MemeName id={m.memeId} />
         </div>
       ))}
-      {side.coins > 0 && <div>🪙 {side.coins.toLocaleString()}</div>}
+      {side.coins > 0 && <div>🧠 {side.coins.toLocaleString()}</div>}
     </div>
   )
 }
@@ -260,7 +260,7 @@ function NewTrade({ onDone }: { onDone: () => void }) {
           </label>
         )}
         <label>
-          Coins you add
+          Braincells you add
           <input
             type="number"
             min={0}
@@ -293,7 +293,7 @@ function NewTrade({ onDone }: { onDone: () => void }) {
           </label>
         )}
         <label>
-          Coins you want
+          Braincells you want
           <input
             type="number"
             min={0}

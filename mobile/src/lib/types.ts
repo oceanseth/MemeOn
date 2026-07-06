@@ -44,10 +44,12 @@ export interface Me {
   sub: string
   name: string
   picture: string | null
+  /** braincells 🧠 */
   coins: number
   portfolioValue: number
   collectionSize: number
   unreadAlerts: number
+  onboarding?: Partial<Record<'pack' | 'mint' | 'share' | 'friend' | 'trade', string>>
 }
 
 export interface HistoryPoint {

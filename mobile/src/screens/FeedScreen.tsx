@@ -98,7 +98,7 @@ export default function FeedScreen() {
       <View style={[styles.topbar, { top: insets.top + 6 }]}>
         <Text style={styles.logo}>MemeOn</Text>
         <View style={styles.topActions}>
-          <Text style={styles.coins}>🪙 {user?.coins.toLocaleString() ?? ''}</Text>
+          <Text style={styles.coins}>🧠 {user?.coins.toLocaleString() ?? ''}</Text>
           <Pressable onPress={() => navigation.navigate('Trades')}>
             <Text style={{ fontSize: 21 }}>🔁</Text>
           </Pressable>
@@ -124,6 +124,51 @@ export default function FeedScreen() {
       <View style={[styles.hint, { bottom: insets.bottom + 10 }]}>
         <Text style={styles.hintText}>← swipe to pass · swipe to invest →</Text>
       </View>
+      {user && !user.onboarding?.pack && <PackBanner />}
+    </View>
+  )
+}
+
+/** First-login hook: claim the free starter pack right from the feed. */
+function PackBanner() {
+  const { refresh } = useAuth()
+  const insets = useSafeAreaInsets()
+  const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle')
+  const [summary, setSummary] = useState('')
+
+  const claim = async () => {
+    setState('busy')
+    try {
+      const out = await post<{ memes: { title: string }[]; reward: number }>(
+        '/api/onboarding/claim-pack',
+        {},
+      )
+      setSummary(
+        out.memes.length
+          ? `10 shares each: ${out.memes.map((m) => m.title).join(', ')} · +${out.reward} 🧠`
+          : `+${out.reward} 🧠 braincells`,
+      )
+      setState('done')
+      void refresh()
+    } catch {
+      setState('idle')
+    }
+  }
+
+  return (
+    <View style={[styles.packBanner, { top: insets.top + 46 }]}>
+      {state === 'done' ? (
+        <Text style={styles.packText}>🎁 Pack opened! {summary}</Text>
+      ) : (
+        <Pressable onPress={claim} disabled={state === 'busy'}>
+          <Text style={styles.packText}>
+            🎁{' '}
+            {state === 'busy'
+              ? 'Opening your starter pack…'
+              : 'New here? Tap to claim your free starter pack + braincells'}
+          </Text>
+        </Pressable>
+      )}
     </View>
   )
 }
@@ -232,7 +277,7 @@ function FeedCard({
             <Text style={styles.creator}>by {item.creatorName} →</Text>
           </Pressable>
           <Text style={styles.stats}>
-            🔁 {item.reshares.toLocaleString()}   🪙 {item.value.toLocaleString()}
+            🔁 {item.reshares.toLocaleString()}   🧠 {item.value.toLocaleString()}
             {item.mediaType === 'video' ? '   🎬 video' : ''}
           </Text>
         </View>
@@ -288,6 +333,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   badgeText: { color: '#fff', fontSize: 10, fontWeight: '800' },
+  packBanner: {
+    position: 'absolute',
+    left: 14,
+    right: 14,
+    backgroundColor: 'rgba(44, 127, 216, 0.92)',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  packText: { color: '#fff', fontWeight: '700', fontSize: 13.5, textAlign: 'center' },
   hint: { position: 'absolute', alignSelf: 'center' },
   hintText: { color: 'rgba(255,255,255,0.45)', fontSize: 12 },
   friendChip: {

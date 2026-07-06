@@ -90,7 +90,7 @@ function SideLine({ label, side }: { label: string; side: TradeSide }) {
           • {m.shares} shares of <MemeName id={m.memeId} />
         </Text>
       ))}
-      {side.coins > 0 && <Text style={styles.sideText}>• 🪙 {side.coins.toLocaleString()}</Text>}
+      {side.coins > 0 && <Text style={styles.sideText}>• 🧠 {side.coins.toLocaleString()}</Text>}
       {side.memes.length === 0 && side.coins === 0 && <Text style={styles.sideText}>• nothing 😶</Text>}
     </View>
   )
