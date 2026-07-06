@@ -35,7 +35,12 @@ Tier frame art is generated with the Masky image API (`api/scripts/generate-fram
   (requests, portfolio stats, RTDB online presence), Trade (propose/respond/history),
   meme detail with cap table, listing, buying, share link.
 - `api/` – Lambda (esbuild-bundled) + Express dev bridge. DynamoDB single-table,
-  Masky OAuth + aigen proxy, session JWTs, og pipeline (jimp), alerts.
+  Masky OAuth + aigen proxy, session JWTs, og pipeline (jimp), alerts, and the
+  mobile feed layer (likes/dislikes/follows, friend-prioritized `/api/feed`,
+  creator profiles, hourly value-history sampling).
+- `mobile/` – Expo React Native app (not an npm workspace; own node_modules):
+  infinite swipe feed, invest view, creator profiles. See `mobile/README.md`
+  for App Store / Play publishing via EAS.
 - `infra/terraform/` – production stack (memeon.ai). **Note:** no state is kept in
   this repo; prod changes since the original apply were made with the AWS CLI and
   these files were updated to match as documentation. Re-import before applying.
