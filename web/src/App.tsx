@@ -74,6 +74,8 @@ export default function App() {
           }
         />
         <Route path="/meme/:id" element={<MemeDetail />} />
+        {/* share URLs render the same page in-app so the /m/ link stays in the address bar */}
+        <Route path="/m/:id" element={<MemeDetail />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

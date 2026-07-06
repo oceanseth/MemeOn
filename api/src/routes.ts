@@ -728,5 +728,5 @@ route('GET /m/:id', async (req) => {
   const ogImageUrl = await ensureOgImage(meme).catch(
     () => `${req.headers['x-forwarded-proto'] ?? 'https'}://${req.headers.host}/api/memes/${meme.id}/og.png`,
   )
-  return html(200, memePageHtml(meme, ogImageUrl))
+  return html(200, await memePageHtml(meme, ogImageUrl))
 })
