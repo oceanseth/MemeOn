@@ -26,6 +26,8 @@ export interface Meme {
   value: number
   myShares?: number
   isCreator?: boolean
+  remixOf?: string | null
+  private?: boolean
 }
 
 export interface Position {

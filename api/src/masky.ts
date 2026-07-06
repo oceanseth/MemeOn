@@ -109,9 +109,28 @@ export function generateImage(
   })
 }
 
+/** Image-to-image edit: prompt + up to 5 reference image URLs -> a new image. */
+export function editImage(
+  token: string,
+  prompt: string,
+  imageUrls: string[],
+): Promise<{ imageUrl: string }> {
+  return maskyFetch(token, '/images/edit', {
+    method: 'POST',
+    body: JSON.stringify({ prompt, imageUrls: imageUrls.slice(0, 5) }),
+  })
+}
+
 export function generateVideo(
   token: string,
-  body: { prompt: string; image?: string; resolution?: string; aspectRatio?: string },
+  body: {
+    prompt: string
+    image?: string
+    srcVideo?: string
+    model?: string
+    resolution?: string
+    aspectRatio?: string
+  },
 ): Promise<{ generationId: string; status: string; model: string }> {
   return maskyFetch(token, '/videos/generate', { method: 'POST', body: JSON.stringify(body) })
 }
