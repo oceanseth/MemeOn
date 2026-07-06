@@ -867,6 +867,12 @@ route('GET /api/memes/:id/history', async (req) => {
 
 route('GET /api/frames', () => json(200, { tiers: TIERS, frames: tierFrameList() }))
 
+/** Env-aware pointer to brand art in the assets bucket (braincell mascot, etc). */
+route('GET /api/brand/:file', (req) => {
+  const file = req.params.file.replace(/[^a-z0-9.-]/gi, '')
+  return redirect(assetUrl(`brand/${file}`), 'public, max-age=3600')
+})
+
 /** Regenerate a tier's card frame art with Masky (bills the caller's credits). */
 authed('POST /api/admin/frames', async (req) => {
   const tierKey = requireString(req.body, 'tierKey')

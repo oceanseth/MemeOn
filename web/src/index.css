@@ -444,6 +444,17 @@ textarea:focus {
   font-weight: 800;
   font-size: 13.5px;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.braincell-img {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
 }
 
 .quest-chip {
