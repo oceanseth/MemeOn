@@ -1,84 +1,95 @@
 # MemeOn
 
-Foundational project for the MemeOn.ai marketing site and serverless API.
+MemeOn.ai — the meme trading card market. Users log in with **Masky SSO**, mint memes
+(generated with their own Masky credits or from a URL), and each meme becomes a
+100-share collectible. Every meme has a unique share URL (`memeon.ai/m/{id}`) whose
+**og-meta card frame levels up** through pokemon-style foil tiers as the link gets
+reshared. Users invest in memes, trade positions with friends, and get alerts when
+their memes sell or tier up.
+
+## Virality tiers
+
+Defined once in `shared/tiers.ts` (used by API and web):
+
+| Tier | Rarity | Reshares | Foil |
+| --- | --- | --- | --- |
+| Paper | Common | 0+ | matte cardboard |
+| Silver | Uncommon | 10+ | silver stamp |
+| Holo | Rare | 50+ | holographic shimmer |
+| Chrome | Ultra Rare | 250+ | liquid chrome |
+| Gold | Legendary | 1,000+ | gold foil |
+| Prismatic | Secret Rare | 5,000+ | prismatic conic foil |
+| Shiny | Mythic Shiny | 25,000+ | ✨ cosmic sparkle ✨ |
+
+Every load of `/m/{id}` (human click, Discord unfurl, crawler) increments the reshare
+counter, recomputes the tier, alerts all position holders on tier-up, and serves og
+meta whose image is the meme composited into its current tier frame
+(`api/src/og.ts`, cached at `og/{memeId}-{tier}.png` in the assets bucket).
+Tier frame art is generated with the Masky image API (`api/scripts/generate-frames.ts`).
 
 ## Project layout
 
-- `web/` – Vite-powered frontend that displays `Hello MemeOn.ai` and calls the serverless API.
-- `api/` – TypeScript Lambda handler plus an Express dev server that serves `/api` routes on port `3001`, returning a JSON description (from `api/src/api-description.ts`) for any unimplemented path.
-- `infra/terraform/` – Terraform configuration for S3, CloudFront, ACM, API Gateway, Lambda and Route53.
-- `.github/workflows/` – CI/CD automation for build and deploy (see below).
+- `shared/` – tier definitions + valuation shared by web and api.
+- `web/` – React + Vite SPA: Landing/FAQ (tier showcase), Marketplace (filters +
+  search), My Binder (collection + mint via Masky image/video gen), Friends
+  (requests, portfolio stats, RTDB online presence), Trade (propose/respond/history),
+  meme detail with cap table, listing, buying, share link.
+- `api/` – Lambda (esbuild-bundled) + Express dev bridge. DynamoDB single-table,
+  Masky OAuth + aigen proxy, session JWTs, og pipeline (jimp), alerts.
+- `infra/terraform/` – production stack (memeon.ai). **Note:** no state is kept in
+  this repo; prod changes since the original apply were made with the AWS CLI and
+  these files were updated to match as documentation. Re-import before applying.
+- `infra/terraform/dev/` – dev stack (dev.memeon.ai), separate root/state.
+- `.github/workflows/` – `deploy.yml` (production branch → memeon.ai),
+  `deploy-dev.yml` (dev branch → dev.memeon.ai).
 
-## Prerequisites
+## Auth (Masky SSO)
 
-- Node.js 20+
-- npm 10+
-- Terraform 1.8+
-- AWS CLI v2 with credentials that can manage S3, CloudFront, Lambda, API Gateway, ACM and Route53.
+`GET /api/auth/masky/config` → client redirects to Masky authorize →
+`POST /api/auth/masky/callback` exchanges the code and returns:
+
+- `sessionToken` — our HS256 JWT (30d), gates all `/api/*` authed routes.
+- `maskyAccessToken` — scoped `mky_` token stored client-side; sent as
+  `x-masky-token` on aigen endpoints so generation bills the user's credits.
+- `firebaseToken` — custom token for the memeon Firebase project (RTDB presence).
+
+The OAuth client (`mkc_…`) is registered for `memeon.ai`, `dev.memeon.ai`, and
+`localhost` with scopes `profile avatars:read generate`.
+
+## Environments
+
+| | production | dev |
+| --- | --- | --- |
+| site | memeon.ai (CF `EMLGLTTNC62L0`) | dev.memeon.ai (CF `E2AM94MLXIMHST`) |
+| lambda | `memeon-api` | `memeon-api-dev` |
+| api gw | `mdv6q8qv28` | `pqxie1uj27` |
+| table | `memeon-production` | `memeon-dev` |
+| assets | `memeon-assets-production` | `memeon-assets-dev` (public read) |
+| ssm | `/memeon/production/*` | `/memeon/dev/*` |
+
+SSM params (us-west-2, SecureString): `masky_oauth` (client_id/client_secret),
+`session_secret`, `firebase_service_account`.
+
+Deploys: push to `production` → memeon.ai; push to `dev` → dev.memeon.ai
+(config in `config/deploy.json` / `config/deploy.dev.json`; GitHub environments
+`production` / `dev` hold AWS credentials).
 
 ## Local development
 
-Install dependencies once:
-
 ```
 npm install
-```
-
-Then launch both the Vite dev server and the API server locally:
-
-```
 npm run dev
 ```
 
-The site runs on http://localhost:5173 and proxies `/api` requests to http://localhost:3001.
+Vite serves http://localhost:5173 and proxies `/api` + `/m` to the local API
+(port 3001), which uses your AWS credentials against the **dev** table/bucket/params.
+Mint a test session: `cd api && AWS_REGION=us-west-2 npx tsx scripts/mint-test-session.ts you "Your Name"`.
 
-## Building
+## Firebase
 
-Build the frontend and package the Lambda bundle:
-
-```
-npm run build
-```
-
-The Lambda package is written to `api/lambda.zip` and is referenced by Terraform.
-
-## Infrastructure
-
-Terraform is organised under `infra/terraform`.
-
-1. Generate the Lambda bundle: `npm run bundle:api`.
-2. Ensure the S3 bucket `memeon.ai` exists. You can create it with the AWS CLI:
-   ```
-   aws s3api create-bucket --bucket memeon.ai --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
-   ```
-3. Initialise and plan:
-   ```
-   cd infra/terraform
-   terraform init
-   terraform plan -var='route53_zone_id=Z123456789ABC'
-   ```
-4. Apply when ready:
-   ```
-   terraform apply -var='route53_zone_id=Z123456789ABC'
-   ```
-
-The configuration provisions:
-
-- S3 bucket for the static site with CORS set to mirror the Masky project.
-- CloudFront distribution with behaviours for the site and `/api/*` requests.
-- CloudFront function to redirect `www.memeon.ai` to `memeon.ai`.
-- ACM certificate in `us-east-1` for `memeon.ai` and `www.memeon.ai`.
-- API Gateway HTTP endpoint integrated with the `memeon-api` Lambda function.
-- Route53 records for apex and `www`.
-
-Certificate validation requires DNS. Terraform creates the CNAME records automatically in the hosted zone you supply.
-
-## Deployment workflow
-
-A GitHub Actions workflow (`.github/workflows/deploy.yml`) builds the frontend, uploads assets to S3, invalidates the CloudFront cache, and updates the Lambda function code using AWS CLI commands. Static deployment identifiers (including the AWS region) live in `config/deploy.json`. Configure the following repository secrets before running the workflow:
-
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
-- `AWS_REGION` *(optional if `awsRegion` is present in `config/deploy.json`)*
-
-Trigger the workflow with pushes to `main` or manually from the Actions tab.
+Project `memeon-8ab5f`: RTDB (`https://memeon-8ab5f-default-rtdb.firebaseio.com`)
+powers online presence in Friends (`presence/{uid}`, rules deployed by
+`api/scripts/deploy-rtdb-rules.ts`). The API mints custom tokens from the service
+account in SSM — **Authentication must be enabled once in the Firebase console**
+(Build → Authentication → Get started) for sign-in to succeed; until then the app
+works with presence silently disabled.

@@ -49,6 +49,12 @@ function handler(event) {
     return response;
   }
 
+  // SPA routing: serve index.html for extensionless client routes
+  // (/marketplace, /binder, /meme/abc). /api/* and /m/* have their own behaviors.
+  var uri = request.uri || "/";
+  if (uri !== "/" && uri.indexOf(".") === -1) {
+    request.uri = "/index.html";
+  }
   return request;
 }
 EOF
@@ -226,6 +232,18 @@ resource "aws_cloudfront_distribution" "site" {
 
   ordered_cache_behavior {
     path_pattern     = "/api/*"
+    allowed_methods  = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "api-gateway"
+    viewer_protocol_policy = "https-only"
+    cache_policy_id        = aws_cloudfront_cache_policy.api.id
+    origin_request_policy_id = aws_cloudfront_origin_request_policy.api.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
+  }
+
+  # meme share URLs: uncached so every load counts a reshare
+  ordered_cache_behavior {
+    path_pattern     = "/m/*"
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "api-gateway"

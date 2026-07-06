@@ -1,0 +1,466 @@
+import { randomUUID } from 'node:crypto'
+import * as db from './db'
+import * as masky from './masky'
+import { authed, HttpError, html, json, maskyToken, redirect, requireString, route } from './http'
+import { issueSession } from './session'
+import { mintFirebaseToken } from './firebase'
+import { ensureOgImage, frameKey, memePageHtml, tierFrameList } from './og'
+import { assetUrl, putAsset } from './s3'
+import { memeValue, TIERS, tierFor, tierIndexFor } from '../../shared/tiers'
+import type { Meme, Trade, TradeSide } from './types'
+
+// ---------- health ----------
+
+route('GET /api/helloworld', () => ({
+  statusCode: 200,
+  headers: { 'content-type': 'text/plain; charset=utf-8' },
+  body: 'helloworld',
+}))
+
+// ---------- auth ----------
+
+route('GET /api/auth/masky/config', async () => json(200, await masky.publicConfig()))
+
+route('POST /api/auth/masky/callback', async (req) => {
+  const code = requireString(req.body, 'code')
+  const redirectUri = requireString(req.body, 'redirectUri')
+  const tokens = await masky.exchangeCode(code, redirectUri)
+  const profile = await masky.fetchProfile(tokens.accessToken)
+  const name = profile.name ?? tokens.avatar?.name ?? 'Anonymous'
+  const picture = profile.picture ?? tokens.avatar?.picture ?? null
+  const user = await db.ensureUser({ sub: profile.id, name, picture })
+  const sessionToken = await issueSession({ sub: user.sub, name: user.name, picture: user.picture })
+  const firebaseToken = await mintFirebaseToken(user.sub, { name: user.name })
+  return json(200, {
+    sessionToken,
+    maskyAccessToken: tokens.accessToken,
+    firebaseToken,
+    profile: { sub: user.sub, name: user.name, picture: user.picture, coins: user.coins },
+  })
+})
+
+// ---------- me / users ----------
+
+async function portfolioSummary(userId: string) {
+  const positions = await db.getPortfolio(userId)
+  const memes = (
+    await Promise.all(positions.map((p) => db.getMeme(p.memeId)))
+  ).filter((m): m is Meme => !!m)
+  const byId = new Map(memes.map((m) => [m.id, m]))
+  let value = 0
+  for (const p of positions) {
+    const m = byId.get(p.memeId)
+    if (m) value += (p.shares / 100) * memeValue(m.reshares)
+  }
+  return { positions, memes, value: Math.round(value), collectionSize: positions.length }
+}
+
+authed('GET /api/me', async (req) => {
+  const user = await db.getUser(req.user.sub)
+  if (!user) throw new HttpError(404, 'user not found')
+  const { value, collectionSize } = await portfolioSummary(user.sub)
+  const alerts = await db.listAlerts(user.sub, 50)
+  return json(200, {
+    sub: user.sub,
+    name: user.name,
+    picture: user.picture,
+    coins: user.coins,
+    portfolioValue: value,
+    collectionSize,
+    unreadAlerts: alerts.filter((a) => !a.read).length,
+  })
+})
+
+authed('GET /api/users', async (req) => {
+  const users = await db.searchUsers(req.query.q ?? '')
+  return json(200, {
+    users: users
+      .filter((u) => u.sub !== req.user.sub)
+      .map((u) => ({ sub: u.sub, name: u.name, picture: u.picture })),
+  })
+})
+
+// ---------- memes / marketplace ----------
+
+const publicMeme = (m: Meme) => ({ ...m, tier: tierFor(m.reshares), value: memeValue(m.reshares) })
+
+authed('GET /api/memes', async (req) => {
+  let memes = await db.listMemes()
+  const { q, type, tier, listed, sort } = req.query
+  if (q) {
+    const needle = q.toLowerCase()
+    memes = memes.filter(
+      (m) =>
+        m.title.toLowerCase().includes(needle) ||
+        (m.tags ?? []).some((t) => t.toLowerCase().includes(needle)) ||
+        m.creatorName.toLowerCase().includes(needle),
+    )
+  }
+  if (type === 'image' || type === 'video') memes = memes.filter((m) => m.mediaType === type)
+  if (tier) memes = memes.filter((m) => tierFor(m.reshares).key === tier)
+  if (listed === 'true') memes = memes.filter((m) => m.listing && m.listing.shares > 0)
+  if (sort === 'viral') memes = [...memes].sort((a, b) => b.reshares - a.reshares)
+  else if (sort === 'value') memes = [...memes].sort((a, b) => memeValue(b.reshares) - memeValue(a.reshares))
+  // default: newest first (query order)
+  return json(200, { memes: memes.map(publicMeme) })
+})
+
+authed('POST /api/memes', async (req) => {
+  const title = requireString(req.body, 'title', 120)
+  const imageUrl = requireString(req.body, 'imageUrl', 2000)
+  const mediaType = req.body.mediaType === 'video' ? 'video' : 'image'
+  const videoUrl = typeof req.body.videoUrl === 'string' ? req.body.videoUrl : null
+  if (mediaType === 'video' && !videoUrl) throw new HttpError(400, 'video memes need videoUrl')
+  const description =
+    typeof req.body.description === 'string' ? req.body.description.slice(0, 500) : null
+  const tags = Array.isArray(req.body.tags)
+    ? req.body.tags.filter((t): t is string => typeof t === 'string').slice(0, 8)
+    : []
+  const meme: Meme = {
+    id: randomUUID().slice(0, 12),
+    title,
+    description,
+    mediaType,
+    imageUrl,
+    videoUrl,
+    tags,
+    creatorId: req.user.sub,
+    creatorName: req.user.name,
+    ownerId: req.user.sub,
+    ownerName: req.user.name,
+    reshares: 0,
+    tierKey: TIERS[0].key,
+    listing: null,
+    createdAt: new Date().toISOString(),
+  }
+  await db.putMeme(meme)
+  await db.putPosition(meme.id, req.user.sub, 100)
+  return json(201, { meme: publicMeme(meme) })
+})
+
+route('GET /api/memes/:id', async (req) => {
+  const meme = await db.getMeme(req.params.id)
+  if (!meme) throw new HttpError(404, 'meme not found')
+  const positions = await db.getPositions(meme.id)
+  return json(200, { meme: publicMeme(meme), positions })
+})
+
+authed('POST /api/memes/:id/list', async (req) => {
+  const meme = await db.getMeme(req.params.id)
+  if (!meme) throw new HttpError(404, 'meme not found')
+  const pricePerShare = Number(req.body.pricePerShare)
+  const shares = Math.floor(Number(req.body.shares))
+  if (!(pricePerShare > 0) || !(shares > 0)) throw new HttpError(400, 'invalid price or shares')
+  const positions = await db.getPositions(meme.id)
+  const mine = positions.find((p) => p.userId === req.user.sub)
+  if (!mine || mine.shares < shares) throw new HttpError(400, 'you do not hold that many shares')
+  if (meme.listing && meme.listing.sellerId !== req.user.sub)
+    throw new HttpError(409, 'another holder already has an active listing on this meme')
+  await db.setListing(meme.id, {
+    sellerId: req.user.sub,
+    pricePerShare: Math.round(pricePerShare * 100) / 100,
+    shares,
+  })
+  return json(200, { ok: true })
+})
+
+authed('POST /api/memes/:id/unlist', async (req) => {
+  const meme = await db.getMeme(req.params.id)
+  if (!meme) throw new HttpError(404, 'meme not found')
+  if (meme.listing && meme.listing.sellerId !== req.user.sub)
+    throw new HttpError(403, 'not your listing')
+  await db.setListing(meme.id, null)
+  return json(200, { ok: true })
+})
+
+authed('POST /api/memes/:id/buy', async (req) => {
+  const meme = await db.getMeme(req.params.id)
+  if (!meme) throw new HttpError(404, 'meme not found')
+  if (!meme.listing || meme.listing.shares <= 0) throw new HttpError(409, 'meme is not listed')
+  if (meme.listing.sellerId === req.user.sub) throw new HttpError(400, 'cannot buy your own listing')
+  const shares = Math.min(Math.floor(Number(req.body.shares) || 0), meme.listing.shares)
+  if (shares <= 0) throw new HttpError(400, 'invalid share count')
+  let cost: number
+  try {
+    cost = await db.executeBuy(meme, meme.listing, req.user.sub, shares)
+  } catch {
+    throw new HttpError(409, 'purchase failed — insufficient coins or listing changed')
+  }
+  await db.refreshOwnership(meme.id)
+  await db.addAlert(
+    meme.listing.sellerId,
+    'sale',
+    `💰 ${req.user.name} bought ${shares} share${shares === 1 ? '' : 's'} of "${meme.title}" for ${cost} coins`,
+    meme.id,
+  )
+  return json(200, { ok: true, shares, cost })
+})
+
+authed('GET /api/binder', async (req) => {
+  const { positions, memes } = await portfolioSummary(req.user.sub)
+  const all = await db.listMemes()
+  const created = all.filter((m) => m.creatorId === req.user.sub)
+  const held = new Map(positions.map((p) => [p.memeId, p.shares]))
+  const byId = new Map<string, Meme>()
+  for (const m of [...memes, ...created]) byId.set(m.id, m)
+  return json(200, {
+    memes: [...byId.values()]
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((m) => ({
+        ...publicMeme(m),
+        myShares: held.get(m.id) ?? 0,
+        isCreator: m.creatorId === req.user.sub,
+      })),
+  })
+})
+
+// ---------- aigen (bills the user's Masky credits) ----------
+
+authed('POST /api/aigen/image', async (req) => {
+  const prompt = requireString(req.body, 'prompt')
+  const aspectRatio = typeof req.body.aspectRatio === 'string' ? req.body.aspectRatio : '1:1'
+  const out = await masky.generateImage(maskyToken(req), prompt, aspectRatio)
+  return json(200, out)
+})
+
+authed('POST /api/aigen/video', async (req) => {
+  const prompt = requireString(req.body, 'prompt')
+  const image = typeof req.body.image === 'string' ? req.body.image : undefined
+  const out = await masky.generateVideo(maskyToken(req), { prompt, image, resolution: '720p' })
+  return json(202, out)
+})
+
+authed('GET /api/aigen/video/:id', async (req) => {
+  const out = await masky.videoStatus(maskyToken(req), req.params.id)
+  return json(200, out)
+})
+
+// ---------- friends ----------
+
+authed('GET /api/friends', async (req) => {
+  const edges = await db.listFriends(req.user.sub)
+  const enriched = await Promise.all(
+    edges.map(async (e) => {
+      const profile = await db.getUser(e.otherId)
+      const stats =
+        e.status === 'accepted'
+          ? await portfolioSummary(e.otherId)
+          : { value: 0, collectionSize: 0 }
+      return {
+        sub: e.otherId,
+        name: profile?.name ?? 'Unknown',
+        picture: profile?.picture ?? null,
+        status: e.status,
+        collectionSize: stats.collectionSize,
+        portfolioValue: stats.value,
+      }
+    }),
+  )
+  return json(200, { friends: enriched })
+})
+
+authed('POST /api/friends/request', async (req) => {
+  const otherId = requireString(req.body, 'userId')
+  if (otherId === req.user.sub) throw new HttpError(400, 'cannot friend yourself')
+  const other = await db.getUser(otherId)
+  if (!other) throw new HttpError(404, 'user not found')
+  const existing = await db.getFriend(req.user.sub, otherId)
+  if (existing) return json(200, { ok: true, status: existing.status })
+  await db.setFriendEdge(req.user.sub, otherId, 'outgoing')
+  await db.setFriendEdge(otherId, req.user.sub, 'incoming')
+  await db.addAlert(otherId, 'friend', `👋 ${req.user.name} sent you a friend request`)
+  return json(200, { ok: true, status: 'outgoing' })
+})
+
+authed('POST /api/friends/respond', async (req) => {
+  const otherId = requireString(req.body, 'userId')
+  const edge = await db.getFriend(req.user.sub, otherId)
+  if (!edge || edge.status !== 'incoming') throw new HttpError(404, 'no pending request')
+  if (req.body.accept) {
+    await db.setFriendEdge(req.user.sub, otherId, 'accepted')
+    await db.setFriendEdge(otherId, req.user.sub, 'accepted')
+    await db.addAlert(otherId, 'friend', `🤝 ${req.user.name} accepted your friend request`)
+  } else {
+    await db.deleteFriendEdge(req.user.sub, otherId)
+    await db.deleteFriendEdge(otherId, req.user.sub)
+  }
+  return json(200, { ok: true })
+})
+
+authed('POST /api/friends/remove', async (req) => {
+  const otherId = requireString(req.body, 'userId')
+  await db.deleteFriendEdge(req.user.sub, otherId)
+  await db.deleteFriendEdge(otherId, req.user.sub)
+  return json(200, { ok: true })
+})
+
+// ---------- trades ----------
+
+function parseTradeSide(v: unknown): TradeSide {
+  const side = (v ?? {}) as Record<string, unknown>
+  const memes = Array.isArray(side.memes)
+    ? side.memes
+        .map((m) => m as Record<string, unknown>)
+        .map((m) => ({ memeId: String(m.memeId ?? ''), shares: Math.floor(Number(m.shares) || 0) }))
+        .filter((m) => m.memeId && m.shares > 0)
+    : []
+  const coins = Math.max(0, Math.floor(Number(side.coins) || 0))
+  if (memes.length > 6) throw new HttpError(400, 'too many memes in one trade')
+  return { memes, coins }
+}
+
+async function assertHoldings(userId: string, side: TradeSide, label: string) {
+  const user = await db.getUser(userId)
+  if (!user) throw new HttpError(404, `${label} not found`)
+  if (user.coins < side.coins) throw new HttpError(400, `${label} lacks the offered coins`)
+  for (const m of side.memes) {
+    const positions = await db.getPositions(m.memeId)
+    const pos = positions.find((p) => p.userId === userId)
+    if (!pos || pos.shares < m.shares)
+      throw new HttpError(400, `${label} does not hold ${m.shares} shares of ${m.memeId}`)
+  }
+}
+
+authed('GET /api/trades', async (req) => json(200, { trades: await db.listTrades(req.user.sub) }))
+
+authed('POST /api/trades', async (req) => {
+  const toId = requireString(req.body, 'toId')
+  if (toId === req.user.sub) throw new HttpError(400, 'cannot trade with yourself')
+  const to = await db.getUser(toId)
+  if (!to) throw new HttpError(404, 'recipient not found')
+  const offer = parseTradeSide(req.body.offer)
+  const ask = parseTradeSide(req.body.ask)
+  if (offer.memes.length + ask.memes.length + offer.coins + ask.coins === 0)
+    throw new HttpError(400, 'empty trade')
+  await assertHoldings(req.user.sub, offer, 'you')
+  await assertHoldings(toId, ask, 'recipient')
+  const trade: Trade = {
+    id: randomUUID().slice(0, 12),
+    fromId: req.user.sub,
+    fromName: req.user.name,
+    toId,
+    toName: to.name,
+    offer,
+    ask,
+    status: 'proposed',
+    createdAt: new Date().toISOString(),
+    resolvedAt: null,
+  }
+  await db.createTrade(trade)
+  await db.addAlert(toId, 'trade', `🔁 ${req.user.name} proposed a trade with you`)
+  return json(201, { trade })
+})
+
+authed('POST /api/trades/:id/respond', async (req) => {
+  const trade = await db.getTrade(req.params.id)
+  if (!trade) throw new HttpError(404, 'trade not found')
+  if (trade.status !== 'proposed') throw new HttpError(409, `trade already ${trade.status}`)
+  const action = requireString(req.body, 'action')
+  if (action === 'cancel') {
+    if (trade.fromId !== req.user.sub) throw new HttpError(403, 'only the proposer can cancel')
+    return json(200, { trade: await db.setTradeStatus(trade, 'cancelled') })
+  }
+  if (trade.toId !== req.user.sub) throw new HttpError(403, 'only the recipient can respond')
+  if (action === 'decline') {
+    const updated = await db.setTradeStatus(trade, 'declined')
+    await db.addAlert(trade.fromId, 'trade', `❌ ${req.user.name} declined your trade`)
+    return json(200, { trade: updated })
+  }
+  if (action !== 'accept') throw new HttpError(400, 'action must be accept, decline, or cancel')
+  try {
+    await db.executeTrade(trade)
+  } catch {
+    throw new HttpError(409, 'trade failed — one side no longer holds the goods')
+  }
+  const updated = await db.setTradeStatus(trade, 'accepted')
+  await Promise.all(
+    [...trade.offer.memes, ...trade.ask.memes].map((m) => db.refreshOwnership(m.memeId)),
+  )
+  await db.addAlert(trade.fromId, 'trade', `✅ ${req.user.name} accepted your trade!`)
+  return json(200, { trade: updated })
+})
+
+// ---------- alerts ----------
+
+authed('GET /api/alerts', async (req) => json(200, { alerts: await db.listAlerts(req.user.sub) }))
+
+authed('POST /api/alerts/read', async (req) => {
+  const ids = Array.isArray(req.body.ids)
+    ? req.body.ids.filter((i): i is string => typeof i === 'string')
+    : []
+  await db.markAlertsRead(req.user.sub, ids)
+  return json(200, { ok: true })
+})
+
+// ---------- tier frames + og ----------
+
+route('GET /api/frames', () => json(200, { tiers: TIERS, frames: tierFrameList() }))
+
+/** Regenerate a tier's card frame art with Masky (bills the caller's credits). */
+authed('POST /api/admin/frames', async (req) => {
+  const tierKey = requireString(req.body, 'tierKey')
+  const tier = TIERS.find((t) => t.key === tierKey)
+  if (!tier) throw new HttpError(400, 'unknown tier')
+  const prompt = framePrompt(tier.name, tierIndexFor(tier.minReshares))
+  const out = await masky.generateImage(maskyToken(req), prompt, '3:4')
+  const res = await fetch(out.imageUrl)
+  if (!res.ok) throw new HttpError(502, 'failed to download generated frame')
+  const buf = Buffer.from(await res.arrayBuffer())
+  const url = await putAsset(frameKey(tier.key), buf, 'image/png')
+  return json(200, { url })
+})
+
+export function framePrompt(tierName: string, tierIdx: number): string {
+  const styles = [
+    'plain matte cardboard, simple thin gray border, subtle paper texture, muted colors',
+    'brushed silver metallic border with embossed uncommon stamp, cool gray tones, soft sheen',
+    'holographic rainbow foil border, prismatic sparkle rays, cyan-magenta light refraction',
+    'liquid chrome mirror-finish border, ultra rare energy arcs, blue-violet reflections',
+    'ornate gold foil border, legendary radiant sunburst engraving, warm golden glow',
+    'iridescent prismatic secret-rare border, rainbow crystal facets, pink-purple aurora',
+    'mythic shiny cosmic border, galaxy foil with glittering stars, teal-gold shimmering aura',
+  ]
+  return (
+    `Trading card frame design, portrait 3:4, in the style of a collectible monster trading card. ` +
+    `${styles[tierIdx] ?? styles[0]}. ` +
+    `A completely EMPTY dark charcoal square art window occupying the middle of the card ` +
+    `(leave the center blank — no artwork inside the window). ` +
+    `The word "${tierName.toUpperCase()}" in small capitals at the bottom of the frame. ` +
+    `Ornate corners, high detail, studio quality, no other text.`
+  )
+}
+
+route('GET /api/memes/:id/og.png', async (req) => {
+  const meme = await db.getMeme(req.params.id)
+  if (!meme) throw new HttpError(404, 'meme not found')
+  const url = await ensureOgImage(meme)
+  return redirect(url, 'public, max-age=300')
+})
+
+/**
+ * The unique share URL for a meme. Every load (human or crawler unfurl) counts
+ * as a reshare — that IS the virality mechanic.
+ */
+route('GET /m/:id', async (req) => {
+  const result = await db.recordReshare(req.params.id)
+  if (!result) return html(404, '<h1>This meme has not been minted (404)</h1>')
+  const { meme, tieredUp } = result
+  if (tieredUp) {
+    const tier = tierFor(meme.reshares)
+    const holders = await db.getPositions(meme.id)
+    await Promise.all(
+      holders.map((h) =>
+        db.addAlert(
+          h.userId,
+          'tierup',
+          `🚀 "${meme.title}" tiered up to ${tier.name.toUpperCase()} (${tier.rarity}) at ${meme.reshares.toLocaleString()} reshares!`,
+          meme.id,
+        ),
+      ),
+    )
+  }
+  const ogImageUrl = await ensureOgImage(meme).catch(
+    () => `${req.headers['x-forwarded-proto'] ?? 'https'}://${req.headers.host}/api/memes/${meme.id}/og.png`,
+  )
+  return html(200, memePageHtml(meme, ogImageUrl))
+})

@@ -1,0 +1,90 @@
+name: Deploy dev
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: 20
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: dev
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Ensure Linux Rollup binary
+        run: npm install --prefix web --no-save @rollup/rollup-linux-x64-gnu@4.53.2
+
+      - name: Build frontend and package Lambda
+        run: npm run build
+
+      - name: Load deploy config
+        id: deploy_config
+        run: |
+          CONFIG_PATH="config/deploy.dev.json"
+          echo "aws_region=$(jq -r '.awsRegion // empty' "$CONFIG_PATH")" >> "$GITHUB_OUTPUT"
+          echo "site_bucket_name=$(jq -r '.siteBucketName' "$CONFIG_PATH")" >> "$GITHUB_OUTPUT"
+          echo "cloudfront_distribution_id=$(jq -r '.cloudfrontDistributionId' "$CONFIG_PATH")" >> "$GITHUB_OUTPUT"
+          echo "lambda_function_name=$(jq -r '.lambdaFunctionName' "$CONFIG_PATH")" >> "$GITHUB_OUTPUT"
+          echo "api_gateway_id=$(jq -r '.apiGatewayId' "$CONFIG_PATH")" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ steps.deploy_config.outputs.aws_region || secrets.AWS_REGION || vars.AWS_REGION }}
+
+      - name: Sync assets to S3
+        run: |
+          aws s3 sync web/dist "s3://${{ steps.deploy_config.outputs.site_bucket_name }}" \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable"
+
+      - name: Upload index.html with short cache
+        run: |
+          aws s3 cp web/dist/index.html "s3://${{ steps.deploy_config.outputs.site_bucket_name }}/index.html" \
+            --cache-control "public, max-age=60" \
+            --content-type "text/html; charset=utf-8"
+
+      - name: Update Lambda function
+        run: |
+          aws lambda update-function-code \
+            --function-name "${{ steps.deploy_config.outputs.lambda_function_name }}" \
+            --zip-file "fileb://api/lambda.zip"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ steps.deploy_config.outputs.cloudfront_distribution_id }}" \
+            --paths "/*"
+
+      - name: Smoke test API
+        if: ${{ steps.deploy_config.outputs.api_gateway_id != '' }}
+        env:
+          API_GATEWAY_ID: ${{ steps.deploy_config.outputs.api_gateway_id }}
+          AWS_REGION: ${{ steps.deploy_config.outputs.aws_region || secrets.AWS_REGION || vars.AWS_REGION }}
+        run: |
+          curl --fail "https://${API_GATEWAY_ID}.execute-api.${AWS_REGION}.amazonaws.com/api/helloworld"
