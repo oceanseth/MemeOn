@@ -34,6 +34,25 @@ export default function DiscordPage() {
           ))}
       </section>
 
+      <div className="panel" style={{ maxWidth: 780, margin: '0 auto 28px', textAlign: 'center' }}>
+        <img
+          src="/brand/memeon-logo-circle-256.png"
+          alt="MemeOn brain logo"
+          style={{ width: 140, height: 140 }}
+        />
+        <p style={{ color: 'var(--text-dim)', fontSize: 14, margin: '10px 0 14px' }}>
+          The MemeOn brain — grab it for bots, servers, or wherever you rep the market.
+        </p>
+        <div className="filter-bar" style={{ justifyContent: 'center' }}>
+          <a href="/brand/memeon-logo-1024.png" download="memeon-logo-1024.png">
+            <button className="primary">⬇ Full size (1024px)</button>
+          </a>
+          <a href="/brand/memeon-logo-circle-256.png" download="memeon-logo-256.png">
+            <button>⬇ Optimized (256px, round)</button>
+          </a>
+        </div>
+      </div>
+
       <div className="faq">
         <details open>
           <summary>Install (10 seconds)</summary>
