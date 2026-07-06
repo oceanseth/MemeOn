@@ -7,6 +7,8 @@ export interface Req {
   headers: Record<string, string>
   /** parsed JSON body ({} when absent/invalid) */
   body: Record<string, unknown>
+  /** unparsed body — needed for signature verification (discord interactions) */
+  rawBody: string
   /** path params captured by the matched route pattern */
   params: Record<string, string>
   /** set by requireAuth routes */
