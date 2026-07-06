@@ -7,6 +7,8 @@ import MobileAuthForward from './pages/MobileAuthForward'
 import Invite from './pages/Invite'
 import Leaderboard from './pages/Leaderboard'
 import Profile from './pages/Profile'
+import DiscordPage from './pages/DiscordPage'
+import DiscordLink from './pages/DiscordLink'
 import Marketplace from './pages/Marketplace'
 import Binder from './pages/Binder'
 import CreateMeme from './pages/CreateMeme'
@@ -35,6 +37,8 @@ export default function App() {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/auth/mobile" element={<MobileAuthForward />} />
         <Route path="/invite/:sub" element={<Invite />} />
+        <Route path="/discord" element={<DiscordPage />} />
+        <Route path="/discord/link" element={<DiscordLink />} />
         <Route
           path="/marketplace"
           element={

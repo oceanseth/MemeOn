@@ -156,6 +156,17 @@ textarea:focus {
   gap: 12px;
 }
 
+.discord-link {
+  color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.15s ease;
+}
+
+.discord-link:hover {
+  color: #5865f2;
+}
+
 .coins {
   font-weight: 700;
   color: var(--gold);

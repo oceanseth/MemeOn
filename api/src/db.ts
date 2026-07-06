@@ -776,6 +776,30 @@ export async function isFollowing(userId: string, creatorId: string): Promise<bo
   return !!res.Item
 }
 
+// ---------- discord account links ----------
+
+export async function linkDiscord(discordUserId: string, sub: string): Promise<void> {
+  await ddb.send(
+    new PutCommand({
+      TableName: T(),
+      Item: {
+        PK: `DISCORD#${discordUserId}`,
+        SK: 'LINK',
+        discordUserId,
+        sub,
+        createdAt: new Date().toISOString(),
+      },
+    }),
+  )
+}
+
+export async function discordLinkedSub(discordUserId: string): Promise<string | null> {
+  const res = await ddb.send(
+    new GetCommand({ TableName: T(), Key: { PK: `DISCORD#${discordUserId}`, SK: 'LINK' } }),
+  )
+  return (res.Item?.sub as string) ?? null
+}
+
 // ---------- memeplex (related-meme graph) ----------
 
 /** Link two memes into each other's memeplex (bidirectional edge). */

@@ -45,6 +45,7 @@ export async function dispatch(input: {
     query: input.query,
     headers: input.headers,
     body,
+    rawBody: input.rawBody ?? '',
     params: match.params,
     user: user ?? { sub: '', name: '', picture: null },
   }
