@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext'
 import Landing from './pages/Landing'
 import AuthCallback from './pages/AuthCallback'
 import MobileAuthForward from './pages/MobileAuthForward'
+import Invite from './pages/Invite'
 import Marketplace from './pages/Marketplace'
 import Binder from './pages/Binder'
 import CreateMeme from './pages/CreateMeme'
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/auth/mobile" element={<MobileAuthForward />} />
+        <Route path="/invite/:sub" element={<Invite />} />
         <Route
           path="/marketplace"
           element={
