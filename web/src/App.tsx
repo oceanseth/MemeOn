@@ -5,6 +5,8 @@ import Landing from './pages/Landing'
 import AuthCallback from './pages/AuthCallback'
 import MobileAuthForward from './pages/MobileAuthForward'
 import Invite from './pages/Invite'
+import Leaderboard from './pages/Leaderboard'
+import Profile from './pages/Profile'
 import Marketplace from './pages/Marketplace'
 import Binder from './pages/Binder'
 import CreateMeme from './pages/CreateMeme'
@@ -70,6 +72,22 @@ export default function App() {
           element={
             <RequireAuth>
               <Trades />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/leaderboard"
+          element={
+            <RequireAuth>
+              <Leaderboard />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/u/:sub"
+          element={
+            <RequireAuth>
+              <Profile />
             </RequireAuth>
           }
         />

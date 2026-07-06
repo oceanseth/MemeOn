@@ -85,7 +85,7 @@ export default function CreatorScreen({ route, navigation }: Props) {
           )}
           <Text style={styles.name}>{profile.name}</Text>
           <Text style={styles.stats}>
-            ⭐ {profile.followers} followers · 📚 {profile.collectionSize} memes · 🪙{' '}
+            ⭐ {profile.followers} followers · 📚 {profile.collectionSize} memes · 🧠{' '}
             {profile.portfolioValue.toLocaleString()}
           </Text>
           <View style={styles.actions}>
@@ -126,7 +126,7 @@ export default function CreatorScreen({ route, navigation }: Props) {
             </Text>
             <Text style={[styles.gridTier, { color: item.tier.color }]}>
               {item.tier.name}
-              {item.shares !== undefined ? ` · ${item.shares}/100` : ''} · 🪙{item.value}
+              {item.shares !== undefined ? ` · ${item.shares}/100` : ''} · 🧠{item.value}
             </Text>
           </Pressable>
         </FoilCard>

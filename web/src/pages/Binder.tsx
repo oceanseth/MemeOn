@@ -26,7 +26,7 @@ export default function Binder() {
         <div className="filter-bar">
           {user && (
             <span style={{ color: 'var(--text-dim)', fontSize: 14 }}>
-              {user.collectionSize} positions · portfolio 🪙 {user.portfolioValue.toLocaleString()}
+              {user.collectionSize} positions · portfolio 🧠 {user.portfolioValue.toLocaleString()}
             </span>
           )}
           {privateCount > 0 && (

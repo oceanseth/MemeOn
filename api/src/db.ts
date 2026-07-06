@@ -71,7 +71,9 @@ export async function ensureUser(profile: {
     name: profile.name,
     nameLower: profile.name.toLowerCase(),
     picture: profile.picture,
-    coins: 1000,
+    // braincells 🧠 (db field kept as `coins`): new users start empty and earn
+    // their first braincells through the onboarding quests
+    coins: 0,
     createdAt: new Date().toISOString(),
   }
   await ddb.send(
@@ -460,6 +462,119 @@ export async function executeTrade(trade: Trade): Promise<void> {
   for (const m of trade.offer.memes) await moveShares(trade.fromId, trade.toId, m.memeId, m.shares)
   for (const m of trade.ask.memes) await moveShares(trade.toId, trade.fromId, m.memeId, m.shares)
 
+  await ddb.send(new TransactWriteCommand({ TransactItems: items }))
+}
+
+// ---------- onboarding quests ----------
+
+export type QuestKey = 'pack' | 'mint' | 'share' | 'friend' | 'trade'
+
+/**
+ * Mark a quest complete exactly once and pay its braincell reward.
+ * Returns true only on first completion.
+ */
+export async function completeQuest(
+  userId: string,
+  key: QuestKey,
+  reward: number,
+): Promise<boolean> {
+  try {
+    // make sure the onboarding map exists (older accounts predate it)
+    await ddb.send(
+      new UpdateCommand({
+        TableName: T(),
+        Key: { PK: `USER#${userId}`, SK: 'PROFILE' },
+        UpdateExpression: 'SET onboarding = if_not_exists(onboarding, :empty)',
+        ConditionExpression: 'attribute_exists(PK)',
+        ExpressionAttributeValues: { ':empty': {} },
+      }),
+    )
+    await ddb.send(
+      new UpdateCommand({
+        TableName: T(),
+        Key: { PK: `USER#${userId}`, SK: 'PROFILE' },
+        UpdateExpression: 'SET onboarding.#k = :now ADD coins :r',
+        ConditionExpression: 'attribute_not_exists(onboarding.#k)',
+        ExpressionAttributeNames: { '#k': key },
+        ExpressionAttributeValues: { ':now': new Date().toISOString(), ':r': reward },
+      }),
+    )
+    return true
+  } catch {
+    return false // user missing or quest already complete
+  }
+}
+
+/** Top braincell holders (excluding house accounts). */
+export async function topHolders(limit = 10): Promise<UserProfile[]> {
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName: T(),
+      IndexName: 'GSI1',
+      KeyConditionExpression: 'GSI1PK = :p',
+      ExpressionAttributeValues: { ':p': 'USER' },
+      Limit: 1000,
+    }),
+  )
+  return (res.Items ?? [])
+    .map((i) => strip<UserProfile>(i))
+    .filter((u) => u.sub !== VAULT_SUB)
+    .sort((a, b) => b.coins - a.coins)
+    .slice(0, limit)
+}
+
+export const VAULT_SUB = 'memeon_vault'
+
+/**
+ * Starter pack: transfer 10 vault shares in each given meme to the user and
+ * complete the 'pack' quest (+reward braincells) in one transaction — the
+ * quest condition makes the whole claim idempotent.
+ */
+export async function claimVaultPack(
+  userId: string,
+  memeIds: string[],
+  reward: number,
+): Promise<void> {
+  // ensure the onboarding map exists before the conditional write
+  await ddb.send(
+    new UpdateCommand({
+      TableName: T(),
+      Key: { PK: `USER#${userId}`, SK: 'PROFILE' },
+      UpdateExpression: 'SET onboarding = if_not_exists(onboarding, :empty)',
+      ConditionExpression: 'attribute_exists(PK)',
+      ExpressionAttributeValues: { ':empty': {} },
+    }),
+  )
+  const items: NonNullable<
+    ConstructorParameters<typeof TransactWriteCommand>[0]['TransactItems']
+  > = [
+    {
+      Update: {
+        TableName: T(),
+        Key: { PK: `USER#${userId}`, SK: 'PROFILE' },
+        UpdateExpression: 'SET onboarding.#k = :now ADD coins :r',
+        ConditionExpression: 'attribute_not_exists(onboarding.#k)',
+        ExpressionAttributeNames: { '#k': 'pack' },
+        ExpressionAttributeValues: { ':now': new Date().toISOString(), ':r': reward },
+      },
+    },
+  ]
+  for (const memeId of memeIds) {
+    const existing = await ddb.send(
+      new GetCommand({ TableName: T(), Key: { PK: `MEME#${memeId}`, SK: `POS#${userId}` } }),
+    )
+    const current = (existing.Item?.shares as number) ?? 0
+    items.push({
+      Update: {
+        TableName: T(),
+        Key: { PK: `MEME#${memeId}`, SK: `POS#${VAULT_SUB}` },
+        UpdateExpression: 'ADD shares :neg',
+        ConditionExpression: 'shares >= :ten',
+        ExpressionAttributeValues: { ':neg': -10, ':ten': 10 },
+      },
+    })
+    items.push({ Put: { TableName: T(), Item: positionItem(memeId, userId, current + 10) } })
+  }
   await ddb.send(new TransactWriteCommand({ TransactItems: items }))
 }
 

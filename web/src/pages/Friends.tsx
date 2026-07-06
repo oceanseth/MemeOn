@@ -182,7 +182,7 @@ export default function Friends() {
                     {online.has(f.sub) && <span className="online-dot" title="online" />}
                   </div>
                   <div className="person-stats">
-                    📚 {f.collectionSize} memes · 🪙 {f.portfolioValue.toLocaleString()} portfolio
+                    📚 {f.collectionSize} memes · 🧠 {f.portfolioValue.toLocaleString()} portfolio
                   </div>
                 </div>
                 <span className="spacer" />

@@ -3,8 +3,12 @@ export interface UserProfile {
   name: string
   nameLower: string
   picture: string | null
+  /** braincells 🧠 (field name kept for data compatibility) */
   coins: number
   createdAt: string
+  /** onboarding quest completion timestamps */
+  onboarding?: Partial<Record<'pack' | 'mint' | 'share' | 'friend' | 'trade', string>>
+  followers?: number
 }
 
 export interface Listing {

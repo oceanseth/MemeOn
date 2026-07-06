@@ -362,7 +362,7 @@ export default function CreateMeme() {
 
         <div>
           <button className="primary" disabled={!canMint} onClick={mint}>
-            🪙 Mint (100 shares to you)
+            🧠 Mint (100 shares to you)
           </button>
         </div>
       </div>

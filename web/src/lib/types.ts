@@ -36,14 +36,35 @@ export interface Position {
   shares: number
 }
 
+export type QuestKey = 'pack' | 'mint' | 'share' | 'friend' | 'trade'
+
 export interface Me {
   sub: string
   name: string
   picture: string | null
+  /** braincells 🧠 */
   coins: number
   portfolioValue: number
   collectionSize: number
   unreadAlerts: number
+  onboarding?: Partial<Record<QuestKey, string>>
+}
+
+export interface QuestStep {
+  key: QuestKey
+  title: string
+  reward: number
+  hint: string
+  done: boolean
+}
+
+export interface LeaderRow {
+  sub: string
+  name: string
+  picture: string | null
+  braincells: number
+  portfolioValue: number
+  collectionSize: number
 }
 
 export interface FriendEntry {

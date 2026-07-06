@@ -110,20 +110,10 @@ resource "aws_cloudfront_cache_policy" "api" {
   }
 }
 
-resource "aws_cloudfront_origin_request_policy" "api" {
-  name = "memeon-api-origin-request-policy"
-
-  cookies_config {
-    cookie_behavior = "none"
-  }
-
-  headers_config {
-    header_behavior = "none"
-  }
-
-  query_strings_config {
-    query_string_behavior = "all"
-  }
+# The API needs viewer headers (Authorization, x-masky-token) forwarded, but not
+# Host (API Gateway rejects mismatched hosts) — exactly the managed policy.
+data "aws_cloudfront_origin_request_policy" "all_viewer_except_host" {
+  name = "Managed-AllViewerExceptHostHeader"
 }
 
 resource "aws_cloudfront_origin_access_control" "site" {
@@ -237,7 +227,7 @@ resource "aws_cloudfront_distribution" "site" {
     target_origin_id = "api-gateway"
     viewer_protocol_policy = "https-only"
     cache_policy_id        = aws_cloudfront_cache_policy.api.id
-    origin_request_policy_id = aws_cloudfront_origin_request_policy.api.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
     response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
   }
 
@@ -249,7 +239,7 @@ resource "aws_cloudfront_distribution" "site" {
     target_origin_id = "api-gateway"
     viewer_protocol_policy = "https-only"
     cache_policy_id        = aws_cloudfront_cache_policy.api.id
-    origin_request_policy_id = aws_cloudfront_origin_request_policy.api.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
     response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
   }
 

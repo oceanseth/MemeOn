@@ -29,13 +29,13 @@ export function MemeCard({ meme, footer }: { meme: Meme; footer?: React.ReactNod
           </span>
           <span className="meme-sub">
             <span>🔁 {meme.reshares.toLocaleString()} reshares</span>
-            <span>🪙 {meme.value.toLocaleString()}</span>
+            <span>🧠 {meme.value.toLocaleString()}</span>
           </span>
           {meme.listing && meme.listing.shares > 0 && (
             <span className="meme-sub">
               <span className="badge">for sale</span>
               <span>
-                {meme.listing.shares} sh @ 🪙{meme.listing.pricePerShare}
+                {meme.listing.shares} sh @ 🧠{meme.listing.pricePerShare}
               </span>
             </span>
           )}

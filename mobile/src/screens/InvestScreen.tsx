@@ -136,7 +136,7 @@ export default function InvestScreen({ route, navigation }: Props) {
       {meme.listing && meme.listing.shares > 0 && meme.listing.sellerId !== user?.sub && (
         <View style={styles.panel}>
           <Text style={styles.panelTitle}>
-            🏷️ On sale: {meme.listing.shares} shares @ 🪙{meme.listing.pricePerShare}
+            🏷️ On sale: {meme.listing.shares} shares @ 🧠{meme.listing.pricePerShare}
           </Text>
           <View style={styles.row}>
             <TextInput
@@ -155,7 +155,7 @@ export default function InvestScreen({ route, navigation }: Props) {
               }
             >
               <Text style={styles.btnText}>
-                Buy for 🪙{Math.ceil((Number(buyShares) || 0) * meme.listing.pricePerShare)}
+                Buy for 🧠{Math.ceil((Number(buyShares) || 0) * meme.listing.pricePerShare)}
               </Text>
             </Pressable>
           </View>
@@ -167,7 +167,7 @@ export default function InvestScreen({ route, navigation }: Props) {
         <Text style={styles.dim}>Offer coins for shares — goes to the owner as a trade proposal.</Text>
         <View style={styles.row}>
           <Field label="shares" value={offerShares} onChange={setOfferShares} />
-          <Field label="🪙 coins" value={offerCoins} onChange={setOfferCoins} />
+          <Field label="🧠 coins" value={offerCoins} onChange={setOfferCoins} />
           <Pressable style={styles.btn} onPress={makeBuyOffer}>
             <Text style={styles.btnText}>Send offer</Text>
           </Pressable>
@@ -217,7 +217,7 @@ export default function InvestScreen({ route, navigation }: Props) {
         ))}
         {myShares > 0 && (
           <Text style={[styles.dim, { marginTop: 6 }]}>
-            Your stake: {myShares}/100 ≈ 🪙{Math.round((myShares / 100) * meme.value)}
+            Your stake: {myShares}/100 ≈ 🧠{Math.round((myShares / 100) * meme.value)}
           </Text>
         )}
       </View>

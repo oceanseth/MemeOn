@@ -107,11 +107,21 @@ export default function Landing() {
           </p>
         </details>
         <details>
+          <summary>What are braincells? 🧠</summary>
+          <p>
+            Braincells are MemeOn's currency — you buy meme shares, fund trades, and flex on the
+            🏆 Top Brains leaderboard with them. Everyone starts at zero (smoothbrained, sorry) and
+            earns their first braincells through the onboarding quests: claim your free starter
+            pack, mint your first meme, get your first reshare, make a friend, close a trade. AI
+            generation is separate — that runs on your own Masky credits.
+          </p>
+        </details>
+        <details>
           <summary>How do I invest in a meme?</summary>
           <p>
-            Memes are split into 100 shares. Holders can list shares at a price in MemeCoins; you
-            can buy from the Marketplace, or propose direct trades (shares + coins for shares +
-            coins) with friends. When your meme sells or tiers up, you get an alert.
+            Memes are split into 100 shares. Holders can list shares at a price in braincells 🧠;
+            you can buy from the Marketplace, or propose direct trades (shares + braincells for
+            shares + braincells) with friends. When your meme sells or tiers up, you get an alert.
           </p>
         </details>
         <details>
