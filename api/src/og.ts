@@ -1,6 +1,12 @@
-// OG meta frame pipeline: composited card images (tier frame + meme art) served
-// from the assets bucket, plus the crawler-facing /m/{id} HTML page.
-import { Jimp } from 'jimp'
+// OG meta frame pipeline: composited card images (tier frame + meme art + title
+// banner) served from the assets bucket, plus the crawler-facing /m/{id} page.
+import { Jimp, loadFont, measureText } from 'jimp'
+import {
+  SANS_32_BLACK,
+  SANS_32_WHITE,
+  SANS_64_BLACK,
+  SANS_64_WHITE,
+} from 'jimp/fonts'
 import { env } from './env'
 import { assetExists, assetUrl, putAsset } from './s3'
 import { TIERS, tierFor } from '../../shared/tiers'
@@ -12,8 +18,59 @@ const CARD_W = 900
 const CARD_H = 1200
 const WIN = { x: 90, y: 216, w: 720, h: 720 }
 
-const ogKey = (memeId: string, tierKey: string) => `og/${memeId}-${tierKey}.png`
+// v2: frames lost their tier-word footer; the meme title renders there instead
+const ogKey = (memeId: string, tierKey: string) => `og/v2/${memeId}-${tierKey}.png`
 export const frameKey = (tierKey: string) => `frames/${tierKey}.png`
+
+// title banner area at the bottom of the 900x1200 frame
+const BANNER = { x: 110, y: 965, w: 680, h: 130 }
+
+// bundled next to the lambda handler (see api package script); node_modules in dev
+function fontPath(bundled: string, dev: string): string {
+  const root = process.env.LAMBDA_TASK_ROOT
+  return root ? `${root}/fonts/${bundled}` : dev
+}
+
+const fontCache = new Map<string, Promise<Awaited<ReturnType<typeof loadFont>>>>()
+function getFont(key: 'w64' | 'b64' | 'w32' | 'b32') {
+  let p = fontCache.get(key)
+  if (!p) {
+    const paths = {
+      w64: fontPath('open-sans-64-white.fnt', SANS_64_WHITE),
+      b64: fontPath('open-sans-64-black.fnt', SANS_64_BLACK),
+      w32: fontPath('open-sans-32-white.fnt', SANS_32_WHITE),
+      b32: fontPath('open-sans-32-black.fnt', SANS_32_BLACK),
+    }
+    p = loadFont(paths[key])
+    fontCache.set(key, p)
+  }
+  return p
+}
+
+/** Print the title into the banner, shrinking (64→32) and ellipsizing to fit. */
+async function printTitle(card: JimpImage, title: string): Promise<void> {
+  try {
+    let text = title.slice(0, 24)
+    let white = await getFont('w64')
+    let black = await getFont('b64')
+    let baseline = BANNER.y + 24
+    if (measureText(white, text) > BANNER.w) {
+      white = await getFont('w32')
+      black = await getFont('b32')
+      baseline = BANNER.y + 44
+      while (text.length > 4 && measureText(white, `${text}…`) > BANNER.w) {
+        text = text.slice(0, -1)
+      }
+      if (text !== title.slice(0, 24)) text = `${text}…`
+    }
+    const w = measureText(white, text)
+    const x = BANNER.x + Math.max(0, Math.round((BANNER.w - w) / 2))
+    card.print({ font: black, x: x + 3, y: baseline + 3, text })
+    card.print({ font: white, x, y: baseline, text })
+  } catch (err) {
+    console.error('title print failed (fonts missing?)', err)
+  }
+}
 
 // jimp's read()/constructor types don't unify across its generics; keep these loose.
 type JimpImage = Awaited<ReturnType<typeof Jimp.read>>
@@ -51,6 +108,7 @@ export async function ensureOgImage(meme: Meme): Promise<string> {
     }) as unknown as JimpImage
   }
   card.composite(art, WIN.x, WIN.y)
+  await printTitle(card, meme.title)
 
   const png = await card.getBuffer('image/png')
   return putAsset(key, png, 'image/png')

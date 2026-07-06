@@ -206,8 +206,8 @@ export default function CreateMeme() {
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Distracted Capybara"
-            maxLength={120}
+            placeholder="max 20 chars — fits the card banner"
+            maxLength={20}
           />
         </label>
 

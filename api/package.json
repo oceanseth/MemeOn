@@ -10,7 +10,8 @@
     "dev": "tsx watch src/local-server.ts",
     "build": "tsc --project tsconfig.json --noEmit",
     "bundle": "esbuild src/handler.ts --bundle --platform=node --target=node20 --outfile=dist/handler.mjs --format=esm --external:@aws-sdk/* --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\"",
-    "package": "npm run bundle && bestzip lambda.zip dist/handler.mjs",
+    "fonts": "rm -rf fonts && mkdir -p fonts && cp ../node_modules/@jimp/plugin-print/dist/fonts/open-sans/open-sans-64-white/* ../node_modules/@jimp/plugin-print/dist/fonts/open-sans/open-sans-64-black/* ../node_modules/@jimp/plugin-print/dist/fonts/open-sans/open-sans-32-white/* ../node_modules/@jimp/plugin-print/dist/fonts/open-sans/open-sans-32-black/* fonts/",
+    "package": "npm run bundle && npm run fonts && bestzip lambda.zip dist/handler.mjs fonts",
     "clean": "rimraf dist lambda.zip"
   },
   "dependencies": {

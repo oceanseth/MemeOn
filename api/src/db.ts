@@ -524,6 +524,53 @@ export async function topHolders(limit = 10): Promise<UserProfile[]> {
 }
 
 export const VAULT_SUB = 'memeon_vault'
+/** house account owning seeded/archive memes until a creator claims them */
+export const ARCHIVE_SUB = 'meme_archive'
+
+// ---------- creator claims (for archive-seeded memes) ----------
+
+export async function putClaim(claim: import('./types').CreatorClaim): Promise<boolean> {
+  try {
+    await ddb.send(
+      new PutCommand({
+        TableName: T(),
+        Item: { PK: `MEME#${claim.memeId}`, SK: `CLAIM#${claim.userId}`, ...claim },
+        ConditionExpression: 'attribute_not_exists(PK)',
+      }),
+    )
+    return true
+  } catch {
+    return false
+  }
+}
+
+export async function listClaims(memeId: string): Promise<import('./types').CreatorClaim[]> {
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName: T(),
+      KeyConditionExpression: 'PK = :pk AND begins_with(SK, :sk)',
+      ExpressionAttributeValues: { ':pk': `MEME#${memeId}`, ':sk': 'CLAIM#' },
+    }),
+  )
+  return (res.Items ?? []).map((i) => strip<import('./types').CreatorClaim>(i))
+}
+
+export async function setClaimStatus(
+  memeId: string,
+  userId: string,
+  status: 'approved' | 'rejected',
+): Promise<void> {
+  await ddb.send(
+    new UpdateCommand({
+      TableName: T(),
+      Key: { PK: `MEME#${memeId}`, SK: `CLAIM#${userId}` },
+      UpdateExpression: 'SET #s = :s',
+      ExpressionAttributeNames: { '#s': 'status' },
+      ExpressionAttributeValues: { ':s': status },
+      ConditionExpression: 'attribute_exists(PK)',
+    }),
+  )
+}
 
 /**
  * Starter pack: transfer 10 vault shares in each given meme to the user and
@@ -727,6 +774,37 @@ export async function isFollowing(userId: string, creatorId: string): Promise<bo
     new GetCommand({ TableName: T(), Key: { PK: `USER#${userId}`, SK: `FOLLOW#${creatorId}` } }),
   )
   return !!res.Item
+}
+
+// ---------- memeplex (related-meme graph) ----------
+
+/** Link two memes into each other's memeplex (bidirectional edge). */
+export async function addPlexEdge(a: string, b: string, addedBy: string): Promise<void> {
+  const createdAt = new Date().toISOString()
+  await Promise.all(
+    [
+      [a, b],
+      [b, a],
+    ].map(([from, to]) =>
+      ddb.send(
+        new PutCommand({
+          TableName: T(),
+          Item: { PK: `MEME#${from}`, SK: `PLEX#${to}`, memeId: from, otherId: to, addedBy, createdAt },
+        }),
+      ),
+    ),
+  )
+}
+
+export async function listPlex(memeId: string): Promise<string[]> {
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName: T(),
+      KeyConditionExpression: 'PK = :pk AND begins_with(SK, :sk)',
+      ExpressionAttributeValues: { ':pk': `MEME#${memeId}`, ':sk': 'PLEX#' },
+    }),
+  )
+  return (res.Items ?? []).map((i) => i.otherId as string)
 }
 
 // ---------- value history (hourly samples, written on reshares) ----------
