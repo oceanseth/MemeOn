@@ -30,6 +30,8 @@ export interface Meme {
   tierKey: string
   listing: Listing | null
   createdAt: string
+  /** total like count (ADD-maintained; may be absent on old items) */
+  likes?: number
 }
 
 export interface Position {

@@ -392,6 +392,159 @@ authed('POST /api/alerts/read', async (req) => {
   return json(200, { ok: true })
 })
 
+// ---------- likes / dislikes ----------
+
+authed('POST /api/memes/:id/like', async (req) => {
+  const meme = await db.getMeme(req.params.id)
+  if (!meme) throw new HttpError(404, 'meme not found')
+  const added = await db.setLike(req.user.sub, meme.id)
+  return json(200, { ok: true, liked: true, added })
+})
+
+authed('POST /api/memes/:id/unlike', async (req) => {
+  await db.removeLike(req.user.sub, req.params.id)
+  return json(200, { ok: true, liked: false })
+})
+
+/** Swipe-left: hide from this user's feed permanently (also clears any like). */
+authed('POST /api/memes/:id/dislike', async (req) => {
+  await db.setDislike(req.user.sub, req.params.id)
+  return json(200, { ok: true })
+})
+
+// ---------- feed (mobile infinite scroll) ----------
+
+/**
+ * Prioritized feed: memes owned or liked by the user's friends come first
+ * (with attribution), then everything else by virality/recency. Excludes
+ * the user's own memes and anything they've disliked. Cursor = offset.
+ */
+authed('GET /api/feed', async (req) => {
+  const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50)
+  const offset = Math.max(Number(req.query.cursor) || 0, 0)
+
+  const [allMemes, disliked, myLikes, friends] = await Promise.all([
+    db.listMemes(),
+    db.listDislikes(req.user.sub),
+    db.listLikes(req.user.sub),
+    db.listFriends(req.user.sub),
+  ])
+  const dislikedSet = new Set(disliked)
+  const likedSet = new Set(myLikes)
+  const accepted = friends.filter((f) => f.status === 'accepted').slice(0, 25)
+
+  const friendOwners = new Map<string, string[]>()
+  const friendLikers = new Map<string, string[]>()
+  await Promise.all(
+    accepted.map(async (f) => {
+      const profile = await db.getUser(f.otherId)
+      const name = profile?.name ?? 'a friend'
+      const [positions, likes] = await Promise.all([
+        db.getPortfolio(f.otherId),
+        db.listLikes(f.otherId),
+      ])
+      for (const p of positions) {
+        friendOwners.set(p.memeId, [...(friendOwners.get(p.memeId) ?? []), name])
+      }
+      for (const memeId of likes) {
+        friendLikers.set(memeId, [...(friendLikers.get(memeId) ?? []), name])
+      }
+    }),
+  )
+
+  const scored = allMemes
+    .filter((m) => !dislikedSet.has(m.id))
+    .filter((m) => m.creatorId !== req.user.sub && m.ownerId !== req.user.sub)
+    .map((m) => ({
+      meme: m,
+      score:
+        (friendOwners.get(m.id)?.length ?? 0) * 3 + (friendLikers.get(m.id)?.length ?? 0) * 2,
+    }))
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        b.meme.reshares - a.meme.reshares ||
+        b.meme.createdAt.localeCompare(a.meme.createdAt),
+    )
+
+  const page = scored.slice(offset, offset + limit)
+  return json(200, {
+    items: page.map(({ meme, score }) => ({
+      ...publicMeme(meme),
+      likes: meme.likes ?? 0,
+      likedByMe: likedSet.has(meme.id),
+      friendOwners: friendOwners.get(meme.id) ?? [],
+      friendLikers: friendLikers.get(meme.id) ?? [],
+      friendSignal: score,
+    })),
+    nextCursor: offset + limit < scored.length ? String(offset + limit) : null,
+  })
+})
+
+// ---------- follows + creator profiles ----------
+
+authed('POST /api/users/:sub/follow', async (req) => {
+  if (req.params.sub === req.user.sub) throw new HttpError(400, 'cannot follow yourself')
+  const target = await db.getUser(req.params.sub)
+  if (!target) throw new HttpError(404, 'user not found')
+  const added = await db.setFollow(req.user.sub, target.sub)
+  if (added) await db.addAlert(target.sub, 'friend', `⭐ ${req.user.name} followed you`)
+  return json(200, { ok: true, following: true })
+})
+
+authed('POST /api/users/:sub/unfollow', async (req) => {
+  await db.removeFollow(req.user.sub, req.params.sub)
+  return json(200, { ok: true, following: false })
+})
+
+/** Creator profile: identity + follower count + their created memes + binder. */
+authed('GET /api/users/:sub/profile', async (req) => {
+  const target = await db.getUser(req.params.sub)
+  if (!target) throw new HttpError(404, 'user not found')
+  const [allMemes, positions, following, friendEdge, stats] = await Promise.all([
+    db.listMemes(),
+    db.getPortfolio(target.sub),
+    db.isFollowing(req.user.sub, target.sub),
+    db.getFriend(req.user.sub, target.sub),
+    portfolioSummary(target.sub),
+  ])
+  const created = allMemes.filter((m) => m.creatorId === target.sub)
+  const held = new Map(positions.map((p) => [p.memeId, p.shares]))
+  const binder = allMemes
+    .filter((m) => held.has(m.id))
+    .map((m) => ({ ...publicMeme(m), shares: held.get(m.id) ?? 0 }))
+  return json(200, {
+    profile: {
+      sub: target.sub,
+      name: target.name,
+      picture: target.picture,
+      followers: (target as { followers?: number }).followers ?? 0,
+      collectionSize: stats.collectionSize,
+      portfolioValue: stats.value,
+      createdAt: target.createdAt,
+    },
+    followingByMe: following,
+    friendStatus: friendEdge?.status ?? null,
+    created: created.map(publicMeme),
+    binder,
+  })
+})
+
+// ---------- value history ----------
+
+route('GET /api/memes/:id/history', async (req) => {
+  const meme = await db.getMeme(req.params.id)
+  if (!meme) throw new HttpError(404, 'meme not found')
+  const points = await db.listHistory(meme.id)
+  // always end the series at "now" so charts show the live value
+  points.push({
+    at: new Date().toISOString(),
+    reshares: meme.reshares,
+    value: memeValue(meme.reshares),
+  })
+  return json(200, { points })
+})
+
 // ---------- tier frames + og ----------
 
 route('GET /api/frames', () => json(200, { tiers: TIERS, frames: tierFrameList() }))
