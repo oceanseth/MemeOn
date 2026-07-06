@@ -127,6 +127,14 @@ textarea:focus {
   background-clip: text;
   color: transparent;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-img {
+  width: 30px;
+  height: 30px;
 }
 
 .nav-links {
