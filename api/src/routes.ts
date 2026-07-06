@@ -502,6 +502,50 @@ authed('GET /api/feed', async (req) => {
   })
 })
 
+// ---------- invites ----------
+
+/** Public invite landing data: who's inviting you + their best cards. */
+route('GET /api/invite/:sub', async (req) => {
+  const inviter = await db.getUser(req.params.sub)
+  if (!inviter) throw new HttpError(404, 'invite not found')
+  const [allMemes, positions, stats] = await Promise.all([
+    db.listMemes(),
+    db.getPortfolio(inviter.sub),
+    portfolioSummary(inviter.sub),
+  ])
+  const held = new Set(positions.map((p) => p.memeId))
+  const topMemes = allMemes
+    .filter((m) => m.creatorId === inviter.sub || held.has(m.id))
+    .sort((a, b) => b.reshares - a.reshares)
+    .slice(0, 4)
+    .map(publicMeme)
+  return json(200, {
+    inviter: {
+      sub: inviter.sub,
+      name: inviter.name,
+      picture: inviter.picture,
+      followers: (inviter as { followers?: number }).followers ?? 0,
+      collectionSize: stats.collectionSize,
+      portfolioValue: stats.value,
+    },
+    topMemes,
+  })
+})
+
+/** Called after the invitee logs in: invite implies mutual consent → instant friendship. */
+authed('POST /api/invites/accept', async (req) => {
+  const inviterId = requireString(req.body, 'inviterId')
+  if (inviterId === req.user.sub) return json(200, { ok: true, self: true })
+  const inviter = await db.getUser(inviterId)
+  if (!inviter) throw new HttpError(404, 'inviter not found')
+  const existing = await db.getFriend(req.user.sub, inviterId)
+  if (existing?.status === 'accepted') return json(200, { ok: true, already: true })
+  await db.setFriendEdge(req.user.sub, inviterId, 'accepted')
+  await db.setFriendEdge(inviterId, req.user.sub, 'accepted')
+  await db.addAlert(inviterId, 'friend', `🎉 ${req.user.name} accepted your invite — you're now friends!`)
+  return json(200, { ok: true })
+})
+
 // ---------- follows + creator profiles ----------
 
 authed('POST /api/users/:sub/follow', async (req) => {
