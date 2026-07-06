@@ -56,6 +56,33 @@ export interface HistoryPoint {
   value: number
 }
 
+export interface Alert {
+  id: string
+  type: 'tierup' | 'sale' | 'trade' | 'friend'
+  message: string
+  memeId: string | null
+  read: boolean
+  createdAt: string
+}
+
+export interface TradeSide {
+  memes: { memeId: string; shares: number }[]
+  coins: number
+}
+
+export interface Trade {
+  id: string
+  fromId: string
+  fromName: string
+  toId: string
+  toName: string
+  offer: TradeSide
+  ask: TradeSide
+  status: 'proposed' | 'accepted' | 'declined' | 'cancelled'
+  createdAt: string
+  resolvedAt: string | null
+}
+
 export interface CreatorProfile {
   profile: {
     sub: string

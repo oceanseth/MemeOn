@@ -1,7 +1,27 @@
 import { S3Client, PutObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { env } from './env'
 
 const s3 = new S3Client({})
+
+/** Presigned PUT for direct browser/app uploads into the assets bucket. */
+export async function presignUpload(
+  key: string,
+  contentType: string,
+  expiresIn = 600,
+): Promise<{ uploadUrl: string; publicUrl: string }> {
+  const uploadUrl = await getSignedUrl(
+    s3,
+    new PutObjectCommand({
+      Bucket: env.assetsBucket,
+      Key: key,
+      ContentType: contentType,
+      CacheControl: 'public, max-age=31536000, immutable',
+    }),
+    { expiresIn },
+  )
+  return { uploadUrl, publicUrl: `${env.assetsBase}/${key}` }
+}
 
 export async function assetExists(key: string): Promise<boolean> {
   try {

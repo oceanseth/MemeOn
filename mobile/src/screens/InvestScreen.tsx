@@ -12,6 +12,8 @@ import {
   View,
 } from 'react-native'
 import type { RootStackParamList } from '../../App'
+import { FoilCard } from '../components/FoilCard'
+import { MemeMedia } from '../components/MemeMedia'
 import { ValueChart } from '../components/ValueChart'
 import { useAuth } from '../context/AuthContext'
 import { apiFetch, post } from '../lib/api'
@@ -109,9 +111,9 @@ export default function InvestScreen({ route, navigation }: Props) {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 16, gap: 16 }}>
-      <View style={[styles.cardFrame, { borderColor: meme.tier.color }]}>
-        <Image source={{ uri: meme.imageUrl }} style={{ width: '100%', aspectRatio: 1 }} resizeMode="cover" />
-      </View>
+      <FoilCard tierKey={meme.tier.key}>
+        <MemeMedia meme={meme} style={{ width: '100%', aspectRatio: 1 }} muted={false} />
+      </FoilCard>
 
       <View style={{ gap: 4 }}>
         <Text style={[styles.tier, { color: meme.tier.color }]}>
