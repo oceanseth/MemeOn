@@ -3,7 +3,10 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { tierClasses } from '../components/MemeCard'
+import { MemeplexPanel } from '../components/MemeplexPanel'
 import type { Meme, Position } from '../lib/types'
+
+const ARCHIVE_SUB = 'meme_archive'
 
 export default function MemeDetail() {
   const { id } = useParams<{ id: string }>()
@@ -109,6 +112,16 @@ export default function MemeDetail() {
                 · <Link to={`/meme/${meme.remixOf}`}>🧬 remix</Link>
               </>
             )}
+            {meme.source && (
+              <>
+                {' '}
+                ·{' '}
+                <a href={meme.source.url} target="_blank" rel="noreferrer">
+                  via {meme.source.provider.toUpperCase()}
+                  {meme.source.author ? ` (@${meme.source.author})` : ''}
+                </a>
+              </>
+            )}
           </p>
           <p style={{ fontSize: 18 }}>
             🔁 <strong>{meme.reshares.toLocaleString()}</strong> reshares · 🧠{' '}
@@ -143,6 +156,22 @@ export default function MemeDetail() {
             {user && (
               <button onClick={() => navigate(`/binder/new?remix=${meme.id}`)}>
                 🧬 Create a meme from this
+              </button>
+            )}
+            {user && meme.creatorId === ARCHIVE_SUB && (
+              <button
+                onClick={() => {
+                  const note = window.prompt(
+                    'Tell us why this meme is yours (links help your case):',
+                  )
+                  if (note !== null)
+                    void act(
+                      () => post(`/api/memes/${meme.id}/claim`, { note }),
+                      'Claim filed 📼 — we’ll review it and transfer the card if it checks out.',
+                    )
+                }}
+              >
+                📼 This is my meme — claim it
               </button>
             )}
             {myShares === 100 && (
@@ -250,7 +279,9 @@ export default function MemeDetail() {
             )
           )}
 
-          <div className="panel">
+          <MemeplexPanel meme={meme} canEdit={!!user && (meme.creatorId === user.sub || myShares > 0)} />
+
+          <div className="panel" style={{ marginTop: 16 }}>
             <strong>Cap table</strong>
             <div className="row-list" style={{ marginTop: 10 }}>
               {positions.map((p) => (
