@@ -8,7 +8,7 @@ resource "aws_apigatewayv2_api" "http_api" {
       "https://${var.www_domain_name}",
       "http://localhost:5173"
     ]
-    allow_methods = ["GET", "OPTIONS"]
+    allow_methods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
     allow_headers = ["*"]
     max_age       = 3600
   }
@@ -25,6 +25,19 @@ resource "aws_apigatewayv2_integration" "lambda" {
 resource "aws_apigatewayv2_route" "helloworld" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "GET /api/helloworld"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "api_proxy" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "ANY /api/{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+}
+
+# unique share URL for each meme; every load counts a reshare and serves og meta
+resource "aws_apigatewayv2_route" "meme_share" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /m/{id}"
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
 }
 
