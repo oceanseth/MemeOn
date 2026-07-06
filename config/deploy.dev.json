@@ -1,0 +1,7 @@
+{
+  "awsRegion": "us-west-2",
+  "siteBucketName": "dev.memeon.ai",
+  "cloudfrontDistributionId": "E2AM94MLXIMHST",
+  "lambdaFunctionName": "memeon-api-dev",
+  "apiGatewayId": "pqxie1uj27"
+}
