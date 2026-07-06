@@ -28,8 +28,10 @@ export default function AuthCallback() {
         if (inviterId) {
           await post('/api/invites/accept', { inviterId }).catch(() => {})
         }
+        const postLogin = sessionStorage.getItem('memeon_post_login')
+        sessionStorage.removeItem('memeon_post_login')
         await refresh()
-        navigate(inviterId ? '/friends' : '/marketplace', { replace: true })
+        navigate(postLogin ?? (inviterId ? '/friends' : '/marketplace'), { replace: true })
       })
       .catch((e) => setErr(e instanceof Error ? e.message : 'login failed'))
   }, [params, navigate, refresh])

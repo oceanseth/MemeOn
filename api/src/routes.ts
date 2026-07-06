@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import * as db from './db'
+import * as discord from './discord'
+import { env } from './env'
 import * as masky from './masky'
 import { authed, HttpError, html, json, maskyToken, redirect, requireString, route } from './http'
 import { issueSession, verifySession } from './session'
@@ -861,6 +863,107 @@ route('GET /api/memes/:id/history', async (req) => {
     value: memeValue(meme.reshares),
   })
   return json(200, { points })
+})
+
+// ---------- discord app ----------
+
+/** Public install info for the /discord page. */
+route('GET /api/discord/config', async () => {
+  const cfg = await discord.discordConfig()
+  if (!cfg) return json(200, { configured: false, installUrl: null })
+  return json(200, {
+    configured: true,
+    installUrl: `https://discord.com/oauth2/authorize?client_id=${cfg.application_id}`,
+  })
+})
+
+/** Complete account linking (user clicked the /memeon-connect link and logged in). */
+authed('POST /api/discord/link', async (req) => {
+  const token = requireString(req.body, 'token', 2000)
+  const discordUserId = await discord.readLinkToken(token)
+  if (!discordUserId) throw new HttpError(400, 'link token invalid or expired — run /memeon-connect again')
+  await db.linkDiscord(discordUserId, req.user.sub)
+  await db.addAlert(
+    req.user.sub,
+    'friend',
+    '🎮 Discord connected — /memeon now puts your binder and friends first.',
+  )
+  return json(200, { ok: true })
+})
+
+/** Discord interactions webhook (signature-verified). */
+route('POST /api/discord/interactions', async (req) => {
+  const cfg = await discord.discordConfig()
+  if (!cfg) throw new HttpError(503, 'discord app not configured')
+  const sig = req.headers['x-signature-ed25519']
+  const ts = req.headers['x-signature-timestamp']
+  if (
+    !sig ||
+    !ts ||
+    !discord.verifyDiscordSignature(cfg.public_key, sig, ts, req.rawBody)
+  ) {
+    throw new HttpError(401, 'bad signature')
+  }
+
+  const interaction = req.body as {
+    type: number
+    data?: {
+      name?: string
+      options?: { name: string; value?: string; focused?: boolean }[]
+    }
+    member?: { user?: { id?: string } }
+    user?: { id?: string }
+  }
+
+  if (interaction.type === 1) return json(200, { type: 1 }) // PING → PONG
+
+  const discordUserId = interaction.member?.user?.id ?? interaction.user?.id ?? ''
+  const linkedSub = discordUserId ? await db.discordLinkedSub(discordUserId) : null
+  const command = interaction.data?.name ?? ''
+  const queryOpt = interaction.data?.options?.find((o) => o.name === 'query')
+
+  // autocomplete: live results as they type, binder/friends first
+  if (interaction.type === 4) {
+    const results = await discord.searchMemesFor(linkedSub, String(queryOpt?.value ?? ''), 8)
+    return json(200, {
+      type: 8,
+      data: {
+        choices: results.map((m) => ({ name: discord.memeChoiceLabel(m), value: m.id })),
+      },
+    })
+  }
+
+  if (interaction.type === 2 && command === 'memeon-connect') {
+    const token = await discord.makeLinkToken(discordUserId)
+    return json(200, {
+      type: 4,
+      data: {
+        flags: 64, // ephemeral
+        content: linkedSub
+          ? '✅ Already connected! `/memeon` puts your binder and friends first.'
+          : `🧠 Connect your MemeOn account so search puts your memes first:\n${env.siteOrigin}/discord/link?token=${token}`,
+      },
+    })
+  }
+
+  if (interaction.type === 2 && command === 'memeon') {
+    const value = String(queryOpt?.value ?? '').trim()
+    let meme = value ? await db.getMeme(value) : null
+    if (!meme || meme.private) {
+      const results = await discord.searchMemesFor(linkedSub, value, 1)
+      meme = results[0] ?? null
+    }
+    if (!meme) {
+      return json(200, {
+        type: 4,
+        data: { flags: 64, content: `😶 No memes matched "${value}". Mint one at ${env.siteOrigin}` },
+      })
+    }
+    // posting the /m/ link unfurls the tier card AND counts a reshare
+    return json(200, { type: 4, data: { content: discord.shareUrl(meme.id) } })
+  }
+
+  return json(200, { type: 4, data: { flags: 64, content: 'unknown command' } })
 })
 
 // ---------- tier frames + og ----------
