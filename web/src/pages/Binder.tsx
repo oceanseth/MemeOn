@@ -8,12 +8,16 @@ import type { Meme } from '../lib/types'
 export default function Binder() {
   const { user } = useAuth()
   const [memes, setMemes] = useState<Meme[] | null>(null)
+  const [showPrivate, setShowPrivate] = useState(false)
 
   useEffect(() => {
     apiFetch<{ memes: Meme[] }>('/api/binder')
       .then((r) => setMemes(r.memes))
       .catch(() => setMemes([]))
   }, [])
+
+  const visible = (memes ?? []).filter((m) => showPrivate || !m.private)
+  const privateCount = (memes ?? []).filter((m) => m.private).length
 
   return (
     <main className="container">
@@ -25,6 +29,16 @@ export default function Binder() {
               {user.collectionSize} positions · portfolio 🪙 {user.portfolioValue.toLocaleString()}
             </span>
           )}
+          {privateCount > 0 && (
+            <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13.5 }}>
+              <input
+                type="checkbox"
+                checked={showPrivate}
+                onChange={(e) => setShowPrivate(e.target.checked)}
+              />
+              Show private ({privateCount})
+            </label>
+          )}
           <Link to="/binder/new">
             <button className="primary">＋ Mint a meme</button>
           </Link>
@@ -35,13 +49,15 @@ export default function Binder() {
         <div className="empty">
           <span className="spin" />
         </div>
-      ) : memes.length === 0 ? (
+      ) : visible.length === 0 ? (
         <div className="empty">
-          Your binder is empty. Mint your first meme and start the grind to ✨Shiny✨.
+          {memes.length === 0
+            ? 'Your binder is empty. Mint your first meme and start the grind to ✨Shiny✨.'
+            : 'Everything here is private — tick "Show private" to see it.'}
         </div>
       ) : (
         <div className="card-grid">
-          {memes.map((m) => (
+          {visible.map((m) => (
             <MemeCard
               key={m.id}
               meme={m}
@@ -50,6 +66,7 @@ export default function Binder() {
                   <span>
                     {m.myShares ?? 0}/100 shares{m.isCreator ? ' · creator' : ''}
                   </span>
+                  {m.private && <span className="badge">🙈 private</span>}
                 </span>
               }
             />

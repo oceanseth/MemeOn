@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
 import type { Meme } from '../lib/types'
 
-type Mode = 'generate' | 'video' | 'url' | 'upload'
+type Mode = 'generate' | 'video' | 'url' | 'upload' | 'remix'
 
 async function uploadFile(file: File): Promise<string> {
   const { uploadUrl, publicUrl } = await post<{ uploadUrl: string; publicUrl: string }>(
@@ -21,7 +21,11 @@ async function uploadFile(file: File): Promise<string> {
 
 export default function CreateMeme() {
   const navigate = useNavigate()
-  const [mode, setMode] = useState<Mode>('generate')
+  const [params] = useSearchParams()
+  const remixId = params.get('remix')
+  const [mode, setMode] = useState<Mode>(remixId ? 'remix' : 'generate')
+  const [remixSource, setRemixSource] = useState<Meme | null>(null)
+  const [remixOutput, setRemixOutput] = useState<'image' | 'video'>('image')
   const [title, setTitle] = useState('')
   const [tags, setTags] = useState('')
   const [prompt, setPrompt] = useState('')
@@ -34,6 +38,61 @@ export default function CreateMeme() {
   useEffect(() => () => {
     if (pollRef.current) clearInterval(pollRef.current)
   }, [])
+
+  useEffect(() => {
+    if (!remixId) return
+    apiFetch<{ meme: Meme }>(`/api/memes/${remixId}`)
+      .then((r) => setRemixSource(r.meme))
+      .catch(() => setErr('source meme not found'))
+  }, [remixId])
+
+  const remix = async () => {
+    if (!remixSource) return
+    setErr(null)
+    try {
+      if (remixOutput === 'image') {
+        setBusy('Remixing the art (uses your Masky credits)…')
+        const out = await post<{ imageUrl: string }>('/api/aigen/image-edit', {
+          prompt,
+          imageUrls: [remixSource.imageUrl],
+        })
+        setImageUrl(out.imageUrl)
+        setVideoUrl('')
+      } else {
+        setBusy('Starting video remix (1–3 min, uses your Masky credits)…')
+        setImageUrl(remixSource.imageUrl)
+        const started = await post<{ generationId: string }>('/api/aigen/video', {
+          prompt,
+          ...(remixSource.mediaType === 'video' && remixSource.videoUrl
+            ? { srcVideo: remixSource.videoUrl }
+            : { image: remixSource.imageUrl }),
+        })
+        setBusy('Rendering video remix… hold the vibe.')
+        await new Promise<void>((resolve, reject) => {
+          pollRef.current = setInterval(async () => {
+            try {
+              const st = await fetchVideoStatus(started.generationId)
+              if (st.status === 'video' && st.videoUrl) {
+                setVideoUrl(st.videoUrl)
+                if (pollRef.current) clearInterval(pollRef.current)
+                resolve()
+              } else if (st.status === 'error') {
+                if (pollRef.current) clearInterval(pollRef.current)
+                reject(new Error(st.errorMessage ?? 'video remix failed'))
+              }
+            } catch (e) {
+              if (pollRef.current) clearInterval(pollRef.current)
+              reject(e instanceof Error ? e : new Error('poll failed'))
+            }
+          }, 5000)
+        })
+      }
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'remix failed')
+    } finally {
+      setBusy(null)
+    }
+  }
 
   const generateImage = async () => {
     setBusy('Rendering your masterpiece (uses your Masky credits)…')
@@ -92,12 +151,14 @@ export default function CreateMeme() {
     setBusy('Minting…')
     setErr(null)
     try {
-      const isVideo = mode === 'video' || (mode === 'upload' && !!videoUrl)
+      const isVideo =
+        mode === 'video' || ((mode === 'upload' || mode === 'remix') && !!videoUrl)
       const body = {
         title,
         imageUrl,
         mediaType: isVideo ? 'video' : 'image',
         videoUrl: isVideo ? videoUrl : null,
+        remixOf: mode === 'remix' ? remixId : null,
         tags: tags
           .split(',')
           .map((t) => t.trim())
@@ -121,6 +182,11 @@ export default function CreateMeme() {
       </div>
       <div className="panel form-grid">
         <div className="filter-bar">
+          {remixId && (
+            <button className={mode === 'remix' ? 'primary' : ''} onClick={() => setMode('remix')}>
+              🧬 Remix
+            </button>
+          )}
           <button className={mode === 'generate' ? 'primary' : ''} onClick={() => setMode('generate')}>
             🎨 Generate image
           </button>
@@ -150,7 +216,57 @@ export default function CreateMeme() {
           <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="animals, chaos" />
         </label>
 
-        {mode === 'url' ? (
+        {mode === 'remix' ? (
+          <>
+            {remixSource ? (
+              <div className="filter-bar" style={{ alignItems: 'center' }}>
+                <img
+                  src={remixSource.imageUrl}
+                  alt={remixSource.title}
+                  style={{ width: 84, height: 84, objectFit: 'cover', borderRadius: 10 }}
+                />
+                <span style={{ color: 'var(--text-dim)', fontSize: 14 }}>
+                  Remixing <Link to={`/meme/${remixSource.id}`}>"{remixSource.title}"</Link> by{' '}
+                  {remixSource.creatorName}
+                </span>
+              </div>
+            ) : (
+              <span className="spin" />
+            )}
+            <label>
+              Output
+              <select
+                value={remixOutput}
+                onChange={(e) => setRemixOutput(e.target.value as 'image' | 'video')}
+              >
+                <option value="image">🎨 New image (edit the art)</option>
+                <option value="video">🎬 New video (animate it)</option>
+              </select>
+            </label>
+            <label>
+              Edit prompt (runs on your Masky credits)
+              <textarea
+                rows={3}
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder={
+                  remixOutput === 'video'
+                    ? 'the capybara slowly turns to the camera as the office burns'
+                    : 'same scene but everyone is a skeleton and it is raining'
+                }
+              />
+            </label>
+            <div>
+              <button
+                className="primary"
+                disabled={!prompt.trim() || !remixSource || !!busy}
+                onClick={remix}
+              >
+                {remixOutput === 'video' ? 'Remix into video' : 'Remix image'}
+              </button>
+            </div>
+          </>
+        ) : mode === 'url' ? (
           <label>
             Image URL
             <input

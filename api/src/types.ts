@@ -32,6 +32,10 @@ export interface Meme {
   createdAt: string
   /** total like count (ADD-maintained; may be absent on old items) */
   likes?: number
+  /** id of the meme this was remixed from */
+  remixOf?: string | null
+  /** hidden from marketplace/feed/others (sole-owner soft delete) */
+  private?: boolean
 }
 
 export interface Position {
