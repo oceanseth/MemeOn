@@ -1,6 +1,7 @@
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { AlertsBell } from './AlertsBell'
+import { QuestBar } from './QuestBar'
 import type { ReactNode } from 'react'
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -20,16 +21,21 @@ export function Layout({ children }: { children: ReactNode }) {
               <NavLink to="/binder">My Binder</NavLink>
               <NavLink to="/friends">Friends</NavLink>
               <NavLink to="/trade">Trade</NavLink>
+              <NavLink to="/leaderboard">🏆 Top Brains</NavLink>
             </nav>
           )}
           <div className="topbar-right">
             {user ? (
               <>
-                <span className="coins" title="MemeCoins">
-                  🪙 {user.coins.toLocaleString()}
+                <span className="coins" title="Braincells">
+                  🧠 {user.coins.toLocaleString()}
                 </span>
                 <AlertsBell />
-                {user.picture && <img className="avatar" src={user.picture} alt={user.name} />}
+                {user.picture && (
+                  <Link to={`/u/${encodeURIComponent(user.sub)}`}>
+                    <img className="avatar" src={user.picture} alt={user.name} />
+                  </Link>
+                )}
                 <button
                   onClick={() => {
                     logout()
@@ -43,6 +49,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
+      <QuestBar />
       {children}
     </>
   )

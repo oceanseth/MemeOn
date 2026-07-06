@@ -29,3 +29,7 @@ terraform.tfvars
 # Expo
 mobile/.expo/
 mobile/dist/
+
+# Expo generated native projects (CNG - app.json is the source of truth)
+mobile/ios/
+mobile/android/

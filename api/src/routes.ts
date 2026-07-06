@@ -39,6 +39,109 @@ route('POST /api/auth/masky/callback', async (req) => {
   })
 })
 
+// ---------- onboarding quests + braincells ----------
+
+export const QUESTS: { key: db.QuestKey; title: string; reward: number; hint: string }[] = [
+  {
+    key: 'pack',
+    title: 'Claim your starter pack',
+    reward: 20,
+    hint: 'Crack open a free pack of meme shares from the MemeOn Vault.',
+  },
+  {
+    key: 'mint',
+    title: 'Mint your first meme',
+    reward: 100,
+    hint: 'Generate, remix, or upload — your first card earns big.',
+  },
+  {
+    key: 'share',
+    title: 'Get your first reshare',
+    reward: 50,
+    hint: 'Share a meme you minted anywhere — the first link hit pays out.',
+  },
+  {
+    key: 'friend',
+    title: 'Make a friend',
+    reward: 25,
+    hint: 'Invite someone or accept a request.',
+  },
+  {
+    key: 'trade',
+    title: 'Complete a trade or purchase',
+    reward: 25,
+    hint: 'Buy shares or close a trade — welcome to the market.',
+  },
+]
+
+/** Complete a quest once, with the alert attached. Safe to call repeatedly. */
+async function awardQuest(userId: string, key: db.QuestKey): Promise<void> {
+  const quest = QUESTS.find((q) => q.key === key)
+  if (!quest) return
+  const first = await db.completeQuest(userId, key, quest.reward)
+  if (first) {
+    await db.addAlert(userId, 'friend', `🧠 +${quest.reward} braincells — ${quest.title.toLowerCase()} ✅`)
+  }
+}
+
+authed('GET /api/onboarding', async (req) => {
+  const user = await db.getUser(req.user.sub)
+  if (!user) throw new HttpError(404, 'user not found')
+  return json(200, {
+    steps: QUESTS.map((q) => ({ ...q, done: !!user.onboarding?.[q.key] })),
+    braincells: user.coins,
+  })
+})
+
+authed('POST /api/onboarding/claim-pack', async (req) => {
+  const user = await db.getUser(req.user.sub)
+  if (!user) throw new HttpError(404, 'user not found')
+  if (user.onboarding?.pack) return json(200, { ok: true, already: true, memes: [], reward: 0 })
+
+  const vaultPositions = await db.getPortfolio(db.VAULT_SUB)
+  const eligible = vaultPositions.filter((p) => p.shares >= 10)
+  const picks = [...eligible].sort(() => Math.random() - 0.5).slice(0, 3)
+  const packQuest = QUESTS.find((q) => q.key === 'pack')!
+  // if the vault is dry, the pack falls back to a bigger braincell grant
+  const reward = picks.length > 0 ? packQuest.reward : 50
+  try {
+    await db.claimVaultPack(
+      req.user.sub,
+      picks.map((p) => p.memeId),
+      reward,
+    )
+  } catch {
+    throw new HttpError(409, 'pack already claimed or vault changed — refresh and retry')
+  }
+  const memes = (
+    await Promise.all(picks.map((p) => db.getMeme(p.memeId)))
+  ).filter((m): m is Meme => !!m)
+  await db.addAlert(
+    req.user.sub,
+    'friend',
+    `🎁 Starter pack opened: ${memes.length ? memes.map((m) => `10 shares of "${m.title}"`).join(', ') + ' and' : ''} +${reward} braincells!`,
+  )
+  return json(200, { ok: true, memes: memes.map(publicMeme), reward })
+})
+
+authed('GET /api/leaderboard', async () => {
+  const top = await db.topHolders(10)
+  const rows = await Promise.all(
+    top.map(async (u) => {
+      const { value, collectionSize } = await portfolioSummary(u.sub)
+      return {
+        sub: u.sub,
+        name: u.name,
+        picture: u.picture,
+        braincells: u.coins,
+        portfolioValue: value,
+        collectionSize,
+      }
+    }),
+  )
+  return json(200, { leaders: rows })
+})
+
 // ---------- me / users ----------
 
 async function portfolioSummary(userId: string) {
@@ -68,6 +171,7 @@ authed('GET /api/me', async (req) => {
     portfolioValue: value,
     collectionSize,
     unreadAlerts: alerts.filter((a) => !a.read).length,
+    onboarding: user.onboarding ?? {},
   })
 })
 
@@ -138,6 +242,7 @@ authed('POST /api/memes', async (req) => {
   }
   await db.putMeme(meme)
   await db.putPosition(meme.id, req.user.sub, 100)
+  await awardQuest(req.user.sub, 'mint')
   return json(201, { meme: publicMeme(meme) })
 })
 
@@ -216,9 +321,11 @@ authed('POST /api/memes/:id/buy', async (req) => {
   await db.addAlert(
     meme.listing.sellerId,
     'sale',
-    `💰 ${req.user.name} bought ${shares} share${shares === 1 ? '' : 's'} of "${meme.title}" for ${cost} coins`,
+    `💰 ${req.user.name} bought ${shares} share${shares === 1 ? '' : 's'} of "${meme.title}" for ${cost} braincells`,
     meme.id,
   )
+  await awardQuest(req.user.sub, 'trade')
+  await awardQuest(meme.listing.sellerId, 'trade')
   return json(200, { ok: true, shares, cost })
 })
 
@@ -323,6 +430,8 @@ authed('POST /api/friends/respond', async (req) => {
     await db.setFriendEdge(req.user.sub, otherId, 'accepted')
     await db.setFriendEdge(otherId, req.user.sub, 'accepted')
     await db.addAlert(otherId, 'friend', `🤝 ${req.user.name} accepted your friend request`)
+    await awardQuest(req.user.sub, 'friend')
+    await awardQuest(otherId, 'friend')
   } else {
     await db.deleteFriendEdge(req.user.sub, otherId)
     await db.deleteFriendEdge(otherId, req.user.sub)
@@ -420,6 +529,8 @@ authed('POST /api/trades/:id/respond', async (req) => {
     [...trade.offer.memes, ...trade.ask.memes].map((m) => db.refreshOwnership(m.memeId)),
   )
   await db.addAlert(trade.fromId, 'trade', `✅ ${req.user.name} accepted your trade!`)
+  await awardQuest(trade.fromId, 'trade')
+  await awardQuest(trade.toId, 'trade')
   return json(200, { trade: updated })
 })
 
@@ -587,6 +698,8 @@ authed('POST /api/invites/accept', async (req) => {
   await db.setFriendEdge(req.user.sub, inviterId, 'accepted')
   await db.setFriendEdge(inviterId, req.user.sub, 'accepted')
   await db.addAlert(inviterId, 'friend', `🎉 ${req.user.name} accepted your invite — you're now friends!`)
+  await awardQuest(req.user.sub, 'friend')
+  await awardQuest(inviterId, 'friend')
   return json(200, { ok: true })
 })
 
@@ -725,6 +838,7 @@ route('GET /m/:id', async (req) => {
       ),
     )
   }
+  await awardQuest(meme.creatorId, 'share')
   const ogImageUrl = await ensureOgImage(meme).catch(
     () => `${req.headers['x-forwarded-proto'] ?? 'https'}://${req.headers.host}/api/memes/${meme.id}/og.png`,
   )

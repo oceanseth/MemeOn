@@ -100,7 +100,8 @@ export default function MemeDetail() {
             )}
           </h2>
           <p style={{ color: 'var(--text-dim)' }}>
-            minted by {meme.creatorName} · owned by {meme.ownerName}
+            minted by <Link to={`/u/${encodeURIComponent(meme.creatorId)}`}>{meme.creatorName}</Link>{' '}
+            · owned by <Link to={`/u/${encodeURIComponent(meme.ownerId)}`}>{meme.ownerName}</Link>
             {meme.tags.length > 0 && <> · {meme.tags.map((t) => `#${t}`).join(' ')}</>}
             {meme.remixOf && (
               <>
@@ -110,7 +111,7 @@ export default function MemeDetail() {
             )}
           </p>
           <p style={{ fontSize: 18 }}>
-            🔁 <strong>{meme.reshares.toLocaleString()}</strong> reshares · 🪙{' '}
+            🔁 <strong>{meme.reshares.toLocaleString()}</strong> reshares · 🧠{' '}
             <strong>{meme.value.toLocaleString()}</strong> value
             {myShares > 0 && (
               <>
@@ -166,7 +167,7 @@ export default function MemeDetail() {
           {meme.listing && meme.listing.shares > 0 ? (
             <div className="panel" style={{ marginBottom: 16 }}>
               <strong>
-                On sale: {meme.listing.shares} shares @ 🪙{meme.listing.pricePerShare}/share
+                On sale: {meme.listing.shares} shares @ 🧠{meme.listing.pricePerShare}/share
               </strong>
               {user && !isSeller && (
                 <div className="filter-bar" style={{ marginTop: 10 }}>
@@ -187,7 +188,7 @@ export default function MemeDetail() {
                       )
                     }
                   >
-                    Buy for 🪙{Math.ceil(buyShares * meme.listing!.pricePerShare)}
+                    Buy for 🧠{Math.ceil(buyShares * meme.listing!.pricePerShare)}
                   </button>
                 </div>
               )}
@@ -219,7 +220,7 @@ export default function MemeDetail() {
                     />
                   </label>
                   <label style={{ fontSize: 13 }}>
-                    🪙/share{' '}
+                    🧠/share{' '}
                     <input
                       type="number"
                       min={0.01}

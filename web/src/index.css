@@ -423,6 +423,107 @@ textarea:focus {
   }
 }
 
+/* ---------- onboarding quests ---------- */
+
+.questbar {
+  background: linear-gradient(90deg, rgba(44, 127, 216, 0.14), rgba(122, 63, 216, 0.14));
+  border-bottom: 1px solid var(--border);
+}
+
+.questbar-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 8px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.questbar-title {
+  font-weight: 800;
+  font-size: 13.5px;
+  white-space: nowrap;
+}
+
+.quest-chip {
+  font-size: 12px;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.quest-chip.done {
+  color: var(--ok);
+  border-color: rgba(125, 255, 178, 0.35);
+}
+
+.quest-chip em {
+  font-style: normal;
+  color: var(--gold);
+}
+
+.quest-chip-btn {
+  font-size: 12.5px;
+  padding: 4px 12px;
+}
+
+.pack-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 7, 12, 0.8);
+  backdrop-filter: blur(6px);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.pack-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-width: 640px;
+  width: 100%;
+  max-height: 86vh;
+  overflow-y: auto;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.pack-modal h3 {
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+
+/* ---------- leaderboard ---------- */
+
+.leader-row {
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.15s ease;
+}
+
+.leader-row:hover {
+  border-color: var(--accent);
+}
+
+.leader-rank {
+  font-size: 20px;
+  width: 40px;
+  text-align: center;
+  font-weight: 800;
+}
+
+.leader-cells {
+  font-weight: 800;
+  color: var(--gold);
+  font-size: 16px;
+}
+
 /* ---------- landing / faq ---------- */
 
 .hero {
