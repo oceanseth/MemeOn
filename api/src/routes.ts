@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import * as db from './db'
 import * as masky from './masky'
 import { authed, HttpError, html, json, maskyToken, redirect, requireString, route } from './http'
-import { issueSession } from './session'
+import { issueSession, verifySession } from './session'
 import { mintFirebaseToken } from './firebase'
 import { ensureOgImage, frameKey, memePageHtml, tierFrameList } from './og'
 import { assetUrl, presignUpload, putAsset } from './s3'
@@ -85,7 +85,7 @@ authed('GET /api/users', async (req) => {
 const publicMeme = (m: Meme) => ({ ...m, tier: tierFor(m.reshares), value: memeValue(m.reshares) })
 
 authed('GET /api/memes', async (req) => {
-  let memes = await db.listMemes()
+  let memes = (await db.listMemes()).filter((m) => !m.private)
   const { q, type, tier, listed, sort } = req.query
   if (q) {
     const needle = q.toLowerCase()
@@ -116,6 +116,7 @@ authed('POST /api/memes', async (req) => {
   const tags = Array.isArray(req.body.tags)
     ? req.body.tags.filter((t): t is string => typeof t === 'string').slice(0, 8)
     : []
+  const remixOf = typeof req.body.remixOf === 'string' ? req.body.remixOf.slice(0, 40) : null
   const meme: Meme = {
     id: randomUUID().slice(0, 12),
     title,
@@ -132,6 +133,8 @@ authed('POST /api/memes', async (req) => {
     tierKey: TIERS[0].key,
     listing: null,
     createdAt: new Date().toISOString(),
+    remixOf,
+    private: false,
   }
   await db.putMeme(meme)
   await db.putPosition(meme.id, req.user.sub, 100)
@@ -142,7 +145,30 @@ route('GET /api/memes/:id', async (req) => {
   const meme = await db.getMeme(req.params.id)
   if (!meme) throw new HttpError(404, 'meme not found')
   const positions = await db.getPositions(meme.id)
+  if (meme.private) {
+    // soft-deleted: only shareholders can still see it
+    const viewer = await verifySession(req.headers.authorization)
+    if (!viewer || !positions.some((p) => p.userId === viewer.sub))
+      throw new HttpError(404, 'meme not found')
+  }
   return json(200, { meme: publicMeme(meme), positions })
+})
+
+/** Sole owners (100/100 shares) can hide a meme from every public surface. */
+authed('POST /api/memes/:id/visibility', async (req) => {
+  const meme = await db.getMeme(req.params.id)
+  if (!meme) throw new HttpError(404, 'meme not found')
+  const positions = await db.getPositions(meme.id)
+  const mine = positions.find((p) => p.userId === req.user.sub)
+  if (!mine || mine.shares < 100)
+    throw new HttpError(403, 'only a 100% owner can change visibility')
+  const makePrivate = !!req.body.private
+  await db.updateMemeFields(meme.id, {
+    private: makePrivate,
+    // a hidden meme shouldn't stay purchasable
+    ...(makePrivate ? { listing: null } : {}),
+  })
+  return json(200, { ok: true, private: makePrivate })
 })
 
 authed('POST /api/memes/:id/list', async (req) => {
@@ -226,8 +252,25 @@ authed('POST /api/aigen/image', async (req) => {
 authed('POST /api/aigen/video', async (req) => {
   const prompt = requireString(req.body, 'prompt')
   const image = typeof req.body.image === 'string' ? req.body.image : undefined
-  const out = await masky.generateVideo(maskyToken(req), { prompt, image, resolution: '720p' })
+  const srcVideo = typeof req.body.srcVideo === 'string' ? req.body.srcVideo : undefined
+  const out = await masky.generateVideo(maskyToken(req), {
+    prompt,
+    image,
+    srcVideo,
+    resolution: '720p',
+  })
   return json(202, out)
+})
+
+/** Remix: image-to-image edit on the source meme's art (bills the user's credits). */
+authed('POST /api/aigen/image-edit', async (req) => {
+  const prompt = requireString(req.body, 'prompt')
+  const imageUrls = Array.isArray(req.body.imageUrls)
+    ? req.body.imageUrls.filter((u): u is string => typeof u === 'string')
+    : []
+  if (imageUrls.length === 0) throw new HttpError(400, 'imageUrls required')
+  const out = await masky.editImage(maskyToken(req), prompt, imageUrls)
+  return json(200, out)
 })
 
 authed('GET /api/aigen/video/:id', async (req) => {
@@ -474,7 +517,7 @@ authed('GET /api/feed', async (req) => {
   )
 
   const scored = allMemes
-    .filter((m) => !dislikedSet.has(m.id))
+    .filter((m) => !m.private && !dislikedSet.has(m.id))
     .filter((m) => m.creatorId !== req.user.sub && m.ownerId !== req.user.sub)
     .map((m) => ({
       meme: m,
@@ -515,6 +558,7 @@ route('GET /api/invite/:sub', async (req) => {
   ])
   const held = new Set(positions.map((p) => p.memeId))
   const topMemes = allMemes
+    .filter((m) => !m.private)
     .filter((m) => m.creatorId === inviter.sub || held.has(m.id))
     .sort((a, b) => b.reshares - a.reshares)
     .slice(0, 4)
@@ -573,9 +617,11 @@ authed('GET /api/users/:sub/profile', async (req) => {
     db.getFriend(req.user.sub, target.sub),
     portfolioSummary(target.sub),
   ])
-  const created = allMemes.filter((m) => m.creatorId === target.sub)
+  const isSelf = req.user.sub === target.sub
+  const visible = allMemes.filter((m) => isSelf || !m.private)
+  const created = visible.filter((m) => m.creatorId === target.sub)
   const held = new Map(positions.map((p) => [p.memeId, p.shares]))
-  const binder = allMemes
+  const binder = visible
     .filter((m) => held.has(m.id))
     .map((m) => ({ ...publicMeme(m), shares: held.get(m.id) ?? 0 }))
   return json(200, {
@@ -650,7 +696,7 @@ export function framePrompt(tierName: string, tierIdx: number): string {
 
 route('GET /api/memes/:id/og.png', async (req) => {
   const meme = await db.getMeme(req.params.id)
-  if (!meme) throw new HttpError(404, 'meme not found')
+  if (!meme || meme.private) throw new HttpError(404, 'meme not found')
   const url = await ensureOgImage(meme)
   return redirect(url, 'public, max-age=300')
 })
@@ -660,6 +706,8 @@ route('GET /api/memes/:id/og.png', async (req) => {
  * as a reshare — that IS the virality mechanic.
  */
 route('GET /m/:id', async (req) => {
+  const existing = await db.getMeme(req.params.id)
+  if (existing?.private) return html(404, '<h1>This meme has gone private (404)</h1>')
   const result = await db.recordReshare(req.params.id)
   if (!result) return html(404, '<h1>This meme has not been minted (404)</h1>')
   const { meme, tieredUp } = result

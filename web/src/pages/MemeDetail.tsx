@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { tierClasses } from '../components/MemeCard'
@@ -7,6 +7,7 @@ import type { Meme, Position } from '../lib/types'
 
 export default function MemeDetail() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const { user, refresh } = useAuth()
   const [meme, setMeme] = useState<Meme | null>(null)
   const [positions, setPositions] = useState<Position[]>([])
@@ -90,10 +91,23 @@ export default function MemeDetail() {
         </div>
 
         <div>
-          <h2 style={{ marginTop: 0 }}>{meme.title}</h2>
+          <h2 style={{ marginTop: 0 }}>
+            {meme.title}
+            {meme.private && (
+              <span className="badge" style={{ marginLeft: 10, verticalAlign: 'middle' }}>
+                🙈 private
+              </span>
+            )}
+          </h2>
           <p style={{ color: 'var(--text-dim)' }}>
             minted by {meme.creatorName} · owned by {meme.ownerName}
             {meme.tags.length > 0 && <> · {meme.tags.map((t) => `#${t}`).join(' ')}</>}
+            {meme.remixOf && (
+              <>
+                {' '}
+                · <Link to={`/meme/${meme.remixOf}`}>🧬 remix</Link>
+              </>
+            )}
           </p>
           <p style={{ fontSize: 18 }}>
             🔁 <strong>{meme.reshares.toLocaleString()}</strong> reshares · 🪙{' '}
@@ -122,6 +136,28 @@ export default function MemeDetail() {
                 <button>Preview card</button>
               </a>
             </div>
+          </div>
+
+          <div className="filter-bar" style={{ marginBottom: 16 }}>
+            {user && (
+              <button onClick={() => navigate(`/binder/new?remix=${meme.id}`)}>
+                🧬 Create a meme from this
+              </button>
+            )}
+            {myShares === 100 && (
+              <button
+                onClick={() =>
+                  act(
+                    () => post(`/api/memes/${meme.id}/visibility`, { private: !meme.private }),
+                    meme.private
+                      ? 'Back on the marketplace 🌐'
+                      : 'Hidden from the marketplace 🙈 (still in your binder)',
+                  )
+                }
+              >
+                {meme.private ? '🌐 Make public' : '🙈 Make private'}
+              </button>
+            )}
           </div>
 
           {msg && <p className="notice ok">{msg}</p>}
