@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { completeMaskyLogin } from '../lib/auth'
+import { post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
+import { INVITE_KEY } from './Invite'
 
 export default function AuthCallback() {
   const [params] = useSearchParams()
@@ -20,8 +22,14 @@ export default function AuthCallback() {
     }
     completeMaskyLogin(code, params.get('state'))
       .then(async () => {
+        // finish an invite if this login started from an invite link
+        const inviterId = sessionStorage.getItem(INVITE_KEY)
+        sessionStorage.removeItem(INVITE_KEY)
+        if (inviterId) {
+          await post('/api/invites/accept', { inviterId }).catch(() => {})
+        }
         await refresh()
-        navigate('/marketplace', { replace: true })
+        navigate(inviterId ? '/friends' : '/marketplace', { replace: true })
       })
       .catch((e) => setErr(e instanceof Error ? e.message : 'login failed'))
   }, [params, navigate, refresh])

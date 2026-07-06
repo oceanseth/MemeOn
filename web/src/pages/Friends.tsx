@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { apiFetch, post } from '../lib/api'
 import { watchPresence } from '../lib/presence'
+import { useAuth } from '../context/AuthContext'
 import type { FriendEntry } from '../lib/types'
 
 interface UserHit {
@@ -10,13 +11,34 @@ interface UserHit {
 }
 
 export default function Friends() {
+  const { user } = useAuth()
   const [friends, setFriends] = useState<FriendEntry[] | null>(null)
   const [q, setQ] = useState('')
   const [hits, setHits] = useState<UserHit[]>([])
   const [msg, setMsg] = useState<string | null>(null)
   const [online, setOnline] = useState<Set<string>>(new Set())
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => watchPresence(setOnline), [])
+
+  const inviteLink = user ? `${window.location.origin}/invite/${encodeURIComponent(user.sub)}` : ''
+
+  const copyInvite = async () => {
+    if (!inviteLink) return
+    if (navigator.share) {
+      await navigator
+        .share({
+          title: 'Join me on MemeOn',
+          text: 'Memes are the new trading cards — join me on MemeOn!',
+          url: inviteLink,
+        })
+        .catch(() => {})
+      return
+    }
+    await navigator.clipboard.writeText(inviteLink)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2500)
+  }
 
   const load = useCallback(() => {
     apiFetch<{ friends: FriendEntry[] }>('/api/friends')
@@ -76,6 +98,9 @@ export default function Friends() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
+          <button className="primary" onClick={copyInvite}>
+            {copied ? 'Invite link copied ✓' : '💌 Invite a friend'}
+          </button>
         </div>
       </div>
 
