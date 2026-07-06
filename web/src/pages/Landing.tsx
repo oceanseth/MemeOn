@@ -108,6 +108,12 @@ export default function Landing() {
         </details>
         <details>
           <summary>What are braincells? 🧠</summary>
+          <img
+            className="braincell-img"
+            src="/api/brand/braincell.png"
+            alt="a braincell"
+            style={{ width: 72, height: 72, float: 'right', margin: '6px 0 6px 12px' }}
+          />
           <p>
             Braincells are MemeOn's currency — you buy meme shares, fund trades, and flex on the
             🏆 Top Brains leaderboard with them. Everyone starts at zero (smoothbrained, sorry) and

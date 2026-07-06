@@ -51,7 +51,8 @@ export function QuestBar() {
       <div className="questbar">
         <div className="questbar-inner">
           <span className="questbar-title">
-            🧠 Earn your braincells · {doneCount}/{steps.length}
+            <img className="braincell-img" src="/api/brand/braincell.png" alt="braincell" /> Earn
+            your braincells · {doneCount}/{steps.length}
           </span>
           {steps.map((s) =>
             s.key === 'pack' && !s.done ? (
@@ -70,6 +71,12 @@ export function QuestBar() {
       {packMemes && (
         <div className="pack-overlay" onClick={() => setPackMemes(null)}>
           <div className="pack-modal" onClick={(e) => e.stopPropagation()}>
+            <img
+              className="braincell-img"
+              src="/api/brand/braincell.png"
+              alt=""
+              style={{ width: 64, height: 64, float: 'right' }}
+            />
             <h3>🎁 Starter pack opened!</h3>
             <p style={{ color: 'var(--text-dim)' }}>
               {packMemes.length > 0

@@ -17,7 +17,10 @@ export default function Leaderboard() {
   return (
     <main className="container">
       <div className="page-head">
-        <h2>🏆 Top Brains</h2>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          🏆 Top Brains
+          <img className="braincell-img" src="/api/brand/braincell.png" alt="" style={{ width: 34, height: 34 }} />
+        </h2>
         <span style={{ color: 'var(--text-dim)', fontSize: 14 }}>
           The ten wrinkliest braincell holders on MemeOn
         </span>
