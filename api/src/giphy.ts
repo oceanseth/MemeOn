@@ -71,3 +71,12 @@ export async function search(q: string, limit = 12): Promise<GiphyResult[]> {
   )
   return (data.data ?? []).map(toResult).filter((r): r is GiphyResult => !!r)
 }
+
+/** Trending feed — whatever giphy users are posting/sharing right now, term-free. */
+export async function trending(limit = 50, offset = 0): Promise<GiphyResult[]> {
+  const data = await giphyGet<{ data?: RawGif[] }>(
+    `/gifs/trending?limit=${Math.min(limit, 50)}&offset=${offset}&rating=pg-13`,
+    10 * 60_000,
+  )
+  return (data.data ?? []).map(toResult).filter((r): r is GiphyResult => !!r)
+}
