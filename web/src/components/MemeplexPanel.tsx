@@ -54,6 +54,23 @@ export function MemeplexPanel({ meme, canEdit }: { meme: Meme; canEdit: boolean 
   const family = [...plex.remixes, ...plex.related]
   if (family.length === 0 && plex.ancestors.length === 0 && !canEdit) return null
 
+  // never offer the meme itself or anything already in the family
+  const alreadyLinked = new Set([
+    meme.id,
+    ...plex.ancestors.map((m) => m.id),
+    ...plex.remixes.map((m) => m.id),
+    ...plex.related.map((m) => m.id),
+  ])
+  const linkable = binder.filter((m) => !alreadyLinked.has(m.id))
+
+  const tryAdd = (memeId: string) => {
+    if (alreadyLinked.has(memeId)) {
+      setMsg(memeId === meme.id ? "That's this meme — already the center of its own memeplex." : 'Already in the memeplex.')
+      return
+    }
+    void add(memeId)
+  }
+
   return (
     <div className="panel" style={{ marginTop: 16 }}>
       <strong>🕸️ Memeplex</strong>
@@ -89,13 +106,13 @@ export function MemeplexPanel({ meme, canEdit }: { meme: Meme; canEdit: boolean 
         <div className="filter-bar" style={{ marginTop: 12 }}>
           <select value={pick} onChange={(e) => setPick(e.target.value)}>
             <option value="">Link from your binder…</option>
-            {binder.map((m) => (
+            {linkable.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.title}
               </option>
             ))}
           </select>
-          {pick && <button className="primary" onClick={() => add(pick)}>Link</button>}
+          {pick && <button className="primary" onClick={() => tryAdd(pick)}>Link</button>}
           <input
             placeholder="…or paste a meme link"
             value={pasted}
@@ -103,7 +120,7 @@ export function MemeplexPanel({ meme, canEdit }: { meme: Meme; canEdit: boolean 
             style={{ minWidth: 180 }}
           />
           {pasted.trim() && (
-            <button className="primary" onClick={() => add(parseMemeRef(pasted))}>
+            <button className="primary" onClick={() => tryAdd(parseMemeRef(pasted))}>
               Link
             </button>
           )}
