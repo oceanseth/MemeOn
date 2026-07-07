@@ -67,6 +67,7 @@ export interface Alert {
   type: 'tierup' | 'sale' | 'trade' | 'friend'
   message: string
   memeId: string | null
+  subjectSub?: string | null
   read: boolean
   createdAt: string
 }

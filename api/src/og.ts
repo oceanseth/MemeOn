@@ -8,7 +8,7 @@ import {
   SANS_64_WHITE,
 } from 'jimp/fonts'
 import { env } from './env'
-import { assetExists, assetUrl, putAsset } from './s3'
+import { assetAgeSeconds, assetExists, assetUrl, putAsset, putAssetShortCache } from './s3'
 import { getSharedSecret } from './ssm'
 import { TIERS, tierFor } from '../../shared/tiers'
 import type { Meme } from './types'
@@ -246,6 +246,107 @@ ${block}
 <p>${esc(title)} · <a href="${esc(appUrl)}">open on MemeOn</a></p>
 </body>
 </html>`
+}
+
+/**
+ * Profile share card: avatar + name + stats over the dimmed brand banner.
+ * Cached in S3, refreshed when older than an hour (stats drift).
+ */
+export async function ensureProfileOgImage(profile: {
+  sub: string
+  name: string
+  picture: string | null
+  coins: number
+  collectionSize: number
+}): Promise<string> {
+  const key = `og/u/${profile.sub}.png`
+  const age = await assetAgeSeconds(key)
+  if (age !== null && age < 3600) return assetUrl(key)
+
+  // base: the site's home banner, dimmed so the profile pops
+  const canvas = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14ff }) as unknown as JimpImage
+  try {
+    const banner = await fetchImage(`${env.siteOrigin}/brand/og-home.png`)
+    banner.cover({ w: OG_W, h: OG_H })
+    canvas.composite(banner, 0, 0)
+    const dim = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14a8 }) as unknown as JimpImage
+    canvas.composite(dim, 0, 0)
+  } catch {
+    /* solid bg fallback */
+  }
+
+  // avatar (circle when possible), centered-left
+  const AV = 250
+  try {
+    const avatar = profile.picture
+      ? await fetchImage(profile.picture)
+      : await fetchImage(assetUrl('brand/memeon-logo-circle-256.png'))
+    avatar.cover({ w: AV, h: AV })
+    try {
+      ;(avatar as unknown as { circle: () => void }).circle()
+    } catch {
+      /* square avatar is fine */
+    }
+    canvas.composite(avatar, 150, Math.round((OG_H - AV) / 2))
+  } catch {
+    /* no avatar — text still carries it */
+  }
+
+  // name + stats
+  try {
+    const big = await getFont('w64')
+    const bigShadow = await getFont('b64')
+    const small = await getFont('w32')
+    let name = profile.name.slice(0, 18)
+    while (name.length > 4 && measureText(big, name) > 680) name = name.slice(0, -1)
+    const nx = 460
+    canvas.print({ font: bigShadow, x: nx + 3, y: 233, text: name })
+    canvas.print({ font: big, x: nx, y: 230, text: name })
+    canvas.print({
+      font: small,
+      x: nx + 2,
+      y: 330,
+      text: `on MemeOn · ${profile.coins.toLocaleString()} braincells · ${profile.collectionSize} memes`,
+    })
+  } catch (err) {
+    console.error('profile og text failed', err)
+  }
+
+  const png = await canvas.getBuffer('image/png')
+  await putAssetShortCache(key, png)
+  return assetUrl(key)
+}
+
+/**
+ * SPA shell with profile og tags injected (crawlers see the person; humans
+ * get the app at the same URL).
+ */
+export async function profilePageHtml(
+  profile: { sub: string; name: string; coins: number; collectionSize: number },
+  ogImageUrl: string,
+): Promise<string> {
+  const title = `${profile.name} on MemeOn`
+  const desc = `🧠 ${profile.coins.toLocaleString()} braincells · ${profile.collectionSize} memes in the binder. Collect, trade, and invest in memes on MemeOn.`
+  const pageUrl = `${env.siteOrigin}/u/${encodeURIComponent(profile.sub)}`
+  const block = `<meta property="og:site_name" content="MemeOn">
+<meta property="og:type" content="profile">
+<meta property="og:url" content="${esc(pageUrl)}">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(desc)}">
+<meta property="og:image" content="${esc(ogImageUrl)}">
+<meta property="og:image:width" content="${OG_W}">
+<meta property="og:image:height" content="${OG_H}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:image" content="${esc(ogImageUrl)}">`
+  const index = await fetchIndexHtml()
+  if (index) {
+    return index
+      .replace(/\s*<meta (?:property="og:|name="twitter:)[^>]*\/?>/g, '')
+      .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
+      .replace('</head>', `${block}\n</head>`)
+  }
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title>${block}</head><body><a href="${esc(pageUrl)}">${esc(title)}</a></body></html>`
 }
 
 /**

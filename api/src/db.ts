@@ -7,6 +7,7 @@ import {
   UpdateCommand,
   DeleteCommand,
   TransactWriteCommand,
+  BatchWriteCommand,
 } from '@aws-sdk/lib-dynamodb'
 import { randomUUID } from 'node:crypto'
 import { env } from './env'
@@ -238,6 +239,47 @@ export async function refreshOwnership(memeId: string): Promise<void> {
   if (top.userId !== meme.ownerId) {
     const owner = await getUser(top.userId)
     await updateMemeFields(memeId, { ownerId: top.userId, ownerName: owner?.name ?? 'Unknown' })
+  }
+}
+
+/**
+ * Permanently remove a meme: every item in its partition (meta, positions,
+ * referrers, history, memeplex edges, claims) plus backedges from relatives.
+ */
+export async function deleteMemeCompletely(memeId: string): Promise<void> {
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName: T(),
+      KeyConditionExpression: 'PK = :pk',
+      ExpressionAttributeValues: { ':pk': `MEME#${memeId}` },
+    }),
+  )
+  const items = res.Items ?? []
+  // memeplex backedges live in other memes' partitions
+  await Promise.all(
+    items
+      .filter((i) => (i.SK as string).startsWith('PLEX#'))
+      .map((i) =>
+        ddb
+          .send(
+            new DeleteCommand({
+              TableName: T(),
+              Key: { PK: `MEME#${i.otherId as string}`, SK: `PLEX#${memeId}` },
+            }),
+          )
+          .catch(() => {}),
+      ),
+  )
+  for (let i = 0; i < items.length; i += 25) {
+    await ddb.send(
+      new BatchWriteCommand({
+        RequestItems: {
+          [T()]: items
+            .slice(i, i + 25)
+            .map((it) => ({ DeleteRequest: { Key: { PK: it.PK, SK: it.SK } } })),
+        },
+      }),
+    )
   }
 }
 
@@ -942,13 +984,28 @@ export async function addAlert(
   type: AlertType,
   message: string,
   memeId: string | null = null,
+  subjectSub: string | null = null,
 ): Promise<void> {
   const createdAt = new Date().toISOString()
   const id = `${createdAt}#${randomUUID().slice(0, 8)}`
-  const alert: Alert = { id, userId, type, message, memeId, read: false, createdAt }
+  const alert: Alert = { id, userId, type, message, memeId, subjectSub, read: false, createdAt }
   await ddb.send(
     new PutCommand({ TableName: T(), Item: { PK: `USER#${userId}`, SK: `ALERT#${id}`, ...alert } }),
   )
+}
+
+/** Everyone following a creator (GSI1 FOLLOWERS#{creator}), capped. */
+export async function listFollowers(creatorId: string, limit = 200): Promise<string[]> {
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName: T(),
+      IndexName: 'GSI1',
+      KeyConditionExpression: 'GSI1PK = :p',
+      ExpressionAttributeValues: { ':p': `FOLLOWERS#${creatorId}` },
+      Limit: limit,
+    }),
+  )
+  return (res.Items ?? []).map((i) => i.userId as string)
 }
 
 export async function listAlerts(userId: string, limit = 50): Promise<Alert[]> {

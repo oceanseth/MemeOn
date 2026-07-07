@@ -99,6 +99,8 @@ export interface Alert {
   type: AlertType
   message: string
   memeId: string | null
+  /** when set, the alert links to this user's profile */
+  subjectSub?: string | null
   read: boolean
   createdAt: string
 }

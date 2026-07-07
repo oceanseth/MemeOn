@@ -4,6 +4,7 @@ import { apiFetch, post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { tierClasses } from '../components/MemeCard'
 import { MemeplexPanel } from '../components/MemeplexPanel'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import type { Meme, Position } from '../lib/types'
 
 const ARCHIVE_SUB = 'meme_archive'
@@ -25,6 +26,8 @@ export default function MemeDetail() {
   const [msg, setMsg] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   // listing form
   const [price, setPrice] = useState(1)
@@ -199,6 +202,11 @@ export default function MemeDetail() {
                 {meme.private ? '🌐 Make public' : '🙈 Make private'}
               </button>
             )}
+            {myShares === 100 && meme.private && (
+              <button className="danger" onClick={() => setConfirmingDelete(true)}>
+                🗑️ Delete forever
+              </button>
+            )}
           </div>
 
           {msg && <p className="notice ok">{msg}</p>}
@@ -333,6 +341,33 @@ export default function MemeDetail() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmingDelete}
+        danger
+        busy={deleting}
+        title="Delete this meme forever?"
+        message={
+          <>
+            <strong>"{meme.title}"</strong> will be permanently removed — its card, share link,
+            view history, and memeplex links all go with it. This cannot be undone.
+          </>
+        }
+        confirmLabel="Delete it forever"
+        onCancel={() => setConfirmingDelete(false)}
+        onConfirm={async () => {
+          setDeleting(true)
+          try {
+            await apiFetch(`/api/memes/${meme.id}`, { method: 'DELETE' })
+            navigate('/binder')
+          } catch (e) {
+            setErr(e instanceof Error ? e.message : 'delete failed')
+            setConfirmingDelete(false)
+          } finally {
+            setDeleting(false)
+          }
+        }}
+      />
     </main>
   )
 }

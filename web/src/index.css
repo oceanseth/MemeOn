@@ -538,6 +538,34 @@ textarea:focus {
   font-size: 22px;
 }
 
+.confirm-modal {
+  max-width: 440px;
+}
+
+.confirm-modal.confirm-danger {
+  border-color: #5b2733;
+  box-shadow:
+    0 0 0 1px rgba(255, 122, 122, 0.25),
+    0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.confirm-message {
+  color: var(--text-dim);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.confirm-danger-btn {
+  background: #a12b3a;
+  border-color: transparent;
+  color: #fff;
+  font-weight: 700;
+}
+
+.confirm-danger-btn:hover:not(:disabled) {
+  border-color: var(--danger);
+}
+
 /* ---------- leaderboard ---------- */
 
 .leader-row {
@@ -679,6 +707,22 @@ textarea:focus {
 }
 
 /* ---------- page furniture ---------- */
+
+/* marketplace controls stay reachable while scrolling the grid */
+.market-controls {
+  position: sticky;
+  top: 53px; /* just under the topbar */
+  z-index: 15;
+  background: rgba(11, 13, 20, 0.92);
+  backdrop-filter: blur(10px);
+  margin: 0 -20px;
+  padding: 0 20px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.market-controls .page-head {
+  margin: 14px 0 10px;
+}
 
 .page-head {
   display: flex;
