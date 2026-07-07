@@ -14,6 +14,7 @@ import {
   pingFacebookRescrape,
   tierFrameList,
 } from './og'
+import * as ogModule from './og'
 import { assetUrl, presignUpload, putAsset } from './s3'
 import { memeValue, TIERS, tierFor, tierIndexFor } from '../../shared/tiers'
 import type { Meme, Trade, TradeSide } from './types'
@@ -278,6 +279,15 @@ authed('POST /api/memes', async (req) => {
   await db.putPosition(meme.id, req.user.sub, 100)
   if (remixOf) await db.addPlexEdge(meme.id, remixOf, req.user.sub).catch(() => {})
   await awardQuest(req.user.sub, 'mint')
+  // tell the creator's followers about the fresh mint
+  const followers = await db.listFollowers(req.user.sub).catch(() => [] as string[])
+  await Promise.all(
+    followers
+      .filter((f) => f !== req.user.sub)
+      .map((f) =>
+        db.addAlert(f, 'friend', `🆕 ${req.user.name} minted "${meme.title}"`, meme.id, req.user.sub),
+      ),
+  )
   // pre-render the og card so the first crawler hit (facebook is impatient and
   // caches failures for weeks) finds the image already sitting in S3
   await ensureOgImage(meme).catch(() => {})
@@ -295,6 +305,18 @@ route('GET /api/memes/:id', async (req) => {
       throw new HttpError(404, 'meme not found')
   }
   return json(200, { meme: publicMeme(meme), positions })
+})
+
+/** Sole owners can permanently delete a meme — but only after making it private. */
+authed('DELETE /api/memes/:id', async (req) => {
+  const meme = await db.getMeme(req.params.id)
+  if (!meme) throw new HttpError(404, 'meme not found')
+  if (!meme.private) throw new HttpError(400, 'make the meme private before deleting it')
+  const positions = await db.getPositions(meme.id)
+  const mine = positions.find((p) => p.userId === req.user.sub)
+  if (!mine || mine.shares < 100) throw new HttpError(403, 'only a 100% owner can delete')
+  await db.deleteMemeCompletely(meme.id)
+  return json(200, { ok: true, deleted: meme.id })
 })
 
 /** Sole owners (100/100 shares) can hide a meme from every public surface. */
@@ -456,7 +478,7 @@ authed('POST /api/friends/request', async (req) => {
   if (existing) return json(200, { ok: true, status: existing.status })
   await db.setFriendEdge(req.user.sub, otherId, 'outgoing')
   await db.setFriendEdge(otherId, req.user.sub, 'incoming')
-  await db.addAlert(otherId, 'friend', `👋 ${req.user.name} sent you a friend request`)
+  await db.addAlert(otherId, 'friend', `👋 ${req.user.name} sent you a friend request`, null, req.user.sub)
   return json(200, { ok: true, status: 'outgoing' })
 })
 
@@ -467,7 +489,7 @@ authed('POST /api/friends/respond', async (req) => {
   if (req.body.accept) {
     await db.setFriendEdge(req.user.sub, otherId, 'accepted')
     await db.setFriendEdge(otherId, req.user.sub, 'accepted')
-    await db.addAlert(otherId, 'friend', `🤝 ${req.user.name} accepted your friend request`)
+    await db.addAlert(otherId, 'friend', `🤝 ${req.user.name} accepted your friend request`, null, req.user.sub)
     await awardQuest(req.user.sub, 'friend')
     await awardQuest(otherId, 'friend')
   } else {
@@ -744,7 +766,7 @@ authed('POST /api/invites/accept', async (req) => {
   if (existing?.status === 'accepted') return json(200, { ok: true, already: true })
   await db.setFriendEdge(req.user.sub, inviterId, 'accepted')
   await db.setFriendEdge(inviterId, req.user.sub, 'accepted')
-  await db.addAlert(inviterId, 'friend', `🎉 ${req.user.name} accepted your invite — you're now friends!`)
+  await db.addAlert(inviterId, 'friend', `🎉 ${req.user.name} accepted your invite — you're now friends!`, null, req.user.sub)
   await awardQuest(req.user.sub, 'friend')
   await awardQuest(inviterId, 'friend')
   return json(200, { ok: true })
@@ -757,7 +779,8 @@ authed('POST /api/users/:sub/follow', async (req) => {
   const target = await db.getUser(req.params.sub)
   if (!target) throw new HttpError(404, 'user not found')
   const added = await db.setFollow(req.user.sub, target.sub)
-  if (added) await db.addAlert(target.sub, 'friend', `⭐ ${req.user.name} followed you`)
+  if (added)
+    await db.addAlert(target.sub, 'friend', `⭐ ${req.user.name} followed you`, null, req.user.sub)
   return json(200, { ok: true, following: true })
 })
 
@@ -1247,6 +1270,25 @@ function classifyViewSource(
   return null // direct click — counts as a view only
 }
 
+/** Profile pages: same SPA, but crawlers get a personalized og card. */
+route('GET /u/:sub', async (req) => {
+  const user = await db.getUser(req.params.sub)
+  if (!user) return html(404, '<h1>No such memelord (404)</h1>')
+  const { value, collectionSize } = await portfolioSummary(user.sub)
+  const profile = {
+    sub: user.sub,
+    name: user.name,
+    picture: user.picture,
+    coins: user.coins,
+    collectionSize,
+  }
+  void value
+  const ogImageUrl = await ogModule
+    .ensureProfileOgImage(profile)
+    .catch(() => `${env.siteOrigin}/brand/og-home.png`)
+  return html(200, await ogModule.profilePageHtml(profile, ogImageUrl))
+})
+
 /**
  * The unique share URL for a meme. Every load counts a view (which drives the
  * tier ladder); each distinct external source counts a reshare.
@@ -1276,6 +1318,22 @@ route('GET /m/:id', async (req) => {
           meme.id,
         ),
       ),
+    )
+    // creator's followers hear about it too (minus holders, who already did)
+    const holderSet = new Set(holders.map((h) => h.userId))
+    const followers = await db.listFollowers(meme.creatorId).catch(() => [] as string[])
+    await Promise.all(
+      followers
+        .filter((f) => !holderSet.has(f))
+        .map((f) =>
+          db.addAlert(
+            f,
+            'tierup',
+            `🚀 "${meme.title}" by ${meme.creatorName} hit ${tier.name.toUpperCase()} (${tier.rarity})!`,
+            meme.id,
+            meme.creatorId,
+          ),
+        ),
     )
   }
   await awardQuest(meme.creatorId, 'share')

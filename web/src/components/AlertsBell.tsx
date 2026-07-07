@@ -63,6 +63,10 @@ export function AlertsBell() {
                 <Link to={`/meme/${a.memeId}`} onClick={() => setOpen(false)}>
                   {a.message}
                 </Link>
+              ) : a.subjectSub ? (
+                <Link to={`/u/${encodeURIComponent(a.subjectSub)}`} onClick={() => setOpen(false)}>
+                  {a.message}
+                </Link>
               ) : (
                 a.message
               )}
