@@ -3,7 +3,17 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
 import type { Meme } from '../lib/types'
 
-type Mode = 'generate' | 'video' | 'url' | 'upload' | 'remix'
+type Mode = 'generate' | 'video' | 'url' | 'upload' | 'remix' | 'giphy'
+
+interface GiphyResult {
+  id: string
+  title: string
+  stillUrl: string
+  gifUrl: string
+  mp4Url: string | null
+  author: string | null
+  url: string
+}
 
 async function uploadFile(file: File | Blob, contentType?: string): Promise<string> {
   const type = contentType ?? (file as File).type
@@ -78,6 +88,64 @@ export default function CreateMeme() {
   const [busy, setBusy] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // giphy mode
+  const [giphyCategories, setGiphyCategories] = useState<string[]>([])
+  const [giphyQuery, setGiphyQuery] = useState('')
+  const [giphyResults, setGiphyResults] = useState<GiphyResult[]>([])
+  const [giphyPick, setGiphyPick] = useState<GiphyResult | null>(null)
+  // set after a Masky edit replaces the raw source image
+  const [edited, setEdited] = useState(false)
+
+  useEffect(() => {
+    if (mode !== 'giphy' || giphyCategories.length > 0) return
+    apiFetch<{ categories: string[] }>('/api/giphy/categories')
+      .then((r) => setGiphyCategories(r.categories))
+      .catch(() => {})
+  }, [mode, giphyCategories.length])
+
+  const giphySearch = async (q: string) => {
+    if (!q.trim()) return
+    setGiphyQuery(q)
+    setBusy('Searching Giphy…')
+    setErr(null)
+    try {
+      const r = await apiFetch<{ results: GiphyResult[] }>(
+        `/api/giphy/search?q=${encodeURIComponent(q)}`,
+      )
+      setGiphyResults(r.results)
+      if (r.results.length === 0) setErr(`Giphy came up empty for "${q}"`)
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'giphy search failed')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  const pickGiphy = (g: GiphyResult) => {
+    setGiphyPick(g)
+    setImageUrl(g.gifUrl)
+    setEdited(false)
+    if (!title) setTitle(g.title.slice(0, 20))
+  }
+
+  /** Run the current prompt through Masky image-edit against the given source image. */
+  const applyEdit = async (sourceUrl: string) => {
+    setBusy('Remixing with Masky (uses your credits)…')
+    setErr(null)
+    try {
+      const out = await post<{ imageUrl: string }>('/api/aigen/image-edit', {
+        prompt,
+        imageUrls: [sourceUrl],
+      })
+      setImageUrl(out.imageUrl)
+      setEdited(true)
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'edit failed')
+    } finally {
+      setBusy(null)
+    }
+  }
 
   useEffect(() => () => {
     if (pollRef.current) clearInterval(pollRef.current)
@@ -203,6 +271,11 @@ export default function CreateMeme() {
         mediaType: isVideo ? 'video' : 'image',
         videoUrl: isVideo ? videoUrl : null,
         remixOf: mode === 'remix' ? remixId : null,
+        // attribution only when the raw giphy art is used unedited
+        source:
+          mode === 'giphy' && giphyPick && !edited
+            ? { provider: 'giphy', id: giphyPick.id, url: giphyPick.url, author: giphyPick.author }
+            : null,
         tags: tags
           .split(',')
           .map((t) => t.trim())
@@ -239,6 +312,9 @@ export default function CreateMeme() {
           </button>
           <button className={mode === 'upload' ? 'primary' : ''} onClick={() => setMode('upload')}>
             📤 Upload
+          </button>
+          <button className={mode === 'giphy' ? 'primary' : ''} onClick={() => setMode('giphy')}>
+            🎞️ From Giphy
           </button>
           <button className={mode === 'url' ? 'primary' : ''} onClick={() => setMode('url')}>
             🔗 From URL
@@ -310,15 +386,105 @@ export default function CreateMeme() {
               </button>
             </div>
           </>
+        ) : mode === 'giphy' ? (
+          <>
+            <div className="filter-bar">
+              <select
+                value=""
+                onChange={(e) => e.target.value && void giphySearch(e.target.value)}
+              >
+                <option value="">Browse categories…</option>
+                {giphyCategories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="search"
+                placeholder="Search Giphy…"
+                value={giphyQuery}
+                onChange={(e) => setGiphyQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && void giphySearch(giphyQuery)}
+                style={{ minWidth: 200 }}
+              />
+              <button onClick={() => void giphySearch(giphyQuery)} disabled={!giphyQuery.trim() || !!busy}>
+                Search
+              </button>
+              <span className="giphy-mark">Powered by GIPHY</span>
+            </div>
+
+            {giphyResults.length > 0 && (
+              <div className="giphy-grid">
+                {giphyResults.map((g) => (
+                  <img
+                    key={g.id}
+                    src={g.gifUrl}
+                    alt={g.title}
+                    title={g.title}
+                    className={giphyPick?.id === g.id ? 'giphy-cell picked' : 'giphy-cell'}
+                    onClick={() => pickGiphy(g)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {giphyPick && (
+              <>
+                <p style={{ color: 'var(--text-dim)', fontSize: 13, margin: 0 }}>
+                  Selected: <strong>{giphyPick.title}</strong>
+                  {giphyPick.author ? ` (@${giphyPick.author})` : ''} — mint it as-is (with GIPHY
+                  attribution) or remix it below.
+                </p>
+                <label>
+                  Optional prompt — remix the gif with Masky (uses your credits)
+                  <textarea
+                    rows={2}
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="put everyone in medieval armor"
+                  />
+                </label>
+                {prompt.trim() && (
+                  <div>
+                    <button className="primary" disabled={!!busy} onClick={() => void applyEdit(giphyPick.stillUrl)}>
+                      ✨ Remix with Masky
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </>
         ) : mode === 'url' ? (
-          <label>
-            Image URL
-            <input
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://…/meme.png"
-            />
-          </label>
+          <>
+            <label>
+              Image URL
+              <input
+                value={imageUrl}
+                onChange={(e) => {
+                  setImageUrl(e.target.value)
+                  setEdited(false)
+                }}
+                placeholder="https://…/meme.png"
+              />
+            </label>
+            <label>
+              Optional prompt — run the image through Masky image-edit (uses your credits)
+              <textarea
+                rows={2}
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="same image but it's 3am and everything is on fire"
+              />
+            </label>
+            {prompt.trim() && imageUrl && !edited && (
+              <div>
+                <button className="primary" disabled={!!busy} onClick={() => void applyEdit(imageUrl)}>
+                  ✨ Apply AI edit
+                </button>
+              </div>
+            )}
+          </>
         ) : mode === 'upload' ? (
           <>
             <label>
