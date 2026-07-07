@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { apiFetch, post } from '../lib/api'
 import { watchPresence } from '../lib/presence'
+import { GiftDialog } from '../components/GiftDialog'
 import { useAuth } from '../context/AuthContext'
 import type { FriendEntry } from '../lib/types'
 
@@ -17,6 +18,7 @@ export default function Friends() {
   const [hits, setHits] = useState<UserHit[]>([])
   const [msg, setMsg] = useState<string | null>(null)
   const [online, setOnline] = useState<Set<string>>(new Set())
+  const [gifting, setGifting] = useState<{ sub: string; name: string } | null>(null)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => watchPresence(setOnline), [])
@@ -186,6 +188,9 @@ export default function Friends() {
                   </div>
                 </div>
                 <span className="spacer" />
+                <button title="Gift shares" onClick={() => setGifting({ sub: f.sub, name: f.name })}>
+                  🎁
+                </button>
                 <button className="danger" onClick={() => remove(f.sub)}>
                   Remove
                 </button>
@@ -203,6 +208,12 @@ export default function Friends() {
           </div>
         </>
       )}
+      <GiftDialog
+        open={!!gifting}
+        recipient={gifting}
+        onClose={() => setGifting(null)}
+        onGifted={(m) => setMsg(m)}
+      />
     </main>
   )
 }
