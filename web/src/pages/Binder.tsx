@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch } from '../lib/api'
 import { MemeCard } from '../components/MemeCard'
+import { SortChips, sortMemes, type SortDir, type SortKey } from '../components/SortChips'
 import { useAuth } from '../context/AuthContext'
 import type { Meme } from '../lib/types'
 
@@ -9,6 +10,8 @@ export default function Binder() {
   const { user } = useAuth()
   const [memes, setMemes] = useState<Meme[] | null>(null)
   const [showPrivate, setShowPrivate] = useState(false)
+  const [sortKey, setSortKey] = useState<SortKey>('new')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
 
   useEffect(() => {
     apiFetch<{ memes: Meme[] }>('/api/binder')
@@ -16,7 +19,11 @@ export default function Binder() {
       .catch(() => setMemes([]))
   }, [])
 
-  const visible = (memes ?? []).filter((m) => showPrivate || !m.private)
+  const visible = sortMemes(
+    (memes ?? []).filter((m) => showPrivate || !m.private),
+    sortKey,
+    sortDir,
+  )
   const privateCount = (memes ?? []).filter((m) => m.private).length
 
   return (
@@ -43,6 +50,17 @@ export default function Binder() {
             <button className="primary">＋ Create meme</button>
           </Link>
         </div>
+      </div>
+
+      <div className="filter-bar" style={{ marginBottom: 18 }}>
+        <SortChips
+          sortKey={sortKey}
+          dir={sortDir}
+          onChange={(k, d) => {
+            setSortKey(k)
+            setSortDir(d)
+          }}
+        />
       </div>
 
       {memes === null ? (

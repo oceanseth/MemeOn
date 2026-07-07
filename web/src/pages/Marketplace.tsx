@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch } from '../lib/api'
 import { MemeCard } from '../components/MemeCard'
+import { SortChips, sortMemes, type SortDir, type SortKey } from '../components/SortChips'
 import { TIERS } from '../../../shared/tiers'
 import type { Meme } from '../lib/types'
 
@@ -11,7 +12,8 @@ export default function Marketplace() {
   const [type, setType] = useState('')
   const [tier, setTier] = useState('')
   const [listed, setListed] = useState(false)
-  const [sort, setSort] = useState('new')
+  const [sortKey, setSortKey] = useState<SortKey>('new')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
 
   const query = useMemo(() => {
     const p = new URLSearchParams()
@@ -19,9 +21,8 @@ export default function Marketplace() {
     if (type) p.set('type', type)
     if (tier) p.set('tier', tier)
     if (listed) p.set('listed', 'true')
-    if (sort !== 'new') p.set('sort', sort)
     return p.toString()
-  }, [q, type, tier, listed, sort])
+  }, [q, type, tier, listed])
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -56,11 +57,6 @@ export default function Marketplace() {
               </option>
             ))}
           </select>
-          <select value={sort} onChange={(e) => setSort(e.target.value)}>
-            <option value="new">Newest</option>
-            <option value="viral">Most viral</option>
-            <option value="value">Highest value</option>
-          </select>
           <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13.5 }}>
             <input type="checkbox" checked={listed} onChange={(e) => setListed(e.target.checked)} />
             For sale
@@ -71,6 +67,17 @@ export default function Marketplace() {
         </div>
       </div>
 
+      <div className="filter-bar" style={{ marginBottom: 18 }}>
+        <SortChips
+          sortKey={sortKey}
+          dir={sortDir}
+          onChange={(k, d) => {
+            setSortKey(k)
+            setSortDir(d)
+          }}
+        />
+      </div>
+
       {memes === null ? (
         <div className="empty">
           <span className="spin" />
@@ -79,7 +86,7 @@ export default function Marketplace() {
         <div className="empty">No memes match. Be the change — mint one in My Binder.</div>
       ) : (
         <div className="card-grid">
-          {memes.map((m) => (
+          {sortMemes(memes, sortKey, sortDir).map((m) => (
             <MemeCard key={m.id} meme={m} />
           ))}
         </div>

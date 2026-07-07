@@ -7,7 +7,13 @@ import * as masky from './masky'
 import { authed, HttpError, html, json, maskyToken, redirect, requireString, route } from './http'
 import { issueSession, verifySession } from './session'
 import { mintFirebaseToken } from './firebase'
-import { ensureOgImage, frameKey, memePageHtml, tierFrameList } from './og'
+import {
+  ensureOgImage,
+  frameKey,
+  memePageHtml,
+  pingFacebookRescrape,
+  tierFrameList,
+} from './og'
 import { assetUrl, presignUpload, putAsset } from './s3'
 import { memeValue, TIERS, tierFor, tierIndexFor } from '../../shared/tiers'
 import type { Meme, Trade, TradeSide } from './types'
@@ -1180,7 +1186,7 @@ route('GET /m/:id', async (req) => {
         db.addAlert(
           h.userId,
           'tierup',
-          `🚀 "${meme.title}" tiered up to ${tier.name.toUpperCase()} (${tier.rarity}) at ${meme.reshares.toLocaleString()} reshares!`,
+          `🚀 "${meme.title}" tiered up to ${tier.name.toUpperCase()} (${tier.rarity}) at ${meme.reshares.toLocaleString()} views!`,
           meme.id,
         ),
       ),
@@ -1190,5 +1196,9 @@ route('GET /m/:id', async (req) => {
   const ogImageUrl = await ensureOgImage(meme).catch(
     () => `${req.headers['x-forwarded-proto'] ?? 'https'}://${req.headers.host}/api/memes/${meme.id}/og.png`,
   )
+  if (tieredUp) {
+    // the card just changed tiers: bust facebook's scrape cache so old shares upgrade
+    await pingFacebookRescrape(`${env.siteOrigin}/m/${meme.id}`)
+  }
   return html(200, await memePageHtml(meme, ogImageUrl))
 })

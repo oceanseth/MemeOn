@@ -908,6 +908,30 @@ textarea:focus {
   color: var(--text);
 }
 
+.sort-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sort-chip {
+  font-size: 12.5px;
+  padding: 5px 11px;
+  border-radius: 999px;
+}
+
+.sort-chip.active {
+  border-color: var(--accent);
+  color: var(--text);
+  background: rgba(127, 212, 255, 0.1);
+}
+
+.sort-arrow {
+  margin-left: 4px;
+  color: var(--accent);
+  font-weight: 800;
+}
+
 .giphy-mark {
   font-size: 11px;
   font-weight: 800;

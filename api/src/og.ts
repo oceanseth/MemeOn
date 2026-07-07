@@ -9,6 +9,7 @@ import {
 } from 'jimp/fonts'
 import { env } from './env'
 import { assetExists, assetUrl, putAsset } from './s3'
+import { getSharedSecret } from './ssm'
 import { TIERS, tierFor } from '../../shared/tiers'
 import type { Meme } from './types'
 
@@ -18,8 +19,12 @@ const CARD_W = 900
 const CARD_H = 1200
 const WIN = { x: 90, y: 216, w: 720, h: 720 }
 
-// v4: title vertically centered in each frame's measured banner band
-const ogKey = (memeId: string, tierKey: string) => `og/v4/${memeId}-${tierKey}.png`
+// v5: landscape 1200x630 og image containing the entire portrait card, so
+// facebook's wide layout never crops the border or title
+const ogKey = (memeId: string, tierKey: string) => `og/v5/${memeId}-${tierKey}.png`
+
+export const OG_W = 1200
+export const OG_H = 630
 export const frameKey = (tierKey: string) => `frames/${tierKey}.png`
 
 // title banner: x-range shared, but each generated frame's dark band sits at a
@@ -141,7 +146,25 @@ export async function ensureOgImage(meme: Meme): Promise<string> {
 
   await printTitle(card, meme.title, tier.key)
 
-  const png = await card.getBuffer('image/png')
+  // wide 1.91:1 canvas with the ENTIRE card visible: blurred art fills the
+  // background, dimmed, card scaled to fit height and centered
+  const wide = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14ff }) as unknown as JimpImage
+  try {
+    const bgArt = art.clone()
+    bgArt.cover({ w: OG_W, h: OG_H })
+    bgArt.blur(12)
+    wide.composite(bgArt, 0, 0)
+    const dim = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14b8 }) as unknown as JimpImage
+    wide.composite(dim, 0, 0)
+  } catch {
+    /* solid brand background is a fine fallback */
+  }
+  const cardH = 590
+  const cardW = Math.round((CARD_W / CARD_H) * cardH)
+  card.resize({ w: cardW, h: cardH })
+  wide.composite(card, Math.round((OG_W - cardW) / 2), Math.round((OG_H - cardH) / 2))
+
+  const png = await wide.getBuffer('image/png')
   return putAsset(key, png, 'image/png')
 }
 
@@ -165,8 +188,8 @@ function ogMetaBlock(meme: Meme, ogImageUrl: string): { title: string; block: st
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:image" content="${esc(ogImageUrl)}">
-<meta property="og:image:width" content="${CARD_W}">
-<meta property="og:image:height" content="${CARD_H}">
+<meta property="og:image:width" content="${OG_W}">
+<meta property="og:image:height" content="${OG_H}">
 ${video ? `<meta property="og:video" content="${esc(meme.videoUrl!)}">\n<meta property="og:video:type" content="video/mp4">\n` : ''}<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(desc)}">
@@ -223,6 +246,24 @@ ${block}
 <p>${esc(title)} · <a href="${esc(appUrl)}">open on MemeOn</a></p>
 </body>
 </html>`
+}
+
+/**
+ * Ask Facebook to re-scrape a page (busts its ~30-day og cache) — fired on
+ * tier-ups so old shares upgrade their card. Silently skipped unless
+ * /memeon/shared/facebook_app_token (APP_ID|APP_SECRET) exists.
+ */
+export async function pingFacebookRescrape(pageUrl: string): Promise<void> {
+  let token: string
+  try {
+    token = await getSharedSecret('facebook_app_token')
+  } catch {
+    return
+  }
+  await fetch(
+    `https://graph.facebook.com/v19.0/?id=${encodeURIComponent(pageUrl)}&scrape=true&access_token=${encodeURIComponent(token)}`,
+    { method: 'POST', signal: AbortSignal.timeout(4000) },
+  ).catch(() => {})
 }
 
 export function tierFrameList(): { key: string; name: string; url: string }[] {
