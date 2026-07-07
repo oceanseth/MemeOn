@@ -485,6 +485,15 @@ textarea:focus {
   white-space: nowrap;
 }
 
+.quest-chip-link {
+  text-decoration: none;
+}
+
+.quest-chip-link:hover .quest-chip {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
 .quest-chip.done {
   color: var(--ok);
   border-color: rgba(125, 255, 178, 0.35);

@@ -3,7 +3,15 @@ import { Link } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { MemeCard } from './MemeCard'
-import type { Meme, QuestStep } from '../lib/types'
+import type { Meme, QuestKey, QuestStep } from '../lib/types'
+
+/** Where each undone quest sends you to go do the thing. */
+const QUEST_LINKS: Partial<Record<QuestKey, string>> = {
+  mint: '/binder/new',
+  share: '/binder',
+  friend: '/friends',
+  trade: '/marketplace',
+}
 
 /**
  * Onboarding quest strip: shown under the header until all quests are done.
@@ -54,17 +62,28 @@ export function QuestBar() {
             <img className="braincell-img" src="/api/brand/braincell.png" alt="braincell" /> Earn
             your braincells · {doneCount}/{steps.length}
           </span>
-          {steps.map((s) =>
-            s.key === 'pack' && !s.done ? (
-              <button key={s.key} className="primary quest-chip-btn" onClick={claimPack} disabled={busy}>
-                🎁 {busy ? 'Opening…' : `${s.title} (+${s.reward} 🧠)`}
-              </button>
-            ) : (
+          {steps.map((s) => {
+            if (s.key === 'pack' && !s.done) {
+              return (
+                <button key={s.key} className="primary quest-chip-btn" onClick={claimPack} disabled={busy}>
+                  🎁 {busy ? 'Opening…' : `${s.title} (+${s.reward} 🧠)`}
+                </button>
+              )
+            }
+            const to = s.done ? null : QUEST_LINKS[s.key]
+            const chip = (
               <span key={s.key} className={`quest-chip ${s.done ? 'done' : ''}`} title={s.hint}>
                 {s.done ? '✅' : '⬜'} {s.title} <em>+{s.reward}🧠</em>
               </span>
-            ),
-          )}
+            )
+            return to ? (
+              <Link key={s.key} to={to} className="quest-chip-link" title={s.hint}>
+                {chip}
+              </Link>
+            ) : (
+              chip
+            )
+          })}
         </div>
       </div>
 
