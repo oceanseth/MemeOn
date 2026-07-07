@@ -230,6 +230,10 @@ authed('POST /api/memes', async (req) => {
   // titles must fit the og card's banner: hard 20-char cap
   const title = requireString(req.body, 'title', 20)
   const imageUrl = requireString(req.body, 'imageUrl', 2000)
+  // webp can't be composited into og cards (no decoder); catch it at mint
+  if (/\.webp($|\?)/i.test(imageUrl)) {
+    throw new HttpError(400, 'webp images are not supported yet — use a png, jpg, or gif')
+  }
   const mediaType = req.body.mediaType === 'video' ? 'video' : 'image'
   const videoUrl = typeof req.body.videoUrl === 'string' ? req.body.videoUrl : null
   if (mediaType === 'video' && !videoUrl) throw new HttpError(400, 'video memes need videoUrl')
@@ -996,10 +1000,15 @@ authed('POST /api/resolve-image', async (req) => {
   }
   // only need the <head>; cap the read at 400KB
   const htmlChunk = (await res.text()).slice(0, 400_000)
-  const imageUrl = metaContent(htmlChunk, 'og:image:secure_url', 'og:image', 'twitter:image')
+  let imageUrl = metaContent(htmlChunk, 'og:image:secure_url', 'og:image', 'twitter:image')
   const videoRaw = metaContent(htmlChunk, 'og:video:secure_url', 'og:video')
   const videoUrl = videoRaw && /\.mp4($|\?)/i.test(videoRaw) ? videoRaw : null
   if (!imageUrl) throw new HttpError(404, 'no main image found on that page')
+  // giphy media URLs offer every format at the same path; webp breaks the og
+  // compositor (jimp has no webp decoder) so swap it for the gif rendition
+  if (/giphy\.com\/media\//i.test(imageUrl) && /\.webp($|\?)/i.test(imageUrl)) {
+    imageUrl = imageUrl.replace(/\.webp(\?|$)/i, '.gif$1')
+  }
   return json(200, { imageUrl, videoUrl, resolvedFrom: 'og', source: null })
 })
 
@@ -1207,7 +1216,8 @@ export function framePrompt(tierName: string, tierIdx: number): string {
 route('GET /api/memes/:id/og.png', async (req) => {
   const meme = await db.getMeme(req.params.id)
   if (!meme || meme.private) throw new HttpError(404, 'meme not found')
-  const url = await ensureOgImage(meme)
+  // if compositing fails (undecodable art), the raw art still beats a 500
+  const url = await ensureOgImage(meme).catch(() => meme.imageUrl)
   return redirect(url, 'public, max-age=300')
 })
 
