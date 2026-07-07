@@ -156,7 +156,7 @@ const esc = (s: string): string =>
 function ogMetaBlock(meme: Meme, ogImageUrl: string): { title: string; block: string } {
   const tier = tierFor(meme.reshares)
   const title = `${meme.title} — ${tier.name.toUpperCase()} ${tier.rarity}`
-  const desc = `${meme.reshares.toLocaleString()} reshares · ${tier.hype} Collect, trade, and invest on MemeOn.`
+  const desc = `${meme.reshares.toLocaleString()} views · ${(meme.uniqueRefs ?? 0).toLocaleString()} reshares · ${tier.hype} Collect, trade, and invest on MemeOn.`
   const pageUrl = `${env.siteOrigin}/m/${meme.id}`
   const video = meme.mediaType === 'video' && meme.videoUrl
   const block = `<meta property="og:site_name" content="MemeOn">

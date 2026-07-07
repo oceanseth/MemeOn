@@ -279,7 +279,7 @@ function FeedCard({
             <Text style={styles.creator}>by {item.creatorName} →</Text>
           </Pressable>
           <Text style={styles.stats}>
-            🔁 {item.reshares.toLocaleString()}   🧠 {item.value.toLocaleString()}
+            👁️ {(item.views ?? item.reshares).toLocaleString()}  🔁 {(item.reshareCount ?? 0).toLocaleString()}  🧠 {item.value.toLocaleString()}
             {item.mediaType === 'video' ? '   🎬 video' : ''}
           </Text>
         </View>

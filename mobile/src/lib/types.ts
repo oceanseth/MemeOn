@@ -18,7 +18,11 @@ export interface Meme {
   creatorName: string
   ownerId: string
   ownerName: string
+  /** total share-link loads (tier driver) */
   reshares: number
+  views?: number
+  /** distinct external sources — true reshares */
+  reshareCount?: number
   listing: Listing | null
   createdAt: string
   tier: Tier
