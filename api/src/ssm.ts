@@ -6,7 +6,15 @@ const cache = new Map<string, Promise<string>>()
 
 /** Read a SecureString SSM parameter under the env prefix, decrypted and cached per warm Lambda. */
 export function getSecret(name: string): Promise<string> {
-  const full = `${env.ssmPrefix}/${name}`
+  return fetchParam(`${env.ssmPrefix}/${name}`)
+}
+
+/** Read a cross-environment parameter under /memeon/shared/. */
+export function getSharedSecret(name: string): Promise<string> {
+  return fetchParam(`/memeon/shared/${name}`)
+}
+
+function fetchParam(full: string): Promise<string> {
   let p = cache.get(full)
   if (!p) {
     p = client

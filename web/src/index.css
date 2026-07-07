@@ -908,6 +908,40 @@ textarea:focus {
   color: var(--text);
 }
 
+.giphy-mark {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.giphy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.giphy-cell {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  cursor: pointer;
+  background: #0a0c12;
+}
+
+.giphy-cell:hover {
+  border-color: var(--accent);
+}
+
+.giphy-cell.picked {
+  border-color: var(--gold);
+  box-shadow: 0 0 12px rgba(255, 215, 106, 0.4);
+}
+
 .spin {
   display: inline-block;
   width: 18px;
