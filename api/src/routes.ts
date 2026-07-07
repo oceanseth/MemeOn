@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import * as db from './db'
 import * as discord from './discord'
+import * as giphy from './giphy'
 import { env } from './env'
 import * as masky from './masky'
 import { authed, HttpError, html, json, maskyToken, redirect, requireString, route } from './http'
@@ -224,6 +225,17 @@ authed('POST /api/memes', async (req) => {
     ? req.body.tags.filter((t): t is string => typeof t === 'string').slice(0, 8)
     : []
   const remixOf = typeof req.body.remixOf === 'string' ? req.body.remixOf.slice(0, 40) : null
+  // attribution for memes minted straight from Giphy search (unedited)
+  const rawSource = req.body.source as Record<string, unknown> | undefined
+  const source =
+    rawSource && rawSource.provider === 'giphy' && typeof rawSource.id === 'string'
+      ? {
+          provider: 'giphy',
+          id: String(rawSource.id).slice(0, 64),
+          url: typeof rawSource.url === 'string' ? rawSource.url.slice(0, 300) : `https://giphy.com/gifs/${rawSource.id}`,
+          author: typeof rawSource.author === 'string' ? rawSource.author.slice(0, 100) : null,
+        }
+      : null
   const meme: Meme = {
     id: randomUUID().slice(0, 12),
     title,
@@ -242,6 +254,7 @@ authed('POST /api/memes', async (req) => {
     createdAt: new Date().toISOString(),
     remixOf,
     private: false,
+    source,
   }
   await db.putMeme(meme)
   await db.putPosition(meme.id, req.user.sub, 100)
@@ -872,6 +885,16 @@ route('GET /api/memes/:id/history', async (req) => {
     value: memeValue(meme.reshares),
   })
   return json(200, { points })
+})
+
+// ---------- giphy proxy (meme creator) ----------
+
+authed('GET /api/giphy/categories', async () => json(200, { categories: await giphy.categories() }))
+
+authed('GET /api/giphy/search', async (req) => {
+  const q = (req.query.q ?? '').trim()
+  if (!q) throw new HttpError(400, 'q required')
+  return json(200, { results: await giphy.search(q) })
 })
 
 // ---------- discord app ----------
