@@ -37,7 +37,13 @@ export default function AlertsScreen() {
       renderItem={({ item }) => (
         <Pressable
           style={[styles.row, !item.read && styles.unread]}
-          onPress={() => item.memeId && navigation.navigate('Invest', { memeId: item.memeId })}
+          onPress={() =>
+            item.memeId
+              ? navigation.navigate('Invest', { memeId: item.memeId })
+              : item.subjectSub
+                ? navigation.navigate('Creator', { sub: item.subjectSub })
+                : undefined
+          }
         >
           <Text style={styles.msg}>{item.message}</Text>
           <Text style={styles.time}>{new Date(item.createdAt).toLocaleString()}</Text>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch } from '../lib/api'
 import { MemeCard } from '../components/MemeCard'
@@ -14,6 +14,8 @@ export default function Marketplace() {
   const [listed, setListed] = useState(false)
   const [sortKey, setSortKey] = useState<SortKey>('new')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
+  const [visibleCount, setVisibleCount] = useState(30)
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
   const query = useMemo(() => {
     const p = new URLSearchParams()
@@ -33,8 +35,26 @@ export default function Marketplace() {
     return () => clearTimeout(t)
   }, [query])
 
+  // fresh filter/sort → collapse the window back down
+  useEffect(() => setVisibleCount(30), [query, sortKey, sortDir])
+
+  // infinite scroll: grow the window as the sentinel comes into view
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) setVisibleCount((c) => c + 30)
+      },
+      { rootMargin: '600px' },
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [memes])
+
   return (
     <main className="container">
+      <div className="market-controls">
       <div className="page-head">
         <h2>Marketplace</h2>
         <div className="filter-bar">
@@ -67,7 +87,7 @@ export default function Marketplace() {
         </div>
       </div>
 
-      <div className="filter-bar" style={{ marginBottom: 18 }}>
+      <div className="filter-bar" style={{ marginBottom: 4 }}>
         <SortChips
           sortKey={sortKey}
           dir={sortDir}
@@ -77,6 +97,7 @@ export default function Marketplace() {
           }}
         />
       </div>
+      </div>
 
       {memes === null ? (
         <div className="empty">
@@ -85,11 +106,20 @@ export default function Marketplace() {
       ) : memes.length === 0 ? (
         <div className="empty">No memes match. Be the change — mint one in My Binder.</div>
       ) : (
-        <div className="card-grid">
-          {sortMemes(memes, sortKey, sortDir).map((m) => (
-            <MemeCard key={m.id} meme={m} />
-          ))}
-        </div>
+        <>
+          <div className="card-grid">
+            {sortMemes(memes, sortKey, sortDir)
+              .slice(0, visibleCount)
+              .map((m) => (
+                <MemeCard key={m.id} meme={m} />
+              ))}
+          </div>
+          {visibleCount < memes.length && (
+            <div ref={sentinelRef} style={{ textAlign: 'center', padding: 24 }}>
+              <span className="spin" />
+            </div>
+          )}
+        </>
       )}
     </main>
   )

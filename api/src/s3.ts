@@ -38,6 +38,30 @@ export async function assetExists(key: string): Promise<boolean> {
   }
 }
 
+/** Age of an asset in seconds, or null when it doesn't exist. */
+export async function assetAgeSeconds(key: string): Promise<number | null> {
+  try {
+    const head = await s3.send(new HeadObjectCommand({ Bucket: env.assetsBucket, Key: key }))
+    return head.LastModified ? (Date.now() - head.LastModified.getTime()) / 1000 : null
+  } catch {
+    return null
+  }
+}
+
+/** Like putAsset but short-cached (for refreshing artifacts like profile cards). */
+export async function putAssetShortCache(key: string, body: Buffer): Promise<string> {
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: env.assetsBucket,
+      Key: key,
+      Body: body,
+      ContentType: 'image/png',
+      CacheControl: 'public, max-age=300',
+    }),
+  )
+  return `${env.assetsBase}/${key}`
+}
+
 export async function putAsset(key: string, body: Buffer, contentType: string): Promise<string> {
   await s3.send(
     new PutObjectCommand({
