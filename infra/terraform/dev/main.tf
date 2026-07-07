@@ -119,8 +119,8 @@ resource "aws_lambda_function" "api" {
   runtime       = "nodejs20.x"
   handler       = "dist/handler.handler"
   architectures = ["arm64"]
-  memory_size   = 512
-  timeout       = 20
+  memory_size   = 1024
+  timeout       = 28
 
   filename         = var.api_lambda_package
   source_code_hash = filebase64sha256(var.api_lambda_package)
@@ -161,7 +161,7 @@ resource "aws_apigatewayv2_integration" "lambda" {
   integration_type       = "AWS_PROXY"
   integration_uri        = aws_lambda_function.api.invoke_arn
   payload_format_version = "2.0"
-  timeout_milliseconds   = 25000
+  timeout_milliseconds   = 29000
 }
 
 resource "aws_apigatewayv2_route" "api_proxy" {
