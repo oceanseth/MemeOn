@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { apiFetch } from '../lib/api'
 import { MemeCard } from '../components/MemeCard'
 import { TIERS } from '../../../shared/tiers'
@@ -64,6 +65,9 @@ export default function Marketplace() {
             <input type="checkbox" checked={listed} onChange={(e) => setListed(e.target.checked)} />
             For sale
           </label>
+          <Link to="/binder/new">
+            <button className="primary">＋ Create meme</button>
+          </Link>
         </div>
       </div>
 

@@ -40,7 +40,7 @@ export default function Binder() {
             </label>
           )}
           <Link to="/binder/new">
-            <button className="primary">＋ Mint a meme</button>
+            <button className="primary">＋ Create meme</button>
           </Link>
         </div>
       </div>
