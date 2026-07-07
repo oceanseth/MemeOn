@@ -28,7 +28,10 @@ export function MemeCard({ meme, footer }: { meme: Meme; footer?: React.ReactNod
             </span>
           </span>
           <span className="meme-sub">
-            <span>🔁 {meme.reshares.toLocaleString()} reshares</span>
+            <span>
+              👁️ {(meme.views ?? meme.reshares).toLocaleString()} · 🔁{' '}
+              {(meme.reshareCount ?? 0).toLocaleString()}
+            </span>
             <span>🧠 {meme.value.toLocaleString()}</span>
           </span>
           {meme.listing && meme.listing.shares > 0 && (

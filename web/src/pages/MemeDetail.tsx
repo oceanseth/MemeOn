@@ -8,11 +8,18 @@ import type { Meme, Position } from '../lib/types'
 
 const ARCHIVE_SUB = 'meme_archive'
 
+interface MemeStats {
+  views: number
+  reshares: number
+  sources: { source: string; url: string | null; views: number; firstSeen: string | null }[]
+}
+
 export default function MemeDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { user, refresh } = useAuth()
   const [meme, setMeme] = useState<Meme | null>(null)
+  const [stats, setStats] = useState<MemeStats | null>(null)
   const [positions, setPositions] = useState<Position[]>([])
   const [notFound, setNotFound] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
@@ -32,6 +39,9 @@ export default function MemeDetail() {
         setPositions(r.positions)
       })
       .catch(() => setNotFound(true))
+    apiFetch<MemeStats>(`/api/memes/${id}/stats`)
+      .then(setStats)
+      .catch(() => {})
   }, [id])
 
   useEffect(load, [load])
@@ -124,7 +134,8 @@ export default function MemeDetail() {
             )}
           </p>
           <p style={{ fontSize: 18 }}>
-            🔁 <strong>{meme.reshares.toLocaleString()}</strong> reshares · 🧠{' '}
+            👁️ <strong>{(meme.views ?? meme.reshares).toLocaleString()}</strong> views · 🔁{' '}
+            <strong>{(meme.reshareCount ?? 0).toLocaleString()}</strong> reshares · 🧠{' '}
             <strong>{meme.value.toLocaleString()}</strong> value
             {myShares > 0 && (
               <>
@@ -138,8 +149,8 @@ export default function MemeDetail() {
           <div className="panel" style={{ marginBottom: 16 }}>
             <strong>Share to go viral</strong>
             <p style={{ color: 'var(--text-dim)', fontSize: 13.5, margin: '6px 0 10px' }}>
-              Every load of this link (Discord unfurls included) counts a reshare and upgrades the
-              link-preview card frame at each tier.
+              Every load of this link counts a view (views drive the tier ladder); each new place
+              it's shared — a subreddit, a group chat, an unfurl — counts a reshare.
             </p>
             <div className="filter-bar">
               <input readOnly value={shareUrl} style={{ flex: 1, minWidth: 200 }} />
@@ -277,6 +288,31 @@ export default function MemeDetail() {
                 </div>
               </div>
             )
+          )}
+
+          {stats && stats.sources.length > 0 && (
+            <div className="panel" style={{ marginBottom: 16 }}>
+              <strong>📡 Where it's spreading</strong>
+              <div className="row-list" style={{ marginTop: 10 }}>
+                {stats.sources.map((s) => (
+                  <div key={s.source} className="person-row" style={{ padding: 9 }}>
+                    <span style={{ fontSize: 13.5 }}>
+                      {s.url ? (
+                        <a href={s.url} target="_blank" rel="noreferrer">
+                          {s.source}
+                        </a>
+                      ) : (
+                        s.source
+                      )}
+                    </span>
+                    <span className="spacer" />
+                    <span style={{ color: 'var(--text-dim)', fontSize: 13 }}>
+                      👁️ {s.views.toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
 
           <MemeplexPanel meme={meme} canEdit={!!user && (meme.creatorId === user.sub || myShares > 0)} />

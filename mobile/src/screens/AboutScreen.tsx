@@ -56,7 +56,7 @@ export default function AboutScreen() {
               <Text style={[styles.tierName, { color: t.color }]}>
                 {t.name} · {t.rarity}
               </Text>
-              <Text style={styles.tierReq}>{t.minReshares.toLocaleString()}+ reshares</Text>
+              <Text style={styles.tierReq}>{t.minReshares.toLocaleString()}+ views</Text>
               <Text style={styles.tierHype}>{t.hype}</Text>
             </View>
           </View>

@@ -189,7 +189,15 @@ authed('GET /api/users', async (req) => {
 
 // ---------- memes / marketplace ----------
 
-const publicMeme = (m: Meme) => ({ ...m, tier: tierFor(m.reshares), value: memeValue(m.reshares) })
+// `reshares` (db field) is the raw view counter and still drives the tier
+// ladder; `reshareCount` is distinct external sources — true spread
+const publicMeme = (m: Meme) => ({
+  ...m,
+  tier: tierFor(m.reshares),
+  value: memeValue(m.reshares),
+  views: m.reshares,
+  reshareCount: m.uniqueRefs ?? 0,
+})
 
 authed('GET /api/memes', async (req) => {
   let memes = (await db.listMemes()).filter((m) => !m.private)
@@ -877,6 +885,29 @@ authed('POST /api/memes/:id/memeplex', async (req) => {
 
 // ---------- value history ----------
 
+/** Views vs reshares report: totals + where it's spreading. */
+route('GET /api/memes/:id/stats', async (req) => {
+  const meme = await db.getMeme(req.params.id)
+  if (!meme || meme.private) throw new HttpError(404, 'meme not found')
+  const sources = await db.listReferrers(meme.id)
+  const direct = meme.reshares - sources.reduce((s, r) => s + r.count, 0)
+  return json(200, {
+    views: meme.reshares,
+    reshares: meme.uniqueRefs ?? 0,
+    sources: [
+      ...sources.map((s) => ({
+        source: s.sourceKey.startsWith('unfurl:')
+          ? `${s.sourceKey.slice(7)} unfurls`
+          : s.sourceKey,
+        url: s.url,
+        views: s.count,
+        firstSeen: s.firstSeen,
+      })),
+      ...(direct > 0 ? [{ source: 'direct / app opens', url: null, views: direct, firstSeen: null }] : []),
+    ],
+  })
+})
+
 route('GET /api/memes/:id/history', async (req) => {
   const meme = await db.getMeme(req.params.id)
   if (!meme) throw new HttpError(404, 'meme not found')
@@ -1098,15 +1129,48 @@ route('GET /api/memes/:id/og.png', async (req) => {
   return redirect(url, 'public, max-age=300')
 })
 
+const CRAWLER_RE =
+  /(discordbot|facebookexternalhit|twitterbot|slackbot|telegrambot|whatsapp|linkedinbot|redditbot|pinterest|googlebot|bingbot)/i
+
+/** Classify where a view came from: an external page, a crawler unfurl, or direct. */
+function classifyViewSource(
+  referer: string | undefined,
+  userAgent: string,
+): { key: string; url: string | null } | null {
+  if (referer) {
+    try {
+      const u = new URL(referer)
+      const host = u.hostname.toLowerCase()
+      // own-site navigation isn't a reshare
+      if (host.endsWith('memeon.ai') || host === 'localhost') return null
+      const path = u.pathname.replace(/\/$/, '').slice(0, 120)
+      return { key: `${host}${path}`, url: `${u.origin}${path}` }
+    } catch {
+      return null
+    }
+  }
+  // no referer: a crawler unfurl is still evidence the link was posted somewhere
+  const bot = userAgent.match(CRAWLER_RE)
+  if (bot) return { key: `unfurl:${bot[1].toLowerCase()}`, url: null }
+  return null // direct click — counts as a view only
+}
+
 /**
- * The unique share URL for a meme. Every load (human or crawler unfurl) counts
- * as a reshare — that IS the virality mechanic.
+ * The unique share URL for a meme. Every load counts a view (which drives the
+ * tier ladder); each distinct external source counts a reshare.
  */
 route('GET /m/:id', async (req) => {
   const existing = await db.getMeme(req.params.id)
   if (existing?.private) return html(404, '<h1>This meme has gone private (404)</h1>')
   const result = await db.recordReshare(req.params.id)
   if (!result) return html(404, '<h1>This meme has not been minted (404)</h1>')
+  const source = classifyViewSource(
+    req.headers.referer ?? req.headers.referrer,
+    req.headers['user-agent'] ?? '',
+  )
+  if (source) {
+    await db.trackReferrer(result.meme.id, source.key, source.url).catch(() => {})
+  }
   const { meme, tieredUp } = result
   if (tieredUp) {
     const tier = tierFor(meme.reshares)
