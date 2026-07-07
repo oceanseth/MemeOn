@@ -927,6 +927,82 @@ route('GET /api/memes/:id/history', async (req) => {
   return json(200, { points })
 })
 
+// ---------- page-url → image resolver (meme creator "From URL") ----------
+
+const PRIVATE_HOST_RE =
+  /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|\[?::1)/i
+
+function metaContent(htmlChunk: string, ...props: string[]): string | null {
+  for (const prop of props) {
+    const re = new RegExp(
+      `<meta[^>]+(?:property|name)=["']${prop}["'][^>]+content=["']([^"']+)["']|<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${prop}["']`,
+      'i',
+    )
+    const m = htmlChunk.match(re)
+    if (m) return m[1] ?? m[2] ?? null
+  }
+  return null
+}
+
+/**
+ * Resolve a pasted URL to usable media: direct images pass through; html pages
+ * (giphy, imgur, tenor, reddit, …) yield their og:image / og:video.
+ */
+authed('POST /api/resolve-image', async (req) => {
+  const raw = requireString(req.body, 'url', 2000)
+  let target: URL
+  try {
+    target = new URL(raw)
+  } catch {
+    throw new HttpError(400, 'not a valid URL')
+  }
+  if (!/^https?:$/.test(target.protocol) || PRIVATE_HOST_RE.test(target.hostname)) {
+    throw new HttpError(400, 'unsupported URL')
+  }
+
+  // giphy pages: skip scraping entirely — the gif id is in the slug and the API
+  // gives us the still, the mp4, and proper attribution
+  if (/(^|\.)giphy\.com$/i.test(target.hostname)) {
+    const slug = target.pathname.split('/').filter(Boolean).pop() ?? ''
+    const gifId = slug.split('-').pop() ?? slug
+    const gif = gifId ? await giphy.getById(gifId).catch(() => null) : null
+    if (gif) {
+      return json(200, {
+        imageUrl: gif.stillUrl,
+        videoUrl: gif.mp4Url,
+        resolvedFrom: 'giphy',
+        source: { provider: 'giphy', id: gif.id, url: gif.url, author: gif.author },
+      })
+    }
+  }
+
+  const res = await fetch(target.toString(), {
+    headers: {
+      accept: 'text/html,image/*',
+      // most media sites whitelist the facebook crawler for og tags
+      'user-agent': 'facebookexternalhit/1.1 (MemeOnBot; +https://memeon.ai)',
+    },
+    signal: AbortSignal.timeout(8000),
+    redirect: 'follow',
+  }).catch(() => null)
+  if (!res || !res.ok) throw new HttpError(400, 'could not fetch that URL')
+
+  const contentType = res.headers.get('content-type') ?? ''
+  if (contentType.startsWith('image/')) {
+    return json(200, { imageUrl: target.toString(), videoUrl: null, resolvedFrom: 'direct', source: null })
+  }
+  if (!contentType.includes('text/html')) {
+    throw new HttpError(400, `that URL is ${contentType.split(';')[0] || 'not an image or page'}`)
+  }
+  // only need the <head>; cap the read at 400KB
+  const htmlChunk = (await res.text()).slice(0, 400_000)
+  const imageUrl = metaContent(htmlChunk, 'og:image:secure_url', 'og:image', 'twitter:image')
+  const videoRaw = metaContent(htmlChunk, 'og:video:secure_url', 'og:video')
+  const videoUrl = videoRaw && /\.mp4($|\?)/i.test(videoRaw) ? videoRaw : null
+  if (!imageUrl) throw new HttpError(404, 'no main image found on that page')
+  return json(200, { imageUrl, videoUrl, resolvedFrom: 'og', source: null })
+})
+
 // ---------- giphy proxy (meme creator) ----------
 
 authed('GET /api/giphy/categories', async () => json(200, { categories: await giphy.categories() }))

@@ -72,6 +72,12 @@ export async function search(q: string, limit = 12): Promise<GiphyResult[]> {
   return (data.data ?? []).map(toResult).filter((r): r is GiphyResult => !!r)
 }
 
+/** Fetch a single gif by id (used when a giphy page URL is pasted in the creator). */
+export async function getById(id: string): Promise<GiphyResult | null> {
+  const data = await giphyGet<{ data?: RawGif }>(`/gifs/${encodeURIComponent(id)}`, 60 * 60_000)
+  return data.data ? toResult(data.data) : null
+}
+
 /** Trending feed — whatever giphy users are posting/sharing right now, term-free. */
 export async function trending(limit = 50, offset = 0): Promise<GiphyResult[]> {
   const data = await giphyGet<{ data?: RawGif[] }>(
