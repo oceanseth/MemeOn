@@ -868,6 +868,37 @@ textarea:focus {
   }
 }
 
+.legal {
+  max-width: 760px;
+  padding-top: 36px;
+}
+
+.legal h1 {
+  margin-bottom: 4px;
+}
+
+.legal-date {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-bottom: 26px;
+}
+
+.legal h2 {
+  font-size: 18px;
+  margin: 26px 0 8px;
+}
+
+.legal p,
+.legal li {
+  color: var(--text-dim);
+  line-height: 1.6;
+  font-size: 14.5px;
+}
+
+.legal strong {
+  color: var(--text);
+}
+
 .spin {
   display: inline-block;
   width: 18px;
