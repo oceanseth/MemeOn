@@ -96,6 +96,13 @@ export default function CreateMeme() {
   const [giphyPick, setGiphyPick] = useState<GiphyResult | null>(null)
   // set after a Masky edit replaces the raw source image
   const [edited, setEdited] = useState(false)
+  // attribution captured when a pasted page URL resolves (e.g. a giphy page)
+  const [resolvedSource, setResolvedSource] = useState<{
+    provider: string
+    id: string
+    url: string
+    author: string | null
+  } | null>(null)
 
   useEffect(() => {
     if (mode !== 'giphy' || giphyCategories.length > 0) return
@@ -127,6 +134,30 @@ export default function CreateMeme() {
     setImageUrl(g.gifUrl)
     setEdited(false)
     if (!title) setTitle(g.title.slice(0, 20))
+  }
+
+  /** If the pasted URL is an html page (giphy/imgur/…), swap in its main image. */
+  const resolvePageUrl = async () => {
+    const url = imageUrl.trim()
+    // direct image links don't need resolving
+    if (!url || !/^https?:\/\//.test(url) || /\.(png|jpe?g|gif|webp)($|\?)/i.test(url)) return
+    setBusy('Finding the main image on that page…')
+    setErr(null)
+    try {
+      const out = await post<{
+        imageUrl: string
+        videoUrl: string | null
+        source: { provider: string; id: string; url: string; author: string | null } | null
+      }>('/api/resolve-image', { url })
+      setImageUrl(out.imageUrl)
+      if (out.videoUrl) setVideoUrl(out.videoUrl)
+      setResolvedSource(out.source)
+      setEdited(false)
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'could not resolve that page')
+    } finally {
+      setBusy(null)
+    }
   }
 
   /** Run the current prompt through Masky image-edit against the given source image. */
@@ -264,7 +295,8 @@ export default function CreateMeme() {
     setErr(null)
     try {
       const isVideo =
-        mode === 'video' || ((mode === 'upload' || mode === 'remix') && !!videoUrl)
+        mode === 'video' ||
+        ((mode === 'upload' || mode === 'remix' || mode === 'url') && !!videoUrl)
       const body = {
         title,
         imageUrl,
@@ -275,7 +307,9 @@ export default function CreateMeme() {
         source:
           mode === 'giphy' && giphyPick && !edited
             ? { provider: 'giphy', id: giphyPick.id, url: giphyPick.url, author: giphyPick.author }
-            : null,
+            : mode === 'url' && resolvedSource && !edited
+              ? resolvedSource
+              : null,
         tags: tags
           .split(',')
           .map((t) => t.trim())
@@ -458,14 +492,16 @@ export default function CreateMeme() {
         ) : mode === 'url' ? (
           <>
             <label>
-              Image URL
+              Image or page URL (giphy/imgur/reddit pages work — we grab the main image)
               <input
                 value={imageUrl}
                 onChange={(e) => {
                   setImageUrl(e.target.value)
                   setEdited(false)
                 }}
-                placeholder="https://…/meme.png"
+                onBlur={() => void resolvePageUrl()}
+                onKeyDown={(e) => e.key === 'Enter' && void resolvePageUrl()}
+                placeholder="https://giphy.com/gifs/… or https://…/meme.png"
               />
             </label>
             <label>
