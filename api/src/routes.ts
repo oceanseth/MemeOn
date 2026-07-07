@@ -260,6 +260,9 @@ authed('POST /api/memes', async (req) => {
   await db.putPosition(meme.id, req.user.sub, 100)
   if (remixOf) await db.addPlexEdge(meme.id, remixOf, req.user.sub).catch(() => {})
   await awardQuest(req.user.sub, 'mint')
+  // pre-render the og card so the first crawler hit (facebook is impatient and
+  // caches failures for weeks) finds the image already sitting in S3
+  await ensureOgImage(meme).catch(() => {})
   return json(201, { meme: publicMeme(meme) })
 })
 
