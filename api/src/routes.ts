@@ -909,6 +909,7 @@ route('POST /api/discord/interactions', async (req) => {
     type: number
     data?: {
       name?: string
+      custom_id?: string
       options?: { name: string; value?: string; focused?: boolean }[]
     }
     member?: { user?: { id?: string } }
@@ -916,6 +917,25 @@ route('POST /api/discord/interactions', async (req) => {
   }
 
   if (interaction.type === 1) return json(200, { type: 1 }) // PING → PONG
+
+  // component clicks from the visual picker
+  if (interaction.type === 3) {
+    const customId = interaction.data?.custom_id ?? ''
+    if (customId === 'cancel') {
+      return json(200, {
+        type: 7, // update the ephemeral picker in place
+        data: { content: '🧠 Picker closed.', embeds: [], components: [] },
+      })
+    }
+    if (customId.startsWith('post:')) {
+      const meme = await db.getMeme(customId.slice(5))
+      if (!meme || meme.private) {
+        return json(200, { type: 4, data: { flags: 64, content: 'That meme vanished 😶' } })
+      }
+      // public post into the channel; the /m/ unfurl shows the card + counts a reshare
+      return json(200, { type: 4, data: { content: discord.shareUrl(meme.id) } })
+    }
+  }
 
   const discordUserId = interaction.member?.user?.id ?? interaction.user?.id ?? ''
   const linkedSub = discordUserId ? await db.discordLinkedSub(discordUserId) : null
@@ -948,19 +968,45 @@ route('POST /api/discord/interactions', async (req) => {
 
   if (interaction.type === 2 && command === 'memeon') {
     const value = String(queryOpt?.value ?? '').trim()
-    let meme = value ? await db.getMeme(value) : null
-    if (!meme || meme.private) {
-      const results = await discord.searchMemesFor(linkedSub, value, 1)
-      meme = results[0] ?? null
+    // picked a specific card from autocomplete → post it straight away
+    const exact = value ? await db.getMeme(value) : null
+    if (exact && !exact.private) {
+      return json(200, { type: 4, data: { content: discord.shareUrl(exact.id) } })
     }
-    if (!meme) {
+    // free-text search → private visual picker (giphy-style): thumbnails + Send buttons
+    const results = await discord.searchMemesFor(linkedSub, value, 4)
+    if (results.length === 0) {
       return json(200, {
         type: 4,
         data: { flags: 64, content: `😶 No memes matched "${value}". Mint one at ${env.siteOrigin}` },
       })
     }
-    // posting the /m/ link unfurls the tier card AND counts a reshare
-    return json(200, { type: 4, data: { content: discord.shareUrl(meme.id) } })
+    return json(200, {
+      type: 4,
+      data: {
+        flags: 64, // only the searcher sees the picker
+        content: `🧠 Results for **${value || 'top memes'}** — pick one to drop it in chat:`,
+        embeds: results.map((m, i) => ({
+          title: `${i + 1}. ${discord.memeChoiceLabel(m)}`,
+          image: { url: m.imageUrl },
+          color: parseInt(tierFor(m.reshares).color.replace('#', ''), 16),
+        })),
+        components: [
+          {
+            type: 1, // action row
+            components: [
+              ...results.map((m, i) => ({
+                type: 2, // button
+                style: 1,
+                label: `Send #${i + 1}`,
+                custom_id: `post:${m.id}`,
+              })),
+              { type: 2, style: 2, label: '✕', custom_id: 'cancel' },
+            ],
+          },
+        ],
+      },
+    })
   }
 
   return json(200, { type: 4, data: { flags: 64, content: 'unknown command' } })
