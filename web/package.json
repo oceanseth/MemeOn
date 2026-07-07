@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && mkdir -p dist/.well-known && cp dist/skill.md dist/.well-known/skill.md",
     "preview": "vite preview"
   },
   "dependencies": {

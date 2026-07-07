@@ -538,6 +538,65 @@ textarea:focus {
   font-size: 22px;
 }
 
+.gift-list {
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gift-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  text-align: left;
+}
+
+.gift-row img {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.gift-row-title {
+  flex: 1;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gift-row-shares {
+  color: var(--text-dim);
+  font-size: 12.5px;
+}
+
+.gift-row.picked {
+  border-color: var(--gold);
+  background: rgba(255, 215, 106, 0.08);
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  margin-top: 48px;
+  padding: 22px 20px 34px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.site-footer a {
+  color: var(--text-dim);
+  margin: 0 10px;
+}
+
+.site-footer a:hover {
+  color: var(--text);
+}
+
 .confirm-modal {
   max-width: 440px;
 }

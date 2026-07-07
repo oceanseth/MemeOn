@@ -36,6 +36,17 @@ export async function dispatch(input: {
   let user: SessionUser | null = null
   if (match.auth) {
     user = await verifySession(input.headers.authorization)
+    if (!user) {
+      // developer api keys (mk_...) act as the owning account
+      const raw = input.headers.authorization?.startsWith('Bearer ')
+        ? input.headers.authorization.slice(7)
+        : ''
+      if (raw.startsWith('mk_')) {
+        const { userForApiKey } = await import('./db')
+        const owner = await userForApiKey(raw)
+        if (owner) user = { sub: owner.sub, name: owner.name, picture: owner.picture }
+      }
+    }
     if (!user) return withCors(json(401, { error: 'login required' }))
   }
 

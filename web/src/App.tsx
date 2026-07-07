@@ -10,6 +10,7 @@ import Profile from './pages/Profile'
 import DiscordPage from './pages/DiscordPage'
 import DiscordLink from './pages/DiscordLink'
 import Privacy from './pages/Privacy'
+import Developers from './pages/Developers'
 import Terms from './pages/Terms'
 import Marketplace from './pages/Marketplace'
 import Binder from './pages/Binder'
@@ -42,6 +43,14 @@ export default function App() {
         <Route path="/discord" element={<DiscordPage />} />
         <Route path="/discord/link" element={<DiscordLink />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route
+          path="/developers"
+          element={
+            <RequireAuth>
+              <Developers />
+            </RequireAuth>
+          }
+        />
         <Route path="/terms" element={<Terms />} />
         <Route
           path="/marketplace"
