@@ -38,7 +38,12 @@ route('POST /api/auth/masky/callback', async (req) => {
   const profile = await masky.fetchProfile(tokens.accessToken)
   const name = profile.name ?? tokens.avatar?.name ?? 'Anonymous'
   const picture = profile.picture ?? tokens.avatar?.picture ?? null
-  const user = await db.ensureUser({ sub: profile.id, name, picture })
+  const user = await db.ensureUser({
+    sub: profile.id,
+    name,
+    picture,
+    avatarId: profile.avatarId ?? tokens.avatar?.id ?? null,
+  })
   const sessionToken = await issueSession({ sub: user.sub, name: user.name, picture: user.picture })
   const firebaseToken = await mintFirebaseToken(user.sub, { name: user.name })
   return json(200, {
@@ -822,6 +827,66 @@ authed('GET /api/users/:sub/profile', async (req) => {
     created: created.map(publicMeme),
     binder,
   })
+})
+
+// ---------- gifting ----------
+
+/**
+ * Gift shares you hold — free transfer, no braincells. Recipient can be a
+ * MemeOn sub (`toSub`) or a masky avatar id (`avatarId`) captured by another
+ * site's masky SSO; the avatar must have logged into MemeOn at least once.
+ */
+authed('POST /api/gift', async (req) => {
+  const memeId = requireString(req.body, 'memeId', 40)
+  const shares = Math.floor(Number(req.body.shares) || 0)
+  if (shares <= 0) throw new HttpError(400, 'shares must be a positive number')
+  let toSub = typeof req.body.toSub === 'string' ? req.body.toSub.trim() : ''
+  if (!toSub && typeof req.body.avatarId === 'string') {
+    const resolved = await db.subForAvatarId(req.body.avatarId.trim())
+    if (!resolved)
+      throw new HttpError(404, 'that avatar has not joined MemeOn yet — send them an invite!')
+    toSub = resolved
+  }
+  if (!toSub) throw new HttpError(400, 'toSub or avatarId required')
+  if (toSub === req.user.sub) throw new HttpError(400, 'cannot gift to yourself')
+  const [meme, recipient] = await Promise.all([db.getMeme(memeId), db.getUser(toSub)])
+  if (!meme) throw new HttpError(404, 'meme not found')
+  if (!recipient) throw new HttpError(404, 'recipient not found')
+  try {
+    await db.giftShares(memeId, req.user.sub, toSub, shares)
+  } catch {
+    throw new HttpError(409, `you don't hold ${shares} shares of that meme`)
+  }
+  await db.refreshOwnership(memeId)
+  await db.addAlert(
+    toSub,
+    'trade',
+    `🎁 ${req.user.name} gifted you ${shares} share${shares === 1 ? '' : 's'} of "${meme.title}"!`,
+    memeId,
+    req.user.sub,
+  )
+  return json(200, { ok: true, memeId, toSub, shares })
+})
+
+// ---------- developer api keys ----------
+
+authed('POST /api/developers/keys', async (req) => {
+  const label = requireString(req.body, 'label', 60)
+  const existing = await db.listApiKeys(req.user.sub)
+  if (existing.length >= 5) throw new HttpError(400, 'key limit reached (5) — revoke one first')
+  const { key, prefix } = await db.createApiKey(req.user.sub, label)
+  // the full key is returned exactly once
+  return json(201, { key, prefix, label })
+})
+
+authed('GET /api/developers/keys', async (req) =>
+  json(200, { keys: await db.listApiKeys(req.user.sub) }),
+)
+
+authed('DELETE /api/developers/keys/:prefix', async (req) => {
+  const removed = await db.revokeApiKey(req.user.sub, req.params.prefix)
+  if (!removed) throw new HttpError(404, 'key not found')
+  return json(200, { ok: true })
 })
 
 // ---------- creator claims (archive memes) ----------

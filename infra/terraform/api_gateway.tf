@@ -34,6 +34,13 @@ resource "aws_apigatewayv2_route" "api_proxy" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
 }
 
+# profile pages served with personalized og cards
+resource "aws_apigatewayv2_route" "profile_page" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /u/{sub}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+}
+
 # unique share URL for each meme; every load counts a reshare and serves og meta
 resource "aws_apigatewayv2_route" "meme_share" {
   api_id    = aws_apigatewayv2_api.http_api.id

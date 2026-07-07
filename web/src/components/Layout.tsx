@@ -57,6 +57,13 @@ export function Layout({ children }: { children: ReactNode }) {
       </header>
       <QuestBar />
       {children}
+      <footer className="site-footer">
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+        <a href="/developers">Developers</a>
+        <a href="/discord">Discord</a>
+        <a href="/skill.md">API</a>
+      </footer>
     </>
   )
 }

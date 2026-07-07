@@ -41,12 +41,31 @@ export async function getUser(sub: string): Promise<UserProfile | null> {
   return res.Item ? strip<UserProfile>(res.Item) : null
 }
 
-/** Create the user on first login (1000 starting coins) or refresh name/picture. */
+/** Map a global masky avatar id to this site's account (for cross-site gifting). */
+async function putAvatarLink(avatarId: string, sub: string): Promise<void> {
+  await ddb.send(
+    new PutCommand({
+      TableName: T(),
+      Item: { PK: `AVATAR#${avatarId}`, SK: 'LINK', avatarId, sub },
+    }),
+  )
+}
+
+export async function subForAvatarId(avatarId: string): Promise<string | null> {
+  const res = await ddb.send(
+    new GetCommand({ TableName: T(), Key: { PK: `AVATAR#${avatarId}`, SK: 'LINK' } }),
+  )
+  return (res.Item?.sub as string) ?? null
+}
+
+/** Create the user on first login (starts at 0 braincells) or refresh name/picture. */
 export async function ensureUser(profile: {
   sub: string
   name: string
   picture: string | null
+  avatarId?: string | null
 }): Promise<UserProfile> {
+  if (profile.avatarId) await putAvatarLink(profile.avatarId, profile.sub).catch(() => {})
   const existing = await getUser(profile.sub)
   if (existing) {
     if (existing.name !== profile.name || existing.picture !== profile.picture) {
@@ -361,6 +380,115 @@ async function getPositionShares(memeId: string, userId: string): Promise<number
     new GetCommand({ TableName: T(), Key: { PK: `MEME#${memeId}`, SK: `POS#${userId}` } }),
   )
   return (res.Item?.shares as number) ?? 0
+}
+
+// ---------- gifting ----------
+
+/** Move shares for free: giver must hold them; recipient upserted. Transactional. */
+export async function giftShares(
+  memeId: string,
+  fromSub: string,
+  toSub: string,
+  shares: number,
+): Promise<void> {
+  const existing = await ddb.send(
+    new GetCommand({ TableName: T(), Key: { PK: `MEME#${memeId}`, SK: `POS#${toSub}` } }),
+  )
+  const current = (existing.Item?.shares as number) ?? 0
+  await ddb.send(
+    new TransactWriteCommand({
+      TransactItems: [
+        {
+          Update: {
+            TableName: T(),
+            Key: { PK: `MEME#${memeId}`, SK: `POS#${fromSub}` },
+            UpdateExpression: 'ADD shares :neg',
+            ConditionExpression: 'shares >= :n',
+            ExpressionAttributeValues: { ':neg': -shares, ':n': shares },
+          },
+        },
+        { Put: { TableName: T(), Item: positionItem(memeId, toSub, current + shares) } },
+      ],
+    }),
+  )
+}
+
+// ---------- developer api keys ----------
+
+export async function createApiKey(
+  sub: string,
+  label: string,
+): Promise<{ key: string; prefix: string }> {
+  const { createHash, randomBytes } = await import('node:crypto')
+  const key = `mk_${randomBytes(24).toString('hex')}`
+  const hash = createHash('sha256').update(key).digest('hex')
+  const prefix = key.slice(0, 11)
+  const createdAt = new Date().toISOString()
+  await ddb.send(
+    new TransactWriteCommand({
+      TransactItems: [
+        {
+          Put: {
+            TableName: T(),
+            Item: { PK: `APIKEY#${hash}`, SK: 'KEY', sub, label, prefix, createdAt },
+            ConditionExpression: 'attribute_not_exists(PK)',
+          },
+        },
+        {
+          Put: {
+            TableName: T(),
+            Item: { PK: `USER#${sub}`, SK: `APIKEY#${prefix}`, hash, label, prefix, createdAt },
+          },
+        },
+      ],
+    }),
+  )
+  return { key, prefix }
+}
+
+export async function listApiKeys(
+  sub: string,
+): Promise<{ prefix: string; label: string; createdAt: string }[]> {
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName: T(),
+      KeyConditionExpression: 'PK = :pk AND begins_with(SK, :sk)',
+      ExpressionAttributeValues: { ':pk': `USER#${sub}`, ':sk': 'APIKEY#' },
+    }),
+  )
+  return (res.Items ?? []).map((i) => ({
+    prefix: i.prefix as string,
+    label: i.label as string,
+    createdAt: i.createdAt as string,
+  }))
+}
+
+export async function revokeApiKey(sub: string, prefix: string): Promise<boolean> {
+  const res = await ddb.send(
+    new GetCommand({ TableName: T(), Key: { PK: `USER#${sub}`, SK: `APIKEY#${prefix}` } }),
+  )
+  if (!res.Item) return false
+  await Promise.all([
+    ddb.send(
+      new DeleteCommand({ TableName: T(), Key: { PK: `APIKEY#${res.Item.hash as string}`, SK: 'KEY' } }),
+    ),
+    ddb.send(
+      new DeleteCommand({ TableName: T(), Key: { PK: `USER#${sub}`, SK: `APIKEY#${prefix}` } }),
+    ),
+  ])
+  return true
+}
+
+/** Resolve a presented mk_ key to its owning account, or null. */
+export async function userForApiKey(token: string): Promise<UserProfile | null> {
+  if (!token.startsWith('mk_')) return null
+  const { createHash } = await import('node:crypto')
+  const hash = createHash('sha256').update(token).digest('hex')
+  const res = await ddb.send(
+    new GetCommand({ TableName: T(), Key: { PK: `APIKEY#${hash}`, SK: 'KEY' } }),
+  )
+  if (!res.Item) return null
+  return getUser(res.Item.sub as string)
 }
 
 // ---------- friends ----------
