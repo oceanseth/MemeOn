@@ -231,6 +231,18 @@ resource "aws_cloudfront_distribution" "site" {
     response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
   }
 
+  # profile pages: personalized og cards from the api
+  ordered_cache_behavior {
+    path_pattern     = "/u/*"
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "api-gateway"
+    viewer_protocol_policy = "https-only"
+    cache_policy_id        = aws_cloudfront_cache_policy.api.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
+  }
+
   # meme share URLs: uncached so every load counts a reshare
   ordered_cache_behavior {
     path_pattern     = "/m/*"

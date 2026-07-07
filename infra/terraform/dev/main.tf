@@ -176,6 +176,12 @@ resource "aws_apigatewayv2_route" "helloworld" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
 }
 
+resource "aws_apigatewayv2_route" "profile_page" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /u/{sub}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+}
+
 resource "aws_apigatewayv2_route" "meme_share" {
   api_id    = aws_apigatewayv2_api.http_api.id
   route_key = "GET /m/{id}"
@@ -352,6 +358,16 @@ resource "aws_cloudfront_distribution" "site" {
     cached_methods           = ["GET", "HEAD"]
     target_origin_id         = "api-gateway"
     viewer_protocol_policy   = "https-only"
+    cache_policy_id          = local.cache_policy_api
+    origin_request_policy_id = local.origin_req_api
+  }
+
+  ordered_cache_behavior {
+    path_pattern             = "/u/*"
+    allowed_methods          = ["GET", "HEAD"]
+    cached_methods           = ["GET", "HEAD"]
+    target_origin_id         = "api-gateway"
+    viewer_protocol_policy   = "redirect-to-https"
     cache_policy_id          = local.cache_policy_api
     origin_request_policy_id = local.origin_req_api
   }
