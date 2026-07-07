@@ -83,7 +83,10 @@ data "aws_iam_policy_document" "lambda_permissions" {
   statement {
     effect    = "Allow"
     actions   = ["ssm:GetParameter"]
-    resources = ["arn:aws:ssm:us-west-2:${data.aws_caller_identity.current.account_id}:parameter/memeon/dev/*"]
+    resources = [
+      "arn:aws:ssm:us-west-2:${data.aws_caller_identity.current.account_id}:parameter/memeon/dev/*",
+      "arn:aws:ssm:us-west-2:${data.aws_caller_identity.current.account_id}:parameter/memeon/shared/*",
+    ]
   }
 
   statement {
