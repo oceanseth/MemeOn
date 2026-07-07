@@ -13,7 +13,7 @@ import { TIERS } from '../../shared/tiers'
 import type { Meme } from '../src/types'
 
 const SEARCHES = ['classic meme', 'doge meme', 'cat meme', 'reaction meme', 'fail meme', 'dance meme']
-const COUNT = Math.min(Number(process.argv[2]) || 18, 50)
+const COUNT = Math.min(Number(process.argv[2]) || 20, 50) // batches of 20 by default
 
 async function giphyKey(): Promise<string> {
   if (process.env.GIPHY_API_KEY) return process.env.GIPHY_API_KEY
@@ -43,6 +43,23 @@ interface GiphyGif {
 }
 
 const key = await giphyKey()
+
+// preflight: fail loudly with the fix, instead of 403-ing through every search
+const ping = await fetch(`https://api.giphy.com/v1/gifs/search?api_key=${key}&q=test&limit=1`)
+if (!ping.ok) {
+  console.error(`
+❌ Giphy rejected the API key (HTTP ${ping.status}).
+   ${key === 'dc6zaTOxFJmzC' ? 'No key is configured, and Giphy retired the public beta key.' : 'The configured key is invalid or rate-limited.'}
+
+   Fix (≈2 min):
+   1. Get a free key: https://developers.giphy.com → Create an App → API
+   2. aws ssm put-parameter --region us-west-2 --type SecureString \\
+        --name /memeon/shared/giphy_api_key --value "YOUR_KEY"
+   3. Re-run this script.
+`)
+  process.exit(1)
+}
+
 await db.ensureUser({ sub: db.ARCHIVE_SUB, name: 'Meme Archive', picture: null })
 const existing = await db.listMemes()
 const existingGiphyIds = new Set(
