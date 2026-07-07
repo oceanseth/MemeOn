@@ -4,10 +4,15 @@ import { env } from './env'
 
 const s3 = new S3Client({})
 
-/** Presigned PUT for direct browser/app uploads into the assets bucket. */
+/**
+ * Presigned PUT for direct browser/app uploads into the assets bucket.
+ * ContentLength is part of the signature, so S3 rejects any upload that
+ * doesn't match the declared size — that's the hard size cap.
+ */
 export async function presignUpload(
   key: string,
   contentType: string,
+  contentLength: number,
   expiresIn = 600,
 ): Promise<{ uploadUrl: string; publicUrl: string }> {
   const uploadUrl = await getSignedUrl(
@@ -16,6 +21,7 @@ export async function presignUpload(
       Bucket: env.assetsBucket,
       Key: key,
       ContentType: contentType,
+      ContentLength: contentLength,
       CacheControl: 'public, max-age=31536000, immutable',
     }),
     { expiresIn },

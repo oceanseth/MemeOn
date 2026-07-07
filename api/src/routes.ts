@@ -562,12 +562,21 @@ const UPLOAD_TYPES: Record<string, string> = {
   'video/webm': 'webm',
 }
 
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024 // 8 MB
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024 // 50 MB
+
 authed('POST /api/uploads', async (req) => {
   const contentType = requireString(req.body, 'contentType', 100)
   const ext = UPLOAD_TYPES[contentType]
   if (!ext) throw new HttpError(400, `unsupported content type (${Object.keys(UPLOAD_TYPES).join(', ')})`)
+  const size = Math.floor(Number(req.body.size) || 0)
+  const cap = contentType.startsWith('video/') ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES
+  if (size <= 0) throw new HttpError(400, 'size (bytes) required')
+  if (size > cap) {
+    throw new HttpError(413, `file too large — max ${Math.round(cap / 1024 / 1024)}MB for ${contentType.split('/')[0]}s`)
+  }
   const key = `uploads/${req.user.sub}/${randomUUID()}.${ext}`
-  const out = await presignUpload(key, contentType)
+  const out = await presignUpload(key, contentType, size)
   return json(200, out)
 })
 

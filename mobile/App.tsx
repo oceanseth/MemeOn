@@ -12,6 +12,7 @@ import InvestScreen from './src/screens/InvestScreen'
 import CreatorScreen from './src/screens/CreatorScreen'
 import AlertsScreen from './src/screens/AlertsScreen'
 import TradesScreen from './src/screens/TradesScreen'
+import AboutScreen from './src/screens/AboutScreen'
 
 export type RootStackParamList = {
   Feed: undefined
@@ -19,6 +20,7 @@ export type RootStackParamList = {
   Creator: { sub: string }
   Alerts: undefined
   Trades: undefined
+  About: undefined
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
@@ -59,6 +61,7 @@ function Root() {
         <Stack.Screen name="Creator" component={CreatorScreen} options={{ title: 'Creator' }} />
         <Stack.Screen name="Alerts" component={AlertsScreen} options={{ title: 'Alerts' }} />
         <Stack.Screen name="Trades" component={TradesScreen} options={{ title: 'Trades' }} />
+        <Stack.Screen name="About" component={AboutScreen} options={{ title: 'MemeOn' }} />
       </Stack.Navigator>
     </NavigationContainer>
   )
