@@ -68,8 +68,16 @@ function withCors(res: {
 }
 
 export async function handler(
-  event: APIGatewayProxyEventV2,
-): Promise<APIGatewayProxyStructuredResultV2> {
+  event: APIGatewayProxyEventV2 & { action?: string; max?: number; inventoryTarget?: number },
+): Promise<APIGatewayProxyStructuredResultV2 | Record<string, unknown>> {
+  // scheduled invocations (EventBridge) carry an action instead of an http request
+  if (event.action === 'giphy-seed') {
+    const { runGiphySeed } = await import('./seeder')
+    const result = await runGiphySeed({ max: event.max, inventoryTarget: event.inventoryTarget })
+    console.log('giphy-seed run', result)
+    return result
+  }
+
   const headers: Record<string, string> = {}
   for (const [k, v] of Object.entries(event.headers ?? {})) {
     if (v !== undefined) headers[k.toLowerCase()] = v

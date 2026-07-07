@@ -66,7 +66,7 @@ export async function categories(): Promise<string[]> {
 /** Search gifs; identical queries cached 10 min to protect the rate budget. */
 export async function search(q: string, limit = 12): Promise<GiphyResult[]> {
   const data = await giphyGet<{ data?: RawGif[] }>(
-    `/gifs/search?q=${encodeURIComponent(q)}&limit=${Math.min(limit, 24)}&rating=pg-13`,
+    `/gifs/search?q=${encodeURIComponent(q)}&limit=${Math.min(limit, 50)}&rating=pg-13`,
     10 * 60_000,
   )
   return (data.data ?? []).map(toResult).filter((r): r is GiphyResult => !!r)
