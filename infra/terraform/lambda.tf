@@ -101,8 +101,8 @@ resource "aws_lambda_function" "api" {
   runtime       = "nodejs20.x"
   handler       = "dist/handler.handler"
   architectures = ["arm64"]
-  memory_size   = 512
-  timeout       = 20
+  memory_size   = 1024
+  timeout       = 28
 
   filename         = var.api_lambda_package
   source_code_hash = filebase64sha256(var.api_lambda_package)
