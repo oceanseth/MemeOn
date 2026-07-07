@@ -12,7 +12,7 @@ export function Layout({ children }: { children: ReactNode }) {
     <>
       <header className="topbar">
         <div className="topbar-inner">
-          <Link to={user ? '/marketplace' : '/'} className="logo">
+          <Link to="/" className="logo">
             <img src="/brand/memeon-logo-circle-64.png" alt="" className="logo-img" />
             MemeOn
           </Link>

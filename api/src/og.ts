@@ -18,8 +18,8 @@ const CARD_W = 900
 const CARD_H = 1200
 const WIN = { x: 90, y: 216, w: 720, h: 720 }
 
-// v2: frames lost their tier-word footer; the meme title renders there instead
-const ogKey = (memeId: string, tierKey: string) => `og/v2/${memeId}-${tierKey}.png`
+// v3: video memes get a play button + logo badge composited on the art
+const ogKey = (memeId: string, tierKey: string) => `og/v3/${memeId}-${tierKey}.png`
 export const frameKey = (tierKey: string) => `frames/${tierKey}.png`
 
 // title banner area at the bottom of the 900x1200 frame
@@ -108,6 +108,26 @@ export async function ensureOgImage(meme: Meme): Promise<string> {
     }) as unknown as JimpImage
   }
   card.composite(art, WIN.x, WIN.y)
+
+  if (meme.mediaType === 'video') {
+    // play button centered on the art + logo badge in its corner, so shares
+    // read as "tap to watch" and carry the brand
+    try {
+      const play = await fetchImage(assetUrl('brand/play-overlay.png'))
+      play.resize({ w: 300, h: 300 })
+      card.composite(play, WIN.x + Math.round((WIN.w - 300) / 2), WIN.y + Math.round((WIN.h - 300) / 2))
+    } catch {
+      /* overlay art missing — card still works */
+    }
+    try {
+      const logo = await fetchImage(assetUrl('brand/memeon-logo-circle-256.png'))
+      logo.resize({ w: 110, h: 110 })
+      card.composite(logo, WIN.x + WIN.w - 122, WIN.y + WIN.h - 122)
+    } catch {
+      /* ditto */
+    }
+  }
+
   await printTitle(card, meme.title)
 
   const png = await card.getBuffer('image/png')
@@ -173,6 +193,8 @@ export async function memePageHtml(meme: Meme, ogImageUrl: string): Promise<stri
   const index = await fetchIndexHtml()
   if (index) {
     return index
+      // drop the site-wide og/twitter tags — crawlers honor the first tag seen
+      .replace(/\s*<meta (?:property="og:|name="twitter:)[^>]*\/?>/g, '')
       .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
       .replace('</head>', `${block}\n</head>`)
   }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { beginMaskyLogin } from '../lib/auth'
 import { apiFetch } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
@@ -13,7 +13,7 @@ interface FrameInfo {
 }
 
 export default function Landing() {
-  const { user, loading } = useAuth()
+  const { user } = useAuth()
   const [frames, setFrames] = useState<Record<string, string>>({})
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
@@ -23,8 +23,6 @@ export default function Landing() {
       .then((r) => setFrames(Object.fromEntries(r.frames.map((f) => [f.key, f.url]))))
       .catch(() => {})
   }, [])
-
-  if (!loading && user) return <Navigate to="/marketplace" replace />
 
   const login = async () => {
     setBusy(true)
@@ -48,9 +46,15 @@ export default function Landing() {
           positions with friends. Every meme gets a share link whose card frame levels up as it
           spreads.
         </p>
-        <button className="primary login-btn" onClick={login} disabled={busy}>
-          {busy ? 'Redirecting…' : '🎭 Log in with Masky'}
-        </button>
+        {user ? (
+          <Link to="/marketplace">
+            <button className="primary login-btn">📈 Enter the marketplace</button>
+          </Link>
+        ) : (
+          <button className="primary login-btn" onClick={login} disabled={busy}>
+            {busy ? 'Redirecting…' : '🎭 Log in with Masky'}
+          </button>
+        )}
         {err && <p className="notice error">{err}</p>}
       </section>
 
