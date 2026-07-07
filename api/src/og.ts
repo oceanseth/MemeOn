@@ -1,6 +1,6 @@
 // OG meta frame pipeline: composited card images (tier frame + meme art + title
 // banner) served from the assets bucket, plus the crawler-facing /m/{id} page.
-import { Jimp, loadFont, measureText } from 'jimp'
+import { Jimp, loadFont, measureText, measureTextHeight } from 'jimp'
 import {
   SANS_32_BLACK,
   SANS_32_WHITE,
@@ -18,12 +18,22 @@ const CARD_W = 900
 const CARD_H = 1200
 const WIN = { x: 90, y: 216, w: 720, h: 720 }
 
-// v3: video memes get a play button + logo badge composited on the art
-const ogKey = (memeId: string, tierKey: string) => `og/v3/${memeId}-${tierKey}.png`
+// v4: title vertically centered in each frame's measured banner band
+const ogKey = (memeId: string, tierKey: string) => `og/v4/${memeId}-${tierKey}.png`
 export const frameKey = (tierKey: string) => `frames/${tierKey}.png`
 
-// title banner area at the bottom of the 900x1200 frame
-const BANNER = { x: 110, y: 965, w: 680, h: 130 }
+// title banner: x-range shared, but each generated frame's dark band sits at a
+// slightly different height — vertical centers measured per frame art
+const BANNER = { x: 110, w: 680 }
+const BANNER_CENTER_Y: Record<string, number> = {
+  paper: 1008,
+  silver: 1012,
+  holo: 1032,
+  chrome: 981,
+  gold: 1034,
+  prismatic: 1039,
+  shiny: 1001,
+}
 
 // bundled next to the lambda handler (see api package script); node_modules in dev
 function fontPath(bundled: string, dev: string): string {
@@ -47,26 +57,27 @@ function getFont(key: 'w64' | 'b64' | 'w32' | 'b32') {
   return p
 }
 
-/** Print the title into the banner, shrinking (64→32) and ellipsizing to fit. */
-async function printTitle(card: JimpImage, title: string): Promise<void> {
+/** Print the title centered in the tier frame's banner band, shrinking to fit. */
+async function printTitle(card: JimpImage, title: string, tierKey: string): Promise<void> {
   try {
     let text = title.slice(0, 24)
     let white = await getFont('w64')
     let black = await getFont('b64')
-    let baseline = BANNER.y + 24
     if (measureText(white, text) > BANNER.w) {
       white = await getFont('w32')
       black = await getFont('b32')
-      baseline = BANNER.y + 44
       while (text.length > 4 && measureText(white, `${text}…`) > BANNER.w) {
         text = text.slice(0, -1)
       }
       if (text !== title.slice(0, 24)) text = `${text}…`
     }
     const w = measureText(white, text)
+    const h = measureTextHeight(white, text, BANNER.w)
+    const centerY = BANNER_CENTER_Y[tierKey] ?? 1015
     const x = BANNER.x + Math.max(0, Math.round((BANNER.w - w) / 2))
-    card.print({ font: black, x: x + 3, y: baseline + 3, text })
-    card.print({ font: white, x, y: baseline, text })
+    const y = Math.round(centerY - h / 2)
+    card.print({ font: black, x: x + 3, y: y + 3, text })
+    card.print({ font: white, x, y, text })
   } catch (err) {
     console.error('title print failed (fonts missing?)', err)
   }
@@ -128,7 +139,7 @@ export async function ensureOgImage(meme: Meme): Promise<string> {
     }
   }
 
-  await printTitle(card, meme.title)
+  await printTitle(card, meme.title, tier.key)
 
   const png = await card.getBuffer('image/png')
   return putAsset(key, png, 'image/png')
