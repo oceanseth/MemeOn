@@ -800,6 +800,70 @@ export async function discordLinkedSub(discordUserId: string): Promise<string | 
   return (res.Item?.sub as string) ?? null
 }
 
+// ---------- referrer tracking (views vs reshares) ----------
+
+/**
+ * Record a view source for a meme. First sighting of a source bumps the
+ * meme's uniqueRefs counter — that's the "reshares" metric.
+ */
+export async function trackReferrer(
+  memeId: string,
+  sourceKey: string,
+  url: string | null,
+): Promise<void> {
+  const res = await ddb.send(
+    new UpdateCommand({
+      TableName: T(),
+      Key: { PK: `MEME#${memeId}`, SK: `REF#${sourceKey}` },
+      UpdateExpression:
+        'ADD #c :one SET memeId = :mid, sourceKey = :sk, #u = if_not_exists(#u, :url), firstSeen = if_not_exists(firstSeen, :now)',
+      ExpressionAttributeNames: { '#c': 'count', '#u': 'url' },
+      ExpressionAttributeValues: {
+        ':one': 1,
+        ':mid': memeId,
+        ':sk': sourceKey.slice(0, 200),
+        ':url': url,
+        ':now': new Date().toISOString(),
+      },
+      ReturnValues: 'ALL_NEW',
+    }),
+  )
+  if ((res.Attributes?.count as number) === 1) {
+    await ddb
+      .send(
+        new UpdateCommand({
+          TableName: T(),
+          Key: { PK: `MEME#${memeId}`, SK: 'META' },
+          UpdateExpression: 'ADD uniqueRefs :one',
+          ConditionExpression: 'attribute_exists(PK)',
+          ExpressionAttributeValues: { ':one': 1 },
+        }),
+      )
+      .catch(() => {})
+  }
+}
+
+export interface ReferrerRow {
+  sourceKey: string
+  url: string | null
+  count: number
+  firstSeen: string
+}
+
+export async function listReferrers(memeId: string, limit = 25): Promise<ReferrerRow[]> {
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName: T(),
+      KeyConditionExpression: 'PK = :pk AND begins_with(SK, :sk)',
+      ExpressionAttributeValues: { ':pk': `MEME#${memeId}`, ':sk': 'REF#' },
+    }),
+  )
+  return (res.Items ?? [])
+    .map((i) => strip<ReferrerRow>(i))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, limit)
+}
+
 // ---------- memeplex (related-meme graph) ----------
 
 /** Link two memes into each other's memeplex (bidirectional edge). */

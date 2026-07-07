@@ -36,6 +36,8 @@ export interface Meme {
   createdAt: string
   /** total like count (ADD-maintained; may be absent on old items) */
   likes?: number
+  /** distinct external referrer sources — the true "reshares" metric */
+  uniqueRefs?: number
   /** id of the meme this was remixed from */
   remixOf?: string | null
   /** hidden from marketplace/feed/others (sole-owner soft delete) */

@@ -24,6 +24,10 @@ export interface Meme {
   createdAt: string
   tier: Tier
   value: number
+  /** total share-link loads (drives the tier ladder) */
+  views?: number
+  /** distinct external sources — true reshares */
+  reshareCount?: number
   myShares?: number
   isCreator?: boolean
   remixOf?: string | null

@@ -82,7 +82,7 @@ export default function Landing() {
                 {t.name}
               </span>
               <span className="tier-req">
-                {t.rarity} · {t.minReshares.toLocaleString()}+ reshares
+                {t.rarity} · {t.minReshares.toLocaleString()}+ views
               </span>
               <span className="tier-hype">{t.hype}</span>
             </div>
@@ -104,7 +104,8 @@ export default function Landing() {
           <summary>How do tiers work?</summary>
           <p>
             Every meme has a share URL (memeon.ai/m/…). Each time that link is loaded — a friend
-            clicks it, Discord unfurls it, a bot scrapes it — the reshare counter ticks up. Cross a
+            clicks it, Discord unfurls it, a bot scrapes it — the view counter ticks up, and every
+            new place it's shared counts as a reshare. Cross a
             threshold and the meme tiers up: Paper → Silver → Holo → Chrome → Gold → Prismatic →
             ✨Shiny✨. The link preview card (the og image) upgrades its foil frame automatically,
             so a Gold meme flexes gold wherever it's shared.
