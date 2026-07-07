@@ -9,6 +9,8 @@ import Leaderboard from './pages/Leaderboard'
 import Profile from './pages/Profile'
 import DiscordPage from './pages/DiscordPage'
 import DiscordLink from './pages/DiscordLink'
+import Privacy from './pages/Privacy'
+import Terms from './pages/Terms'
 import Marketplace from './pages/Marketplace'
 import Binder from './pages/Binder'
 import CreateMeme from './pages/CreateMeme'
@@ -39,6 +41,8 @@ export default function App() {
         <Route path="/invite/:sub" element={<Invite />} />
         <Route path="/discord" element={<DiscordPage />} />
         <Route path="/discord/link" element={<DiscordLink />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
         <Route
           path="/marketplace"
           element={
