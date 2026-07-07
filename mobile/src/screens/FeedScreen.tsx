@@ -96,7 +96,9 @@ export default function FeedScreen() {
         }
       />
       <View style={[styles.topbar, { top: insets.top + 6 }]}>
-        <Text style={styles.logo}>MemeOn</Text>
+        <Pressable onPress={() => navigation.navigate('About')}>
+          <Image source={require('../../assets/brand-logo.png')} style={styles.logoImg} />
+        </Pressable>
         <View style={styles.topActions}>
           <Text style={styles.coins}>🧠 {user?.coins.toLocaleString() ?? ''}</Text>
           <Pressable onPress={() => navigation.navigate('Trades')}>
@@ -319,6 +321,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: { color: colors.accent, fontWeight: '800', fontSize: 20 },
+  logoImg: { width: 38, height: 38 },
   topActions: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   coins: { color: colors.gold, fontWeight: '700', fontSize: 15 },
   miniAvatar: { width: 30, height: 30, borderRadius: 15, borderWidth: 1, borderColor: colors.border },

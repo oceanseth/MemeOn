@@ -5,18 +5,62 @@ import type { Meme } from '../lib/types'
 
 type Mode = 'generate' | 'video' | 'url' | 'upload' | 'remix'
 
-async function uploadFile(file: File): Promise<string> {
+async function uploadFile(file: File | Blob, contentType?: string): Promise<string> {
+  const type = contentType ?? (file as File).type
   const { uploadUrl, publicUrl } = await post<{ uploadUrl: string; publicUrl: string }>(
     '/api/uploads',
-    { contentType: file.type },
+    { contentType: type, size: file.size },
   )
   const put = await fetch(uploadUrl, {
     method: 'PUT',
-    headers: { 'content-type': file.type },
+    headers: { 'content-type': type },
     body: file,
   })
   if (!put.ok) throw new Error(`upload failed (${put.status})`)
   return publicUrl
+}
+
+/** Grab the first frame of a video file as a PNG blob (browser-side, no server). */
+function extractPoster(file: File): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const video = document.createElement('video')
+    video.muted = true
+    video.playsInline = true
+    video.preload = 'auto'
+    video.src = url
+    const fail = (why: string) => {
+      URL.revokeObjectURL(url)
+      reject(new Error(why))
+    }
+    video.onerror = () => fail('could not read video')
+    video.onloadeddata = () => {
+      video.currentTime = Math.min(0.1, video.duration || 0.1)
+    }
+    video.onseeked = () => {
+      const size = 720
+      const canvas = document.createElement('canvas')
+      canvas.width = size
+      canvas.height = size
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return fail('canvas unavailable')
+      // cover-crop into a square
+      const s = Math.min(video.videoWidth, video.videoHeight)
+      ctx.drawImage(
+        video,
+        (video.videoWidth - s) / 2,
+        (video.videoHeight - s) / 2,
+        s,
+        s,
+        0,
+        0,
+        size,
+        size,
+      )
+      URL.revokeObjectURL(url)
+      canvas.toBlob((b) => (b ? resolve(b) : fail('poster encode failed')), 'image/png')
+    }
+  })
 }
 
 export default function CreateMeme() {
@@ -278,7 +322,7 @@ export default function CreateMeme() {
         ) : mode === 'upload' ? (
           <>
             <label>
-              Image (the card art{videoUrl ? ' / video thumbnail' : ''})
+              Image (optional for videos — we grab the first frame; max 8MB)
               <input
                 type="file"
                 accept="image/png,image/jpeg,image/gif,image/webp"
@@ -298,7 +342,7 @@ export default function CreateMeme() {
               />
             </label>
             <label>
-              Video (optional — makes it a video meme)
+              Video (optional — makes it a video meme; max 50MB)
               <input
                 type="file"
                 accept="video/mp4,video/quicktime,video/webm"
@@ -309,6 +353,12 @@ export default function CreateMeme() {
                   setErr(null)
                   try {
                     setVideoUrl(await uploadFile(f))
+                    if (!imageUrl) {
+                      // no art provided: auto-poster from the first frame
+                      setBusy('Grabbing the first frame for the card…')
+                      const poster = await extractPoster(f)
+                      setImageUrl(await uploadFile(poster, 'image/png'))
+                    }
                   } catch (er) {
                     setErr(er instanceof Error ? er.message : 'upload failed')
                   } finally {
