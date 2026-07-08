@@ -1,4 +1,9 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useParams } from 'react-router-dom'
+
+function LegacyMemeRedirect() {
+  const { id } = useParams<{ id: string }>()
+  return <Navigate to={`/m/${id}`} replace />
+}
 import { Layout } from './components/Layout'
 import { useAuth } from './context/AuthContext'
 import Landing from './pages/Landing'
@@ -108,9 +113,9 @@ export default function App() {
             </RequireAuth>
           }
         />
-        <Route path="/meme/:id" element={<MemeDetail />} />
-        {/* share URLs render the same page in-app so the /m/ link stays in the address bar */}
+        {/* /m/ is the one true meme URL; legacy /meme/ links redirect into it */}
         <Route path="/m/:id" element={<MemeDetail />} />
+        <Route path="/meme/:id" element={<LegacyMemeRedirect />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>
