@@ -175,6 +175,42 @@ resource "aws_cloudfront_response_headers_policy" "security" {
   }
 }
 
+# Same headers as `security` but frameable: /m/* share pages are embedded by partner
+# sites (ChooseAStory shows the ending's meme card in an iframe). CSP frame-ancestors
+# replaces X-Frame-Options, which has no allowlist form.
+resource "aws_cloudfront_response_headers_policy" "embeddable_share" {
+  name = "memeon-embeddable-share"
+
+  security_headers_config {
+    content_type_options {
+      override = true
+    }
+
+    content_security_policy {
+      override                = true
+      content_security_policy = "frame-ancestors 'self' https://chooseastory.com https://*.chooseastory.com http://localhost:* https://localhost:*"
+    }
+
+    referrer_policy {
+      override        = true
+      referrer_policy = "strict-origin-when-cross-origin"
+    }
+
+    strict_transport_security {
+      override                   = true
+      access_control_max_age_sec = 63072000
+      include_subdomains         = true
+      preload                    = true
+    }
+
+    xss_protection {
+      override   = true
+      protection = true
+      mode_block = true
+    }
+  }
+}
+
 resource "aws_cloudfront_distribution" "site" {
   enabled             = true
   is_ipv6_enabled     = true
@@ -243,7 +279,8 @@ resource "aws_cloudfront_distribution" "site" {
     response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
   }
 
-  # meme share URLs: uncached so every load counts a reshare
+  # meme share URLs: uncached so every load counts a reshare; embeddable headers so
+  # partner sites can iframe the card
   ordered_cache_behavior {
     path_pattern     = "/m/*"
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
@@ -252,7 +289,7 @@ resource "aws_cloudfront_distribution" "site" {
     viewer_protocol_policy = "https-only"
     cache_policy_id        = aws_cloudfront_cache_policy.api.id
     origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
-    response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.embeddable_share.id
   }
 
   restrictions {

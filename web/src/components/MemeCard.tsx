@@ -13,7 +13,7 @@ export function MemeCard({ meme, footer }: { meme: Meme; footer?: React.ReactNod
   return (
     <div className={`meme-card ${tierClasses(meme.tier.key)}`}>
       <div className="meme-card-inner">
-        <Link to={`/meme/${meme.id}`}>
+        <Link to={`/m/${meme.id}`}>
           {meme.mediaType === 'video' && meme.videoUrl ? (
             <video className="meme-art" src={meme.videoUrl} muted loop playsInline autoPlay poster={meme.imageUrl} />
           ) : (

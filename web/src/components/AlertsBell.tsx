@@ -60,7 +60,7 @@ export function AlertsBell() {
           {alerts.map((a) => (
             <div key={a.id} className={`alert-row ${a.read ? '' : 'unread'}`}>
               {a.memeId ? (
-                <Link to={`/meme/${a.memeId}`} onClick={() => setOpen(false)}>
+                <Link to={`/m/${a.memeId}`} onClick={() => setOpen(false)}>
                   {a.message}
                 </Link>
               ) : a.subjectSub ? (

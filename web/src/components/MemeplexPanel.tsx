@@ -80,7 +80,7 @@ export function MemeplexPanel({ meme, canEdit }: { meme: Meme; canEdit: boolean 
           {plex.ancestors.map((a, i) => (
             <span key={a.id}>
               {i > 0 && ' → '}
-              <Link to={`/meme/${a.id}`}>"{a.title}"</Link>
+              <Link to={`/m/${a.id}`}>"{a.title}"</Link>
             </span>
           ))}
           {plex.original && plex.ancestors[0]?.id === plex.original.id && ' (the original)'}
