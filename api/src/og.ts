@@ -233,7 +233,7 @@ export async function memePageHtml(meme: Meme, ogImageUrl: string): Promise<stri
       .replace('</head>', `${block}\n</head>`)
   }
   // fallback when the SPA shell can't be fetched: og tags + a manual link
-  const appUrl = `/meme/${encodeURIComponent(meme.id)}`
+  const appUrl = `/m/${encodeURIComponent(meme.id)}`
   return `<!doctype html>
 <html lang="en">
 <head>

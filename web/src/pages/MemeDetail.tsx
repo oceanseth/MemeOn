@@ -122,7 +122,7 @@ export default function MemeDetail() {
             {meme.remixOf && (
               <>
                 {' '}
-                · <Link to={`/meme/${meme.remixOf}`}>🧬 remix</Link>
+                · <Link to={`/m/${meme.remixOf}`}>🧬 remix</Link>
               </>
             )}
             {meme.source && (

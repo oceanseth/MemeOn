@@ -316,7 +316,7 @@ export default function CreateMeme() {
           .filter(Boolean),
       }
       const out = await post<{ meme: Meme }>('/api/memes', body)
-      navigate(`/meme/${out.meme.id}`)
+      navigate(`/m/${out.meme.id}`)
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'mint failed')
       setBusy(null)
@@ -380,7 +380,7 @@ export default function CreateMeme() {
                   style={{ width: 84, height: 84, objectFit: 'cover', borderRadius: 10 }}
                 />
                 <span style={{ color: 'var(--text-dim)', fontSize: 14 }}>
-                  Remixing <Link to={`/meme/${remixSource.id}`}>"{remixSource.title}"</Link> by{' '}
+                  Remixing <Link to={`/m/${remixSource.id}`}>"{remixSource.title}"</Link> by{' '}
                   {remixSource.creatorName}
                 </span>
               </div>
