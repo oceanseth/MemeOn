@@ -211,25 +211,42 @@ const publicMeme = (m: Meme) => ({
   reshareCount: m.uniqueRefs ?? 0,
 })
 
+/**
+ * Paginated marketplace query (newest first). Filters apply server-side and
+ * the server keeps pulling pages until it fills `limit` matches (bounded),
+ * so the client always gets a full page + a resume cursor.
+ */
 authed('GET /api/memes', async (req) => {
-  let memes = (await db.listMemes()).filter((m) => !m.private)
-  const { q, type, tier, listed, sort } = req.query
-  if (q) {
-    const needle = q.toLowerCase()
-    memes = memes.filter(
-      (m) =>
+  const { q, type, tier, listed } = req.query
+  const limit = Math.min(Math.max(Number(req.query.limit) || 60, 1), 120)
+  const needle = (q ?? '').toLowerCase()
+  const matches = (m: Meme): boolean => {
+    if (m.private) return false
+    if (needle) {
+      const hit =
         m.title.toLowerCase().includes(needle) ||
         (m.tags ?? []).some((t) => t.toLowerCase().includes(needle)) ||
-        m.creatorName.toLowerCase().includes(needle),
-    )
+        m.creatorName.toLowerCase().includes(needle)
+      if (!hit) return false
+    }
+    if ((type === 'image' || type === 'video') && m.mediaType !== type) return false
+    if (tier && tierFor(m.reshares).key !== tier) return false
+    if (listed === 'true' && !(m.listing && m.listing.shares > 0)) return false
+    return true
   }
-  if (type === 'image' || type === 'video') memes = memes.filter((m) => m.mediaType === type)
-  if (tier) memes = memes.filter((m) => tierFor(m.reshares).key === tier)
-  if (listed === 'true') memes = memes.filter((m) => m.listing && m.listing.shares > 0)
-  if (sort === 'viral') memes = [...memes].sort((a, b) => b.reshares - a.reshares)
-  else if (sort === 'value') memes = [...memes].sort((a, b) => memeValue(b.reshares) - memeValue(a.reshares))
-  // default: newest first (query order)
-  return json(200, { memes: memes.map(publicMeme) })
+
+  const out: Meme[] = []
+  let cursor: string | null = (req.query.cursor as string) || null
+  // scan at most 10 pages (~1000 memes) per request to bound latency
+  for (let i = 0; i < 10; i++) {
+    const page = await db.listMemesPage({ cursor, limit: 100 })
+    for (const m of page.memes) {
+      if (out.length < limit && matches(m)) out.push(m)
+    }
+    cursor = page.nextCursor
+    if (!cursor || out.length >= limit) break
+  }
+  return json(200, { memes: out.map(publicMeme), nextCursor: cursor })
 })
 
 authed('POST /api/memes', async (req) => {
