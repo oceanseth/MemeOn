@@ -85,25 +85,21 @@ export async function runGiphySeed(opts: {
   const target = opts.inventoryTarget ?? DEFAULT_INVENTORY_TARGET
 
   await db.ensureUser({ sub: db.ARCHIVE_SUB, name: 'Meme Archive', picture: null })
-  const existing = await db.listMemes(1000)
-  const unclaimed = existing.filter(
-    (m) => m.creatorId === db.ARCHIVE_SUB && m.ownerId === db.ARCHIVE_SUB,
-  ).length
-  if (unclaimed >= target) {
-    return { seeded: 0, inventory: unclaimed, skipped: true, termsSwept: 0 }
+  // counter + per-gif markers instead of scanning memes: correct at any scale
+  const alreadySeeded = await db.archiveSeedCount()
+  if (alreadySeeded >= target) {
+    return { seeded: 0, inventory: alreadySeeded, skipped: true, termsSwept: 0 }
   }
-  const room = Math.min(max, target - unclaimed)
-  const seenGiphyIds = new Set(
-    existing.filter((m) => m.source?.provider === 'giphy').map((m) => m.source!.id),
-  )
+  const room = Math.min(max, target - alreadySeeded)
 
   let seeded = 0
   const mintGif = async (
     gif: Awaited<ReturnType<typeof search>>[number],
     tag: string,
   ): Promise<boolean> => {
-    if (seenGiphyIds.has(gif.id) || !gif.mp4Url) return false
-    seenGiphyIds.add(gif.id)
+    if (!gif.mp4Url) return false
+    // permanent marker record — never mint the same gif twice, ever
+    if (!(await db.markGiphySeeded(gif.id))) return false
     const meme: Meme = {
       id: randomUUID().slice(0, 12),
       title: gif.title.slice(0, 20) || 'Classic Meme',
@@ -153,5 +149,6 @@ export async function runGiphySeed(opts: {
     }
   }
 
-  return { seeded, inventory: unclaimed + seeded, skipped: false, termsSwept }
+  if (seeded > 0) await db.bumpArchiveSeedCount(seeded)
+  return { seeded, inventory: alreadySeeded + seeded, skipped: false, termsSwept }
 }

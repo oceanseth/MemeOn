@@ -140,7 +140,39 @@ export async function getMeme(id: string): Promise<Meme | null> {
   return res.Item ? strip<Meme>(res.Item) : null
 }
 
-/** All memes, newest first. Fine at v1 scale; add pagination when it hurts. */
+/** One page of memes, newest first, with an opaque resume cursor. */
+export async function listMemesPage(opts: {
+  cursor?: string | null
+  limit?: number
+}): Promise<{ memes: Meme[]; nextCursor: string | null }> {
+  let startKey: Record<string, unknown> | undefined
+  if (opts.cursor) {
+    try {
+      startKey = JSON.parse(Buffer.from(opts.cursor, 'base64url').toString('utf-8'))
+    } catch {
+      startKey = undefined
+    }
+  }
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName: T(),
+      IndexName: 'GSI1',
+      KeyConditionExpression: 'GSI1PK = :p',
+      ExpressionAttributeValues: { ':p': 'MEME' },
+      ScanIndexForward: false,
+      Limit: Math.min(opts.limit ?? 100, 200),
+      ExclusiveStartKey: startKey,
+    }),
+  )
+  return {
+    memes: (res.Items ?? []).map((i) => strip<Meme>(i)),
+    nextCursor: res.LastEvaluatedKey
+      ? Buffer.from(JSON.stringify(res.LastEvaluatedKey)).toString('base64url')
+      : null,
+  }
+}
+
+/** Newest memes (bounded window). Fine for feeds; use listMemesPage to go deep. */
 export async function listMemes(limit = 500): Promise<Meme[]> {
   const res = await ddb.send(
     new QueryCommand({
@@ -696,6 +728,42 @@ export async function topHolders(limit = 10): Promise<UserProfile[]> {
 export const VAULT_SUB = 'memeon_vault'
 /** house account owning seeded/archive memes until a creator claims them */
 export const ARCHIVE_SUB = 'meme_archive'
+
+// ---------- giphy seed bookkeeping (scale-proof dedup + inventory counter) ----------
+
+/** Claim a giphy id for seeding. False = already seeded some time in history. */
+export async function markGiphySeeded(giphyId: string): Promise<boolean> {
+  try {
+    await ddb.send(
+      new PutCommand({
+        TableName: T(),
+        Item: { PK: `GIPHY#${giphyId}`, SK: 'SEED', giphyId, at: new Date().toISOString() },
+        ConditionExpression: 'attribute_not_exists(PK)',
+      }),
+    )
+    return true
+  } catch {
+    return false
+  }
+}
+
+export async function archiveSeedCount(): Promise<number> {
+  const res = await ddb.send(
+    new GetCommand({ TableName: T(), Key: { PK: 'ARCHIVE#STATS', SK: 'COUNT' } }),
+  )
+  return (res.Item?.seeded as number) ?? 0
+}
+
+export async function bumpArchiveSeedCount(n: number): Promise<void> {
+  await ddb.send(
+    new UpdateCommand({
+      TableName: T(),
+      Key: { PK: 'ARCHIVE#STATS', SK: 'COUNT' },
+      UpdateExpression: 'ADD seeded :n',
+      ExpressionAttributeValues: { ':n': n },
+    }),
+  )
+}
 
 // ---------- creator claims (for archive-seeded memes) ----------
 
