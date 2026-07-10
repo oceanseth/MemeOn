@@ -891,6 +891,25 @@ textarea:focus {
   gap: 7px;
   font-size: 13.5px;
   color: var(--text-dim);
+  text-decoration: none;
+}
+
+.online-friend:hover span {
+  color: var(--text);
+}
+
+/* clickable identity block inside person rows */
+.person-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 10px;
+}
+
+.person-link:hover .person-name {
+  color: var(--accent);
 }
 
 .form-grid {
