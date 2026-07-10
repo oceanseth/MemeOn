@@ -369,6 +369,30 @@ textarea:focus {
     0 0 80px rgba(240, 195, 255, 0.25);
 }
 
+/* large variant for the meme detail page: same card, bigger everything */
+.meme-card-lg .meme-title {
+  font-size: 22px;
+  white-space: normal;
+}
+
+.meme-card-lg .meme-meta {
+  padding: 14px 16px 16px;
+  gap: 9px;
+}
+
+.meme-card-lg .meme-sub {
+  font-size: 15px;
+}
+
+.meme-card-lg .tier-chip {
+  font-size: 13px;
+  padding: 4px 12px;
+}
+
+.meme-card-lg:hover {
+  transform: none;
+}
+
 /* sheen sweep over holo+ tiers */
 .meme-card.sheen .meme-card-inner::after {
   content: '';
