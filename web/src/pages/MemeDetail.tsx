@@ -91,7 +91,10 @@ export default function MemeDetail() {
   return (
     <main className="container">
       <div className="detail-layout">
-        <div className={`meme-card ${tierClasses(meme.tier.key)}`} style={{ alignSelf: 'start' }}>
+        <div
+          className={`meme-card meme-card-lg ${tierClasses(meme.tier.key)}`}
+          style={{ alignSelf: 'start' }}
+        >
           <div className="meme-card-inner">
             {meme.mediaType === 'video' && meme.videoUrl ? (
               <video className="meme-art" src={meme.videoUrl} controls loop poster={meme.imageUrl} />
@@ -99,9 +102,27 @@ export default function MemeDetail() {
               <img className="meme-art" src={meme.imageUrl} alt={meme.title} />
             )}
             <div className="meme-meta">
-              <span className="tier-chip" style={{ color: meme.tier.color, alignSelf: 'flex-start' }}>
-                {meme.tier.name} · {meme.tier.rarity}
+              <span className="meme-title">{meme.title}</span>
+              <span>
+                <span className="tier-chip" style={{ color: meme.tier.color }}>
+                  {meme.tier.name} · {meme.tier.rarity}
+                </span>
               </span>
+              <span className="meme-sub">
+                <span>
+                  👁️ {(meme.views ?? meme.reshares).toLocaleString()} · 🔁{' '}
+                  {(meme.reshareCount ?? 0).toLocaleString()}
+                </span>
+                <span>🧠 {meme.value.toLocaleString()}</span>
+              </span>
+              {meme.listing && meme.listing.shares > 0 && (
+                <span className="meme-sub">
+                  <span className="badge">for sale</span>
+                  <span>
+                    {meme.listing.shares} sh @ 🧠{meme.listing.pricePerShare}
+                  </span>
+                </span>
+              )}
             </div>
           </div>
         </div>
