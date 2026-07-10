@@ -25,8 +25,9 @@ export const TIERS: Tier[] = [
     key: 'paper',
     name: 'Paper',
     rarity: 'Common',
+    // value starts at zero: an unshared meme is worth exactly nothing (yet)
     minReshares: 0,
-    baseValue: 10,
+    baseValue: 0,
     color: '#a8b0bd',
     hype: 'Fresh off the press. Every legend starts as a humble shitpost.',
   },
