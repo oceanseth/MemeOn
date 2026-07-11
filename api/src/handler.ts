@@ -65,6 +65,12 @@ export async function dispatch(input: {
     return withCors(await match.handler(req))
   } catch (err) {
     if (err instanceof HttpError) return withCors(json(err.statusCode, { error: err.message }))
+    // upstream (masky) errors carry a status — surface their message instead of a blind 500
+    const upstream = err as Error & { status?: number }
+    if (typeof upstream?.status === 'number' && upstream.status >= 400) {
+      console.error('upstream error', { path: input.path, err })
+      return withCors(json(502, { error: upstream.message.slice(0, 300) }))
+    }
     console.error('unhandled route error', { path: input.path, err })
     return withCors(json(500, { error: 'internal error' }))
   }

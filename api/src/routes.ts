@@ -446,7 +446,8 @@ authed('POST /api/aigen/video', async (req) => {
     prompt,
     image,
     srcVideo,
-    resolution: '720p',
+    // resolution is cinematic-only; video-to-video (ensemble) rejects it
+    ...(srcVideo ? {} : { resolution: '720p' }),
   })
   return json(202, out)
 })
