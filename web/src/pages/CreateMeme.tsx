@@ -80,6 +80,10 @@ export default function CreateMeme() {
   const [mode, setMode] = useState<Mode>(remixId ? 'remix' : 'generate')
   const [remixSource, setRemixSource] = useState<Meme | null>(null)
   const [remixOutput, setRemixOutput] = useState<'image' | 'video'>('image')
+  // video remixes: 'edit' = precise change (edit still, then animate — reliable);
+  // 'restyle' = raw video-to-video (transforms the whole look, ignores fine edits)
+  const [videoMode, setVideoMode] = useState<'edit' | 'restyle'>('edit')
+  const [motionPrompt, setMotionPrompt] = useState('')
   const [title, setTitle] = useState('')
   const [tags, setTags] = useState('')
   const [prompt, setPrompt] = useState('')
@@ -271,16 +275,31 @@ export default function CreateMeme() {
         })
         setImageUrl(out.imageUrl)
         setVideoUrl('')
-      } else {
-        setBusy('Starting video remix (1–3 min, uses your Masky credits)…')
+      } else if (videoMode === 'restyle' && remixSource.mediaType === 'video' && remixSource.videoUrl) {
+        // whole-video restyle: masky's ensemble transforms the look globally
+        setBusy('Restyling the whole video (uses your Masky credits)…')
         setImageUrl(remixSource.imageUrl)
         const started = await post<{ generationId: string }>('/api/aigen/video', {
           prompt,
-          ...(remixSource.mediaType === 'video' && remixSource.videoUrl
-            ? { srcVideo: remixSource.videoUrl }
-            : { image: remixSource.imageUrl }),
+          srcVideo: remixSource.videoUrl,
         })
         setBusy('Rendering video remix… hold the vibe.')
+        setVideoUrl(await pollVideo(started.generationId, Date.now()))
+      } else {
+        // precise edit: change the still first (reliable), then animate it
+        setBusy('Step 1/2 — applying your edit to the frame (uses your Masky credits)…')
+        const edited = await post<{ imageUrl: string }>('/api/aigen/image-edit', {
+          prompt: `${prompt}, keep everything else identical`,
+          imageUrls: [remixSource.imageUrl],
+        })
+        setImageUrl(edited.imageUrl)
+        setBusy('Step 2/2 — animating the edited frame…')
+        const started = await post<{ generationId: string }>('/api/aigen/video', {
+          prompt:
+            motionPrompt.trim() ||
+            'subtle natural motion true to the scene, same style, short loop',
+          image: edited.imageUrl,
+        })
         setVideoUrl(await pollVideo(started.generationId, Date.now()))
       }
     } catch (e) {
@@ -430,22 +449,49 @@ export default function CreateMeme() {
                 onChange={(e) => setRemixOutput(e.target.value as 'image' | 'video')}
               >
                 <option value="image">🎨 New image (edit the art)</option>
-                <option value="video">🎬 New video (animate it)</option>
+                <option value="video">🎬 New video</option>
               </select>
             </label>
+            {remixOutput === 'video' && remixSource?.mediaType === 'video' && (
+              <label>
+                Video remix style
+                <select
+                  value={videoMode}
+                  onChange={(e) => setVideoMode(e.target.value as 'edit' | 'restyle')}
+                >
+                  <option value="edit">🎯 Precise edit (change something, then animate)</option>
+                  <option value="restyle">🌀 Restyle the whole video (transforms the look)</option>
+                </select>
+              </label>
+            )}
             <label>
-              Edit prompt (runs on your Masky credits)
+              {remixOutput === 'video' && videoMode === 'edit'
+                ? 'What to change (runs on your Masky credits)'
+                : 'Edit prompt (runs on your Masky credits)'}
               <textarea
                 rows={3}
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder={
                   remixOutput === 'video'
-                    ? 'the capybara slowly turns to the camera as the office burns'
+                    ? videoMode === 'edit'
+                      ? 'add a claude icon to the tshirt he is wearing'
+                      : 'make the whole scene look like a vaporwave painting'
                     : 'same scene but everyone is a skeleton and it is raining'
                 }
               />
             </label>
+            {remixOutput === 'video' && videoMode === 'edit' && (
+              <label>
+                Motion (optional — how the animated clip should move)
+                <textarea
+                  rows={2}
+                  value={motionPrompt}
+                  onChange={(e) => setMotionPrompt(e.target.value)}
+                  placeholder="he sprays himself in the face with the hose, same scene, short loop"
+                />
+              </label>
+            )}
             <div>
               <button
                 className="primary"
