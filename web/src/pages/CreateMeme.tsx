@@ -189,6 +189,76 @@ export default function CreateMeme() {
       .catch(() => setErr('source meme not found'))
   }, [remixId])
 
+  const PENDING_KEY = 'memeon_pending_video'
+  const POLL_TIMEOUT_MS = 8 * 60_000
+
+  /**
+   * Poll a masky video job to completion with elapsed display, an 8-min
+   * timeout, and sessionStorage bookkeeping so a refresh can resume it.
+   */
+  const pollVideo = (generationId: string, startedAt: number): Promise<string> =>
+    new Promise<string>((resolve, reject) => {
+      sessionStorage.setItem(
+        PENDING_KEY,
+        JSON.stringify({ generationId, startedAt, imageUrl, remixId }),
+      )
+      const finish = (fn: () => void) => {
+        if (pollRef.current) clearInterval(pollRef.current)
+        sessionStorage.removeItem(PENDING_KEY)
+        fn()
+      }
+      pollRef.current = setInterval(async () => {
+        const elapsed = Math.round((Date.now() - startedAt) / 1000)
+        setBusy(`Rendering video… ${Math.floor(elapsed / 60)}m${String(elapsed % 60).padStart(2, '0')}s — hold the vibe.`)
+        if (Date.now() - startedAt > POLL_TIMEOUT_MS) {
+          return finish(() =>
+            reject(
+              new Error(
+                `render is taking longer than 8 minutes — it may still finish on Masky (job ${generationId}); come back to this page to resume waiting`,
+              ),
+            ),
+          )
+        }
+        try {
+          const st = await fetchVideoStatus(generationId)
+          if (st.status === 'video' && st.videoUrl) {
+            const url = st.videoUrl
+            finish(() => resolve(url))
+          } else if (st.status === 'error') {
+            finish(() => reject(new Error(st.errorMessage ?? 'video generation failed')))
+          }
+        } catch {
+          /* transient poll failure — keep going until timeout */
+        }
+      }, 5000)
+    })
+
+  // resume a render that was in flight when the page was left/refreshed
+  useEffect(() => {
+    const raw = sessionStorage.getItem(PENDING_KEY)
+    if (!raw) return
+    try {
+      const pending = JSON.parse(raw) as {
+        generationId: string
+        startedAt: number
+        imageUrl?: string
+      }
+      if (Date.now() - pending.startedAt > POLL_TIMEOUT_MS) {
+        sessionStorage.removeItem(PENDING_KEY)
+        return
+      }
+      if (pending.imageUrl) setImageUrl(pending.imageUrl)
+      setBusy('Resuming a video render already in progress…')
+      pollVideo(pending.generationId, pending.startedAt)
+        .then((url) => setVideoUrl(url))
+        .catch((e) => setErr(e instanceof Error ? e.message : 'render failed'))
+        .finally(() => setBusy(null))
+    } catch {
+      sessionStorage.removeItem(PENDING_KEY)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const remix = async () => {
     if (!remixSource) return
     setErr(null)
@@ -211,24 +281,7 @@ export default function CreateMeme() {
             : { image: remixSource.imageUrl }),
         })
         setBusy('Rendering video remix… hold the vibe.')
-        await new Promise<void>((resolve, reject) => {
-          pollRef.current = setInterval(async () => {
-            try {
-              const st = await fetchVideoStatus(started.generationId)
-              if (st.status === 'video' && st.videoUrl) {
-                setVideoUrl(st.videoUrl)
-                if (pollRef.current) clearInterval(pollRef.current)
-                resolve()
-              } else if (st.status === 'error') {
-                if (pollRef.current) clearInterval(pollRef.current)
-                reject(new Error(st.errorMessage ?? 'video remix failed'))
-              }
-            } catch (e) {
-              if (pollRef.current) clearInterval(pollRef.current)
-              reject(e instanceof Error ? e : new Error('poll failed'))
-            }
-          }, 5000)
-        })
+        setVideoUrl(await pollVideo(started.generationId, Date.now()))
       }
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'remix failed')
@@ -265,24 +318,7 @@ export default function CreateMeme() {
       setImageUrl(thumb.imageUrl)
       const started = await post<{ generationId: string }>('/api/aigen/video', { prompt })
       setBusy('Rendering video… this takes a minute or three. Hold the vibe.')
-      await new Promise<void>((resolve, reject) => {
-        pollRef.current = setInterval(async () => {
-          try {
-            const st = await fetchVideoStatus(started.generationId)
-            if (st.status === 'video' && st.videoUrl) {
-              setVideoUrl(st.videoUrl)
-              if (pollRef.current) clearInterval(pollRef.current)
-              resolve()
-            } else if (st.status === 'error') {
-              if (pollRef.current) clearInterval(pollRef.current)
-              reject(new Error(st.errorMessage ?? 'video generation failed'))
-            }
-          } catch (e) {
-            if (pollRef.current) clearInterval(pollRef.current)
-            reject(e instanceof Error ? e : new Error('poll failed'))
-          }
-        }, 5000)
-      })
+      setVideoUrl(await pollVideo(started.generationId, Date.now()))
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'video generation failed')
     } finally {
