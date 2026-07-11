@@ -97,7 +97,7 @@ export default function MemeDetail() {
         >
           <div className="meme-card-inner">
             {meme.mediaType === 'video' && meme.videoUrl ? (
-              {/* muted+playsInline is required for browsers to allow autoplay */}
+              // muted+playsInline is required for browsers to allow autoplay
               <video
                 className="meme-art"
                 src={meme.videoUrl}
