@@ -84,6 +84,8 @@ export default function CreateMeme() {
   // 'restyle' = raw video-to-video (transforms the whole look, ignores fine edits)
   const [videoMode, setVideoMode] = useState<'edit' | 'restyle'>('edit')
   const [motionPrompt, setMotionPrompt] = useState('')
+  // precise-edit flow pauses here: edited frame awaiting user approval to animate
+  const [editedFrame, setEditedFrame] = useState<string | null>(null)
   const [title, setTitle] = useState('')
   const [tags, setTags] = useState('')
   const [prompt, setPrompt] = useState('')
@@ -286,21 +288,15 @@ export default function CreateMeme() {
         setBusy('Rendering video remix… hold the vibe.')
         setVideoUrl(await pollVideo(started.generationId, Date.now()))
       } else {
-        // precise edit: change the still first (reliable), then animate it
-        setBusy('Step 1/2 — applying your edit to the frame (uses your Masky credits)…')
+        // precise edit: change the still first, then pause for approval
+        setBusy('Applying your edit to the frame (uses your Masky credits)…')
         const edited = await post<{ imageUrl: string }>('/api/aigen/image-edit', {
           prompt: `${prompt}, keep everything else identical`,
           imageUrls: [remixSource.imageUrl],
         })
         setImageUrl(edited.imageUrl)
-        setBusy('Step 2/2 — animating the edited frame…')
-        const started = await post<{ generationId: string }>('/api/aigen/video', {
-          prompt:
-            motionPrompt.trim() ||
-            'subtle natural motion true to the scene, same style, short loop',
-          image: edited.imageUrl,
-        })
-        setVideoUrl(await pollVideo(started.generationId, Date.now()))
+        setEditedFrame(edited.imageUrl)
+        setVideoUrl('')
       }
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'remix failed')
@@ -340,6 +336,26 @@ export default function CreateMeme() {
       setVideoUrl(await pollVideo(started.generationId, Date.now()))
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'video generation failed')
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  /** User approved the edited frame — run the animation step. */
+  const animateEdited = async () => {
+    if (!editedFrame) return
+    setErr(null)
+    try {
+      setBusy('Animating the approved frame (uses your Masky credits)…')
+      const started = await post<{ generationId: string }>('/api/aigen/video', {
+        prompt:
+          motionPrompt.trim() || 'subtle natural motion true to the scene, same style, short loop',
+        image: editedFrame,
+      })
+      setVideoUrl(await pollVideo(started.generationId, Date.now()))
+      setEditedFrame(null)
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : 'animation failed')
     } finally {
       setBusy(null)
     }
@@ -481,16 +497,31 @@ export default function CreateMeme() {
                 }
               />
             </label>
-            {remixOutput === 'video' && videoMode === 'edit' && (
-              <label>
-                Motion (optional — how the animated clip should move)
-                <textarea
-                  rows={2}
-                  value={motionPrompt}
-                  onChange={(e) => setMotionPrompt(e.target.value)}
-                  placeholder="he sprays himself in the face with the hose, same scene, short loop"
-                />
-              </label>
+            {remixOutput === 'video' && videoMode === 'edit' && editedFrame && !videoUrl && (
+              <div className="panel" style={{ borderColor: 'var(--gold)' }}>
+                <strong>✅ Edit applied — happy with this frame?</strong>
+                <p style={{ color: 'var(--text-dim)', fontSize: 13, margin: '6px 0 10px' }}>
+                  Check the preview below. Animate it, or tweak the prompt and re-run the edit
+                  before spending render credits.
+                </p>
+                <label>
+                  Motion (optional — how the animated clip should move)
+                  <textarea
+                    rows={2}
+                    value={motionPrompt}
+                    onChange={(e) => setMotionPrompt(e.target.value)}
+                    placeholder="he sprays himself in the face with the hose, same scene, short loop"
+                  />
+                </label>
+                <div className="filter-bar" style={{ marginTop: 10 }}>
+                  <button className="primary" disabled={!!busy} onClick={animateEdited}>
+                    🎬 Looks good — animate it
+                  </button>
+                  <button disabled={!!busy || !prompt.trim()} onClick={remix}>
+                    ↻ Re-run the edit
+                  </button>
+                </div>
+              </div>
             )}
             <div>
               <button
