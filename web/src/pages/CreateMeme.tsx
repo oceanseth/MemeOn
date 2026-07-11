@@ -347,10 +347,15 @@ export default function CreateMeme() {
     setErr(null)
     try {
       setBusy('Animating the approved frame (uses your Masky credits)…')
+      // video source: srcVideo + edited reference image preserves the ORIGINAL
+      // motion with the edit applied (verified against masky/pruna directly)
+      const isVideoSource = remixSource?.mediaType === 'video' && remixSource.videoUrl
       const started = await post<{ generationId: string }>('/api/aigen/video', {
-        prompt:
-          motionPrompt.trim() || 'subtle natural motion true to the scene, same style, short loop',
+        prompt: isVideoSource
+          ? `same video and motion as the source, with the change from the reference image applied${motionPrompt.trim() ? ` — ${motionPrompt.trim()}` : ''}`
+          : motionPrompt.trim() || 'subtle natural motion true to the scene, same style, short loop',
         image: editedFrame,
+        ...(isVideoSource ? { srcVideo: remixSource!.videoUrl } : {}),
       })
       setVideoUrl(await pollVideo(started.generationId, Date.now()))
       setEditedFrame(null)
