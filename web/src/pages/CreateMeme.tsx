@@ -191,7 +191,11 @@ export default function CreateMeme() {
   useEffect(() => {
     if (!remixId) return
     apiFetch<{ meme: Meme }>(`/api/memes/${remixId}`)
-      .then((r) => setRemixSource(r.meme))
+      .then((r) => {
+        setRemixSource(r.meme)
+        // pre-fill so the mint gate never silently blocks on a blank title
+        setTitle((t) => t || r.meme.title.slice(0, 20))
+      })
       .catch(() => setErr('source meme not found'))
   }, [remixId])
 
@@ -731,6 +735,18 @@ export default function CreateMeme() {
         )}
 
         <div>
+          {!canMint && !busy && (
+            <p style={{ color: 'var(--text-dim)', fontSize: 13, margin: '0 0 8px' }}>
+              To mint:{' '}
+              {[
+                !title.trim() && 'add a title',
+                !imageUrl && 'add artwork',
+                mode === 'video' && !videoUrl && 'finish the video',
+              ]
+                .filter(Boolean)
+                .join(' · ') || '…'}
+            </p>
+          )}
           <button className="primary" disabled={!canMint} onClick={mint}>
             🧠 Mint (100 shares to you)
           </button>
