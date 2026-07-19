@@ -65,6 +65,14 @@ jobs:
             --cache-control "public, max-age=60" \
             --content-type "text/html; charset=utf-8"
 
+      - name: Upload skill.md with explicit content type
+        run: |
+          for key in skill.md .well-known/skill.md; do
+            aws s3 cp web/dist/skill.md "s3://${{ steps.deploy_config.outputs.site_bucket_name }}/$key" \
+              --cache-control "public, max-age=300" \
+              --content-type "text/markdown; charset=utf-8"
+          done
+
       - name: Update Lambda function
         run: |
           aws lambda update-function-code \
