@@ -94,6 +94,12 @@ export async function handler(
     console.log('giphy-seed run', result)
     return result
   }
+  if (event.action === 'leaderboard-rebuild') {
+    const { rebuildLeaderboard } = await import('./leaderboard')
+    const result = await rebuildLeaderboard()
+    console.log('leaderboard-rebuild run', { leaders: result.leaders.length, computedAt: result.computedAt })
+    return result
+  }
 
   const headers: Record<string, string> = {}
   for (const [k, v] of Object.entries(event.headers ?? {})) {
