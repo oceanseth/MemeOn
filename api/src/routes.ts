@@ -7,6 +7,8 @@ import * as masky from './masky'
 import { authed, HttpError, html, json, maskyToken, redirect, requireString, route } from './http'
 import { issueSession, verifySession } from './session'
 import { mintFirebaseToken } from './firebase'
+import { portfolioSummary } from './portfolio'
+import { rebuildLeaderboard } from './leaderboard'
 import {
   ensureOgImage,
   frameKey,
@@ -140,38 +142,12 @@ authed('POST /api/onboarding/claim-pack', async (req) => {
 })
 
 authed('GET /api/leaderboard', async () => {
-  const top = await db.topHolders(10)
-  const rows = await Promise.all(
-    top.map(async (u) => {
-      const { value, collectionSize } = await portfolioSummary(u.sub)
-      return {
-        sub: u.sub,
-        name: u.name,
-        picture: u.picture,
-        braincells: u.coins,
-        portfolioValue: value,
-        collectionSize,
-      }
-    }),
-  )
-  return json(200, { leaders: rows })
+  // served from the precomputed cache item; lazy first build if it's missing
+  const cached = (await db.getLeaderboardCache()) ?? (await rebuildLeaderboard())
+  return json(200, { leaders: cached.leaders, computedAt: cached.computedAt })
 })
 
 // ---------- me / users ----------
-
-async function portfolioSummary(userId: string) {
-  const positions = await db.getPortfolio(userId)
-  const memes = (
-    await Promise.all(positions.map((p) => db.getMeme(p.memeId)))
-  ).filter((m): m is Meme => !!m)
-  const byId = new Map(memes.map((m) => [m.id, m]))
-  let value = 0
-  for (const p of positions) {
-    const m = byId.get(p.memeId)
-    if (m) value += (p.shares / 100) * memeValue(m.reshares)
-  }
-  return { positions, memes, value: Math.round(value), collectionSize: positions.length }
-}
 
 authed('GET /api/me', async (req) => {
   const user = await db.getUser(req.user.sub)
@@ -816,19 +792,22 @@ authed('POST /api/users/:sub/unfollow', async (req) => {
 authed('GET /api/users/:sub/profile', async (req) => {
   const target = await db.getUser(req.params.sub)
   if (!target) throw new HttpError(404, 'user not found')
-  const [allMemes, positions, following, friendEdge, stats] = await Promise.all([
-    db.listMemes(),
-    db.getPortfolio(target.sub),
+  const isSelf = req.user.sub === target.sub
+  const [createdIds, following, friendEdge, stats] = await Promise.all([
+    db.listCreatedMemeIds(target.sub, 200),
     db.isFollowing(req.user.sub, target.sub),
     db.getFriend(req.user.sub, target.sub),
     portfolioSummary(target.sub),
   ])
-  const isSelf = req.user.sub === target.sub
-  const visible = allMemes.filter((m) => isSelf || !m.private)
-  const created = visible.filter((m) => m.creatorId === target.sub)
-  const held = new Map(positions.map((p) => [p.memeId, p.shares]))
-  const binder = visible
-    .filter((m) => held.has(m.id))
+  const createdById = new Map((await db.getMemesByIds(createdIds)).map((m) => [m.id, m]))
+  const created = createdIds
+    .map((id) => createdById.get(id))
+    .filter((m): m is Meme => !!m && (isSelf || !m.private))
+  const held = new Map(stats.positions.map((p) => [p.memeId, p.shares]))
+  const binder = stats.memes
+    .filter((m) => isSelf || !m.private)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 200)
     .map((m) => ({ ...publicMeme(m), shares: held.get(m.id) ?? 0 }))
   return json(200, {
     profile: {

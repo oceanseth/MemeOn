@@ -8,6 +8,7 @@ import {
   DeleteCommand,
   TransactWriteCommand,
   BatchWriteCommand,
+  BatchGetCommand,
 } from '@aws-sdk/lib-dynamodb'
 import { randomUUID } from 'node:crypto'
 import { env } from './env'
@@ -125,6 +126,36 @@ export async function searchUsers(q: string, limit = 25): Promise<UserProfile[]>
 
 // ---------- memes ----------
 
+// ---------- created-by edges (profile "Created" tab without scanning all memes) ----------
+
+export function createdEdgeItem(creatorId: string, createdAt: string, memeId: string) {
+  return { PK: `CREATED#${creatorId}`, SK: `${createdAt}#${memeId}`, memeId }
+}
+
+export async function putCreatedEdge(creatorId: string, createdAt: string, memeId: string): Promise<void> {
+  await ddb.send(new PutCommand({ TableName: T(), Item: createdEdgeItem(creatorId, createdAt, memeId) }))
+}
+
+export async function deleteCreatedEdge(creatorId: string, createdAt: string, memeId: string): Promise<void> {
+  await ddb
+    .send(new DeleteCommand({ TableName: T(), Key: { PK: `CREATED#${creatorId}`, SK: `${createdAt}#${memeId}` } }))
+    .catch(() => {})
+}
+
+/** Ids of memes created by `sub`, newest first. */
+export async function listCreatedMemeIds(sub: string, limit = 200): Promise<string[]> {
+  const res = await ddb.send(
+    new QueryCommand({
+      TableName: T(),
+      KeyConditionExpression: 'PK = :pk',
+      ExpressionAttributeValues: { ':pk': `CREATED#${sub}` },
+      ScanIndexForward: false,
+      Limit: limit,
+    }),
+  )
+  return (res.Items ?? []).map((i) => i.memeId as string)
+}
+
 export async function putMeme(meme: Meme): Promise<void> {
   await ddb.send(
     new PutCommand({
@@ -133,11 +164,32 @@ export async function putMeme(meme: Meme): Promise<void> {
       ConditionExpression: 'attribute_not_exists(PK)',
     }),
   )
+  await putCreatedEdge(meme.creatorId, meme.createdAt, meme.id)
 }
 
 export async function getMeme(id: string): Promise<Meme | null> {
   const res = await ddb.send(new GetCommand({ TableName: T(), Key: { PK: `MEME#${id}`, SK: 'META' } }))
   return res.Item ? strip<Meme>(res.Item) : null
+}
+
+/** Batch-fetch memes by id — chunks of 100 fired in parallel, unordered. */
+export async function getMemesByIds(ids: string[]): Promise<Meme[]> {
+  const unique = [...new Set(ids)]
+  const chunks: string[][] = []
+  for (let i = 0; i < unique.length; i += 100) chunks.push(unique.slice(i, i + 100))
+  const results = await Promise.all(
+    chunks.map(async (chunk) => {
+      const memes: Meme[] = []
+      let keys: { PK: string; SK: string }[] = chunk.map((id) => ({ PK: `MEME#${id}`, SK: 'META' }))
+      while (keys.length > 0) {
+        const res = await ddb.send(new BatchGetCommand({ RequestItems: { [T()]: { Keys: keys } } }))
+        memes.push(...(res.Responses?.[T()] ?? []).map((i) => strip<Meme>(i)))
+        keys = (res.UnprocessedKeys?.[T()]?.Keys ?? []) as { PK: string; SK: string }[]
+      }
+      return memes
+    }),
+  )
+  return results.flat()
 }
 
 /** One page of memes, newest first, with an opaque resume cursor. */
@@ -255,15 +307,22 @@ export async function getPositions(memeId: string): Promise<Position[]> {
 }
 
 export async function getPortfolio(userId: string): Promise<Position[]> {
-  const res = await ddb.send(
-    new QueryCommand({
-      TableName: T(),
-      IndexName: 'GSI1',
-      KeyConditionExpression: 'GSI1PK = :p',
-      ExpressionAttributeValues: { ':p': `PORT#${userId}` },
-    }),
-  )
-  return (res.Items ?? []).map((i) => strip<Position>(i)).filter((p) => p.shares > 0)
+  const positions: Position[] = []
+  let startKey: Record<string, unknown> | undefined
+  do {
+    const res = await ddb.send(
+      new QueryCommand({
+        TableName: T(),
+        IndexName: 'GSI1',
+        KeyConditionExpression: 'GSI1PK = :p',
+        ExpressionAttributeValues: { ':p': `PORT#${userId}` },
+        ExclusiveStartKey: startKey,
+      }),
+    )
+    positions.push(...(res.Items ?? []).map((i) => strip<Position>(i)).filter((p) => p.shares > 0))
+    startKey = res.LastEvaluatedKey
+  } while (startKey)
+  return positions
 }
 
 export function positionItem(memeId: string, userId: string, shares: number) {
@@ -306,6 +365,11 @@ export async function deleteMemeCompletely(memeId: string): Promise<void> {
     }),
   )
   const items = res.Items ?? []
+  // the created-by edge lives in the creator's partition
+  const meta = items.find((i) => i.SK === 'META')
+  if (meta?.creatorId && meta?.createdAt) {
+    await deleteCreatedEdge(meta.creatorId as string, meta.createdAt as string, memeId)
+  }
   // memeplex backedges live in other memes' partitions
   await Promise.all(
     items
@@ -707,27 +771,62 @@ export async function completeQuest(
   }
 }
 
-/** Top braincell holders (excluding house accounts). */
+/**
+ * Top braincell holders (excluding house accounts). Streams every page of the
+ * USER partition keeping only the current top `limit` in memory — background
+ * use only (the leaderboard route reads the cache item instead).
+ */
 export async function topHolders(limit = 10): Promise<UserProfile[]> {
-  const res = await ddb.send(
-    new QueryCommand({
-      TableName: T(),
-      IndexName: 'GSI1',
-      KeyConditionExpression: 'GSI1PK = :p',
-      ExpressionAttributeValues: { ':p': 'USER' },
-      Limit: 1000,
-    }),
-  )
-  return (res.Items ?? [])
-    .map((i) => strip<UserProfile>(i))
-    .filter((u) => u.sub !== VAULT_SUB)
-    .sort((a, b) => b.coins - a.coins)
-    .slice(0, limit)
+  let top: UserProfile[] = []
+  let startKey: Record<string, unknown> | undefined
+  do {
+    const res = await ddb.send(
+      new QueryCommand({
+        TableName: T(),
+        IndexName: 'GSI1',
+        KeyConditionExpression: 'GSI1PK = :p',
+        ExpressionAttributeValues: { ':p': 'USER' },
+        ExclusiveStartKey: startKey,
+      }),
+    )
+    const page = (res.Items ?? []).map((i) => strip<UserProfile>(i)).filter((u) => !HOUSE_SUBS.has(u.sub))
+    top = [...top, ...page].sort((a, b) => b.coins - a.coins).slice(0, limit)
+    startKey = res.LastEvaluatedKey
+  } while (startKey)
+  return top
 }
 
 export const VAULT_SUB = 'memeon_vault'
 /** house account owning seeded/archive memes until a creator claims them */
 export const ARCHIVE_SUB = 'meme_archive'
+const HOUSE_SUBS = new Set([VAULT_SUB, ARCHIVE_SUB])
+
+// ---------- leaderboard cache (rebuilt on a schedule; route reads one item) ----------
+
+export type LeaderboardRow = {
+  sub: string
+  name: string
+  picture: string | null
+  braincells: number
+  portfolioValue: number
+  collectionSize: number
+}
+
+export async function getLeaderboardCache(): Promise<{ leaders: LeaderboardRow[]; computedAt: string } | null> {
+  const res = await ddb.send(
+    new GetCommand({ TableName: T(), Key: { PK: 'LEADERBOARD', SK: 'CURRENT' } }),
+  )
+  if (!res.Item) return null
+  return { leaders: res.Item.leaders as LeaderboardRow[], computedAt: res.Item.computedAt as string }
+}
+
+export async function putLeaderboardCache(leaders: LeaderboardRow[]): Promise<string> {
+  const computedAt = new Date().toISOString()
+  await ddb.send(
+    new PutCommand({ TableName: T(), Item: { PK: 'LEADERBOARD', SK: 'CURRENT', leaders, computedAt } }),
+  )
+  return computedAt
+}
 
 // ---------- giphy seed bookkeeping (scale-proof dedup + inventory counter) ----------
 

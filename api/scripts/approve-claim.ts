@@ -30,6 +30,9 @@ await db.updateMemeFields(memeId, {
   ownerId: claimantSub,
   ownerName: claimant.name,
 })
+// creatorship moved — move the created-by edge so profiles stay correct
+await db.deleteCreatedEdge(meme.creatorId, meme.createdAt, memeId)
+await db.putCreatedEdge(claimantSub, meme.createdAt, memeId)
 await db.setClaimStatus(memeId, claimantSub, 'approved')
 for (const other of claims.filter((c) => c.userId !== claimantSub)) {
   await db.setClaimStatus(memeId, other.userId, 'rejected')
