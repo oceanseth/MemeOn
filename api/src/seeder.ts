@@ -5,6 +5,7 @@
 import { randomUUID } from 'node:crypto'
 import * as db from './db'
 import { search, trending } from './giphy'
+import { indexMeme } from './vectors'
 import { TIERS } from '../../shared/tiers'
 import type { Meme } from './types'
 
@@ -121,6 +122,7 @@ export async function runGiphySeed(opts: {
       source: { provider: 'giphy', id: gif.id, url: gif.url, author: gif.author },
     }
     await db.putMeme(meme)
+    await indexMeme(meme).catch(() => {})
     await db.putPosition(meme.id, db.ARCHIVE_SUB, 100)
     // archive stock goes straight on the market: 10 shares for 1 braincell
     await db.setListing(meme.id, { sellerId: db.ARCHIVE_SUB, pricePerShare: 0.1, shares: 100 })
