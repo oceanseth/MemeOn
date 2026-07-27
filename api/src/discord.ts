@@ -4,6 +4,7 @@
 import { createPublicKey, verify as edVerify } from 'node:crypto'
 import { SignJWT, jwtVerify } from 'jose'
 import * as db from './db'
+import * as vectors from './vectors'
 import { env } from './env'
 import { getJsonSecret, getSecret } from './ssm'
 import { memeValue, tierFor } from '../../shared/tiers'
@@ -80,7 +81,50 @@ export async function searchMemesFor(
   query: string,
   limit = 8,
 ): Promise<(Meme & { rank: number })[]> {
-  const all = (await db.listMemes()).filter((m) => !m.private)
+  const needle = query.trim()
+  const [candidates, { mine, friendly }] = await Promise.all([
+    findCandidates(needle, limit),
+    binderAndFriendSets(memeonSub),
+  ])
+  const ranked = candidates.map((m) => ({
+    ...m,
+    rank: mine.has(m.id) ? 0 : friendly.has(m.id) ? 1 : 2,
+  }))
+  // semantic candidates arrive best-match-first — keep that order within each
+  // rank tier (Array.sort is stable); browsing with no query ranks by reshares
+  return (
+    needle
+      ? ranked.sort((a, b) => a.rank - b.rank)
+      : ranked.sort((a, b) => a.rank - b.rank || b.reshares - a.reshares)
+  ).slice(0, limit)
+}
+
+/** Semantic search over the full archive, with a lexical fallback if it fails. */
+async function findCandidates(needle: string, limit: number): Promise<Meme[]> {
+  if (!needle) return (await db.listMemes(100)).filter((m) => !m.private)
+  try {
+    const ids = await vectors.searchIds(needle, Math.max(limit * 3, 24))
+    const byId = new Map((await db.getMemesByIds(ids)).map((m) => [m.id, m]))
+    return ids
+      .map((id) => byId.get(id))
+      .filter((m): m is Meme => !!m && !m.private)
+  } catch (err) {
+    console.error('semantic search failed, falling back to lexical', err)
+    const lower = needle.toLowerCase()
+    return (await db.listMemes()).filter(
+      (m) =>
+        !m.private &&
+        (m.title.toLowerCase().includes(lower) ||
+          (m.tags ?? []).some((t) => t.toLowerCase().includes(lower)) ||
+          m.creatorName.toLowerCase().includes(lower)),
+    )
+  }
+}
+
+/** Meme ids in the caller's binder, and in friends' binders/likes. */
+async function binderAndFriendSets(
+  memeonSub: string | null,
+): Promise<{ mine: Set<string>; friendly: Set<string> }> {
   const mine = new Set<string>()
   const friendly = new Set<string>()
   if (memeonSub) {
@@ -101,18 +145,7 @@ export async function searchMemesFor(
       }),
     )
   }
-  const needle = query.trim().toLowerCase()
-  return all
-    .filter(
-      (m) =>
-        !needle ||
-        m.title.toLowerCase().includes(needle) ||
-        (m.tags ?? []).some((t) => t.toLowerCase().includes(needle)) ||
-        m.creatorName.toLowerCase().includes(needle),
-    )
-    .map((m) => ({ ...m, rank: mine.has(m.id) ? 0 : friendly.has(m.id) ? 1 : 2 }))
-    .sort((a, b) => a.rank - b.rank || b.reshares - a.reshares)
-    .slice(0, limit)
+  return { mine, friendly }
 }
 
 export function memeChoiceLabel(m: Meme & { rank: number }): string {

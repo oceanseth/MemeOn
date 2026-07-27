@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import * as db from './db'
 import * as discord from './discord'
 import * as giphy from './giphy'
+import * as vectors from './vectors'
 import { env } from './env'
 import * as masky from './masky'
 import { authed, HttpError, html, json, maskyToken, redirect, requireString, route } from './http'
@@ -274,6 +275,7 @@ authed('POST /api/memes', async (req) => {
     source,
   }
   await db.putMeme(meme)
+  await vectors.indexMeme(meme).catch(() => {})
   await db.putPosition(meme.id, req.user.sub, 100)
   if (remixOf) await db.addPlexEdge(meme.id, remixOf, req.user.sub).catch(() => {})
   await awardQuest(req.user.sub, 'mint')
@@ -314,6 +316,7 @@ authed('DELETE /api/memes/:id', async (req) => {
   const mine = positions.find((p) => p.userId === req.user.sub)
   if (!mine || mine.shares < 100) throw new HttpError(403, 'only a 100% owner can delete')
   await db.deleteMemeCompletely(meme.id)
+  await vectors.removeFromIndex(meme.id).catch(() => {})
   return json(200, { ok: true, deleted: meme.id })
 })
 
@@ -331,6 +334,11 @@ authed('POST /api/memes/:id/visibility', async (req) => {
     // a hidden meme shouldn't stay purchasable
     ...(makePrivate ? { listing: null } : {}),
   })
+  // keep the search index in sync with visibility
+  await (makePrivate
+    ? vectors.removeFromIndex(meme.id)
+    : vectors.indexMeme({ ...meme, private: false })
+  ).catch(() => {})
   return json(200, { ok: true, private: makePrivate })
 })
 
