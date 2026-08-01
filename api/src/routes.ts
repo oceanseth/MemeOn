@@ -21,6 +21,7 @@ import * as ogModule from './og'
 import { assetUrl, presignUpload, putAsset } from './s3'
 import { memeValue, TIERS, tierFor, tierIndexFor } from '../../shared/tiers'
 import type { Meme, Trade, TradeSide } from './types'
+import { SafeFetchError, assertPublicUrl, safeFetch } from './safeFetch'
 
 // ---------- health ----------
 
@@ -1064,9 +1065,6 @@ route('GET /api/memes/:id/history', async (req) => {
 
 // ---------- page-url → image resolver (meme creator "From URL") ----------
 
-const PRIVATE_HOST_RE =
-  /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|\[?::1)/i
-
 function metaContent(htmlChunk: string, ...props: string[]): string | null {
   for (const prop of props) {
     const re = new RegExp(
@@ -1082,17 +1080,15 @@ function metaContent(htmlChunk: string, ...props: string[]): string | null {
 /**
  * Resolve a pasted URL to usable media: direct images pass through; html pages
  * (giphy, imgur, tenor, reddit, …) yield their og:image / og:video.
+ * SSRF-hardened: private IPs blocked pre-fetch and after every redirect (mo-100.5).
  */
 authed('POST /api/resolve-image', async (req) => {
   const raw = requireString(req.body, 'url', 2000)
   let target: URL
   try {
-    target = new URL(raw)
-  } catch {
-    throw new HttpError(400, 'not a valid URL')
-  }
-  if (!/^https?:$/.test(target.protocol) || PRIVATE_HOST_RE.test(target.hostname)) {
-    throw new HttpError(400, 'unsupported URL')
+    target = await assertPublicUrl(raw)
+  } catch (err) {
+    throw new HttpError(400, err instanceof SafeFetchError ? err.message : 'unsupported URL')
   }
 
   // giphy pages: skip scraping entirely — the gif id is in the slug and the API
@@ -1111,30 +1107,44 @@ authed('POST /api/resolve-image', async (req) => {
     }
   }
 
-  const res = await fetch(target.toString(), {
-    headers: {
-      accept: 'text/html,image/*',
-      // most media sites whitelist the facebook crawler for og tags
-      'user-agent': 'facebookexternalhit/1.1 (MemeOnBot; +https://memeon.ai)',
-    },
-    signal: AbortSignal.timeout(8000),
-    redirect: 'follow',
-  }).catch(() => null)
-  if (!res || !res.ok) throw new HttpError(400, 'could not fetch that URL')
+  let fetched: Awaited<ReturnType<typeof safeFetch>>
+  try {
+    fetched = await safeFetch(target.toString(), {
+      headers: {
+        accept: 'text/html,image/*',
+        // most media sites whitelist the facebook crawler for og tags
+        'user-agent': 'facebookexternalhit/1.1 (MemeOnBot; +https://memeon.ai)',
+      },
+      timeoutMs: 8000,
+      maxBytes: 400_000, // only need <head> for HTML; images also capped
+    })
+  } catch (err) {
+    throw new HttpError(400, err instanceof SafeFetchError ? err.message : 'could not fetch that URL')
+  }
 
-  const contentType = res.headers.get('content-type') ?? ''
+  const contentType = fetched.headers.get('content-type') ?? ''
   if (contentType.startsWith('image/')) {
-    return json(200, { imageUrl: target.toString(), videoUrl: null, resolvedFrom: 'direct', source: null })
+    return json(200, {
+      imageUrl: fetched.url,
+      videoUrl: null,
+      resolvedFrom: 'direct',
+      source: null,
+    })
   }
   if (!contentType.includes('text/html')) {
     throw new HttpError(400, `that URL is ${contentType.split(';')[0] || 'not an image or page'}`)
   }
-  // only need the <head>; cap the read at 400KB
-  const htmlChunk = (await res.text()).slice(0, 400_000)
+  const htmlChunk = fetched.body.toString('utf8')
   let imageUrl = metaContent(htmlChunk, 'og:image:secure_url', 'og:image', 'twitter:image')
   const videoRaw = metaContent(htmlChunk, 'og:video:secure_url', 'og:video')
   const videoUrl = videoRaw && /\.mp4($|\?)/i.test(videoRaw) ? videoRaw : null
   if (!imageUrl) throw new HttpError(404, 'no main image found on that page')
+  // og:image must also be public (no open-redirect to metadata)
+  try {
+    await assertPublicUrl(imageUrl)
+  } catch {
+    throw new HttpError(400, 'page image points to a private host')
+  }
   // giphy media URLs offer every format at the same path; webp breaks the og
   // compositor (jimp has no webp decoder) so swap it for the gif rendition
   if (/giphy\.com\/media\//i.test(imageUrl) && /\.webp($|\?)/i.test(imageUrl)) {
