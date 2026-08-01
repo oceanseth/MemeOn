@@ -3,7 +3,7 @@ import * as db from './db'
 import * as discord from './discord'
 import * as giphy from './giphy'
 import * as vectors from './vectors'
-import { env } from './env'
+import { env, isAdminSub } from './env'
 import * as masky from './masky'
 import { authed, HttpError, html, json, maskyToken, redirect, requireString, route } from './http'
 import { issueSession, verifySession } from './session'
@@ -1320,17 +1320,25 @@ route('GET /api/brand/:file', (req) => {
   return redirect(assetUrl(`brand/${file}`), 'public, max-age=3600')
 })
 
-/** Regenerate a tier's card frame art with Masky (bills the caller's credits). */
+/**
+ * Regenerate a tier's card frame art with Masky (bills the caller's credits).
+ * Admin-only: `ADMIN_SUBS` env (comma-separated subs); empty allowlist → 403.
+ */
 authed('POST /api/admin/frames', async (req) => {
+  if (!isAdminSub(req.user.sub)) throw new HttpError(403, 'admin only')
   const tierKey = requireString(req.body, 'tierKey')
   const tier = TIERS.find((t) => t.key === tierKey)
   if (!tier) throw new HttpError(400, 'unknown tier')
   const prompt = framePrompt(tier.name, tierIndexFor(tier.minReshares))
   const out = await masky.generateImage(maskyToken(req), prompt, '3:4')
-  const res = await fetch(out.imageUrl)
-  if (!res.ok) throw new HttpError(502, 'failed to download generated frame')
-  const buf = Buffer.from(await res.arrayBuffer())
-  const url = await putAsset(frameKey(tier.key), buf, 'image/png')
+  const { body } = await safeFetch(out.imageUrl, {
+    maxBytes: 8 * 1024 * 1024,
+    timeoutMs: 30_000,
+    headers: { accept: 'image/*' },
+  }).catch(() => {
+    throw new HttpError(502, 'failed to download generated frame')
+  })
+  const url = await putAsset(frameKey(tier.key), body, 'image/png')
   return json(200, { url })
 })
 
