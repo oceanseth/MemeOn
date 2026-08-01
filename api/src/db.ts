@@ -675,30 +675,56 @@ export async function listTrades(userId: string): Promise<Trade[]> {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
 
-/** Update trade status on the META item and both user refs. */
-export async function setTradeStatus(trade: Trade, status: Trade['status']): Promise<Trade> {
-  const resolvedAt = new Date().toISOString()
-  const updated = { ...trade, status, resolvedAt }
-  await ddb.send(
-    new TransactWriteCommand({
-      TransactItems: [
-        { Put: { TableName: T(), Item: { PK: `TRADE#${trade.id}`, SK: 'META', ...updated } } },
-        { Put: { TableName: T(), Item: tradeRefItem(trade.fromId, updated) } },
-        { Put: { TableName: T(), Item: tradeRefItem(trade.toId, updated) } },
-      ],
-    }),
-  )
-  return updated
+type TransactItems = NonNullable<
+  ConstructorParameters<typeof TransactWriteCommand>[0]['TransactItems']
+>
+
+/** Put META + both user trade refs only if every copy is still `proposed`. */
+function tradeStatusPuts(updated: Trade): TransactItems {
+  const cond = {
+    ConditionExpression: '#status = :proposed',
+    ExpressionAttributeNames: { '#status': 'status' },
+    ExpressionAttributeValues: { ':proposed': 'proposed' },
+  }
+  return [
+    {
+      Put: {
+        TableName: T(),
+        Item: { PK: `TRADE#${updated.id}`, SK: 'META', ...updated },
+        ...cond,
+      },
+    },
+    {
+      Put: {
+        TableName: T(),
+        Item: tradeRefItem(updated.fromId, updated),
+        ...cond,
+      },
+    },
+    {
+      Put: {
+        TableName: T(),
+        Item: tradeRefItem(updated.toId, updated),
+        ...cond,
+      },
+    },
+  ]
 }
 
 /**
- * Execute an accepted trade: move each side's meme shares and coins.
- * Throws (transaction cancelled) if either party lacks the goods.
+ * Update trade status on META + both user refs.
+ * Conditional: only succeeds while status is still `proposed` (cancel/decline races).
  */
-export async function executeTrade(trade: Trade): Promise<void> {
-  const items: NonNullable<
-    ConstructorParameters<typeof TransactWriteCommand>[0]['TransactItems']
-  > = []
+export async function setTradeStatus(trade: Trade, status: Trade['status']): Promise<Trade> {
+  const resolvedAt = new Date().toISOString()
+  const updated = { ...trade, status, resolvedAt }
+  await ddb.send(new TransactWriteCommand({ TransactItems: tradeStatusPuts(updated) }))
+  return updated
+}
+
+/** Build coin + share transfer items for a trade (no status write). */
+function tradeTransferItems(trade: Trade): TransactItems {
+  const items: TransactItems = []
 
   const moveCoins = (from: string, to: string, amount: number) => {
     if (amount <= 0) return
@@ -738,8 +764,31 @@ export async function executeTrade(trade: Trade): Promise<void> {
   moveCoins(trade.toId, trade.fromId, trade.ask.coins)
   for (const m of trade.offer.memes) moveShares(trade.fromId, trade.toId, m.memeId, m.shares)
   for (const m of trade.ask.memes) moveShares(trade.toId, trade.fromId, m.memeId, m.shares)
+  return items
+}
 
-  await ddb.send(new TransactWriteCommand({ TransactItems: items }))
+/**
+ * Accept a proposed trade in one transaction: status proposed→accepted on META
+ * + both refs, and all coin/share moves. Concurrent cancel/decline/accept loses
+ * the condition and leaves funds untouched.
+ */
+export async function acceptTrade(trade: Trade): Promise<Trade> {
+  const resolvedAt = new Date().toISOString()
+  const updated: Trade = { ...trade, status: 'accepted', resolvedAt }
+  await ddb.send(
+    new TransactWriteCommand({
+      TransactItems: [...tradeTransferItems(trade), ...tradeStatusPuts(updated)],
+    }),
+  )
+  return updated
+}
+
+/**
+ * Execute fund moves only (no status). Prefer `acceptTrade` for the accept path.
+ * Kept for callers that already flipped status under a stronger lock.
+ */
+export async function executeTrade(trade: Trade): Promise<void> {
+  await ddb.send(new TransactWriteCommand({ TransactItems: tradeTransferItems(trade) }))
 }
 
 // ---------- onboarding quests ----------
