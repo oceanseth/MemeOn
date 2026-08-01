@@ -1,0 +1,97 @@
+<template>
+  <div data-hf-id="hf-prpg" id="root" data-composition-id="08-cta" data-width="1920" data-height="1080">
+    <style>
+
+      @font-face { font-family: "Barlow"; font-style: normal; font-weight: 400;
+        font-display: block; src: url("assets/fonts/Barlow-400.woff2") format("woff2"); }
+      @font-face { font-family: "Barlow"; font-style: normal; font-weight: 700;
+        font-display: block; src: url("assets/fonts/Barlow-700.woff2") format("woff2"); }
+      @font-face { font-family: "Barlow"; font-style: normal; font-weight: 900;
+        font-display: block; src: url("assets/fonts/Barlow-900.woff2") format("woff2"); }
+      @font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500;
+        font-display: block; src: url("assets/fonts/IBMPlexMono-500.woff2") format("woff2"); }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden;
+              container-type: size; font-family: "Barlow", sans-serif; color: #E8ECF4; }
+      #root .mono { font-family: "IBM Plex Mono", monospace; text-transform: uppercase;
+                    letter-spacing: 0.14em; font-weight: 500; }
+      #root .disp { font-weight: 900; letter-spacing: -0.04em; line-height: 0.9;
+                    text-transform: lowercase; }
+      #root .ground { position: absolute; inset: 0; background: #0B0D14; }
+      #root .stage { position: absolute; inset: 0; }
+      /* art sits ABOVE the foil, matching api/src/og.ts (composite art onto frame) */
+      #root .card { position: relative; }
+      #root .card img.frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+      #root .card img.art { position: absolute; left: 10%; top: 18%; width: 80%; height: 60%;
+                            object-fit: cover; z-index: 2; }
+      /* stacked value stack: one span per step, opacity-toggled */
+      #root .vstack { position: relative; }
+      #root .vstack > span { position: absolute; left: 0; top: 0; white-space: nowrap; }
+
+
+      #root .fan { position:absolute; left:960px; top:326px; }
+      #root .fan .card { position:absolute; left:-120px; top:-160px; opacity:0; }
+      #root .lock { position:absolute; left:0; right:0; top:592px; text-align:center; z-index:5; }
+      #root .wm { font-size:130px; font-weight:900; letter-spacing:-0.05em; line-height:1;
+                  background:linear-gradient(92deg,#7FD4FF 0%,#FF9AF5 52%,#FFD76A 100%);
+                  -webkit-background-clip:text; background-clip:text; color:transparent;
+                  display:inline-block; }
+      #root .cta { display:inline-block; margin-top:34px; padding:24px 54px;
+                   background:linear-gradient(92deg,#2C7FD8,#7A3FD8); color:#fff; font-size:23px; }
+      #root .cursor8 { position:absolute; width:48px; height:48px; z-index:9; opacity:0; }
+
+    </style>
+    <div data-hf-id="hf-p5k5" id="f08-cta-ground" class="clip ground" data-start="0" data-duration="4.032" data-track-index="0"></div>
+    <div data-hf-id="hf-raeo" id="f08-cta-stage" class="clip stage" data-start="0" data-duration="4.032" data-track-index="1">
+
+      <div data-hf-id="hf-1grj" class="fan">
+        <div data-hf-id="hf-4345" id="f08-cta-fan0" class="card" style="width:240px;height:320px;"><img data-hf-id="hf-s2ag" class="frame" id="f08-cta-fan0-foil" src="assets/frames/chrome.png" alt=""><img data-hf-id="hf-z8kq" class="art" src="assets/memes/drake.jpg" alt=""></div><div data-hf-id="hf-ds7g" id="f08-cta-fan1" class="card" style="width:240px;height:320px;"><img data-hf-id="hf-7iub" class="frame" id="f08-cta-fan1-foil" src="assets/frames/holo.png" alt=""><img data-hf-id="hf-9cgf" class="art" src="assets/memes/two-buttons.jpg" alt=""></div><div data-hf-id="hf-20xz" id="f08-cta-fan2" class="card" style="width:240px;height:320px;"><img data-hf-id="hf-49lq" class="frame" id="f08-cta-fan2-foil" src="assets/frames/gold.png" alt=""><img data-hf-id="hf-el0u" class="art" src="assets/memes/bernie-asking.jpg" alt=""></div><div data-hf-id="hf-6lfy" id="f08-cta-fan3" class="card" style="width:240px;height:320px;"><img data-hf-id="hf-exu1" class="frame" id="f08-cta-fan3-foil" src="assets/frames/prismatic.png" alt=""><img data-hf-id="hf-dx2j" class="art" src="assets/memes/running-away-balloon.jpg" alt=""></div>
+      </div>
+      <div data-hf-id="hf-fhcd" class="lock">
+        <div data-hf-id="hf-a9hi" id="f08-cta-wm" class="wm" style="opacity:0">memeon.ai</div>
+        <div data-hf-id="hf-yeow"><div data-hf-id="hf-dpw3" id="f08-cta-cta" class="cta mono" style="opacity:0">🎭 LOG IN WITH MASKY</div></div>
+        <div data-hf-id="hf-rghw" id="f08-cta-tag" style="font-size:27px;color:#97A0B5;margin-top:28px;opacity:0">bring your best shitpost.</div>
+      </div>
+      <svg data-hf-id="hf-1m29" id="f08-cta-cur" class="cursor8" viewBox="0 0 24 24" style="left:1042px;top:766px">
+        <path data-hf-id="hf-36a9" d="M4 2 L4 20 L9 15.5 L12.5 22 L15.5 20.5 L12 14.5 L19 14 Z" fill="#E8ECF4" stroke="#0B0D14" stroke-width="1.2" />
+      </svg>
+    </div>
+    <!-- The script MUST live inside the composition root. Outside the <template>
+         it executes before the runtime clones the content, so every selector
+         misses and the frame renders as static HTML. -->
+    <script>
+      (function () {
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+
+    // continues the UPWARD vector — everything arrives still rising
+    tl.fromTo("#f08-cta-stage", { y: 220, opacity: 0 },
+              { y: 0, opacity: 1, duration: 0.66, ease: "power4.out" }, 0);
+    
+    tl.fromTo("#f08-cta-fan0", { opacity: 0, x: 0, y: 60, rotation: 0, scale: 0.9 },
+              { opacity: 0.95, x: -486, y: 34, rotation: -13, scale: 1,
+                 duration: 0.72, ease: "power3.out" }, 0.05);
+    tl.fromTo("#f08-cta-fan1", { opacity: 0, x: 0, y: 60, rotation: 0, scale: 0.9 },
+              { opacity: 0.95, x: -252, y: 8, rotation: -7, scale: 1,
+                 duration: 0.72, ease: "power3.out" }, 0.11);
+    tl.fromTo("#f08-cta-fan2", { opacity: 0, x: 0, y: 60, rotation: 0, scale: 0.9 },
+              { opacity: 0.95, x: 252, y: 8, rotation: 7, scale: 1,
+                 duration: 0.72, ease: "power3.out" }, 0.17);
+    tl.fromTo("#f08-cta-fan3", { opacity: 0, x: 0, y: 60, rotation: 0, scale: 0.9 },
+              { opacity: 0.95, x: 486, y: 34, rotation: 13, scale: 1,
+                 duration: 0.72, ease: "power3.out" }, 0.23);
+    tl.fromTo("#f08-cta-wm", { opacity: 0, y: 34, scale: 0.94 },
+              { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.4)" }, 0.05);
+    tl.fromTo("#f08-cta-cta", { opacity: 0, y: 22 },
+              { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 1.35);
+    tl.fromTo("#f08-cta-tag", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 2.23);
+    tl.fromTo("#f08-cta-cur", { opacity: 0, x: 150, y: 130 },
+              { opacity: 1, x: 0, y: 0, duration: 0.75, ease: "power2.out" }, 1.55);
+    tl.to("#f08-cta-cta", { scale: 0.96, duration: 0.1, ease: "power2.in" }, 2.55);
+    tl.to("#f08-cta-cta", { scale: 1, duration: 0.34, ease: "back.out(2.4)" }, 2.65);
+    tl.to("#f08-cta-cur", { opacity: 0, duration: 0.3 }, 3.25);
+
+        window.__timelines["08-cta"] = tl;
+      })();
+    </script>
+  </div>
+</template>

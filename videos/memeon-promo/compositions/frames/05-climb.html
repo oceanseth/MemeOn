@@ -1,0 +1,273 @@
+<template>
+  <div data-hf-id="hf-p5vs" id="root" data-composition-id="05-climb" data-width="1920" data-height="1080">
+    <style>
+
+      @font-face { font-family: "Barlow"; font-style: normal; font-weight: 400;
+        font-display: block; src: url("assets/fonts/Barlow-400.woff2") format("woff2"); }
+      @font-face { font-family: "Barlow"; font-style: normal; font-weight: 700;
+        font-display: block; src: url("assets/fonts/Barlow-700.woff2") format("woff2"); }
+      @font-face { font-family: "Barlow"; font-style: normal; font-weight: 900;
+        font-display: block; src: url("assets/fonts/Barlow-900.woff2") format("woff2"); }
+      @font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500;
+        font-display: block; src: url("assets/fonts/IBMPlexMono-500.woff2") format("woff2"); }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden;
+              container-type: size; font-family: "Barlow", sans-serif; color: #E8ECF4; }
+      #root .mono { font-family: "IBM Plex Mono", monospace; text-transform: uppercase;
+                    letter-spacing: 0.14em; font-weight: 500; }
+      #root .disp { font-weight: 900; letter-spacing: -0.04em; line-height: 0.9;
+                    text-transform: lowercase; }
+      #root .ground { position: absolute; inset: 0; background: #0B0D14; }
+      #root .stage { position: absolute; inset: 0; }
+      /* art sits ABOVE the foil, matching api/src/og.ts (composite art onto frame) */
+      #root .card { position: relative; }
+      #root .card img.frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+      #root .card img.art { position: absolute; left: 10%; top: 18%; width: 80%; height: 60%;
+                            object-fit: cover; z-index: 2; }
+      /* stacked value stack: one span per step, opacity-toggled */
+      #root .vstack { position: relative; }
+      #root .vstack > span { position: absolute; left: 0; top: 0; white-space: nowrap; }
+
+
+      /* nothing lives in the bottom band — that belongs to the caption overlay */
+      #root .c5 { position:absolute; left:756px; top:512px; transform:translate(-50%,-50%); }
+      #root .tiername { position:absolute; left:120px; top:250px; width:430px; }
+      #root .tnstack { position:relative; height:190px; }
+      #root .tn { position:absolute; left:0; top:0; }
+      #root .rail { position:absolute; right:120px; top:150px; width:430px; }
+      #root .ctrnum { font-size:104px; font-weight:900; letter-spacing:-0.05em; color:#7FD4FF;
+                      line-height:1; display:block; }
+      #root .lad { margin-top:30px; display:flex; flex-direction:column; gap:7px; }
+      #root .rung { position:relative; background:rgba(255,255,255,0.02);
+                    padding:11px 16px 11px 20px; display:flex; justify-content:space-between;
+                    align-items:baseline; }
+      #root .rung .rl { position:absolute; left:0; top:0; bottom:0; width:3px;
+                        transform:scaleY(0); transform-origin:center bottom; }
+      #root .rung .n { font-size:15px; font-weight:700; letter-spacing:0.1em; }
+      #root .rung .r { font-size:13px; color:#8A93A5; letter-spacing:0.1em; }
+
+    </style>
+    <div data-hf-id="hf-av4m" id="f05-climb-ground" class="clip ground" data-start="0" data-duration="11.202" data-track-index="0"></div>
+    <div data-hf-id="hf-4s5f" id="f05-climb-stage" class="clip stage" data-start="0" data-duration="11.202" data-track-index="1">
+
+      <div data-hf-id="hf-ckh8" class="c5">
+        <div data-hf-id="hf-9i4o" id="f05-climb-card" class="card" style="width:430px;height:573px">
+          <img data-hf-id="hf-i7qz" class="frame" id="f05-climb-foil-paper" src="assets/frames/paper.png" alt="" style="opacity:1"><img data-hf-id="hf-7wdo" class="frame" id="f05-climb-foil-silver" src="assets/frames/silver.png" alt="" style="opacity:0"><img data-hf-id="hf-e61y" class="frame" id="f05-climb-foil-holo" src="assets/frames/holo.png" alt="" style="opacity:0"><img data-hf-id="hf-0qkm" class="frame" id="f05-climb-foil-chrome" src="assets/frames/chrome.png" alt="" style="opacity:0"><img data-hf-id="hf-w5lm" class="frame" id="f05-climb-foil-gold" src="assets/frames/gold.png" alt="" style="opacity:0"><img data-hf-id="hf-930m" class="frame" id="f05-climb-foil-prismatic" src="assets/frames/prismatic.png" alt="" style="opacity:0"><img data-hf-id="hf-uy9e" class="frame" id="f05-climb-foil-shiny" src="assets/frames/shiny.png" alt="" style="opacity:0">
+          <img data-hf-id="hf-q3hp" class="art" src="assets/memes/disaster-girl.jpg" alt="">
+        </div>
+      </div>
+      <div data-hf-id="hf-ifp9" class="tiername">
+        <div data-hf-id="hf-dmpe" class="mono" style="font-size:15px;color:#97A0B5;margin-bottom:14px">CURRENT TIER</div>
+        <div data-hf-id="hf-p56i" class="tnstack"><div data-hf-id="hf-hdtv" id="f05-climb-tn-paper" class="tn" style="opacity:1"><div data-hf-id="hf-z3yi" class="disp" style="font-size:78px;color:#a8b0bd">paper</div><div data-hf-id="hf-0oxo" class="mono" style="font-size:15px;color:#97A0B5;margin-top:12px">COMMON</div></div><div data-hf-id="hf-n1l5" id="f05-climb-tn-silver" class="tn" style="opacity:0"><div data-hf-id="hf-ixnn" class="disp" style="font-size:78px;color:#c8d3e0">silver</div><div data-hf-id="hf-a9cr" class="mono" style="font-size:15px;color:#97A0B5;margin-top:12px">UNCOMMON</div></div><div data-hf-id="hf-q88a" id="f05-climb-tn-holo" class="tn" style="opacity:0"><div data-hf-id="hf-86eg" class="disp" style="font-size:78px;color:#7fd4ff">holo</div><div data-hf-id="hf-hc51" class="mono" style="font-size:15px;color:#97A0B5;margin-top:12px">RARE</div></div><div data-hf-id="hf-c5so" id="f05-climb-tn-chrome" class="tn" style="opacity:0"><div data-hf-id="hf-xpf8" class="disp" style="font-size:78px;color:#b8c6ff">chrome</div><div data-hf-id="hf-7ld3" class="mono" style="font-size:15px;color:#97A0B5;margin-top:12px">ULTRA RARE</div></div><div data-hf-id="hf-b9v4" id="f05-climb-tn-gold" class="tn" style="opacity:0"><div data-hf-id="hf-34fh" class="disp" style="font-size:78px;color:#ffd76a">gold</div><div data-hf-id="hf-3b4y" class="mono" style="font-size:15px;color:#97A0B5;margin-top:12px">LEGENDARY</div></div><div data-hf-id="hf-3h5s" id="f05-climb-tn-prismatic" class="tn" style="opacity:0"><div data-hf-id="hf-a5ta" class="disp" style="font-size:78px;color:#ff9af5">prismatic</div><div data-hf-id="hf-ftur" class="mono" style="font-size:15px;color:#97A0B5;margin-top:12px">SECRET RARE</div></div><div data-hf-id="hf-8lyx" id="f05-climb-tn-shiny" class="tn" style="opacity:0"><div data-hf-id="hf-gth4" class="disp" style="font-size:78px;color:#9fffe0">shiny</div><div data-hf-id="hf-us98" class="mono" style="font-size:15px;color:#97A0B5;margin-top:12px">MYTHIC SHINY</div></div></div>
+      </div>
+      <div data-hf-id="hf-qzq8" class="rail">
+        <div data-hf-id="hf-csfm" class="mono" style="font-size:15px;color:#97A0B5;margin-bottom:12px">RESHARES</div>
+        <span data-hf-id="hf-xqva" id="f05-climb-n" class="vstack" style="display:block;height:112px"><span data-hf-id="hf-m9zm" id="f05-climb-n-s0" class="ctrnum" style="opacity:1">0</span><span data-hf-id="hf-dysv" id="f05-climb-n-s1" class="ctrnum" style="opacity:0">10</span><span data-hf-id="hf-agsw" id="f05-climb-n-s2" class="ctrnum" style="opacity:0">50</span><span data-hf-id="hf-j15r" id="f05-climb-n-s3" class="ctrnum" style="opacity:0">250</span><span data-hf-id="hf-kkg2" id="f05-climb-n-s4" class="ctrnum" style="opacity:0">1,000</span><span data-hf-id="hf-88yp" id="f05-climb-n-s5" class="ctrnum" style="opacity:0">5,000</span><span data-hf-id="hf-o6b4" id="f05-climb-n-s6" class="ctrnum" style="opacity:0">25,000</span></span>
+        <div data-hf-id="hf-9dhn" class="lad"><div data-hf-id="hf-y2yy" id="f05-climb-rung-paper" class="rung" style="opacity:0"><span data-hf-id="hf-6ey0" class="rl" id="f05-climb-rl-paper" style="background:#a8b0bd"></span><span data-hf-id="hf-6q1l" class="n mono" style="color:#a8b0bd">Paper</span><span data-hf-id="hf-iocj" class="r mono">0+</span></div><div data-hf-id="hf-yhht" id="f05-climb-rung-silver" class="rung" style="opacity:0"><span data-hf-id="hf-jqed" class="rl" id="f05-climb-rl-silver" style="background:#c8d3e0"></span><span data-hf-id="hf-mynm" class="n mono" style="color:#c8d3e0">Silver</span><span data-hf-id="hf-mxac" class="r mono">10+</span></div><div data-hf-id="hf-bpo2" id="f05-climb-rung-holo" class="rung" style="opacity:0"><span data-hf-id="hf-jb3a" class="rl" id="f05-climb-rl-holo" style="background:#7fd4ff"></span><span data-hf-id="hf-h33x" class="n mono" style="color:#7fd4ff">Holo</span><span data-hf-id="hf-cxso" class="r mono">50+</span></div><div data-hf-id="hf-58wg" id="f05-climb-rung-chrome" class="rung" style="opacity:0"><span data-hf-id="hf-g9l2" class="rl" id="f05-climb-rl-chrome" style="background:#b8c6ff"></span><span data-hf-id="hf-vttd" class="n mono" style="color:#b8c6ff">Chrome</span><span data-hf-id="hf-35w6" class="r mono">250+</span></div><div data-hf-id="hf-ld4o" id="f05-climb-rung-gold" class="rung" style="opacity:0"><span data-hf-id="hf-2kcj" class="rl" id="f05-climb-rl-gold" style="background:#ffd76a"></span><span data-hf-id="hf-qh1g" class="n mono" style="color:#ffd76a">Gold</span><span data-hf-id="hf-6p0e" class="r mono">1,000+</span></div><div data-hf-id="hf-xjfs" id="f05-climb-rung-prismatic" class="rung" style="opacity:0"><span data-hf-id="hf-xe48" class="rl" id="f05-climb-rl-prismatic" style="background:#ff9af5"></span><span data-hf-id="hf-7vtl" class="n mono" style="color:#ff9af5">Prismatic</span><span data-hf-id="hf-i4c2" class="r mono">5,000+</span></div><div data-hf-id="hf-zf4h" id="f05-climb-rung-shiny" class="rung" style="opacity:0"><span data-hf-id="hf-cj2c" class="rl" id="f05-climb-rl-shiny" style="background:#9fffe0"></span><span data-hf-id="hf-ch1n" class="n mono" style="color:#9fffe0">Shiny</span><span data-hf-id="hf-8kxo" class="r mono">25,000+</span></div></div>
+      </div>
+    </div>
+    <!-- The script MUST live inside the composition root. Outside the <template>
+         it executes before the runtime clones the content, so every selector
+         misses and the frame renders as static HTML. -->
+    <script>
+      (function () {
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+
+    tl.fromTo("#f05-climb-card", { scale: 0.88 }, { scale: 1, duration: 1.1, ease: "power3.out" }, 0);
+    tl.fromTo("#f05-climb-stage", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0);
+    
+    tl.fromTo("#f05-climb-rung-paper", { opacity: 0, x: 34 },
+              { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 0.1);
+    tl.fromTo("#f05-climb-rung-silver", { opacity: 0, x: 34 },
+              { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 0.15);
+    tl.fromTo("#f05-climb-rung-holo", { opacity: 0, x: 34 },
+              { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 0.2);
+    tl.fromTo("#f05-climb-rung-chrome", { opacity: 0, x: 34 },
+              { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 0.25);
+    tl.fromTo("#f05-climb-rung-gold", { opacity: 0, x: 34 },
+              { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 0.3);
+    tl.fromTo("#f05-climb-rung-prismatic", { opacity: 0, x: 34 },
+              { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 0.35);
+    tl.fromTo("#f05-climb-rung-shiny", { opacity: 0, x: 34 },
+              { opacity: 1, x: 0, duration: 0.4, ease: "power2.out" }, 0.4);
+    tl.set("#f05-climb-n-s0", { opacity: 1 }, 0.0);
+    tl.set("#f05-climb-n-s1", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-n-s2", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-n-s3", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-n-s4", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-n-s5", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-n-s6", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-n-s0", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-n-s1", { opacity: 1 }, 1.38);
+    tl.set("#f05-climb-n-s2", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-n-s3", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-n-s4", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-n-s5", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-n-s6", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-n-s0", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-n-s1", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-n-s2", { opacity: 1 }, 3.69);
+    tl.set("#f05-climb-n-s3", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-n-s4", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-n-s5", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-n-s6", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-n-s0", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-n-s1", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-n-s2", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-n-s3", { opacity: 1 }, 5.1);
+    tl.set("#f05-climb-n-s4", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-n-s5", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-n-s6", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-n-s0", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-n-s1", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-n-s2", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-n-s3", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-n-s4", { opacity: 1 }, 5.77);
+    tl.set("#f05-climb-n-s5", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-n-s6", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-n-s0", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-n-s1", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-n-s2", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-n-s3", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-n-s4", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-n-s5", { opacity: 1 }, 7.2);
+    tl.set("#f05-climb-n-s6", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-n-s0", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-n-s1", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-n-s2", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-n-s3", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-n-s4", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-n-s5", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-n-s6", { opacity: 1 }, 9.9);
+    tl.set("#f05-climb-foil-paper", { opacity: 1 }, 0.0);
+    tl.set("#f05-climb-tn-paper", { opacity: 1 }, 0.0);
+    tl.set("#f05-climb-foil-silver", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-tn-silver", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-foil-holo", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-tn-holo", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-foil-chrome", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-tn-chrome", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-foil-gold", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-tn-gold", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-foil-prismatic", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-tn-prismatic", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-foil-shiny", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-tn-shiny", { opacity: 0 }, 0.0);
+    tl.set("#f05-climb-rl-paper", { scaleY: 1 }, 0);
+    tl.set("#f05-climb-foil-paper", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-tn-paper", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-foil-silver", { opacity: 1 }, 1.38);
+    tl.set("#f05-climb-tn-silver", { opacity: 1 }, 1.38);
+    tl.set("#f05-climb-foil-holo", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-tn-holo", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-foil-chrome", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-tn-chrome", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-foil-gold", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-tn-gold", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-foil-prismatic", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-tn-prismatic", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-foil-shiny", { opacity: 0 }, 1.38);
+    tl.set("#f05-climb-tn-shiny", { opacity: 0 }, 1.38);
+
+    tl.fromTo("#f05-climb-card", { scale: 1.055 }, { scale: 1, duration: 0.34, ease: "power3.out" }, 1.38);
+    tl.fromTo("#f05-climb-tn-silver", { y: 14 }, { y: 0, duration: 0.3, ease: "power3.out" }, 1.38);
+    tl.fromTo("#f05-climb-rl-silver", { scaleY: 0 }, { scaleY: 1, duration: 0.3, ease: "power3.out" }, 1.38);
+    tl.set("#f05-climb-foil-paper", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-tn-paper", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-foil-silver", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-tn-silver", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-foil-holo", { opacity: 1 }, 3.69);
+    tl.set("#f05-climb-tn-holo", { opacity: 1 }, 3.69);
+    tl.set("#f05-climb-foil-chrome", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-tn-chrome", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-foil-gold", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-tn-gold", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-foil-prismatic", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-tn-prismatic", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-foil-shiny", { opacity: 0 }, 3.69);
+    tl.set("#f05-climb-tn-shiny", { opacity: 0 }, 3.69);
+
+    tl.fromTo("#f05-climb-card", { scale: 1.055 }, { scale: 1, duration: 0.34, ease: "power3.out" }, 3.69);
+    tl.fromTo("#f05-climb-tn-holo", { y: 14 }, { y: 0, duration: 0.3, ease: "power3.out" }, 3.69);
+    tl.fromTo("#f05-climb-rl-holo", { scaleY: 0 }, { scaleY: 1, duration: 0.3, ease: "power3.out" }, 3.69);
+    tl.set("#f05-climb-foil-paper", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-tn-paper", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-foil-silver", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-tn-silver", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-foil-holo", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-tn-holo", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-foil-chrome", { opacity: 1 }, 5.1);
+    tl.set("#f05-climb-tn-chrome", { opacity: 1 }, 5.1);
+    tl.set("#f05-climb-foil-gold", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-tn-gold", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-foil-prismatic", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-tn-prismatic", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-foil-shiny", { opacity: 0 }, 5.1);
+    tl.set("#f05-climb-tn-shiny", { opacity: 0 }, 5.1);
+
+    tl.fromTo("#f05-climb-card", { scale: 1.055 }, { scale: 1, duration: 0.34, ease: "power3.out" }, 5.1);
+    tl.fromTo("#f05-climb-tn-chrome", { y: 14 }, { y: 0, duration: 0.3, ease: "power3.out" }, 5.1);
+    tl.fromTo("#f05-climb-rl-chrome", { scaleY: 0 }, { scaleY: 1, duration: 0.3, ease: "power3.out" }, 5.1);
+    tl.set("#f05-climb-foil-paper", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-tn-paper", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-foil-silver", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-tn-silver", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-foil-holo", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-tn-holo", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-foil-chrome", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-tn-chrome", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-foil-gold", { opacity: 1 }, 5.77);
+    tl.set("#f05-climb-tn-gold", { opacity: 1 }, 5.77);
+    tl.set("#f05-climb-foil-prismatic", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-tn-prismatic", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-foil-shiny", { opacity: 0 }, 5.77);
+    tl.set("#f05-climb-tn-shiny", { opacity: 0 }, 5.77);
+
+    tl.fromTo("#f05-climb-card", { scale: 1.055 }, { scale: 1, duration: 0.34, ease: "power3.out" }, 5.77);
+    tl.fromTo("#f05-climb-tn-gold", { y: 14 }, { y: 0, duration: 0.3, ease: "power3.out" }, 5.77);
+    tl.fromTo("#f05-climb-rl-gold", { scaleY: 0 }, { scaleY: 1, duration: 0.3, ease: "power3.out" }, 5.77);
+    tl.set("#f05-climb-foil-paper", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-tn-paper", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-foil-silver", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-tn-silver", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-foil-holo", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-tn-holo", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-foil-chrome", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-tn-chrome", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-foil-gold", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-tn-gold", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-foil-prismatic", { opacity: 1 }, 7.2);
+    tl.set("#f05-climb-tn-prismatic", { opacity: 1 }, 7.2);
+    tl.set("#f05-climb-foil-shiny", { opacity: 0 }, 7.2);
+    tl.set("#f05-climb-tn-shiny", { opacity: 0 }, 7.2);
+
+    tl.fromTo("#f05-climb-card", { scale: 1.055 }, { scale: 1, duration: 0.34, ease: "power3.out" }, 7.2);
+    tl.fromTo("#f05-climb-tn-prismatic", { y: 14 }, { y: 0, duration: 0.3, ease: "power3.out" }, 7.2);
+    tl.fromTo("#f05-climb-rl-prismatic", { scaleY: 0 }, { scaleY: 1, duration: 0.3, ease: "power3.out" }, 7.2);
+    tl.set("#f05-climb-foil-paper", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-tn-paper", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-foil-silver", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-tn-silver", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-foil-holo", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-tn-holo", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-foil-chrome", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-tn-chrome", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-foil-gold", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-tn-gold", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-foil-prismatic", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-tn-prismatic", { opacity: 0 }, 9.9);
+    tl.set("#f05-climb-foil-shiny", { opacity: 1 }, 9.9);
+    tl.set("#f05-climb-tn-shiny", { opacity: 1 }, 9.9);
+
+    tl.fromTo("#f05-climb-tn-shiny", { y: 14 }, { y: 0, duration: 0.3, ease: "power3.out" }, 9.9);
+    tl.fromTo("#f05-climb-rl-shiny", { scaleY: 0 }, { scaleY: 1, duration: 0.3, ease: "power3.out" }, 9.9);
+    // stillness before the climax — the dramatic comma ahead of "mythic shiny"
+    tl.to("#f05-climb-card", { scale: 1.04, duration: 0.55, ease: "power2.inOut" }, 8.55);
+    tl.to("#f05-climb-card", { scale: 1.10, duration: 0.8, ease: "power3.out" }, 9.90);
+    tl.to("#f05-climb-stage", { x: -260, opacity: 0, duration: 0.5, ease: "power4.in" }, 10.862);
+
+        window.__timelines["05-climb"] = tl;
+      })();
+    </script>
+  </div>
+</template>

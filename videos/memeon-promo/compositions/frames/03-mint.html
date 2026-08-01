@@ -1,0 +1,79 @@
+<template>
+  <div data-hf-id="hf-xj0d" id="root" data-composition-id="03-mint" data-width="1920" data-height="1080">
+    <style>
+
+      @font-face { font-family: "Barlow"; font-style: normal; font-weight: 400;
+        font-display: block; src: url("assets/fonts/Barlow-400.woff2") format("woff2"); }
+      @font-face { font-family: "Barlow"; font-style: normal; font-weight: 700;
+        font-display: block; src: url("assets/fonts/Barlow-700.woff2") format("woff2"); }
+      @font-face { font-family: "Barlow"; font-style: normal; font-weight: 900;
+        font-display: block; src: url("assets/fonts/Barlow-900.woff2") format("woff2"); }
+      @font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500;
+        font-display: block; src: url("assets/fonts/IBMPlexMono-500.woff2") format("woff2"); }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden;
+              container-type: size; font-family: "Barlow", sans-serif; color: #E8ECF4; }
+      #root .mono { font-family: "IBM Plex Mono", monospace; text-transform: uppercase;
+                    letter-spacing: 0.14em; font-weight: 500; }
+      #root .disp { font-weight: 900; letter-spacing: -0.04em; line-height: 0.9;
+                    text-transform: lowercase; }
+      #root .ground { position: absolute; inset: 0; background: #0B0D14; }
+      #root .stage { position: absolute; inset: 0; }
+      /* art sits ABOVE the foil, matching api/src/og.ts (composite art onto frame) */
+      #root .card { position: relative; }
+      #root .card img.frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+      #root .card img.art { position: absolute; left: 10%; top: 18%; width: 80%; height: 60%;
+                            object-fit: cover; z-index: 2; }
+      /* stacked value stack: one span per step, opacity-toggled */
+      #root .vstack { position: relative; }
+      #root .vstack > span { position: absolute; left: 0; top: 0; white-space: nowrap; }
+
+
+      #root .mintwrap { position:absolute; left:250px; top:50%; margin-top:-300px; }
+      #root .col3 { position:absolute; left:830px; top:50%; margin-top:-230px; width:940px; }
+      #root .fact { font-size:33px; color:#97A0B5; margin-top:16px; opacity:0; }
+      #root .fact b { color:#7FD4FF; font-weight:700; }
+
+    </style>
+    <div data-hf-id="hf-y0dw" id="f03-mint-ground" class="clip ground" data-start="0" data-duration="5.664" data-track-index="0"></div>
+    <div data-hf-id="hf-9j0j" id="f03-mint-stage" class="clip stage" data-start="0" data-duration="5.664" data-track-index="1">
+
+      <div data-hf-id="hf-sfzw" class="mintwrap"><div data-hf-id="hf-cnjd" id="f03-mint-card" class="card" style="width:450px;height:600px;"><img data-hf-id="hf-0ttk" class="frame" id="f03-mint-card-foil" src="assets/frames/paper.png" alt=""><img data-hf-id="hf-q3hp" class="art" src="assets/memes/disaster-girl.jpg" alt=""></div></div>
+      <div data-hf-id="hf-cfoh" class="col3">
+        <div data-hf-id="hf-xy1c" id="f03-mint-kick" class="mono" style="font-size:15px;color:#7FD4FF;margin-bottom:20px;opacity:0">MINT</div>
+        <div data-hf-id="hf-94r6" id="f03-mint-h" class="disp" style="font-size:90px;opacity:0">it becomes a<br data-hf-id="hf-x5px">trading card.</div>
+        <div data-hf-id="hf-3h4n" id="f03-mint-f1" class="fact"><b data-hf-id="hf-a9hr">one</b> share link — memeon.ai/m/…</div>
+        <div data-hf-id="hf-gsdf" id="f03-mint-f2" class="fact"><b data-hf-id="hf-puf0">100</b> shares</div>
+        <div data-hf-id="hf-qhel" id="f03-mint-f3" class="fact"><b data-hf-id="hf-p4nt">paper</b> tier · common · worth 0 🧠</div>
+      </div>
+    </div>
+    <!-- The script MUST live inside the composition root. Outside the <template>
+         it executes before the runtime clones the content, so every selector
+         misses and the frame renders as static HTML. -->
+    <script>
+      (function () {
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+
+    tl.fromTo("#f03-mint-stage", { x: 300, opacity: 0 },
+              { x: 0, opacity: 1, duration: 0.62, ease: "power4.out" }, 0);
+    // the mint: bare art first, then the foil frame lands around it
+    tl.fromTo("#f03-mint-card .art", { scale: 1.26 },
+              { scale: 1, duration: 1.5, ease: "power3.out" }, 0);
+    tl.fromTo("#f03-mint-card-foil", { opacity: 0, scale: 1.14 },
+              { opacity: 1, scale: 1, duration: 0.55, ease: "back.out(1.4)" }, 1.19);
+    tl.fromTo("#f03-mint-kick", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4 }, 0.07);
+    tl.fromTo("#f03-mint-h", { opacity: 0, y: 34 },
+              { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.35);
+    tl.fromTo("#f03-mint-f1", { opacity: 0, x: 26 }, { opacity: 1, x: 0, duration: 0.42 }, 2.34);
+    tl.fromTo("#f03-mint-f2", { opacity: 0, x: 26 }, { opacity: 1, x: 0, duration: 0.42 }, 3.84);
+    tl.fromTo("#f03-mint-f3", { opacity: 0, x: 26 }, { opacity: 1, x: 0, duration: 0.42 }, 4.60);
+    // carrier handoff: the card travels right, into F4's centre
+    tl.to("#f03-mint-card", { x: 500, duration: 0.62, ease: "power4.in" }, 5.324);
+    tl.to("#f03-mint-kick", { opacity: 0, duration: 0.3 }, 5.324);
+    tl.to("#f03-mint-h", { x: -240, opacity: 0, duration: 0.5, ease: "power4.in" }, 5.324);
+
+        window.__timelines["03-mint"] = tl;
+      })();
+    </script>
+  </div>
+</template>

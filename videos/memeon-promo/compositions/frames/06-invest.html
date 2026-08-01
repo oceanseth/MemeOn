@@ -1,0 +1,133 @@
+<template>
+  <div data-hf-id="hf-sbjh" id="root" data-composition-id="06-invest" data-width="1920" data-height="1080">
+    <style>
+
+      @font-face { font-family: "Barlow"; font-style: normal; font-weight: 400;
+        font-display: block; src: url("assets/fonts/Barlow-400.woff2") format("woff2"); }
+      @font-face { font-family: "Barlow"; font-style: normal; font-weight: 700;
+        font-display: block; src: url("assets/fonts/Barlow-700.woff2") format("woff2"); }
+      @font-face { font-family: "Barlow"; font-style: normal; font-weight: 900;
+        font-display: block; src: url("assets/fonts/Barlow-900.woff2") format("woff2"); }
+      @font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500;
+        font-display: block; src: url("assets/fonts/IBMPlexMono-500.woff2") format("woff2"); }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden;
+              container-type: size; font-family: "Barlow", sans-serif; color: #E8ECF4; }
+      #root .mono { font-family: "IBM Plex Mono", monospace; text-transform: uppercase;
+                    letter-spacing: 0.14em; font-weight: 500; }
+      #root .disp { font-weight: 900; letter-spacing: -0.04em; line-height: 0.9;
+                    text-transform: lowercase; }
+      #root .ground { position: absolute; inset: 0; background: #0B0D14; }
+      #root .stage { position: absolute; inset: 0; }
+      /* art sits ABOVE the foil, matching api/src/og.ts (composite art onto frame) */
+      #root .card { position: relative; }
+      #root .card img.frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+      #root .card img.art { position: absolute; left: 10%; top: 18%; width: 80%; height: 60%;
+                            object-fit: cover; z-index: 2; }
+      /* stacked value stack: one span per step, opacity-toggled */
+      #root .vstack { position: relative; }
+      #root .vstack > span { position: absolute; left: 0; top: 0; white-space: nowrap; }
+
+
+      #root .wrap6 { position:absolute; left:150px; right:150px; top:168px; height:700px;
+                     display:flex; gap:56px; }
+      #root .grid6 { flex:1.3; display:grid; grid-template-columns:repeat(2,1fr);
+                     gap:28px; align-content:start; }
+      #root .row6 { border:1px solid #262D40; background:#131722; padding:26px; display:flex;
+                    gap:26px; align-items:center; opacity:0; }
+      #root .row6 .th { width:150px; height:200px; position:relative; flex:none; }
+      #root .row6 .th img.a { position:absolute; left:10%; top:18%; width:80%; height:60%; object-fit:cover; z-index:2; }
+      #root .row6 .th img.f { position:absolute; inset:0; width:100%; height:100%; z-index:1; }
+      #root .row6 .tier { font-size:16px; }
+      #root .row6 .price { font-size:34px; margin-top:12px; }
+      #root .side6 { flex:1; display:flex; flex-direction:column; gap:26px; }
+      #root .panel { border:1px solid #262D40; background:#131722; padding:26px; opacity:0; }
+      #root .bar { height:30px; background:#0B0D14; border:1px solid #262D40; position:relative; }
+      #root .bar i { position:absolute; left:0; top:0; bottom:0; width:100%; background:#7FD4FF;
+                     transform:scaleX(0); transform-origin:left center; }
+      #root .buy { border:1px solid #7FD4FF; background:rgba(127,212,255,.12); padding:24px;
+                   text-align:center; color:#7FD4FF; font-size:19px; opacity:0; }
+      #root .cursor { position:absolute; width:46px; height:46px; z-index:9; opacity:0; }
+
+    </style>
+    <div data-hf-id="hf-0bbd" id="f06-invest-ground" class="clip ground" data-start="0" data-duration="6.552" data-track-index="0"></div>
+    <div data-hf-id="hf-ldxc" id="f06-invest-stage" class="clip stage" data-start="0" data-duration="6.552" data-track-index="1">
+
+      <div data-hf-id="hf-syte" class="wrap6">
+        <div data-hf-id="hf-rrs6" class="grid6">
+          <div data-hf-id="hf-5hgn" id="f06-invest-row0" class="row6">
+            <div data-hf-id="hf-en3o" class="th"><img data-hf-id="hf-rjhd" class="f" src="assets/frames/holo.png" alt=""><img data-hf-id="hf-k81k" class="a" src="assets/memes/drake.jpg" alt=""></div>
+            <div data-hf-id="hf-yeow"><div data-hf-id="hf-dvi8" class="mono tier" style="color:#7fd4ff">Holo</div>
+            <div data-hf-id="hf-w293" class="price">240 🧠<span data-hf-id="hf-i1mx" style="color:#97A0B5;font-size:16px"> / share</span></div></div>
+          </div><div data-hf-id="hf-1jcm" id="f06-invest-row1" class="row6">
+            <div data-hf-id="hf-jte4" class="th"><img data-hf-id="hf-2hfn" class="f" src="assets/frames/gold.png" alt=""><img data-hf-id="hf-fazh" class="a" src="assets/memes/two-buttons.jpg" alt=""></div>
+            <div data-hf-id="hf-y7yw"><div data-hf-id="hf-cozp" class="mono tier" style="color:#ffd76a">Gold</div>
+            <div data-hf-id="hf-u353" class="price">910 🧠<span data-hf-id="hf-pygt" style="color:#97A0B5;font-size:16px"> / share</span></div></div>
+          </div><div data-hf-id="hf-xl8l" id="f06-invest-row2" class="row6">
+            <div data-hf-id="hf-imh1" class="th"><img data-hf-id="hf-qmwu" class="f" src="assets/frames/silver.png" alt=""><img data-hf-id="hf-9lo0" class="a" src="assets/memes/bernie-asking.jpg" alt=""></div>
+            <div data-hf-id="hf-x11t"><div data-hf-id="hf-516z" class="mono tier" style="color:#c8d3e0">Silver</div>
+            <div data-hf-id="hf-cr2b" class="price">75 🧠<span data-hf-id="hf-r5dw" style="color:#97A0B5;font-size:16px"> / share</span></div></div>
+          </div><div data-hf-id="hf-wtks" id="f06-invest-row3" class="row6">
+            <div data-hf-id="hf-j0s2" class="th"><img data-hf-id="hf-yoij" class="f" src="assets/frames/chrome.png" alt=""><img data-hf-id="hf-ab71" class="a" src="assets/memes/running-away-balloon.jpg" alt=""></div>
+            <div data-hf-id="hf-xfcu"><div data-hf-id="hf-xju4" class="mono tier" style="color:#b8c6ff">Chrome</div>
+            <div data-hf-id="hf-nviw" class="price">430 🧠<span data-hf-id="hf-qr2v" style="color:#97A0B5;font-size:16px"> / share</span></div></div>
+          </div>
+        </div>
+        <div data-hf-id="hf-xsa5" class="side6">
+          <div data-hf-id="hf-wcum" id="f06-invest-hd" class="disp" style="font-size:70px;opacity:0">own a piece<br data-hf-id="hf-x5px">of it.</div>
+          <div data-hf-id="hf-6yn9" id="f06-invest-cap" class="panel">
+            <div data-hf-id="hf-oiez" class="mono" style="font-size:13px;color:#97A0B5;margin-bottom:16px">CAP TABLE · 100 SHARES</div>
+            <div data-hf-id="hf-ufsv" class="bar"><i data-hf-id="hf-be3x" id="f06-invest-mine"></i></div>
+            <div data-hf-id="hf-mzww" style="margin-top:14px;height:20px">
+              <span data-hf-id="hf-xyib" id="f06-invest-you" class="vstack" style="display:block;font-size:14px;color:#7FD4FF"><span data-hf-id="hf-ut7a" id="f06-invest-you-s0" class="mono" style="opacity:1">YOU HOLD 0</span><span data-hf-id="hf-25q9" id="f06-invest-you-s1" class="mono" style="opacity:0">YOU HOLD 12</span></span>
+            </div>
+          </div>
+          <div data-hf-id="hf-9obm" id="f06-invest-buy" class="buy mono">BUY 12 SHARES · 2,880 🧠</div>
+          <div data-hf-id="hf-3glz" id="f06-invest-tip" style="font-size:26px;color:#97A0B5;opacity:0">buy in <span data-hf-id="hf-gbdg" style="color:#7FD4FF">before</span> they tier up.</div>
+        </div>
+      </div>
+      <svg data-hf-id="hf-yihy" id="f06-invest-cur" class="cursor" viewBox="0 0 24 24" style="left:1352px;top:500px">
+        <path data-hf-id="hf-36a9" d="M4 2 L4 20 L9 15.5 L12.5 22 L15.5 20.5 L12 14.5 L19 14 Z" fill="#E8ECF4" stroke="#0B0D14" stroke-width="1.2" />
+      </svg>
+    </div>
+    <!-- The script MUST live inside the composition root. Outside the <template>
+         it executes before the runtime clones the content, so every selector
+         misses and the frame renders as static HTML. -->
+    <script>
+      (function () {
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+
+    tl.fromTo("#f06-invest-stage", { x: 300, opacity: 0 },
+              { x: 0, opacity: 1, duration: 0.62, ease: "power4.out" }, 0);
+    
+    tl.fromTo("#f06-invest-row0", { opacity: 0, y: 30 },
+              { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.03);
+    tl.fromTo("#f06-invest-row1", { opacity: 0, y: 30 },
+              { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.11);
+    tl.fromTo("#f06-invest-row2", { opacity: 0, y: 30 },
+              { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.19);
+    tl.fromTo("#f06-invest-row3", { opacity: 0, y: 30 },
+              { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.27);
+    tl.fromTo("#f06-invest-hd", { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5 }, 0.03);
+    tl.fromTo("#f06-invest-cap", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45 }, 1.13);
+    tl.fromTo("#f06-invest-buy", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, 1.55);
+    // cursor-led: the click ignites the fill on the same frame
+    tl.fromTo("#f06-invest-cur", { opacity: 0, x: 250, y: 380 },
+              { opacity: 1, x: 120, y: 190, duration: 0.7, ease: "power2.out" }, 1.9);
+    tl.to("#f06-invest-cur", { x: 0, y: 0, duration: 0.7, ease: "power2.inOut" }, 2.6);
+    tl.to("#f06-invest-buy", { scale: 0.965, duration: 0.1, ease: "power2.in" }, 3.30);
+    tl.to("#f06-invest-buy", { scale: 1, duration: 0.32, ease: "back.out(2.2)" }, 3.40);
+    tl.fromTo("#f06-invest-mine", { scaleX: 0 }, { scaleX: 0.12, duration: 0.7, ease: "power3.out" }, 3.42);
+    tl.set("#f06-invest-you-s0", { opacity: 1 }, 0);
+    tl.set("#f06-invest-you-s1", { opacity: 0 }, 0);
+    tl.set("#f06-invest-you-s0", { opacity: 0 }, 3.42);
+    tl.set("#f06-invest-you-s1", { opacity: 1 }, 3.42);
+    tl.fromTo("#f06-invest-tip", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.45 }, 4.47);
+    tl.to("#f06-invest-cur", { opacity: 0, duration: 0.3 }, 4.9);
+    tl.to("#f06-invest-stage", { x: -260, opacity: 0, duration: 0.5, ease: "power4.in" }, 6.212);
+
+        window.__timelines["06-invest"] = tl;
+      })();
+    </script>
+  </div>
+</template>
