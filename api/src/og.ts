@@ -8,6 +8,7 @@ import {
   SANS_64_WHITE,
 } from 'jimp/fonts'
 import { env } from './env'
+import { safeFetch } from './safeFetch'
 import { assetAgeSeconds, assetExists, assetUrl, putAsset, putAssetShortCache } from './s3'
 import { getSharedSecret } from './ssm'
 import { TIERS, tierFor } from '../../shared/tiers'
@@ -92,10 +93,13 @@ async function printTitle(card: JimpImage, title: string, tierKey: string): Prom
 type JimpImage = Awaited<ReturnType<typeof Jimp.read>>
 
 async function fetchImage(url: string): Promise<JimpImage> {
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`fetch image ${url} -> ${res.status}`)
-  const buf = Buffer.from(await res.arrayBuffer())
-  return Jimp.read(buf)
+  // SSRF: private hosts/IPs blocked after DNS + each redirect; body capped (mo-100.5)
+  const { body } = await safeFetch(url, {
+    maxBytes: 8 * 1024 * 1024,
+    timeoutMs: 12_000,
+    headers: { accept: 'image/*' },
+  })
+  return Jimp.read(body)
 }
 
 /**
