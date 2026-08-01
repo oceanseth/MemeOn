@@ -82,42 +82,87 @@ export async function searchMemesFor(
   limit = 8,
 ): Promise<(Meme & { rank: number })[]> {
   const needle = query.trim()
-  const [candidates, { mine, friendly }] = await Promise.all([
-    findCandidates(needle, limit),
-    binderAndFriendSets(memeonSub),
-  ])
-  const ranked = candidates.map((m) => ({
-    ...m,
-    rank: mine.has(m.id) ? 0 : friendly.has(m.id) ? 1 : 2,
-  }))
+  const lower = needle.toLowerCase()
+  const { mine, friendly } = await binderAndFriendSets(memeonSub)
+  const rankOf = (id: string) => (mine.has(id) ? 0 : friendly.has(id) ? 1 : 2)
+  const lexicalHit = (m: Meme) =>
+    !needle ||
+    m.title.toLowerCase().includes(lower) ||
+    (m.tags ?? []).some((t) => t.toLowerCase().includes(lower)) ||
+    m.creatorName.toLowerCase().includes(lower)
+
+  const seen = new Set<string>()
+  const out: (Meme & { rank: number })[] = []
+
+  // Prefer binder + friend-signal memes (cheap batch-get) before discovery fill.
+  const priorityIds = [...new Set([...mine, ...friendly])]
+  for (const m of await db.getMemesByIds(priorityIds)) {
+    if (m.private || !lexicalHit(m) || seen.has(m.id)) continue
+    seen.add(m.id)
+    out.push({ ...m, rank: rankOf(m.id) })
+  }
+
+  // Fill remaining slots: semantic when querying, else/fallback bounded listMemesPage.
+  if (out.length < limit) {
+    for (const m of await findCandidates(needle, limit, seen)) {
+      if (out.length >= limit) break
+      if (m.private || seen.has(m.id)) continue
+      seen.add(m.id)
+      out.push({ ...m, rank: rankOf(m.id) })
+    }
+  }
+
   // semantic candidates arrive best-match-first — keep that order within each
   // rank tier (Array.sort is stable); browsing with no query ranks by reshares
   return (
     needle
-      ? ranked.sort((a, b) => a.rank - b.rank)
-      : ranked.sort((a, b) => a.rank - b.rank || b.reshares - a.reshares)
+      ? out.sort((a, b) => a.rank - b.rank)
+      : out.sort((a, b) => a.rank - b.rank || b.reshares - a.reshares)
   ).slice(0, limit)
 }
 
-/** Semantic search over the full archive, with a lexical fallback if it fails. */
-async function findCandidates(needle: string, limit: number): Promise<Meme[]> {
-  if (!needle) return (await db.listMemes(100)).filter((m) => !m.private)
+/**
+ * Discovery candidates for Discord autocomplete. Empty query → one newest page.
+ * Non-empty → semantic vectors, with marketplace-style lexical page scan fallback.
+ */
+async function findCandidates(
+  needle: string,
+  limit: number,
+  exclude: Set<string>,
+): Promise<Meme[]> {
+  if (!needle) {
+    const page = await db.listMemesPage({ limit: 100 })
+    return page.memes.filter((m) => !m.private && !exclude.has(m.id))
+  }
   try {
     const ids = await vectors.searchIds(needle, Math.max(limit * 3, 24))
     const byId = new Map((await db.getMemesByIds(ids)).map((m) => [m.id, m]))
     return ids
       .map((id) => byId.get(id))
-      .filter((m): m is Meme => !!m && !m.private)
+      .filter((m): m is Meme => !!m && !m.private && !exclude.has(m.id))
   } catch (err) {
     console.error('semantic search failed, falling back to lexical', err)
     const lower = needle.toLowerCase()
-    return (await db.listMemes()).filter(
-      (m) =>
-        !m.private &&
-        (m.title.toLowerCase().includes(lower) ||
+    const out: Meme[] = []
+    let cursor: string | null = null
+    // scan at most 10 pages (~1000 memes) — same bound as marketplace search
+    for (let i = 0; i < 10 && out.length < limit; i++) {
+      const page = await db.listMemesPage({ cursor, limit: 100 })
+      for (const m of page.memes) {
+        if (out.length >= limit) break
+        if (m.private || exclude.has(m.id)) continue
+        if (
+          m.title.toLowerCase().includes(lower) ||
           (m.tags ?? []).some((t) => t.toLowerCase().includes(lower)) ||
-          m.creatorName.toLowerCase().includes(lower)),
-    )
+          m.creatorName.toLowerCase().includes(lower)
+        ) {
+          out.push(m)
+        }
+      }
+      cursor = page.nextCursor
+      if (!cursor) break
+    }
+    return out
   }
 }
 
