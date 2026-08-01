@@ -1,0 +1,591 @@
+{
+  "bgm": null,
+  "bgm_pending": false,
+  "voices": [
+    {
+      "frame": 1,
+      "path": "assets/voice/01.mp3",
+      "duration_s": 6.144,
+      "words": [
+        {
+          "id": "01-w000",
+          "text": "In",
+          "start": 0.07,
+          "end": 0.16
+        },
+        {
+          "id": "01-w001",
+          "text": "2021,",
+          "start": 0.16,
+          "end": 1.34
+        },
+        {
+          "id": "01-w002",
+          "text": "this",
+          "start": 1.43,
+          "end": 1.74
+        },
+        {
+          "id": "01-w003",
+          "text": "photo",
+          "start": 1.74,
+          "end": 2.12
+        },
+        {
+          "id": "01-w004",
+          "text": "sold",
+          "start": 2.5,
+          "end": 2.65
+        },
+        {
+          "id": "01-w005",
+          "text": "for",
+          "start": 2.65,
+          "end": 2.88
+        },
+        {
+          "id": "01-w006",
+          "text": "$473,000.",
+          "start": 2.99,
+          "end": 5.36
+        }
+      ]
+    },
+    {
+      "frame": 2,
+      "path": "assets/voice/02.mp3",
+      "duration_s": 4.392,
+      "words": [
+        {
+          "id": "02-w000",
+          "text": "Your",
+          "start": 0.07,
+          "end": 0.3
+        },
+        {
+          "id": "02-w001",
+          "text": "memes",
+          "start": 0.3,
+          "end": 0.68
+        },
+        {
+          "id": "02-w002",
+          "text": "travel",
+          "start": 0.68,
+          "end": 1.21
+        },
+        {
+          "id": "02-w003",
+          "text": "just",
+          "start": 1.36,
+          "end": 1.58
+        },
+        {
+          "id": "02-w004",
+          "text": "as",
+          "start": 1.58,
+          "end": 1.65
+        },
+        {
+          "id": "02-w005",
+          "text": "far.",
+          "start": 1.74,
+          "end": 2.3
+        },
+        {
+          "id": "02-w006",
+          "text": "You",
+          "start": 2.37,
+          "end": 2.48
+        },
+        {
+          "id": "02-w007",
+          "text": "just",
+          "start": 2.48,
+          "end": 2.72
+        },
+        {
+          "id": "02-w008",
+          "text": "never",
+          "start": 2.72,
+          "end": 3.02
+        },
+        {
+          "id": "02-w009",
+          "text": "owned",
+          "start": 3.02,
+          "end": 3.32
+        },
+        {
+          "id": "02-w010",
+          "text": "any",
+          "start": 3.32,
+          "end": 3.5
+        },
+        {
+          "id": "02-w011",
+          "text": "of",
+          "start": 3.5,
+          "end": 3.57
+        },
+        {
+          "id": "02-w012",
+          "text": "it.",
+          "start": 3.66,
+          "end": 3.93
+        }
+      ]
+    },
+    {
+      "frame": 3,
+      "path": "assets/voice/03.mp3",
+      "duration_s": 5.664,
+      "words": [
+        {
+          "id": "03-w000",
+          "text": "MemeOn",
+          "start": 0.07,
+          "end": 0.35
+        },
+        {
+          "id": "03-w001",
+          "text": "turns",
+          "start": 0.35,
+          "end": 0.7
+        },
+        {
+          "id": "03-w002",
+          "text": "it",
+          "start": 0.7,
+          "end": 0.84
+        },
+        {
+          "id": "03-w003",
+          "text": "into",
+          "start": 0.84,
+          "end": 1.12
+        },
+        {
+          "id": "03-w004",
+          "text": "a",
+          "start": 1.12,
+          "end": 1.19
+        },
+        {
+          "id": "03-w005",
+          "text": "trading",
+          "start": 1.19,
+          "end": 1.68
+        },
+        {
+          "id": "03-w006",
+          "text": "card.",
+          "start": 1.68,
+          "end": 2.31
+        },
+        {
+          "id": "03-w007",
+          "text": "One",
+          "start": 2.34,
+          "end": 2.55
+        },
+        {
+          "id": "03-w008",
+          "text": "share",
+          "start": 2.7,
+          "end": 3.13
+        },
+        {
+          "id": "03-w009",
+          "text": "link.",
+          "start": 3.13,
+          "end": 3.75
+        },
+        {
+          "id": "03-w010",
+          "text": "A",
+          "start": 3.84,
+          "end": 3.85
+        },
+        {
+          "id": "03-w011",
+          "text": "hundred",
+          "start": 3.85,
+          "end": 4.53
+        },
+        {
+          "id": "03-w012",
+          "text": "shares.",
+          "start": 4.53,
+          "end": 5.44
+        }
+      ]
+    },
+    {
+      "frame": 4,
+      "path": "assets/voice/04.mp3",
+      "duration_s": 7.344,
+      "words": [
+        {
+          "id": "04-w000",
+          "text": "Then",
+          "start": 0.05,
+          "end": 0.3
+        },
+        {
+          "id": "04-w001",
+          "text": "people",
+          "start": 0.39,
+          "end": 0.83
+        },
+        {
+          "id": "04-w002",
+          "text": "share",
+          "start": 0.83,
+          "end": 1.01
+        },
+        {
+          "id": "04-w003",
+          "text": "it.",
+          "start": 1.44,
+          "end": 1.76
+        },
+        {
+          "id": "04-w004",
+          "text": "Every",
+          "start": 1.76,
+          "end": 2.02
+        },
+        {
+          "id": "04-w005",
+          "text": "unfurl,",
+          "start": 2.3,
+          "end": 3.1
+        },
+        {
+          "id": "04-w006",
+          "text": "every",
+          "start": 3.23,
+          "end": 3.47
+        },
+        {
+          "id": "04-w007",
+          "text": "click,",
+          "start": 3.55,
+          "end": 4.01
+        },
+        {
+          "id": "04-w008",
+          "text": "every",
+          "start": 4.14,
+          "end": 4.48
+        },
+        {
+          "id": "04-w009",
+          "text": "repost \u2014",
+          "start": 4.48,
+          "end": 5.01
+        },
+        {
+          "id": "04-w010",
+          "text": "it",
+          "start": 5.19,
+          "end": 5.24
+        },
+        {
+          "id": "04-w011",
+          "text": "all",
+          "start": 5.24,
+          "end": 5.43
+        },
+        {
+          "id": "04-w012",
+          "text": "counts.",
+          "start": 5.43,
+          "end": 7.19
+        }
+      ]
+    },
+    {
+      "frame": 5,
+      "path": "assets/voice/05.mp3",
+      "duration_s": 11.202,
+      "words": [
+        {
+          "id": "05-w000",
+          "text": "10",
+          "start": 0.09,
+          "end": 0.57
+        },
+        {
+          "id": "05-w001",
+          "text": "reshares,",
+          "start": 0.61,
+          "end": 1.38
+        },
+        {
+          "id": "05-w002",
+          "text": "silver.",
+          "start": 1.38,
+          "end": 2.4
+        },
+        {
+          "id": "05-w003",
+          "text": "50,",
+          "start": 2.48,
+          "end": 3.69
+        },
+        {
+          "id": "05-w004",
+          "text": "holo.",
+          "start": 3.69,
+          "end": 4.67
+        },
+        {
+          "id": "05-w005",
+          "text": "1,000 \u2014",
+          "start": 4.77,
+          "end": 5.77
+        },
+        {
+          "id": "05-w006",
+          "text": "gold",
+          "start": 5.77,
+          "end": 6.07
+        },
+        {
+          "id": "05-w007",
+          "text": "foil.",
+          "start": 6.07,
+          "end": 7.35
+        },
+        {
+          "id": "05-w008",
+          "text": "25,000 \u2014",
+          "start": 8.0,
+          "end": 9.28
+        },
+        {
+          "id": "05-w009",
+          "text": "mythic",
+          "start": 9.9,
+          "end": 10.28
+        },
+        {
+          "id": "05-w010",
+          "text": "shiny.",
+          "start": 10.36,
+          "end": 11.04
+        }
+      ]
+    },
+    {
+      "frame": 6,
+      "path": "assets/voice/06.mp3",
+      "duration_s": 6.552,
+      "words": [
+        {
+          "id": "06-w000",
+          "text": "Every",
+          "start": 0.03,
+          "end": 0.47
+        },
+        {
+          "id": "06-w001",
+          "text": "meme",
+          "start": 0.47,
+          "end": 0.82
+        },
+        {
+          "id": "06-w002",
+          "text": "is",
+          "start": 0.85,
+          "end": 1.04
+        },
+        {
+          "id": "06-w003",
+          "text": "a",
+          "start": 1.04,
+          "end": 1.13
+        },
+        {
+          "id": "06-w004",
+          "text": "hundred",
+          "start": 1.13,
+          "end": 1.64
+        },
+        {
+          "id": "06-w005",
+          "text": "shares.",
+          "start": 1.8,
+          "end": 2.5
+        },
+        {
+          "id": "06-w006",
+          "text": "Buy",
+          "start": 2.5,
+          "end": 2.65
+        },
+        {
+          "id": "06-w007",
+          "text": "into",
+          "start": 2.65,
+          "end": 2.86
+        },
+        {
+          "id": "06-w008",
+          "text": "the",
+          "start": 2.86,
+          "end": 3.01
+        },
+        {
+          "id": "06-w009",
+          "text": "ones",
+          "start": 3.01,
+          "end": 3.23
+        },
+        {
+          "id": "06-w010",
+          "text": "you",
+          "start": 3.24,
+          "end": 3.38
+        },
+        {
+          "id": "06-w011",
+          "text": "believe",
+          "start": 3.38,
+          "end": 3.93
+        },
+        {
+          "id": "06-w012",
+          "text": "in",
+          "start": 4.16,
+          "end": 4.24
+        },
+        {
+          "id": "06-w013",
+          "text": "\u2014 before",
+          "start": 4.47,
+          "end": 4.74
+        },
+        {
+          "id": "06-w014",
+          "text": "they",
+          "start": 4.74,
+          "end": 4.94
+        },
+        {
+          "id": "06-w015",
+          "text": "tier",
+          "start": 5.08,
+          "end": 5.2
+        },
+        {
+          "id": "06-w016",
+          "text": "up.",
+          "start": 5.2,
+          "end": 5.5
+        }
+      ]
+    },
+    {
+      "frame": 7,
+      "path": "assets/voice/07.mp3",
+      "duration_s": 4.656,
+      "words": [
+        {
+          "id": "07-w000",
+          "text": "Trade",
+          "start": 0.09,
+          "end": 0.4
+        },
+        {
+          "id": "07-w001",
+          "text": "positions",
+          "start": 0.4,
+          "end": 1.11
+        },
+        {
+          "id": "07-w002",
+          "text": "with",
+          "start": 1.11,
+          "end": 1.32
+        },
+        {
+          "id": "07-w003",
+          "text": "friends.",
+          "start": 1.32,
+          "end": 2.0
+        },
+        {
+          "id": "07-w004",
+          "text": "Cash",
+          "start": 2.09,
+          "end": 2.3
+        },
+        {
+          "id": "07-w005",
+          "text": "out",
+          "start": 2.38,
+          "end": 2.57
+        },
+        {
+          "id": "07-w006",
+          "text": "on",
+          "start": 2.58,
+          "end": 2.74
+        },
+        {
+          "id": "07-w007",
+          "text": "a",
+          "start": 2.74,
+          "end": 2.82
+        },
+        {
+          "id": "07-w008",
+          "text": "legendary.",
+          "start": 2.82,
+          "end": 3.8
+        }
+      ]
+    },
+    {
+      "frame": 8,
+      "path": "assets/voice/08.mp3",
+      "duration_s": 4.032,
+      "words": [
+        {
+          "id": "08-w000",
+          "text": "memeon.ai.",
+          "start": 0.05,
+          "end": 2.23
+        },
+        {
+          "id": "08-w001",
+          "text": "Bring",
+          "start": 2.23,
+          "end": 2.46
+        },
+        {
+          "id": "08-w002",
+          "text": "your",
+          "start": 2.52,
+          "end": 2.64
+        },
+        {
+          "id": "08-w003",
+          "text": "best",
+          "start": 2.69,
+          "end": 2.88
+        },
+        {
+          "id": "08-w004",
+          "text": "shitpost.",
+          "start": 3.02,
+          "end": 3.83
+        }
+      ]
+    }
+  ],
+  "sfx": []
+}
