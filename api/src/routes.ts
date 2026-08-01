@@ -578,21 +578,30 @@ authed('POST /api/trades/:id/respond', async (req) => {
   const action = requireString(req.body, 'action')
   if (action === 'cancel') {
     if (trade.fromId !== req.user.sub) throw new HttpError(403, 'only the proposer can cancel')
-    return json(200, { trade: await db.setTradeStatus(trade, 'cancelled') })
+    try {
+      return json(200, { trade: await db.setTradeStatus(trade, 'cancelled') })
+    } catch {
+      throw new HttpError(409, 'trade already resolved')
+    }
   }
   if (trade.toId !== req.user.sub) throw new HttpError(403, 'only the recipient can respond')
   if (action === 'decline') {
-    const updated = await db.setTradeStatus(trade, 'declined')
-    await db.addAlert(trade.fromId, 'trade', `❌ ${req.user.name} declined your trade`)
-    return json(200, { trade: updated })
+    try {
+      const updated = await db.setTradeStatus(trade, 'declined')
+      await db.addAlert(trade.fromId, 'trade', `❌ ${req.user.name} declined your trade`)
+      return json(200, { trade: updated })
+    } catch {
+      throw new HttpError(409, 'trade already resolved')
+    }
   }
   if (action !== 'accept') throw new HttpError(400, 'action must be accept, decline, or cancel')
+  // Single transaction: proposed→accepted + fund moves (no funds-without-status race).
+  let updated: Trade
   try {
-    await db.executeTrade(trade)
+    updated = await db.acceptTrade(trade)
   } catch {
-    throw new HttpError(409, 'trade failed — one side no longer holds the goods')
+    throw new HttpError(409, 'trade failed — already resolved or one side no longer holds the goods')
   }
-  const updated = await db.setTradeStatus(trade, 'accepted')
   await Promise.all(
     [...trade.offer.memes, ...trade.ask.memes].map((m) => db.refreshOwnership(m.memeId)),
   )
