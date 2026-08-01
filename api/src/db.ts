@@ -429,8 +429,44 @@ export async function deleteMemeCompletely(memeId: string): Promise<void> {
 
 // ---------- marketplace ----------
 
+/** Shares held back by an active listing for this user (0 if not the seller). */
+export function listingReservedFor(meme: Meme | null | undefined, userId: string): number {
+  if (!meme?.listing || meme.listing.sellerId !== userId) return 0
+  return Math.max(0, meme.listing.shares)
+}
+
+/**
+ * Set or clear the active listing. When setting, requires the seller still holds
+ * at least `listing.shares` (ConditionCheck) so list cannot oversell inventory.
+ */
 export async function setListing(memeId: string, listing: Listing | null): Promise<void> {
-  await updateMemeFields(memeId, { listing })
+  if (!listing) {
+    await updateMemeFields(memeId, { listing: null })
+    return
+  }
+  await ddb.send(
+    new TransactWriteCommand({
+      TransactItems: [
+        {
+          Update: {
+            TableName: T(),
+            Key: { PK: `MEME#${memeId}`, SK: 'META' },
+            UpdateExpression: 'SET listing = :l',
+            ConditionExpression: 'attribute_exists(PK)',
+            ExpressionAttributeValues: { ':l': listing },
+          },
+        },
+        {
+          ConditionCheck: {
+            TableName: T(),
+            Key: { PK: `MEME#${memeId}`, SK: `POS#${listing.sellerId}` },
+            ConditionExpression: 'shares >= :n',
+            ExpressionAttributeValues: { ':n': listing.shares },
+          },
+        },
+      ],
+    }),
+  )
 }
 
 /**
@@ -496,13 +532,20 @@ export async function executeBuy(
 
 // ---------- gifting ----------
 
-/** Move shares for free: giver must hold them; recipient credited atomically. Transactional. */
+/**
+ * Move shares for free: giver must hold unlisted (free) shares; recipient credited
+ * atomically. Listed inventory is reserved and cannot be gifted away.
+ */
 export async function giftShares(
   memeId: string,
   fromSub: string,
   toSub: string,
   shares: number,
 ): Promise<void> {
+  const meme = await getMeme(memeId)
+  const reserved = listingReservedFor(meme, fromSub)
+  // need free shares: position.shares - reserved >= gift amount
+  const need = shares + reserved
   await ddb.send(
     new TransactWriteCommand({
       TransactItems: [
@@ -511,8 +554,8 @@ export async function giftShares(
             TableName: T(),
             Key: { PK: `MEME#${memeId}`, SK: `POS#${fromSub}` },
             UpdateExpression: 'ADD shares :neg',
-            ConditionExpression: 'shares >= :n',
-            ExpressionAttributeValues: { ':neg': -shares, ':n': shares },
+            ConditionExpression: 'shares >= :need',
+            ExpressionAttributeValues: { ':neg': -shares, ':need': need },
           },
         },
         creditSharesItem(memeId, toSub, shares),
@@ -722,8 +765,14 @@ export async function setTradeStatus(trade: Trade, status: Trade['status']): Pro
   return updated
 }
 
-/** Build coin + share transfer items for a trade (no status write). */
-function tradeTransferItems(trade: Trade): TransactItems {
+/**
+ * Build coin + share transfer items for a trade (no status write).
+ * `reservedByUserMeme` maps `${userId}#${memeId}` → listed shares that must stay.
+ */
+function tradeTransferItems(
+  trade: Trade,
+  reservedByUserMeme: Map<string, number> = new Map(),
+): TransactItems {
   const items: TransactItems = []
 
   const moveCoins = (from: string, to: string, amount: number) => {
@@ -748,13 +797,15 @@ function tradeTransferItems(trade: Trade): TransactItems {
   }
 
   const moveShares = (from: string, to: string, memeId: string, shares: number) => {
+    const reserved = reservedByUserMeme.get(`${from}#${memeId}`) ?? 0
+    const need = shares + reserved
     items.push({
       Update: {
         TableName: T(),
         Key: { PK: `MEME#${memeId}`, SK: `POS#${from}` },
         UpdateExpression: 'ADD shares :neg',
-        ConditionExpression: 'shares >= :n',
-        ExpressionAttributeValues: { ':neg': -shares, ':n': shares },
+        ConditionExpression: 'shares >= :need',
+        ExpressionAttributeValues: { ':neg': -shares, ':need': need },
       },
     })
     items.push(creditSharesItem(memeId, to, shares))
@@ -767,6 +818,19 @@ function tradeTransferItems(trade: Trade): TransactItems {
   return items
 }
 
+async function listingReserveMap(trade: Trade): Promise<Map<string, number>> {
+  const pairs: { userId: string; memeId: string }[] = []
+  for (const m of trade.offer.memes) pairs.push({ userId: trade.fromId, memeId: m.memeId })
+  for (const m of trade.ask.memes) pairs.push({ userId: trade.toId, memeId: m.memeId })
+  const memes = await getMemesByIds(pairs.map((p) => p.memeId))
+  const byId = new Map(memes.map((m) => [m.id, m]))
+  const map = new Map<string, number>()
+  for (const p of pairs) {
+    map.set(`${p.userId}#${p.memeId}`, listingReservedFor(byId.get(p.memeId), p.userId))
+  }
+  return map
+}
+
 /**
  * Accept a proposed trade in one transaction: status proposed→accepted on META
  * + both refs, and all coin/share moves. Concurrent cancel/decline/accept loses
@@ -775,9 +839,10 @@ function tradeTransferItems(trade: Trade): TransactItems {
 export async function acceptTrade(trade: Trade): Promise<Trade> {
   const resolvedAt = new Date().toISOString()
   const updated: Trade = { ...trade, status: 'accepted', resolvedAt }
+  const reserved = await listingReserveMap(trade)
   await ddb.send(
     new TransactWriteCommand({
-      TransactItems: [...tradeTransferItems(trade), ...tradeStatusPuts(updated)],
+      TransactItems: [...tradeTransferItems(trade, reserved), ...tradeStatusPuts(updated)],
     }),
   )
   return updated
@@ -788,7 +853,8 @@ export async function acceptTrade(trade: Trade): Promise<Trade> {
  * Kept for callers that already flipped status under a stronger lock.
  */
 export async function executeTrade(trade: Trade): Promise<void> {
-  await ddb.send(new TransactWriteCommand({ TransactItems: tradeTransferItems(trade) }))
+  const reserved = await listingReserveMap(trade)
+  await ddb.send(new TransactWriteCommand({ TransactItems: tradeTransferItems(trade, reserved) }))
 }
 
 // ---------- onboarding quests ----------
