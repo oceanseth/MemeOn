@@ -156,6 +156,12 @@ export async function listCreatedMemeIds(sub: string, limit = 200): Promise<stri
   return (res.Items ?? []).map((i) => i.memeId as string)
 }
 
+/** Memes created by `sub`, newest-id order not guaranteed after batch-get. */
+export async function listCreatedMemes(sub: string, limit = 200): Promise<Meme[]> {
+  const ids = await listCreatedMemeIds(sub, limit)
+  return getMemesByIds(ids)
+}
+
 export async function putMeme(meme: Meme): Promise<void> {
   await ddb.send(
     new PutCommand({
