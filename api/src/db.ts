@@ -343,6 +343,29 @@ export function positionItem(memeId: string, userId: string, shares: number) {
   }
 }
 
+/**
+ * Transact item: credit `shares` onto a position with atomic ADD.
+ * Creates the item (with GSI portfolio keys) if missing — never absolute Put of
+ * a pre-read total, so concurrent credits cannot clobber each other.
+ */
+export function creditSharesItem(memeId: string, userId: string, shares: number) {
+  return {
+    Update: {
+      TableName: T(),
+      Key: { PK: `MEME#${memeId}`, SK: `POS#${userId}` },
+      UpdateExpression:
+        'ADD shares :n SET GSI1PK = if_not_exists(GSI1PK, :gpk), GSI1SK = if_not_exists(GSI1SK, :gsk), memeId = if_not_exists(memeId, :mid), userId = if_not_exists(userId, :uid)',
+      ExpressionAttributeValues: {
+        ':n': shares,
+        ':gpk': `PORT#${userId}`,
+        ':gsk': `MEME#${memeId}`,
+        ':mid': memeId,
+        ':uid': userId,
+      },
+    },
+  }
+}
+
 export async function putPosition(memeId: string, userId: string, shares: number): Promise<void> {
   await ddb.send(new PutCommand({ TableName: T(), Item: positionItem(memeId, userId, shares) }))
 }
@@ -421,7 +444,6 @@ export async function executeBuy(
   shares: number,
 ): Promise<number> {
   const cost = Math.ceil(shares * listing.pricePerShare)
-  const buyerPos = await getPositionShares(meme.id, buyerId)
   const remaining = listing.shares - shares
   await ddb.send(
     new TransactWriteCommand({
@@ -452,12 +474,7 @@ export async function executeBuy(
             ExpressionAttributeValues: { ':neg': -shares, ':n': shares },
           },
         },
-        {
-          Put: {
-            TableName: T(),
-            Item: positionItem(meme.id, buyerId, buyerPos + shares),
-          },
-        },
+        creditSharesItem(meme.id, buyerId, shares),
         {
           Update: {
             TableName: T(),
@@ -477,26 +494,15 @@ export async function executeBuy(
   return cost
 }
 
-async function getPositionShares(memeId: string, userId: string): Promise<number> {
-  const res = await ddb.send(
-    new GetCommand({ TableName: T(), Key: { PK: `MEME#${memeId}`, SK: `POS#${userId}` } }),
-  )
-  return (res.Item?.shares as number) ?? 0
-}
-
 // ---------- gifting ----------
 
-/** Move shares for free: giver must hold them; recipient upserted. Transactional. */
+/** Move shares for free: giver must hold them; recipient credited atomically. Transactional. */
 export async function giftShares(
   memeId: string,
   fromSub: string,
   toSub: string,
   shares: number,
 ): Promise<void> {
-  const existing = await ddb.send(
-    new GetCommand({ TableName: T(), Key: { PK: `MEME#${memeId}`, SK: `POS#${toSub}` } }),
-  )
-  const current = (existing.Item?.shares as number) ?? 0
   await ddb.send(
     new TransactWriteCommand({
       TransactItems: [
@@ -509,7 +515,7 @@ export async function giftShares(
             ExpressionAttributeValues: { ':neg': -shares, ':n': shares },
           },
         },
-        { Put: { TableName: T(), Item: positionItem(memeId, toSub, current + shares) } },
+        creditSharesItem(memeId, toSub, shares),
       ],
     }),
   )
@@ -715,8 +721,7 @@ export async function executeTrade(trade: Trade): Promise<void> {
     })
   }
 
-  const moveShares = async (from: string, to: string, memeId: string, shares: number) => {
-    const toShares = await getPositionShares(memeId, to)
+  const moveShares = (from: string, to: string, memeId: string, shares: number) => {
     items.push({
       Update: {
         TableName: T(),
@@ -726,13 +731,13 @@ export async function executeTrade(trade: Trade): Promise<void> {
         ExpressionAttributeValues: { ':neg': -shares, ':n': shares },
       },
     })
-    items.push({ Put: { TableName: T(), Item: positionItem(memeId, to, toShares + shares) } })
+    items.push(creditSharesItem(memeId, to, shares))
   }
 
   moveCoins(trade.fromId, trade.toId, trade.offer.coins)
   moveCoins(trade.toId, trade.fromId, trade.ask.coins)
-  for (const m of trade.offer.memes) await moveShares(trade.fromId, trade.toId, m.memeId, m.shares)
-  for (const m of trade.ask.memes) await moveShares(trade.toId, trade.fromId, m.memeId, m.shares)
+  for (const m of trade.offer.memes) moveShares(trade.fromId, trade.toId, m.memeId, m.shares)
+  for (const m of trade.ask.memes) moveShares(trade.toId, trade.fromId, m.memeId, m.shares)
 
   await ddb.send(new TransactWriteCommand({ TransactItems: items }))
 }
@@ -950,10 +955,6 @@ export async function claimVaultPack(
     },
   ]
   for (const memeId of memeIds) {
-    const existing = await ddb.send(
-      new GetCommand({ TableName: T(), Key: { PK: `MEME#${memeId}`, SK: `POS#${userId}` } }),
-    )
-    const current = (existing.Item?.shares as number) ?? 0
     items.push({
       Update: {
         TableName: T(),
@@ -963,7 +964,7 @@ export async function claimVaultPack(
         ExpressionAttributeValues: { ':neg': -10, ':ten': 10 },
       },
     })
-    items.push({ Put: { TableName: T(), Item: positionItem(memeId, userId, current + 10) } })
+    items.push(creditSharesItem(memeId, userId, 10))
   }
   await ddb.send(new TransactWriteCommand({ TransactItems: items }))
 }
