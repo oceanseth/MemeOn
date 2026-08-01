@@ -4,6 +4,7 @@ import { beginMaskyLogin } from '../lib/auth'
 import { apiFetch } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { tierClasses } from '../components/MemeCard'
+import HeroVideo from '../components/HeroVideo'
 import { TIERS, type Tier } from '../../../shared/tiers'
 
 interface FrameInfo {
@@ -46,6 +47,7 @@ export default function Landing() {
           positions with friends. Every meme gets a share link whose card frame levels up as it
           spreads.
         </p>
+        <HeroVideo />
         {user ? (
           <Link to="/marketplace">
             <button className="primary login-btn">📈 Enter the marketplace</button>
