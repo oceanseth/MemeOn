@@ -396,9 +396,10 @@ authed('POST /api/memes/:id/buy', async (req) => {
 })
 
 authed('GET /api/binder', async (req) => {
-  const { positions, memes } = await portfolioSummary(req.user.sub)
-  const all = await db.listMemes()
-  const created = all.filter((m) => m.creatorId === req.user.sub)
+  const [{ positions, memes }, created] = await Promise.all([
+    portfolioSummary(req.user.sub),
+    db.listCreatedMemes(req.user.sub),
+  ])
   const held = new Map(positions.map((p) => [p.memeId, p.shares]))
   const byId = new Map<string, Meme>()
   for (const m of [...memes, ...created]) byId.set(m.id, m)
@@ -674,8 +675,10 @@ authed('GET /api/feed', async (req) => {
   const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50)
   const offset = Math.max(Number(req.query.cursor) || 0, 0)
 
-  const [allMemes, disliked, myLikes, friends] = await Promise.all([
-    db.listMemes(),
+  // Discovery is one bounded MEME GSI page (~100 newest); friend-owned/liked
+  // ids are batch-got so friendSignal still surfaces cards outside that window.
+  const [discovery, disliked, myLikes, friends] = await Promise.all([
+    db.listMemesPage({ limit: 100 }),
     db.listDislikes(req.user.sub),
     db.listLikes(req.user.sub),
     db.listFriends(req.user.sub),
@@ -703,7 +706,12 @@ authed('GET /api/feed', async (req) => {
     }),
   )
 
-  const scored = allMemes
+  const friendSignalIds = [...new Set([...friendOwners.keys(), ...friendLikers.keys()])]
+  const friendMemes = await db.getMemesByIds(friendSignalIds)
+  const byId = new Map<string, Meme>()
+  for (const m of [...discovery.memes, ...friendMemes]) byId.set(m.id, m)
+
+  const scored = [...byId.values()]
     .filter((m) => !m.private && !dislikedSet.has(m.id))
     .filter((m) => m.creatorId !== req.user.sub && m.ownerId !== req.user.sub)
     .map((m) => ({
@@ -738,15 +746,14 @@ authed('GET /api/feed', async (req) => {
 route('GET /api/invite/:sub', async (req) => {
   const inviter = await db.getUser(req.params.sub)
   if (!inviter) throw new HttpError(404, 'invite not found')
-  const [allMemes, positions, stats] = await Promise.all([
-    db.listMemes(),
+  const [createdIds, positions, stats] = await Promise.all([
+    db.listCreatedMemeIds(inviter.sub),
     db.getPortfolio(inviter.sub),
     portfolioSummary(inviter.sub),
   ])
-  const held = new Set(positions.map((p) => p.memeId))
-  const topMemes = allMemes
+  const memeIds = [...new Set([...createdIds, ...positions.map((p) => p.memeId)])]
+  const topMemes = (await db.getMemesByIds(memeIds))
     .filter((m) => !m.private)
-    .filter((m) => m.creatorId === inviter.sub || held.has(m.id))
     .sort((a, b) => b.reshares - a.reshares)
     .slice(0, 4)
     .map(publicMeme)
@@ -947,11 +954,12 @@ route('GET /api/memes/:id/memeplex', async (req) => {
     cursor = parent
   }
 
-  const [allMemes, plexIds] = await Promise.all([db.listMemes(), db.listPlex(meme.id)])
-  const remixes = allMemes.filter((m) => m.remixOf === meme.id && !m.private)
-  const plexSet = new Set(plexIds)
-  const related = allMemes.filter(
-    (m) => plexSet.has(m.id) && !m.private && m.remixOf !== meme.id && !seen.has(m.id),
+  // Remixes/related come from plex edges written at mint (no full-catalog scan).
+  const plexIds = await db.listPlex(meme.id)
+  const plexMemes = await db.getMemesByIds(plexIds)
+  const remixes = plexMemes.filter((m) => m.remixOf === meme.id && !m.private)
+  const related = plexMemes.filter(
+    (m) => !m.private && m.remixOf !== meme.id && !seen.has(m.id),
   )
 
   return json(200, {
