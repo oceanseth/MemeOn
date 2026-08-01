@@ -353,11 +353,15 @@ authed('POST /api/memes/:id/list', async (req) => {
   if (!mine || mine.shares < shares) throw new HttpError(400, 'you do not hold that many shares')
   if (meme.listing && meme.listing.sellerId !== req.user.sub)
     throw new HttpError(409, 'another holder already has an active listing on this meme')
-  await db.setListing(meme.id, {
-    sellerId: req.user.sub,
-    pricePerShare: Math.round(pricePerShare * 100) / 100,
-    shares,
-  })
+  try {
+    await db.setListing(meme.id, {
+      sellerId: req.user.sub,
+      pricePerShare: Math.round(pricePerShare * 100) / 100,
+      shares,
+    })
+  } catch {
+    throw new HttpError(409, 'listing failed — you no longer hold that many shares')
+  }
   return json(200, { ok: true })
 })
 
@@ -381,7 +385,10 @@ authed('POST /api/memes/:id/buy', async (req) => {
   try {
     cost = await db.executeBuy(meme, meme.listing, req.user.sub, shares)
   } catch {
-    throw new HttpError(409, 'purchase failed — insufficient coins or listing changed')
+    throw new HttpError(
+      409,
+      'purchase failed — insufficient coins, seller inventory, or listing changed',
+    )
   }
   await db.refreshOwnership(meme.id)
   await db.addAlert(
@@ -534,10 +541,18 @@ async function assertHoldings(userId: string, side: TradeSide, label: string) {
   if (!user) throw new HttpError(404, `${label} not found`)
   if (user.coins < side.coins) throw new HttpError(400, `${label} lacks the offered coins`)
   for (const m of side.memes) {
-    const positions = await db.getPositions(m.memeId)
+    const [positions, meme] = await Promise.all([db.getPositions(m.memeId), db.getMeme(m.memeId)])
     const pos = positions.find((p) => p.userId === userId)
-    if (!pos || pos.shares < m.shares)
-      throw new HttpError(400, `${label} does not hold ${m.shares} shares of ${m.memeId}`)
+    const reserved = db.listingReservedFor(meme, userId)
+    const free = (pos?.shares ?? 0) - reserved
+    if (free < m.shares) {
+      if (reserved > 0 && (pos?.shares ?? 0) >= m.shares)
+        throw new HttpError(
+          400,
+          `${label} has ${reserved} share${reserved === 1 ? '' : 's'} of ${m.memeId} listed — unlist or trade fewer`,
+        )
+      throw new HttpError(400, `${label} does not hold ${m.shares} free shares of ${m.memeId}`)
+    }
   }
 }
 
@@ -876,6 +891,12 @@ authed('POST /api/gift', async (req) => {
   try {
     await db.giftShares(memeId, req.user.sub, toSub, shares)
   } catch {
+    const reserved = db.listingReservedFor(meme, req.user.sub)
+    if (reserved > 0)
+      throw new HttpError(
+        409,
+        `not enough free shares — ${reserved} are listed for sale (unlist or gift fewer)`,
+      )
     throw new HttpError(409, `you don't hold ${shares} shares of that meme`)
   }
   await db.refreshOwnership(memeId)
