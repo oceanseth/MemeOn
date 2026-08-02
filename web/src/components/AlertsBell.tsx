@@ -1,16 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { AlertsBell as AlertsBellView } from '@memeon/ui'
 import { apiFetch, post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import type { Alert } from '../lib/types'
 
 const POLL_MS = 30_000
 
+/** Container: polls the alerts feed and marks unread as read when opened. */
 export function AlertsBell() {
   const { user, refresh } = useAuth()
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [open, setOpen] = useState(false)
-  const wrapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!user) return
@@ -27,19 +27,10 @@ export function AlertsBell() {
     }
   }, [user])
 
-  useEffect(() => {
-    const onClick = (e: MouseEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', onClick)
-    return () => document.removeEventListener('mousedown', onClick)
-  }, [])
-
-  const unread = alerts.filter((a) => !a.read)
-
   const toggle = async () => {
     const next = !open
     setOpen(next)
+    const unread = alerts.filter((a) => !a.read)
     if (next && unread.length > 0) {
       // mark as read once viewed
       await post('/api/alerts/read', { ids: unread.map((a) => a.id) }).catch(() => {})
@@ -49,32 +40,11 @@ export function AlertsBell() {
   }
 
   return (
-    <div className="bell" ref={wrapRef}>
-      <button onClick={toggle} aria-label="Alerts">
-        🔔
-        {unread.length > 0 && <span className="bell-badge">{unread.length}</span>}
-      </button>
-      {open && (
-        <div className="alerts-pop">
-          {alerts.length === 0 && <div className="alert-row">No alerts yet — go make noise.</div>}
-          {alerts.map((a) => (
-            <div key={a.id} className={`alert-row ${a.read ? '' : 'unread'}`}>
-              {a.memeId ? (
-                <Link to={`/m/${a.memeId}`} onClick={() => setOpen(false)}>
-                  {a.message}
-                </Link>
-              ) : a.subjectSub ? (
-                <Link to={`/u/${encodeURIComponent(a.subjectSub)}`} onClick={() => setOpen(false)}>
-                  {a.message}
-                </Link>
-              ) : (
-                a.message
-              )}
-              <time>{new Date(a.createdAt).toLocaleString()}</time>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    <AlertsBellView
+      alerts={alerts}
+      open={open}
+      onToggle={() => void toggle()}
+      onDismiss={() => setOpen(false)}
+    />
   )
 }

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
 import { useAuth } from '../context/AuthContext'
-import { MemeCard } from '../components/MemeCard'
+import { MemeCard } from '@memeon/ui'
 import type { Meme } from '../lib/types'
 
 export const INVITE_KEY = 'memeon_invite_from'

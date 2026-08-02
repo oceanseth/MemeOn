@@ -1,0 +1,19 @@
+{
+  "projectId": "721cdf23-967e-4286-8ec2-55d91dfe0ab3",
+  "shape": "storybook",
+  "pkg": "@memeon/ui",
+  "globalName": "MemeOn",
+  "buildCmd": "npm run build:ui",
+  "storybookConfigDir": "ui/.storybook",
+  "storybookStatic": ".design-sync/sb-reference",
+  "cssEntry": "src/styles.css",
+  "guidelinesGlob": [],
+  "readmeHeader": ".design-sync/conventions.md",
+  "provider": { "component": "MemeOnSurface" },
+  "overrides": {
+    "Layout": { "cardMode": "column" },
+    "QuestBar": { "cardMode": "single", "primaryStory": "FreshAccount" },
+    "ConfirmDialog": { "cardMode": "single", "primaryStory": "Default", "viewport": "900x520" },
+    "GiftDialog": { "cardMode": "single", "primaryStory": "Default", "viewport": "900x680" }
+  }
+}

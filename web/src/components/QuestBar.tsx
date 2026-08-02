@@ -1,32 +1,22 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { QuestBar as QuestBarView, type PackResult } from '@memeon/ui'
 import { apiFetch, post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
-import { MemeCard } from './MemeCard'
-import type { Meme, QuestKey, QuestStep } from '../lib/types'
+import type { QuestStep } from '../lib/types'
 
-/** Where each undone quest sends you to go do the thing. */
-const QUEST_LINKS: Partial<Record<QuestKey, string>> = {
-  mint: '/binder/new',
-  share: '/binder',
-  friend: '/friends',
-  trade: '/marketplace',
-}
-
-/**
- * Onboarding quest strip: shown under the header until all quests are done.
- * New users start with 0 braincells and earn their bankroll here.
- */
+/** Container: loads onboarding steps and claims the starter pack. */
 export function QuestBar() {
   const { user, refresh } = useAuth()
   const [steps, setSteps] = useState<QuestStep[] | null>(null)
-  const [packMemes, setPackMemes] = useState<Meme[] | null>(null)
-  const [packReward, setPackReward] = useState(0)
+  const [pack, setPack] = useState<PackResult | null>(null)
   const [busy, setBusy] = useState(false)
 
-  const allDone = user && user.onboarding && ['pack', 'mint', 'share', 'friend', 'trade'].every(
-    (k) => user.onboarding?.[k as keyof typeof user.onboarding],
-  )
+  const allDone =
+    user &&
+    user.onboarding &&
+    ['pack', 'mint', 'share', 'friend', 'trade'].every(
+      (k) => user.onboarding?.[k as keyof typeof user.onboarding],
+    )
 
   useEffect(() => {
     if (!user || allDone) return
@@ -40,9 +30,11 @@ export function QuestBar() {
   const claimPack = async () => {
     setBusy(true)
     try {
-      const out = await post<{ memes: Meme[]; reward: number }>('/api/onboarding/claim-pack', {})
-      setPackMemes(out.memes)
-      setPackReward(out.reward)
+      const out = await post<{ memes: PackResult['memes']; reward: number }>(
+        '/api/onboarding/claim-pack',
+        {},
+      )
+      setPack({ memes: out.memes, reward: out.reward })
       setSteps((prev) => prev?.map((s) => (s.key === 'pack' ? { ...s, done: true } : s)) ?? null)
       void refresh()
     } catch {
@@ -52,74 +44,13 @@ export function QuestBar() {
     }
   }
 
-  const doneCount = steps.filter((s) => s.done).length
-
   return (
-    <>
-      <div className="questbar">
-        <div className="questbar-inner">
-          <span className="questbar-title">
-            <img className="braincell-img" src="/api/brand/braincell.png" alt="braincell" /> Earn
-            your braincells · {doneCount}/{steps.length}
-          </span>
-          {steps.map((s) => {
-            if (s.key === 'pack' && !s.done) {
-              return (
-                <button key={s.key} className="primary quest-chip-btn" onClick={claimPack} disabled={busy}>
-                  🎁 {busy ? 'Opening…' : `${s.title} (+${s.reward} 🧠)`}
-                </button>
-              )
-            }
-            const to = s.done ? null : QUEST_LINKS[s.key]
-            const chip = (
-              <span key={s.key} className={`quest-chip ${s.done ? 'done' : ''}`} title={s.hint}>
-                {s.done ? '✅' : '⬜'} {s.title} <em>+{s.reward}🧠</em>
-              </span>
-            )
-            return to ? (
-              <Link key={s.key} to={to} className="quest-chip-link" title={s.hint}>
-                {chip}
-              </Link>
-            ) : (
-              chip
-            )
-          })}
-        </div>
-      </div>
-
-      {packMemes && (
-        <div className="pack-overlay" onClick={() => setPackMemes(null)}>
-          <div className="pack-modal" onClick={(e) => e.stopPropagation()}>
-            <img
-              className="braincell-img"
-              src="/api/brand/braincell.png"
-              alt=""
-              style={{ width: 64, height: 64, float: 'right' }}
-            />
-            <h3>🎁 Starter pack opened!</h3>
-            <p style={{ color: 'var(--text-dim)' }}>
-              {packMemes.length > 0
-                ? `You now hold 10 shares in each of these — plus ${packReward} 🧠 braincells.`
-                : `The vault was empty, so you got ${packReward} 🧠 braincells instead. Spend them wisely.`}
-            </p>
-            {packMemes.length > 0 && (
-              <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))' }}>
-                {packMemes.map((m) => (
-                  <MemeCard key={m.id} meme={m} />
-                ))}
-              </div>
-            )}
-            <div className="filter-bar" style={{ marginTop: 16 }}>
-              <Link to="/binder">
-                <button className="primary" onClick={() => setPackMemes(null)}>
-                  View in My Binder
-                </button>
-              </Link>
-              <button onClick={() => setPackMemes(null)}>Keep exploring</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+    <QuestBarView
+      steps={steps}
+      busy={busy}
+      packResult={pack}
+      onClaimPack={() => void claimPack()}
+      onDismissPack={() => setPack(null)}
+    />
   )
 }

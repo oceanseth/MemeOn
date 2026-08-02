@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useConfirmDialog } from './hooks/useConfirmDialog'
 
 /**
  * Reusable styled confirmation modal. Render it always; control with `open`.
@@ -8,6 +9,9 @@ import type { ReactNode } from 'react'
  *     message="This can't be undone." confirmLabel="Delete it"
  *     onConfirm={...} onCancel={() => setConfirming(false)}
  *   />
+ *
+ * Markup and styling only: gating, the danger flag and the busy label swap
+ * live in `useConfirmDialog`.
  */
 export function ConfirmDialog({
   open,
@@ -30,27 +34,33 @@ export function ConfirmDialog({
   onConfirm: () => void
   onCancel: () => void
 }) {
-  if (!open) return null
+  const c = useConfirmDialog({
+    open,
+    confirmLabel,
+    cancelLabel,
+    danger,
+    busy,
+    onConfirm,
+    onCancel,
+  })
+
+  if (!c.isOpen) return null
+
   return (
-    <div className="pack-overlay" onClick={onCancel}>
+    <div className="pack-overlay" {...c.overlayProps}>
       <div
-        className={`pack-modal confirm-modal ${danger ? 'confirm-danger' : ''}`}
-        onClick={(e) => e.stopPropagation()}
-        role="alertdialog"
-        aria-modal="true"
+        className={`pack-modal confirm-modal ${c.danger ? 'confirm-danger' : ''}`}
+        {...c.modalProps}
       >
-        <h3>{danger ? '⚠️ ' : ''}{title}</h3>
+        <h3>
+          {c.titlePrefix}
+          {title}
+        </h3>
         <div className="confirm-message">{message}</div>
         <div className="filter-bar" style={{ marginTop: 18, justifyContent: 'flex-end' }}>
-          <button onClick={onCancel} disabled={busy}>
-            {cancelLabel}
-          </button>
-          <button
-            className={danger ? 'danger confirm-danger-btn' : 'primary'}
-            onClick={onConfirm}
-            disabled={busy}
-          >
-            {busy ? 'Working…' : confirmLabel}
+          <button {...c.cancelProps}>{c.cancelLabel}</button>
+          <button className={c.danger ? 'danger confirm-danger-btn' : 'primary'} {...c.confirmProps}>
+            {c.confirmText}
           </button>
         </div>
       </div>

@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "workspaces": [
+    "ui",
     "web",
     "api"
   ],
@@ -11,7 +12,9 @@
     "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
     "dev:web": "npm run dev --prefix web",
     "dev:api": "npm run dev --prefix api",
-    "build": "npm run build:web && npm run bundle:api",
+    "storybook": "npm run storybook --prefix ui",
+    "build": "npm run build:ui && npm run build:web && npm run bundle:api",
+    "build:ui": "npm run build --prefix ui",
     "build:web": "npm run build --prefix web",
     "bundle:api": "npm run package --prefix api",
     "format": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\""

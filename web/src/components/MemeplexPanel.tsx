@@ -1,25 +1,12 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { MemeplexPanel as MemeplexPanelView } from '@memeon/ui'
 import { apiFetch, post } from '../lib/api'
-import { MemeCard } from './MemeCard'
 import type { Meme, Memeplex } from '../lib/types'
 
-/** Extract a meme id from a raw id or a pasted /m/ | /meme/ URL. */
-function parseMemeRef(raw: string): string {
-  const t = raw.trim()
-  const m = t.match(/\/(?:m|meme)\/([^/?#]+)/)
-  return m ? decodeURIComponent(m[1]) : t
-}
-
-/**
- * The memeplex: this meme's family — remix ancestry, remixes of it, and
- * manually linked relatives. Creators/shareholders can add relatives.
- */
+/** Container: loads the memeplex and the binder memes that can be linked. */
 export function MemeplexPanel({ meme, canEdit }: { meme: Meme; canEdit: boolean }) {
   const [plex, setPlex] = useState<Memeplex | null>(null)
   const [binder, setBinder] = useState<Meme[]>([])
-  const [pick, setPick] = useState('')
-  const [pasted, setPasted] = useState('')
   const [msg, setMsg] = useState<string | null>(null)
 
   const load = useCallback(() => {
@@ -37,96 +24,45 @@ export function MemeplexPanel({ meme, canEdit }: { meme: Meme; canEdit: boolean 
       .catch(() => {})
   }, [canEdit, meme.id])
 
-  const add = async (memeId: string) => {
+  // never offer the meme itself or anything already in the family
+  const alreadyLinked = useMemo(
+    () =>
+      new Set([
+        meme.id,
+        ...(plex?.ancestors ?? []).map((m) => m.id),
+        ...(plex?.remixes ?? []).map((m) => m.id),
+        ...(plex?.related ?? []).map((m) => m.id),
+      ]),
+    [meme.id, plex],
+  )
+
+  const link = async (memeId: string) => {
     setMsg(null)
+    if (alreadyLinked.has(memeId)) {
+      setMsg(
+        memeId === meme.id
+          ? "That's this meme — already the center of its own memeplex."
+          : 'Already in the memeplex.',
+      )
+      return
+    }
     try {
       await post(`/api/memes/${meme.id}/memeplex`, { memeId })
       setMsg('Added to the memeplex 🕸️')
-      setPick('')
-      setPasted('')
       load()
     } catch (e) {
       setMsg(e instanceof Error ? e.message : 'failed to add')
     }
   }
 
-  if (!plex) return null
-  const family = [...plex.remixes, ...plex.related]
-  if (family.length === 0 && plex.ancestors.length === 0 && !canEdit) return null
-
-  // never offer the meme itself or anything already in the family
-  const alreadyLinked = new Set([
-    meme.id,
-    ...plex.ancestors.map((m) => m.id),
-    ...plex.remixes.map((m) => m.id),
-    ...plex.related.map((m) => m.id),
-  ])
-  const linkable = binder.filter((m) => !alreadyLinked.has(m.id))
-
-  const tryAdd = (memeId: string) => {
-    if (alreadyLinked.has(memeId)) {
-      setMsg(memeId === meme.id ? "That's this meme — already the center of its own memeplex." : 'Already in the memeplex.')
-      return
-    }
-    void add(memeId)
-  }
-
   return (
-    <div className="panel" style={{ marginTop: 16 }}>
-      <strong>🕸️ Memeplex</strong>
-      {plex.ancestors.length > 0 && (
-        <p style={{ color: 'var(--text-dim)', fontSize: 13.5, margin: '8px 0' }}>
-          Descended from{' '}
-          {plex.ancestors.map((a, i) => (
-            <span key={a.id}>
-              {i > 0 && ' → '}
-              <Link to={`/m/${a.id}`}>"{a.title}"</Link>
-            </span>
-          ))}
-          {plex.original && plex.ancestors[0]?.id === plex.original.id && ' (the original)'}
-        </p>
-      )}
-
-      {family.length > 0 ? (
-        <div
-          className="card-grid"
-          style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', marginTop: 10 }}
-        >
-          {family.map((m) => (
-            <MemeCard key={m.id} meme={m} />
-          ))}
-        </div>
-      ) : (
-        <p style={{ color: 'var(--text-dim)', fontSize: 13.5 }}>
-          No relatives yet — remix this meme or link related ones.
-        </p>
-      )}
-
-      {canEdit && (
-        <div className="filter-bar" style={{ marginTop: 12 }}>
-          <select value={pick} onChange={(e) => setPick(e.target.value)}>
-            <option value="">Link from your binder…</option>
-            {linkable.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.title}
-              </option>
-            ))}
-          </select>
-          {pick && <button className="primary" onClick={() => tryAdd(pick)}>Link</button>}
-          <input
-            placeholder="…or paste a meme link"
-            value={pasted}
-            onChange={(e) => setPasted(e.target.value)}
-            style={{ minWidth: 180 }}
-          />
-          {pasted.trim() && (
-            <button className="primary" onClick={() => tryAdd(parseMemeRef(pasted))}>
-              Link
-            </button>
-          )}
-        </div>
-      )}
-      {msg && <p className="notice ok" style={{ marginTop: 8 }}>{msg}</p>}
-    </div>
+    <MemeplexPanelView
+      meme={meme}
+      plex={plex}
+      canEdit={canEdit}
+      linkable={binder.filter((m) => !alreadyLinked.has(m.id))}
+      message={msg}
+      onLink={(memeId) => void link(memeId)}
+    />
   )
 }

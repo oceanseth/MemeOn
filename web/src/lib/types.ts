@@ -1,54 +1,22 @@
-import type { Tier } from '../../../shared/tiers'
-
-export interface Listing {
-  sellerId: string
-  pricePerShare: number
-  shares: number
-}
-
-export interface Meme {
-  id: string
-  title: string
-  description: string | null
-  mediaType: 'image' | 'video'
-  imageUrl: string
-  videoUrl: string | null
-  tags: string[]
-  creatorId: string
-  creatorName: string
-  ownerId: string
-  ownerName: string
-  reshares: number
-  tierKey: string
-  listing: Listing | null
-  createdAt: string
-  tier: Tier
-  value: number
-  /** total share-link loads (drives the tier ladder) */
-  views?: number
-  /** distinct external sources — true reshares */
-  reshareCount?: number
-  myShares?: number
-  isCreator?: boolean
-  remixOf?: string | null
-  private?: boolean
-  source?: { provider: string; id: string; url: string; author: string | null } | null
-}
-
-export interface Memeplex {
-  original: Meme | null
-  ancestors: Meme[]
-  remixes: Meme[]
-  related: Meme[]
-}
+// The design system owns the view types it renders — one definition, in
+// @memeon/ui. App-only shapes (Me, Trade, LeaderRow…) stay here.
+export type {
+  Tier,
+  Listing,
+  Meme,
+  Memeplex,
+  QuestKey,
+  QuestStep,
+  Alert,
+  NavUser,
+} from '@memeon/ui'
+import type { QuestKey } from '@memeon/ui'
 
 export interface Position {
   memeId: string
   userId: string
   shares: number
 }
-
-export type QuestKey = 'pack' | 'mint' | 'share' | 'friend' | 'trade'
 
 export interface Me {
   sub: string
@@ -60,14 +28,6 @@ export interface Me {
   collectionSize: number
   unreadAlerts: number
   onboarding?: Partial<Record<QuestKey, string>>
-}
-
-export interface QuestStep {
-  key: QuestKey
-  title: string
-  reward: number
-  hint: string
-  done: boolean
 }
 
 export interface LeaderRow {
@@ -106,12 +66,3 @@ export interface Trade {
   resolvedAt: string | null
 }
 
-export interface Alert {
-  id: string
-  type: 'tierup' | 'sale' | 'trade' | 'friend'
-  message: string
-  memeId: string | null
-  subjectSub?: string | null
-  read: boolean
-  createdAt: string
-}

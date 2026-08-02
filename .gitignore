@@ -36,3 +36,11 @@ mobile/android/
 
 # jimp fonts staged for lambda packaging
 api/fonts/
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules
+ui/storybook-static/
+ui/dist/
+.design-sync/sb-reference/

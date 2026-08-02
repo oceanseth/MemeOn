@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { apiFetch, post } from '../lib/api'
-import { ConfirmDialog } from '../components/ConfirmDialog'
+import { ConfirmDialog } from '@memeon/ui'
 
 interface KeyRow {
   prefix: string
