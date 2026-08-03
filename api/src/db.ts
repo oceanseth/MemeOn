@@ -156,6 +156,12 @@ export async function listCreatedMemeIds(sub: string, limit = 200): Promise<stri
   return (res.Items ?? []).map((i) => i.memeId as string)
 }
 
+/** Memes created by `sub`, newest-id order not guaranteed after batch-get. */
+export async function listCreatedMemes(sub: string, limit = 200): Promise<Meme[]> {
+  const ids = await listCreatedMemeIds(sub, limit)
+  return getMemesByIds(ids)
+}
+
 export async function putMeme(meme: Meme): Promise<void> {
   await ddb.send(
     new PutCommand({
@@ -337,6 +343,29 @@ export function positionItem(memeId: string, userId: string, shares: number) {
   }
 }
 
+/**
+ * Transact item: credit `shares` onto a position with atomic ADD.
+ * Creates the item (with GSI portfolio keys) if missing — never absolute Put of
+ * a pre-read total, so concurrent credits cannot clobber each other.
+ */
+export function creditSharesItem(memeId: string, userId: string, shares: number) {
+  return {
+    Update: {
+      TableName: T(),
+      Key: { PK: `MEME#${memeId}`, SK: `POS#${userId}` },
+      UpdateExpression:
+        'ADD shares :n SET GSI1PK = if_not_exists(GSI1PK, :gpk), GSI1SK = if_not_exists(GSI1SK, :gsk), memeId = if_not_exists(memeId, :mid), userId = if_not_exists(userId, :uid)',
+      ExpressionAttributeValues: {
+        ':n': shares,
+        ':gpk': `PORT#${userId}`,
+        ':gsk': `MEME#${memeId}`,
+        ':mid': memeId,
+        ':uid': userId,
+      },
+    },
+  }
+}
+
 export async function putPosition(memeId: string, userId: string, shares: number): Promise<void> {
   await ddb.send(new PutCommand({ TableName: T(), Item: positionItem(memeId, userId, shares) }))
 }
@@ -400,8 +429,44 @@ export async function deleteMemeCompletely(memeId: string): Promise<void> {
 
 // ---------- marketplace ----------
 
+/** Shares held back by an active listing for this user (0 if not the seller). */
+export function listingReservedFor(meme: Meme | null | undefined, userId: string): number {
+  if (!meme?.listing || meme.listing.sellerId !== userId) return 0
+  return Math.max(0, meme.listing.shares)
+}
+
+/**
+ * Set or clear the active listing. When setting, requires the seller still holds
+ * at least `listing.shares` (ConditionCheck) so list cannot oversell inventory.
+ */
 export async function setListing(memeId: string, listing: Listing | null): Promise<void> {
-  await updateMemeFields(memeId, { listing })
+  if (!listing) {
+    await updateMemeFields(memeId, { listing: null })
+    return
+  }
+  await ddb.send(
+    new TransactWriteCommand({
+      TransactItems: [
+        {
+          Update: {
+            TableName: T(),
+            Key: { PK: `MEME#${memeId}`, SK: 'META' },
+            UpdateExpression: 'SET listing = :l',
+            ConditionExpression: 'attribute_exists(PK)',
+            ExpressionAttributeValues: { ':l': listing },
+          },
+        },
+        {
+          ConditionCheck: {
+            TableName: T(),
+            Key: { PK: `MEME#${memeId}`, SK: `POS#${listing.sellerId}` },
+            ConditionExpression: 'shares >= :n',
+            ExpressionAttributeValues: { ':n': listing.shares },
+          },
+        },
+      ],
+    }),
+  )
 }
 
 /**
@@ -415,7 +480,6 @@ export async function executeBuy(
   shares: number,
 ): Promise<number> {
   const cost = Math.ceil(shares * listing.pricePerShare)
-  const buyerPos = await getPositionShares(meme.id, buyerId)
   const remaining = listing.shares - shares
   await ddb.send(
     new TransactWriteCommand({
@@ -446,12 +510,7 @@ export async function executeBuy(
             ExpressionAttributeValues: { ':neg': -shares, ':n': shares },
           },
         },
-        {
-          Put: {
-            TableName: T(),
-            Item: positionItem(meme.id, buyerId, buyerPos + shares),
-          },
-        },
+        creditSharesItem(meme.id, buyerId, shares),
         {
           Update: {
             TableName: T(),
@@ -471,26 +530,22 @@ export async function executeBuy(
   return cost
 }
 
-async function getPositionShares(memeId: string, userId: string): Promise<number> {
-  const res = await ddb.send(
-    new GetCommand({ TableName: T(), Key: { PK: `MEME#${memeId}`, SK: `POS#${userId}` } }),
-  )
-  return (res.Item?.shares as number) ?? 0
-}
-
 // ---------- gifting ----------
 
-/** Move shares for free: giver must hold them; recipient upserted. Transactional. */
+/**
+ * Move shares for free: giver must hold unlisted (free) shares; recipient credited
+ * atomically. Listed inventory is reserved and cannot be gifted away.
+ */
 export async function giftShares(
   memeId: string,
   fromSub: string,
   toSub: string,
   shares: number,
 ): Promise<void> {
-  const existing = await ddb.send(
-    new GetCommand({ TableName: T(), Key: { PK: `MEME#${memeId}`, SK: `POS#${toSub}` } }),
-  )
-  const current = (existing.Item?.shares as number) ?? 0
+  const meme = await getMeme(memeId)
+  const reserved = listingReservedFor(meme, fromSub)
+  // need free shares: position.shares - reserved >= gift amount
+  const need = shares + reserved
   await ddb.send(
     new TransactWriteCommand({
       TransactItems: [
@@ -499,11 +554,11 @@ export async function giftShares(
             TableName: T(),
             Key: { PK: `MEME#${memeId}`, SK: `POS#${fromSub}` },
             UpdateExpression: 'ADD shares :neg',
-            ConditionExpression: 'shares >= :n',
-            ExpressionAttributeValues: { ':neg': -shares, ':n': shares },
+            ConditionExpression: 'shares >= :need',
+            ExpressionAttributeValues: { ':neg': -shares, ':need': need },
           },
         },
-        { Put: { TableName: T(), Item: positionItem(memeId, toSub, current + shares) } },
+        creditSharesItem(memeId, toSub, shares),
       ],
     }),
   )
@@ -663,30 +718,62 @@ export async function listTrades(userId: string): Promise<Trade[]> {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
 
-/** Update trade status on the META item and both user refs. */
+type TransactItems = NonNullable<
+  ConstructorParameters<typeof TransactWriteCommand>[0]['TransactItems']
+>
+
+/** Put META + both user trade refs only if every copy is still `proposed`. */
+function tradeStatusPuts(updated: Trade): TransactItems {
+  const cond = {
+    ConditionExpression: '#status = :proposed',
+    ExpressionAttributeNames: { '#status': 'status' },
+    ExpressionAttributeValues: { ':proposed': 'proposed' },
+  }
+  return [
+    {
+      Put: {
+        TableName: T(),
+        Item: { PK: `TRADE#${updated.id}`, SK: 'META', ...updated },
+        ...cond,
+      },
+    },
+    {
+      Put: {
+        TableName: T(),
+        Item: tradeRefItem(updated.fromId, updated),
+        ...cond,
+      },
+    },
+    {
+      Put: {
+        TableName: T(),
+        Item: tradeRefItem(updated.toId, updated),
+        ...cond,
+      },
+    },
+  ]
+}
+
+/**
+ * Update trade status on META + both user refs.
+ * Conditional: only succeeds while status is still `proposed` (cancel/decline races).
+ */
 export async function setTradeStatus(trade: Trade, status: Trade['status']): Promise<Trade> {
   const resolvedAt = new Date().toISOString()
   const updated = { ...trade, status, resolvedAt }
-  await ddb.send(
-    new TransactWriteCommand({
-      TransactItems: [
-        { Put: { TableName: T(), Item: { PK: `TRADE#${trade.id}`, SK: 'META', ...updated } } },
-        { Put: { TableName: T(), Item: tradeRefItem(trade.fromId, updated) } },
-        { Put: { TableName: T(), Item: tradeRefItem(trade.toId, updated) } },
-      ],
-    }),
-  )
+  await ddb.send(new TransactWriteCommand({ TransactItems: tradeStatusPuts(updated) }))
   return updated
 }
 
 /**
- * Execute an accepted trade: move each side's meme shares and coins.
- * Throws (transaction cancelled) if either party lacks the goods.
+ * Build coin + share transfer items for a trade (no status write).
+ * `reservedByUserMeme` maps `${userId}#${memeId}` → listed shares that must stay.
  */
-export async function executeTrade(trade: Trade): Promise<void> {
-  const items: NonNullable<
-    ConstructorParameters<typeof TransactWriteCommand>[0]['TransactItems']
-  > = []
+function tradeTransferItems(
+  trade: Trade,
+  reservedByUserMeme: Map<string, number> = new Map(),
+): TransactItems {
+  const items: TransactItems = []
 
   const moveCoins = (from: string, to: string, amount: number) => {
     if (amount <= 0) return
@@ -709,26 +796,65 @@ export async function executeTrade(trade: Trade): Promise<void> {
     })
   }
 
-  const moveShares = async (from: string, to: string, memeId: string, shares: number) => {
-    const toShares = await getPositionShares(memeId, to)
+  const moveShares = (from: string, to: string, memeId: string, shares: number) => {
+    const reserved = reservedByUserMeme.get(`${from}#${memeId}`) ?? 0
+    const need = shares + reserved
     items.push({
       Update: {
         TableName: T(),
         Key: { PK: `MEME#${memeId}`, SK: `POS#${from}` },
         UpdateExpression: 'ADD shares :neg',
-        ConditionExpression: 'shares >= :n',
-        ExpressionAttributeValues: { ':neg': -shares, ':n': shares },
+        ConditionExpression: 'shares >= :need',
+        ExpressionAttributeValues: { ':neg': -shares, ':need': need },
       },
     })
-    items.push({ Put: { TableName: T(), Item: positionItem(memeId, to, toShares + shares) } })
+    items.push(creditSharesItem(memeId, to, shares))
   }
 
   moveCoins(trade.fromId, trade.toId, trade.offer.coins)
   moveCoins(trade.toId, trade.fromId, trade.ask.coins)
-  for (const m of trade.offer.memes) await moveShares(trade.fromId, trade.toId, m.memeId, m.shares)
-  for (const m of trade.ask.memes) await moveShares(trade.toId, trade.fromId, m.memeId, m.shares)
+  for (const m of trade.offer.memes) moveShares(trade.fromId, trade.toId, m.memeId, m.shares)
+  for (const m of trade.ask.memes) moveShares(trade.toId, trade.fromId, m.memeId, m.shares)
+  return items
+}
 
-  await ddb.send(new TransactWriteCommand({ TransactItems: items }))
+async function listingReserveMap(trade: Trade): Promise<Map<string, number>> {
+  const pairs: { userId: string; memeId: string }[] = []
+  for (const m of trade.offer.memes) pairs.push({ userId: trade.fromId, memeId: m.memeId })
+  for (const m of trade.ask.memes) pairs.push({ userId: trade.toId, memeId: m.memeId })
+  const memes = await getMemesByIds(pairs.map((p) => p.memeId))
+  const byId = new Map(memes.map((m) => [m.id, m]))
+  const map = new Map<string, number>()
+  for (const p of pairs) {
+    map.set(`${p.userId}#${p.memeId}`, listingReservedFor(byId.get(p.memeId), p.userId))
+  }
+  return map
+}
+
+/**
+ * Accept a proposed trade in one transaction: status proposed→accepted on META
+ * + both refs, and all coin/share moves. Concurrent cancel/decline/accept loses
+ * the condition and leaves funds untouched.
+ */
+export async function acceptTrade(trade: Trade): Promise<Trade> {
+  const resolvedAt = new Date().toISOString()
+  const updated: Trade = { ...trade, status: 'accepted', resolvedAt }
+  const reserved = await listingReserveMap(trade)
+  await ddb.send(
+    new TransactWriteCommand({
+      TransactItems: [...tradeTransferItems(trade, reserved), ...tradeStatusPuts(updated)],
+    }),
+  )
+  return updated
+}
+
+/**
+ * Execute fund moves only (no status). Prefer `acceptTrade` for the accept path.
+ * Kept for callers that already flipped status under a stronger lock.
+ */
+export async function executeTrade(trade: Trade): Promise<void> {
+  const reserved = await listingReserveMap(trade)
+  await ddb.send(new TransactWriteCommand({ TransactItems: tradeTransferItems(trade, reserved) }))
 }
 
 // ---------- onboarding quests ----------
@@ -944,10 +1070,6 @@ export async function claimVaultPack(
     },
   ]
   for (const memeId of memeIds) {
-    const existing = await ddb.send(
-      new GetCommand({ TableName: T(), Key: { PK: `MEME#${memeId}`, SK: `POS#${userId}` } }),
-    )
-    const current = (existing.Item?.shares as number) ?? 0
     items.push({
       Update: {
         TableName: T(),
@@ -957,7 +1079,7 @@ export async function claimVaultPack(
         ExpressionAttributeValues: { ':neg': -10, ':ten': 10 },
       },
     })
-    items.push({ Put: { TableName: T(), Item: positionItem(memeId, userId, current + 10) } })
+    items.push(creditSharesItem(memeId, userId, 10))
   }
   await ddb.send(new TransactWriteCommand({ TransactItems: items }))
 }

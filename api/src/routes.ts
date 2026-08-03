@@ -3,7 +3,7 @@ import * as db from './db'
 import * as discord from './discord'
 import * as giphy from './giphy'
 import * as vectors from './vectors'
-import { env } from './env'
+import { env, isAdminSub } from './env'
 import * as masky from './masky'
 import { authed, HttpError, html, json, maskyToken, redirect, requireString, route } from './http'
 import { issueSession, verifySession } from './session'
@@ -21,6 +21,7 @@ import * as ogModule from './og'
 import { assetUrl, presignUpload, putAsset } from './s3'
 import { memeValue, TIERS, tierFor, tierIndexFor } from '../../shared/tiers'
 import type { Meme, Trade, TradeSide } from './types'
+import { SafeFetchError, assertPublicUrl, safeFetch } from './safeFetch'
 
 // ---------- health ----------
 
@@ -353,11 +354,15 @@ authed('POST /api/memes/:id/list', async (req) => {
   if (!mine || mine.shares < shares) throw new HttpError(400, 'you do not hold that many shares')
   if (meme.listing && meme.listing.sellerId !== req.user.sub)
     throw new HttpError(409, 'another holder already has an active listing on this meme')
-  await db.setListing(meme.id, {
-    sellerId: req.user.sub,
-    pricePerShare: Math.round(pricePerShare * 100) / 100,
-    shares,
-  })
+  try {
+    await db.setListing(meme.id, {
+      sellerId: req.user.sub,
+      pricePerShare: Math.round(pricePerShare * 100) / 100,
+      shares,
+    })
+  } catch {
+    throw new HttpError(409, 'listing failed — you no longer hold that many shares')
+  }
   return json(200, { ok: true })
 })
 
@@ -381,7 +386,10 @@ authed('POST /api/memes/:id/buy', async (req) => {
   try {
     cost = await db.executeBuy(meme, meme.listing, req.user.sub, shares)
   } catch {
-    throw new HttpError(409, 'purchase failed — insufficient coins or listing changed')
+    throw new HttpError(
+      409,
+      'purchase failed — insufficient coins, seller inventory, or listing changed',
+    )
   }
   await db.refreshOwnership(meme.id)
   await db.addAlert(
@@ -396,9 +404,10 @@ authed('POST /api/memes/:id/buy', async (req) => {
 })
 
 authed('GET /api/binder', async (req) => {
-  const { positions, memes } = await portfolioSummary(req.user.sub)
-  const all = await db.listMemes()
-  const created = all.filter((m) => m.creatorId === req.user.sub)
+  const [{ positions, memes }, created] = await Promise.all([
+    portfolioSummary(req.user.sub),
+    db.listCreatedMemes(req.user.sub),
+  ])
   const held = new Map(positions.map((p) => [p.memeId, p.shares]))
   const byId = new Map<string, Meme>()
   for (const m of [...memes, ...created]) byId.set(m.id, m)
@@ -533,10 +542,18 @@ async function assertHoldings(userId: string, side: TradeSide, label: string) {
   if (!user) throw new HttpError(404, `${label} not found`)
   if (user.coins < side.coins) throw new HttpError(400, `${label} lacks the offered coins`)
   for (const m of side.memes) {
-    const positions = await db.getPositions(m.memeId)
+    const [positions, meme] = await Promise.all([db.getPositions(m.memeId), db.getMeme(m.memeId)])
     const pos = positions.find((p) => p.userId === userId)
-    if (!pos || pos.shares < m.shares)
-      throw new HttpError(400, `${label} does not hold ${m.shares} shares of ${m.memeId}`)
+    const reserved = db.listingReservedFor(meme, userId)
+    const free = (pos?.shares ?? 0) - reserved
+    if (free < m.shares) {
+      if (reserved > 0 && (pos?.shares ?? 0) >= m.shares)
+        throw new HttpError(
+          400,
+          `${label} has ${reserved} share${reserved === 1 ? '' : 's'} of ${m.memeId} listed — unlist or trade fewer`,
+        )
+      throw new HttpError(400, `${label} does not hold ${m.shares} free shares of ${m.memeId}`)
+    }
   }
 }
 
@@ -577,21 +594,30 @@ authed('POST /api/trades/:id/respond', async (req) => {
   const action = requireString(req.body, 'action')
   if (action === 'cancel') {
     if (trade.fromId !== req.user.sub) throw new HttpError(403, 'only the proposer can cancel')
-    return json(200, { trade: await db.setTradeStatus(trade, 'cancelled') })
+    try {
+      return json(200, { trade: await db.setTradeStatus(trade, 'cancelled') })
+    } catch {
+      throw new HttpError(409, 'trade already resolved')
+    }
   }
   if (trade.toId !== req.user.sub) throw new HttpError(403, 'only the recipient can respond')
   if (action === 'decline') {
-    const updated = await db.setTradeStatus(trade, 'declined')
-    await db.addAlert(trade.fromId, 'trade', `❌ ${req.user.name} declined your trade`)
-    return json(200, { trade: updated })
+    try {
+      const updated = await db.setTradeStatus(trade, 'declined')
+      await db.addAlert(trade.fromId, 'trade', `❌ ${req.user.name} declined your trade`)
+      return json(200, { trade: updated })
+    } catch {
+      throw new HttpError(409, 'trade already resolved')
+    }
   }
   if (action !== 'accept') throw new HttpError(400, 'action must be accept, decline, or cancel')
+  // Single transaction: proposed→accepted + fund moves (no funds-without-status race).
+  let updated: Trade
   try {
-    await db.executeTrade(trade)
+    updated = await db.acceptTrade(trade)
   } catch {
-    throw new HttpError(409, 'trade failed — one side no longer holds the goods')
+    throw new HttpError(409, 'trade failed — already resolved or one side no longer holds the goods')
   }
-  const updated = await db.setTradeStatus(trade, 'accepted')
   await Promise.all(
     [...trade.offer.memes, ...trade.ask.memes].map((m) => db.refreshOwnership(m.memeId)),
   )
@@ -674,8 +700,10 @@ authed('GET /api/feed', async (req) => {
   const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 50)
   const offset = Math.max(Number(req.query.cursor) || 0, 0)
 
-  const [allMemes, disliked, myLikes, friends] = await Promise.all([
-    db.listMemes(),
+  // Discovery is one bounded MEME GSI page (~100 newest); friend-owned/liked
+  // ids are batch-got so friendSignal still surfaces cards outside that window.
+  const [discovery, disliked, myLikes, friends] = await Promise.all([
+    db.listMemesPage({ limit: 100 }),
     db.listDislikes(req.user.sub),
     db.listLikes(req.user.sub),
     db.listFriends(req.user.sub),
@@ -703,7 +731,12 @@ authed('GET /api/feed', async (req) => {
     }),
   )
 
-  const scored = allMemes
+  const friendSignalIds = [...new Set([...friendOwners.keys(), ...friendLikers.keys()])]
+  const friendMemes = await db.getMemesByIds(friendSignalIds)
+  const byId = new Map<string, Meme>()
+  for (const m of [...discovery.memes, ...friendMemes]) byId.set(m.id, m)
+
+  const scored = [...byId.values()]
     .filter((m) => !m.private && !dislikedSet.has(m.id))
     .filter((m) => m.creatorId !== req.user.sub && m.ownerId !== req.user.sub)
     .map((m) => ({
@@ -738,15 +771,14 @@ authed('GET /api/feed', async (req) => {
 route('GET /api/invite/:sub', async (req) => {
   const inviter = await db.getUser(req.params.sub)
   if (!inviter) throw new HttpError(404, 'invite not found')
-  const [allMemes, positions, stats] = await Promise.all([
-    db.listMemes(),
+  const [createdIds, positions, stats] = await Promise.all([
+    db.listCreatedMemeIds(inviter.sub),
     db.getPortfolio(inviter.sub),
     portfolioSummary(inviter.sub),
   ])
-  const held = new Set(positions.map((p) => p.memeId))
-  const topMemes = allMemes
+  const memeIds = [...new Set([...createdIds, ...positions.map((p) => p.memeId)])]
+  const topMemes = (await db.getMemesByIds(memeIds))
     .filter((m) => !m.private)
-    .filter((m) => m.creatorId === inviter.sub || held.has(m.id))
     .sort((a, b) => b.reshares - a.reshares)
     .slice(0, 4)
     .map(publicMeme)
@@ -797,14 +829,16 @@ authed('POST /api/users/:sub/unfollow', async (req) => {
 })
 
 /** Creator profile: identity + follower count + their created memes + binder. */
-authed('GET /api/users/:sub/profile', async (req) => {
+// public with optional session: logged-out visitors can browse shared binders/profiles
+route('GET /api/users/:sub/profile', async (req) => {
+  const viewer = await verifySession(req.headers.authorization)
   const target = await db.getUser(req.params.sub)
   if (!target) throw new HttpError(404, 'user not found')
-  const isSelf = req.user.sub === target.sub
+  const isSelf = viewer?.sub === target.sub
   const [createdIds, following, friendEdge, stats] = await Promise.all([
     db.listCreatedMemeIds(target.sub, 200),
-    db.isFollowing(req.user.sub, target.sub),
-    db.getFriend(req.user.sub, target.sub),
+    viewer ? db.isFollowing(viewer.sub, target.sub) : Promise.resolve(false),
+    viewer ? db.getFriend(viewer.sub, target.sub) : Promise.resolve(null),
     portfolioSummary(target.sub),
   ])
   const createdById = new Map((await db.getMemesByIds(createdIds)).map((m) => [m.id, m]))
@@ -860,6 +894,12 @@ authed('POST /api/gift', async (req) => {
   try {
     await db.giftShares(memeId, req.user.sub, toSub, shares)
   } catch {
+    const reserved = db.listingReservedFor(meme, req.user.sub)
+    if (reserved > 0)
+      throw new HttpError(
+        409,
+        `not enough free shares — ${reserved} are listed for sale (unlist or gift fewer)`,
+      )
     throw new HttpError(409, `you don't hold ${shares} shares of that meme`)
   }
   await db.refreshOwnership(memeId)
@@ -947,11 +987,12 @@ route('GET /api/memes/:id/memeplex', async (req) => {
     cursor = parent
   }
 
-  const [allMemes, plexIds] = await Promise.all([db.listMemes(), db.listPlex(meme.id)])
-  const remixes = allMemes.filter((m) => m.remixOf === meme.id && !m.private)
-  const plexSet = new Set(plexIds)
-  const related = allMemes.filter(
-    (m) => plexSet.has(m.id) && !m.private && m.remixOf !== meme.id && !seen.has(m.id),
+  // Remixes/related come from plex edges written at mint (no full-catalog scan).
+  const plexIds = await db.listPlex(meme.id)
+  const plexMemes = await db.getMemesByIds(plexIds)
+  const remixes = plexMemes.filter((m) => m.remixOf === meme.id && !m.private)
+  const related = plexMemes.filter(
+    (m) => !m.private && m.remixOf !== meme.id && !seen.has(m.id),
   )
 
   return json(200, {
@@ -1026,9 +1067,6 @@ route('GET /api/memes/:id/history', async (req) => {
 
 // ---------- page-url → image resolver (meme creator "From URL") ----------
 
-const PRIVATE_HOST_RE =
-  /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|\[?::1)/i
-
 function metaContent(htmlChunk: string, ...props: string[]): string | null {
   for (const prop of props) {
     const re = new RegExp(
@@ -1044,17 +1082,15 @@ function metaContent(htmlChunk: string, ...props: string[]): string | null {
 /**
  * Resolve a pasted URL to usable media: direct images pass through; html pages
  * (giphy, imgur, tenor, reddit, …) yield their og:image / og:video.
+ * SSRF-hardened: private IPs blocked pre-fetch and after every redirect (mo-100.5).
  */
 authed('POST /api/resolve-image', async (req) => {
   const raw = requireString(req.body, 'url', 2000)
   let target: URL
   try {
-    target = new URL(raw)
-  } catch {
-    throw new HttpError(400, 'not a valid URL')
-  }
-  if (!/^https?:$/.test(target.protocol) || PRIVATE_HOST_RE.test(target.hostname)) {
-    throw new HttpError(400, 'unsupported URL')
+    target = await assertPublicUrl(raw)
+  } catch (err) {
+    throw new HttpError(400, err instanceof SafeFetchError ? err.message : 'unsupported URL')
   }
 
   // giphy pages: skip scraping entirely — the gif id is in the slug and the API
@@ -1073,30 +1109,44 @@ authed('POST /api/resolve-image', async (req) => {
     }
   }
 
-  const res = await fetch(target.toString(), {
-    headers: {
-      accept: 'text/html,image/*',
-      // most media sites whitelist the facebook crawler for og tags
-      'user-agent': 'facebookexternalhit/1.1 (MemeOnBot; +https://memeon.ai)',
-    },
-    signal: AbortSignal.timeout(8000),
-    redirect: 'follow',
-  }).catch(() => null)
-  if (!res || !res.ok) throw new HttpError(400, 'could not fetch that URL')
+  let fetched: Awaited<ReturnType<typeof safeFetch>>
+  try {
+    fetched = await safeFetch(target.toString(), {
+      headers: {
+        accept: 'text/html,image/*',
+        // most media sites whitelist the facebook crawler for og tags
+        'user-agent': 'facebookexternalhit/1.1 (MemeOnBot; +https://memeon.ai)',
+      },
+      timeoutMs: 8000,
+      maxBytes: 400_000, // only need <head> for HTML; images also capped
+    })
+  } catch (err) {
+    throw new HttpError(400, err instanceof SafeFetchError ? err.message : 'could not fetch that URL')
+  }
 
-  const contentType = res.headers.get('content-type') ?? ''
+  const contentType = fetched.headers.get('content-type') ?? ''
   if (contentType.startsWith('image/')) {
-    return json(200, { imageUrl: target.toString(), videoUrl: null, resolvedFrom: 'direct', source: null })
+    return json(200, {
+      imageUrl: fetched.url,
+      videoUrl: null,
+      resolvedFrom: 'direct',
+      source: null,
+    })
   }
   if (!contentType.includes('text/html')) {
     throw new HttpError(400, `that URL is ${contentType.split(';')[0] || 'not an image or page'}`)
   }
-  // only need the <head>; cap the read at 400KB
-  const htmlChunk = (await res.text()).slice(0, 400_000)
+  const htmlChunk = fetched.body.toString('utf8')
   let imageUrl = metaContent(htmlChunk, 'og:image:secure_url', 'og:image', 'twitter:image')
   const videoRaw = metaContent(htmlChunk, 'og:video:secure_url', 'og:video')
   const videoUrl = videoRaw && /\.mp4($|\?)/i.test(videoRaw) ? videoRaw : null
   if (!imageUrl) throw new HttpError(404, 'no main image found on that page')
+  // og:image must also be public (no open-redirect to metadata)
+  try {
+    await assertPublicUrl(imageUrl)
+  } catch {
+    throw new HttpError(400, 'page image points to a private host')
+  }
   // giphy media URLs offer every format at the same path; webp breaks the og
   // compositor (jimp has no webp decoder) so swap it for the gif rendition
   if (/giphy\.com\/media\//i.test(imageUrl) && /\.webp($|\?)/i.test(imageUrl)) {
@@ -1272,17 +1322,25 @@ route('GET /api/brand/:file', (req) => {
   return redirect(assetUrl(`brand/${file}`), 'public, max-age=3600')
 })
 
-/** Regenerate a tier's card frame art with Masky (bills the caller's credits). */
+/**
+ * Regenerate a tier's card frame art with Masky (bills the caller's credits).
+ * Admin-only: `ADMIN_SUBS` env (comma-separated subs); empty allowlist → 403.
+ */
 authed('POST /api/admin/frames', async (req) => {
+  if (!isAdminSub(req.user.sub)) throw new HttpError(403, 'admin only')
   const tierKey = requireString(req.body, 'tierKey')
   const tier = TIERS.find((t) => t.key === tierKey)
   if (!tier) throw new HttpError(400, 'unknown tier')
   const prompt = framePrompt(tier.name, tierIndexFor(tier.minReshares))
   const out = await masky.generateImage(maskyToken(req), prompt, '3:4')
-  const res = await fetch(out.imageUrl)
-  if (!res.ok) throw new HttpError(502, 'failed to download generated frame')
-  const buf = Buffer.from(await res.arrayBuffer())
-  const url = await putAsset(frameKey(tier.key), buf, 'image/png')
+  const { body } = await safeFetch(out.imageUrl, {
+    maxBytes: 8 * 1024 * 1024,
+    timeoutMs: 30_000,
+    headers: { accept: 'image/*' },
+  }).catch(() => {
+    throw new HttpError(502, 'failed to download generated frame')
+  })
+  const url = await putAsset(frameKey(tier.key), body, 'image/png')
   return json(200, { url })
 })
 
@@ -1357,6 +1415,24 @@ route('GET /u/:sub', async (req) => {
     .ensureProfileOgImage(profile)
     .catch(() => `${env.siteOrigin}/brand/og-home.png`)
   return html(200, await ogModule.profilePageHtml(profile, ogImageUrl))
+})
+
+/** Binder pages: same SPA, but crawlers get a binder-collection og card. */
+route('GET /binder/:sub', async (req) => {
+  const user = await db.getUser(req.params.sub)
+  // not a user (e.g. /binder/new, stale links): plain SPA shell, router handles it
+  if (!user) return html(200, await ogModule.spaShellHtml())
+  const stats = await portfolioSummary(user.sub)
+  const topMemes = stats.memes
+    .filter((m) => !m.private)
+    .sort((a, b) => memeValue(b.reshares) - memeValue(a.reshares))
+    .slice(0, 6)
+  const profile = { sub: user.sub, name: user.name, picture: user.picture }
+  const binderStats = { collectionSize: stats.collectionSize, value: stats.value }
+  const ogImageUrl = await ogModule
+    .ensureBinderOgImage(profile, binderStats, topMemes)
+    .catch(() => `${env.siteOrigin}/brand/og-home.png`)
+  return html(200, await ogModule.binderPageHtml(profile, binderStats, topMemes[0], ogImageUrl))
 })
 
 /**

@@ -1,3 +1,5 @@
+@import url('./tier-glow-borders.css');
+
 :root {
   --bg: #0b0d14;
   --bg-raised: #131722;
@@ -248,6 +250,7 @@ textarea:focus {
 }
 
 .meme-card {
+  --glow-width: 3px;
   position: relative;
   border-radius: var(--radius);
   padding: 3px; /* the frame */
@@ -327,20 +330,14 @@ textarea:focus {
 
 .tier-holo {
   background: linear-gradient(120deg, #46d3ff, #7a5cff, #ff5ce1, #46d3ff);
-  background-size: 300% 300%;
-  animation: foil-shift 6s ease-in-out infinite;
 }
 
 .tier-chrome {
   background: linear-gradient(105deg, #cfd8ff 0%, #6f7ba8 20%, #f4f7ff 40%, #8a96c8 60%, #dde4ff 80%, #707ca9 100%);
-  background-size: 400% 400%;
-  animation: foil-shift 4.5s linear infinite;
 }
 
 .tier-gold {
   background: linear-gradient(120deg, #b8860b, #ffd76a, #fff3c4, #ffd76a, #8f6508);
-  background-size: 300% 300%;
-  animation: foil-shift 5s ease-in-out infinite;
   box-shadow: 0 0 24px rgba(255, 215, 106, 0.25);
 }
 
@@ -356,14 +353,11 @@ textarea:focus {
     #ff5cf0,
     #ff5c5c
   );
-  animation: prism-spin 8s linear infinite;
   box-shadow: 0 0 28px rgba(255, 154, 245, 0.35);
 }
 
 .tier-shiny {
   background: linear-gradient(120deg, #0ff0c3, #9fffe0, #5cd4ff, #f0c3ff, #ffd76a, #0ff0c3);
-  background-size: 500% 500%;
-  animation: foil-shift 3.5s linear infinite;
   box-shadow:
     0 0 34px rgba(159, 255, 224, 0.45),
     0 0 80px rgba(240, 195, 255, 0.25);
@@ -427,24 +421,6 @@ textarea:focus {
     radial-gradient(1.4px 1.4px at 10% 60%, #fff 40%, transparent 60%);
   animation: twinkle 2.2s ease-in-out infinite alternate;
   mix-blend-mode: screen;
-}
-
-@keyframes foil-shift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@keyframes prism-spin {
-  to {
-    filter: hue-rotate(360deg);
-  }
 }
 
 @keyframes sheen-sweep {
@@ -724,6 +700,7 @@ textarea:focus {
 }
 
 .tier-card {
+  --glow-width: 3px;
   padding: 3px;
   border-radius: var(--radius);
 }

@@ -16,9 +16,20 @@ export interface Tier {
   baseValue: number
   /** accent color used for CSS fallbacks and borders */
   color: string
+  /** named animated border profile used by web card surfaces */
+  glowStyle: GlowBorderStyle
   /** hype copy shown in the FAQ */
   hype: string
 }
+
+export type GlowBorderStyle =
+  | 'graphite-gradient-still'
+  | 'silver-highlight-still'
+  | 'cyan-magenta-gradient-drift'
+  | 'silver-single-beam-chase'
+  | 'gold-gradient-counter-sweep'
+  | 'rainbow-gradient-drift'
+  | 'mint-gold-highlight-orbit'
 
 export const TIERS: Tier[] = [
   {
@@ -29,6 +40,7 @@ export const TIERS: Tier[] = [
     minReshares: 0,
     baseValue: 0,
     color: '#a8b0bd',
+    glowStyle: 'graphite-gradient-still',
     hype: 'Fresh off the press. Every legend starts as a humble shitpost.',
   },
   {
@@ -38,6 +50,7 @@ export const TIERS: Tier[] = [
     minReshares: 10,
     baseValue: 25,
     color: '#c8d3e0',
+    glowStyle: 'silver-highlight-still',
     hype: 'The group chats have noticed. A silver-stamped contender.',
   },
   {
@@ -47,6 +60,7 @@ export const TIERS: Tier[] = [
     minReshares: 50,
     baseValue: 60,
     color: '#7fd4ff',
+    glowStyle: 'cyan-magenta-gradient-drift',
     hype: 'Holographic shimmer unlocked. This one is escaping containment.',
   },
   {
@@ -56,6 +70,7 @@ export const TIERS: Tier[] = [
     minReshares: 250,
     baseValue: 150,
     color: '#b8c6ff',
+    glowStyle: 'silver-single-beam-chase',
     hype: 'Full-art chrome. Normies are starting to send it to their moms.',
   },
   {
@@ -65,6 +80,7 @@ export const TIERS: Tier[] = [
     minReshares: 1000,
     baseValue: 400,
     color: '#ffd76a',
+    glowStyle: 'gold-gradient-counter-sweep',
     hype: 'Gold foil legendary. Brands are ruining it as we speak.',
   },
   {
@@ -74,6 +90,7 @@ export const TIERS: Tier[] = [
     minReshares: 5000,
     baseValue: 1000,
     color: '#ff9af5',
+    glowStyle: 'rainbow-gradient-drift',
     hype: 'Prismatic secret rare. Screenshotted, reposted, tattooed on strangers.',
   },
   {
@@ -83,6 +100,7 @@ export const TIERS: Tier[] = [
     minReshares: 25000,
     baseValue: 2500,
     color: '#9fffe0',
+    glowStyle: 'mint-gold-highlight-orbit',
     hype: '✨ MYTHIC SHINY ✨ A once-in-a-generation cultural event.',
   },
 ]
@@ -98,6 +116,11 @@ export function tierIndexFor(reshares: number): number {
 
 export function tierFor(reshares: number): Tier {
   return TIERS[tierIndexFor(reshares)]
+}
+
+/** Named glow-border profile for a tier key, with a safe Paper fallback. */
+export function glowStyleFor(tierKey: string): GlowBorderStyle {
+  return TIERS.find((tier) => tier.key === tierKey)?.glowStyle ?? TIERS[0].glowStyle
 }
 
 /**

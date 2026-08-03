@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { MemeCard } from '../components/MemeCard'
@@ -20,11 +20,11 @@ interface ProfileData {
   binder: (Meme & { shares: number })[]
 }
 
-export default function Profile() {
+export default function Profile({ initialTab = 'created' }: { initialTab?: 'created' | 'binder' }) {
   const { sub } = useParams<{ sub: string }>()
   const { user } = useAuth()
   const [data, setData] = useState<ProfileData | null>(null)
-  const [tab, setTab] = useState<'created' | 'binder'>('created')
+  const [tab, setTab] = useState<'created' | 'binder'>(initialTab)
   const [err, setErr] = useState<string | null>(null)
 
   const load = useCallback(() => {
@@ -100,6 +100,13 @@ export default function Profile() {
             >
               {friendLabel}
             </button>
+          </div>
+        )}
+        {!user && (
+          <div className="filter-bar" style={{ justifyContent: 'center', marginTop: 16 }}>
+            <Link to="/">
+              <button className="primary">Join MemeOn to collect &amp; trade</button>
+            </Link>
           </div>
         )}
       </section>

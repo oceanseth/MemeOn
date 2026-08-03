@@ -4,6 +4,20 @@ function LegacyMemeRedirect() {
   const { id } = useParams<{ id: string }>()
   return <Navigate to={`/m/${id}`} replace />
 }
+
+/** Bare /binder → the caller's own shareable /binder/:sub URL. */
+function BinderOwnRedirect() {
+  const { user } = useAuth()
+  return <Navigate to={`/binder/${encodeURIComponent(user!.sub)}`} replace />
+}
+
+/** /binder/:sub — owner gets the management binder; anyone else gets the public profile binder. */
+function BinderRoute() {
+  const { sub } = useParams<{ sub: string }>()
+  const { user } = useAuth()
+  if (user && sub === user.sub) return <Binder />
+  return <Profile initialTab="binder" />
+}
 import { Layout } from './components/Layout'
 import { useAuth } from './context/AuthContext'
 import Landing from './pages/Landing'
@@ -69,10 +83,12 @@ export default function App() {
           path="/binder"
           element={
             <RequireAuth>
-              <Binder />
+              <BinderOwnRedirect />
             </RequireAuth>
           }
         />
+        {/* public: shared binder links must work for logged-out visitors */}
+        <Route path="/binder/:sub" element={<BinderRoute />} />
         <Route
           path="/binder/new"
           element={
@@ -105,14 +121,8 @@ export default function App() {
             </RequireAuth>
           }
         />
-        <Route
-          path="/u/:sub"
-          element={
-            <RequireAuth>
-              <Profile />
-            </RequireAuth>
-          }
-        />
+        {/* public: profile links unfurl with og cards, so they must load logged-out too */}
+        <Route path="/u/:sub" element={<Profile />} />
         {/* /m/ is the one true meme URL; legacy /meme/ links redirect into it */}
         <Route path="/m/:id" element={<MemeDetail />} />
         <Route path="/meme/:id" element={<LegacyMemeRedirect />} />
