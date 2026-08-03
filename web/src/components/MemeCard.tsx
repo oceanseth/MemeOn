@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { glowStyleFor } from '../../../shared/tiers'
 import type { Meme } from '../lib/types'
 
 const SHEEN_TIERS = new Set(['holo', 'chrome', 'gold', 'prismatic', 'shiny'])
@@ -6,12 +7,15 @@ const SHEEN_TIERS = new Set(['holo', 'chrome', 'gold', 'prismatic', 'shiny'])
 export function tierClasses(tierKey: string): string {
   const sheen = SHEEN_TIERS.has(tierKey) ? ' sheen' : ''
   const sparkle = tierKey === 'shiny' ? ' sparkle' : ''
-  return `tier-${tierKey}${sheen}${sparkle}`
+  return `glow-border tier-${tierKey}${sheen}${sparkle}`
 }
 
 export function MemeCard({ meme, footer }: { meme: Meme; footer?: React.ReactNode }) {
   return (
-    <div className={`meme-card ${tierClasses(meme.tier.key)}`}>
+    <div
+      className={`meme-card ${tierClasses(meme.tier.key)}`}
+      data-glow-style={glowStyleFor(meme.tier.key)}
+    >
       <div className="meme-card-inner">
         <Link to={`/m/${meme.id}`}>
           {meme.mediaType === 'video' && meme.videoUrl ? (

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { tierClasses } from '../components/MemeCard'
+import { glowStyleFor } from '../../../shared/tiers'
 import { MemeplexPanel } from '../components/MemeplexPanel'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import type { Meme, Position } from '../lib/types'
@@ -93,6 +94,7 @@ export default function MemeDetail() {
       <div className="detail-layout">
         <div
           className={`meme-card meme-card-lg ${tierClasses(meme.tier.key)}`}
+          data-glow-style={glowStyleFor(meme.tier.key)}
           style={{ alignSelf: 'start' }}
         >
           <div className="meme-card-inner">

@@ -69,7 +69,11 @@ export default function Landing() {
       </p>
       <div className="tier-grid">
         {TIERS.map((t) => (
-          <div key={t.key} className={`tier-card ${tierClasses(t.key)}`}>
+          <div
+            key={t.key}
+            className={`tier-card ${tierClasses(t.key)}`}
+            data-glow-style={t.glowStyle}
+          >
             <div className="tier-card-inner">
               {frames[t.key] ? (
                 <img
