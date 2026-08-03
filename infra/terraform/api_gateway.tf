@@ -41,6 +41,13 @@ resource "aws_apigatewayv2_route" "profile_page" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
 }
 
+# binder share pages: collection og cards (CLI-applied to dev+prod apigw 2026-08-03)
+resource "aws_apigatewayv2_route" "binder_page" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "GET /binder/{sub}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+}
+
 # unique share URL for each meme; every load counts a reshare and serves og meta
 resource "aws_apigatewayv2_route" "meme_share" {
   api_id    = aws_apigatewayv2_api.http_api.id
