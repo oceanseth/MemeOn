@@ -87,14 +87,8 @@ export default function App() {
             </RequireAuth>
           }
         />
-        <Route
-          path="/binder/:sub"
-          element={
-            <RequireAuth>
-              <BinderRoute />
-            </RequireAuth>
-          }
-        />
+        {/* public: shared binder links must work for logged-out visitors */}
+        <Route path="/binder/:sub" element={<BinderRoute />} />
         <Route
           path="/binder/new"
           element={
@@ -127,14 +121,8 @@ export default function App() {
             </RequireAuth>
           }
         />
-        <Route
-          path="/u/:sub"
-          element={
-            <RequireAuth>
-              <Profile />
-            </RequireAuth>
-          }
-        />
+        {/* public: profile links unfurl with og cards, so they must load logged-out too */}
+        <Route path="/u/:sub" element={<Profile />} />
         {/* /m/ is the one true meme URL; legacy /meme/ links redirect into it */}
         <Route path="/m/:id" element={<MemeDetail />} />
         <Route path="/meme/:id" element={<LegacyMemeRedirect />} />

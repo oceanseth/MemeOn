@@ -829,14 +829,16 @@ authed('POST /api/users/:sub/unfollow', async (req) => {
 })
 
 /** Creator profile: identity + follower count + their created memes + binder. */
-authed('GET /api/users/:sub/profile', async (req) => {
+// public with optional session: logged-out visitors can browse shared binders/profiles
+route('GET /api/users/:sub/profile', async (req) => {
+  const viewer = await verifySession(req.headers.authorization)
   const target = await db.getUser(req.params.sub)
   if (!target) throw new HttpError(404, 'user not found')
-  const isSelf = req.user.sub === target.sub
+  const isSelf = viewer?.sub === target.sub
   const [createdIds, following, friendEdge, stats] = await Promise.all([
     db.listCreatedMemeIds(target.sub, 200),
-    db.isFollowing(req.user.sub, target.sub),
-    db.getFriend(req.user.sub, target.sub),
+    viewer ? db.isFollowing(viewer.sub, target.sub) : Promise.resolve(false),
+    viewer ? db.getFriend(viewer.sub, target.sub) : Promise.resolve(null),
     portfolioSummary(target.sub),
   ])
   const createdById = new Map((await db.getMemesByIds(createdIds)).map((m) => [m.id, m]))
@@ -1413,6 +1415,24 @@ route('GET /u/:sub', async (req) => {
     .ensureProfileOgImage(profile)
     .catch(() => `${env.siteOrigin}/brand/og-home.png`)
   return html(200, await ogModule.profilePageHtml(profile, ogImageUrl))
+})
+
+/** Binder pages: same SPA, but crawlers get a binder-collection og card. */
+route('GET /binder/:sub', async (req) => {
+  const user = await db.getUser(req.params.sub)
+  // not a user (e.g. /binder/new, stale links): plain SPA shell, router handles it
+  if (!user) return html(200, await ogModule.spaShellHtml())
+  const stats = await portfolioSummary(user.sub)
+  const topMemes = stats.memes
+    .filter((m) => !m.private)
+    .sort((a, b) => memeValue(b.reshares) - memeValue(a.reshares))
+    .slice(0, 6)
+  const profile = { sub: user.sub, name: user.name, picture: user.picture }
+  const binderStats = { collectionSize: stats.collectionSize, value: stats.value }
+  const ogImageUrl = await ogModule
+    .ensureBinderOgImage(profile, binderStats, topMemes)
+    .catch(() => `${env.siteOrigin}/brand/og-home.png`)
+  return html(200, await ogModule.binderPageHtml(profile, binderStats, topMemes[0], ogImageUrl))
 })
 
 /**

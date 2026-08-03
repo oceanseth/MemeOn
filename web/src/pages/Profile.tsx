@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { MemeCard } from '../components/MemeCard'
@@ -100,6 +100,13 @@ export default function Profile({ initialTab = 'created' }: { initialTab?: 'crea
             >
               {friendLabel}
             </button>
+          </div>
+        )}
+        {!user && (
+          <div className="filter-bar" style={{ justifyContent: 'center', marginTop: 16 }}>
+            <Link to="/">
+              <button className="primary">Join MemeOn to collect &amp; trade</button>
+            </Link>
           </div>
         )}
       </section>

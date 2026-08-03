@@ -267,6 +267,21 @@ resource "aws_cloudfront_distribution" "site" {
     response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
   }
 
+  # binder share pages: collection og cards from the api (bare /binder stays SPA).
+  # NOTE: applied to the DEV distribution 2026-08-03 via CLI; NOT yet on prod —
+  # add to EMLGLTTNC62L0 when production is promoted with the GET /binder/:sub route,
+  # else /binder/new hard-loads 404 (prod lambda lacks the route until then).
+  ordered_cache_behavior {
+    path_pattern     = "/binder/*"
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "api-gateway"
+    viewer_protocol_policy = "https-only"
+    cache_policy_id        = aws_cloudfront_cache_policy.api.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
+  }
+
   # profile pages: personalized og cards from the api
   ordered_cache_behavior {
     path_pattern     = "/u/*"
