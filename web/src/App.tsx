@@ -4,6 +4,20 @@ function LegacyMemeRedirect() {
   const { id } = useParams<{ id: string }>()
   return <Navigate to={`/m/${id}`} replace />
 }
+
+/** Bare /binder → the caller's own shareable /binder/:sub URL. */
+function BinderOwnRedirect() {
+  const { user } = useAuth()
+  return <Navigate to={`/binder/${encodeURIComponent(user!.sub)}`} replace />
+}
+
+/** /binder/:sub — owner gets the management binder; anyone else gets the public profile binder. */
+function BinderRoute() {
+  const { sub } = useParams<{ sub: string }>()
+  const { user } = useAuth()
+  if (user && sub === user.sub) return <Binder />
+  return <Profile initialTab="binder" />
+}
 import { Layout } from './components/Layout'
 import { useAuth } from './context/AuthContext'
 import Landing from './pages/Landing'
@@ -69,7 +83,15 @@ export default function App() {
           path="/binder"
           element={
             <RequireAuth>
-              <Binder />
+              <BinderOwnRedirect />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/binder/:sub"
+          element={
+            <RequireAuth>
+              <BinderRoute />
             </RequireAuth>
           }
         />

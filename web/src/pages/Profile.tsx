@@ -20,11 +20,11 @@ interface ProfileData {
   binder: (Meme & { shares: number })[]
 }
 
-export default function Profile() {
+export default function Profile({ initialTab = 'created' }: { initialTab?: 'created' | 'binder' }) {
   const { sub } = useParams<{ sub: string }>()
   const { user } = useAuth()
   const [data, setData] = useState<ProfileData | null>(null)
-  const [tab, setTab] = useState<'created' | 'binder'>('created')
+  const [tab, setTab] = useState<'created' | 'binder'>(initialTab)
   const [err, setErr] = useState<string | null>(null)
 
   const load = useCallback(() => {
