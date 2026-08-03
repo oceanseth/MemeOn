@@ -17,6 +17,12 @@ interface MemeStats {
 
 export default function MemeDetail() {
   const { id } = useParams<{ id: string }>()
+  // Dev-only frame preview: ?tier=prismatic renders any meme in another tier's
+  // frame, so foil work is testable without a meme at that reshare count.
+  // import.meta.env.DEV is statically false in prod, so this drops out of the build.
+  const tierPreview = import.meta.env.DEV
+    ? new URLSearchParams(window.location.search).get('tier')
+    : null
   const navigate = useNavigate()
   const { user, refresh } = useAuth()
   const [meme, setMeme] = useState<Meme | null>(null)
@@ -92,7 +98,7 @@ export default function MemeDetail() {
     <main className="container">
       <div className="detail-layout">
         <div
-          className={`meme-card meme-card-lg ${tierClasses(meme.tier.key)}`}
+          className={`meme-card meme-card-lg ${tierClasses(tierPreview ?? meme.tier.key)}`}
           style={{ alignSelf: 'start' }}
         >
           <div className="meme-card-inner">

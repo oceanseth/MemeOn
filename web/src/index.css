@@ -317,6 +317,12 @@ textarea:focus {
 
 /* Tier frames: the card's padding-background IS the frame. Foil mechanics per tier. */
 
+@property --a {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
 .tier-paper {
   background: linear-gradient(160deg, #3a4152, #262c3a);
 }
@@ -345,18 +351,12 @@ textarea:focus {
 }
 
 .tier-prismatic {
-  background: conic-gradient(
-    from 0deg,
-    #ff5c5c,
-    #ffb85c,
-    #f7ff5c,
-    #6bff8a,
-    #5cd4ff,
-    #8a6bff,
-    #ff5cf0,
-    #ff5c5c
-  );
-  animation: prism-spin 8s linear infinite;
+  /* two-tone sweep; the first color repeats at 360deg so the loop is seamless */
+  background: conic-gradient(from var(--a), #ff5cf0, #5cd4ff, #ff5cf0);
+  /* 12s/turn means the magenta pole covers 180deg — top-left corner to
+     bottom-right — in the 6s the sheen takes to cross the card. The -7.5s offset
+     parks the pole on the top-left corner exactly as the glare enters there. */
+  animation: spin 12s linear -7.5s infinite;
   box-shadow: 0 0 28px rgba(255, 154, 245, 0.35);
 }
 
@@ -408,7 +408,10 @@ textarea:focus {
     transparent 70%
   );
   background-size: 300% 300%;
-  animation: sheen-sweep 3.8s ease-in-out infinite;
+  /* One pass per 24s: 12s of travel, then a long rest. Linear (not eased) so it
+     stays locked to the prismatic border for the whole crossing, not just at the
+     endpoints. 24s is 2x the border period, so the two never drift apart. */
+  animation: sheen-sweep 24s linear infinite;
   mix-blend-mode: screen;
 }
 
@@ -441,19 +444,21 @@ textarea:focus {
   }
 }
 
-@keyframes prism-spin {
+@keyframes spin {
   to {
-    filter: hue-rotate(360deg);
+    --a: 360deg;
   }
 }
 
+/* Travel over the first half, rest for the second. The band is off-card at both
+   ends of the range, so the glare is actually on the face from 3s to 9s. */
 @keyframes sheen-sweep {
   0% {
-    background-position: 200% 0;
+    background-position: 100% 0;
   }
-  60%,
+  50%,
   100% {
-    background-position: -100% 0;
+    background-position: 0% 0;
   }
 }
 

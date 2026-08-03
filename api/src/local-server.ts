@@ -6,7 +6,7 @@ process.env.AWS_REGION ??= 'us-west-2'
 process.env.TABLE_NAME ??= 'memeon-dev'
 process.env.SSM_PREFIX ??= '/memeon/dev'
 process.env.ASSETS_BUCKET ??= 'memeon-assets-dev'
-process.env.SITE_ORIGIN ??= 'http://localhost:5173'
+process.env.SITE_ORIGIN ??= `http://localhost:${process.env.WEB_PORT ?? 5173}`
 
 const { default: express } = await import('express')
 const { dispatch } = await import('./handler')
@@ -27,5 +27,5 @@ app.all(/(.*)/, async (req, res) => {
   res.send(out.body ?? '')
 })
 
-const port = Number(process.env.PORT ?? 3001)
+const port = Number(process.env.API_PORT ?? process.env.PORT ?? 3001)
 app.listen(port, () => console.log(`memeon api listening on http://localhost:${port}`))
