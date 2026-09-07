@@ -1,11 +1,9 @@
-import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { apiFetch, post } from '../lib/api'
 import { MemeCard } from '../atoms/MemeCard'
 import type { Meme, Memeplex } from '../lib/types'
 
 /** Extract a meme id from a raw id or a pasted /m/ | /meme/ URL. */
-function parseMemeRef(raw: string): string {
+export function parseMemeRef(raw: string): string {
   const t = raw.trim()
   const m = t.match(/\/(?:m|meme)\/([^/?#]+)/)
   return m ? decodeURIComponent(m[1]) : t
@@ -13,48 +11,35 @@ function parseMemeRef(raw: string): string {
 
 /**
  * The memeplex: this meme's family — remix ancestry, remixes of it, and
- * manually linked relatives. Creators/shareholders can add relatives.
+ * manually linked relatives. Parent owns plex, binder, and add.
  */
-export function MemeplexPanel({ meme, canEdit }: { meme: Meme; canEdit: boolean }) {
-  const [plex, setPlex] = useState<Memeplex | null>(null)
-  const [binder, setBinder] = useState<Meme[]>([])
-  const [pick, setPick] = useState('')
-  const [pasted, setPasted] = useState('')
-  const [msg, setMsg] = useState<string | null>(null)
-
-  const load = useCallback(() => {
-    apiFetch<Memeplex>(`/api/memes/${meme.id}/memeplex`)
-      .then(setPlex)
-      .catch(() => {})
-  }, [meme.id])
-
-  useEffect(load, [load])
-
-  useEffect(() => {
-    if (!canEdit) return
-    apiFetch<{ memes: Meme[] }>('/api/binder')
-      .then((r) => setBinder(r.memes.filter((m) => m.id !== meme.id)))
-      .catch(() => {})
-  }, [canEdit, meme.id])
-
-  const add = async (memeId: string) => {
-    setMsg(null)
-    try {
-      await post(`/api/memes/${meme.id}/memeplex`, { memeId })
-      setMsg('Added to the memeplex 🕸️')
-      setPick('')
-      setPasted('')
-      load()
-    } catch (e) {
-      setMsg(e instanceof Error ? e.message : 'failed to add')
-    }
-  }
-
+export function MemeplexPanel({
+  meme,
+  plex,
+  canEdit,
+  binder,
+  pick,
+  onPickChange,
+  pasted,
+  onPastedChange,
+  notice,
+  onAdd,
+}: {
+  meme: Meme
+  plex: Memeplex | null
+  canEdit: boolean
+  binder: Meme[]
+  pick: string
+  onPickChange: (id: string) => void
+  pasted: string
+  onPastedChange: (raw: string) => void
+  notice: string | null
+  onAdd: (memeId: string) => void
+}) {
   if (!plex) return null
   const family = [...plex.remixes, ...plex.related]
   if (family.length === 0 && plex.ancestors.length === 0 && !canEdit) return null
 
-  // never offer the meme itself or anything already in the family
   const alreadyLinked = new Set([
     meme.id,
     ...plex.ancestors.map((m) => m.id),
@@ -62,14 +47,6 @@ export function MemeplexPanel({ meme, canEdit }: { meme: Meme; canEdit: boolean 
     ...plex.related.map((m) => m.id),
   ])
   const linkable = binder.filter((m) => !alreadyLinked.has(m.id))
-
-  const tryAdd = (memeId: string) => {
-    if (alreadyLinked.has(memeId)) {
-      setMsg(memeId === meme.id ? "That's this meme — already the center of its own memeplex." : 'Already in the memeplex.')
-      return
-    }
-    void add(memeId)
-  }
 
   return (
     <div className="panel" style={{ marginTop: 16 }}>
@@ -104,7 +81,7 @@ export function MemeplexPanel({ meme, canEdit }: { meme: Meme; canEdit: boolean 
 
       {canEdit && (
         <div className="filter-bar" style={{ marginTop: 12 }}>
-          <select value={pick} onChange={(e) => setPick(e.target.value)}>
+          <select value={pick} onChange={(e) => onPickChange(e.target.value)}>
             <option value="">Link from your binder…</option>
             {linkable.map((m) => (
               <option key={m.id} value={m.id}>
@@ -112,21 +89,29 @@ export function MemeplexPanel({ meme, canEdit }: { meme: Meme; canEdit: boolean 
               </option>
             ))}
           </select>
-          {pick && <button className="primary" onClick={() => tryAdd(pick)}>Link</button>}
+          {pick && (
+            <button className="primary" onClick={() => onAdd(pick)}>
+              Link
+            </button>
+          )}
           <input
             placeholder="…or paste a meme link"
             value={pasted}
-            onChange={(e) => setPasted(e.target.value)}
+            onChange={(e) => onPastedChange(e.target.value)}
             style={{ minWidth: 180 }}
           />
           {pasted.trim() && (
-            <button className="primary" onClick={() => tryAdd(parseMemeRef(pasted))}>
+            <button className="primary" onClick={() => onAdd(parseMemeRef(pasted))}>
               Link
             </button>
           )}
         </div>
       )}
-      {msg && <p className="notice ok" style={{ marginTop: 8 }}>{msg}</p>}
+      {notice && (
+        <p className="notice ok" style={{ marginTop: 8 }}>
+          {notice}
+        </p>
+      )}
     </div>
   )
 }

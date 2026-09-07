@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import { apiFetch, post } from '../lib/api'
 import { watchPresence } from '../lib/presence'
-import { GiftDialog } from '../components/GiftDialog'
+import { GiftDialog } from '../molecules/GiftDialog'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import type { FriendEntry } from '../lib/types'
+import type { FriendEntry, Meme } from '../lib/types'
 
 interface UserHit {
   sub: string
@@ -20,6 +20,12 @@ export default function Friends() {
   const [msg, setMsg] = useState<string | null>(null)
   const [online, setOnline] = useState<Set<string>>(new Set())
   const [gifting, setGifting] = useState<{ sub: string; name: string } | null>(null)
+  const [giftMemes, setGiftMemes] = useState<Meme[]>([])
+  const [giftQuery, setGiftQuery] = useState('')
+  const [giftPick, setGiftPick] = useState<Meme | null>(null)
+  const [giftShares, setGiftShares] = useState(1)
+  const [giftBusy, setGiftBusy] = useState(false)
+  const [giftErr, setGiftErr] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => watchPresence(setOnline), [])
@@ -50,6 +56,17 @@ export default function Friends() {
   }, [])
 
   useEffect(load, [load])
+
+  useEffect(() => {
+    if (!gifting) return
+    setGiftPick(null)
+    setGiftQuery('')
+    setGiftShares(1)
+    setGiftErr(null)
+    apiFetch<{ memes: Meme[] }>('/api/binder')
+      .then((r) => setGiftMemes(r.memes.filter((m) => (m.myShares ?? 0) > 0)))
+      .catch(() => setGiftMemes([]))
+  }, [gifting])
 
   useEffect(() => {
     if (!q.trim()) {
@@ -220,8 +237,35 @@ export default function Friends() {
       <GiftDialog
         open={!!gifting}
         recipient={gifting}
+        memes={giftMemes}
+        query={giftQuery}
+        onQueryChange={setGiftQuery}
+        pick={giftPick}
+        onPick={(m) => {
+          setGiftPick(m)
+          setGiftShares((s) => Math.min(s, m.myShares ?? 1))
+        }}
+        shares={giftShares}
+        onSharesChange={setGiftShares}
+        busy={giftBusy}
+        error={giftErr}
         onClose={() => setGifting(null)}
-        onGifted={(m) => setMsg(m)}
+        onSubmit={async () => {
+          if (!giftPick || !gifting) return
+          setGiftBusy(true)
+          setGiftErr(null)
+          try {
+            await post('/api/gift', { memeId: giftPick.id, toSub: gifting.sub, shares: giftShares })
+            setMsg(
+              `🎁 Gifted ${giftShares} share${giftShares === 1 ? '' : 's'} of "${giftPick.title}" to ${gifting.name}`,
+            )
+            setGifting(null)
+          } catch (e) {
+            setGiftErr(e instanceof Error ? e.message : 'gift failed')
+          } finally {
+            setGiftBusy(false)
+          }
+        }}
       />
     </main>
   )

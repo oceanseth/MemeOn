@@ -4,9 +4,9 @@ import { apiFetch, post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import { tierClasses } from '../atoms/MemeCard'
 import { glowStyleFor } from '../../../shared/tiers'
-import { MemeplexPanel } from '../components/MemeplexPanel'
+import { MemeplexPanel } from '../organisms/MemeplexPanel'
 import { ConfirmDialog } from '../molecules/ConfirmDialog'
-import type { Meme, Position } from '../lib/types'
+import type { Meme, Memeplex, Position } from '../lib/types'
 
 const ARCHIVE_SUB = 'meme_archive'
 
@@ -34,6 +34,11 @@ export default function MemeDetail() {
   const [price, setPrice] = useState(1)
   const [sellShares, setSellShares] = useState(10)
   const [buyShares, setBuyShares] = useState(1)
+  const [plex, setPlex] = useState<Memeplex | null>(null)
+  const [plexBinder, setPlexBinder] = useState<Meme[]>([])
+  const [plexPick, setPlexPick] = useState('')
+  const [plexPasted, setPlexPasted] = useState('')
+  const [plexMsg, setPlexMsg] = useState<string | null>(null)
 
   const load = useCallback(() => {
     if (!id) return
@@ -49,6 +54,27 @@ export default function MemeDetail() {
   }, [id])
 
   useEffect(load, [load])
+
+  useEffect(() => {
+    if (!id) return
+    setPlex(null)
+    setPlexPick('')
+    setPlexPasted('')
+    setPlexMsg(null)
+    setPlexBinder([])
+    apiFetch<Memeplex>(`/api/memes/${id}/memeplex`)
+      .then(setPlex)
+      .catch(() => {})
+  }, [id])
+
+  useEffect(() => {
+    if (!meme || !user) return
+    const shares = positions.find((p) => p.userId === user.sub)?.shares ?? 0
+    if (meme.creatorId !== user.sub && shares <= 0) return
+    apiFetch<{ memes: Meme[] }>('/api/binder')
+      .then((r) => setPlexBinder(r.memes.filter((m) => m.id !== meme.id)))
+      .catch(() => {})
+  }, [meme, user, positions])
 
   if (notFound)
     return (
@@ -356,7 +382,44 @@ export default function MemeDetail() {
             </div>
           )}
 
-          <MemeplexPanel meme={meme} canEdit={!!user && (meme.creatorId === user.sub || myShares > 0)} />
+          <MemeplexPanel
+            meme={meme}
+            plex={plex}
+            canEdit={!!user && (meme.creatorId === user.sub || myShares > 0)}
+            binder={plexBinder}
+            pick={plexPick}
+            onPickChange={setPlexPick}
+            pasted={plexPasted}
+            onPastedChange={setPlexPasted}
+            notice={plexMsg}
+            onAdd={(memeId) => {
+              const alreadyLinked = new Set([
+                meme.id,
+                ...(plex?.ancestors.map((m) => m.id) ?? []),
+                ...(plex?.remixes.map((m) => m.id) ?? []),
+                ...(plex?.related.map((m) => m.id) ?? []),
+              ])
+              if (alreadyLinked.has(memeId)) {
+                setPlexMsg(
+                  memeId === meme.id
+                    ? "That's this meme — already the center of its own memeplex."
+                    : 'Already in the memeplex.',
+                )
+                return
+              }
+              setPlexMsg(null)
+              void post(`/api/memes/${meme.id}/memeplex`, { memeId })
+                .then(() => {
+                  setPlexMsg('Added to the memeplex 🕸️')
+                  setPlexPick('')
+                  setPlexPasted('')
+                  return apiFetch<Memeplex>(`/api/memes/${meme.id}/memeplex`).then(setPlex)
+                })
+                .catch((e) => {
+                  setPlexMsg(e instanceof Error ? e.message : 'failed to add')
+                })
+            }}
+          />
 
           <div className="panel" style={{ marginTop: 16 }}>
             <strong>Cap table</strong>

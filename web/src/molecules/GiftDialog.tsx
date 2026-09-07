@@ -1,60 +1,46 @@
-import { useEffect, useMemo, useState } from 'react'
-import { apiFetch, post } from '../lib/api'
 import type { Meme } from '../lib/types'
 
-/** Gift shares from your binder to a friend: search → pick → choose amount. */
+export type GiftRecipient = { sub: string; name: string }
+
+/**
+ * Gift shares from your binder to a friend: search → pick → choose amount.
+ * Parent owns binder results, query, pick, submit.
+ */
 export function GiftDialog({
   open,
   recipient,
+  memes,
+  query,
+  onQueryChange,
+  pick,
+  onPick,
+  shares,
+  onSharesChange,
+  busy,
+  error,
   onClose,
-  onGifted,
+  onSubmit,
 }: {
   open: boolean
-  recipient: { sub: string; name: string } | null
+  recipient: GiftRecipient | null
+  memes: Meme[]
+  query: string
+  onQueryChange: (q: string) => void
+  pick: Meme | null
+  onPick: (meme: Meme) => void
+  shares: number
+  onSharesChange: (n: number) => void
+  busy: boolean
+  error: string | null
   onClose: () => void
-  onGifted: (msg: string) => void
+  onSubmit: () => void
 }) {
-  const [binder, setBinder] = useState<Meme[]>([])
-  const [q, setQ] = useState('')
-  const [pick, setPick] = useState<Meme | null>(null)
-  const [shares, setShares] = useState(1)
-  const [busy, setBusy] = useState(false)
-  const [err, setErr] = useState<string | null>(null)
-
-  useEffect(() => {
-    if (!open) return
-    setPick(null)
-    setQ('')
-    setShares(1)
-    setErr(null)
-    apiFetch<{ memes: Meme[] }>('/api/binder')
-      .then((r) => setBinder(r.memes.filter((m) => (m.myShares ?? 0) > 0)))
-      .catch(() => setBinder([]))
-  }, [open])
-
-  const matches = useMemo(
-    () => binder.filter((m) => !q.trim() || m.title.toLowerCase().includes(q.toLowerCase())),
-    [binder, q],
-  )
-
   if (!open || !recipient) return null
 
+  const matches = memes.filter(
+    (m) => !query.trim() || m.title.toLowerCase().includes(query.toLowerCase()),
+  )
   const maxShares = pick?.myShares ?? 0
-
-  const send = async () => {
-    if (!pick) return
-    setBusy(true)
-    setErr(null)
-    try {
-      await post('/api/gift', { memeId: pick.id, toSub: recipient.sub, shares })
-      onGifted(`🎁 Gifted ${shares} share${shares === 1 ? '' : 's'} of "${pick.title}" to ${recipient.name}`)
-      onClose()
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : 'gift failed')
-    } finally {
-      setBusy(false)
-    }
-  }
 
   return (
     <div className="pack-overlay" onClick={onClose}>
@@ -66,8 +52,8 @@ export function GiftDialog({
         <input
           type="search"
           placeholder="Search your binder…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
+          value={query}
+          onChange={(e) => onQueryChange(e.target.value)}
           style={{ width: '100%', marginBottom: 10 }}
         />
         <div className="gift-list">
@@ -78,10 +64,7 @@ export function GiftDialog({
             <button
               key={m.id}
               className={`gift-row ${pick?.id === m.id ? 'picked' : ''}`}
-              onClick={() => {
-                setPick(m)
-                setShares((s) => Math.min(s, m.myShares ?? 1))
-              }}
+              onClick={() => onPick(m)}
             >
               <img src={m.imageUrl} alt="" />
               <span className="gift-row-title">{m.title}</span>
@@ -99,18 +82,18 @@ export function GiftDialog({
                 max={maxShares}
                 value={shares}
                 onChange={(e) =>
-                  setShares(Math.max(1, Math.min(maxShares, Math.floor(Number(e.target.value) || 1))))
+                  onSharesChange(Math.max(1, Math.min(maxShares, Math.floor(Number(e.target.value) || 1))))
                 }
                 style={{ width: 84 }}
               />{' '}
               <span style={{ color: 'var(--text-dim)' }}>of {maxShares}</span>
             </label>
-            <button className="primary" onClick={send} disabled={busy}>
+            <button className="primary" onClick={onSubmit} disabled={busy}>
               {busy ? 'Gifting…' : `Gift ${shares} of "${pick.title}"`}
             </button>
           </div>
         )}
-        {err && <p className="notice error" style={{ marginTop: 10 }}>{err}</p>}
+        {error && <p className="notice error" style={{ marginTop: 10 }}>{error}</p>}
       </div>
     </div>
   )
