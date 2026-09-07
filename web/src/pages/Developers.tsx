@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { apiFetch, post } from '../lib/api'
-import { ConfirmDialog } from '../components/ConfirmDialog'
+import { ConfirmDialog } from '../molecules/ConfirmDialog'
 
 interface KeyRow {
   prefix: string

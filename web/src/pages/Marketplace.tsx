@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch } from '../lib/api'
-import { MemeCard } from '../components/MemeCard'
-import { SortChips, sortMemes, type SortDir, type SortKey } from '../components/SortChips'
+import { MemeCard } from '../atoms/MemeCard'
+import { SortChips, sortMemes, type SortDir, type SortKey } from '../molecules/SortChips'
 import { TIERS } from '../../../shared/tiers'
 import type { Meme } from '../lib/types'
 

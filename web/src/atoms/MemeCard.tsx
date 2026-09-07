@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { glowStyleFor } from '../../../shared/tiers'
 import type { Meme } from '../lib/types'
@@ -10,7 +11,7 @@ export function tierClasses(tierKey: string): string {
   return `glow-border tier-${tierKey}${sheen}${sparkle}`
 }
 
-export function MemeCard({ meme, footer }: { meme: Meme; footer?: React.ReactNode }) {
+export function MemeCard({ meme, footer }: { meme: Meme; footer?: ReactNode | undefined }) {
   return (
     <div
       className={`meme-card ${tierClasses(meme.tier.key)}`}

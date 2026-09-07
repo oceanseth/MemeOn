@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { beginMaskyLogin } from '../lib/auth'
 import { apiFetch } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
-import { tierClasses } from '../components/MemeCard'
+import { tierClasses } from '../atoms/MemeCard'
 import HeroVideo from '../components/HeroVideo'
 import { TIERS, type Tier } from '../../../shared/tiers'
 

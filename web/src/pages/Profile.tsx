@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
-import { MemeCard } from '../components/MemeCard'
+import { MemeCard } from '../atoms/MemeCard'
 import type { Meme } from '../lib/types'
 
 interface ProfileData {

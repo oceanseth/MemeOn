@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
-import { MemeCard } from './MemeCard'
+import { MemeCard } from '../atoms/MemeCard'
 import type { Meme, Memeplex } from '../lib/types'
 
 /** Extract a meme id from a raw id or a pasted /m/ | /meme/ URL. */

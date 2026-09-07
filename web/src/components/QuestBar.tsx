@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
-import { MemeCard } from './MemeCard'
+import { MemeCard } from '../atoms/MemeCard'
 import type { Meme, QuestKey, QuestStep } from '../lib/types'
 
 /** Where each undone quest sends you to go do the thing. */
