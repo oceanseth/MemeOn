@@ -13,6 +13,7 @@ When you hit one of these situations, use the resolution — do not re-discover 
 | Who merges? | **Anyone may merge green PRs to `dev`.** After merge, smoke-test **dev.memeon.ai** before the next bead. Promote **`dev` → `production`** only via PR that **Strong alone** can approve. | Strong 2026-08-01 |
 | Bead run order | **Serial** for PRs to `dev`. **Exception:** epic `mo-9dg` / branch `ox/ui` may fan worktrees in parallel after atoms land; merge back to `ox/ui` before any `dev` PR. | Strong 2026-08-01; lou 2026-09-08 ox/ui |
 | Local web UI / agent-browser | Always **`npm run dev:web`** (Vite on :5173). View and interact with **agent-browser** (`/Users/lou/.local/bin/agent-browser`). Auth: `agent-browser --state ./localstorage.json open http://localhost:5173`. Do not use `npm run dev` as the web command. API is proxied to :3001; if a flow needs `/api`, start `dev:api` separately. | lou 2026-09-08 |
+| Resume ox/ui overhaul | Read [docs/OX_UI_HANDOFF.md](docs/OX_UI_HANDOFF.md), then `bd show mo-9dg` / `bd show mo-9dg.6`. Continue atoms in `/Users/lou/gts/strong/MemeOn-ox-ui-atoms`. Do not restart. | lou 2026-09-08 |
 | Local deploy / AWS CLI from laptop? | **Do not deploy from local.** Project AWS is not authenticated for local agents. Deploys use **GitHub secrets** only. | Strong 2026-07-28 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
 | Local API testing env? | Local / `local-server` should hit **dev or local** resources, never production. | Strong 2026-07-28 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
 | `api/src/env.ts` defaults look like production | Documented footgun only. **mo-100.13 deferred/closed** (Strong 2026-08-01): CI injects env; local never deploys. Do not open a PR for this unless policy changes. | Strong 2026-08-01 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
@@ -38,6 +39,7 @@ When you hit one of these situations, use the resolution — do not re-discover 
 | `.grok/workflows/memeon-bead-pr.rhai` | Approved bead→PR pipeline (planner ≠ implementer ≠ verifier) |
 | `bd show mo-100` | Epic + children for the fix track |
 | `bd show mo-9dg` | ox/ui headless molecularize + XState/MobX + Storybook |
+| [docs/OX_UI_HANDOFF.md](docs/OX_UI_HANDOFF.md) | Resume ox/ui: next agent starts on `mo-9dg.6` in `MemeOn-ox-ui-atoms` |
 
 ## How to append
 
