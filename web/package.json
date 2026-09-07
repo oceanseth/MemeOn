@@ -6,20 +6,37 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && mkdir -p dist/.well-known && cp dist/skill.md dist/.well-known/skill.md",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "check-tiers": "node scripts/check-tiers.mjs src --legacy components,pages,context,stories --baseline .tiers-baseline.json"
   },
   "dependencies": {
+    "@xstate/react": "^6.1.0",
     "firebase": "^12.15.0",
+    "mobx": "^7.0.3",
+    "mobx-react-lite": "^5.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0"
+    "react-router-dom": "^6.28.0",
+    "xstate": "^5.32.6"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^5.3.1",
+    "@storybook/addon-a11y": "^10.6.0",
+    "@storybook/addon-docs": "^10.6.0",
+    "@storybook/addon-vitest": "^10.6.0",
+    "@storybook/react-vite": "^10.6.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/browser-playwright": "latest",
+    "@vitest/coverage-v8": "latest",
+    "playwright": "latest",
+    "storybook": "^10.6.0",
     "typescript": "~5.9.3",
-    "vite": "^7.2.2"
+    "vite": "^7.2.2",
+    "vitest": "latest"
   },
   "optionalDependencies": {
     "@rollup/rollup-darwin-arm64": "^4.53.2"
