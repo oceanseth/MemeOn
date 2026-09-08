@@ -18,6 +18,12 @@ function BinderRoute() {
   if (user && sub === user.sub) return <Binder />
   return <Profile initialTab="binder" />
 }
+
+/** Fresh machine per meme id so remix/cap-table links do not reuse the previous actor. */
+function MemeDetailRoute() {
+  const { id } = useParams<{ id: string }>()
+  return <MemeDetailView key={id} />
+}
 import { Layout } from './components/Layout'
 import { useAuth } from './context/AuthContext'
 import Landing from './pages/Landing'
@@ -31,12 +37,12 @@ import DiscordLink from './pages/DiscordLink'
 import Privacy from './pages/Privacy'
 import Developers from './pages/Developers'
 import Terms from './pages/Terms'
-import Marketplace from './pages/Marketplace'
+import { MarketplaceView } from './views/MarketplaceView'
 import Binder from './pages/Binder'
 import { CreateMemeView } from './views/CreateMemeView'
 import Friends from './pages/Friends'
-import Trades from './pages/Trades'
-import MemeDetail from './pages/MemeDetail'
+import { TradesView } from './views/TradesView'
+import { MemeDetailView } from './views/MemeDetailView'
 import type { ReactNode } from 'react'
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -75,7 +81,7 @@ export default function App() {
           path="/marketplace"
           element={
             <RequireAuth>
-              <Marketplace />
+              <MarketplaceView />
             </RequireAuth>
           }
         />
@@ -109,7 +115,7 @@ export default function App() {
           path="/trade"
           element={
             <RequireAuth>
-              <Trades />
+              <TradesView />
             </RequireAuth>
           }
         />
@@ -124,7 +130,7 @@ export default function App() {
         {/* public: profile links unfurl with og cards, so they must load logged-out too */}
         <Route path="/u/:sub" element={<Profile />} />
         {/* /m/ is the one true meme URL; legacy /meme/ links redirect into it */}
-        <Route path="/m/:id" element={<MemeDetail />} />
+        <Route path="/m/:id" element={<MemeDetailRoute />} />
         <Route path="/meme/:id" element={<LegacyMemeRedirect />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
