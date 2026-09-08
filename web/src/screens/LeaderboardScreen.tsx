@@ -1,19 +1,16 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { apiFetch } from '../lib/api'
-import type { LeaderRow } from '../lib/types'
+import type { LeaderboardScreenModel } from '../hooks/useLeaderboardScreen'
 
 const MEDALS = ['🥇', '🥈', '🥉']
 
-export default function Leaderboard() {
-  const [leaders, setLeaders] = useState<LeaderRow[] | null>(null)
-
-  useEffect(() => {
-    apiFetch<{ leaders: LeaderRow[] }>('/api/leaderboard')
-      .then((r) => setLeaders(r.leaders))
-      .catch(() => setLeaders([]))
-  }, [])
-
+/** Top Brains as a function of its model. Every engine state is one set of args. */
+export function LeaderboardScreen({
+  leaders,
+  showLoading,
+  showEmpty,
+  emptyMessage,
+  showList,
+}: LeaderboardScreenModel) {
   return (
     <main className="container">
       <div className="page-head">
@@ -26,13 +23,13 @@ export default function Leaderboard() {
         </span>
       </div>
 
-      {leaders === null ? (
+      {showLoading ? (
         <div className="empty">
           <span className="spin" />
         </div>
-      ) : leaders.length === 0 ? (
-        <div className="empty">Nobody's earned a braincell yet. The throne is empty.</div>
-      ) : (
+      ) : showEmpty ? (
+        <div className="empty">{emptyMessage}</div>
+      ) : showList ? (
         <div className="row-list">
           {leaders.map((l, i) => (
             <Link key={l.sub} to={`/u/${encodeURIComponent(l.sub)}`} className="person-row leader-row">
@@ -49,7 +46,7 @@ export default function Leaderboard() {
             </Link>
           ))}
         </div>
-      )}
+      ) : null}
     </main>
   )
 }

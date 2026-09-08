@@ -15,8 +15,13 @@ function BinderOwnRedirect() {
 function BinderRoute() {
   const { sub } = useParams<{ sub: string }>()
   const { user } = useAuth()
-  if (user && sub === user.sub) return <Binder />
-  return <Profile initialTab="binder" />
+  if (user && sub === user.sub) return <BinderView />
+  return <ProfileView key={sub} initialTab="binder" />
+}
+
+function ProfileRoute() {
+  const { sub } = useParams<{ sub: string }>()
+  return <ProfileView key={sub} />
 }
 import { Layout } from './components/Layout'
 import { useAuth } from './context/AuthContext'
@@ -24,18 +29,18 @@ import Landing from './pages/Landing'
 import AuthCallback from './pages/AuthCallback'
 import MobileAuthForward from './pages/MobileAuthForward'
 import Invite from './pages/Invite'
-import Leaderboard from './pages/Leaderboard'
-import Profile from './pages/Profile'
 import DiscordPage from './pages/DiscordPage'
 import DiscordLink from './pages/DiscordLink'
 import Privacy from './pages/Privacy'
 import Developers from './pages/Developers'
 import Terms from './pages/Terms'
 import Marketplace from './pages/Marketplace'
-import Binder from './pages/Binder'
 import CreateMeme from './pages/CreateMeme'
-import Friends from './pages/Friends'
 import Trades from './pages/Trades'
+import { BinderView } from './views/BinderView'
+import { FriendsView } from './views/FriendsView'
+import { LeaderboardView } from './views/LeaderboardView'
+import { ProfileView } from './views/ProfileView'
 import MemeDetail from './pages/MemeDetail'
 import type { ReactNode } from 'react'
 
@@ -101,7 +106,7 @@ export default function App() {
           path="/friends"
           element={
             <RequireAuth>
-              <Friends />
+              <FriendsView />
             </RequireAuth>
           }
         />
@@ -117,12 +122,12 @@ export default function App() {
           path="/leaderboard"
           element={
             <RequireAuth>
-              <Leaderboard />
+              <LeaderboardView />
             </RequireAuth>
           }
         />
         {/* public: profile links unfurl with og cards, so they must load logged-out too */}
-        <Route path="/u/:sub" element={<Profile />} />
+        <Route path="/u/:sub" element={<ProfileRoute />} />
         {/* /m/ is the one true meme URL; legacy /meme/ links redirect into it */}
         <Route path="/m/:id" element={<MemeDetail />} />
         <Route path="/meme/:id" element={<LegacyMemeRedirect />} />
