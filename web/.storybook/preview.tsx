@@ -7,7 +7,10 @@ import { StoresProvider } from '../src/stores/StoresContext'
 
 function FreshStores({ children }: { children: ReactNode }) {
   const [stores] = useState(() => createStores())
-  useMountEffect(() => () => stores.dispose())
+  useMountEffect(() => {
+    stores.retain()
+    return () => stores.dispose()
+  })
   return <StoresProvider stores={stores}>{children}</StoresProvider>
 }
 

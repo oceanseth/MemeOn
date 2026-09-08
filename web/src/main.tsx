@@ -15,7 +15,10 @@ function AuthRuntime() {
 
 function Root() {
   const [stores] = useState(() => createStores())
-  useMountEffect(() => () => stores.dispose())
+  useMountEffect(() => {
+    stores.retain()
+    return () => stores.dispose()
+  })
   return (
     <StoresProvider stores={stores}>
       <AuthRuntime />
