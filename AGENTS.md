@@ -14,7 +14,7 @@ When you hit one of these situations, use the resolution — do not re-discover 
 | Bead run order | **Serial** for PRs to `dev`. **Exception:** epic `mo-9dg` / branch `ox/ui` may fan worktrees in parallel after atoms land; merge back to `ox/ui` before any `dev` PR. | Strong 2026-08-01; lou 2026-09-08 ox/ui |
 | Local web UI / agent-browser | Always **`npm run dev:web`** (Vite on :5173). View and interact with **agent-browser** (`/Users/lou/.local/bin/agent-browser`). Auth: `agent-browser --state ./localstorage.json open http://localhost:5173`. Do not use `npm run dev` as the web command. API is proxied to :3001; if a flow needs `/api`, start `dev:api` separately. | lou 2026-09-08 |
 | Change React UI | `web/src/Anatomy.mdx`, then the tier folder (`atoms/` → `molecules/` → `organisms/` → `screens/` → `views/`) | The component's `*.stories.tsx`; `cd web && node scripts/check-tiers.mjs src` | Below `views/` components are pure props → markup; state lives in `hooks/` and `stores/`; one view-model hook per screen exporting its model type; every component has a story |
-| Resume ox/ui overhaul | Read [web/src/Anatomy.mdx](web/src/Anatomy.mdx), then `bd show mo-9dg`. Mint/market/social/chrome clusters are closed. Next is `mo-9dg.12` (merge into `ox/ui`). Do not restart. | lou 2026-09-08 |
+| Resume ox/ui overhaul | Merged on **`ox/ui` @ `246a11f`**. Read [web/src/Anatomy.mdx](web/src/Anatomy.mdx). Do not restart. PR to `dev` only when Lou asks. `mo-9su` / `mo-97t` stay open. | lou 2026-09-08 |
 | Local deploy / AWS CLI from laptop? | **Do not deploy from local.** Project AWS is not authenticated for local agents. Deploys use **GitHub secrets** only. | Strong 2026-07-28 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
 | Local API testing env? | Local / `local-server` should hit **dev or local** resources, never production. | Strong 2026-07-28 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
 | `api/src/env.ts` defaults look like production | Documented footgun only. **mo-100.13 deferred/closed** (Strong 2026-08-01): CI injects env; local never deploys. Do not open a PR for this unless policy changes. | Strong 2026-08-01 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
@@ -41,7 +41,7 @@ When you hit one of these situations, use the resolution — do not re-discover 
 | `bd show mo-100` | Epic + children for the fix track |
 | `bd show mo-9dg` | ox/ui headless molecularize + XState/MobX + Storybook |
 | [web/src/Anatomy.mdx](web/src/Anatomy.mdx) | React UI map: tiers, engines, listed legacy |
-| [docs/OX_UI_HANDOFF.md](docs/OX_UI_HANDOFF.md) | ox/ui history; clusters closed — next is mo-9dg.12 merge |
+| [docs/OX_UI_HANDOFF.md](docs/OX_UI_HANDOFF.md) | ox/ui history; overhaul merged @ `246a11f` |
 
 ## How to append
 
