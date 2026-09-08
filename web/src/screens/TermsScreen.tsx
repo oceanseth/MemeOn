@@ -1,4 +1,5 @@
-export default function Terms() {
+/** Static terms of service. No engine — copy only. */
+export function TermsScreen() {
   return (
     <main className="container legal">
       <h1>Terms of Service</h1>

@@ -1,4 +1,5 @@
-export default function Privacy() {
+/** Static privacy policy. No engine — copy only. */
+export function PrivacyScreen() {
   return (
     <main className="container legal">
       <h1>Privacy Policy</h1>

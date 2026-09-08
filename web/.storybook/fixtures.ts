@@ -153,3 +153,44 @@ export const questStepsPackDone: QuestStep[] = questStepsFresh.map((s) =>
 )
 
 export const marketplacePage = [paperMeme, silverMeme, holoMeme, listedHolo]
+
+export const tierFrames: Record<string, string> = {
+  paper: '/brand/og-home.png',
+  silver: '/brand/og-home.png',
+  holo: '/brand/og-home.png',
+  chrome: '/brand/og-home.png',
+  gold: '/brand/og-home.png',
+  prismatic: '/brand/og-home.png',
+  shiny: '/brand/og-home.png',
+}
+
+export const invitePal = {
+  inviter: {
+    sub: friendAccepted.sub,
+    name: friendAccepted.name,
+    picture: friendAccepted.picture,
+    followers: 4,
+    collectionSize: friendAccepted.collectionSize,
+    portfolioValue: friendAccepted.portfolioValue,
+  },
+  topMemes: [paperMeme, silverMeme, holoMeme],
+}
+
+export const inviteLou = {
+  inviter: {
+    sub: meLou.sub,
+    name: meLou.name,
+    picture: meLou.picture,
+    followers: 2,
+    collectionSize: meLou.collectionSize,
+    portfolioValue: meLou.portfolioValue,
+  },
+  topMemes: [paperMeme],
+}
+
+export const developerKeys = [
+  { prefix: 'mo_live_abcd', label: 'my-trading-bot', createdAt: FIXED_NOW },
+  { prefix: 'mo_live_efgh', label: 'my key', createdAt: FIXED_NOW },
+]
+
+export const discordInstallUrl = 'https://discord.com/oauth2/authorize'
