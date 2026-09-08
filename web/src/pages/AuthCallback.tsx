@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { completeMaskyLogin } from '../lib/auth'
 import { post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
-import { INVITE_KEY } from './Invite'
+import { INVITE_KEY } from '../hooks/useInviteScreen'
 
 export default function AuthCallback() {
   const [params] = useSearchParams()

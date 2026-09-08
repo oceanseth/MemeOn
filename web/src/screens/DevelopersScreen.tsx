@@ -1,43 +1,27 @@
-import { useCallback, useEffect, useState } from 'react'
-import { apiFetch, post } from '../lib/api'
+import type { DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { ConfirmDialog } from '../molecules/ConfirmDialog'
 
-interface KeyRow {
-  prefix: string
-  label: string
-  createdAt: string
-}
-
-export default function Developers() {
-  const [keys, setKeys] = useState<KeyRow[] | null>(null)
-  const [label, setLabel] = useState('')
-  const [freshKey, setFreshKey] = useState<string | null>(null)
-  const [revoking, setRevoking] = useState<KeyRow | null>(null)
-  const [err, setErr] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
-
-  const load = useCallback(() => {
-    apiFetch<{ keys: KeyRow[] }>('/api/developers/keys')
-      .then((r) => setKeys(r.keys))
-      .catch(() => setKeys([]))
-  }, [])
-
-  useEffect(load, [load])
-
-  const create = async () => {
-    setErr(null)
-    try {
-      const out = await post<{ key: string }>('/api/developers/keys', {
-        label: label.trim() || 'my key',
-      })
-      setFreshKey(out.key)
-      setLabel('')
-      load()
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : 'key creation failed')
-    }
-  }
-
+/** Developers API-key page as a function of its model. Every engine state is one set of args. */
+export function DevelopersScreen({
+  keys,
+  label,
+  freshKey,
+  revoking,
+  err,
+  showSpinner,
+  showEmpty,
+  showKeys,
+  showErr,
+  showFreshKey,
+  showRevoke,
+  copyLabel,
+  onLabelChange,
+  onCreate,
+  onCopyKey,
+  onRevoke,
+  onRevokeCancel,
+  onRevokeConfirm,
+}: DevelopersScreenModel) {
   return (
     <main className="container">
       <div className="page-head">
@@ -61,27 +45,21 @@ export default function Developers() {
           <input
             placeholder="Key label (e.g. my-trading-bot)"
             value={label}
-            onChange={(e) => setLabel(e.target.value)}
+            onChange={(e) => onLabelChange(e.target.value)}
             maxLength={60}
             style={{ minWidth: 240 }}
           />
-          <button className="primary" onClick={create}>
+          <button className="primary" onClick={onCreate}>
             ＋ Generate key
           </button>
         </div>
-        {err && <p className="notice error" style={{ marginTop: 10 }}>{err}</p>}
-        {freshKey && (
+        {showErr && <p className="notice error" style={{ marginTop: 10 }}>{err}</p>}
+        {showFreshKey && (
           <div className="notice ok" style={{ marginTop: 12, wordBreak: 'break-all' }}>
             <strong>Copy it now — shown once:</strong>
             <div style={{ fontFamily: 'monospace', margin: '8px 0' }}>{freshKey}</div>
-            <button
-              onClick={async () => {
-                await navigator.clipboard.writeText(freshKey)
-                setCopied(true)
-                setTimeout(() => setCopied(false), 2000)
-              }}
-            >
-              {copied ? 'Copied ✓' : 'Copy key'}
+            <button onClick={onCopyKey}>
+              {copyLabel}
             </button>
           </div>
         )}
@@ -90,28 +68,28 @@ export default function Developers() {
       <div className="panel" style={{ maxWidth: 720, marginTop: 16 }}>
         <strong>Your keys</strong>
         <div className="row-list" style={{ marginTop: 10 }}>
-          {keys === null ? (
+          {showSpinner ? (
             <span className="spin" />
-          ) : keys.length === 0 ? (
+          ) : showEmpty ? (
             <p style={{ color: 'var(--text-dim)', fontSize: 13.5 }}>No keys yet.</p>
-          ) : (
+          ) : showKeys && keys ? (
             keys.map((k) => (
               <div key={k.prefix} className="person-row">
                 <span style={{ fontFamily: 'monospace' }}>{k.prefix}…</span>
                 <span className="person-stats">{k.label}</span>
                 <span className="spacer" />
                 <span className="person-stats">{new Date(k.createdAt).toLocaleDateString()}</span>
-                <button className="danger" onClick={() => setRevoking(k)}>
+                <button className="danger" onClick={() => onRevoke(k)}>
                   Revoke
                 </button>
               </div>
             ))
-          )}
+          ) : null}
         </div>
       </div>
 
       <ConfirmDialog
-        open={!!revoking}
+        open={showRevoke}
         danger
         title="Revoke this API key?"
         message={
@@ -121,15 +99,8 @@ export default function Developers() {
           </>
         }
         confirmLabel="Revoke it"
-        onCancel={() => setRevoking(null)}
-        onConfirm={async () => {
-          if (!revoking) return
-          await apiFetch(`/api/developers/keys/${revoking.prefix}`, { method: 'DELETE' }).catch(
-            () => {},
-          )
-          setRevoking(null)
-          load()
-        }}
+        onCancel={onRevokeCancel}
+        onConfirm={onRevokeConfirm}
       />
     </main>
   )
