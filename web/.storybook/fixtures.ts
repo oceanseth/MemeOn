@@ -1,5 +1,5 @@
 import { memeValue, tierFor } from '../../shared/tiers'
-import type { Alert, FriendEntry, Me, Meme, Memeplex, QuestStep, Trade } from '../src/lib/types'
+import type { Alert, FriendEntry, GiphyResult, Me, Meme, Memeplex, QuestStep, Trade } from '../src/lib/types'
 
 export const FIXED_NOW = '2026-09-08T00:00:00.000Z'
 
@@ -153,3 +153,33 @@ export const questStepsPackDone: QuestStep[] = questStepsFresh.map((s) =>
 )
 
 export const marketplacePage = [paperMeme, silverMeme, holoMeme, listedHolo]
+
+export const videoMeme: Meme = meme({
+  id: 'meme-video',
+  title: 'moving paper',
+  reshares: 0,
+  mediaType: 'video',
+  videoUrl: '/brand/og-home.png',
+})
+
+export const giphyCat: GiphyResult = {
+  id: 'giphy-cat',
+  title: 'cat keyboard',
+  stillUrl: '/brand/og-home.png',
+  gifUrl: '/brand/og-home.png',
+  mp4Url: null,
+  author: 'giphy-user',
+  url: 'https://giphy.com/gifs/cat-keyboard',
+}
+
+export const giphyDog: GiphyResult = {
+  id: 'giphy-dog',
+  title: 'dog office',
+  stillUrl: '/brand/og-home.png',
+  gifUrl: '/brand/og-home.png',
+  mp4Url: null,
+  author: null,
+  url: 'https://giphy.com/gifs/dog-office',
+}
+
+export const giphyCategories = ['reactions', 'animals', 'memes']

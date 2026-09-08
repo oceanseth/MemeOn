@@ -33,7 +33,7 @@ import Developers from './pages/Developers'
 import Terms from './pages/Terms'
 import Marketplace from './pages/Marketplace'
 import Binder from './pages/Binder'
-import CreateMeme from './pages/CreateMeme'
+import { CreateMemeView } from './views/CreateMemeView'
 import Friends from './pages/Friends'
 import Trades from './pages/Trades'
 import MemeDetail from './pages/MemeDetail'
@@ -93,7 +93,7 @@ export default function App() {
           path="/binder/new"
           element={
             <RequireAuth>
-              <CreateMeme />
+              <CreateMemeView />
             </RequireAuth>
           }
         />
