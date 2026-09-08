@@ -1,82 +1,56 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { apiFetch, post } from '../lib/api'
-import { useAuth } from '../context/AuthContext'
-import { tierClasses } from '../atoms/MemeCard'
+import { Link } from 'react-router-dom'
 import { glowStyleFor } from '../../../shared/tiers'
-import { MemeplexPanel } from '../organisms/MemeplexPanel'
+import { tierClasses } from '../atoms/MemeCard'
+import type { MemeDetailScreenModel } from '../hooks/useMemeDetailScreen'
 import { ConfirmDialog } from '../molecules/ConfirmDialog'
-import type { Meme, Memeplex, Position } from '../lib/types'
+import { MemeplexPanel } from '../organisms/MemeplexPanel'
 
-const ARCHIVE_SUB = 'meme_archive'
-
-interface MemeStats {
-  views: number
-  reshares: number
-  sources: { source: string; url: string | null; views: number; firstSeen: string | null }[]
-}
-
-export default function MemeDetail() {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const { user, refresh } = useAuth()
-  const [meme, setMeme] = useState<Meme | null>(null)
-  const [stats, setStats] = useState<MemeStats | null>(null)
-  const [positions, setPositions] = useState<Position[]>([])
-  const [notFound, setNotFound] = useState(false)
-  const [msg, setMsg] = useState<string | null>(null)
-  const [err, setErr] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
-  const [confirmingDelete, setConfirmingDelete] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-
-  // listing form
-  const [price, setPrice] = useState(1)
-  const [sellShares, setSellShares] = useState(10)
-  const [buyShares, setBuyShares] = useState(1)
-  const [plex, setPlex] = useState<Memeplex | null>(null)
-  const [plexBinder, setPlexBinder] = useState<Meme[]>([])
-  const [plexPick, setPlexPick] = useState('')
-  const [plexPasted, setPlexPasted] = useState('')
-  const [plexMsg, setPlexMsg] = useState<string | null>(null)
-
-  const load = useCallback(() => {
-    if (!id) return
-    apiFetch<{ meme: Meme; positions: Position[] }>(`/api/memes/${id}`)
-      .then((r) => {
-        setMeme(r.meme)
-        setPositions(r.positions)
-      })
-      .catch(() => setNotFound(true))
-    apiFetch<MemeStats>(`/api/memes/${id}/stats`)
-      .then(setStats)
-      .catch(() => {})
-  }, [id])
-
-  useEffect(load, [load])
-
-  useEffect(() => {
-    if (!id) return
-    setPlex(null)
-    setPlexPick('')
-    setPlexPasted('')
-    setPlexMsg(null)
-    setPlexBinder([])
-    apiFetch<Memeplex>(`/api/memes/${id}/memeplex`)
-      .then(setPlex)
-      .catch(() => {})
-  }, [id])
-
-  useEffect(() => {
-    if (!meme || !user) return
-    const shares = positions.find((p) => p.userId === user.sub)?.shares ?? 0
-    if (meme.creatorId !== user.sub && shares <= 0) return
-    apiFetch<{ memes: Meme[] }>('/api/binder')
-      .then((r) => setPlexBinder(r.memes.filter((m) => m.id !== meme.id)))
-      .catch(() => {})
-  }, [meme, user, positions])
-
-  if (notFound)
+/** Meme detail as a function of its model. Every engine state is one set of args. */
+export function MemeDetailScreen({
+  meme,
+  stats,
+  capTable,
+  msg,
+  err,
+  copied,
+  confirmingDelete,
+  deleting,
+  price,
+  sellShares,
+  buyShares,
+  plex,
+  plexBinder,
+  plexPick,
+  plexPasted,
+  plexMsg,
+  shareUrl,
+  myShares,
+  isSeller,
+  showNotFound,
+  showLoading,
+  showUserActions,
+  showClaim,
+  showVisibility,
+  showDelete,
+  canEditPlex,
+  onCopyShare,
+  onRemix,
+  onClaim,
+  onToggleVisibility,
+  onAskDelete,
+  onCancelDelete,
+  onConfirmDelete,
+  onBuySharesChange,
+  onBuy,
+  onUnlist,
+  onSellSharesChange,
+  onPriceChange,
+  onList,
+  onPlexPickChange,
+  onPlexPastedChange,
+  onPlexAdd,
+}: MemeDetailScreenModel) {
+  if (showNotFound)
     return (
       <main className="container">
         <div className="empty" style={{ marginTop: 60 }}>
@@ -85,35 +59,12 @@ export default function MemeDetail() {
       </main>
     )
 
-  if (!meme)
+  if (showLoading || !meme)
     return (
       <main className="container" style={{ paddingTop: 80, textAlign: 'center' }}>
         <span className="spin" />
       </main>
     )
-
-  const myShares = positions.find((p) => p.userId === user?.sub)?.shares ?? 0
-  const shareUrl = `${window.location.origin}/m/${meme.id}`
-  const isSeller = meme.listing?.sellerId === user?.sub
-
-  const copyShare = async () => {
-    await navigator.clipboard.writeText(shareUrl)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  const act = async (fn: () => Promise<unknown>, okMsg: string) => {
-    setMsg(null)
-    setErr(null)
-    try {
-      await fn()
-      setMsg(okMsg)
-      load()
-      void refresh()
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : 'action failed')
-    }
-  }
 
   return (
     <main className="container">
@@ -216,7 +167,7 @@ export default function MemeDetail() {
             </p>
             <div className="filter-bar">
               <input readOnly value={shareUrl} style={{ flex: 1, minWidth: 200 }} />
-              <button className="primary" onClick={copyShare}>
+              <button className="primary" onClick={onCopyShare}>
                 {copied ? 'Copied ✓' : 'Copy link'}
               </button>
               <a href={`/api/memes/${meme.id}/og.png`} target="_blank" rel="noreferrer">
@@ -226,43 +177,19 @@ export default function MemeDetail() {
           </div>
 
           <div className="filter-bar" style={{ marginBottom: 16 }}>
-            {user && (
-              <button onClick={() => navigate(`/binder/new?remix=${meme.id}`)}>
-                🧬 Create a meme from this
-              </button>
+            {showUserActions && (
+              <button onClick={onRemix}>🧬 Create a meme from this</button>
             )}
-            {user && meme.creatorId === ARCHIVE_SUB && (
-              <button
-                onClick={() => {
-                  const note = window.prompt(
-                    'Tell us why this meme is yours (links help your case):',
-                  )
-                  if (note !== null)
-                    void act(
-                      () => post(`/api/memes/${meme.id}/claim`, { note }),
-                      'Claim filed 📼 — we’ll review it and transfer the card if it checks out.',
-                    )
-                }}
-              >
-                📼 This is my meme — claim it
-              </button>
+            {showClaim && (
+              <button onClick={onClaim}>📼 This is my meme — claim it</button>
             )}
-            {myShares === 100 && (
-              <button
-                onClick={() =>
-                  act(
-                    () => post(`/api/memes/${meme.id}/visibility`, { private: !meme.private }),
-                    meme.private
-                      ? 'Back on the marketplace 🌐'
-                      : 'Hidden from the marketplace 🙈 (still in your binder)',
-                  )
-                }
-              >
+            {showVisibility && (
+              <button onClick={onToggleVisibility}>
                 {meme.private ? '🌐 Make public' : '🙈 Make private'}
               </button>
             )}
-            {myShares === 100 && meme.private && (
-              <button className="danger" onClick={() => setConfirmingDelete(true)}>
+            {showDelete && (
+              <button className="danger" onClick={onAskDelete}>
                 🗑️ Delete forever
               </button>
             )}
@@ -276,35 +203,24 @@ export default function MemeDetail() {
               <strong>
                 On sale: {meme.listing.shares} shares @ 🧠{meme.listing.pricePerShare}/share
               </strong>
-              {user && !isSeller && (
+              {showUserActions && !isSeller && (
                 <div className="filter-bar" style={{ marginTop: 10 }}>
                   <input
                     type="number"
                     min={1}
                     max={meme.listing.shares}
                     value={buyShares}
-                    onChange={(e) => setBuyShares(Number(e.target.value))}
+                    onChange={(e) => onBuySharesChange(Number(e.target.value))}
                     style={{ width: 90 }}
                   />
-                  <button
-                    className="primary"
-                    onClick={() =>
-                      act(
-                        () => post(`/api/memes/${meme.id}/buy`, { shares: buyShares }),
-                        'Shares acquired 💼',
-                      )
-                    }
-                  >
+                  <button className="primary" onClick={onBuy}>
                     Buy for 🧠{Math.ceil(buyShares * meme.listing!.pricePerShare)}
                   </button>
                 </div>
               )}
               {isSeller && (
                 <div className="filter-bar" style={{ marginTop: 10 }}>
-                  <button
-                    className="danger"
-                    onClick={() => act(() => post(`/api/memes/${meme.id}/unlist`, {}), 'Delisted')}
-                  >
+                  <button className="danger" onClick={onUnlist}>
                     Remove listing
                   </button>
                 </div>
@@ -322,7 +238,7 @@ export default function MemeDetail() {
                       min={1}
                       max={myShares}
                       value={sellShares}
-                      onChange={(e) => setSellShares(Number(e.target.value))}
+                      onChange={(e) => onSellSharesChange(Number(e.target.value))}
                       style={{ width: 80 }}
                     />
                   </label>
@@ -333,23 +249,11 @@ export default function MemeDetail() {
                       min={0.01}
                       step={0.01}
                       value={price}
-                      onChange={(e) => setPrice(Number(e.target.value))}
+                      onChange={(e) => onPriceChange(Number(e.target.value))}
                       style={{ width: 90 }}
                     />
                   </label>
-                  <button
-                    className="primary"
-                    onClick={() =>
-                      act(
-                        () =>
-                          post(`/api/memes/${meme.id}/list`, {
-                            shares: sellShares,
-                            pricePerShare: price,
-                          }),
-                        'Listed on the marketplace 🏷️',
-                      )
-                    }
-                  >
+                  <button className="primary" onClick={onList}>
                     List
                   </button>
                 </div>
@@ -385,50 +289,22 @@ export default function MemeDetail() {
           <MemeplexPanel
             meme={meme}
             plex={plex}
-            canEdit={!!user && (meme.creatorId === user.sub || myShares > 0)}
+            canEdit={canEditPlex}
             binder={plexBinder}
             pick={plexPick}
-            onPickChange={setPlexPick}
+            onPickChange={onPlexPickChange}
             pasted={plexPasted}
-            onPastedChange={setPlexPasted}
+            onPastedChange={onPlexPastedChange}
             notice={plexMsg}
-            onAdd={(memeId) => {
-              const alreadyLinked = new Set([
-                meme.id,
-                ...(plex?.ancestors.map((m) => m.id) ?? []),
-                ...(plex?.remixes.map((m) => m.id) ?? []),
-                ...(plex?.related.map((m) => m.id) ?? []),
-              ])
-              if (alreadyLinked.has(memeId)) {
-                setPlexMsg(
-                  memeId === meme.id
-                    ? "That's this meme — already the center of its own memeplex."
-                    : 'Already in the memeplex.',
-                )
-                return
-              }
-              setPlexMsg(null)
-              void post(`/api/memes/${meme.id}/memeplex`, { memeId })
-                .then(() => {
-                  setPlexMsg('Added to the memeplex 🕸️')
-                  setPlexPick('')
-                  setPlexPasted('')
-                  return apiFetch<Memeplex>(`/api/memes/${meme.id}/memeplex`).then(setPlex)
-                })
-                .catch((e) => {
-                  setPlexMsg(e instanceof Error ? e.message : 'failed to add')
-                })
-            }}
+            onAdd={onPlexAdd}
           />
 
           <div className="panel" style={{ marginTop: 16 }}>
             <strong>Cap table</strong>
             <div className="row-list" style={{ marginTop: 10 }}>
-              {positions.map((p) => (
+              {capTable.map((p) => (
                 <div key={p.userId} className="person-row">
-                  <span className="person-name">
-                    {p.userId === user?.sub ? 'You' : <HolderName sub={p.userId} />}
-                  </span>
+                  <span className="person-name">{p.label}</span>
                   <span className="spacer" />
                   <span>{p.shares}/100</span>
                 </div>
@@ -450,39 +326,9 @@ export default function MemeDetail() {
           </>
         }
         confirmLabel="Delete it forever"
-        onCancel={() => setConfirmingDelete(false)}
-        onConfirm={async () => {
-          setDeleting(true)
-          try {
-            await apiFetch(`/api/memes/${meme.id}`, { method: 'DELETE' })
-            navigate('/binder')
-          } catch (e) {
-            setErr(e instanceof Error ? e.message : 'delete failed')
-            setConfirmingDelete(false)
-          } finally {
-            setDeleting(false)
-          }
-        }}
+        onCancel={onCancelDelete}
+        onConfirm={onConfirmDelete}
       />
     </main>
   )
-}
-
-const nameCache = new Map<string, string>()
-
-function HolderName({ sub }: { sub: string }) {
-  const [name, setName] = useState(nameCache.get(sub) ?? `${sub.slice(0, 10)}…`)
-  useEffect(() => {
-    if (nameCache.has(sub)) return
-    apiFetch<{ users: { sub: string; name: string }[] }>(`/api/users?q=`)
-      .then((r) => {
-        const hit = r.users.find((u) => u.sub === sub)
-        if (hit) {
-          nameCache.set(sub, hit.name)
-          setName(hit.name)
-        }
-      })
-      .catch(() => {})
-  }, [sub])
-  return <>{name}</>
 }
