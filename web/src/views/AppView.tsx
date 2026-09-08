@@ -1,4 +1,24 @@
+import type { ReactNode } from 'react'
+import { observer } from 'mobx-react-lite'
 import { Navigate, Route, Routes, useParams } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
+import { AuthCallback, MobileAuthForward } from '../lib/legacyAuthPages'
+import { AppShellView } from './AppShellView'
+import { BinderView } from './BinderView'
+import { CreateMemeView } from './CreateMemeView'
+import { DevelopersView } from './DevelopersView'
+import { DiscordLinkView } from './DiscordLinkView'
+import { DiscordPageView } from './DiscordPageView'
+import { FriendsView } from './FriendsView'
+import { InviteView } from './InviteView'
+import { LandingView } from './LandingView'
+import { LeaderboardView } from './LeaderboardView'
+import { MarketplaceView } from './MarketplaceView'
+import { MemeDetailView } from './MemeDetailView'
+import { PrivacyView } from './PrivacyView'
+import { ProfileView } from './ProfileView'
+import { TermsView } from './TermsView'
+import { TradesView } from './TradesView'
 
 function LegacyMemeRedirect() {
   const { id } = useParams<{ id: string }>()
@@ -29,26 +49,6 @@ function MemeDetailRoute() {
   const { id } = useParams<{ id: string }>()
   return <MemeDetailView key={id} />
 }
-import { useAuth } from './context/AuthContext'
-import AuthCallback from './pages/AuthCallback'
-import MobileAuthForward from './pages/MobileAuthForward'
-import { AppShellView } from './views/AppShellView'
-import { BinderView } from './views/BinderView'
-import { CreateMemeView } from './views/CreateMemeView'
-import { DevelopersView } from './views/DevelopersView'
-import { DiscordLinkView } from './views/DiscordLinkView'
-import { DiscordPageView } from './views/DiscordPageView'
-import { FriendsView } from './views/FriendsView'
-import { InviteView } from './views/InviteView'
-import { LandingView } from './views/LandingView'
-import { LeaderboardView } from './views/LeaderboardView'
-import { MarketplaceView } from './views/MarketplaceView'
-import { MemeDetailView } from './views/MemeDetailView'
-import { PrivacyView } from './views/PrivacyView'
-import { ProfileView } from './views/ProfileView'
-import { TermsView } from './views/TermsView'
-import { TradesView } from './views/TradesView'
-import type { ReactNode } from 'react'
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth()
@@ -62,7 +62,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
-export default function App() {
+export const AppView = observer(function AppView() {
   return (
     <AppShellView>
       <Routes>
@@ -141,4 +141,4 @@ export default function App() {
       </Routes>
     </AppShellView>
   )
-}
+})

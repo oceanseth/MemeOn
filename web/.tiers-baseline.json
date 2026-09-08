@@ -1,6 +1,0 @@
-{
-  "src": "src",
-  "problems": [
-    "App.tsx: component outside a tier folder"
-  ]
-}
