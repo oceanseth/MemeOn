@@ -15,16 +15,17 @@ function BinderOwnRedirect() {
 function BinderRoute() {
   const { sub } = useParams<{ sub: string }>()
   const { user } = useAuth()
-  if (user && sub === user.sub) return <Binder />
-  return <Profile initialTab="binder" />
+  if (user && sub === user.sub) return <BinderView />
+  return <ProfileView key={sub} initialTab="binder" />
+}
+
+function ProfileRoute() {
+  const { sub } = useParams<{ sub: string }>()
+  return <ProfileView key={sub} />
 }
 import { useAuth } from './context/AuthContext'
 import AuthCallback from './pages/AuthCallback'
 import MobileAuthForward from './pages/MobileAuthForward'
-import Leaderboard from './pages/Leaderboard'
-import Profile from './pages/Profile'
-import Binder from './pages/Binder'
-import Friends from './pages/Friends'
 import type { ReactNode } from 'react'
 import { AppShellView } from './views/AppShellView'
 import { CreateMemeView } from './views/CreateMemeView'
@@ -38,6 +39,10 @@ import { TermsView } from './views/TermsView'
 import { MarketplaceView } from './views/MarketplaceView'
 import { MemeDetailView } from './views/MemeDetailView'
 import { TradesView } from './views/TradesView'
+import { BinderView } from './views/BinderView'
+import { ProfileView } from './views/ProfileView'
+import { FriendsView } from './views/FriendsView'
+import { LeaderboardView } from './views/LeaderboardView'
 
 /** Fresh machine per meme id so links do not reuse the previous detail actor. */
 function MemeDetailRoute() {
@@ -119,7 +124,7 @@ export default function App() {
           path="/friends"
           element={
             <RequireAuth>
-              <Friends />
+              <FriendsView />
             </RequireAuth>
           }
         />
@@ -135,12 +140,12 @@ export default function App() {
           path="/leaderboard"
           element={
             <RequireAuth>
-              <Leaderboard />
+              <LeaderboardView />
             </RequireAuth>
           }
         />
         {/* public: profile links unfurl with og cards, so they must load logged-out too */}
-        <Route path="/u/:sub" element={<Profile />} />
+        <Route path="/u/:sub" element={<ProfileRoute />} />
         {/* /m/ is the one true meme URL; legacy /meme/ links redirect into it */}
         <Route path="/m/:id" element={<MemeDetailRoute />} />
         <Route path="/meme/:id" element={<LegacyMemeRedirect />} />
