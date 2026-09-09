@@ -6,11 +6,12 @@
   --bg-card: oklch(0.228 0.028 268.958);
   --border: oklch(0.299 0.036 268.582);
   --text: oklch(0.942 0.012 264.509);
-  --text-dim: oklch(0.705 0.032 267.093);
+  --text-dim: oklch(0.77 0.032 267.093);
   --accent: oklch(0.832 0.102 231.822);
   --accent-2: oklch(0.819 0.164 330.583);
   --gold: oklch(0.892 0.135 89.311);
-  --danger: oklch(0.735 0.163 21.864);
+  --danger: oklch(0.8 0.115 21.864);
+  --danger-fill: oklch(0.477 0.153 18.308);
   --ok: oklch(0.906 0.158 155.414);
   --radius: 14px;
   color-scheme: dark;
@@ -72,7 +73,7 @@ button.primary {
 }
 
 button.danger {
-  border-color: oklch(0.349 0.077 7.441);
+  border-color: oklch(0.349 0.077 21.864);
   color: var(--danger);
 }
 
@@ -201,7 +202,7 @@ textarea:focus {
   position: absolute;
   top: -4px;
   right: -4px;
-  background: var(--danger);
+  background: var(--danger-fill);
   color: oklch(1 0 0);
   font-size: 10px;
   font-weight: 700;
@@ -602,7 +603,7 @@ textarea:focus {
 }
 
 .confirm-modal.confirm-danger {
-  border-color: oklch(0.349 0.077 7.441);
+  border-color: oklch(0.349 0.077 21.864);
   box-shadow:
     0 0 0 1px oklch(0.735 0.163 21.864 / 0.25),
     0 30px 80px oklch(0 0 0 / 0.6);
@@ -615,7 +616,7 @@ textarea:focus {
 }
 
 .confirm-danger-btn {
-  background: oklch(0.477 0.153 18.308);
+  background: var(--danger-fill);
   border-color: transparent;
   color: oklch(1 0 0);
   font-weight: 700;
