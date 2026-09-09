@@ -85,10 +85,9 @@ export const friendsMachine = setup({
         giftQuery: '',
         giftShares: 1,
         giftErr: null,
-        giftBusy: false,
       }),
     },
-    CLOSE_GIFT: { actions: assign({ gifting: null, giftBusy: false }) },
+    CLOSE_GIFT: { actions: assign({ gifting: null }) },
     SET_GIFT_MEMES: { actions: assign({ giftMemes: ({ event }) => event.memes }) },
     SET_GIFT_QUERY: { actions: assign({ giftQuery: ({ event }) => event.query }) },
     SET_GIFT_PICK: {
