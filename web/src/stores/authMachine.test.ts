@@ -34,6 +34,12 @@ function deferredResponse() {
   return { promise, resolve, reject }
 }
 
+function settleLate(result: 'success' | 'network failure' | '401', response: ReturnType<typeof deferredResponse>) {
+  if (result === 'success') response.resolve(Response.json({ ...me, coins: 42 }))
+  else if (result === '401') response.resolve(Response.json({ error: 'expired' }, { status: 401 }))
+  else response.reject(new Error('account unavailable'))
+}
+
 const fetchMock = vi.fn<typeof fetch>()
 let actor: ReturnType<typeof createActor<typeof authMachine>>
 let stores: ReturnType<typeof createStores>
@@ -210,6 +216,104 @@ test('background refresh keeps the authenticated projection usable while awaitin
   expect(stores.auth.user).toEqual(updated)
   expect(stores.auth.loading).toBe(false)
 })
+
+test.each(['success', 'network failure', '401'] as const)(
+  'a replacement refresh prevents a late %s response from winning',
+  async (lateResult) => {
+    await authenticate()
+    const first = deferredResponse()
+    fetchMock.mockReturnValueOnce(first.promise)
+    const firstWaiter = stores.auth.refresh()
+    const firstSignal = fetchMock.mock.calls.at(-1)?.[1]?.signal
+
+    const second = deferredResponse()
+    fetchMock.mockReturnValueOnce(second.promise)
+    const secondWaiter = stores.auth.refresh()
+    expect(firstSignal?.aborted).toBe(true)
+
+    let settled = false
+    void Promise.all([firstWaiter, secondWaiter]).then(() => { settled = true })
+    settleLate(lateResult, first)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(settled).toBe(false)
+    expect(stores.auth.user).toEqual(me)
+
+    const updated = { ...me, coins: 52 }
+    second.resolve(Response.json(updated))
+    await Promise.all([firstWaiter, secondWaiter])
+    expect(stores.auth.user).toEqual(updated)
+    expect(sessionToken()).toBe('old-session')
+    expect(maskyAccessToken()).toBe('old-masky-token')
+  },
+)
+
+test.each(['success', 'network failure', '401'] as const)(
+  'a late superseded %s response cannot overwrite a completed replacement',
+  async (lateResult) => {
+    await authenticate()
+    const first = deferredResponse()
+    fetchMock.mockReturnValueOnce(first.promise)
+    const firstWaiter = stores.auth.refresh()
+    const firstSignal = fetchMock.mock.calls.at(-1)?.[1]?.signal
+    const second = deferredResponse()
+    fetchMock.mockReturnValueOnce(second.promise)
+    const secondWaiter = stores.auth.refresh()
+    expect(firstSignal?.aborted).toBe(true)
+
+    const updated = { ...me, coins: 52 }
+    second.resolve(Response.json(updated))
+    await Promise.all([firstWaiter, secondWaiter])
+    settleLate(lateResult, first)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(stores.auth.user).toEqual(updated)
+    expect(sessionToken()).toBe('old-session')
+    expect(maskyAccessToken()).toBe('old-masky-token')
+  },
+)
+
+test.each(['transient failure', '401', 'logout'] as const)(
+  'both replacement refresh waiters settle when the latest request ends in %s',
+  async (latestOutcome) => {
+    await authenticate()
+    const first = deferredResponse()
+    fetchMock.mockReturnValueOnce(first.promise)
+    const firstWaiter = stores.auth.refresh()
+    const second = deferredResponse()
+    fetchMock.mockReturnValueOnce(second.promise)
+    const secondWaiter = stores.auth.refresh()
+
+    if (latestOutcome === 'transient failure') second.reject(new Error('account unavailable'))
+    else if (latestOutcome === '401') second.resolve(Response.json({ error: 'expired' }, { status: 401 }))
+    else stores.auth.logout()
+    await Promise.all([firstWaiter, secondWaiter])
+
+    if (latestOutcome === 'transient failure') {
+      expect(stores.auth.user).toEqual(me)
+      expect(stores.auth.error).toBe('account unavailable')
+      expect(sessionToken()).toBe('old-session')
+    } else if (latestOutcome === '401') {
+      expect(stores.auth.user).toBeNull()
+      expect(sessionToken()).toBeNull()
+      expect(maskyAccessToken()).toBeNull()
+    } else {
+      expectLoggedOut()
+    }
+
+    settleLate('401', first)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    if (latestOutcome === 'transient failure') {
+      expect(stores.auth.user).toEqual(me)
+      expect(sessionToken()).toBe('old-session')
+    } else if (latestOutcome === '401') {
+      expect(stores.auth.user).toBeNull()
+      expect(sessionToken()).toBeNull()
+      expect(maskyAccessToken()).toBeNull()
+    } else {
+      expectLoggedOut()
+    }
+  },
+)
 
 for (const failure of ['network', '503'] as const) {
   function failAccountRequest() {

@@ -62,6 +62,7 @@ export const authMachine = setup({
       on: { START: 'loading' },
     },
     loading: {
+      on: { START: { target: 'loading', reenter: true } },
       invoke: {
         src: 'loadMe',
         onDone: [
