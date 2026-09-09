@@ -86,7 +86,7 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
     }, { rootMargin: '900px' })
     observer.observe(element)
     observerRef.current = observer
-  }, [])
+  }, [context.nextCursor])
 
   useMountEffect(() => {
     scheduleFetch()
