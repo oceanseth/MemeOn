@@ -28,43 +28,47 @@ Owner keys: `shared-atoms` (deleted only by the final legacy-removal package), `
 `shared-atoms`, with the members listed; a surface package migrates its component and leaves the
 now-dead rule in place for the final package to delete.
 
+`dev` covers the Developers/API-keys surface **and** the two Discord screens
+(`DiscordLinkScreen`, `DiscordPageScreen`), which is why it is a member of the FAQ and prose-link
+rows below as well as the owner of `23-link-status.css`.
+
 | File | Origin lines | Selectors / prefixes | Owner |
 | --- | --- | --- | --- |
 | `../../tier-glow-borders.css` | (separate file) | `@property --glow-angle`, `:where(.glow-border)` ring + bloom, `[data-glow-style=…]` stops, reduced-motion pause | card |
-| `01-base.css` | 76–169 | `::selection`, `*`, `img/video/svg`, `body`, `#root`, `#root > main`, `h1–h4`, `p`, `code`, `.mono` | shared-atoms |
+| `01-base.css` | 76–169 | `::selection`, `*`, `img/video/svg`, `body`, `#root`, `#root > main`, `h1–h4`, `p`, `code`, `.mono` (no users) | shared-atoms |
 | `02-controls.css` | 170–343 | `a`, `button`/`.btn` (+ hover lift, disabled, `aria-busy`, `.primary`, `.danger`), `input/select/textarea`, placeholder, checkbox + `.checkbox-label`, `.field-label/.field-hint/.field-help/.field-counter`, the `:focus-visible` ring | shared-atoms |
 | `03-container.css` | 344–356 | `.container`, `.container.narrow` | shared-atoms |
 | `04-skip-link.css` | 357–379 | `.skip-link`, `main { scroll-margin-top }` | shell |
 | `05-header.css` | 380–491 | `.topbar`, `.topbar-inner`, `.logo`, `.logo-img`, `.nav-links`, `.topbar-right`, `.discord-link`, `.coins`, `.avatar` | shell |
 | `06-alerts-bell.css` | 492–578 | `.bell`, `.bell-badge`, `.alerts-pop`, `.alert-row` (+ `.unread`, `time`), `.alert-dot` | shell |
-| `07-collections.css` | 579–624 | list resets for `.card-grid/.row-list/.tier-grid/.profile-stats/.invite-stats/.legal-toc`, `.card-grid`, `.market-grid`, `.memeplex-grid`, `.card-slot` | shared-atoms (members: card, market, social, landing) |
+| `07-collections.css` | 579–624 | list resets for `.card-grid/.row-list/.tier-grid/.profile-stats/.invite-stats/.legal-toc`, `.card-grid`, `.market-grid`, `.memeplex-grid`, `.card-slot`. `.card-grid` also carries the starter-pack grid in `molecules/QuestBar.tsx` | shared-atoms (members: card, market, social, landing, shell) |
 | `08-meme-card.css` | 625–931 | `.meme-card`, `.meme-card-inner`, `.meme-art`, `.meme-meta`, `.meme-title`, `.meme-sub`, `.tier-chip`, `.tier-paper … .tier-shiny`, `.meme-card-lg`, `.foil-media`, `.meme-media-toggle`, `.sheen`, `.sparkle`, `@keyframes sheen-sweep/twinkle` | card |
 | `09-quests.css` | 932–1051 | `.questbar`, `.questbar-inner`, `.questbar-title`, `.braincell-img` (+ `.lg`, used by the FAQ), `.quest-chip*`, `.quest-more/.quest-later`, `.quest-hint`, `.questbar-error` | shell |
 | `10-dialog-shell.css` | 1052–1139 | `.pack-modal h3`, `dialog.pack-modal`/`dialog.confirm-modal` frame + `::backdrop`, `dialog:not([open])`, `body:has(dialog[open])`, `.dialog-head`, `.modal-close`, ≤720 bottom sheet | dialogs |
 | `11-gift-dialog.css` | 1140–1230 | `.alerts-pop/.pack-modal/.gift-list { scrollbar-width }`, `.gift-list`, `.gift-row*`, `.gift-thumb`, `.gift-dialog-*` | dialogs |
 | `12-friends.css` | 1231–1238 | `.friends-panel`, `.friends-section` | social |
 | `13-site-footer.css` | 1239–1256 | `.site-footer`, `.site-footer a` | shell |
-| `14-prose-links.css` | 1257–1291 | underline rules for `.legal a`, `.faq a`, `.hero p a`, `.notice a`, `.site-footer a`; `a[aria-current]`; `a.btn` exception | shared-atoms (members: landing, shell, shared) |
+| `14-prose-links.css` | 1257–1291 | underline rules for `.legal a`, `.faq a`, `.hero p a`, `.notice a`, `.site-footer a`; `a[aria-current]`; `a.btn` exception. `.faq a`/`.hero p a`/`.notice a` reach `DiscordPageScreen` too | shared-atoms (members: landing, shell, dev, shared) |
 | `15-confirm-dialog.css` | 1292–1333 | `.confirm-modal.confirm-danger`, `.confirm-message`, `.confirm-modal .field-label/textarea`, `.confirm-danger-btn` | dialogs |
 | `16-leaderboard.css` | 1334–1382 | `.leader-row` (+ `.is-me`), `.leader-rank`, `.leader-medal`, `.row-head`, `.leader-cells` | social |
-| `17-numeric.css` | 1383–1394 | tabular-nums for `.coins/.leader-cells/.meme-sub/.person-stats/.gift-row-shares/.cap-row/.bell-badge/.numeric` | shared-atoms |
+| `17-numeric.css` | 1383–1394 | tabular-nums for `.coins/.leader-cells/.meme-sub/.person-stats/.gift-row-shares/.cap-row/.bell-badge/.numeric`. `.numeric` has no users — no markup in `web/src` writes the class, so the final package can drop that selector without hunting for a consumer | shared-atoms |
 | `18-hero.css` | 1395–1442 | `.hero`, `.hero h1`, `.grad`, `@supports not (background-clip: text)` (also `.logo`), `.hero p`, `.login-reassure` | landing |
 | `19-login-btn.css` | 1443–1456 | `.login-btn` (landing, invite, discord, profile) | shared-atoms |
 | `20-landing-sections.css` | 1457–1472 | `.landing-close`, `.section-title`, `.section-sub` | landing |
 | `21-tier-showcase.css` | 1473–1566 | `.tier-grid` (+ ≥1100 four columns), `.tier-card`, `.tier-card-inner`, `.tier-frame-img`, `.tier-frame-slot[data-state]`, `.tier-name`, `.tier-req`, `.tier-hype` | landing |
-| `22-faq.css` | 1567–1615 | `.faq`, `.faq details/summary/p`, `.faq-actions`, `.cta-slot` | landing |
+| `22-faq.css` | 1567–1615 | `.faq`, `.faq details/summary/p`, `.faq-actions`, `.cta-slot`. Landing owns `.faq`/`.faq-q`; `DiscordPageScreen` uses `.faq` twice plus `.faq-actions` and `.cta-slot` | shared-atoms (members: landing, dev) |
 | `23-link-status.css` | 1616–1629 | `.link-status` (+ ≤640) | dev |
 | `24-profile-invite.css` | 1630–1733 | `.profile-avatar`, `.invite-avatar`, monogram fallbacks, `.profile-hero h1`, `.profile-identity*`, `.profile-stats`, `.profile-tabs`, `.binder-controls`, `.invite-hero`, `.invite-note`, `.invite-highlights-title`, `.invite-stats` | social |
 | `25-market-controls.css` | 1734–1800 | `.market-controls`, `.market-filters`, `.market-filters-toggle`, `.market-summary`, ≤720 unstick | market |
 | `26-page-head.css` | 1801–1842 | `.page-head`, `.page-subtitle`, `.filter-bar`, `.filter-bar input[type=search]`, ≥761 head layout | shared-atoms |
-| `27-empty-state.css` | 1843–1900 | `.empty` (+ `.error`, `p`, headings), `.empty-actions`, `.page-state`, `.muted` | shared-atoms |
+| `27-empty-state.css` | 1843–1900 | `.empty` (+ `.error`, `p`, headings), `.empty-actions`, `.cta-slot > .notice` (Discord page), `.page-state`, `.muted` | shared-atoms |
 | `28-utilities.css` | 1901–1931 | `.stack`, `.stack-lg`, `.sr-only`, `.live-region` | shared-atoms |
 | `29-panel.css` | 1932–1946 | `.panel`, `.panel :where(h3, h4)` | shared-atoms |
-| `30-person-rows.css` | 1947–2037 | `.row-list`, `.person-row` (+ children, `.danger-text`), `.avatar-fallback`, `.person-name`, `.person-stats`, `.person-name.wrap`, `.key-label` (dev member) | social |
+| `30-person-rows.css` | 1947–2037 | `.row-list`, `.person-row` (+ children, `.danger-text`), `.avatar-fallback`, `.person-name`, `.person-stats`, `.person-name.wrap` (no users), `.key-label`. `.person-row` is Friends and Leaderboard (social), the sources list and cap table in `MemeDetailScreen` (market) and the API-key list in `DevelopersScreen` (dev, which also owns `.key-label`) | shared-atoms (members: social, market, dev) |
 | `31-api-keys.css` | 2038–2058 | `.key-meta`, `.key-string` | dev |
 | `32-spacer.css` | 2059–2062 | `.spacer` | shared-atoms |
 | `33-online.css` | 2063–2127 | `.online-dot`, `.online-strip`, `.online-avatars`, `.online-friend`, `.person-link` | social |
-| `34-create-form.css` | 2128–2169 | `.form-grid`, `.form-grid label`, `.create-layout`, `.create-rail` (+ ≥1000). `.form-grid` is also used by Trades compose and Developers | create (member: market) |
+| `34-create-form.css` | 2128–2169 | `.form-grid`, `.form-grid label`, `.create-layout`, `.create-rail` (+ ≥1000). `.form-grid` is also used by the Trades compose form (`TradesScreen.tsx:41,44,53`); Developers does not use it | create (member: market) |
 | `35-notice-badge.css` | 2170–2229 | `.notice` (+ `.error/.ok/.busy/.info`), `.badge`, `.badge.state` | shared-atoms |
 | `36-trades.css` | 2230–2333 | `.trade-card*`, `.trade-parties`, `.trade-sides`, `.trade-swap`, `.trade-side`, `.trade-fieldset`, `.trade-compose` (+ ≥900) | market |
 | `37-detail.css` | 2334–2368 | `.detail-layout`, `.detail-rail`, `.tier-ladder*` | market |
@@ -74,25 +78,69 @@ now-dead rule in place for the final package to delete.
 | `41-bp-560.css` | 2468–2539 | ≤560: `.card-grid/.tier-grid` two-up, `.card-slot`, `.leader-*`, `.person-row .avatar`, `.meme-sub`, `.login-btn` | shared-atoms (members: card, landing, social, shared) |
 | `42-bp-questbar.css` | 2540–2565 | ≤720: `.questbar-inner` scroller, `.questbar-words` | shell |
 | `43-legal.css` | 2566–2639 | `.legal`, `.legal-date`, `.legal h1/h2/p/li/strong`, `.legal-key`, `.legal-toc`, `.legal-more` | landing |
-| `44-sort-chips.css` | 2640–2645 | `.sort-chips` | market |
+| `44-sort-chips.css` | 2640–2645 | `.sort-chips`, written only by `molecules/SortChips.tsx` — but that molecule is rendered by `BinderScreen` (social) as well as `MarketplaceScreen`, so migrating it is a cross-surface change | market |
 | `45-binder.css` | 2646–2684 | `.binder-collection-label`, `.binder-owned`, `.binder-owned-tags`, `.binder-owned-bar` | social |
-| `46-sort-chip.css` | 2685–2705 | `.sort-chip`, `button.sort-chip.active`, `.sort-arrow` | market |
+| `46-sort-chip.css` | 2685–2705 | `.sort-chip`, `button.sort-chip.active`, `.sort-arrow`. `.sort-arrow` belongs to `SortChips` (market, rendered by Binder too), but `.sort-chip`/`.active` is also written by hand in `hooks/useCreateMemeScreen.ts:412` for the Create-meme mode buttons, so the class outlives a `SortChips` migration | shared-atoms (members: market, social, create) |
 | `47-giphy.css` | 2706–2749 | `.giphy-mark`, `.giphy-grid`, `.giphy-cell` (+ `img`, `.picked`) | create |
 | `48-spin.css` | 2750–2766 | `.spin`, `@keyframes rot` | shared-atoms |
 | `49-loading.css` | 2767–2847 | `.loading-state`, `.skeleton` (+ `::after`, `@keyframes skeleton-sweep`), `.skeleton-card`, `.skeleton-row`, `.skeleton-block`, `.trade-card-skeleton`, `.profile-skeleton-*`, `.skeleton.profile-avatar` | shared-atoms (members: market, social) |
 | `50-input-modality.css` | 2848–2919 | `@media (pointer: coarse)` 44px targets for buttons, chips, nav, footer, rows, inputs; touch `:active` feedback | shared-atoms |
 | `51-a11y-media.css` | 2920–3025 | `prefers-reduced-motion`, `forced-colors`, `prefers-contrast: more` (token override re-pointed to `--color-border`) | shared-atoms |
 
-`src/components/HeroVideo.css` is untouched and still imported by `HeroVideo.tsx`; it is unlayered,
-so it now sits above every layer. No rule in it conflicts with a legacy rule today (its pills set
-properties the `button` rules do not, and the focus ring is a zero-specificity `:where()`), so
-nothing renders differently.
+### `src/components/HeroVideo.css` sits above every layer — the landing package must fix that first
+
+`src/components/HeroVideo.css` is untouched and still imported by `HeroVideo.tsx`. It is **unlayered**,
+and an unlayered normal declaration beats every cascade layer regardless of specificity, so it now
+outranks `legacy`, `components` and `utilities` alike. Two consequences:
+
+- Two pairs invert. `02-controls.css:31`
+  (`@media (hover:hover) and (pointer:fine) { button:hover:not(:disabled) { transform: translateY(-1px) } }`,
+  specificity 0,2,1) and `50-input-modality.css:65`
+  (`@media (pointer:coarse) { button:active:not(:disabled) { transform: translateY(1px) } }`) used to
+  beat `HeroVideo.css:61` `.hero-video-play { transform: translate(-50%,-50%) }` (0,1,0). They no
+  longer do: before this change the landing play pill jumped off its 50%/50% anchor on hover (and on
+  touch `:active`); now it stays centred. Better behaviour, but it is a rendering change, so treat it
+  as a transitional delta alongside the list below.
+- **Trap for the landing package.** Because the file also outranks `@layer components` and
+  `@layer utilities`, any Tailwind utility written on `.hero-video-*` markup will silently lose to it.
+  The landing package's *first* step must be to move this import into `@layer components` (or migrate
+  the file away entirely) — in the same commit that puts utilities on that markup, not after.
+
+## Emptying rule
+
+The owner column says who *may* empty a file, not that emptying it is safe on sight. Before a
+package removes any rule from a legacy file:
+
+1. Grep every class name in that file across `web/src` — `*.tsx`, `*.ts`, `*.stories.tsx` and
+   `*.test.*`/`*.runtime.test.*` alike. Class names are also assembled in hooks and models
+   (`useCreateMemeScreen.ts` writes `sort-chip active`, `avatarModel.ts` writes `avatar-fallback`),
+   so searching only `className=` in components misses users.
+2. Any hit outside the files the package is migrating means that rule **stays**. Leave it in place,
+   byte-unchanged, and add it to the list the final legacy-removal package owns.
+3. Only when a file has no hits left anywhere may it be deleted and its `@import` dropped from
+   `styles/legacy/index.css`.
+
+A package that migrates a shared molecule (`SortChips`, `QuestBar`, `MemeCard`, the dialogs) is
+making a cross-surface change: its consumers on other surfaces render the migrated component, so
+they need the same before/after check.
 
 ## Tailwind notes for the surface packages
 
+- `src/lib/cn.ts` extends `tailwind-merge` with the `@theme` namespaces its stock validators cannot
+  infer — `radius` (`card`, `control`, `pill`), `shadow` (`pop`, `modal`) and `container` (`page`).
+  Without that, `cn('max-w-page', 'max-w-sm')` and `cn('rounded-card', 'rounded-pill')` keep both
+  classes and the winner is source-scan order, not the caller's `className`. `--color-*`,
+  `--text-xl/2xl`, `--font-*` and `--breakpoint-*` already validate. **Any new `@theme` name that is
+  not a colour, a t-shirt size or a bare font name must be registered in `cn.ts` in the same commit**,
+  with a case in `cn.test.ts`.
 - `@source not inline('container')` in `src/index.css` suppresses Tailwind's `container` utility
   because legacy markup uses `.container` for the 1180px page measure. Build the page measure
   from `mx-auto max-w-page` (or a `@utility`) and lift the exclusion in the final package.
+- `src/index.css` also carries `@source not './styles/legacy'` and `@source not './lib/cn.test.ts'`.
+  Auto source detection treats both as markup and mines candidates out of them — declaration values
+  in the legacy sheet (`display: flex` → `.flex`), this file's own prose (`mx-auto max-w-page`) and
+  the `cn` fixtures — emitting utilities nothing asks for into the layer that outranks `legacy`.
+  Keep prose examples out of scanned files, or exclude the file.
 - The only other class name shared by legacy markup and a generated utility is `sr-only`; the two
   rules are equivalent.
 - Breakpoints are project widths (see the `@theme` comments): `max-lg:` is "under 721px", i.e.
@@ -139,7 +187,19 @@ the pre-migration reference look; do not patch these globally.
 8. Chrome/Safari widget cosmetics: `::-webkit-search-decoration` removed on the three
    `type="search"` fields; number spin buttons `height: auto` on the eight `type="number"` fields.
 9. `[hidden] { display: none !important }`: no markup uses the `hidden` attribute, so no change.
-10. Build pipeline: the legacy CSS is now compiled by Lightning CSS through `@tailwindcss/vite`.
+10. `*, ::after, ::before, ::backdrop, ::file-selector-button { border: 0 solid }` (the same rule as
+    delta 3, whose border half was not listed): it strips the UA `fieldset` border and the UA `hr`
+    groove as well. No effect today — `36-trades.css:65-70` already authors
+    `.trade-fieldset { border: 0; padding: 0 }` for the only two `<fieldset>`s
+    (`TradesScreen.tsx:42,51`), and `web/src` has no `<hr>` and no `<table>` — but a package that
+    adds either gets no border.
+11. `b, strong { font-weight: bolder }` (UA `bold`). `bolder` is relative: inside a 700 context it
+    computes to 900, not 700. Harmless today — the only 700 container is `.panel :where(h3, h4)`
+    (`29-panel.css`), which holds no `<strong>` — but a package that puts `font-bold` on a heading
+    or row containing `<strong>` will render that `<strong>` at 900.
+12. `html { tab-size: 4 }` (UA 8). No preformatted content with tabs today (`.key-string` holds API
+    keys on one line); noted for whoever adds a `<pre>`.
+13. Build pipeline: the legacy CSS is now compiled by Lightning CSS through `@tailwindcss/vite`.
     `color-mix()` declarations are emitted with an `@supports (color: color-mix(in lab, red,
     red))` pair and vendor prefixes are recomputed; evergreen browsers render the same values.
     Verified in the built bundle: `:has()`, `mask-composite`, `content-visibility`,

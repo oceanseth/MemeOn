@@ -12,6 +12,14 @@
    responsive container would out-cascade it */
 @source not inline('container');
 
+/* Auto source detection reads these as markup and mines class names out of them: declaration values in
+   the legacy sheet (`display: flex` -> `.flex`), the MANIFEST's prose (`mx-auto max-w-page`) and the
+   `cn` fixtures. Nothing asks for those utilities, but each one it emits lands in `utilities` and would
+   out-cascade legacy the moment any markup used the name. Paths are relative to this file; the
+   directory rule covers MANIFEST.md. */
+@source not './styles/legacy';
+@source not './lib/cn.test.ts';
+
 @theme static {
   --color-bg: #0b0d14;
   --color-bg-raised: #131722;

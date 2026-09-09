@@ -20,7 +20,6 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
-    "@tailwindcss/vite": "^4.3.3",
     "@xstate/react": "^6.1.0",
     "clsx": "^2.1.1",
     "firebase": "^12.15.0",
@@ -30,7 +29,6 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",
     "tailwind-merge": "^3.6.0",
-    "tailwindcss": "^4.3.3",
     "xstate": "^5.32.6"
   },
   "devDependencies": {
@@ -39,6 +37,7 @@
     "@storybook/addon-docs": "^10.6.0",
     "@storybook/addon-vitest": "^10.6.0",
     "@storybook/react-vite": "^10.6.0",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
@@ -49,6 +48,7 @@
     "msw-storybook-addon": "^3.0.0",
     "playwright": "latest",
     "storybook": "^10.6.0",
+    "tailwindcss": "^4.3.3",
     "typescript": "~5.9.3",
     "vite": "^7.2.2",
     "vitest": "latest"
