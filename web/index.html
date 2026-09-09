@@ -5,7 +5,12 @@
     <link rel="icon" href="/brand/memeon-logo-circle-32.png" sizes="32x32" type="image/png" />
     <link rel="icon" href="/brand/memeon-logo-circle-48.png" sizes="48x48" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <!-- pre-CSS hints only: index.css owns color-scheme and --bg -->
+    <meta name="theme-color" content="#0b0d14" />
+    <meta name="color-scheme" content="dark" />
+    <!-- Pre-hydration fallback, and the title every route keeps except /privacy and /terms, which
+         set their own and restore this one. Keep both the <title> and this description. -->
     <meta name="description" content="MemeOn — collect, trade, and invest in memes as they go viral." />
     <meta property="og:site_name" content="MemeOn" />
     <meta property="og:type" content="website" />
@@ -22,6 +27,46 @@
     <title>MemeOn — the meme trading card market</title>
   </head>
   <body>
+    <noscript>
+      <div
+        style="
+          background: #0b0d14;
+          color: #e8ecf4;
+          font-family:
+            system-ui,
+            -apple-system,
+            'Segoe UI',
+            Roboto,
+            sans-serif;
+          max-width: 520px;
+          margin: 14vh auto;
+          padding: 0 24px;
+          text-align: center;
+        "
+      >
+        <img
+          src="/brand/memeon-logo-circle-48.png"
+          width="48"
+          height="48"
+          alt=""
+        />
+        <h1 style="font-size: 24px; margin: 16px 0 8px">
+          MemeOn needs JavaScript to deal the cards.
+        </h1>
+        <p
+          style="
+            color: #97a0b5;
+            font-size: 16px;
+            line-height: 1.5;
+            margin: 0 0 20px;
+          "
+        >
+          Turn it back on (or try another browser) and the binder, the market
+          and your braincells are right where you left them.
+        </p>
+        <a style="color: #7fd4ff" href="/">Back to memeon.ai</a>
+      </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

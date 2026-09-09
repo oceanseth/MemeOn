@@ -5,6 +5,7 @@ import { observer } from 'mobx-react-lite'
 import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { invitePal, meLou, memeplexEmpty, paperMeme } from '../../.storybook/fixtures'
+import { TIERS } from '../../../shared/tiers'
 import { authMachine } from '../stores/authMachine'
 import { createStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
@@ -58,7 +59,7 @@ const fetchMock = vi.fn<typeof fetch>()
 const requests: Array<{ path: string; init?: RequestInit | undefined }> = []
 
 function response(path: string): unknown {
-  if (path === '/api/frames') return { frames: [{ key: 'paper', url: '/frame.png' }] }
+  if (path === '/api/frames') return { frames: TIERS.map((tier) => ({ key: tier.key, url: `/frames/${tier.key}.png` })) }
   if (path === '/api/alerts') return { alerts: [] }
   if (path === '/api/onboarding') return { steps: [] }
   if (path.startsWith('/api/memes?') || path === '/api/memes' || path === '/api/binder') return { memes: [paperMeme], nextCursor: null }
@@ -130,9 +131,10 @@ it('AppShell projects alert-open events', async () => {
 })
 
 it('Landing projects async frame results', async () => {
-  const probe = await mountHook(useLandingScreen, (m) => `${m.phase}:${Object.keys(m.frameImageProps).length}`)
+  // every tier keeps a slot through all three states; only a ready slot carries image props
+  const probe = await mountHook(useLandingScreen, (m) => `${m.phase}:${Object.values(m.frameImageProps).filter(Boolean).length}`)
   expect(probe.renders).toContain('loading:0')
-  expect(probe.text()).toBe('ready:1')
+  expect(probe.text()).toBe(`ready:${TIERS.length}`)
 })
 
 it('CreateMeme projects editable draft events', async () => {
@@ -180,9 +182,10 @@ it('actual MemeDetailView in the app route observes deferred loading and later d
   expect(host.querySelector('h2')?.textContent).toContain(paperMeme.title)
   expect(host.textContent).toContain('you hold 100/100')
   await act(() => button('Delete forever').click())
-  expect(host.querySelector('[role="alertdialog"]')).not.toBeNull()
+  // the confirmations are native <dialog>s: they stay mounted and open/close in the top layer
+  expect(host.querySelector('dialog[open][role="alertdialog"]')).not.toBeNull()
   await act(() => button('Cancel').click())
-  expect(host.querySelector('[role="alertdialog"]')).toBeNull()
+  expect(host.querySelector('dialog[open][role="alertdialog"]')).toBeNull()
   expect(requests.every((request) => !request.init?.method || request.init.method === 'GET')).toBe(true)
 })
 
@@ -230,13 +233,16 @@ it('DiscordPage projects async configuration results', async () => {
   expect(probe.text()).toBe('ready:true')
 })
 
-it('DiscordLink projects completion of a pending link exactly once', async () => {
+it('DiscordLink waits for consent, then projects completion of a pending link exactly once', async () => {
   const pending = deferred<Response>()
   fetchMock.mockImplementation(async (input, init) => {
     requests.push({ path: String(input), init })
     return pending.promise
   })
   const probe = await mountHook(useDiscordLinkScreen, (m) => m.phase)
+  expect(probe.text()).toBe('confirm')
+  expect(requests).toHaveLength(0)
+  await act(() => probe.current().onConfirm())
   expect(probe.text()).toBe('working')
   await act(async () => { pending.resolve(jsonResponse({})); await pending.promise })
   expect(probe.text()).toBe('done')
@@ -250,13 +256,26 @@ it('Developers projects API-key label events', async () => {
   expect(probe.text()).toBe('bot key')
 })
 
+it('Developers surfaces a failed key-list load as a retryable error, never as an empty account', async () => {
+  fetchMock.mockRejectedValue(new Error('offline'))
+  const probe = await mountHook(useDevelopersScreen, (m) => `${m.phase}:${m.showEmpty}:${m.showLoadError}`)
+  expect(probe.text()).toBe('error:false:true')
+})
+
+it('Binder surfaces a failed initial load as a retryable error, never as an empty binder', async () => {
+  fetchMock.mockRejectedValue(new Error('offline'))
+  const probe = await mountHook(useBinderScreen, (m) => `${m.phase}:${m.showEmpty}:${m.showError}`)
+  expect(probe.text()).toBe('error:false:true')
+})
+
 it.each([
-  ['Binder', () => { const m = useBinderScreen(); return `${m.phase}:${m.showEmpty}` }, 'empty:true'],
-  ['Friends', () => { const m = useFriendsScreen(); return `${m.phase}:${m.showEmpty}` }, 'empty:true'],
-  ['Leaderboard', () => { const m = useLeaderboardScreen(); return `${m.phase}:${m.showEmpty}` }, 'empty:true'],
-  ['Developers', () => { const m = useDevelopersScreen(); return `${m.phase}:${m.showEmpty}:${m.showErr}` }, 'empty:true:false'],
+  // Friends is the exception: a failed load reaches `error` with a Retry, never a false "no friends yet"
+  ['Friends', () => { const m = useFriendsScreen(); return `${m.phase}:${m.showError}:${m.showEmpty}` }, 'error:true:false'],
+  // Leaderboard: an unreachable board is an error with a Retry, never a false "throne is empty"
+  ['Leaderboard', () => { const m = useLeaderboardScreen(); return `${m.phase}:${m.showError}:${m.showEmpty}` }, 'error:true:false'],
   ['MemeDetail', () => { const m = useMemeDetailScreen(); return `${m.phase}:${m.showNotFound}` }, 'empty:true'],
-  ['DiscordPage', () => { const m = useDiscordPageScreen(); return `${m.phase}:${m.showPending}` }, 'ready:true'],
+  // DiscordPage: an unreachable config is its own state — a network failure must never read as "registering"
+  ['DiscordPage', () => { const m = useDiscordPageScreen(); return `${m.phase}:${m.showPending}:${m.showError}` }, 'errored:false:true'],
 ] as const)('%s retains its existing initial-request failure presentation', async (_name, useModel, expected) => {
   fetchMock.mockRejectedValue(new Error('offline'))
   const probe = await mountHook(useModel, (value) => value)
@@ -291,7 +310,9 @@ it('ProfileView retains the selected tab and mounted cards while follow and frie
   await act(async () => { holdReload = false; reload.resolve(jsonResponse(latest)); await reload.promise })
   expect(button('Following').getAttribute('aria-pressed')).toBe('true')
   await act(async () => { button('Add friend').click() })
-  expect(button('Requested').disabled).toBe(true)
+  // a settled request is state, not a control: the button gives way to a chip
+  expect(host.querySelector('.badge.state')?.textContent).toContain('Request sent')
+  expect(Array.from(host.querySelectorAll('button')).some((b) => b.textContent?.includes('friend'))).toBe(false)
   expect(button('Binder')).toBe(binderTab)
   expect(button('Binder').getAttribute('aria-pressed')).toBe('true')
   expect(requests.filter((r) => r.path.endsWith('/profile'))).toHaveLength(3)
@@ -311,17 +332,19 @@ it('ProfileView reloads after accepting an incoming friend and preserves reload 
   })
   await act(() => root.render(tree(<ProfileView />)))
   await act(async () => { button('Accept request').click() })
-  expect(button('Friends').disabled).toBe(true)
+  expect(host.querySelector('.badge.state')?.textContent).toContain('Friends')
   expect(JSON.parse(String(requests.find((r) => r.path === '/api/friends/respond')?.init?.body))).toEqual({ userId: 'user-pal', accept: true })
   await act(async () => { button('Follow').click() })
-  expect(host.textContent).toContain('profile not found')
+  expect(host.textContent).toContain("Couldn't load this profile.")
 })
 
 it('ProfileView shows initial load failure', async () => {
   fetchMock.mockRejectedValue(new Error('offline'))
   await act(() => root.render(tree(<ProfileView />)))
-  expect(host.textContent).toContain('profile not found')
-  expect(host.querySelector('button')).toBeNull()
+  // the failure is named and recoverable; no profile identity or actions are invented
+  expect(host.querySelector('[role="alert"]')?.textContent).toContain("Couldn't load this profile.")
+  expect(button('Retry').disabled).toBe(false)
+  expect(host.querySelector('[aria-label="Profile actions"]')).toBeNull()
 })
 
 it('actual profile route keys reject late results and reset the selected tab for the next profile', async () => {

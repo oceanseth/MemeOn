@@ -1,9 +1,17 @@
 import { useProjectedActor } from './useProjectedActor'
 import { autorun } from 'mobx'
-import { useCallback, useRef, type ButtonHTMLAttributes, type ImgHTMLAttributes, type Ref } from 'react'
+import {
+  useCallback,
+  useRef,
+  type AnchorHTMLAttributes,
+  type ButtonHTMLAttributes,
+  type ImgHTMLAttributes,
+  type Ref,
+} from 'react'
 import { useNavigate, type LinkProps } from 'react-router-dom'
 import { buildAlertsBellModel, type AlertsBellModel } from '../lib/alertsBellModel'
 import { apiFetch, post } from '../lib/api'
+import { avatarErrorHandler } from '../lib/avatarModel'
 import { buildQuestBarModel, type QuestBarModel } from '../lib/questBarModel'
 import type { Alert, Meme, Me, QuestKey, QuestStep } from '../lib/types'
 import { appShellMachine, type AppShellContext, type AppShellPhase } from '../stores/appShellMachine'
@@ -14,6 +22,14 @@ import { useMountEffect } from './useMountEffect'
 const POLL_MS = 30_000
 const QUEST_KEYS: QuestKey[] = ['pack', 'mint', 'share', 'friend', 'trade']
 
+const NAV_ITEMS: { to: string; label: string; emoji: string | null }[] = [
+  { to: '/marketplace', label: 'Marketplace', emoji: null },
+  { to: '/binder', label: 'My Binder', emoji: null },
+  { to: '/friends', label: 'Friends', emoji: null },
+  { to: '/trade', label: 'Trade', emoji: null },
+  { to: '/leaderboard', label: 'Top Brains', emoji: '🏆' },
+]
+
 function allDone(user: Me | null): boolean {
   return !!user && !!user.onboarding && QUEST_KEYS.every((k) => user.onboarding?.[k])
 }
@@ -22,14 +38,19 @@ export interface AppShellScreenModel {
   phase: AppShellPhase
   showNav: boolean
   showToolbar: boolean
-  coinsText: string
+  navItems: { to: string; label: string; emoji: string | null }[]
+  /** The gold figure and the name it announces: a span takes no name from a title. */
+  coins: { text: string; label: string } | null
   avatar: {
-    linkProps: Pick<LinkProps, 'to'>
-    imageProps: Pick<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt'>
+    linkProps: Pick<LinkProps, 'to'> & Pick<AnchorHTMLAttributes<HTMLAnchorElement>, 'aria-label'>
+    imageProps: Pick<
+      ImgHTMLAttributes<HTMLImageElement>,
+      'src' | 'alt' | 'referrerPolicy' | 'onError'
+    >
   } | null
   alertsBell: AlertsBellModel
   questBar: QuestBarModel | null
-  logoutButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
+  logoutButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-label'>
 }
 
 export function buildAppShellScreenModel({
@@ -41,6 +62,8 @@ export function buildAppShellScreenModel({
   onClaimPack,
   onDismissPack,
   onOpenAlerts,
+  onToggleQuests = () => {},
+  onDismissQuests = () => {},
 }: {
   phase: AppShellPhase
   user: Me | null
@@ -50,33 +73,55 @@ export function buildAppShellScreenModel({
   onClaimPack: () => void
   onDismissPack: () => void
   onOpenAlerts: (open: boolean) => void
+  onToggleQuests?: () => void
+  onDismissQuests?: () => void
 }): AppShellScreenModel {
-  const showQuest = (!!user && !allDone(user) && !!context.steps) || !!context.packMemes
+  const steps = context.questDismissed ? [] : context.steps ?? []
+  const showQuest = (!!user && !allDone(user) && steps.length > 0) || !!context.packMemes
 
   return {
     phase,
     showNav: !!user,
     showToolbar: !!user,
-    coinsText: user ? `🧠 ${user.coins.toLocaleString()}` : '',
+    navItems: NAV_ITEMS,
+    coins: user
+      ? {
+          text: `🧠 ${user.coins.toLocaleString()}`,
+          label: `${user.coins.toLocaleString()} braincells`,
+        }
+      : null,
     avatar: user?.picture ? {
-      linkProps: { to: `/u/${encodeURIComponent(user.sub)}` },
-      imageProps: { src: user.picture, alt: user.name },
+      linkProps: { to: `/u/${encodeURIComponent(user.sub)}`, 'aria-label': 'Your profile' },
+      imageProps: {
+        src: user.picture,
+        alt: '',
+        referrerPolicy: 'no-referrer',
+        /* third-party avatar hosts 404: the slot keeps its shape and stays *your* monogram,
+           never the MemeOn mark, which is a different identity in the same 32px circle */
+        onError: avatarErrorHandler(user.name),
+      },
     } : null,
     alertsBell: buildAlertsBellModel({
       alerts: context.alerts,
       open: context.alertsOpen,
       onOpenChange: onOpenAlerts,
       rootRef: bellRef,
+      wasUnread: context.wasUnread,
+      failed: context.alertsError,
     }),
     questBar: showQuest ? buildQuestBarModel({
-      steps: context.steps ?? [],
+      steps,
       packMemes: context.packMemes,
       packReward: context.packReward,
       busy: context.packBusy,
+      claimError: context.claimError,
+      expanded: context.questExpanded,
       onClaimPack,
       onDismissPack,
+      onToggleSteps: onToggleQuests,
+      onDismissSteps: onDismissQuests,
     }) : null,
-    logoutButtonProps: { onClick: onLogout },
+    logoutButtonProps: { onClick: onLogout, 'aria-label': 'Log out' },
   }
 }
 
@@ -93,6 +138,7 @@ export function useAppShellScreen(): AppShellScreenModel {
   useMountEffect(() => {
     let lastUser: Me | null | undefined
     let disposeLoads = () => {}
+    let refetchOnVisible = () => {}
 
     const disposeUser = autorun(() => {
       const next = auth.user
@@ -110,7 +156,7 @@ export function useAppShellScreen(): AppShellScreenModel {
         if (!live) return
         void apiFetch<{ alerts: Alert[] }>('/api/alerts')
           .then((r) => { if (live) send({ type: 'SET_ALERTS', alerts: r.alerts }) })
-          .catch(() => {})
+          .catch(() => { if (live) send({ type: 'SET_ALERTS_FAIL' }) })
       }
       const loadSteps = () => {
         if (!live) return
@@ -118,16 +164,24 @@ export function useAppShellScreen(): AppShellScreenModel {
           .then((r) => { if (live) send({ type: 'SET_STEPS', steps: r.steps }) })
           .catch(() => {})
       }
+      /* a hidden tab is not a reader: skip its ticks and catch up when it comes back */
+      refetchOnVisible = () => { if (document.visibilityState === 'visible') loadAlerts() }
       disposeLoads = () => {
         live = false
+        refetchOnVisible = () => {}
         if (poll) clearInterval(poll)
         poll = null
       }
       send({ type: 'LOGGED_IN' })
       loadAlerts()
       if (!done) loadSteps()
-      poll = setInterval(loadAlerts, POLL_MS)
+      poll = setInterval(() => {
+        if (document.visibilityState === 'visible') loadAlerts()
+      }, POLL_MS)
     })
+
+    const onVisibility = () => refetchOnVisible()
+    document.addEventListener('visibilitychange', onVisibility)
 
     const onClick = (e: MouseEvent) => {
       if (!bellRef.current?.contains(e.target as Node)) send({ type: 'CLOSE_ALERTS' })
@@ -137,6 +191,7 @@ export function useAppShellScreen(): AppShellScreenModel {
     return () => {
       disposeUser()
       disposeLoads()
+      document.removeEventListener('visibilitychange', onVisibility)
       document.removeEventListener('mousedown', onClick)
     }
   })
@@ -157,8 +212,10 @@ export function useAppShellScreen(): AppShellScreenModel {
       send({ type: next ? 'OPEN_ALERTS' : 'CLOSE_ALERTS' })
       const unread = actor.getSnapshot().context.alerts.filter((a) => !a.read)
       if (next && unread.length > 0) {
-        await post('/api/alerts/read', { ids: unread.map((a) => a.id) }).catch(() => {})
-        send({ type: 'MARK_READ' })
+        const ids = unread.map((a) => a.id)
+        await post('/api/alerts/read', { ids }).catch(() => {})
+        /* the ids stay marked in this session so the gesture that reveals them does not erase them */
+        send({ type: 'MARK_READ', ids })
         void refresh()
       }
     },
@@ -179,5 +236,7 @@ export function useAppShellScreen(): AppShellScreenModel {
     onClaimPack: () => void onClaimPack(),
     onDismissPack: () => send({ type: 'DISMISS_PACK' }),
     onOpenAlerts: (open) => void onOpenAlerts(open),
+    onToggleQuests: () => send({ type: 'TOGGLE_QUESTS' }),
+    onDismissQuests: () => send({ type: 'DISMISS_QUESTS' }),
   })
 }

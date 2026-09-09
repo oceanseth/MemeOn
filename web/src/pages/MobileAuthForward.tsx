@@ -23,7 +23,7 @@ export default function MobileAuthForward() {
   }, [deepLink])
 
   return (
-    <main className="container" style={{ paddingTop: 90, textAlign: 'center' }}>
+    <main className="container" id="main" tabIndex={-1} style={{ paddingTop: 90, textAlign: 'center' }}>
       <p style={{ color: 'var(--text-dim)' }}>Returning to the MemeOn app…</p>
       <p>
         <a href={deepLink}>

@@ -37,12 +37,16 @@ export const GenerateAndMint: Story = {
     const canvas = within(canvasElement)
     await userEvent.type(canvas.getByRole('textbox', { name: 'Title' }), 'generated story')
     await userEvent.type(canvas.getByRole('textbox', { name: /^Prompt/ }), 'a cat on the moon')
-    await userEvent.click(canvas.getAllByRole('button', { name: /Generate image/ })[1]!)
-    await expect(await canvas.findByRole('img', { name: 'preview' })).toHaveAttribute('src', loaded.scenario.generatedImage)
+    await userEvent.click(canvas.getByRole('button', { name: 'Render the image' }))
+    await expect(await canvas.findByRole('img', { name: /^Preview of/ })).toHaveAttribute('src', loaded.scenario.generatedImage)
     const mintButton = canvas.getByRole('button', { name: /Mint/ })
     await expect(mintButton).toBeEnabled()
     await userEvent.click(mintButton)
     await waitFor(() => expect(loaded.scenario.requests.some((request: { method: string; path: string; body: { title?: string } }) => request.method === 'POST' && request.path === '/api/memes' && request.body.title === 'generated story')).toBe(true))
+    /* the mint moment: the finished card is held with its share link, and the user opens it */
+    await expect(await canvas.findByRole('heading', { name: /Minted/ })).toBeInTheDocument()
+    await expect(canvas.getByRole('textbox', { name: 'Share link' })).toHaveValue(`${window.location.origin}/m/meme-minted`)
+    await userEvent.click(canvas.getByRole('link', { name: 'Open the card' }))
     await waitFor(() => expect(canvas.getByRole('status', { name: 'Current route' })).toHaveTextContent('/m/meme-minted'))
     await expect(loaded.scenario.unexpected).toEqual([])
   },
@@ -53,7 +57,7 @@ export const GiphyKeyboardSearchPickAndMint: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: /From Giphy/ }))
-    const query = canvas.getByPlaceholderText('Search Giphy…')
+    const query = canvas.getByRole('searchbox', { name: 'Search GIPHY' })
     await userEvent.type(query, 'keyboard cat{Enter}')
     const pick = await canvas.findByRole('button', { name: giphyCat.title })
     await userEvent.click(pick)
@@ -76,8 +80,8 @@ export const MockedUploadAndMint: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: /Upload/ }))
     const file = new File(['story image'], 'story.png', { type: 'image/png' })
-    await userEvent.upload(canvas.getByLabelText(/^Image \(optional/), file)
-    await expect(await canvas.findByRole('img', { name: 'preview' })).toHaveAttribute('src', loaded.scenario.uploadedImage)
+    await userEvent.upload(canvas.getByLabelText('Image'), file)
+    await expect(await canvas.findByRole('img', { name: /^Preview of/ })).toHaveAttribute('src', loaded.scenario.uploadedImage)
     await userEvent.type(canvas.getByRole('textbox', { name: 'Title' }), 'upload story')
     await userEvent.click(canvas.getByRole('button', { name: /Mint/ }))
     await waitFor(() => expect(loaded.scenario.requests.some((request: { method: string; path: string }) => request.method === 'PUT' && request.path === '/story')).toBe(true))
@@ -91,7 +95,9 @@ export const GenerationFailure: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.type(canvas.getByRole('textbox', { name: /^Prompt/ }), 'fail')
-    await userEvent.click(canvas.getAllByRole('button', { name: /Generate image/ })[1]!)
-    await expect(await canvas.findByRole('alert')).toHaveTextContent('credits exhausted')
+    await userEvent.click(canvas.getByRole('button', { name: 'Render the image' }))
+    const alert = await canvas.findByRole('alert')
+    await expect(alert).toHaveTextContent('credits exhausted')
+    await expect(alert).toHaveTextContent('Top up Masky credits')
   },
 }

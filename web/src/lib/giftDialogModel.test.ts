@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { giftablePaper, giftableSilver } from '../../.storybook/fixtures'
+import { giftablePaper, giftableSilver, listedHolo } from '../../.storybook/fixtures'
 import { buildGiftDialogModel, clampGiftShares } from './giftDialogModel'
 
 const recipient = { sub: 'pal-sub', name: 'Pal' }
@@ -18,6 +18,7 @@ function buildModel(overrides: Partial<Parameters<typeof buildGiftDialogModel>[0
     onQueryChange: vi.fn(),
     onPick: vi.fn(),
     onSharesChange: vi.fn(),
+    onSharesBlur: vi.fn(),
     onSubmit: vi.fn(),
     ...overrides,
   })
@@ -31,19 +32,41 @@ describe('gift dialog model', () => {
     expect(model.rows.map((row) => row.id)).toEqual([giftableSilver.id])
     model.searchInputProps.onChange?.({ target: { value: 'paper' } } as never)
     expect(onQueryChange).toHaveBeenCalledWith('paper')
+    expect(model.searchInputProps['aria-label']).toBe('Search your binder')
   })
 
-  it('normalizes share input to the selected holding floor and ceiling', () => {
+  it('keeps the raw share text while typing and clamps only on blur and submit', () => {
     const onSharesChange = vi.fn()
-    const model = buildModel({ pick: { ...giftablePaper, myShares: 3 }, shares: 99, onSharesChange })
+    const onSharesBlur = vi.fn()
+    const model = buildModel({ pick: { ...giftablePaper, myShares: 3 }, shares: 99, onSharesChange, onSharesBlur })
 
     expect(model.sharesInputProps.value).toBe(3)
-    model.sharesInputProps.onChange?.({ target: { value: '2.8' } } as never)
     model.sharesInputProps.onChange?.({ target: { value: '' } } as never)
-    expect(onSharesChange).toHaveBeenNthCalledWith(1, 2)
-    expect(onSharesChange).toHaveBeenNthCalledWith(2, 1)
+    expect(onSharesChange).toHaveBeenCalledWith('')
+    model.sharesInputProps.onBlur?.({} as never)
+    expect(onSharesBlur).toHaveBeenCalledOnce()
+
+    const cleared = buildModel({ pick: { ...giftablePaper, myShares: 3 }, shares: 1, sharesInput: '' })
+    expect(cleared.sharesInputProps.value).toBe('')
+
+    expect(clampGiftShares('2.8', 3)).toBe(2)
     expect(clampGiftShares(-4, 3)).toBe(1)
     expect(clampGiftShares('not-a-number', 3)).toBe(1)
+  })
+
+  it('carries the tier ladder and the listed flag into every row', () => {
+    const model = buildModel({ memes: [giftablePaper, { ...listedHolo, myShares: 100 }], pick: null })
+
+    expect(model.rows[0]).toMatchObject({
+      tierKey: 'paper',
+      tierLabel: 'Paper',
+      tierColor: giftablePaper.tier.color,
+      thumbClassName: 'gift-thumb tier-paper',
+      listed: false,
+      sharesLabel: 'you hold 12 of 100',
+    })
+    expect(model.rows[1]).toMatchObject({ tierKey: 'holo', listed: true, listedLabel: 'Listed' })
+    expect(model.rows[0]?.imageProps).toMatchObject({ loading: 'lazy', decoding: 'async', width: 40, height: 40 })
   })
 
   it('keeps row selection, overlay dismissal, and submission eligibility in the model', () => {
@@ -51,21 +74,69 @@ describe('gift dialog model', () => {
     const onClose = vi.fn()
     const onSubmit = vi.fn()
     const model = buildModel({ onPick, onClose, onSubmit })
-    const event = { stopPropagation: vi.fn() }
 
+    const dialogNode = {}
     model.rows[1]?.buttonProps.onClick?.({} as never)
-    model.overlayProps.onClick?.({} as never)
-    model.dialogProps.onClick?.(event as never)
+    model.dialogProps.onClick?.({ target: dialogNode, currentTarget: dialogNode } as never)
+    model.dialogProps.onClick?.({ target: {}, currentTarget: dialogNode } as never)
     model.submitButtonProps.onClick?.({} as never)
 
     expect(model.rows[0]?.selected).toBe(true)
+    expect(model.rows[0]?.buttonProps['aria-pressed']).toBe(true)
     expect(onPick).toHaveBeenCalledWith(giftableSilver)
+    // only the backdrop dismisses; a click inside the dialog does not
     expect(onClose).toHaveBeenCalledOnce()
-    expect(event.stopPropagation).toHaveBeenCalledOnce()
-    expect(model.dialogProps).toMatchObject({ role: 'dialog', 'aria-modal': true, 'aria-labelledby': 'gift-dialog-title' })
+    expect(model.dialogProps).toMatchObject({ 'aria-labelledby': 'gift-dialog-title' })
     expect(model.submitButtonProps.disabled).toBe(false)
     expect(onSubmit).toHaveBeenCalledOnce()
     expect(buildModel({ pick: null }).submitButtonProps.disabled).toBe(true)
     expect(buildModel({ busy: true }).submitButtonProps.disabled).toBe(true)
+  })
+
+  it('gives an empty binder a way out: close button, cancel, and Escape', () => {
+    const onClose = vi.fn()
+    const model = buildModel({ onClose, memes: [] })
+    const preventDefault = vi.fn()
+
+    expect(model.closeButtonProps['aria-label']).toBe('Close gift dialog')
+    model.closeButtonProps.onClick?.({} as never)
+    model.cancelButtonProps.onClick?.({} as never)
+    model.dialogProps.onCancel?.({ preventDefault } as never)
+
+    expect(onClose).toHaveBeenCalledTimes(3)
+    expect(preventDefault).toHaveBeenCalledOnce()
+  })
+
+  it('will not dismiss itself while a gift is in flight', () => {
+    const onClose = vi.fn()
+    const model = buildModel({ onClose, busy: true })
+
+    model.cancelButtonProps.onClick?.({} as never)
+    model.dialogProps.onCancel?.({ preventDefault: vi.fn() } as never)
+
+    expect(onClose).not.toHaveBeenCalled()
+    expect(model.submitButtonProps['aria-busy']).toBe(true)
+  })
+
+  it('says so on every control while a gift is in flight, instead of looking operable', () => {
+    const model = buildModel({ busy: true })
+
+    expect(model.closeButtonProps.disabled).toBe(true)
+    expect(model.cancelButtonProps.disabled).toBe(true)
+    expect(model.searchInputProps.disabled).toBe(true)
+    expect(model.sharesInputProps.disabled).toBe(true)
+    expect(model.rows.every((row) => row.buttonProps.disabled)).toBe(true)
+
+    const idle = buildModel()
+    expect(idle.closeButtonProps.disabled).toBe(false)
+    expect(idle.cancelButtonProps.disabled).toBe(false)
+    expect(idle.searchInputProps.disabled).toBe(false)
+    expect(idle.sharesInputProps.disabled).toBe(false)
+    expect(idle.rows.every((row) => row.buttonProps.disabled)).toBe(false)
+  })
+
+  it('never dead-ends an empty binder', () => {
+    expect(buildModel({ memes: [] }).emptyMessage).toBe('Nothing to gift here — you need shares in a meme first.')
+    expect(buildModel({ query: 'zzz' }).emptyMessage).toBe('Nothing in your binder matches "zzz".')
   })
 })

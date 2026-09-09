@@ -4,15 +4,19 @@ import { discordInstallUrl } from '../../.storybook/fixtures'
 import type { DiscordPageScreenModel } from '../hooks/useDiscordPageScreen'
 import { DiscordPageScreen } from './DiscordPageScreen'
 
+const pendingSteps = 'The button above goes live the moment the app is registered.'
+
 const empty: DiscordPageScreenModel = {
   phase: 'loading',
+  showLoading: true,
   showInstall: false,
   showPending: false,
+  showError: false,
+  installSteps: pendingSteps,
   installLinkProps: {
     href: undefined,
     target: '_blank',
     rel: 'noreferrer',
-    'aria-label': 'Add MemeOn to Discord (opens Discord in a new tab)',
   },
 }
 
@@ -31,13 +35,14 @@ export const Loading: Story = {}
 export const Ready: Story = {
   args: {
     phase: 'ready',
+    showLoading: false,
     showInstall: true,
     showPending: false,
+    installSteps: 'Hit the button above.',
     installLinkProps: {
       href: discordInstallUrl,
       target: '_blank',
       rel: 'noreferrer',
-      'aria-label': 'Add MemeOn to Discord (opens Discord in a new tab)',
     },
   },
 }
@@ -45,7 +50,16 @@ export const Ready: Story = {
 export const NotConfigured: Story = {
   args: {
     phase: 'ready',
+    showLoading: false,
     showInstall: false,
     showPending: true,
+  },
+}
+
+export const Errored: Story = {
+  args: {
+    phase: 'errored',
+    showLoading: false,
+    showError: true,
   },
 }

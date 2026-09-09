@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
+import { expect, within } from 'storybook/test'
 import { PrivacyScreen } from './PrivacyScreen'
 
 const meta = {
@@ -11,4 +12,29 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const Default: Story = {}
+export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // every section is citable, and the on-this-page index reaches all seven
+    const toc = canvas.getByRole('navigation', { name: 'On this page' })
+    await expect(within(toc).getAllByRole('link')).toHaveLength(7)
+    // the section users arrive for can be linked and jumped to
+    await expect(canvas.getByRole('heading', { name: 'Deletion' })).toHaveAttribute('id', 'deletion')
+    await expect(canvas.getByRole('link', { name: 'make any meme private' })).toHaveAttribute(
+      'href',
+      '/binder',
+    )
+    await expect(
+      canvas.getByRole('link', { name: 'masky.ai/developer → Connected apps' }),
+    ).toHaveAttribute('href', 'https://masky.ai/developer')
+    await expect(canvas.getAllByRole('link', { name: 'seth@voicecert.com' })[0]).toHaveAttribute(
+      'href',
+      'mailto:seth@voicecert.com?subject=MemeOn%20account%20deletion',
+    )
+    // the document ends on a route forward, not an orphan address
+    await expect(canvas.getByRole('link', { name: 'Terms of Service' })).toHaveAttribute(
+      'href',
+      '/terms',
+    )
+  },
+}

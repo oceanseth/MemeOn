@@ -127,11 +127,15 @@ function giftRequests(requests: RecordedRequest[]): RecordedRequest[] {
   return requests.filter((request) => request.method === 'POST' && request.path === '/api/gift')
 }
 
-async function openAndPickGift(): Promise<HTMLElement> {
-  await click(host.querySelector<HTMLElement>('[title="Gift shares"]')!)
-  const dialog = host.querySelector<HTMLElement>('[role="dialog"]')!
+async function openAndPickGift(): Promise<HTMLDialogElement> {
+  await click(host.querySelector<HTMLElement>('[aria-label^="Gift shares to"]')!)
+  const dialog = host.querySelector('dialog.pack-modal')!
   await click(button(giftablePaper.title, dialog))
-  return dialog
+  return dialog as HTMLDialogElement
+}
+
+function giftDialogOpen(): boolean {
+  return host.querySelector<HTMLDialogElement>('dialog.pack-modal')?.open ?? false
 }
 
 let host: HTMLDivElement
@@ -181,7 +185,7 @@ async function renderFriends(): Promise<void> {
 }
 
 describe('FriendsView gift lifetime', () => {
-  it('keeps a pending gift guarded across close and reopen, then clears busy on success', async () => {
+  it('locks the dialog down while a gift is in flight, then clears busy on success', async () => {
     const pendingGift = deferred<Response>()
     const api = installSocialApi({ gifts: [pendingGift] })
     await renderFriends()
@@ -193,19 +197,24 @@ describe('FriendsView gift lifetime', () => {
     })])
     expect(button('Gifting', dialog).disabled).toBe(true)
 
-    await click(host.querySelector<HTMLElement>('.pack-overlay')!)
-    dialog = await openAndPickGift()
-    const reopenedSubmit = button('Gifting', dialog)
-    expect(reopenedSubmit.disabled).toBe(true)
-    reopenedSubmit.disabled = false
-    await click(reopenedSubmit)
+    // in flight every control says so instead of looking operable, and the dialog stays put
+    expect(dialog.querySelector<HTMLButtonElement>('.modal-close')!.disabled).toBe(true)
+    expect(button('Cancel', dialog).disabled).toBe(true)
+    expect(button(giftablePaper.title, dialog).disabled).toBe(true)
+    await click(button('Cancel', dialog))
+    expect(giftDialogOpen()).toBe(true)
+
+    // and the guarded submit still cannot double the POST if the disabled attribute is forced off
+    const pendingSubmit = button('Gifting', dialog)
+    pendingSubmit.disabled = false
+    await click(pendingSubmit)
     expect(giftRequests(api.requests)).toHaveLength(1)
 
     await act(async () => {
       pendingGift.resolve(json({ ok: true }))
       await settle()
     })
-    expect(host.querySelector('[role="dialog"]')).toBeNull()
+    expect(giftDialogOpen()).toBe(false)
     expect(host.textContent).toContain('Gifted 1 share')
 
     dialog = await openAndPickGift()
@@ -235,7 +244,7 @@ describe('FriendsView gift lifetime', () => {
       retryGift.resolve(json({ ok: true }))
       await settle()
     })
-    expect(host.querySelector('[role="dialog"]')).toBeNull()
+    expect(giftDialogOpen()).toBe(false)
   })
 })
 
@@ -278,7 +287,9 @@ describe('FriendsView friend-request debounce ownership', () => {
 
     expect(host.querySelector<HTMLInputElement>('input[placeholder^="Find people"]')?.value).toBe('Bob')
     expect(api.userQueries).toEqual(['Alice', 'Bob'])
-    expect(host.textContent).toContain('request unavailable')
+    // the raw API string never reaches the user; the surface names the problem and the recovery
+    expect(host.textContent).toContain("Couldn't send that friend request")
+    expect(host.querySelector('.notice.error')).not.toBeNull()
     expect(host.textContent).toContain('Bob')
     expect(button('Add friend')).toBeTruthy()
   })

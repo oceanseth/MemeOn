@@ -27,6 +27,15 @@ async function settle(): Promise<void> {
   await Promise.resolve()
 }
 
+/** A macrotask that survives fake timers, so React's lazy route can actually resolve. */
+function macrotask(): Promise<void> {
+  return new Promise((resolve) => {
+    const channel = new MessageChannel()
+    channel.port1.onmessage = () => resolve()
+    channel.port2.postMessage(null)
+  })
+}
+
 function CreationRoutes() {
   return (
     <>
@@ -66,7 +75,9 @@ const sourceMeme = (id: string) => ({
 let host: HTMLDivElement
 let root: Root
 
-beforeEach(() => {
+beforeEach(async () => {
+  /* the route view is lazy: pull its module in before any test installs fake timers */
+  await import('../views/CreateMemeView')
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
   host = document.createElement('div')
   document.body.append(host)
@@ -93,6 +104,13 @@ async function renderAt(entry = '/binder/new', strict = false): Promise<void> {
     )
     await settle()
   })
+  /* the route view is lazy: wait for the mounted form rather than guessing a tick count */
+  for (let attempt = 0; attempt < 20 && !host.querySelector('.form-grid'); attempt += 1) {
+    await act(async () => {
+      await macrotask()
+      await settle()
+    })
+  }
 }
 
 function setControlValue(control: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, value: string): void {
@@ -144,7 +162,7 @@ async function startVideo(kind: StartKind, prompt: string): Promise<void> {
   if (kind === 'generate-video') {
     await click(button('Generate video'))
     await change(host.querySelector<HTMLTextAreaElement>('textarea[placeholder^="a capybara"]')!, prompt)
-    await click(button('Generate video', 'last'))
+    await click(button('Render the video'))
     return
   }
 
@@ -202,7 +220,7 @@ describe('CreateMemeRoute video lifetime ownership', () => {
       expect(sessionStorage.getItem(PENDING_VIDEO_KEY)).not.toContain('render-a')
       await act(async () => { await vi.advanceTimersByTimeAsync(5000) })
       expect(statusPaths).toEqual(['/api/aigen/video/render-b'])
-      expect(host.querySelector<HTMLInputElement>('input[placeholder^="max 20"]')?.value).toBe('remix-b')
+      expect(host.querySelector<HTMLInputElement>('#create-title')?.value).toBe('remix-b')
     })
   }
 
@@ -218,7 +236,7 @@ describe('CreateMemeRoute video lifetime ownership', () => {
     await renderAt()
     await click(button('Generate video'))
     await change(host.querySelector<HTMLTextAreaElement>('textarea[placeholder^="a capybara"]')!, 'held thumbnail')
-    await click(button('Generate video', 'last'))
+    await click(button('Render the video'))
     await click(link('Away'))
     await act(async () => {
       thumbnail.resolve(Response.json({ imageUrl: '/late-thumbnail.png' }))
@@ -277,7 +295,7 @@ describe('CreateMemeRoute video lifetime ownership', () => {
     await renderAt('/binder/new?remix=remix-a')
     await act(async () => { await vi.advanceTimersByTimeAsync(5000); await settle() })
 
-    expect(host.querySelector<HTMLVideoElement>('video[aria-label="Video preview"]')?.getAttribute('src')).toBe('/finished-a.mp4')
+    expect(host.querySelector<HTMLVideoElement>('video.meme-art')?.getAttribute('src')).toBe('/finished-a.mp4')
     expect(host.querySelector('.form-grid')?.getAttribute('aria-busy')).toBe('false')
     expect(sessionStorage.getItem(PENDING_VIDEO_KEY)).toBeNull()
   })

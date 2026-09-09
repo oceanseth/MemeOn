@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useSyncExternalStore } from 'react'
 import './HeroVideo.css'
 
 /**
@@ -11,17 +11,73 @@ import './HeroVideo.css'
  * `poster` paints a real frame while the mp4 streams, so the hero never flashes
  * an empty box on a cold load.
  *
- * If the visitor asked their OS for reduced motion we don't autoplay a 50s film
- * at them: the poster shows and native controls let them start it deliberately.
+ * Autoplay is spent only where it is welcome: not when the visitor asked their OS
+ * for reduced motion, and not on a metered or slow connection, where 1.5 MB of
+ * film is the whole page. Both fall back to the same path — the branded poster and
+ * a play pill, nothing preloaded — so the visitor starts it deliberately, and the
+ * hero is never handed over to the browser's own grey control bar.
  */
-const prefersReducedMotion =
-  typeof window !== 'undefined' &&
-  typeof window.matchMedia === 'function' &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
-export default function HeroVideo() {
+interface NetworkInformation {
+  saveData?: boolean
+  effectiveType?: string
+  addEventListener?: (type: 'change', listener: () => void) => void
+  removeEventListener?: (type: 'change', listener: () => void) => void
+}
+
+const FRUGAL_CONNECTIONS = new Set(['slow-2g', '2g', '3g'])
+
+const motionQuery = () =>
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)')
+    : null
+
+const networkInformation = (): NetworkInformation | undefined =>
+  typeof navigator === 'undefined'
+    ? undefined
+    : (navigator as Navigator & { connection?: NetworkInformation }).connection
+
+function readAutoplayEnvironment(): boolean {
+  if (motionQuery()?.matches) return false
+  const link = networkInformation()
+  if (!link) return true
+  return link.saveData !== true && !FRUGAL_CONNECTIONS.has(link.effectiveType ?? '')
+}
+
+/** Live subscription: a preference toggled after load still lands. */
+function subscribeToAutoplayEnvironment(onChange: () => void): () => void {
+  const query = motionQuery()
+  const link = networkInformation()
+  query?.addEventListener('change', onChange)
+  link?.addEventListener?.('change', onChange)
+  return () => {
+    query?.removeEventListener('change', onChange)
+    link?.removeEventListener?.('change', onChange)
+  }
+}
+
+export interface HeroVideoProps {
+  /** Overrides the environment probe. Stories and tests drive both branches with it. */
+  autoplay?: boolean
+}
+
+export default function HeroVideo({ autoplay }: HeroVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [muted, setMuted] = useState(true)
+  /** Only meaningful in the withheld-autoplay branch: the visitor started the film themselves. */
+  const [started, setStarted] = useState(false)
+  const environmentAutoplay = useSyncExternalStore(
+    subscribeToAutoplayEnvironment,
+    readAutoplayEnvironment,
+    () => true,
+  )
+  const shouldAutoplay = autoplay ?? environmentAutoplay
+
+  const start = () => {
+    const v = videoRef.current
+    setStarted(true)
+    if (v?.paused) void v.play().catch(() => {})
+  }
 
   const toggleSound = () => {
     const v = videoRef.current
@@ -42,15 +98,21 @@ export default function HeroVideo() {
           className="hero-video-el"
           src="/promo/memeon-promo.mp4"
           poster="/promo/memeon-promo-poster.jpg"
-          autoPlay={!prefersReducedMotion}
-          controls={prefersReducedMotion}
+          autoPlay={shouldAutoplay}
+          // never the UA's grey bar: the pills below are the only controls this hero shows
+          controls={false}
           muted
           loop
           playsInline
-          preload="metadata"
+          preload={shouldAutoplay ? 'metadata' : 'none'}
           aria-label="MemeOn in 50 seconds: mint a meme, watch it climb the virality tiers, trade it."
         />
-        {!prefersReducedMotion && (
+        {!shouldAutoplay && !started && (
+          <button type="button" className="hero-video-play" onClick={start}>
+            <span aria-hidden="true">▶</span> Play the 50-second tour
+          </button>
+        )}
+        {(shouldAutoplay || started) && (
           <button
             type="button"
             className="hero-video-sound"

@@ -46,5 +46,5 @@ export const LoadingThenReady: Story = {
 
 export const AcceptFailureReturnsToReady: Story = {
   loaders: [connectedLoader({ failures: { 'POST /api/invites/accept': { error: 'invite already used', status: 409 } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><InviteView /></ConnectedStory>,
-  play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click(await canvas.findByRole('button', { name: /Accept & befriend pal/ })); await expect(await canvas.findByText('invite already used')).toBeInTheDocument(); await expect(canvas.getByRole('button', { name: /Accept & befriend pal/ })).toBeEnabled() },
+  play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click(await canvas.findByRole('button', { name: /Accept & befriend pal/ })); await expect(await canvas.findByRole('alert')).toHaveTextContent(/Couldn't accept this invite/); await expect(canvas.getByRole('button', { name: /Accept & befriend pal/ })).not.toHaveAttribute('aria-disabled') },
 }

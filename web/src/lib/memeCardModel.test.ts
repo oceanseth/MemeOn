@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { tierFor } from '../../../shared/tiers'
-import { buildMemeCardModel } from './memeCardModel'
+import { buildMemeCardModel, buildReducedMotionMemeCardModel } from './memeCardModel'
 import type { Meme } from './types'
 
 const imageMeme: Meme = {
@@ -26,22 +26,37 @@ const imageMeme: Meme = {
 }
 
 describe('buildMemeCardModel', () => {
-  it('builds the detail link, fallback counts, tier and listing labels', () => {
+  it('builds the detail link, tier and listing labels', () => {
     const model = buildMemeCardModel(imageMeme)
 
-    expect(model.detailLinkProps).toEqual({ to: '/m/meme-1' })
+    expect(model.detailLinkProps).toEqual({ to: '/m/meme-1', 'aria-label': 'Open foil cat' })
+    expect(model.titleId).toBe('meme-card-title-meme-1')
     expect(model.tierLabel).toBe('Holo · Rare')
-    expect(model.viewsLabel).toBe('1,234')
-    expect(model.resharesLabel).toBe('0')
     expect(model.valueLabel).toBe('5,678')
+    expect(model.valueA11yLabel).toBe('5,678 braincells card value')
     expect(model.listing).toEqual({
       shares: 10,
       pricePerShare: 3,
       sharesLabel: '10 sh @ 🧠3',
+      sharesA11yLabel: '10 shares at 3 braincells each',
     })
   })
 
-  it('supplies accessible image props and excludes empty listings', () => {
+  it('never stands one metric in for another: no views means no views stat', () => {
+    const thin = buildMemeCardModel(imageMeme)
+
+    expect(thin.viewsLabel).toBeNull()
+    expect(thin.resharesLabel).toBe('1,234')
+    expect(thin.statsA11yLabel).toBe('1,234 reshares')
+
+    const full = buildMemeCardModel({ ...imageMeme, views: 9876, reshareCount: 60 })
+
+    expect(full.viewsLabel).toBe('9,876')
+    expect(full.resharesLabel).toBe('60')
+    expect(full.statsA11yLabel).toBe('9,876 views, 60 reshares')
+  })
+
+  it('leaves the media unnamed and excludes empty listings', () => {
     const model = buildMemeCardModel({
       ...imageMeme,
       listing: { sellerId: 'seller-1', shares: 0, pricePerShare: 3 },
@@ -49,7 +64,7 @@ describe('buildMemeCardModel', () => {
 
     expect(model.media).toEqual({
       kind: 'image',
-      imageProps: { src: '/foil-cat.png', alt: 'foil cat', loading: 'lazy' },
+      imageProps: { src: '/foil-cat.png', alt: '', loading: 'lazy' },
     })
     expect(model.listing).toBeNull()
   })
@@ -66,18 +81,30 @@ describe('buildMemeCardModel', () => {
       videoUrl: null,
     })
 
-    expect(video.media).toEqual({
-      kind: 'video',
-      videoProps: {
-        src: '/foil-cat.mp4',
-        muted: true,
-        loop: true,
-        playsInline: true,
-        autoPlay: true,
-        poster: '/foil-cat.png',
-        'aria-label': 'foil cat',
-      },
+    expect(video.media.kind).toBe('video')
+    if (video.media.kind !== 'video') throw new Error('expected video media')
+    expect(video.media.videoProps).toEqual({
+      src: '/foil-cat.mp4',
+      muted: true,
+      loop: true,
+      playsInline: true,
+      autoPlay: false,
+      preload: 'none',
+      poster: '/foil-cat.png',
+      'aria-label': '',
     })
+    expect(video.media.toggleProps['aria-label']).toBe('Play foil cat')
+    expect(video.media.toggleProps['aria-pressed']).toBe(false)
     expect(missingVideo.media.kind).toBe('image')
+  })
+
+  it('lets the viewport observer start video only when motion is welcome', () => {
+    const videoMeme = { ...imageMeme, mediaType: 'video' as const, videoUrl: '/foil-cat.mp4' }
+
+    expect(buildMemeCardModel(videoMeme).mediaAutoplay).toBe('on')
+    expect(buildReducedMotionMemeCardModel(videoMeme).mediaAutoplay).toBe('off')
+    expect(buildReducedMotionMemeCardModel(videoMeme).reducedMotion).toBe(true)
+    // a still card has nothing to start either way
+    expect(buildMemeCardModel(imageMeme).mediaAutoplay).toBe('off')
   })
 })

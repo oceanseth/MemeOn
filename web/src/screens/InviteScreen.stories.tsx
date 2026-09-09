@@ -2,31 +2,66 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { fn } from 'storybook/test'
 import { inviteLou, invitePal } from '../../.storybook/fixtures'
-import type { InviteScreenModel } from '../hooks/useInviteScreen'
+import {
+  buildInviteAvatar,
+  buildInviteStats,
+  type InviteScreenModel,
+} from '../hooks/useInviteScreen'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { InviteScreen } from './InviteScreen'
 
-const inviteModel = (data: typeof invitePal) => ({
+/** Story-local: both shared invite fixtures resolve to `picture: null`, so the image branch needs one. */
+const pictured = {
+  ...invitePal,
+  inviter: { ...invitePal.inviter, picture: '/brand/memeon-logo-circle-256.png' },
+}
+
+const inviteModel = (data: typeof invitePal, self = false) => ({
   name: data.inviter.name,
-  hasPicture: !!data.inviter.picture,
-  imageProps: { src: data.inviter.picture ?? '', alt: data.inviter.name },
-  statsLabel: `📚 ${data.inviter.collectionSize} memes collected · 🧠 ${data.inviter.portfolioValue.toLocaleString()} portfolio · ⭐ ${data.inviter.followers} followers`,
-  acceptanceNote: `Joining creates your account with Masky single sign-on and instantly makes you and ${data.inviter.name} friends.`,
+  avatar: buildInviteAvatar(data.inviter),
+  stats: buildInviteStats(data.inviter),
+  acceptanceNote: self
+    ? "Send this link to a friend — they'll join with Masky and you'll be friends instantly."
+    : `Joining creates your account with Masky single sign-on and instantly makes you and ${data.inviter.name} friends.`,
 })
+
+const cardsOf = (data: typeof invitePal) =>
+  data.topMemes.map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) }))
 
 const empty: InviteScreenModel = {
   phase: 'loading',
   err: null,
-  isSelf: false,
   showFatalError: false,
   showSpinner: true,
   showAcceptError: false,
+  showAcceptSuccess: false,
+  showAcceptSpinner: false,
   showHighlights: false,
+  loadingLabel: 'Loading invite…',
+  acceptErrorMessage: "Couldn't accept this invite — try again.",
+  acceptSuccessMessage: 'You and pal are now friends 🤝',
+  highlightsTitle: "pal's binder highlights",
+  fatalActions: {
+    title: 'This invite link expired',
+    joinLabel: '🎭 Join MemeOn anyway',
+    joinButtonProps: { onClick: fn() },
+    homeLabel: 'Back to MemeOn',
+    homeHref: '/',
+  },
+  selfActions: null,
   inviter: null,
   cards: [],
-  acceptButtonProps: { onClick: fn(), disabled: false },
+  acceptButtonProps: { onClick: fn() },
   acceptLabel: '🎭 Accept invite — join with Masky',
 }
+
+const ready = {
+  phase: 'ready',
+  inviter: inviteModel(invitePal),
+  cards: cardsOf(invitePal),
+  showSpinner: false,
+  showHighlights: true,
+} satisfies Partial<InviteScreenModel>
 
 const meta = {
   title: 'Screens/InviteScreen',
@@ -40,6 +75,7 @@ type Story = StoryObj<typeof meta>
 
 export const Loading: Story = {}
 
+/** Dead link: an explanation plus the two ways forward, never a bare red bar. */
 export const Error: Story = {
   args: {
     phase: 'error',
@@ -49,58 +85,86 @@ export const Error: Story = {
   },
 }
 
-export const Ready: Story = {
+/** The recovery leg of the dead link: Masky signup is in flight. */
+export const ErrorJoining: Story = {
   args: {
-    phase: 'ready',
-    inviter: inviteModel(invitePal),
-    cards: invitePal.topMemes.map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) })),
+    phase: 'accepting',
+    err: 'This invite link is invalid or expired.',
+    showFatalError: true,
     showSpinner: false,
-    showHighlights: true,
+    fatalActions: {
+      ...empty.fatalActions,
+      joinLabel: '🎭 Opening Masky…',
+      joinButtonProps: { onClick: fn(), 'aria-disabled': true, 'aria-busy': true },
+    },
   },
+}
+
+export const Ready: Story = { args: ready }
+
+/** Masky supplied a picture, so the ring carries the face instead of the monogram. */
+export const WithAvatar: Story = {
+  args: { ...ready, inviter: inviteModel(pictured), cards: cardsOf(pictured) },
 }
 
 export const LoggedIn: Story = {
-  args: {
-    phase: 'ready',
-    inviter: inviteModel(invitePal),
-    cards: invitePal.topMemes.map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) })),
-    showSpinner: false,
-    showHighlights: true,
-    acceptLabel: '🤝 Accept & befriend pal',
-  },
-}
-
-export const Self: Story = {
-  args: {
-    phase: 'ready',
-    inviter: inviteModel(inviteLou),
-    cards: inviteLou.topMemes.map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) })),
-    isSelf: true,
-    showSpinner: false,
-    showHighlights: true,
-  },
+  args: { ...ready, acceptLabel: '🤝 Accept & befriend pal' },
 }
 
 export const Accepting: Story = {
   args: {
+    ...ready,
     phase: 'accepting',
-    inviter: inviteModel(invitePal),
-    cards: invitePal.topMemes.map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) })),
-    acceptButtonProps: { onClick: fn(), disabled: true },
-    showSpinner: false,
-    showHighlights: true,
-    acceptLabel: 'Opening Masky…',
+    acceptButtonProps: { onClick: fn(), 'aria-disabled': true, 'aria-busy': true },
+    showAcceptSpinner: true,
+    acceptLabel: '🤝 Adding pal…',
   },
 }
 
 export const AcceptError: Story = {
   args: {
-    phase: 'ready',
-    inviter: inviteModel(invitePal),
-    cards: invitePal.topMemes.map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) })),
-    err: 'something went wrong',
-    showSpinner: false,
+    ...ready,
+    err: 'invite already used',
     showAcceptError: true,
+  },
+}
+
+/** The promise landing: the friendship is confirmed before the route changes. */
+export const Accepted: Story = {
+  args: {
+    ...ready,
+    showAcceptSuccess: true,
+  },
+}
+
+const selfActions = {
+  note: 'This is your own invite link — send it to a friend!',
+  copyLabel: '🔗 Copy invite link',
+  copyStatusMessage: '',
+  copyButtonProps: { onClick: fn() },
+  friendsLabel: 'See your friends',
+  friendsHref: '/friends',
+}
+
+export const Self: Story = {
+  args: {
+    phase: 'ready',
+    inviter: inviteModel(inviteLou, true),
+    cards: cardsOf(inviteLou),
+    highlightsTitle: "lou's binder highlights",
+    selfActions,
+    showSpinner: false,
     showHighlights: true,
+  },
+}
+
+export const SelfCopied: Story = {
+  args: {
+    ...Self.args,
+    selfActions: {
+      ...selfActions,
+      copyLabel: '✅ Link copied',
+      copyStatusMessage: 'Invite link copied to your clipboard.',
+    },
   },
 }

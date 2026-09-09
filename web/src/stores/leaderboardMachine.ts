@@ -11,9 +11,10 @@ export interface LeaderboardContext {
 export type LeaderboardEvent =
   | { type: 'DONE'; leaders: LeaderRow[] }
   | { type: 'FAIL'; err: string }
+  | { type: 'RETRY' }
 
 /**
- * Top Brains source of truth. loading → ready|empty|error.
+ * Top Brains source of truth. loading → ready|empty|error, error → loading on RETRY.
  * The hook drives fetch; do not add React state here.
  */
 export const leaderboardMachine = setup({
@@ -43,6 +44,11 @@ export const leaderboardMachine = setup({
     FAIL: {
       target: '.error',
       actions: assign({ err: ({ event }) => event.err }),
+    },
+    /* retry is a transition, not React state: the spinner comes back with the error cleared */
+    RETRY: {
+      target: '.loading',
+      actions: assign({ err: null }),
     },
   },
   states: {

@@ -37,12 +37,20 @@ export const PublicLandingRoute: Story = {
     await expect(canvas.queryByRole('link', { name: 'My Binder' })).not.toBeInTheDocument()
     await expect(loaded.scenario.stores.auth.snapshot.matches('unauthenticated')).toBe(true)
     await expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/me')).toHaveLength(0)
+    /* the bypass block has to land on the route's own <main>, not on a story-supplied wrapper */
+    await expect(canvas.getByRole('link', { name: 'Skip to content' })).toHaveAttribute('href', '#main')
+    const skipTarget = canvasElement.querySelector<HTMLElement>('#main')
+    await expect(skipTarget?.tagName).toBe('MAIN')
+    skipTarget?.focus()
+    await expect(skipTarget).toHaveFocus()
   },
 }
 
 const authSetup: Story = {
   parameters: { initialEntries: ['/developers'] },
   beforeEach: async ({ loaded, parameters }) => {
+    // the guarded routes are code-split: warm their chunks so a play function sees the route, not the spinner
+    await Promise.all([import('./CreateMemeView'), import('./DevelopersView')])
     const originalFetch = window.fetch
     const previousSession = sessionToken()
     const previousMasky = maskyAccessToken()
@@ -97,7 +105,10 @@ export const LogoutClearsProtectedRoute: Story = {
   ...authSetup,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('heading', { name: /Developers/ })).toBeInTheDocument()
+    // the guarded views are code-split, so the route's chunk lands after the shell
+    await expect(await canvas.findByRole('heading', { name: /Developers/ })).toBeInTheDocument()
+    // the guarded routes carry the same bypass target as the public ones
+    await expect(canvasElement.querySelector('main#main[tabindex="-1"]')).not.toBeNull()
     // Direct store logout exercises RequireAuth without the shell's navigation callback.
     loaded.authStores.auth.logout()
     await waitFor(() => {
@@ -151,18 +162,19 @@ export const AccountRefreshPreservesMintDraft: Story = {
   parameters: { initialEntries: ['/binder/new'], deferRefresh: true, unreadAlerts: true },
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    const title = canvas.getByRole('textbox', { name: 'Title' })
-    const prompt = canvas.getByRole('textbox', { name: /^Prompt / })
+    const title = await canvas.findByRole('textbox', { name: 'Title' })
+    const prompt = canvas.getByRole('textbox', { name: 'Prompt' })
     await userEvent.type(title, 'draft survives')
     await userEvent.type(prompt, 'a cat in a spacesuit')
-    const alerts = canvas.getByRole('button', { name: 'Alerts' })
+    // the bell now names its own unread count, so match the stem
+    const alerts = canvas.getByRole('button', { name: /^Alerts/ })
     await waitFor(() => expect(alerts).toHaveTextContent('1'))
     await userEvent.click(alerts)
 
     await waitFor(() => expect(loaded.accountRequest.count).toBe(2))
     await expect(loaded.authStores.auth.snapshot.matches('loading')).toBe(true)
     await expect(canvas.getByRole('textbox', { name: 'Title' })).toBe(title)
-    await expect(canvas.getByRole('textbox', { name: /^Prompt / })).toBe(prompt)
+    await expect(canvas.getByRole('textbox', { name: 'Prompt' })).toBe(prompt)
     await expect(title).toHaveValue('draft survives')
     await expect(prompt).toHaveValue('a cat in a spacesuit')
     await userEvent.type(title, '!')
@@ -170,7 +182,7 @@ export const AccountRefreshPreservesMintDraft: Story = {
     loaded.accountRequest.resolve(Response.json({ ...meLou, coins: meLou.coins + 1, unreadAlerts: 0 }))
     await waitFor(() => expect(loaded.authStores.auth.user.coins).toBe(meLou.coins + 1))
     await expect(canvas.getByRole('textbox', { name: 'Title' })).toBe(title)
-    await expect(canvas.getByRole('textbox', { name: /^Prompt / })).toBe(prompt)
+    await expect(canvas.getByRole('textbox', { name: 'Prompt' })).toBe(prompt)
     await expect(title).toHaveValue('draft survives!')
     await expect(prompt).toHaveValue('a cat in a spacesuit')
   },
@@ -181,11 +193,12 @@ export const AccountRefreshFailurePreservesMintDraft: Story = {
   parameters: { initialEntries: ['/binder/new'], deferRefresh: true, unreadAlerts: true },
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    const title = canvas.getByRole('textbox', { name: 'Title' })
-    const prompt = canvas.getByRole('textbox', { name: /^Prompt / })
+    const title = await canvas.findByRole('textbox', { name: 'Title' })
+    const prompt = canvas.getByRole('textbox', { name: 'Prompt' })
     await userEvent.type(title, 'draft survives')
     await userEvent.type(prompt, 'a cat in a spacesuit')
-    const alerts = canvas.getByRole('button', { name: 'Alerts' })
+    // the bell now names its own unread count, so match the stem
+    const alerts = canvas.getByRole('button', { name: /^Alerts/ })
     await waitFor(() => expect(alerts).toHaveTextContent('1'))
     await userEvent.click(alerts)
     await waitFor(() => expect(loaded.accountRequest.count).toBe(2))
@@ -193,7 +206,7 @@ export const AccountRefreshFailurePreservesMintDraft: Story = {
     loaded.accountRequest.resolve(Response.json({ error: 'account unavailable' }, { status: 503 }))
     await waitFor(() => expect(loaded.authStores.auth.snapshot.hasTag('settled')).toBe(true))
     await expect(canvas.getByRole('textbox', { name: 'Title' })).toBe(title)
-    await expect(canvas.getByRole('textbox', { name: /^Prompt / })).toBe(prompt)
+    await expect(canvas.getByRole('textbox', { name: 'Prompt' })).toBe(prompt)
     await expect(title).toHaveValue('draft survives')
     await expect(prompt).toHaveValue('a cat in a spacesuit')
     await expect(loaded.authStores.auth.user).toEqual(meLou)
@@ -203,7 +216,7 @@ export const AccountRefreshFailurePreservesMintDraft: Story = {
     await loaded.authStores.auth.refresh()
     await expect(loaded.authStores.auth.error).toBeNull()
     await expect(canvas.getByRole('textbox', { name: 'Title' })).toBe(title)
-    await expect(canvas.getByRole('textbox', { name: /^Prompt / })).toBe(prompt)
+    await expect(canvas.getByRole('textbox', { name: 'Prompt' })).toBe(prompt)
     await expect(title).toHaveValue('draft survives!')
     await expect(prompt).toHaveValue('a cat in a spacesuit')
   },

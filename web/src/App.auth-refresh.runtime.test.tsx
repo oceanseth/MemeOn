@@ -77,7 +77,13 @@ it('keeps the legacy mint draft mounted while a post-pack refresh replaces an ol
     await nextTick()
   })
 
-  const title = host.querySelector<HTMLInputElement>('input[placeholder^="max 20"]')!
+  // selected by its stable id, so placeholder copy can be reworded without breaking the regression
+  // the mint route is code-split, so its lazy chunk lands a few ticks after the shell
+  for (let attempt = 0; attempt < 100 && !host.querySelector('input#create-title'); attempt += 1) {
+    await act(async () => { await new Promise((r) => setTimeout(r, 10)) })
+  }
+  // selected by its stable id, so placeholder copy can be reworded without breaking the regression
+  const title = host.querySelector<HTMLInputElement>('input#create-title')!
   const prompt = host.querySelector<HTMLTextAreaElement>('textarea[placeholder^="a capybara"]')!
   expect(title).toBeTruthy()
   title.value = 'Keep my draft'
@@ -89,7 +95,7 @@ it('keeps the legacy mint draft mounted while a post-pack refresh replaces an ol
 
   holdAccountReads = true
   await act(async () => {
-    host.querySelector<HTMLButtonElement>('button[aria-label="Alerts"]')!.click()
+    host.querySelector<HTMLButtonElement>('button[aria-label^="Alerts"]')!.click()
     await nextTick()
   })
   expect(held).toHaveLength(1)
@@ -102,7 +108,7 @@ it('keeps the legacy mint draft mounted while a post-pack refresh replaces an ol
   expect(held).toHaveLength(2)
   expect(held[0]!.signal?.aborted).toBe(true)
   expect(title.isConnected).toBe(true)
-  expect(host.querySelector<HTMLInputElement>('input[placeholder^="max 20"]')).toBe(title)
+  expect(host.querySelector<HTMLInputElement>('input#create-title')).toBe(title)
   expect(title.value).toBe('Keep my draft')
   expect(prompt.value).toBe('Draft prompt survives account refresh')
 
@@ -111,7 +117,7 @@ it('keeps the legacy mint draft mounted while a post-pack refresh replaces an ol
     await nextTick()
   })
   expect(host.querySelector('.coins')?.textContent).toContain('52')
-  expect(host.querySelector<HTMLInputElement>('input[placeholder^="max 20"]')).toBe(title)
+  expect(host.querySelector<HTMLInputElement>('input#create-title')).toBe(title)
   expect(title.value).toBe('Keep my draft')
   expect(prompt.value).toBe('Draft prompt survives account refresh')
   stores.dispose()

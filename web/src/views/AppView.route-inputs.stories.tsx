@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Suspense } from "react";
 import { createActor } from "xstate";
 import { Link, MemoryRouter, Route, Routes } from "react-router-dom";
 import { expect, userEvent, waitFor, within } from "storybook/test";
@@ -25,9 +26,12 @@ function CreateMemeRoutes() {
         <Link to="/binder/new?remix=remix-a">Remix A</Link>
         <Link to="/binder/new?remix=remix-b">Remix B</Link>
       </nav>
-      <Routes>
-        <Route path="/binder/new" element={<CreateMemeRoute />} />
-      </Routes>
+      {/* the mint view is code-split behind the app's auth gate, so the harness owns the boundary */}
+      <Suspense fallback={<p>Loading the mint desk…</p>}>
+        <Routes>
+          <Route path="/binder/new" element={<CreateMemeRoute />} />
+        </Routes>
+      </Suspense>
     </>
   );
 }
@@ -223,17 +227,16 @@ export const PendingVideoStaysWithItsRemixRoute: Story = {
       await canvas.findByRole("img", { name: "source B" }),
     ).toBeInTheDocument();
     await expect(
-      canvas.queryByRole("img", { name: "preview" }),
+      canvas.queryByRole("img", { name: /^Preview of/ }),
     ).not.toBeInTheDocument();
 
     await userEvent.click(canvas.getByRole("link", { name: "Remix A" }));
     await expect(
       await canvas.findByRole("img", { name: "source A" }),
     ).toBeInTheDocument();
-    await expect(canvas.getByRole("img", { name: "preview" })).toHaveAttribute(
-      "src",
-      "/pending-a.png",
-    );
+    await expect(
+      canvas.getByRole("img", { name: 'Preview of "source A"' }),
+    ).toHaveAttribute("src", "/pending-a.png");
   },
 };
 
@@ -313,10 +316,9 @@ export const LateVideoCompletionAfterRouteChangeKeepsPendingJob: Story = {
     await expect(
       await canvas.findByRole("img", { name: "source A" }),
     ).toBeInTheDocument();
-    await expect(canvas.getByRole("img", { name: "preview" })).toHaveAttribute(
-      "src",
-      "/pending-a.png",
-    );
+    await expect(
+      canvas.getByRole("img", { name: 'Preview of "source A"' }),
+    ).toHaveAttribute("src", "/pending-a.png");
     await expect(
       canvas.getByText(/Resuming a video render/),
     ).toBeInTheDocument();
@@ -462,6 +464,10 @@ export const PendingDiscordLinkUsesLatestTokenOnce: Story = {
     const refresh = loaded.stores.auth.refresh();
     loaded.resolveMe(Response.json(meLou));
     await refresh;
+    // linking is opt-in now: the screen asks before it spends the token
+    await userEvent.click(
+      await canvas.findByRole("button", { name: "Connect Discord" }),
+    );
     await waitFor(() =>
       expect(loaded.linkBodies).toEqual([{ token: "token-b" }]),
     );

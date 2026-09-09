@@ -1,5 +1,7 @@
 /** Grab the first frame of a video file as a PNG blob (browser-side, no server).
  *  Legacy: canvas/video frame grab. Do not molecularize. */
+const POSTER_TIMEOUT_MS = 10_000
+
 export function extractPoster(file: File): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file)
@@ -7,11 +9,25 @@ export function extractPoster(file: File): Promise<Blob> {
     video.muted = true
     video.playsInline = true
     video.preload = 'auto'
-    video.src = url
-    const fail = (why: string) => {
+    let done = false
+    let timer: ReturnType<typeof setTimeout> | null = null
+    /* one exit for every path: a video that never fires `seeked` used to strand the flow forever */
+    const settle = (outcome: () => void) => {
+      if (done) return
+      done = true
+      if (timer) clearTimeout(timer)
+      video.onerror = null
+      video.onloadeddata = null
+      video.onseeked = null
+      video.removeAttribute('src')
       URL.revokeObjectURL(url)
-      reject(new Error(why))
+      outcome()
     }
+    const fail = (why: string) => settle(() => reject(new Error(why)))
+    timer = setTimeout(
+      () => fail('could not read the first frame — upload a poster image instead'),
+      POSTER_TIMEOUT_MS,
+    )
     video.onerror = () => fail('could not read video')
     video.onloadeddata = () => {
       video.currentTime = Math.min(0.1, video.duration || 0.1)
@@ -36,8 +52,11 @@ export function extractPoster(file: File): Promise<Blob> {
         size,
         size,
       )
-      URL.revokeObjectURL(url)
-      canvas.toBlob((b) => (b ? resolve(b) : fail('poster encode failed')), 'image/png')
+      canvas.toBlob(
+        (b) => (b ? settle(() => resolve(b)) : fail('poster encode failed')),
+        'image/png',
+      )
     }
+    video.src = url
   })
 }

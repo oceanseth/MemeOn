@@ -4,7 +4,7 @@ import type { TradeSideSummaryModel } from './tradeCardModel'
 export function SideSummary({ model }: { model: TradeSideSummaryModel }) {
   return (
     <div className="trade-side">
-      <h4>{model.ownerLabel}</h4>
+      <h3>{model.ownerLabel}</h3>
       {model.empty && <div>nothing 😶</div>}
       {model.memeLines.map((meme) => <div key={meme.id}>{meme.sharesLabel} <em>"{meme.title}"</em></div>)}
       {model.coinsLabel && <div>{model.coinsLabel}</div>}

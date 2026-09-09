@@ -1,4 +1,4 @@
-import type { ChangeEventHandler, MouseEventHandler } from 'react'
+import type { ChangeEventHandler, HTMLAttributes, MouseEventHandler } from 'react'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import type { Meme, Memeplex } from '../lib/types'
 
@@ -8,14 +8,18 @@ export interface MemeplexPanelModel {
   showOriginalLabel: boolean
   family: readonly MemeCardModel[]
   canEdit: boolean
-  pickerProps: { value: string; onChange: ChangeEventHandler<HTMLSelectElement> }
+  pickerProps: { value: string; 'aria-label': string; onChange: ChangeEventHandler<HTMLSelectElement> }
   linkable: readonly { id: string; title: string }[]
   pickLinkButtonProps: { onClick: MouseEventHandler<HTMLButtonElement>; disabled: boolean }
   showPickLink: boolean
-  pastedProps: { value: string; onChange: ChangeEventHandler<HTMLInputElement> }
+  pastedProps: { value: string; 'aria-label': string; onChange: ChangeEventHandler<HTMLInputElement> }
   pastedLinkButtonProps: { onClick: MouseEventHandler<HTMLButtonElement>; disabled: boolean }
   showPastedLink: boolean
   notice: string | null
+  error: string | null
+  /** live-region containers are mounted before their text arrives */
+  noticeProps: Pick<HTMLAttributes<HTMLDivElement>, 'role' | 'aria-live'>
+  errorProps: Pick<HTMLAttributes<HTMLDivElement>, 'role' | 'aria-live'>
 }
 
 /** Extract a meme id from a raw id or a pasted /m/ | /meme/ URL. */
@@ -38,6 +42,7 @@ export function buildMemeplexPanelModel({
   pick,
   pasted,
   notice,
+  error,
   onPickChange,
   onPastedChange,
   onAdd,
@@ -49,6 +54,7 @@ export function buildMemeplexPanelModel({
   pick: string
   pasted: string
   notice: string | null
+  error: string | null
   onPickChange: (id: string) => void
   onPastedChange: (raw: string) => void
   onAdd: (memeId: string) => void
@@ -73,13 +79,16 @@ export function buildMemeplexPanelModel({
     showOriginalLabel: !!plex?.original && plex.ancestors[0]?.id === plex.original.id,
     family: family.map(buildMemeCardModel),
     canEdit,
-    pickerProps: { value: pick, onChange: (event) => onPickChange(event.target.value) },
+    pickerProps: { value: pick, 'aria-label': 'Link a meme from your binder', onChange: (event) => onPickChange(event.target.value) },
     linkable: linkable.map((candidate) => ({ id: candidate.id, title: candidate.title })),
     pickLinkButtonProps: { onClick: () => onAdd(pick), disabled: !pick },
     showPickLink: !!pick,
-    pastedProps: { value: pasted, onChange: (event) => onPastedChange(event.target.value) },
+    pastedProps: { value: pasted, 'aria-label': 'Paste a meme link', onChange: (event) => onPastedChange(event.target.value) },
     pastedLinkButtonProps: { onClick: () => onAdd(pastedId), disabled: !pastedId },
     showPastedLink: !!pasted.trim(),
     notice,
+    error,
+    noticeProps: { role: 'status', 'aria-live': 'polite' },
+    errorProps: { role: 'alert', 'aria-live': 'assertive' },
   }
 }

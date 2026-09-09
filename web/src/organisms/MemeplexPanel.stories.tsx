@@ -7,7 +7,7 @@ import { buildMemeplexPanelModel } from './memeplexPanelModel'
 
 const handlers = { onPickChange: fn(), onPastedChange: fn(), onAdd: fn() }
 const build = (overrides: Partial<Parameters<typeof buildMemeplexPanelModel>[0]> = {}) => buildMemeplexPanelModel({
-  meme: holoMeme, plex: memeplexFamily, canEdit: false, binder: [], pick: '', pasted: '', notice: null, ...handlers, ...overrides,
+  meme: holoMeme, plex: memeplexFamily, canEdit: false, binder: [], pick: '', pasted: '', notice: null, error: null, ...handlers, ...overrides,
 })
 
 const meta = {
@@ -25,4 +25,11 @@ export const EmptyEditor: Story = { args: { model: build({ plex: memeplexEmpty, 
 export const EditorPicked: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper, listedHolo], pick: listedHolo.id }) } }
 export const PastedLink: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper], pasted: 'https://memeon.ai/m/meme-listed' }) } }
 export const Notice: Story = { args: { model: build({ notice: 'Added to the memeplex 🕸️' }) } }
+/** A failed link never wears success green. */
+export const ErrorNotice: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper], error: 'Already in the memeplex.' }) } }
 export const Loading: Story = { args: { model: build({ plex: null }) } }
+/** Two columns at 390px: the relatives grid no longer eats the page before the cap table. */
+export const NarrowFamily: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  decorators: [(Story) => <div style={{ maxWidth: 358 }}><Story /></div>],
+}

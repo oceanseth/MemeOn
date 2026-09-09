@@ -18,6 +18,9 @@ export function AppShell({
 }) {
   return (
     <>
+      <a className="skip-link" href="#main">
+        Skip to content
+      </a>
       <header className="topbar">
         <div className="topbar-inner">
           <Link to="/" className="logo">
@@ -38,10 +41,11 @@ export function AppShell({
       {quest}
       {children}
       <footer className="site-footer">
-        <a href="/privacy">Privacy</a>
-        <a href="/terms">Terms</a>
-        <a href="/developers">Developers</a>
-        <a href="/discord">Discord</a>
+        <Link to="/privacy">Privacy</Link>
+        <Link to="/terms">Terms</Link>
+        <Link to="/developers">Developers</Link>
+        <Link to="/discord">Discord</Link>
+        {/* a real static file in public/, not a route: it must leave the SPA */}
         <a href="/skill.md">API</a>
       </footer>
     </>

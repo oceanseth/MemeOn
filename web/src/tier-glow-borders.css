@@ -60,16 +60,21 @@
   --glow-stops:
     #242932 0deg,
     #515967 58deg,
-    #a8b0bd 104deg,
+    #6a7180 104deg,
     #5f6877 154deg,
     #2c323d 218deg,
-    #737c8b 292deg,
+    #5a6270 292deg,
     #242932 360deg;
   --glow-duration: 12s;
   --glow-play-state: paused;
   --glow-phase: -26deg;
   --glow-blur: 10px;
   --glow-opacity: 0.12;
+}
+
+/* Paper's blurred layer is paused at 0.12 opacity: pure paint cost, no visible bloom. Drop it. */
+:where(.glow-border[data-glow-style='graphite-gradient-still'])::after {
+  display: none;
 }
 
 :where(.glow-border[data-glow-style='silver-highlight-still']) {
@@ -86,7 +91,7 @@
   --glow-play-state: paused;
   --glow-phase: 34deg;
   --glow-blur: 12px;
-  --glow-opacity: 0.18;
+  --glow-opacity: 0.34;
 }
 
 :where(.glow-border[data-glow-style='cyan-magenta-gradient-drift']) {
@@ -108,6 +113,7 @@
   --glow-stops:
     #303746 0deg 62deg,
     #596477 116deg,
+    #9fd8ff 128deg,
     #b8c6e8 151deg,
     #fff 169deg,
     #dce7ff 181deg,
@@ -117,7 +123,7 @@
   --glow-duration: 4.5s;
   --glow-phase: -108deg;
   --glow-blur: 17px;
-  --glow-opacity: 0.36;
+  --glow-opacity: 0.52;
 }
 
 :where(.glow-border[data-glow-style='gold-gradient-counter-sweep']) {
@@ -188,5 +194,19 @@
   :where(.glow-border)::before,
   :where(.glow-border)::after {
     display: none;
+  }
+
+  /* non-colour rarity ladder: solid -> double -> heavy double */
+  :where(.meme-card, .tier-card) {
+    border: 1px solid CanvasText;
+  }
+
+  :where(.meme-card, .tier-card).sheen {
+    border-width: 3px;
+    border-style: double;
+  }
+
+  :where(.meme-card, .tier-card).sparkle {
+    border-width: 4px;
   }
 }

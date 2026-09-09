@@ -1,10 +1,10 @@
 import type {
   ButtonHTMLAttributes,
   ChangeEventHandler,
-  HTMLAttributes,
+  DialogHTMLAttributes,
+  FocusEventHandler,
   ImgHTMLAttributes,
   InputHTMLAttributes,
-  MouseEventHandler,
 } from 'react'
 import type { Meme } from './types'
 
@@ -15,23 +15,63 @@ export interface GiftDialogRowModel {
   title: string
   selected: boolean
   sharesLabel: string
-  imageProps: Pick<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt'>
-  buttonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
+  tierKey: string
+  tierLabel: string
+  tierColor: string
+  /** tier frame classes for the thumbnail wrapper, so rarity is visible before you give it away */
+  thumbClassName: string
+  listed: boolean
+  listedLabel: string
+  imageProps: Pick<
+    ImgHTMLAttributes<HTMLImageElement>,
+    'src' | 'alt' | 'loading' | 'decoding' | 'width' | 'height'
+  >
+  buttonProps: Pick<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'onClick' | 'aria-pressed' | 'disabled'
+  >
 }
 
 export interface GiftDialogModel {
   open: boolean
   recipientName: string | null
-  overlayProps: Pick<HTMLAttributes<HTMLDivElement>, 'onClick'>
-  dialogProps: Pick<HTMLAttributes<HTMLDivElement>, 'onClick' | 'role' | 'aria-modal' | 'aria-labelledby'>
-  searchInputProps: Pick<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'>
+  title: string
+  titleId: string
+  hint: string
+  /**
+   * Spread onto the native `<dialog>`: the platform supplies focus containment, Escape, the top
+   * layer and focus restoration; these props supply the name and backdrop dismissal.
+   */
+  dialogProps: Pick<
+    DialogHTMLAttributes<HTMLDialogElement>,
+    'aria-labelledby' | 'onClick' | 'onCancel'
+  >
+  closeButtonProps: Pick<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'onClick' | 'aria-label' | 'disabled'
+  >
+  cancelLabel: string
+  cancelButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'disabled'>
+  searchInputProps: Pick<
+    InputHTMLAttributes<HTMLInputElement>,
+    'value' | 'onChange' | 'aria-label' | 'disabled'
+  >
   rows: readonly GiftDialogRowModel[]
   showEmpty: boolean
+  emptyMessage: string
   showControls: boolean
   maxShares: number
-  sharesInputProps: Pick<InputHTMLAttributes<HTMLInputElement>, 'value' | 'min' | 'max' | 'onChange'>
+  sharesLabel: string
+  sharesMaxLabel: string
+  sharesInputProps: Pick<
+    InputHTMLAttributes<HTMLInputElement>,
+    'value' | 'min' | 'max' | 'onChange' | 'onBlur' | 'aria-label' | 'disabled'
+  >
   submitLabel: string
-  submitButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'disabled'>
+  submitButtonProps: Pick<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'onClick' | 'disabled' | 'aria-busy'
+  >
   error: string | null
 }
 
@@ -42,12 +82,16 @@ export interface BuildGiftDialogModelInput {
   query: string
   pick: Meme | null
   shares: number
+  /** raw text the user is typing into the share field; null shows the clamped number */
+  sharesInput?: string | null
   busy: boolean
   error: string | null
   onClose: () => void
   onQueryChange: (query: string) => void
   onPick: (meme: Meme) => void
-  onSharesChange: (shares: number) => void
+  /** raw field text, so select-all-and-retype survives; clamping happens on blur and at submit */
+  onSharesChange: (rawValue: string) => void
+  onSharesBlur?: () => void
   onSubmit: () => void
 }
 
@@ -66,12 +110,14 @@ export function buildGiftDialogModel({
   query,
   pick,
   shares,
+  sharesInput = null,
   busy,
   error,
   onClose,
   onQueryChange,
   onPick,
   onSharesChange,
+  onSharesBlur,
   onSubmit,
 }: BuildGiftDialogModelInput): GiftDialogModel {
   const normalizedQuery = query.trim().toLocaleLowerCase()
@@ -81,41 +127,86 @@ export function buildGiftDialogModel({
       id: meme.id,
       title: meme.title,
       selected: pick?.id === meme.id,
-      sharesLabel: `${meme.myShares ?? 0}/100`,
-      imageProps: { src: meme.imageUrl, alt: '' },
-      buttonProps: { onClick: () => onPick(meme) },
+      sharesLabel: `you hold ${meme.myShares ?? 0} of 100`,
+      tierKey: meme.tier.key,
+      tierLabel: meme.tier.name,
+      tierColor: meme.tier.color,
+      thumbClassName: `gift-thumb tier-${meme.tier.key}`,
+      listed: !!meme.listing && meme.listing.shares > 0,
+      listedLabel: 'Listed',
+      imageProps: {
+        src: meme.imageUrl,
+        alt: '',
+        loading: 'lazy' as const,
+        decoding: 'async' as const,
+        width: 40,
+        height: 40,
+      },
+      // in flight the transfer owns the dialog: re-picking here would relabel a submit that is already running
+      buttonProps: {
+        onClick: () => onPick(meme),
+        'aria-pressed': pick?.id === meme.id,
+        disabled: busy,
+      },
     }))
   const maxShares = Math.max(1, pick?.myShares ?? 1)
   const normalizedShares = clampGiftShares(shares, maxShares)
   const canSubmit = !!recipient && !!pick && !busy && normalizedShares <= maxShares
-  const stopPropagation: MouseEventHandler<HTMLDivElement> = (event) => event.stopPropagation()
+  const dismiss = () => {
+    if (!busy) onClose()
+  }
   const onSearchChange: ChangeEventHandler<HTMLInputElement> = (event) => onQueryChange(event.target.value)
-  const onShareChange: ChangeEventHandler<HTMLInputElement> = (event) =>
-    onSharesChange(clampGiftShares(event.target.value, maxShares))
+  const onShareChange: ChangeEventHandler<HTMLInputElement> = (event) => onSharesChange(event.target.value)
+  const onShareBlur: FocusEventHandler<HTMLInputElement> = () => onSharesBlur?.()
 
   return {
     open: open && !!recipient,
     recipientName: recipient?.name ?? null,
-    overlayProps: { onClick: onClose },
+    title: `🎁 Gift to ${recipient?.name ?? ''}`,
+    titleId: 'gift-dialog-title',
+    hint: 'Pick a meme you hold shares in — the transfer is free and instant.',
     dialogProps: {
-      onClick: stopPropagation,
-      role: 'dialog',
-      'aria-modal': true,
       'aria-labelledby': 'gift-dialog-title',
+      // backdrop (and only the backdrop) dismisses, and never while the gift is in flight
+      onClick: (event) => {
+        if (event.target === event.currentTarget) dismiss()
+      },
+      // Escape: React stays the single source of truth for open/closed, so cancel the native close
+      onCancel: (event) => {
+        event.preventDefault()
+        dismiss()
+      },
     },
-    searchInputProps: { value: query, onChange: onSearchChange },
+    // dismiss() is a no-op while busy, so every exit says so instead of looking operable
+    closeButtonProps: { onClick: dismiss, 'aria-label': 'Close gift dialog', disabled: busy },
+    cancelLabel: 'Cancel',
+    cancelButtonProps: { onClick: dismiss, disabled: busy },
+    searchInputProps: {
+      value: query,
+      onChange: onSearchChange,
+      'aria-label': 'Search your binder',
+      disabled: busy,
+    },
     rows,
     showEmpty: rows.length === 0,
+    emptyMessage: normalizedQuery
+      ? `Nothing in your binder matches "${query.trim()}".`
+      : 'Nothing to gift here — you need shares in a meme first.',
     showControls: !!pick,
     maxShares,
+    sharesLabel: 'shares',
+    sharesMaxLabel: `of ${maxShares}`,
     sharesInputProps: {
-      value: normalizedShares,
+      value: sharesInput ?? normalizedShares,
       min: 1,
       max: maxShares,
       onChange: onShareChange,
+      onBlur: onShareBlur,
+      'aria-label': `Shares to gift, up to ${maxShares}`,
+      disabled: busy,
     },
     submitLabel: busy ? 'Gifting…' : pick ? `Gift ${normalizedShares} of "${pick.title}"` : 'Choose a meme to gift',
-    submitButtonProps: { onClick: onSubmit, disabled: !canSubmit },
+    submitButtonProps: { onClick: onSubmit, disabled: !canSubmit, 'aria-busy': busy },
     error,
   }
 }

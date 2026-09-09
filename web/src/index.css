@@ -13,11 +13,84 @@
   --danger: #ff7a7a;
   --ok: #7dffb2;
   --radius: 14px;
+  --radius-control: 10px;
+  --radius-pill: 999px;
+  /* type ladder (rem). --font-mono is for code and keys only; the system-ui body stack is unchanged */
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.125rem;
+  --fs-xl: 1.375rem;
+  --fs-2xl: 2rem;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  /* 4px space scale for new rules and the .stack utility; incumbent pixel-tuned literals stay */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  /* layers, durations, page measure, chrome height (the sticky contract .market-controls docks under) */
+  --z-sticky: 15;
+  --z-header: 20;
+  --z-modal: 60;
+  --dur-fast: 0.08s;
+  --dur-base: 0.15s;
+  --page-max: 1180px;
+  --topbar-h: 65px;
+  /* names for the literals the sheet used to retype by hand */
+  --bg-media: #0a0c12;
+  --scrim: rgba(5, 7, 12, 0.8);
+  --brand-discord: #5865f2;
+  --text-inverse: #fff;
+  --shadow-pop: 0 18px 50px rgba(0, 0, 0, 0.55);
+  --shadow-modal: 0 30px 80px rgba(0, 0, 0, 0.6);
+  --selection-bg: color-mix(in srgb, var(--accent) 30%, transparent);
+  /* primary gradient stops, luminance-tuned so --text clears 4.5:1 on both ends (5.44:1 / 7.36:1) */
+  --primary-from: #1e5fa8;
+  --primary-to: #5c2ea8;
+  /* control chrome floor: 3.72:1 on --bg, 3.43:1 on --bg-raised, 3.26:1 on --bg-card. --border stays decorative. */
+  --border-strong: #5f6c8f;
+  --danger-border: #b0485a;
+  /* focus vocabulary */
+  --focus-ring: var(--accent);
+  --focus-offset: 2px;
+  /* state vocabulary, expressed once at the current rendered values */
+  --state-hover-border: var(--accent);
+  --state-selected-bg: color-mix(in oklab, var(--accent) 22%, transparent);
+  --state-selected-border: var(--accent);
+  --state-disabled-opacity: 0.5;
+  --state-error-bg: color-mix(in oklab, var(--danger) 12%, transparent);
+  --state-success-bg: color-mix(in oklab, var(--ok) 12%, transparent);
+  --state-unread-bg: color-mix(in oklab, var(--accent) 14%, transparent);
   color-scheme: dark;
+  /* browser-owned surfaces carry the palette: checkboxes, caret, scrollbars (colour inherits) */
+  accent-color: var(--accent);
+  caret-color: var(--accent);
+  scrollbar-color: var(--border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+::selection {
+  background: var(--selection-bg);
+  color: var(--text);
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* media never escapes its frame; explicit heights (.avatar, .logo-img, .hero-video-el) still win */
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+svg {
+  max-width: 100%;
 }
 
 body {
@@ -33,7 +106,65 @@ body {
     'Segoe UI',
     Roboto,
     sans-serif;
-  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* the shell is a column: on a low-data route (an empty trade list, a new account's friends
+   page) the footer rides the bottom of the screen instead of stranding 400px of empty page */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* width:100% because .container centres itself with auto margins, and a flex item with an auto
+   cross-axis margin shrink-wraps instead of stretching */
+#root > main {
+  flex: 1 0 auto;
+  width: 100%;
+}
+
+/* ---------- base type: nothing inherits the UA ladder ---------- */
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0 0 var(--space-2);
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: var(--fs-2xl);
+}
+
+h2 {
+  font-size: var(--fs-xl);
+}
+
+h3 {
+  font-size: var(--fs-lg);
+}
+
+h4 {
+  font-size: var(--fs-md);
+}
+
+p {
+  line-height: 1.55;
+}
+
+/* the one thing a user must type verbatim never breaks mid-token */
+code,
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  color: var(--text);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 5px;
+  white-space: nowrap;
 }
 
 a {
@@ -41,63 +172,209 @@ a {
   text-decoration: none;
 }
 
-button {
+button,
+.btn {
   font: inherit;
   cursor: pointer;
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
   background: var(--bg-raised);
   color: var(--text);
   padding: 8px 14px;
+  white-space: nowrap;
   transition:
-    transform 0.08s ease,
-    border-color 0.15s ease,
-    background 0.15s ease;
+    transform var(--dur-fast) ease,
+    border-color var(--dur-base) ease,
+    background var(--dur-base) ease;
 }
 
-button:hover:not(:disabled) {
-  border-color: var(--accent);
-  transform: translateY(-1px);
+button:hover:not(:disabled),
+.btn:hover {
+  border-color: var(--state-hover-border);
 }
 
-button:disabled {
-  opacity: 0.5;
+/* the lift is for pointers that hover without tapping; touch gets :active feedback instead */
+@media (hover: hover) and (pointer: fine) {
+  button:hover:not(:disabled),
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+}
+
+button:disabled,
+.btn[aria-disabled='true'],
+/* a field that is locked while a request runs wears the same skin as a locked button */
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: var(--state-disabled-opacity);
   cursor: not-allowed;
 }
 
-button.primary {
-  background: linear-gradient(135deg, #2c7fd8, #7a3fd8);
+/* in flight is not unavailable: full opacity, progress cursor */
+button[aria-busy='true'],
+button[aria-busy='true']:disabled {
+  opacity: 1;
+  cursor: progress;
+  /* room for the .spin beside the label; `button` is not a flex container, `.btn` already is */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+button.primary,
+.btn.primary {
+  background: linear-gradient(135deg, var(--primary-from), var(--primary-to));
   border-color: transparent;
   font-weight: 600;
 }
 
-button.danger {
-  border-color: #5b2733;
+button.danger,
+.btn.danger {
+  border-color: var(--danger-border);
   color: var(--danger);
+}
+
+/* link that looks like a button: one element, one tab stop */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.btn[aria-disabled='true'] {
+  pointer-events: none;
 }
 
 input,
 select,
 textarea {
   font: inherit;
+  /* 16px floor stops iOS focus-zoom; label typography (13.5px) no longer cascades into the control */
+  font-size: max(16px, 1em);
+  line-height: 1.3;
   background: var(--bg-raised);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
   color: var(--text);
   padding: 8px 12px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  /* the label above is 600: an example at the same weight and dim reads as a filled value */
+  font-weight: 400;
+  color: color-mix(in oklab, var(--text-dim) 80%, var(--bg-raised));
+  opacity: 1; /* Firefox applies a UA opacity */
 }
 
 input:focus,
 select:focus,
 textarea:focus {
-  outline: none;
   border-color: var(--accent);
 }
 
+input[type='checkbox'] {
+  inline-size: 20px;
+  block-size: 20px;
+  accent-color: var(--accent);
+  margin: 0;
+}
+
+/* the whole label row is the target; matches with no markup change when the box is a direct child */
+label:has(> input[type='checkbox']),
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 4px 8px;
+  margin-inline-start: -8px;
+}
+
+/* the named class also sets the size, so a toggle reads at chip scale beside sort chips */
+.checkbox-label {
+  font-size: var(--fs-sm);
+}
+
+/* field vocabulary: label / hint / counter */
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.field-hint,
+.field-help {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+
+.field-counter {
+  float: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+}
+
+/* one authored focus ring; :where() keeps it at zero specificity so component rings win without !important */
+:where(
+  a,
+  button,
+  .btn,
+  summary,
+  input,
+  select,
+  textarea,
+  [tabindex]
+):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+
 .container {
-  max-width: 1180px;
+  max-width: var(--page-max);
   margin: 0 auto;
   padding: 0 20px 64px;
+  padding-inline: max(20px, env(safe-area-inset-left))
+    max(20px, env(safe-area-inset-right));
+}
+
+/* prose-width routes (Developers) keep .page-head inside the same measure as their copy */
+.container.narrow {
+  max-width: 780px;
+}
+
+/* bypass block: costs nothing until focused */
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: calc(var(--z-header) + 10);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  color: var(--text);
+  border: 1px solid var(--accent);
+  text-decoration: none;
+  transition: top var(--dur-base) ease;
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+main {
+  scroll-margin-top: var(--topbar-h);
 }
 
 /* ---------- header ---------- */
@@ -105,15 +382,17 @@ textarea:focus {
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: var(--z-header);
   backdrop-filter: blur(12px);
-  background: rgba(11, 13, 20, 0.8);
+  background: color-mix(in oklab, var(--bg) 80%, transparent);
   border-bottom: 1px solid var(--border);
 }
 
 .topbar-inner {
-  max-width: 1180px;
+  max-width: var(--page-max);
   margin: 0 auto;
+  /* the border-bottom is the last pixel of --topbar-h */
+  min-height: calc(var(--topbar-h) - 1px);
   padding: 10px 20px;
   display: flex;
   align-items: center;
@@ -124,7 +403,12 @@ textarea:focus {
   font-weight: 800;
   font-size: 20px;
   letter-spacing: 0.5px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--gold));
+  background: linear-gradient(
+    90deg,
+    var(--accent),
+    var(--accent-2),
+    var(--gold)
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -143,7 +427,13 @@ textarea:focus {
   display: flex;
   gap: 4px;
   flex: 1;
+  min-width: 0;
   overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.nav-links::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-links a {
@@ -154,10 +444,16 @@ textarea:focus {
   white-space: nowrap;
 }
 
-.nav-links a.active,
 .nav-links a:hover {
   color: var(--text);
   background: var(--bg-raised);
+}
+
+/* location is a shape hover never produces and touch never loses */
+.nav-links a.active {
+  color: var(--text);
+  background: var(--bg-raised);
+  box-shadow: inset 0 -2px 0 var(--accent);
 }
 
 .topbar-right {
@@ -170,11 +466,11 @@ textarea:focus {
   color: var(--text-dim);
   display: inline-flex;
   align-items: center;
-  transition: color 0.15s ease;
+  transition: color var(--dur-base) ease;
 }
 
 .discord-link:hover {
-  color: #5865f2;
+  color: var(--brand-discord);
 }
 
 .coins {
@@ -189,6 +485,8 @@ textarea:focus {
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid var(--border);
+  /* a transparent, still-loading or monogram-fallback avatar is a filled disc, never a hole */
+  background: var(--bg-card);
 }
 
 /* ---------- alerts bell ---------- */
@@ -197,41 +495,78 @@ textarea:focus {
   position: relative;
 }
 
+/* the emoji line box made the bell 44px beside a 36px Log out; 1.125 x 16px = 18px content */
+.bell button {
+  line-height: 1.125;
+}
+
 .bell-badge {
   position: absolute;
   top: -4px;
   right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
   background: var(--danger);
-  color: #fff;
+  color: var(--text-inverse);
   font-size: 10px;
   font-weight: 700;
-  border-radius: 999px;
-  padding: 1px 5px;
+  border-radius: var(--radius-pill);
 }
 
 .alerts-pop {
   position: absolute;
   right: 0;
   top: 42px;
-  width: 340px;
-  max-height: 420px;
+  width: min(340px, calc(100vw - 24px));
+  max-height: min(420px, 60dvh);
   overflow-y: auto;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-pop);
   padding: 8px;
 }
 
 .alert-row {
+  display: block;
   padding: 10px;
-  border-radius: 10px;
-  font-size: 13.5px;
+  border-radius: var(--radius-control);
+  font-size: var(--fs-sm);
   line-height: 1.4;
+  color: var(--text);
 }
 
+/* the whole painted row is the target: the link is the row, and the message keeps the accent
+   that marks it as the destination */
+.alert-row-message {
+  color: var(--accent);
+}
+
+a.alert-row:hover .alert-row-message {
+  text-decoration: underline;
+}
+
+/* unread carries a shape cue (bar + weight); the tint is secondary */
 .alert-row.unread {
-  background: rgba(127, 212, 255, 0.08);
+  position: relative;
+  font-weight: 600;
+  background: var(--state-unread-bg);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.alert-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-right: 8px;
+  vertical-align: middle;
 }
 
 .alert-row time {
@@ -243,29 +578,86 @@ textarea:focus {
 
 /* ---------- meme cards + foil tiers ---------- */
 
+/* collection rules double as list resets, so <ul>/<ol> are a drop-in for the bare <div>s */
+.card-grid,
+.row-list,
+.tier-grid,
+.profile-stats,
+.invite-stats,
+.legal-toc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 20px;
 }
 
-.meme-card {
-  --glow-width: 3px;
-  position: relative;
-  border-radius: var(--radius);
-  padding: 3px; /* the frame */
-  background: var(--border);
-  transition: transform 0.15s ease;
+/* the grid clears the sticky control band's border */
+.market-grid {
+  margin-top: 18px;
 }
 
-.meme-card:hover {
-  transform: translateY(-4px) scale(1.01);
+/* relatives panel: tighter tracks than the market grid; the <=560 .card-grid rule still takes it 2-up */
+.memeplex-grid {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+/* skip-rendering slot around a card. content-visibility must not sit on .meme-card itself: it would clip
+   the blurred .glow-border::after bloom. The 30px padding / -30px margin keeps the bloom inside the
+   contained box without changing grid track geometry. */
+.card-slot {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 340px;
+  padding: 30px;
+  margin: -30px;
+  pointer-events: none;
+}
+
+.card-slot > * {
+  pointer-events: auto;
+}
+
+:where(.meme-card, .tier-card) {
+  --glow-width: 3px;
+}
+
+.meme-card {
+  position: relative;
+  border-radius: var(--radius);
+  padding: var(--glow-width); /* the frame */
+  background: var(--border);
+  transition: transform var(--dur-base) ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .meme-card:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+}
+
+/* focus lives on the outer card, outside the clip, keyed off --text so it survives every tier */
+.meme-card:has(a:focus-visible),
+.meme-card-lg:has(a:focus-visible) {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.7);
+}
+
+.meme-card a:focus-visible,
+.meme-card-lg a:focus-visible {
+  outline: none;
 }
 
 .meme-card-inner {
   background: var(--bg-card);
-  border-radius: calc(var(--radius) - 3px);
+  border-radius: calc(var(--radius) - var(--glow-width));
   overflow: hidden;
+  contain: paint;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -277,7 +669,7 @@ textarea:focus {
   width: 100%;
   object-fit: cover;
   display: block;
-  background: #0a0c12;
+  background: var(--bg-media);
 }
 
 .meme-meta {
@@ -297,9 +689,10 @@ textarea:focus {
 }
 
 .meme-sub {
-  font-size: 12.5px;
+  font-size: var(--fs-xs);
   color: var(--text-dim);
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
@@ -313,19 +706,30 @@ textarea:focus {
   letter-spacing: 0.8px;
   text-transform: uppercase;
   padding: 3px 9px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: rgba(0, 0, 0, 0.45);
   border: 1px solid currentColor;
+  /* the rarity is product language: on a 169px 2-up card it wraps to a second line
+     rather than being clipped mid-word by .meme-card-inner's overflow */
+  max-width: 100%;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 /* Tier frames: the card's padding-background IS the frame. Foil mechanics per tier. */
 
+/* non-hue ladder step: matte edge on Paper, specular edge on Silver. An outline paints above the
+   opaque .glow-border::before ring, where an inset box-shadow would be occluded. */
 .tier-paper {
   background: linear-gradient(160deg, #3a4152, #262c3a);
+  outline: 1px solid rgba(0, 0, 0, 0.35);
+  outline-offset: -1px;
 }
 
 .tier-silver {
   background: linear-gradient(160deg, #9aa7b8, #5c6778, #aeb9c9);
+  outline: 1px solid rgba(255, 255, 255, 0.55);
+  outline-offset: -1px;
 }
 
 .tier-holo {
@@ -333,12 +737,27 @@ textarea:focus {
 }
 
 .tier-chrome {
-  background: linear-gradient(105deg, #cfd8ff 0%, #6f7ba8 20%, #f4f7ff 40%, #8a96c8 60%, #dde4ff 80%, #707ca9 100%);
+  background: linear-gradient(
+    105deg,
+    #cfd8ff 0%,
+    #6f7ba8 20%,
+    #f4f7ff 40%,
+    #8a96c8 60%,
+    #dde4ff 80%,
+    #707ca9 100%
+  );
 }
 
 .tier-gold {
-  background: linear-gradient(120deg, #b8860b, #ffd76a, #fff3c4, #ffd76a, #8f6508);
-  box-shadow: 0 0 24px rgba(255, 215, 106, 0.25);
+  background: linear-gradient(
+    120deg,
+    #b8860b,
+    #ffd76a,
+    #fff3c4,
+    #ffd76a,
+    #8f6508
+  );
+  box-shadow: 0 0 24px color-mix(in oklab, var(--gold) 25%, transparent);
 }
 
 .tier-prismatic {
@@ -357,13 +776,27 @@ textarea:focus {
 }
 
 .tier-shiny {
-  background: linear-gradient(120deg, #0ff0c3, #9fffe0, #5cd4ff, #f0c3ff, #ffd76a, #0ff0c3);
+  background: linear-gradient(
+    120deg,
+    #0ff0c3,
+    #9fffe0,
+    #5cd4ff,
+    #f0c3ff,
+    #ffd76a,
+    #0ff0c3
+  );
   box-shadow:
     0 0 34px rgba(159, 255, 224, 0.45),
     0 0 80px rgba(240, 195, 255, 0.25);
 }
 
 /* large variant for the meme detail page: same card, bigger everything */
+/* the hero is the meme itself: a wide two-panel joke letterboxes on the media plate rather
+   than having its caption cropped away. Grid thumbs keep `cover` — those crops are deliberate. */
+.meme-card-lg .meme-art {
+  object-fit: contain;
+}
+
 .meme-card-lg .meme-title {
   font-size: 22px;
   white-space: normal;
@@ -387,8 +820,46 @@ textarea:focus {
   transform: none;
 }
 
+/* Foil mechanics are host-agnostic (.meme-card and .tier-card alike) and bounded to the art box via
+   .foil-media, so the sweep never crosses the meta text. The :where(:not(:has(.foil-media))) form is the interim
+   for hosts that have not added the wrapper yet: same gradient, clipped to the top square. */
+.foil-media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+
+.tier-card-inner .foil-media {
+  border-radius: 8px;
+}
+
+/* pause / play for the card film: a scrim chip pinned to the art corner, state carried by aria-pressed */
+.meme-media-toggle {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  line-height: 1;
+  font-size: var(--fs-sm);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  color: var(--text);
+  backdrop-filter: blur(4px);
+}
+
 /* sheen sweep over holo+ tiers */
-.meme-card.sheen .meme-card-inner::after {
+.sheen .foil-media::after,
+:where(.meme-card, .tier-card).sheen
+  :where(.meme-card-inner, .tier-card-inner):where(
+    :not(:has(.foil-media))
+  )::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -406,8 +877,24 @@ textarea:focus {
   mix-blend-mode: screen;
 }
 
+:where(.meme-card, .tier-card).sheen
+  :where(.meme-card-inner, .tier-card-inner):where(
+    :not(:has(.foil-media))
+  )::after,
+:where(.meme-card, .tier-card).sparkle
+  :where(.meme-card-inner, .tier-card-inner):where(
+    :not(:has(.foil-media))
+  )::before {
+  inset: 0 0 auto 0;
+  aspect-ratio: 1;
+}
+
 /* sparkles for the shiny tier */
-.meme-card.sparkle .meme-card-inner::before {
+.sparkle .foil-media::before,
+:where(.meme-card, .tier-card).sparkle
+  :where(.meme-card-inner, .tier-card-inner):where(
+    :not(:has(.foil-media))
+  )::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -445,12 +932,17 @@ textarea:focus {
 /* ---------- onboarding quests ---------- */
 
 .questbar {
-  background: linear-gradient(90deg, rgba(44, 127, 216, 0.14), rgba(122, 63, 216, 0.14));
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--primary-from) 14%, transparent),
+    color-mix(in oklab, var(--primary-to) 14%, transparent)
+  );
   border-bottom: 1px solid var(--border);
 }
 
 .questbar-inner {
-  max-width: 1180px;
+  position: relative; /* contains the chips' .sr-only text inside the <=720 scroller */
+  max-width: var(--page-max);
   margin: 0 auto;
   padding: 8px 20px;
   display: flex;
@@ -459,9 +951,22 @@ textarea:focus {
   flex-wrap: wrap;
 }
 
+/* "show all" is a request for the whole ladder: rows, no scroller, no edge fade (0-2-0 beats the <=720 block) */
+.questbar-inner.expanded {
+  flex-wrap: wrap;
+  overflow-x: visible;
+  mask-image: none;
+}
+
+/* rows may shrink and wrap their text; the scroller's fixed-basis items would otherwise widen the page */
+.questbar-inner.expanded > * {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
 .questbar-title {
   font-weight: 800;
-  font-size: 13.5px;
+  font-size: var(--fs-sm);
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
@@ -476,11 +981,19 @@ textarea:focus {
   vertical-align: middle;
 }
 
+/* the FAQ's floated hero coin */
+.braincell-img.lg {
+  width: 72px;
+  height: 72px;
+  float: right;
+  margin: 6px 0 6px 12px;
+}
+
 .quest-chip {
   font-size: 12px;
   color: var(--text-dim);
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding: 3px 10px;
   white-space: nowrap;
 }
@@ -496,7 +1009,7 @@ textarea:focus {
 
 .quest-chip.done {
   color: var(--ok);
-  border-color: rgba(125, 255, 178, 0.35);
+  border-color: color-mix(in oklab, var(--ok) 35%, transparent);
 }
 
 .quest-chip em {
@@ -505,37 +1018,129 @@ textarea:focus {
 }
 
 .quest-chip-btn {
-  font-size: 12.5px;
+  font-size: var(--fs-xs);
   padding: 4px 12px;
 }
 
-.pack-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(5, 7, 12, 0.8);
-  backdrop-filter: blur(6px);
-  z-index: 60;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+/* disclosure and dismiss are text-weight so the claim CTA stays the only loud control in the strip */
+.quest-more,
+.quest-later {
+  background: none;
+  border: 0;
+  color: var(--text-dim);
+  padding: 6px 8px;
 }
 
-.pack-modal {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  max-width: 640px;
-  width: 100%;
-  max-height: 86vh;
-  overflow-y: auto;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+.quest-more:hover,
+.quest-later:hover {
+  color: var(--text);
+}
+
+/* the next step's instructions, a step below the claim button */
+.quest-hint {
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+  line-height: 1.4;
+}
+
+/* failed one-shot claim, inline with role="alert" (token value: mo-2us) */
+.questbar-error {
+  color: var(--danger);
+  font-size: var(--fs-sm);
 }
 
 .pack-modal h3 {
   margin: 0 0 6px;
   font-size: 22px;
+}
+
+/* Native <dialog> shell: Escape, focus containment, inert background and the top layer come from the
+   platform. Every modal in the app is a <dialog>, so this is the only box the shell needs. */
+dialog.pack-modal,
+dialog.confirm-modal {
+  margin: auto;
+  inset: 0;
+  width: min(640px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  border-radius: var(--radius);
+  padding: 24px;
+  max-height: min(86dvh, 86vh);
+  overflow-y: auto;
+  box-shadow: var(--shadow-modal);
+}
+
+dialog.confirm-modal {
+  width: min(440px, calc(100vw - 24px));
+}
+
+dialog.pack-modal::backdrop,
+dialog.confirm-modal::backdrop {
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+dialog:not([open]) {
+  display: none;
+}
+
+body:has(dialog[open]) {
+  overflow: hidden;
+}
+
+/* title / close row; every dialog ships a keyboard-reachable exit */
+.pack-modal .dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-right: 44px; /* .modal-close is absolute, so the title reserves its slot */
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-dim);
+  border-radius: var(--radius-control);
+}
+
+.modal-close:hover {
+  color: var(--text);
+  background: var(--bg-raised);
+}
+
+/* bottom sheet on phones so the keyboard pushes the dialog instead of burying it */
+@media (max-width: 720px) {
+  dialog.pack-modal,
+  dialog.confirm-modal {
+    max-width: none;
+    width: 100%;
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+  }
+
+  dialog.pack-modal,
+  dialog.confirm-modal {
+    margin-block-end: 0;
+  }
+}
+
+.alerts-pop,
+.pack-modal,
+.gift-list {
+  scrollbar-width: thin;
 }
 
 .gift-list {
@@ -549,6 +1154,7 @@ textarea:focus {
 .gift-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   padding: 7px 10px;
   text-align: left;
@@ -559,10 +1165,25 @@ textarea:focus {
   height: 40px;
   border-radius: 8px;
   object-fit: cover;
+  flex: 0 0 auto;
+}
+
+/* the tier gradient paints a 2px frame around the art: the one moment rarity is handed away */
+.gift-thumb {
+  display: block;
+  flex: 0 0 auto;
+  padding: 2px;
+  border-radius: 10px;
+  line-height: 0;
+}
+
+.gift-row .tier-chip,
+.gift-row .badge {
+  flex: 0 0 auto;
 }
 
 .gift-row-title {
-  flex: 1;
+  flex: 1 1 120px;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -571,18 +1192,54 @@ textarea:focus {
 
 .gift-row-shares {
   color: var(--text-dim);
-  font-size: 12.5px;
+  font-size: var(--fs-xs);
 }
 
-.gift-row.picked {
+/* selected must survive the generic button:hover rule (same specificity, declared later) */
+button.gift-row.picked {
   border-color: var(--gold);
-  background: rgba(255, 215, 106, 0.08);
+  background: color-mix(in oklab, var(--gold) 8%, transparent);
+}
+
+/* gift dialog furniture */
+.gift-dialog-hint {
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  margin: 4px 0 12px;
+}
+
+.gift-dialog-search {
+  width: 100%;
+}
+
+.gift-dialog-actions {
+  margin-top: 12px;
+}
+
+.gift-dialog-shares-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+
+.gift-dialog-shares {
+  width: 84px;
+}
+
+.friends-panel {
+  margin-bottom: 20px;
+}
+
+.friends-section {
+  margin-bottom: 22px;
 }
 
 .site-footer {
   border-top: 1px solid var(--border);
   margin-top: 48px;
-  padding: 22px 20px 34px;
+  padding: 22px 20px max(34px, env(safe-area-inset-bottom));
   text-align: center;
   font-size: 13px;
   color: var(--text-dim);
@@ -597,28 +1254,77 @@ textarea:focus {
   color: var(--text);
 }
 
-.confirm-modal {
-  max-width: 440px;
+/* links inside prose carry an underline so colour is never the only cue; chrome and cards keep none */
+.legal a,
+.faq a,
+.hero p a,
+.notice a,
+.site-footer a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in oklab, currentColor 60%, transparent);
+}
+
+.legal a:hover,
+.faq a:hover,
+.hero p a:hover,
+.notice a:hover,
+.site-footer a:hover,
+.legal a:focus-visible,
+.faq a:focus-visible,
+.hero p a:focus-visible,
+.notice a:focus-visible,
+.site-footer a:focus-visible {
+  text-decoration-color: currentColor;
+}
+
+.site-footer a[aria-current='page'] {
+  color: var(--text);
+  text-decoration-thickness: 2px;
+}
+
+/* a button-shaped link inside prose is a button, not a link */
+:where(.legal, .faq, .hero p, .notice, .site-footer) a.btn {
+  text-decoration: none;
 }
 
 .confirm-modal.confirm-danger {
   border-color: #5b2733;
   box-shadow:
-    0 0 0 1px rgba(255, 122, 122, 0.25),
-    0 30px 80px rgba(0, 0, 0, 0.6);
+    0 0 0 1px color-mix(in oklab, var(--danger) 25%, transparent),
+    var(--shadow-modal);
 }
 
 .confirm-message {
   color: var(--text-dim);
-  font-size: 14.5px;
+  font-size: var(--fs-sm);
   line-height: 1.55;
 }
 
-.confirm-danger-btn {
+/* optional note inside a confirm: labelled, full width, never bold like its label */
+.confirm-modal .field-label {
+  margin-top: 14px;
+}
+
+.confirm-modal textarea {
+  width: 100%;
+  min-height: 88px;
+  resize: vertical;
+  font-weight: 400;
+}
+
+/* 0-1-1 and declared after button.danger, so the white label wins the specificity fight */
+button.confirm-danger-btn,
+.btn.confirm-danger-btn {
   background: #a12b3a;
   border-color: transparent;
-  color: #fff;
+  color: var(--text-inverse);
   font-weight: 700;
+}
+
+.confirm-danger-btn[aria-disabled='true'] {
+  pointer-events: none;
 }
 
 .confirm-danger-btn:hover:not(:disabled) {
@@ -630,10 +1336,15 @@ textarea:focus {
 .leader-row {
   text-decoration: none;
   color: var(--text);
-  transition: border-color 0.15s ease;
+  transition: border-color var(--dur-base) ease;
 }
 
 .leader-row:hover {
+  border-color: var(--accent);
+}
+
+/* the signed-in player's own row; the "you" badge and label prefix carry the non-colour cue */
+.leader-row.is-me {
   border-color: var(--accent);
 }
 
@@ -644,10 +1355,41 @@ textarea:focus {
   font-weight: 800;
 }
 
+/* podium medal slot: reserved on every row so the avatar column stays put below rank 3 */
+.leader-medal {
+  flex: 0 0 24px;
+  text-align: center;
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* decorative column labels over .row-list; the padding matches .person-row's */
+.row-head {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px 6px;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+
 .leader-cells {
   font-weight: 800;
   color: var(--gold);
-  font-size: 16px;
+  font-size: var(--fs-md);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* counts that tick or sit in columns align on fixed-width figures */
+.coins,
+.leader-cells,
+.meme-sub,
+.person-stats,
+.gift-row-shares,
+.cap-row,
+.bell-badge,
+.numeric {
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---------- landing / faq ---------- */
@@ -664,10 +1406,23 @@ textarea:focus {
 }
 
 .hero h1 .grad {
-  background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--gold));
+  background: linear-gradient(
+    90deg,
+    var(--accent),
+    var(--accent-2),
+    var(--gold)
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+
+@supports not (background-clip: text) {
+  .hero h1 .grad,
+  .logo {
+    color: var(--accent);
+    background: none;
+  }
 }
 
 .hero p {
@@ -675,12 +1430,34 @@ textarea:focus {
   font-size: 18px;
   max-width: 640px;
   margin: 0 auto 28px;
+  text-wrap: pretty;
 }
 
+/* the trust line is a caption under the button, not a second pitch */
+.hero p.login-reassure {
+  margin: 10px auto 0;
+  max-width: 44ch;
+  font-size: var(--fs-sm);
+}
+
+/* the CTA (landing / invite / discord / profile): a stable width across its label swap, a slot for .spin */
 .login-btn {
   font-size: 17px;
   padding: 13px 26px;
   border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 16rem;
+  max-width: 100%;
+  white-space: normal;
+}
+
+/* the closing beat after the FAQ */
+.landing-close {
+  text-align: center;
+  margin: var(--space-8) 0 var(--space-2);
 }
 
 .section-title {
@@ -699,15 +1476,21 @@ textarea:focus {
   gap: 18px;
 }
 
+/* seven tiers read 4 + 3, never 5 + 2 beside three holes */
+@media (min-width: 1100px) {
+  .tier-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 .tier-card {
-  --glow-width: 3px;
-  padding: 3px;
+  padding: var(--glow-width);
   border-radius: var(--radius);
 }
 
 .tier-card-inner {
   background: var(--bg-card);
-  border-radius: calc(var(--radius) - 3px);
+  border-radius: calc(var(--radius) - var(--glow-width));
   padding: 14px;
   height: 100%;
   display: flex;
@@ -722,7 +1505,45 @@ textarea:focus {
   aspect-ratio: 3 / 4;
   object-fit: cover;
   border-radius: 8px;
-  background: #0a0c12;
+  background: var(--bg-media);
+  display: block;
+}
+
+/* the slot owns the box, so height is stable from first paint whether or not the image exists;
+   data-state="loading" | "ready" | "error" keeps the three async outcomes visibly different */
+.tier-frame-slot {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  border-radius: 8px;
+  background: var(--bg-media);
+  overflow: hidden;
+  position: relative;
+}
+
+.tier-frame-slot > .tier-frame-img {
+  height: 100%;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+
+.tier-frame-slot[data-state='loading']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 70%
+  );
+  background-size: 300% 300%;
+  animation: sheen-sweep 3.8s ease-in-out infinite;
+}
+
+/* failure is a still tint of the tier colour with a hairline edge, so it reads without motion */
+.tier-frame-slot[data-state='error'] {
+  background: color-mix(in oklab, currentColor 18%, var(--bg-media));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, currentColor 45%, transparent);
 }
 
 .tier-name {
@@ -745,13 +1566,13 @@ textarea:focus {
 
 .faq {
   max-width: 780px;
-  margin: 0 auto;
 }
 
+/* the padding lives on the control, so the whole card is the hit target */
 .faq details {
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 14px 18px;
+  padding: 0;
   margin-bottom: 10px;
   background: var(--bg-raised);
 }
@@ -759,11 +1580,155 @@ textarea:focus {
 .faq summary {
   font-weight: 600;
   cursor: pointer;
+  padding: 14px 18px;
+  margin: 0;
+  min-height: 44px;
+}
+
+.faq summary :where(h3, .faq-q) {
+  display: inline;
+  font: inherit;
+  margin: 0;
 }
 
 .faq p {
   color: var(--text-dim);
   line-height: 1.55;
+  padding: 0 18px 14px;
+}
+
+/* logo + download links inside a FAQ answer */
+.faq-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* the install CTA's four phases share one box, so the FAQ below never moves */
+.cta-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 55px;
+}
+
+/* account-link ritual: one centred measure, the h1 keeps full contrast (so not .page-state) */
+.link-status {
+  max-width: 480px;
+  margin: 0 auto;
+  padding-top: calc(2 * var(--space-8));
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .link-status {
+    padding-top: var(--space-6);
+  }
+}
+
+/* ---------- profile / invite hero ---------- */
+
+/* the 96px identity ring; the monogram is the common case (most players have no picture) */
+.profile-avatar,
+.invite-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 3px solid var(--accent);
+  object-fit: cover;
+}
+
+.profile-avatar {
+  flex: 0 0 96px;
+}
+
+.invite-avatar {
+  display: block;
+  margin: 0 auto 14px;
+}
+
+.profile-avatar.avatar-fallback,
+.invite-avatar-monogram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text);
+  background: var(--bg-raised);
+  border: 3px solid var(--accent);
+}
+
+.profile-hero h1 {
+  font-size: var(--fs-2xl);
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.profile-identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.profile-identity-copy {
+  min-width: 0; /* load-bearing: the skeleton stats bar otherwise widens the page at 390 */
+}
+
+.profile-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+}
+
+.profile-tabs,
+.binder-controls {
+  margin-bottom: 18px;
+}
+
+@media (max-width: 640px) {
+  .profile-hero > .filter-bar {
+    width: 100%;
+  }
+}
+
+.invite-hero {
+  padding-bottom: 24px;
+}
+
+/* 0-2-0 on purpose: `.hero p` would otherwise size the note at 18px */
+.invite-hero .invite-note {
+  max-width: 46ch;
+  margin: 16px auto 0;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+
+.invite-highlights-title {
+  margin-top: 10px;
+}
+
+/* one trust line; the separators are CSS so a screen reader never hears them */
+.invite-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin: 0 0 18px;
+  font-size: var(--fs-sm);
+  color: var(--text);
+}
+
+/* the dot trails its stat, so a wrapped line never starts with one */
+.invite-stats li:not(:last-child)::after {
+  content: '\00b7';
+  color: var(--text-dim);
+  margin-left: 10px;
 }
 
 /* ---------- page furniture ---------- */
@@ -771,17 +1736,66 @@ textarea:focus {
 /* marketplace controls stay reachable while scrolling the grid */
 .market-controls {
   position: sticky;
-  top: 53px; /* just under the topbar */
-  z-index: 15;
-  background: rgba(11, 13, 20, 0.92);
+  top: var(--topbar-h);
+  z-index: var(--z-sticky);
+  background: color-mix(in oklab, var(--bg) 92%, transparent);
   backdrop-filter: blur(10px);
-  margin: 0 -20px;
-  padding: 0 20px 10px;
+  /* full-bleed plate; the controls stay on the page measure like .topbar / .topbar-inner */
+  margin-inline: calc(50% - 50vw);
+  padding-inline: calc(max(0px, 50vw - var(--page-max) / 2) + 20px);
+  padding-block: 0 10px;
   border-bottom: 1px solid var(--border);
 }
 
 .market-controls .page-head {
   margin: 14px 0 10px;
+}
+
+/* the filter rows; on phones they collapse behind a disclosure so the grid starts on the first screenful */
+.market-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.market-filters-toggle {
+  display: none;
+}
+
+/* one status line under the chips: count, active filters, clear. Also the surface's live region. */
+.market-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0 0;
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+}
+
+.market-summary button {
+  padding: 4px 10px;
+  font-size: var(--fs-xs);
+  border-radius: var(--radius-pill);
+}
+
+/* a phone has no vertical budget to pin filters; unsticking also drops the second blurred layer */
+@media (max-width: 720px) {
+  .market-controls {
+    position: static;
+    backdrop-filter: none;
+    background: transparent;
+    margin: 0;
+    padding: 0 0 10px;
+  }
+
+  .market-filters-toggle {
+    display: inline-flex;
+  }
+
+  .market-filters[data-collapsed='true'] {
+    display: none;
+  }
 }
 
 .page-head {
@@ -793,9 +1807,15 @@ textarea:focus {
   flex-wrap: wrap;
 }
 
-.page-head h2 {
+/* heading-level agnostic: a screen can promote its title to <h1> with no size change */
+.page-head :where(h1, h2) {
   margin: 0;
   font-size: 24px;
+}
+
+/* caption under a page title (pairs with .muted) */
+.page-subtitle {
+  font-size: var(--fs-sm);
 }
 
 .filter-bar {
@@ -805,10 +1825,24 @@ textarea:focus {
   align-items: center;
 }
 
+/* the field absorbs the row's slack instead of clipping its own label */
 .filter-bar input[type='search'] {
+  flex: 1 1 220px;
   min-width: 220px;
+  max-width: 420px;
 }
 
+/* on one row the head's control bar owns the slack, so the search field can actually grow */
+@media (min-width: 761px) {
+  .page-head > .filter-bar {
+    flex: 1 1 auto;
+    justify-content: flex-end;
+  }
+}
+
+/* .empty is a live region contract: mount the container with role="status" before its text arrives.
+   The dashed box means exactly one thing (no results); .empty.error is the failed-load variant and
+   .empty-actions is the retry / on-ramp slot. Loading belongs to .loading-state, not here. */
 .empty {
   text-align: center;
   color: var(--text-dim);
@@ -817,11 +1851,97 @@ textarea:focus {
   border-radius: var(--radius);
 }
 
+.empty p {
+  margin: 0 0 6px;
+}
+
+.empty :where(h2, h3) {
+  margin: 0 0 6px;
+  font-size: var(--fs-lg);
+  color: var(--text);
+}
+
+.empty-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* a .notice inside an action row sits on the button's centre line: the row owns the spacing */
+.empty-actions > .notice,
+.cta-slot > .notice {
+  margin-block: 0;
+}
+
+.empty.error {
+  border-style: solid;
+  border-color: #5b2733;
+  background: var(--state-error-bg);
+  color: var(--danger);
+}
+
+.empty.error strong {
+  color: var(--text);
+}
+
+/* centred page-level state (loading / not found / redirecting): one offset for every route */
+.page-state {
+  padding-top: calc(2 * var(--space-8));
+  text-align: center;
+  color: var(--text-dim);
+}
+
+.muted {
+  color: var(--text-dim);
+}
+
+/* vertical rhythm without per-element margins */
+.stack > * + * {
+  margin-top: var(--space-4);
+}
+
+.stack-lg > * + * {
+  margin-top: var(--space-6);
+}
+
+/* visually hidden, still announced. One name: .sr-only */
+.sr-only,
+/* a silent live region: mounted and announced, but out of flow, so it spends none of its
+   column's rhythm until it has something to say */
+.live-region:empty {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* An announcement region stays mounted in every state and only its text swaps — a live region
+   inserted together with its content is commonly missed by screen readers. */
+.live-region:not(:empty) {
+  margin-bottom: var(--space-4);
+}
+
 .panel {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 18px;
+}
+
+/* panel titles at <strong> weight, so <h3>/<h4> are a drop-in (.trade-side h4 still wins) */
+.panel :where(h3, h4) {
+  margin: 0 0 6px;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--text);
 }
 
 .row-list {
@@ -833,25 +1953,107 @@ textarea:focus {
 .person-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 12px;
+  row-gap: 8px;
   padding: 12px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--bg-raised);
 }
 
+/* shrink floor + fixed avatar slot; trailing actions never shrink, they wrap under */
+.person-row > *,
+.person-link > * {
+  min-width: 0;
+}
+
+/* the identity block takes the slack with a zero basis, so it shrinks and ellipsizes instead of
+   pushing the trailing number onto a second line; the spacer only does that job in rows without one */
+.person-row > :is(.person-link, .person-identity, div) {
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+.person-row:has(> .person-link, > .person-identity, > div) > .spacer {
+  flex: 0 0 0;
+}
+
 .person-row .avatar {
   width: 40px;
   height: 40px;
+  flex: 0 0 40px;
+}
+
+.person-row > button,
+.person-row .btn,
+.person-row .badge,
+.person-row .leader-cells {
+  flex-shrink: 0;
+}
+
+/* destructive action demoted to text weight, so the constructive primary is the loudest control */
+.person-row .danger-text {
+  background: transparent;
+  border: 0;
+  color: var(--danger);
+  padding: 8px 10px;
+}
+
+/* never an empty slot: initial placeholder sized by .avatar */
+.avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-dim);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 50%;
 }
 
 .person-name {
   font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .person-stats {
-  font-size: 12.5px;
+  font-size: var(--fs-xs);
   color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.person-name.wrap,
+.key-label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* second line of a key row: prefix chip + created date, demoted under the label */
+.key-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin-top: 4px;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* the one-time secret: a block credential with a one-click manual-copy path, not the inline chip */
+.key-string {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  user-select: all;
+  overflow-wrap: anywhere;
+  margin: 8px 0;
 }
 
 .spacer {
@@ -890,13 +2092,23 @@ textarea:focus {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: 13.5px;
-  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  color: var(--text);
   text-decoration: none;
+}
+
+/* rest-state link affordance for row links; hover keeps the full-accent emphasis step */
+.online-friend span,
+.person-link .person-name {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 .online-friend:hover span {
   color: var(--text);
+  text-decoration-color: var(--accent);
 }
 
 /* clickable identity block inside person rows */
@@ -906,7 +2118,7 @@ textarea:focus {
   gap: 12px;
   text-decoration: none;
   color: inherit;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
 }
 
 .person-link:hover .person-name {
@@ -924,36 +2136,95 @@ textarea:focus {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 13.5px;
+  font-size: var(--fs-sm);
   color: var(--text-dim);
   font-weight: 600;
 }
 
+/* form beside a live preview rail; the rail is a .stack, so it owns its own rhythm */
+.create-layout {
+  display: grid;
+  grid-template-columns: minmax(
+    0,
+    1fr
+  ); /* the panel's min-content must not size the track */
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.create-rail {
+  max-width: 420px;
+}
+
+@media (min-width: 1000px) {
+  .create-layout {
+    grid-template-columns: minmax(0, 560px) minmax(0, 1fr);
+  }
+
+  .create-rail {
+    position: sticky;
+    top: calc(var(--topbar-h) + 16px);
+  }
+}
+
+/* Role contract: .notice.error carries role="alert"; .notice.ok / .busy / .info carry role="status".
+   Mount the container before its text arrives. Shrink-wraps to its copy (a text-align: center parent
+   centres it) and always separates from what precedes it without adding trailing space. */
 .notice {
+  display: inline-block;
+  max-width: 60ch;
+  text-align: left;
+  margin-block: 12px 0;
   padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 14px;
+  border-radius: var(--radius-control);
+  font-size: var(--fs-sm);
 }
 
 .notice.error {
-  background: rgba(255, 122, 122, 0.12);
+  background: var(--state-error-bg);
   color: var(--danger);
 }
 
 .notice.ok {
-  background: rgba(125, 255, 178, 0.1);
+  background: var(--state-success-bg);
   color: var(--ok);
+}
+
+/* still running */
+.notice.busy {
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in oklab, var(--accent) 35%, transparent);
+}
+
+/* neutral / pending */
+.notice.info {
+  background: var(--bg-raised);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
 }
 
 .badge {
   font-size: 11px;
   font-weight: 700;
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--border);
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+
+/* relationship / status at full opacity, so success never wears the disabled skin */
+.badge.state {
+  color: var(--text);
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 10%, transparent);
+  text-transform: none;
+  letter-spacing: 0.2px;
+  font-size: 12px;
+  padding: 4px 10px;
 }
 
 .trade-card {
@@ -961,6 +2232,24 @@ textarea:focus {
   border-radius: var(--radius);
   background: var(--bg-raised);
   padding: 16px;
+}
+
+.trade-card-head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.trade-card-head .trade-time {
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+}
+
+.trade-parties {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .trade-sides {
@@ -971,20 +2260,75 @@ textarea:focus {
   margin: 12px 0;
 }
 
+.trade-sides > * {
+  min-width: 0;
+}
+
+.trade-swap {
+  font-size: 22px;
+  line-height: 1;
+}
+
 .trade-side {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   padding: 12px;
-  font-size: 13.5px;
+  font-size: var(--fs-sm);
 }
 
-.trade-side h4 {
+.trade-side,
+.trade-side em {
+  overflow-wrap: anywhere;
+}
+
+.trade-side :where(h3, h4) {
   margin: 0 0 8px;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.7px;
   color: var(--text-dim);
+}
+
+/* composer groups: the legend speaks the same vocabulary as the card's side labels */
+.trade-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.trade-fieldset > legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-dim);
+}
+
+.trade-fieldset + .trade-fieldset {
+  margin-top: var(--space-2);
+}
+
+/* give and want are one comparison: side by side once the panel is wider than two 560px
+   forms, instead of a single column down the left half of a 1,140px card */
+@media (min-width: 900px) {
+  .trade-compose {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-6);
+    max-width: none;
+  }
+
+  .trade-compose > .trade-fieldset + .trade-fieldset {
+    margin-top: 0;
+  }
+
+  .trade-compose > :not(.trade-fieldset) {
+    grid-column: 1 / -1;
+  }
 }
 
 .detail-layout {
@@ -994,14 +2338,233 @@ textarea:focus {
   margin-top: 28px;
 }
 
-@media (max-width: 760px) {
+/* card plus the tier meter under it, in the card's own foil colour (currentColor from the inline tint) */
+.detail-rail {
+  align-self: start;
+}
+
+.tier-ladder {
+  margin-top: 12px;
+}
+
+.tier-ladder-track {
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-raised);
+  overflow: hidden;
+}
+
+.tier-ladder-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: currentColor;
+}
+
+.tier-ladder-next {
+  margin: 6px 0 0;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+}
+
+/* ---------- shared chrome breakpoint ---------- */
+
+/* stack ~140px before the rail would drop under the card's own width; cap the lone art square */
+@media (max-width: 900px) {
   .detail-layout {
     grid-template-columns: 1fr;
+  }
+
+  .detail-layout > .meme-card-lg,
+  .detail-rail > .meme-card-lg {
+    max-width: 480px;
+    width: 100%;
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  /* two-row header: 10 + 44 (row 1) + 10 gap + 6 + 44 + 2 (nav row) + 10 + 1 border */
+  :root:has(.nav-links) {
+    --topbar-h: 127px;
+  }
+
+  .hero {
+    padding: 36px 16px 28px;
+  }
+
+  /* topbar wraps to two rows: mark + actions above, a swipeable nav row below */
+  .topbar-inner {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding-inline: max(20px, env(safe-area-inset-left))
+      max(20px, env(safe-area-inset-right));
+  }
+
+  /* the gradient wordmark is brand, not decoration: shrink it to the width the
+     two-row topbar has spare rather than zeroing it off the phone */
+  .logo {
+    font-size: 13px;
+    gap: 4px;
+  }
+
+  .logo-img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .nav-links {
+    flex: 1 0 100%;
+    order: 3;
+    min-width: 0;
+    margin: 6px -20px 0;
+    padding: 0 20px 2px;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    mask-image: linear-gradient(to right, #000 88%, transparent);
+  }
+
+  .nav-links a {
+    scroll-snap-align: start;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .topbar-right {
+    min-width: 0;
+    margin-left: auto;
+    gap: 10px;
+  }
+
+  /* the deal reads give-above / get-below */
+  .trade-sides {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .trade-swap {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
+}
+
+@media (max-width: 480px) {
+  .discord-link {
+    display: none; /* the footer already carries a Discord link */
+  }
+
+  .alerts-pop {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    top: var(--topbar-h);
+    width: auto;
+    /* fixed to the top bar, so the list may run to the bottom of the screen: at 420px a real
+       seven-alert queue was sliced mid-row with 300px of empty page under the popover */
+    max-height: calc(100dvh - var(--topbar-h) - 24px);
+  }
+}
+
+/* two-up grids on phones: one 350px card per screen is a 1,800px scroll for four items.
+   minmax(0, 1fr) so a card's min-content never widens the track past half the viewport. */
+@media (max-width: 560px) {
+  .card-grid,
+  .tier-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  /* the slot's bleed has to stay inside .container's 20px gutter: at 30px the right-hand
+     column pushed the page 10px wider than the viewport and the whole page scrolled sideways */
+  .card-slot {
+    padding: var(--space-5);
+    margin: calc(var(--space-5) * -1);
+  }
+
+  /* rank + medal + avatar + braincells left ~120px for identity, so a real display name and
+     the portfolio figure — half the reason the page exists — were always ellipsized away.
+     One 24px rank slot instead of two, a tighter row, and the stats line clears ~160px. */
+  .leader-row {
+    gap: 8px;
+    padding-inline: 10px;
+  }
+
+  .leader-rank {
+    width: 24px;
+    font-size: var(--fs-lg);
+  }
+
+  /* the medal already says "1st": on the podium it replaces the numeral rather than sitting
+     beside it, and the empty slot below rank 3 costs nothing — every avatar still lands on the same x */
+  .leader-medal:empty {
+    display: none;
+  }
+
+  .leader-medal:not(:empty) {
+    flex: 0 0 24px;
+    font-size: 16px;
+  }
+
+  .leader-row:has(.leader-medal:not(:empty)) .leader-rank {
+    display: none;
+  }
+
+  .person-row .avatar {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+  }
+
+  .leader-row .person-stats {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  .meme-sub {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+
+  /* two trailing buttons would squeeze the identity to nothing: it takes the line, the actions wrap under */
+  .person-row:has(> button ~ button)
+    > :is(.person-link, .person-identity, div) {
+    flex: 1 1 100%;
+  }
+
+  .login-btn {
+    width: 100%;
+  }
+}
+
+/* one swipeable quest row with a truncation cue instead of a four-row block */
+@media (max-width: 720px) {
+  .questbar-inner {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    mask-image: linear-gradient(to right, #000 90%, transparent);
+    padding-block: 6px;
+    scrollbar-width: none;
+  }
+
+  .questbar-inner::-webkit-scrollbar {
+    display: none;
+  }
+
+  .questbar-inner > * {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+  }
+
+  /* the mark + count stay; the words would push the claim CTA off the first screenful */
+  .questbar-words {
+    display: none;
   }
 }
 
 .legal {
-  max-width: 760px;
+  max-width: 68ch; /* measure and type size stay coupled */
   padding-top: 36px;
 }
 
@@ -1022,13 +2585,56 @@ textarea:focus {
 
 .legal p,
 .legal li {
-  color: var(--text-dim);
-  line-height: 1.6;
-  font-size: 14.5px;
+  color: var(--text);
+  line-height: 1.65;
+  font-size: var(--fs-md);
 }
 
 .legal strong {
   color: var(--text);
+}
+
+/* the sentences a reader must not skim past; --text-dim is reserved for .legal-date and asides */
+.legal-key {
+  border-left: 2px solid var(--gold);
+  padding-left: 12px;
+  color: var(--text);
+}
+
+.legal :where(h2, h3) {
+  scroll-margin-top: calc(var(--topbar-h) + 16px);
+}
+
+/* on-this-page chips, reusing the incumbent chip vocabulary */
+.legal-toc {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0 0 26px;
+  padding: 0;
+}
+
+.legal-toc a {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  color: var(--text-dim);
+  text-decoration: none;
+}
+
+.legal-toc a:hover,
+.legal-toc a:focus-visible {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.legal-more {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
 }
 
 .sort-chips {
@@ -1037,16 +2643,58 @@ textarea:focus {
   flex-wrap: wrap;
 }
 
-.sort-chip {
-  font-size: 12.5px;
-  padding: 5px 11px;
-  border-radius: 999px;
+/* ---------- binder ---------- */
+
+.binder-collection-label {
+  color: var(--text-dim);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
 }
 
-.sort-chip.active {
-  border-color: var(--accent);
+/* the binder's defining datum: your share count, promoted above the public numbers */
+.binder-owned {
+  color: var(--gold);
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.binder-owned-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+/* the 100-share fill: how much of this card is yours, without reading the number */
+.binder-owned-bar {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-raised);
+  overflow: hidden;
+}
+
+.binder-owned-bar > i {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
+
+.sort-chip {
+  font-size: var(--fs-xs);
+  padding: 5px 11px;
+  border-radius: var(--radius-pill);
+}
+
+/* selected outranks focus by fill and weight, not border colour, and survives the generic hover rule */
+button.sort-chip.active {
+  border-color: var(--state-selected-border);
   color: var(--text);
-  background: rgba(127, 212, 255, 0.1);
+  background: var(--state-selected-bg);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--state-selected-border);
 }
 
 .sort-arrow {
@@ -1074,10 +2722,20 @@ textarea:focus {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
-  border-radius: 10px;
-  border: 2px solid var(--border);
+  border-radius: var(--radius-control);
+  border: 1px solid var(--border);
   cursor: pointer;
-  background: #0a0c12;
+  background: var(--bg-media);
+  padding: 0;
+  overflow: hidden;
+}
+
+/* same rule when the cell is a <button> around the <img> */
+.giphy-cell img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .giphy-cell:hover {
@@ -1086,11 +2744,12 @@ textarea:focus {
 
 .giphy-cell.picked {
   border-color: var(--gold);
-  box-shadow: 0 0 12px rgba(255, 215, 106, 0.4);
+  box-shadow: 0 0 12px color-mix(in oklab, var(--gold) 40%, transparent);
 }
 
 .spin {
   display: inline-block;
+  flex: none;
   width: 18px;
   height: 18px;
   border: 2px solid var(--border);
@@ -1102,5 +2761,265 @@ textarea:focus {
 @keyframes rot {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* ---------- loading primitives ---------- */
+
+/* labelled spinner row: <div class="loading-state" role="status"><span class="spin" aria-hidden="true" />Loading…</div> */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 60px 20px;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+/* one skeleton; surfaces override the height, never re-declare the recipe */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(232, 236, 244, 0.06),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: skeleton-sweep 1.4s linear infinite;
+}
+
+@keyframes skeleton-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* the card's own shape at any track width: an art square (content box) plus a 70px meta band, so a
+   270px track reserves the same 340px as .card-slot. aspect-ratio + min-height transferred the 340px
+   back into the width and blew the grid track. */
+.skeleton-card {
+  box-sizing: content-box;
+  aspect-ratio: 1;
+  padding-bottom: 70px;
+}
+
+.skeleton-row {
+  min-height: 64px;
+}
+
+.skeleton-block {
+  background: var(--bg-card);
+  border-radius: 8px;
+  height: 14px;
+}
+
+/* per-surface heights */
+.trade-card-skeleton {
+  min-height: 180px;
+}
+
+.profile-skeleton-name {
+  width: 180px;
+  height: 26px;
+  margin-bottom: 10px;
+}
+
+.profile-skeleton-stats {
+  width: 260px;
+  max-width: 100%;
+}
+
+.skeleton.profile-avatar {
+  border-radius: 50%;
+}
+
+/* ---------- input modality ---------- */
+
+/* 44px targets only where the pointer is a finger; desktop density is untouched */
+@media (pointer: coarse) {
+  button,
+  .btn,
+  .sort-chip,
+  .quest-chip-btn,
+  .quest-chip-link,
+  .nav-links a,
+  .site-footer a,
+  .discord-link,
+  .online-friend,
+  .person-link,
+  .legal-toc a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .meme-media-toggle {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* the alert row is the card and the link: on a finger the whole row taps, never a 17px line */
+  .alert-row {
+    min-height: 44px;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  input[type='number'] {
+    min-width: 72px;
+  }
+
+  .site-footer a {
+    padding-inline: 12px;
+    margin: 0;
+  }
+
+  .discord-link {
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  .online-friend {
+    padding: 4px 12px 4px 4px;
+    border-radius: var(--radius-pill);
+    background: var(--bg-raised);
+    gap: 8px;
+  }
+
+  .person-row .danger-text {
+    min-height: 44px;
+    padding: 8px 10px;
+  }
+
+  /* touch feedback in place of the hover lift */
+  button:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .meme-card:active {
+    transform: scale(0.99);
+  }
+}
+
+/* ---------- motion, forced colours, contrast ---------- */
+
+/* Freeze, never delete: the static foil stays painted. .spin slows rather than stops (a frozen spinner
+   reads as a hung page). Glow rings pause in tier-glow-borders.css under the same query. */
+@media (prefers-reduced-motion: reduce) {
+  .sheen .foil-media::after,
+  .sheen :where(.meme-card-inner, .tier-card-inner)::after {
+    animation: none;
+    background-position: 50% 0;
+  }
+
+  .sparkle .foil-media::before,
+  .sparkle :where(.meme-card-inner, .tier-card-inner)::before {
+    animation: none;
+    opacity: 0.6;
+  }
+
+  .meme-card,
+  button,
+  .btn,
+  .discord-link,
+  .leader-row,
+  .skip-link {
+    transition: none;
+  }
+
+  .meme-card:hover,
+  .meme-card-lg:hover,
+  button:hover:not(:disabled),
+  .btn:hover {
+    transform: none;
+  }
+
+  .meme-card:hover .meme-card-inner {
+    outline: 1px solid var(--accent);
+    outline-offset: -1px;
+  }
+
+  .skeleton::after,
+  .tier-frame-slot[data-state='loading']::after {
+    animation: none;
+  }
+
+  .spin {
+    animation-duration: 2s;
+  }
+}
+
+@media (forced-colors: active) {
+  :where(
+    a,
+    button,
+    .btn,
+    summary,
+    input,
+    select,
+    textarea,
+    [tabindex]
+  ):focus-visible {
+    outline-color: Highlight;
+  }
+
+  .sheen .foil-media::after,
+  .sparkle .foil-media::before,
+  .sheen :where(.meme-card-inner, .tier-card-inner)::after,
+  .sparkle :where(.meme-card-inner, .tier-card-inner)::before {
+    display: none;
+  }
+
+  .spin {
+    border-color: CanvasText;
+    border-top-color: Highlight;
+  }
+
+  .hero h1 .grad,
+  .logo {
+    color: CanvasText;
+    background: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --border: var(--border-strong);
+    --state-unread-bg: color-mix(in oklab, var(--accent) 24%, transparent);
+    --state-selected-bg: color-mix(in oklab, var(--accent) 32%, transparent);
+  }
+
+  :where(
+    a,
+    button,
+    .btn,
+    summary,
+    input,
+    select,
+    textarea,
+    [tabindex]
+  ):focus-visible {
+    outline-width: 3px;
+  }
+
+  .notice,
+  .empty {
+    border: 1px solid currentColor;
   }
 }
