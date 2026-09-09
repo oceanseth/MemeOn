@@ -5,12 +5,17 @@ export interface EmptyStateProps extends HTMLAttributes<HTMLDivElement> {
   error?: boolean
 }
 
-/** A live region contract: mount before its text arrives. `error` is the failed-load variant. */
-export function EmptyState({ error = false, className, children, ...rest }: EmptyStateProps) {
+/**
+ * A live region contract: mount before its text arrives, defaulting `role` the same way `Notice`
+ * does (`error` → `alert`, otherwise `status`) so every consumer inherits the contract instead of
+ * having to remember `role="status"`/`role="alert"` themselves. An explicit `role` still wins.
+ */
+export function EmptyState({ error = false, role, className, children, ...rest }: EmptyStateProps) {
   return (
     <div
       {...rest}
       data-slot="empty-state"
+      role={role ?? (error ? 'alert' : 'status')}
       className={cn(
         'rounded-card border border-dashed border-border px-5 py-15 text-center text-text-dim',
         '[&_:where(h2,h3)]:mt-0 [&_:where(h2,h3)]:mb-1.5 [&_:where(h2,h3)]:text-lg [&_:where(h2,h3)]:text-text',

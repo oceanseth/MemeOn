@@ -1,14 +1,17 @@
-import type { HTMLAttributes } from 'react'
+import type { ElementType, HTMLAttributes } from 'react'
 import { cn } from '../lib/cn'
 
-export interface PageContainerProps extends HTMLAttributes<HTMLDivElement> {
+export interface PageContainerProps extends HTMLAttributes<HTMLElement> {
   /** Prose-width routes (Developers) keep their head inside the same measure as their copy. */
   narrow?: boolean
+  /** Every real call site wants the `<main id="main" tabIndex={-1}>` landmark, not a bare `<div>`. */
+  as?: 'div' | 'main' | 'section'
 }
 
-export function PageContainer({ narrow = false, className, children, ...rest }: PageContainerProps) {
+export function PageContainer({ as, narrow = false, className, children, ...rest }: PageContainerProps) {
+  const Tag: ElementType = as ?? 'div'
   return (
-    <div
+    <Tag
       {...rest}
       data-slot="page-container"
       className={cn(
@@ -19,6 +22,6 @@ export function PageContainer({ narrow = false, className, children, ...rest }: 
       )}
     >
       {children}
-    </div>
+    </Tag>
   )
 }

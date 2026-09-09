@@ -1,5 +1,8 @@
 @layer components {
-  @keyframes rot {
+  /* Named uniquely (not `rot`) so this can never collide with the byte-identical legacy
+     `48-spin.css` `@keyframes rot` — verified independent of the legacy import: builds with
+     `web/src/index.css`'s legacy import removed still ship this rule intact. */
+  @keyframes atom-rot {
     to {
       transform: rotate(360deg);
     }

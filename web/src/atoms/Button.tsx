@@ -15,6 +15,7 @@ const BASE = cn(
   'motion-reduce:transition-none',
   '[&:not(:disabled):hover]:border-(--state-hover-border)',
   '[@media(hover:hover)_and_(pointer:fine)]:[&:not(:disabled):hover]:-translate-y-px',
+  'motion-reduce:[&:not(:disabled):hover]:translate-y-0!',
   'pointer-coarse:[&:not(:disabled):active]:translate-y-px',
   'focus-visible:outline-2 focus-visible:outline-(--focus-ring) focus-visible:outline-offset-(--focus-offset)',
   'contrast-more:focus-visible:outline-3',
@@ -43,32 +44,39 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   busy?: boolean
 }
 
-/** Busy always wins over the `:disabled` dimming, matching the legacy `[aria-busy]` override. */
+/**
+ * Busy always wins over the `:disabled` dimming, matching the legacy `[aria-busy]` override.
+ * Every real call site's prop bag is typed and spread as `{ 'aria-busy': boolean, ... }` rather
+ * than `busy` (see hooks/*Screen.ts, molecules/tradeCardModel.ts), so a spread `aria-busy`
+ * (boolean or the string `'true'`/`'false'`) is honoured as a fallback when `busy` isn't passed
+ * explicitly — `busy` still wins when both are present.
+ */
 export function Button({
   variant = 'default',
-  busy = false,
+  busy,
   disabled,
   type = 'button',
   className,
   children,
   ...rest
 }: ButtonProps) {
+  const isBusy = busy ?? (rest['aria-busy'] === true || rest['aria-busy'] === 'true')
   return (
     <button
       {...rest}
       type={type}
       disabled={disabled}
-      aria-busy={busy || undefined}
+      aria-busy={isBusy || undefined}
       data-slot="button"
       className={cn(
         buttonClasses(variant),
-        busy
+        isBusy
           ? 'opacity-100 cursor-progress'
           : 'disabled:opacity-(--state-disabled-opacity) disabled:cursor-not-allowed',
         className,
       )}
     >
-      {busy && <Spinner />}
+      {isBusy && <Spinner />}
       {children}
     </button>
   )
