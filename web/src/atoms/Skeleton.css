@@ -1,0 +1,10 @@
+@layer components {
+  /* Named uniquely (not `skeleton-sweep`) so this can never collide with the byte-identical
+     legacy `49-loading.css` `@keyframes skeleton-sweep` — verified independent of the legacy
+     import: builds with `web/src/index.css`'s legacy import removed still ship this rule intact. */
+  @keyframes atom-skeleton-sweep {
+    to {
+      transform: translateX(100%);
+    }
+  }
+}
