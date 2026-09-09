@@ -115,3 +115,13 @@ export interface Alert {
   read: boolean
   createdAt: string
 }
+
+export interface GiphyResult {
+  id: string
+  title: string
+  stillUrl: string
+  gifUrl: string
+  mp4Url: string | null
+  author: string | null
+  url: string
+}

@@ -1,6 +1,7 @@
 import { apiFetch, post, setMaskyAccessToken, setSessionToken } from './api'
 import { firebaseSignIn } from './firebase'
 import type { Me } from './types'
+import { navigateToAuthorization } from './authNavigation'
 
 const STATE_KEY = 'masky_oauth_state'
 const REDIRECT_PATH = '/auth/callback'
@@ -20,7 +21,7 @@ export async function beginMaskyLogin(): Promise<void> {
   url.searchParams.set('redirect_uri', redirectUri())
   url.searchParams.set('scope', cfg.scopes)
   url.searchParams.set('state', state)
-  window.location.assign(url.toString())
+  navigateToAuthorization(url.toString())
 }
 
 /**
