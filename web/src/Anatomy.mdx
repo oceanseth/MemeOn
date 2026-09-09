@@ -41,16 +41,17 @@ or moving a component. `npm run check-tiers` runs recursively and must pass;
 | `PrivacyScreen` | none (static copy) | — | — |
 | `TermsScreen` | none (static copy) | — | — |
 
-These are declared machine phases. [The screen state inventory](../../docs/SCREEN_STATE_INVENTORY.md)
-distinguishes connected states, transient phases, and prop fixtures that the current
-request handlers do not produce. Initial list failures retain their existing empty
-presentation; an `Error` story alone does not establish a connected error path.
+The table lists declared machine phases, including transient phases and states
+represented only by prop fixtures. In the reachable flows, initial list failures
+for Friends, Binder, and Leaderboard retain their existing empty presentation;
+Marketplace errors also present as empty. Detail, trades, and developer errors
+include mutation failures. A successful creation navigates away from its screen.
 
 ## Composition tree
 
 ```
 main.tsx ── StoresProvider + AuthRuntime + BrowserRouter
-└─ App.tsx (re-export) ── AppView
+└─ App.ts (re-export) ── AppView
    ├─ RequireAuth · BinderOwnRedirect · BinderRoute · ProfileRoute · MemeDetailRoute · LegacyMemeRedirect
    └─ AppShellView ── useAppShellScreen → AppShellScreen
       ├─ AppShell

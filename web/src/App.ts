@@ -1,1 +1,1 @@
-export { AppView as default } from './views/AppView'
+export { AppView as default, CreateMemeRoute, InviteRoute } from './views/AppView'

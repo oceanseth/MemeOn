@@ -106,12 +106,16 @@ export function useFriendsScreen(): FriendsScreenModel {
   const onQueryChange = useCallback(
     (value: string) => {
       send({ type: 'SET_QUERY', query: value })
-      if (searchTimer.current) clearTimeout(searchTimer.current)
+      if (searchTimer.current) {
+        clearTimeout(searchTimer.current)
+        searchTimer.current = null
+      }
       if (!value.trim()) {
         send({ type: 'SET_HITS', hits: [] })
         return
       }
       searchTimer.current = setTimeout(() => {
+        searchTimer.current = null
         apiFetch<{ users: UserHit[] }>(`/api/users?q=${encodeURIComponent(value)}`)
           .then((r) => send({ type: 'SET_HITS', hits: r.users }))
           .catch(() => send({ type: 'SET_HITS', hits: [] }))
@@ -144,14 +148,13 @@ export function useFriendsScreen(): FriendsScreenModel {
       try {
         await post('/api/friends/request', { userId })
         send({ type: 'SET_MSG', msg: 'Friend request sent 👋' })
-        send({ type: 'SET_QUERY', query: '' })
-        send({ type: 'SET_HITS', hits: [] })
+        onQueryChange('')
         load()
       } catch (e) {
         send({ type: 'SET_MSG', msg: e instanceof Error ? e.message : 'request failed' })
       }
     },
-    [load, send],
+    [load, onQueryChange, send],
   )
 
   const onRespond = useCallback(
@@ -182,7 +185,7 @@ export function useFriendsScreen(): FriendsScreenModel {
 
   const onGiftSubmit = useCallback(async () => {
     const live = actor.getSnapshot().context
-    if (!live.giftPick || !live.gifting) return
+    if (live.giftBusy || !live.giftPick || !live.gifting) return
     send({ type: 'SET_GIFT_BUSY', busy: true })
     send({ type: 'SET_GIFT_ERR', err: null })
     try {

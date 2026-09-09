@@ -8,4 +8,3 @@ export function onFirebaseUser(callback: (user: null) => void): () => void {
   callback(null)
   return () => {}
 }
-

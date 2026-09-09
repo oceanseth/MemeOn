@@ -161,6 +161,13 @@ export const memeDetailMachine = setup({
     },
     listing: {
       on: {
+        LOADED: {
+          actions: assign({
+            meme: ({ event }) => event.meme,
+            positions: ({ event }) => event.positions,
+            err: null,
+          }),
+        },
         DONE: {
           target: 'ready',
           actions: assign({ msg: ({ event }) => event.msg ?? null, err: null }),
@@ -173,6 +180,13 @@ export const memeDetailMachine = setup({
     },
     buying: {
       on: {
+        LOADED: {
+          actions: assign({
+            meme: ({ event }) => event.meme,
+            positions: ({ event }) => event.positions,
+            err: null,
+          }),
+        },
         DONE: {
           target: 'ready',
           actions: assign({ msg: ({ event }) => event.msg ?? null, err: null }),
@@ -185,6 +199,13 @@ export const memeDetailMachine = setup({
     },
     deleting: {
       on: {
+        LOADED: {
+          actions: assign({
+            meme: ({ event }) => event.meme,
+            positions: ({ event }) => event.positions,
+            err: null,
+          }),
+        },
         DONE: {
           target: 'ready',
           actions: assign({ deleting: false, confirmingDelete: false }),
