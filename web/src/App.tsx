@@ -18,19 +18,11 @@ function BinderRoute() {
   if (user && sub === user.sub) return <Binder />
   return <Profile initialTab="binder" />
 }
-import { Layout } from './components/Layout'
 import { useAuth } from './context/AuthContext'
-import Landing from './pages/Landing'
 import AuthCallback from './pages/AuthCallback'
 import MobileAuthForward from './pages/MobileAuthForward'
-import Invite from './pages/Invite'
 import Leaderboard from './pages/Leaderboard'
 import Profile from './pages/Profile'
-import DiscordPage from './pages/DiscordPage'
-import DiscordLink from './pages/DiscordLink'
-import Privacy from './pages/Privacy'
-import Developers from './pages/Developers'
-import Terms from './pages/Terms'
 import Marketplace from './pages/Marketplace'
 import Binder from './pages/Binder'
 import CreateMeme from './pages/CreateMeme'
@@ -38,6 +30,14 @@ import Friends from './pages/Friends'
 import Trades from './pages/Trades'
 import MemeDetail from './pages/MemeDetail'
 import type { ReactNode } from 'react'
+import { AppShellView } from './views/AppShellView'
+import { DevelopersView } from './views/DevelopersView'
+import { DiscordLinkView } from './views/DiscordLinkView'
+import { DiscordPageView } from './views/DiscordPageView'
+import { InviteView } from './views/InviteView'
+import { LandingView } from './views/LandingView'
+import { PrivacyView } from './views/PrivacyView'
+import { TermsView } from './views/TermsView'
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth()
@@ -51,26 +51,31 @@ function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
+function InviteRoute() {
+  const { sub } = useParams<{ sub: string }>()
+  return <InviteView key={sub} />
+}
+
 export default function App() {
   return (
-    <Layout>
+    <AppShellView>
       <Routes>
-        <Route path="/" element={<Landing />} />
+        <Route path="/" element={<LandingView />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/auth/mobile" element={<MobileAuthForward />} />
-        <Route path="/invite/:sub" element={<Invite />} />
-        <Route path="/discord" element={<DiscordPage />} />
-        <Route path="/discord/link" element={<DiscordLink />} />
-        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/invite/:sub" element={<InviteRoute />} />
+        <Route path="/discord" element={<DiscordPageView />} />
+        <Route path="/discord/link" element={<DiscordLinkView />} />
+        <Route path="/privacy" element={<PrivacyView />} />
         <Route
           path="/developers"
           element={
             <RequireAuth>
-              <Developers />
+              <DevelopersView />
             </RequireAuth>
           }
         />
-        <Route path="/terms" element={<Terms />} />
+        <Route path="/terms" element={<TermsView />} />
         <Route
           path="/marketplace"
           element={
@@ -128,6 +133,6 @@ export default function App() {
         <Route path="/meme/:id" element={<LegacyMemeRedirect />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </Layout>
+    </AppShellView>
   )
 }

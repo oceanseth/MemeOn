@@ -1,17 +1,11 @@
-import { useEffect, useState } from 'react'
-import { apiFetch } from '../lib/api'
+import type { DiscordPageScreenModel } from '../hooks/useDiscordPageScreen'
 
-export default function DiscordPage() {
-  const [installUrl, setInstallUrl] = useState<string | null>(null)
-  const [loaded, setLoaded] = useState(false)
-
-  useEffect(() => {
-    apiFetch<{ configured: boolean; installUrl: string | null }>('/api/discord/config')
-      .then((r) => setInstallUrl(r.installUrl))
-      .catch(() => {})
-      .finally(() => setLoaded(true))
-  }, [])
-
+/** Discord install landing as a function of its model. Every engine state is one set of args. */
+export function DiscordPageScreen({
+  showInstall,
+  showPending,
+  installLinkProps,
+}: DiscordPageScreenModel) {
   return (
     <main className="container">
       <section className="hero" style={{ paddingBottom: 24 }}>
@@ -24,14 +18,13 @@ export default function DiscordPage() {
           posted is a share link: it unfurls with its current foil tier frame and{' '}
           <strong>counts as a reshare</strong>, pushing the meme up the tiers.
         </p>
-        {loaded &&
-          (installUrl ? (
-            <a href={installUrl} target="_blank" rel="noreferrer">
-              <button className="primary login-btn">🧠 Add MemeOn to Discord</button>
-            </a>
-          ) : (
-            <p className="notice ok">Almost live — the Discord app is being registered. Check back soon!</p>
-          ))}
+        {showInstall ? (
+          <a {...installLinkProps}>
+            <button className="primary login-btn">🧠 Add MemeOn to Discord</button>
+          </a>
+        ) : showPending ? (
+          <p className="notice ok">Almost live — the Discord app is being registered. Check back soon!</p>
+        ) : null}
       </section>
 
       <div className="panel" style={{ maxWidth: 780, margin: '0 auto 28px', textAlign: 'center' }}>

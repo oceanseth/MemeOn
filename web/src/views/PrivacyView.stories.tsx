@@ -1,0 +1,22 @@
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import { MemoryRouter } from 'react-router-dom'
+import { expect, within } from 'storybook/test'
+import { PrivacyView } from './PrivacyView'
+
+const meta = {
+  title: 'Views/PrivacyView',
+  component: PrivacyView,
+  tags: ['!autodocs'],
+  decorators: [
+    (Story) => (
+      <MemoryRouter initialEntries={['/privacy']}>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
+} satisfies Meta<typeof PrivacyView>
+
+export default meta
+type Story = StoryObj<typeof meta>
+
+export const Default: Story = { play: async ({ canvasElement }) => { const canvas = within(canvasElement); await expect(canvas.getByRole('heading', { name: 'Privacy Policy' })).toBeInTheDocument(); await expect(canvas.getAllByRole('link', { name: 'seth@voicecert.com' })[0]).toHaveAttribute('href', 'mailto:seth@voicecert.com') } }

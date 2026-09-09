@@ -1,41 +1,20 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { beginMaskyLogin } from '../lib/auth'
-import { apiFetch } from '../lib/api'
-import { useAuth } from '../context/AuthContext'
-import { tierClasses } from '../components/MemeCard'
-import HeroVideo from '../components/HeroVideo'
-import { TIERS, type Tier } from '../../../shared/tiers'
+import { tierClasses } from '../atoms/MemeCard'
+import type { LandingScreenModel } from '../hooks/useLandingScreen'
 
-interface FrameInfo {
-  key: string
-  name: string
-  url: string
-}
-
-export default function Landing() {
-  const { user } = useAuth()
-  const [frames, setFrames] = useState<Record<string, string>>({})
-  const [busy, setBusy] = useState(false)
-  const [err, setErr] = useState<string | null>(null)
-
-  useEffect(() => {
-    apiFetch<{ tiers: Tier[]; frames: FrameInfo[] }>('/api/frames')
-      .then((r) => setFrames(Object.fromEntries(r.frames.map((f) => [f.key, f.url]))))
-      .catch(() => {})
-  }, [])
-
-  const login = async () => {
-    setBusy(true)
-    setErr(null)
-    try {
-      await beginMaskyLogin()
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : 'login failed')
-      setBusy(false)
-    }
-  }
-
+/** Landing as a function of its model. Every engine state is one set of args. */
+export function LandingScreen({
+  err,
+  showMarketplaceCta,
+  showLoginButton,
+  showErr,
+  loginLabel,
+  hero,
+  tiers,
+  loginButtonProps,
+  frameImageProps,
+  errorNoticeProps,
+}: LandingScreenModel) {
   return (
     <main className="container">
       <section className="hero">
@@ -47,17 +26,17 @@ export default function Landing() {
           positions with friends. Every meme gets a share link whose card frame levels up as it
           spreads.
         </p>
-        <HeroVideo />
-        {user ? (
+        {hero}
+        {showMarketplaceCta ? (
           <Link to="/marketplace">
             <button className="primary login-btn">📈 Enter the marketplace</button>
           </Link>
-        ) : (
-          <button className="primary login-btn" onClick={login} disabled={busy}>
-            {busy ? 'Redirecting…' : '🎭 Log in with Masky'}
+        ) : showLoginButton ? (
+          <button className="primary login-btn" {...loginButtonProps}>
+            {loginLabel}
           </button>
-        )}
-        {err && <p className="notice error">{err}</p>}
+        ) : null}
+        {showErr && <p className="notice error" {...errorNoticeProps}>{err}</p>}
       </section>
 
       <h2 className="section-title" id="tiers">
@@ -68,27 +47,24 @@ export default function Landing() {
         and its card physically transforms as it ascends.
       </p>
       <div className="tier-grid">
-        {TIERS.map((t) => (
+        {tiers.map((t) => (
           <div
             key={t.key}
             className={`tier-card ${tierClasses(t.key)}`}
             data-glow-style={t.glowStyle}
           >
             <div className="tier-card-inner">
-              {frames[t.key] ? (
+              {frameImageProps[t.key] ? (
                 <img
                   className="tier-frame-img"
-                  src={frames[t.key]}
-                  alt={`${t.name} frame`}
-                  loading="lazy"
-                  onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+                  {...frameImageProps[t.key]}
                 />
               ) : null}
               <span className="tier-name" style={{ color: t.color }}>
                 {t.name}
               </span>
               <span className="tier-req">
-                {t.rarity} · {t.minReshares.toLocaleString()}+ views
+                {t.requirementLabel}
               </span>
               <span className="tier-hype">{t.hype}</span>
             </div>
