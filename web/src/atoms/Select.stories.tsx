@@ -33,34 +33,10 @@ function ControlledSelect({ initial = '' }: { initial?: string }) {
   )
 }
 
-/**
- * The preview stubs `IntersectionObserver` so a connected view can drive it, and that stub reports
- * into a scenario an atom story never starts. Base UI's positioner watches layout shift with one,
- * so these stories lend it an inert observer for the duration of the story.
- */
-class InertIntersectionObserver implements IntersectionObserver {
-  readonly root = null
-  readonly rootMargin = '0px'
-  readonly thresholds = [0]
-  disconnect() {}
-  observe() {}
-  takeRecords(): IntersectionObserverEntry[] {
-    return []
-  }
-  unobserve() {}
-}
-
 const meta = {
   title: 'Atoms/Select',
   component: Select,
   args: { items: tiers, 'aria-label': 'Tier' },
-  beforeEach: () => {
-    const original = window.IntersectionObserver
-    window.IntersectionObserver = InertIntersectionObserver
-    return () => {
-      window.IntersectionObserver = original
-    }
-  },
   decorators: [
     (Story) => (
       <div style={{ padding: 8 }}>
@@ -174,6 +150,25 @@ export const Disabled: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('combobox', { name: 'Tier' })).toBeDisabled()
+  },
+}
+
+/**
+ * The native control was as wide as its widest option, so the sticky filter row never moved. The
+ * trigger reserves that same width, so picking the longest label leaves its neighbours where they are.
+ */
+export const StableWidth: Story = {
+  render: () => <ControlledSelect initial="holo" />,
+  play: async ({ canvasElement }) => {
+    onValueChange.mockClear()
+    const canvas = within(canvasElement)
+    const trigger = canvas.getByRole('combobox', { name: 'Tier' })
+    const widthAtHolo = trigger.getBoundingClientRect().width
+    await userEvent.click(trigger)
+    const listbox = await screen.findByRole('listbox')
+    await userEvent.click(within(listbox).getByRole('option', { name: 'Prismatic' }))
+    await waitFor(() => expect(trigger).toHaveTextContent('Prismatic'))
+    await expect(trigger.getBoundingClientRect().width).toBeCloseTo(widthAtHolo, 1)
   },
 }
 

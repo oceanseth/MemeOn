@@ -107,7 +107,26 @@ export function Select({
         className={cn(selectTriggerChrome, className)}
         data-slot="select"
       >
-        <SelectValue placeholder={placeholder} className="min-w-0 truncate" />
+        {/*
+          A native `<select>` is as wide as its widest option, so the sticky filter rows never moved
+          when a value changed. One grid cell holds the value and a zero-height stack of every label,
+          so the cell is always as wide as the widest one and the trigger stops tracking the value.
+        */}
+        <span className="grid min-w-0">
+          <SelectValue placeholder={placeholder} className="[grid-area:1/1] truncate" />
+          <span
+            aria-hidden="true"
+            className="[grid-area:1/1] invisible h-0 overflow-hidden"
+            data-slot="select-sizer"
+          >
+            {placeholder === undefined ? null : <span className="block">{placeholder}</span>}
+            {items.map((item) => (
+              <span key={item.value} className="block">
+                {item.label}
+              </span>
+            ))}
+          </span>
+        </span>
         <SelectIcon className="flex shrink-0">
           <ChevronIcon />
         </SelectIcon>

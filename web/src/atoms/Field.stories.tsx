@@ -1,6 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, userEvent, within } from 'storybook/test'
-import { Field, FieldCounter, FieldError, FieldHint, FieldLabel } from './Field'
+import {
+  ErrorText,
+  Field,
+  FieldCounter,
+  FieldError,
+  FieldFooter,
+  FieldHint,
+  FieldLabel,
+  Hint,
+} from './Field'
 import { Input } from './Input'
 
 const meta = {
@@ -49,19 +58,84 @@ export const WithHint: Story = {
   },
 }
 
-/** The counter and the help line together: the row the Create screen puts under a capped input. */
+/** The Create screen's capped title field: help on the left, counter on the right, one row. */
 export const WithCounter: Story = {
   render: () => (
     <Field>
       <FieldLabel>Title</FieldLabel>
-      <Input defaultValue="chrome streak" />
-      <FieldCounter>13 / 20</FieldCounter>
-      <FieldHint>Twenty characters, so the card never truncates it.</FieldHint>
+      <Input defaultValue="chrome streak" maxLength={20} />
+      <FieldFooter>
+        <FieldHint>Up to 20 characters — it has to fit the card banner.</FieldHint>
+        <FieldCounter>13 / 20</FieldCounter>
+      </FieldFooter>
     </Field>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('13 / 20')).toBeVisible()
+  },
+}
+
+/** The counter at the cap. Both captions share one line, exactly as the floated legacy pair did. */
+export const AtLimit: Story = {
+  render: () => (
+    <Field>
+      <FieldLabel>Title</FieldLabel>
+      <Input defaultValue="twenty characters ok" maxLength={20} />
+      <FieldFooter>
+        <FieldHint>Up to 20 characters — it has to fit the card banner.</FieldHint>
+        <FieldCounter>20 / 20</FieldCounter>
+      </FieldFooter>
+    </Field>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const hint = canvas.getByText('Up to 20 characters — it has to fit the card banner.')
+    const counter = canvas.getByText('20 / 20')
+    // one row: the counter starts to the right of the hint and shares its top edge
+    const hintBox = hint.getBoundingClientRect()
+    const counterBox = counter.getBoundingClientRect()
+    await expect(counterBox.left).toBeGreaterThanOrEqual(hintBox.right)
+    await expect(Math.abs(counterBox.top - hintBox.top)).toBeLessThan(4)
+  },
+}
+
+/**
+ * Most `.field-hint` / `.field-help` in the app has no label and no control around it, so the
+ * standalone pair renders the same caption without a `<Field>` — where Base UI's parts would throw.
+ */
+export const Standalone: Story = {
+  render: () => (
+    <div>
+      {/* loose caption: no label, no control — the SortChips / MemeDetail shape */}
+      <Hint>Sorting by value needs at least one listing.</Hint>
+      <ErrorText>That binder is empty.</ErrorText>
+      {/* a bare label wants phrasing content, so the Trades shape asks for a span */}
+      <label>
+        Braincells you add
+        <Input type="number" defaultValue={12} />
+        <Hint as="span">You hold 40.</Hint>
+      </label>
+      {/* the Create screen wires its help text by hand */}
+      <label htmlFor="tags">Tags</label>
+      <Input id="tags" aria-describedby="tags-help" placeholder="cat, chaos, monday" />
+      <Hint id="tags-help">Up to five, comma separated.</Hint>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Sorting by value needs at least one listing.')).toHaveAttribute(
+      'data-slot',
+      'hint',
+    )
+    await expect(canvas.getByText('That binder is empty.')).toHaveAttribute(
+      'data-slot',
+      'error-text',
+    )
+    await expect(canvas.getByText('You hold 40.').tagName).toBe('SPAN')
+    await expect(canvas.getByLabelText('Tags')).toHaveAccessibleDescription(
+      'Up to five, comma separated.',
+    )
   },
 }
 

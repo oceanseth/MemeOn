@@ -48,6 +48,17 @@ export const BrokenImage: Story = {
   },
 }
 
+/** The 40px `.person-row` disc, carrying the `loading="lazy"` the Friends and Leaderboard lists set. */
+export const PersonRow: Story = {
+  args: { size: 'md', src: LOGO, alt: 'lou', loading: 'lazy' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const image = await waitFor(() => canvas.getByRole('img', { name: 'lou' }))
+    await expect(image).toHaveAttribute('loading', 'lazy')
+    await expect(image.closest('[data-slot="avatar"]')).toHaveClass('size-10')
+  },
+}
+
 export const Large: Story = {
   args: { size: 'lg', src: LOGO, alt: 'lou' },
   play: async ({ canvasElement }) => {
