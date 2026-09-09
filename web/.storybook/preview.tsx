@@ -61,9 +61,13 @@ const preview: Preview = {
       readonly rootMargin = '0px'
       readonly thresholds = [0]
       constructor(callback: IntersectionObserverCallback) {
-        void import('./connected-scenario').then(({ getActiveScenario }) => {
-          getActiveScenario().intersectionObservers.push((entries) => callback(entries, this))
-        })
+        void import('./connected-scenario')
+          .then(({ getActiveScenario }) => {
+            getActiveScenario().intersectionObservers.push((entries) => callback(entries, this))
+          })
+          // an atom story never starts a scenario, and every Base UI popup builds an observer:
+          // no scenario to report into means an inert observer, not a failed story
+          .catch(() => {})
       }
       disconnect() {}
       observe() {}
