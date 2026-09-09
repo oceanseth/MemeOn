@@ -1,0 +1,7 @@
+@layer components {
+  @keyframes skeleton-sweep {
+    to {
+      transform: translateX(100%);
+    }
+  }
+}

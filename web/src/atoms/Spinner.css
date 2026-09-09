@@ -1,0 +1,7 @@
+@layer components {
+  @keyframes rot {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
