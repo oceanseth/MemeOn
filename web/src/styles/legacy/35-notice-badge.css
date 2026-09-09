@@ -1,0 +1,60 @@
+/* Role contract: .notice.error carries role="alert"; .notice.ok / .busy / .info carry role="status".
+   Mount the container before its text arrives. Shrink-wraps to its copy (a text-align: center parent
+   centres it) and always separates from what precedes it without adding trailing space. */
+.notice {
+  display: inline-block;
+  max-width: 60ch;
+  text-align: left;
+  margin-block: 12px 0;
+  padding: 10px 14px;
+  border-radius: var(--radius-control);
+  font-size: var(--fs-sm);
+}
+
+.notice.error {
+  background: var(--state-error-bg);
+  color: var(--danger);
+}
+
+.notice.ok {
+  background: var(--state-success-bg);
+  color: var(--ok);
+}
+
+/* still running */
+.notice.busy {
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in oklab, var(--accent) 35%, transparent);
+}
+
+/* neutral / pending */
+.notice.info {
+  background: var(--bg-raised);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+
+/* relationship / status at full opacity, so success never wears the disabled skin */
+.badge.state {
+  color: var(--text);
+  border-color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 10%, transparent);
+  text-transform: none;
+  letter-spacing: 0.2px;
+  font-size: 12px;
+  padding: 4px 10px;
+}
+

@@ -1,0 +1,16 @@
+/* ---------- shared chrome breakpoint ---------- */
+
+/* stack ~140px before the rail would drop under the card's own width; cap the lone art square */
+@media (max-width: 900px) {
+  .detail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-layout > .meme-card-lg,
+  .detail-rail > .meme-card-lg {
+    max-width: 480px;
+    width: 100%;
+    margin-inline: auto;
+  }
+}
+

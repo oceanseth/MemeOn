@@ -1,0 +1,58 @@
+/* .empty is a live region contract: mount the container with role="status" before its text arrives.
+   The dashed box means exactly one thing (no results); .empty.error is the failed-load variant and
+   .empty-actions is the retry / on-ramp slot. Loading belongs to .loading-state, not here. */
+.empty {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 60px 20px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+}
+
+.empty p {
+  margin: 0 0 6px;
+}
+
+.empty :where(h2, h3) {
+  margin: 0 0 6px;
+  font-size: var(--fs-lg);
+  color: var(--text);
+}
+
+.empty-actions {
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* a .notice inside an action row sits on the button's centre line: the row owns the spacing */
+.empty-actions > .notice,
+.cta-slot > .notice {
+  margin-block: 0;
+}
+
+.empty.error {
+  border-style: solid;
+  border-color: #5b2733;
+  background: var(--state-error-bg);
+  color: var(--danger);
+}
+
+.empty.error strong {
+  color: var(--text);
+}
+
+/* centred page-level state (loading / not found / redirecting): one offset for every route */
+.page-state {
+  padding-top: calc(2 * var(--space-8));
+  text-align: center;
+  color: var(--text-dim);
+}
+
+.muted {
+  color: var(--text-dim);
+}
+

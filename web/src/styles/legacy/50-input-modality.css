@@ -1,0 +1,72 @@
+/* ---------- input modality ---------- */
+
+/* 44px targets only where the pointer is a finger; desktop density is untouched */
+@media (pointer: coarse) {
+  button,
+  .btn,
+  .sort-chip,
+  .quest-chip-btn,
+  .quest-chip-link,
+  .nav-links a,
+  .site-footer a,
+  .discord-link,
+  .online-friend,
+  .person-link,
+  .legal-toc a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .meme-media-toggle {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* the alert row is the card and the link: on a finger the whole row taps, never a 17px line */
+  .alert-row {
+    min-height: 44px;
+  }
+
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+
+  input[type='number'] {
+    min-width: 72px;
+  }
+
+  .site-footer a {
+    padding-inline: 12px;
+    margin: 0;
+  }
+
+  .discord-link {
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  .online-friend {
+    padding: 4px 12px 4px 4px;
+    border-radius: var(--radius-pill);
+    background: var(--bg-raised);
+    gap: 8px;
+  }
+
+  .person-row .danger-text {
+    min-height: 44px;
+    padding: 8px 10px;
+  }
+
+  /* touch feedback in place of the hover lift */
+  button:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  .meme-card:active {
+    transform: scale(0.99);
+  }
+}
+

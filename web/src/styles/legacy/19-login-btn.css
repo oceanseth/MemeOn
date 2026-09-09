@@ -1,0 +1,14 @@
+/* the CTA (landing / invite / discord / profile): a stable width across its label swap, a slot for .spin */
+.login-btn {
+  font-size: 17px;
+  padding: 13px 26px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 16rem;
+  max-width: 100%;
+  white-space: normal;
+}
+

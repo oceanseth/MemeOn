@@ -1,0 +1,49 @@
+/* ---------- leaderboard ---------- */
+
+.leader-row {
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color var(--dur-base) ease;
+}
+
+.leader-row:hover {
+  border-color: var(--accent);
+}
+
+/* the signed-in player's own row; the "you" badge and label prefix carry the non-colour cue */
+.leader-row.is-me {
+  border-color: var(--accent);
+}
+
+.leader-rank {
+  font-size: 20px;
+  width: 40px;
+  text-align: center;
+  font-weight: 800;
+}
+
+/* podium medal slot: reserved on every row so the avatar column stays put below rank 3 */
+.leader-medal {
+  flex: 0 0 24px;
+  text-align: center;
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* decorative column labels over .row-list; the padding matches .person-row's */
+.row-head {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px 6px;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+
+.leader-cells {
+  font-weight: 800;
+  color: var(--gold);
+  font-size: var(--fs-md);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+

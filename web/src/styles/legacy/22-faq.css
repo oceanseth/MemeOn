@@ -1,0 +1,49 @@
+.faq {
+  max-width: 780px;
+}
+
+/* the padding lives on the control, so the whole card is the hit target */
+.faq details {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0;
+  margin-bottom: 10px;
+  background: var(--bg-raised);
+}
+
+.faq summary {
+  font-weight: 600;
+  cursor: pointer;
+  padding: 14px 18px;
+  margin: 0;
+  min-height: 44px;
+}
+
+.faq summary :where(h3, .faq-q) {
+  display: inline;
+  font: inherit;
+  margin: 0;
+}
+
+.faq p {
+  color: var(--text-dim);
+  line-height: 1.55;
+  padding: 0 18px 14px;
+}
+
+/* logo + download links inside a FAQ answer */
+.faq-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+/* the install CTA's four phases share one box, so the FAQ below never moves */
+.cta-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 55px;
+}
+

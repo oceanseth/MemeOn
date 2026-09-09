@@ -1,0 +1,21 @@
+/* second line of a key row: prefix chip + created date, demoted under the label */
+.key-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin-top: 4px;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+/* the one-time secret: a block credential with a one-click manual-copy path, not the inline chip */
+.key-string {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  user-select: all;
+  overflow-wrap: anywhere;
+  margin: 8px 0;
+}
+

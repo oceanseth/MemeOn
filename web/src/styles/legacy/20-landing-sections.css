@@ -1,0 +1,16 @@
+/* the closing beat after the FAQ */
+.landing-close {
+  text-align: center;
+  margin: var(--space-8) 0 var(--space-2);
+}
+
+.section-title {
+  font-size: 26px;
+  margin: 56px 0 6px;
+}
+
+.section-sub {
+  color: var(--text-dim);
+  margin: 0 0 24px;
+}
+

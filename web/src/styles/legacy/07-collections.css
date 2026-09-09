@@ -1,0 +1,46 @@
+/* ---------- meme cards + foil tiers ---------- */
+
+/* collection rules double as list resets, so <ul>/<ol> are a drop-in for the bare <div>s */
+.card-grid,
+.row-list,
+.tier-grid,
+.profile-stats,
+.invite-stats,
+.legal-toc {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 20px;
+}
+
+/* the grid clears the sticky control band's border */
+.market-grid {
+  margin-top: 18px;
+}
+
+/* relatives panel: tighter tracks than the market grid; the <=560 .card-grid rule still takes it 2-up */
+.memeplex-grid {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+/* skip-rendering slot around a card. content-visibility must not sit on .meme-card itself: it would clip
+   the blurred .glow-border::after bloom. The 30px padding / -30px margin keeps the bloom inside the
+   contained box without changing grid track geometry. */
+.card-slot {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 340px;
+  padding: 30px;
+  margin: -30px;
+  pointer-events: none;
+}
+
+.card-slot > * {
+  pointer-events: auto;
+}
+

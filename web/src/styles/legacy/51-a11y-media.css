@@ -1,0 +1,106 @@
+/* ---------- motion, forced colours, contrast ---------- */
+
+/* Freeze, never delete: the static foil stays painted. .spin slows rather than stops (a frozen spinner
+   reads as a hung page). Glow rings pause in tier-glow-borders.css under the same query. */
+@media (prefers-reduced-motion: reduce) {
+  .sheen .foil-media::after,
+  .sheen :where(.meme-card-inner, .tier-card-inner)::after {
+    animation: none;
+    background-position: 50% 0;
+  }
+
+  .sparkle .foil-media::before,
+  .sparkle :where(.meme-card-inner, .tier-card-inner)::before {
+    animation: none;
+    opacity: 0.6;
+  }
+
+  .meme-card,
+  button,
+  .btn,
+  .discord-link,
+  .leader-row,
+  .skip-link {
+    transition: none;
+  }
+
+  .meme-card:hover,
+  .meme-card-lg:hover,
+  button:hover:not(:disabled),
+  .btn:hover {
+    transform: none;
+  }
+
+  .meme-card:hover .meme-card-inner {
+    outline: 1px solid var(--accent);
+    outline-offset: -1px;
+  }
+
+  .skeleton::after,
+  .tier-frame-slot[data-state='loading']::after {
+    animation: none;
+  }
+
+  .spin {
+    animation-duration: 2s;
+  }
+}
+
+@media (forced-colors: active) {
+  :where(
+    a,
+    button,
+    .btn,
+    summary,
+    input,
+    select,
+    textarea,
+    [tabindex]
+  ):focus-visible {
+    outline-color: Highlight;
+  }
+
+  .sheen .foil-media::after,
+  .sparkle .foil-media::before,
+  .sheen :where(.meme-card-inner, .tier-card-inner)::after,
+  .sparkle :where(.meme-card-inner, .tier-card-inner)::before {
+    display: none;
+  }
+
+  .spin {
+    border-color: CanvasText;
+    border-top-color: Highlight;
+  }
+
+  .hero h1 .grad,
+  .logo {
+    color: CanvasText;
+    background: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --color-border: var(--color-border-strong);
+    --state-unread-bg: color-mix(in oklab, var(--accent) 24%, transparent);
+    --state-selected-bg: color-mix(in oklab, var(--accent) 32%, transparent);
+  }
+
+  :where(
+    a,
+    button,
+    .btn,
+    summary,
+    input,
+    select,
+    textarea,
+    [tabindex]
+  ):focus-visible {
+    outline-width: 3px;
+  }
+
+  .notice,
+  .empty {
+    border: 1px solid currentColor;
+  }
+}

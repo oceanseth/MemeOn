@@ -1,0 +1,174 @@
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+button,
+.btn {
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  background: var(--bg-raised);
+  color: var(--text);
+  padding: 8px 14px;
+  white-space: nowrap;
+  transition:
+    transform var(--dur-fast) ease,
+    border-color var(--dur-base) ease,
+    background var(--dur-base) ease;
+}
+
+button:hover:not(:disabled),
+.btn:hover {
+  border-color: var(--state-hover-border);
+}
+
+/* the lift is for pointers that hover without tapping; touch gets :active feedback instead */
+@media (hover: hover) and (pointer: fine) {
+  button:hover:not(:disabled),
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+}
+
+button:disabled,
+.btn[aria-disabled='true'],
+/* a field that is locked while a request runs wears the same skin as a locked button */
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: var(--state-disabled-opacity);
+  cursor: not-allowed;
+}
+
+/* in flight is not unavailable: full opacity, progress cursor */
+button[aria-busy='true'],
+button[aria-busy='true']:disabled {
+  opacity: 1;
+  cursor: progress;
+  /* room for the .spin beside the label; `button` is not a flex container, `.btn` already is */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+button.primary,
+.btn.primary {
+  background: linear-gradient(135deg, var(--primary-from), var(--primary-to));
+  border-color: transparent;
+  font-weight: 600;
+}
+
+button.danger,
+.btn.danger {
+  border-color: var(--danger-border);
+  color: var(--danger);
+}
+
+/* link that looks like a button: one element, one tab stop */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.btn[aria-disabled='true'] {
+  pointer-events: none;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  /* 16px floor stops iOS focus-zoom; label typography (13.5px) no longer cascades into the control */
+  font-size: max(16px, 1em);
+  line-height: 1.3;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  padding: 8px 12px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  /* the label above is 600: an example at the same weight and dim reads as a filled value */
+  font-weight: 400;
+  color: color-mix(in oklab, var(--text-dim) 80%, var(--bg-raised));
+  opacity: 1; /* Firefox applies a UA opacity */
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent);
+}
+
+input[type='checkbox'] {
+  inline-size: 20px;
+  block-size: 20px;
+  accent-color: var(--accent);
+  margin: 0;
+}
+
+/* the whole label row is the target; matches with no markup change when the box is a direct child */
+label:has(> input[type='checkbox']),
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 4px 8px;
+  margin-inline-start: -8px;
+}
+
+/* the named class also sets the size, so a toggle reads at chip scale beside sort chips */
+.checkbox-label {
+  font-size: var(--fs-sm);
+}
+
+/* field vocabulary: label / hint / counter */
+.field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.field-hint,
+.field-help {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+
+.field-counter {
+  float: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+  font-size: var(--fs-xs);
+}
+
+/* one authored focus ring; :where() keeps it at zero specificity so component rings win without !important */
+:where(
+  a,
+  button,
+  .btn,
+  summary,
+  input,
+  select,
+  textarea,
+  [tabindex]
+):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+

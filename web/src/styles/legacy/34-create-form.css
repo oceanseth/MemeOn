@@ -1,0 +1,42 @@
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 560px;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+/* form beside a live preview rail; the rail is a .stack, so it owns its own rhythm */
+.create-layout {
+  display: grid;
+  grid-template-columns: minmax(
+    0,
+    1fr
+  ); /* the panel's min-content must not size the track */
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.create-rail {
+  max-width: 420px;
+}
+
+@media (min-width: 1000px) {
+  .create-layout {
+    grid-template-columns: minmax(0, 560px) minmax(0, 1fr);
+  }
+
+  .create-rail {
+    position: sticky;
+    top: calc(var(--topbar-h) + 16px);
+  }
+}
+

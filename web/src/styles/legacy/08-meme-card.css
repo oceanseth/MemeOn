@@ -1,0 +1,307 @@
+:where(.meme-card, .tier-card) {
+  --glow-width: 3px;
+}
+
+.meme-card {
+  position: relative;
+  border-radius: var(--radius);
+  padding: var(--glow-width); /* the frame */
+  background: var(--border);
+  transition: transform var(--dur-base) ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .meme-card:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+}
+
+/* focus lives on the outer card, outside the clip, keyed off --text so it survives every tier */
+.meme-card:has(a:focus-visible),
+.meme-card-lg:has(a:focus-visible) {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.7);
+}
+
+.meme-card a:focus-visible,
+.meme-card-lg a:focus-visible {
+  outline: none;
+}
+
+.meme-card-inner {
+  background: var(--bg-card);
+  border-radius: calc(var(--radius) - var(--glow-width));
+  overflow: hidden;
+  contain: paint;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.meme-art {
+  aspect-ratio: 1;
+  width: 100%;
+  object-fit: cover;
+  display: block;
+  background: var(--bg-media);
+}
+
+.meme-meta {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meme-title {
+  font-weight: 700;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.meme-sub {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tier-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid currentColor;
+  /* the rarity is product language: on a 169px 2-up card it wraps to a second line
+     rather than being clipped mid-word by .meme-card-inner's overflow */
+  max-width: 100%;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* Tier frames: the card's padding-background IS the frame. Foil mechanics per tier. */
+
+/* non-hue ladder step: matte edge on Paper, specular edge on Silver. An outline paints above the
+   opaque .glow-border::before ring, where an inset box-shadow would be occluded. */
+.tier-paper {
+  background: linear-gradient(160deg, #3a4152, #262c3a);
+  outline: 1px solid rgba(0, 0, 0, 0.35);
+  outline-offset: -1px;
+}
+
+.tier-silver {
+  background: linear-gradient(160deg, #9aa7b8, #5c6778, #aeb9c9);
+  outline: 1px solid rgba(255, 255, 255, 0.55);
+  outline-offset: -1px;
+}
+
+.tier-holo {
+  background: linear-gradient(120deg, #46d3ff, #7a5cff, #ff5ce1, #46d3ff);
+}
+
+.tier-chrome {
+  background: linear-gradient(
+    105deg,
+    #cfd8ff 0%,
+    #6f7ba8 20%,
+    #f4f7ff 40%,
+    #8a96c8 60%,
+    #dde4ff 80%,
+    #707ca9 100%
+  );
+}
+
+.tier-gold {
+  background: linear-gradient(
+    120deg,
+    #b8860b,
+    #ffd76a,
+    #fff3c4,
+    #ffd76a,
+    #8f6508
+  );
+  box-shadow: 0 0 24px color-mix(in oklab, var(--gold) 25%, transparent);
+}
+
+.tier-prismatic {
+  background: conic-gradient(
+    from 0deg,
+    #ff5c5c,
+    #ffb85c,
+    #f7ff5c,
+    #6bff8a,
+    #5cd4ff,
+    #8a6bff,
+    #ff5cf0,
+    #ff5c5c
+  );
+  box-shadow: 0 0 28px rgba(255, 154, 245, 0.35);
+}
+
+.tier-shiny {
+  background: linear-gradient(
+    120deg,
+    #0ff0c3,
+    #9fffe0,
+    #5cd4ff,
+    #f0c3ff,
+    #ffd76a,
+    #0ff0c3
+  );
+  box-shadow:
+    0 0 34px rgba(159, 255, 224, 0.45),
+    0 0 80px rgba(240, 195, 255, 0.25);
+}
+
+/* large variant for the meme detail page: same card, bigger everything */
+/* the hero is the meme itself: a wide two-panel joke letterboxes on the media plate rather
+   than having its caption cropped away. Grid thumbs keep `cover` — those crops are deliberate. */
+.meme-card-lg .meme-art {
+  object-fit: contain;
+}
+
+.meme-card-lg .meme-title {
+  font-size: 22px;
+  white-space: normal;
+}
+
+.meme-card-lg .meme-meta {
+  padding: 14px 16px 16px;
+  gap: 9px;
+}
+
+.meme-card-lg .meme-sub {
+  font-size: 15px;
+}
+
+.meme-card-lg .tier-chip {
+  font-size: 13px;
+  padding: 4px 12px;
+}
+
+.meme-card-lg:hover {
+  transform: none;
+}
+
+/* Foil mechanics are host-agnostic (.meme-card and .tier-card alike) and bounded to the art box via
+   .foil-media, so the sweep never crosses the meta text. The :where(:not(:has(.foil-media))) form is the interim
+   for hosts that have not added the wrapper yet: same gradient, clipped to the top square. */
+.foil-media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+
+.tier-card-inner .foil-media {
+  border-radius: 8px;
+}
+
+/* pause / play for the card film: a scrim chip pinned to the art corner, state carried by aria-pressed */
+.meme-media-toggle {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
+  line-height: 1;
+  font-size: var(--fs-sm);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  color: var(--text);
+  backdrop-filter: blur(4px);
+}
+
+/* sheen sweep over holo+ tiers */
+.sheen .foil-media::after,
+:where(.meme-card, .tier-card).sheen
+  :where(.meme-card-inner, .tier-card-inner):where(
+    :not(:has(.foil-media))
+  )::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.14) 45%,
+    rgba(255, 255, 255, 0.32) 50%,
+    rgba(255, 255, 255, 0.14) 55%,
+    transparent 70%
+  );
+  background-size: 300% 300%;
+  animation: sheen-sweep 3.8s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+
+:where(.meme-card, .tier-card).sheen
+  :where(.meme-card-inner, .tier-card-inner):where(
+    :not(:has(.foil-media))
+  )::after,
+:where(.meme-card, .tier-card).sparkle
+  :where(.meme-card-inner, .tier-card-inner):where(
+    :not(:has(.foil-media))
+  )::before {
+  inset: 0 0 auto 0;
+  aspect-ratio: 1;
+}
+
+/* sparkles for the shiny tier */
+.sparkle .foil-media::before,
+:where(.meme-card, .tier-card).sparkle
+  :where(.meme-card-inner, .tier-card-inner):where(
+    :not(:has(.foil-media))
+  )::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background-image:
+    radial-gradient(2px 2px at 20% 30%, #fff 40%, transparent 60%),
+    radial-gradient(1.6px 1.6px at 70% 20%, #fff 40%, transparent 60%),
+    radial-gradient(2.4px 2.4px at 85% 65%, #fff 40%, transparent 60%),
+    radial-gradient(1.8px 1.8px at 40% 80%, #fff 40%, transparent 60%),
+    radial-gradient(1.4px 1.4px at 10% 60%, #fff 40%, transparent 60%);
+  animation: twinkle 2.2s ease-in-out infinite alternate;
+  mix-blend-mode: screen;
+}
+
+@keyframes sheen-sweep {
+  0% {
+    background-position: 200% 0;
+  }
+  60%,
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes twinkle {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+

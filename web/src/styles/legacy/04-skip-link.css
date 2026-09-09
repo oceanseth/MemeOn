@@ -1,0 +1,23 @@
+/* bypass block: costs nothing until focused */
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -60px;
+  z-index: calc(var(--z-header) + 10);
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  color: var(--text);
+  border: 1px solid var(--accent);
+  text-decoration: none;
+  transition: top var(--dur-base) ease;
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+main {
+  scroll-margin-top: var(--topbar-h);
+}
+

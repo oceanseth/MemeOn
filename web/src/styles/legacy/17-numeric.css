@@ -1,0 +1,12 @@
+/* counts that tick or sit in columns align on fixed-width figures */
+.coins,
+.leader-cells,
+.meme-sub,
+.person-stats,
+.gift-row-shares,
+.cap-row,
+.bell-badge,
+.numeric {
+  font-variant-numeric: tabular-nums;
+}
+

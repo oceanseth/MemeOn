@@ -1,0 +1,94 @@
+::selection {
+  background: var(--selection-bg);
+  color: var(--text);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* media never escapes its frame; explicit heights (.avatar, .logo-img, .hero-video-el) still win */
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+svg {
+  max-width: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, #1b2140 0%, transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, #241436 0%, transparent 55%),
+    var(--bg);
+  color: var(--text);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  min-height: 100dvh;
+}
+
+/* the shell is a column: on a low-data route (an empty trade list, a new account's friends
+   page) the footer rides the bottom of the screen instead of stranding 400px of empty page */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* width:100% because .container centres itself with auto margins, and a flex item with an auto
+   cross-axis margin shrink-wraps instead of stretching */
+#root > main {
+  flex: 1 0 auto;
+  width: 100%;
+}
+
+/* ---------- base type: nothing inherits the UA ladder ---------- */
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0 0 var(--space-2);
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: var(--fs-2xl);
+}
+
+h2 {
+  font-size: var(--fs-xl);
+}
+
+h3 {
+  font-size: var(--fs-lg);
+}
+
+h4 {
+  font-size: var(--fs-md);
+}
+
+p {
+  line-height: 1.55;
+}
+
+/* the one thing a user must type verbatim never breaks mid-token */
+code,
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  color: var(--text);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+

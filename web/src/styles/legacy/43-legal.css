@@ -1,0 +1,74 @@
+.legal {
+  max-width: 68ch; /* measure and type size stay coupled */
+  padding-top: 36px;
+}
+
+.legal h1 {
+  margin-bottom: 4px;
+}
+
+.legal-date {
+  color: var(--text-dim);
+  font-size: 13px;
+  margin-bottom: 26px;
+}
+
+.legal h2 {
+  font-size: 18px;
+  margin: 26px 0 8px;
+}
+
+.legal p,
+.legal li {
+  color: var(--text);
+  line-height: 1.65;
+  font-size: var(--fs-md);
+}
+
+.legal strong {
+  color: var(--text);
+}
+
+/* the sentences a reader must not skim past; --text-dim is reserved for .legal-date and asides */
+.legal-key {
+  border-left: 2px solid var(--gold);
+  padding-left: 12px;
+  color: var(--text);
+}
+
+.legal :where(h2, h3) {
+  scroll-margin-top: calc(var(--topbar-h) + 16px);
+}
+
+/* on-this-page chips, reusing the incumbent chip vocabulary */
+.legal-toc {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0 0 26px;
+  padding: 0;
+}
+
+.legal-toc a {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  color: var(--text-dim);
+  text-decoration: none;
+}
+
+.legal-toc a:hover,
+.legal-toc a:focus-visible {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.legal-more {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+

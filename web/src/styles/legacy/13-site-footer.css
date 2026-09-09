@@ -1,0 +1,18 @@
+.site-footer {
+  border-top: 1px solid var(--border);
+  margin-top: 48px;
+  padding: 22px 20px max(34px, env(safe-area-inset-bottom));
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.site-footer a {
+  color: var(--text-dim);
+  margin: 0 10px;
+}
+
+.site-footer a:hover {
+  color: var(--text);
+}
+
