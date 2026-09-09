@@ -92,35 +92,41 @@ export function useAppShellScreen(): AppShellScreenModel {
 
   useMountEffect(() => {
     let lastUser: Me | null | undefined
-    let poll: ReturnType<typeof setInterval> | null = null
-
-    const loadAlerts = () =>
-      apiFetch<{ alerts: Alert[] }>('/api/alerts')
-        .then((r) => send({ type: 'SET_ALERTS', alerts: r.alerts }))
-        .catch(() => {})
-
-    const loadSteps = () =>
-      apiFetch<{ steps: QuestStep[] }>('/api/onboarding')
-        .then((r) => send({ type: 'SET_STEPS', steps: r.steps }))
-        .catch(() => {})
+    let disposeLoads = () => {}
 
     const disposeUser = autorun(() => {
       const next = auth.user
       const done = allDone(next)
       if (next === lastUser) return
       lastUser = next
-      if (poll) {
-        clearInterval(poll)
-        poll = null
-      }
+      disposeLoads()
       if (!next) {
         send({ type: 'LOGGED_OUT' })
         return
       }
+      let live = true
+      let poll: ReturnType<typeof setInterval> | null = null
+      const loadAlerts = () => {
+        if (!live) return
+        void apiFetch<{ alerts: Alert[] }>('/api/alerts')
+          .then((r) => { if (live) send({ type: 'SET_ALERTS', alerts: r.alerts }) })
+          .catch(() => {})
+      }
+      const loadSteps = () => {
+        if (!live) return
+        void apiFetch<{ steps: QuestStep[] }>('/api/onboarding')
+          .then((r) => { if (live) send({ type: 'SET_STEPS', steps: r.steps }) })
+          .catch(() => {})
+      }
+      disposeLoads = () => {
+        live = false
+        if (poll) clearInterval(poll)
+        poll = null
+      }
       send({ type: 'LOGGED_IN' })
-      void loadAlerts()
-      if (!done) void loadSteps()
-      poll = setInterval(() => void loadAlerts(), POLL_MS)
+      loadAlerts()
+      if (!done) loadSteps()
+      poll = setInterval(loadAlerts, POLL_MS)
     })
 
     const onClick = (e: MouseEvent) => {
@@ -130,7 +136,7 @@ export function useAppShellScreen(): AppShellScreenModel {
 
     return () => {
       disposeUser()
-      if (poll) clearInterval(poll)
+      disposeLoads()
       document.removeEventListener('mousedown', onClick)
     }
   })
