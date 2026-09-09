@@ -1,19 +1,19 @@
 import { Link } from 'react-router-dom'
-import { TIERS } from '../../../shared/tiers'
 import { tierClasses } from '../atoms/MemeCard'
 import type { LandingScreenModel } from '../hooks/useLandingScreen'
 
 /** Landing as a function of its model. Every engine state is one set of args. */
 export function LandingScreen({
-  frames,
-  busy,
   err,
   showMarketplaceCta,
   showLoginButton,
   showErr,
   loginLabel,
   hero,
-  onLogin,
+  tiers,
+  loginButtonProps,
+  frameImageProps,
+  errorNoticeProps,
 }: LandingScreenModel) {
   return (
     <main className="container">
@@ -32,11 +32,11 @@ export function LandingScreen({
             <button className="primary login-btn">📈 Enter the marketplace</button>
           </Link>
         ) : showLoginButton ? (
-          <button className="primary login-btn" onClick={onLogin} disabled={busy}>
+          <button className="primary login-btn" {...loginButtonProps}>
             {loginLabel}
           </button>
         ) : null}
-        {showErr && <p className="notice error">{err}</p>}
+        {showErr && <p className="notice error" {...errorNoticeProps}>{err}</p>}
       </section>
 
       <h2 className="section-title" id="tiers">
@@ -47,27 +47,24 @@ export function LandingScreen({
         and its card physically transforms as it ascends.
       </p>
       <div className="tier-grid">
-        {TIERS.map((t) => (
+        {tiers.map((t) => (
           <div
             key={t.key}
             className={`tier-card ${tierClasses(t.key)}`}
             data-glow-style={t.glowStyle}
           >
             <div className="tier-card-inner">
-              {frames[t.key] ? (
+              {frameImageProps[t.key] ? (
                 <img
                   className="tier-frame-img"
-                  src={frames[t.key]}
-                  alt={`${t.name} frame`}
-                  loading="lazy"
-                  onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')}
+                  {...frameImageProps[t.key]}
                 />
               ) : null}
               <span className="tier-name" style={{ color: t.color }}>
                 {t.name}
               </span>
               <span className="tier-req">
-                {t.rarity} · {t.minReshares.toLocaleString()}+ views
+                {t.requirementLabel}
               </span>
               <span className="tier-hype">{t.hype}</span>
             </div>

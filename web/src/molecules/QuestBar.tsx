@@ -1,81 +1,55 @@
 import { Link } from 'react-router-dom'
 import { MemeCard } from '../atoms/MemeCard'
-import type { Meme, QuestKey, QuestStep } from '../lib/types'
-
-/** Where each undone quest sends you to go do the thing. */
-const QUEST_LINKS: Partial<Record<QuestKey, string>> = {
-  mint: '/binder/new',
-  share: '/binder',
-  friend: '/friends',
-  trade: '/marketplace',
-}
+import type { QuestBarModel } from '../lib/questBarModel'
 
 /**
  * Onboarding quest strip. Parent owns steps, pack overlay, and claim.
  * Hidden when there are no steps and no pack to show.
  */
-export function QuestBar({
-  steps,
-  packMemes,
-  packReward,
-  busy,
-  onClaimPack,
-  onDismissPack,
-}: {
-  steps: QuestStep[]
-  packMemes: Meme[] | null
-  packReward: number
-  busy: boolean
-  onClaimPack: () => void
-  onDismissPack: () => void
-}) {
-  if (steps.length === 0 && !packMemes) return null
-
-  const doneCount = steps.filter((s) => s.done).length
+export function QuestBar({ model }: { model: QuestBarModel }) {
+  if (!model.visible) return null
 
   return (
     <>
-      {steps.length > 0 && (
+      {model.showSteps && (
         <div className="questbar">
           <div className="questbar-inner">
             <span className="questbar-title">
               <img className="braincell-img" src="/api/brand/braincell.png" alt="braincell" /> Earn
-              your braincells · {doneCount}/{steps.length}
+              your braincells · {model.completionLabel}
             </span>
-            {steps.map((s) => {
-              if (s.key === 'pack' && !s.done) {
+            {model.chips.map((chip) => {
+              if (chip.kind === 'claim') {
                 return (
                   <button
-                    key={s.key}
+                    key={chip.key}
                     className="primary quest-chip-btn"
-                    onClick={onClaimPack}
-                    disabled={busy}
+                    {...chip.buttonProps}
                   >
-                    🎁 {busy ? 'Opening…' : `${s.title} (+${s.reward} 🧠)`}
+                    🎁 {chip.label}
                   </button>
                 )
               }
-              const to = s.done ? null : QUEST_LINKS[s.key]
-              const chip = (
-                <span key={s.key} className={`quest-chip ${s.done ? 'done' : ''}`} title={s.hint}>
-                  {s.done ? '✅' : '⬜'} {s.title} <em>+{s.reward}🧠</em>
+              const content = (
+                <span key={chip.key} className={`quest-chip ${chip.done ? 'done' : ''}`} {...chip.chipProps}>
+                  {chip.done ? '✅' : '⬜'} {chip.title} <em>{chip.rewardLabel}</em>
                 </span>
               )
-              return to ? (
-                <Link key={s.key} to={to} className="quest-chip-link" title={s.hint}>
-                  {chip}
+              return chip.linkProps ? (
+                <Link key={chip.key} {...chip.linkProps} className="quest-chip-link">
+                  {content}
                 </Link>
               ) : (
-                chip
+                content
               )
             })}
           </div>
         </div>
       )}
 
-      {packMemes && (
-        <div className="pack-overlay" onClick={onDismissPack}>
-          <div className="pack-modal" onClick={(e) => e.stopPropagation()}>
+      {model.pack && (
+        <div className="pack-overlay" {...model.pack.overlayProps}>
+          <div className="pack-modal" {...model.pack.modalProps}>
             <img
               className="braincell-img"
               src="/api/brand/braincell.png"
@@ -84,27 +58,25 @@ export function QuestBar({
             />
             <h3>🎁 Starter pack opened!</h3>
             <p style={{ color: 'var(--text-dim)' }}>
-              {packMemes.length > 0
-                ? `You now hold 10 shares in each of these — plus ${packReward} 🧠 braincells.`
-                : `The vault was empty, so you got ${packReward} 🧠 braincells instead. Spend them wisely.`}
+              {model.pack.description}
             </p>
-            {packMemes.length > 0 && (
+            {model.pack.showCards && (
               <div
                 className="card-grid"
                 style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))' }}
               >
-                {packMemes.map((m) => (
-                  <MemeCard key={m.id} meme={m} />
+                {model.pack.cards.map((card) => (
+                  <MemeCard key={card.id} model={card} />
                 ))}
               </div>
             )}
             <div className="filter-bar" style={{ marginTop: 16 }}>
-              <Link to="/binder">
-                <button className="primary" onClick={onDismissPack}>
+              <Link {...model.pack.binderLinkProps}>
+                <button className="primary" {...model.pack.binderButtonProps}>
                   View in My Binder
                 </button>
               </Link>
-              <button onClick={onDismissPack}>Keep exploring</button>
+              <button {...model.pack.exploreButtonProps}>Keep exploring</button>
             </div>
           </div>
         </div>

@@ -1,10 +1,14 @@
-import { useMachine } from '@xstate/react'
+import { useProjectedActor } from './useProjectedActor'
 import { useAuth } from './useAuth'
 import { apiFetch } from '../lib/api'
 import type { Meme } from '../lib/types'
-import { sortMemes, type SortDir, type SortKey } from '../molecules/SortChips'
+import { sortMemes } from '../lib/sorting'
 import { binderMachine, type BinderPhase } from '../stores/binderMachine'
 import { useMountEffect } from './useMountEffect'
+import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
+import { buildSortChipsModel, type SortChipsModel } from '../lib/sortChipsModel'
+import type { InputHTMLAttributes } from 'react'
+import type { LinkProps } from 'react-router-dom'
 
 export type { BinderPhase }
 
@@ -14,22 +18,28 @@ export interface BinderScreenModel {
   showCollection: boolean
   showPrivateToggle: boolean
   privateCount: number
-  showPrivate: boolean
-  sortKey: SortKey
-  sortDir: SortDir
-  visible: Meme[]
+  privateToggleProps: Pick<InputHTMLAttributes<HTMLInputElement>, 'checked' | 'onChange'>
+  sortChips: SortChipsModel
+  createLinkProps: Pick<LinkProps, 'to'>
+  cards: readonly BinderCardModel[]
   showLoading: boolean
   showEmpty: boolean
   emptyMessage: string
   showGrid: boolean
-  onShowPrivateChange: (show: boolean) => void
-  onSortChange: (key: SortKey, dir: SortDir) => void
+}
+
+interface BinderCardModel {
+  id: string
+  memeCard: MemeCardModel
+  sharesLabel: string
+  showCreator: boolean
+  showPrivate: boolean
 }
 
 /** Everything `BinderScreen` renders. The hook is the engine; the screen is the terminal. */
 export function useBinderScreen(): BinderScreenModel {
   const { user } = useAuth()
-  const [snapshot, send] = useMachine(binderMachine)
+  const [snapshot, send] = useProjectedActor(binderMachine)
   const ctx = snapshot.context
   const phase = snapshot.value as BinderPhase
 
@@ -60,15 +70,26 @@ export function useBinderScreen(): BinderScreenModel {
     showCollection: !!user,
     showPrivateToggle: privateCount > 0,
     privateCount,
-    showPrivate: ctx.showPrivate,
-    sortKey: ctx.sortKey,
-    sortDir: ctx.sortDir,
-    visible,
+    privateToggleProps: {
+      checked: ctx.showPrivate,
+      onChange: (event) => send({ type: 'SET_SHOW_PRIVATE', showPrivate: event.target.checked }),
+    },
+    sortChips: buildSortChipsModel({
+      sortKey: ctx.sortKey,
+      dir: ctx.sortDir,
+      onChange: (sortKey, sortDir) => send({ type: 'SET_SORT', sortKey, sortDir }),
+    }),
+    createLinkProps: { to: '/binder/new' },
+    cards: visible.map((meme) => ({
+      id: meme.id,
+      memeCard: buildMemeCardModel(meme),
+      sharesLabel: `${meme.myShares ?? 0}/100 shares`,
+      showCreator: !!meme.isCreator,
+      showPrivate: !!meme.private,
+    })),
     showLoading,
     showEmpty,
     emptyMessage,
     showGrid: !showLoading && visible.length > 0,
-    onShowPrivateChange: (showPrivate) => send({ type: 'SET_SHOW_PRIVATE', showPrivate }),
-    onSortChange: (sortKey, sortDir) => send({ type: 'SET_SORT', sortKey, sortDir }),
   }
 }

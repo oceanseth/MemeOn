@@ -2,9 +2,9 @@ import type { DiscordPageScreenModel } from '../hooks/useDiscordPageScreen'
 
 /** Discord install landing as a function of its model. Every engine state is one set of args. */
 export function DiscordPageScreen({
-  installUrl,
   showInstall,
   showPending,
+  installLinkProps,
 }: DiscordPageScreenModel) {
   return (
     <main className="container">
@@ -18,8 +18,8 @@ export function DiscordPageScreen({
           posted is a share link: it unfurls with its current foil tier frame and{' '}
           <strong>counts as a reshare</strong>, pushing the meme up the tiers.
         </p>
-        {showInstall && installUrl ? (
-          <a href={installUrl} target="_blank" rel="noreferrer">
+        {showInstall ? (
+          <a {...installLinkProps}>
             <button className="primary login-btn">🧠 Add MemeOn to Discord</button>
           </a>
         ) : showPending ? (

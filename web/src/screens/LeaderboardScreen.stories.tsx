@@ -1,26 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
-import { friendAccepted, meLou } from '../../.storybook/fixtures'
-import type { LeaderboardScreenModel } from '../hooks/useLeaderboardScreen'
+import { leaderboardRows } from '../../.storybook/fixtures'
+import { buildLeaderboardRowModel, type LeaderboardScreenModel } from '../hooks/useLeaderboardScreen'
 import { LeaderboardScreen } from './LeaderboardScreen'
-
-const leaderLou = {
-  sub: meLou.sub,
-  name: meLou.name,
-  picture: meLou.picture,
-  braincells: meLou.coins,
-  portfolioValue: meLou.portfolioValue,
-  collectionSize: meLou.collectionSize,
-}
-
-const leaderPal = {
-  sub: friendAccepted.sub,
-  name: friendAccepted.name,
-  picture: friendAccepted.picture,
-  braincells: 40,
-  portfolioValue: friendAccepted.portfolioValue,
-  collectionSize: friendAccepted.collectionSize,
-}
 
 const empty: LeaderboardScreenModel = {
   phase: 'empty',
@@ -48,6 +30,7 @@ export const Loading: Story = {
 export const Empty: Story = {}
 
 export const Error: Story = {
+  name: 'Error (prop fixture only)',
   args: {
     phase: 'error',
     emptyMessage: 'could not load leaderboard',
@@ -59,6 +42,6 @@ export const Ready: Story = {
     phase: 'ready',
     showEmpty: false,
     showList: true,
-    leaders: [leaderLou, leaderPal],
+    leaders: leaderboardRows.map(buildLeaderboardRowModel),
   },
 }

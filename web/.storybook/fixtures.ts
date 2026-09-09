@@ -1,5 +1,5 @@
 import { memeValue, tierFor } from '../../shared/tiers'
-import type { Alert, FriendEntry, GiphyResult, Me, Meme, Memeplex, QuestStep, Trade } from '../src/lib/types'
+import type { Alert, FriendEntry, GiphyResult, LeaderRow, Me, Meme, Memeplex, QuestStep, Trade } from '../src/lib/types'
 
 export const FIXED_NOW = '2026-09-08T00:00:00.000Z'
 
@@ -224,3 +224,8 @@ export const developerKeys = [
 ]
 
 export const discordInstallUrl = 'https://discord.com/oauth2/authorize'
+
+export const leaderboardRows: LeaderRow[] = [
+  { sub: friendAccepted.sub, name: friendAccepted.name, picture: friendAccepted.picture, collectionSize: friendAccepted.collectionSize, portfolioValue: friendAccepted.portfolioValue, braincells: 240 },
+  { sub: meLou.sub, name: meLou.name, picture: meLou.picture, collectionSize: meLou.collectionSize, portfolioValue: meLou.portfolioValue, braincells: meLou.coins },
+]

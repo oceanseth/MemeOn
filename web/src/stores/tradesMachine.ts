@@ -1,5 +1,5 @@
 import { assign, setup } from 'xstate'
-import type { FriendEntry, Meme, Trade } from '../lib/types'
+import type { FriendEntry, Meme, Trade, TradeSide } from '../lib/types'
 
 export type TradesPhase = 'loading' | 'ready' | 'empty' | 'error' | 'composing' | 'acting'
 
@@ -8,6 +8,7 @@ export interface TradesContext {
   msg: string | null
   composeErr: string | null
   showNew: boolean
+  composeGeneration: number
   friends: FriendEntry[]
   binder: Meme[]
   allMemes: Meme[]
@@ -27,13 +28,13 @@ export type TradesEvent =
   | { type: 'FAIL'; err: string }
   | { type: 'DONE'; msg?: string | null }
   | { type: 'SET_MSG'; msg: string | null }
-  | { type: 'SET_COMPOSE_ERR'; err: string | null }
+  | { type: 'SET_COMPOSE_ERR'; err: string | null; composeGeneration?: number }
   | { type: 'OPEN_COMPOSE' }
-  | { type: 'CLOSE_COMPOSE' }
+  | { type: 'CLOSE_COMPOSE'; composeGeneration?: number }
   | { type: 'RESPOND' }
-  | { type: 'SET_FRIENDS'; friends: FriendEntry[] }
-  | { type: 'SET_BINDER'; binder: Meme[] }
-  | { type: 'SET_ALL_MEMES'; memes: Meme[] }
+  | { type: 'SET_FRIENDS'; friends: FriendEntry[]; composeGeneration: number }
+  | { type: 'SET_BINDER'; binder: Meme[]; composeGeneration: number }
+  | { type: 'SET_ALL_MEMES'; memes: Meme[]; composeGeneration: number }
   | { type: 'SET_TO_ID'; toId: string }
   | { type: 'SET_OFFER_MEME'; memeId: string }
   | { type: 'SET_OFFER_SHARES'; shares: number }
@@ -41,8 +42,25 @@ export type TradesEvent =
   | { type: 'SET_ASK_MEME'; memeId: string }
   | { type: 'SET_ASK_SHARES'; shares: number }
   | { type: 'SET_ASK_COINS'; coins: number }
-  | { type: 'SET_BUSY'; busy: boolean }
+  | { type: 'SET_BUSY'; busy: boolean; composeGeneration?: number }
   | { type: 'SET_MEME_NAME'; id: string; title: string }
+
+export function tradeProposalPayload(context: Pick<
+  TradesContext,
+  'toId' | 'offerMeme' | 'offerShares' | 'offerCoins' | 'askMeme' | 'askShares' | 'askCoins'
+>): { toId: string; offer: TradeSide; ask: TradeSide } {
+  return {
+    toId: context.toId,
+    offer: {
+      memes: context.offerMeme ? [{ memeId: context.offerMeme, shares: context.offerShares }] : [],
+      coins: context.offerCoins,
+    },
+    ask: {
+      memes: context.askMeme ? [{ memeId: context.askMeme, shares: context.askShares }] : [],
+      coins: context.askCoins,
+    },
+  }
+}
 
 const restoreAfterAct = [
   { guard: ({ context }: { context: TradesContext }) => context.showNew, target: 'composing' as const },
@@ -66,6 +84,7 @@ export const tradesMachine = setup({
     msg: null,
     composeErr: null,
     showNew: false,
+    composeGeneration: 0,
     friends: [],
     binder: [],
     allMemes: [],
@@ -82,10 +101,24 @@ export const tradesMachine = setup({
   initial: 'loading',
   on: {
     SET_MSG: { actions: assign({ msg: ({ event }) => event.msg }) },
-    SET_COMPOSE_ERR: { actions: assign({ composeErr: ({ event }) => event.err }) },
-    SET_FRIENDS: { actions: assign({ friends: ({ event }) => event.friends }) },
-    SET_BINDER: { actions: assign({ binder: ({ event }) => event.binder }) },
-    SET_ALL_MEMES: { actions: assign({ allMemes: ({ event }) => event.memes }) },
+    SET_COMPOSE_ERR: {
+      guard: ({ context, event }) =>
+        event.composeGeneration === undefined ||
+        (context.showNew && event.composeGeneration === context.composeGeneration),
+      actions: assign({ composeErr: ({ event }) => event.err }),
+    },
+    SET_FRIENDS: {
+      guard: ({ context, event }) => context.showNew && event.composeGeneration === context.composeGeneration,
+      actions: assign({ friends: ({ event }) => event.friends }),
+    },
+    SET_BINDER: {
+      guard: ({ context, event }) => context.showNew && event.composeGeneration === context.composeGeneration,
+      actions: assign({ binder: ({ event }) => event.binder }),
+    },
+    SET_ALL_MEMES: {
+      guard: ({ context, event }) => context.showNew && event.composeGeneration === context.composeGeneration,
+      actions: assign({ allMemes: ({ event }) => event.memes }),
+    },
     SET_TO_ID: { actions: assign({ toId: ({ event }) => event.toId }) },
     SET_OFFER_MEME: { actions: assign({ offerMeme: ({ event }) => event.memeId }) },
     SET_OFFER_SHARES: { actions: assign({ offerShares: ({ event }) => event.shares }) },
@@ -93,7 +126,12 @@ export const tradesMachine = setup({
     SET_ASK_MEME: { actions: assign({ askMeme: ({ event }) => event.memeId }) },
     SET_ASK_SHARES: { actions: assign({ askShares: ({ event }) => event.shares }) },
     SET_ASK_COINS: { actions: assign({ askCoins: ({ event }) => event.coins }) },
-    SET_BUSY: { actions: assign({ busy: ({ event }) => event.busy }) },
+    SET_BUSY: {
+      guard: ({ context, event }) =>
+        event.composeGeneration === undefined ||
+        (context.showNew && event.composeGeneration === context.composeGeneration),
+      actions: assign({ busy: ({ event }) => event.busy }),
+    },
     SET_MEME_NAME: {
       actions: assign({
         memeNames: ({ context, event }) => ({ ...context.memeNames, [event.id]: event.title }),
@@ -119,7 +157,11 @@ export const tradesMachine = setup({
       target: '.composing',
       actions: assign({
         showNew: true,
+        composeGeneration: ({ context }) => context.composeGeneration + 1,
         composeErr: null,
+        friends: [],
+        binder: [],
+        allMemes: [],
         busy: false,
         toId: '',
         offerMeme: '',
@@ -132,11 +174,17 @@ export const tradesMachine = setup({
     },
     CLOSE_COMPOSE: [
       {
-        guard: ({ context }) => context.trades.length === 0,
+        guard: ({ context, event }) =>
+          (event.composeGeneration === undefined ||
+            (context.showNew && event.composeGeneration === context.composeGeneration)) &&
+          context.trades.length === 0,
         target: '.empty',
         actions: assign({ showNew: false, composeErr: null, busy: false }),
       },
       {
+        guard: ({ context, event }) =>
+          event.composeGeneration === undefined ||
+          (context.showNew && event.composeGeneration === context.composeGeneration),
         target: '.ready',
         actions: assign({ showNew: false, composeErr: null, busy: false }),
       },

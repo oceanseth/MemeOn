@@ -9,16 +9,14 @@ export function BinderScreen({
   showCollection,
   showPrivateToggle,
   privateCount,
-  showPrivate,
-  sortKey,
-  sortDir,
-  visible,
+  privateToggleProps,
+  sortChips,
+  createLinkProps,
+  cards,
   showLoading,
   showEmpty,
   emptyMessage,
   showGrid,
-  onShowPrivateChange,
-  onSortChange,
 }: BinderScreenModel) {
   return (
     <main className="container">
@@ -34,24 +32,19 @@ export function BinderScreen({
             <label style={{ display: 'flex', gap: 6, alignItems: 'center', fontSize: 13.5 }}>
               <input
                 type="checkbox"
-                checked={showPrivate}
-                onChange={(e) => onShowPrivateChange(e.target.checked)}
+                {...privateToggleProps}
               />
               Show private ({privateCount})
             </label>
           )}
-          <Link to="/binder/new">
+          <Link {...createLinkProps}>
             <button className="primary">＋ Create meme</button>
           </Link>
         </div>
       </div>
 
       <div className="filter-bar" style={{ marginBottom: 18 }}>
-        <SortChips
-          sortKey={sortKey}
-          dir={sortDir}
-          onChange={onSortChange}
-        />
+        <SortChips model={sortChips} />
       </div>
 
       {showLoading ? (
@@ -62,16 +55,16 @@ export function BinderScreen({
         <div className="empty">{emptyMessage}</div>
       ) : showGrid ? (
         <div className="card-grid">
-          {visible.map((m) => (
+          {cards.map((card) => (
             <MemeCard
-              key={m.id}
-              meme={m}
+              key={card.id}
+              model={card.memeCard}
               footer={
                 <span className="meme-sub">
                   <span>
-                    {m.myShares ?? 0}/100 shares{m.isCreator ? ' · creator' : ''}
+                    {card.sharesLabel}{card.showCreator ? ' · creator' : ''}
                   </span>
-                  {m.private && <span className="badge">🙈 private</span>}
+                  {card.showPrivate && <span className="badge">🙈 private</span>}
                 </span>
               }
             />

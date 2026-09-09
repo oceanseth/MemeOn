@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { fn } from 'storybook/test'
 import { friendAccepted, giftablePaper, meLou, paperMeme } from '../../.storybook/fixtures'
 import type { ProfileScreenModel } from '../hooks/useProfileScreen'
+import { buildMemeCardModel } from '../lib/memeCardModel'
 import { ProfileScreen } from './ProfileScreen'
 
 const palProfile = {
@@ -24,31 +25,35 @@ const louProfile = {
 }
 
 const handlers = {
-  onTabChange: fn(),
-  onToggleFollow: fn(),
-  onFriendAction: fn(),
+  createdTabButtonProps: { 'aria-pressed': true, onClick: fn() },
+  binderTabButtonProps: { 'aria-pressed': false, onClick: fn() },
+  followButtonProps: { 'aria-pressed': false, onClick: fn() },
+  friendButtonProps: { onClick: fn(), disabled: false },
 } satisfies Partial<ProfileScreenModel>
 
 const emptyCreated: ProfileScreenModel = {
-  tab: 'created',
   err: null,
   showErr: false,
   showLoading: false,
-  profile: palProfile,
-  followingByMe: false,
-  friendStatus: null,
-  isSelf: false,
+  profile: {
+    name: palProfile.name,
+    hasPicture: !!palProfile.picture,
+    imageProps: { src: palProfile.picture ?? '', alt: palProfile.name },
+    statsLabel: `⭐ ${palProfile.followers} followers · 📚 ${palProfile.collectionSize} memes · portfolio 🧠 ${palProfile.portfolioValue.toLocaleString()}`,
+  },
   showActions: true,
   showJoin: false,
-  followPrimary: true,
+  followButtonClassName: 'primary',
   followLabel: '☆ Follow',
   friendLabel: '👋 Add friend',
-  friendDisabled: false,
   createdCount: 0,
   binderCount: 0,
-  memes: [],
+  cards: [],
   showEmpty: true,
   showGrid: false,
+  createdTabClassName: 'primary',
+  binderTabClassName: '',
+  joinLinkProps: { to: '/' },
   ...handlers,
 }
 
@@ -81,29 +86,36 @@ export const Created: Story = {
     showEmpty: false,
     showGrid: true,
     createdCount: 1,
-    memes: [paperMeme],
+    cards: [{ id: `created-${paperMeme.id}`, memeCard: buildMemeCardModel(paperMeme), sharesLabel: null }],
   },
 }
 
 export const BinderTab: Story = {
   args: {
-    tab: 'binder',
+    createdTabClassName: '',
+    binderTabClassName: 'primary',
+    createdTabButtonProps: { 'aria-pressed': false, onClick: fn() },
+    binderTabButtonProps: { 'aria-pressed': true, onClick: fn() },
     showEmpty: false,
     showGrid: true,
     binderCount: 1,
-    memes: [{ ...giftablePaper, shares: 12 }],
+    cards: [{ id: `binder-${giftablePaper.id}`, memeCard: buildMemeCardModel(giftablePaper), sharesLabel: '12/100 shares' }],
   },
 }
 
 export const Self: Story = {
   args: {
-    profile: louProfile,
-    isSelf: true,
+    profile: {
+      name: louProfile.name,
+      hasPicture: !!louProfile.picture,
+      imageProps: { src: louProfile.picture ?? '', alt: louProfile.name },
+      statsLabel: `⭐ ${louProfile.followers} followers · 📚 ${louProfile.collectionSize} memes · portfolio 🧠 ${louProfile.portfolioValue.toLocaleString()}`,
+    },
     showActions: false,
     showEmpty: false,
     showGrid: true,
     createdCount: 1,
-    memes: [paperMeme],
+    cards: [{ id: `created-${paperMeme.id}`, memeCard: buildMemeCardModel(paperMeme), sharesLabel: null }],
   },
 }
 
@@ -114,29 +126,27 @@ export const LoggedOut: Story = {
     showEmpty: false,
     showGrid: true,
     createdCount: 1,
-    memes: [paperMeme],
+    cards: [{ id: `created-${paperMeme.id}`, memeCard: buildMemeCardModel(paperMeme), sharesLabel: null }],
   },
 }
 
 export const Following: Story = {
   args: {
-    followingByMe: true,
-    followPrimary: false,
+    followButtonClassName: '',
     followLabel: '★ Following',
-    friendStatus: 'accepted',
     friendLabel: '🤝 Friends',
-    friendDisabled: true,
+    followButtonProps: { 'aria-pressed': true, onClick: fn() },
+    friendButtonProps: { onClick: fn(), disabled: true },
     showEmpty: false,
     showGrid: true,
     createdCount: 1,
-    memes: [paperMeme],
+    cards: [{ id: `created-${paperMeme.id}`, memeCard: buildMemeCardModel(paperMeme), sharesLabel: null }],
   },
 }
 
 export const IncomingRequest: Story = {
   args: {
-    friendStatus: 'incoming',
     friendLabel: '✅ Accept request',
-    friendDisabled: false,
+    friendButtonProps: { onClick: fn(), disabled: false },
   },
 }

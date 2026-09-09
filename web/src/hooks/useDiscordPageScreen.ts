@@ -1,4 +1,5 @@
-import { useMachine } from '@xstate/react'
+import { useProjectedActor } from './useProjectedActor'
+import type { AnchorHTMLAttributes } from 'react'
 import { apiFetch } from '../lib/api'
 import {
   discordPageMachine,
@@ -6,17 +7,21 @@ import {
 } from '../stores/discordPageMachine'
 import { useMountEffect } from './useMountEffect'
 
+export type DiscordInstallLinkProps = Pick<
+  AnchorHTMLAttributes<HTMLAnchorElement>,
+  'href' | 'target' | 'rel' | 'aria-label'
+>
+
 export interface DiscordPageScreenModel {
   phase: DiscordPagePhase
-  installUrl: string | null
-  loaded: boolean
   showInstall: boolean
   showPending: boolean
+  installLinkProps: DiscordInstallLinkProps
 }
 
 /** Everything `DiscordPageScreen` renders. The hook is the engine; the screen is the terminal. */
 export function useDiscordPageScreen(): DiscordPageScreenModel {
-  const [snapshot, send] = useMachine(discordPageMachine)
+  const [snapshot, send] = useProjectedActor(discordPageMachine)
   const ctx = snapshot.context
   const phase = snapshot.value as DiscordPagePhase
 
@@ -28,9 +33,13 @@ export function useDiscordPageScreen(): DiscordPageScreenModel {
 
   return {
     phase,
-    installUrl: ctx.installUrl,
-    loaded: ctx.loaded,
     showInstall: ctx.loaded && !!ctx.installUrl,
     showPending: ctx.loaded && !ctx.installUrl,
+    installLinkProps: {
+      href: ctx.installUrl ?? undefined,
+      target: '_blank',
+      rel: 'noreferrer',
+      'aria-label': 'Add MemeOn to Discord (opens Discord in a new tab)',
+    },
   }
 }

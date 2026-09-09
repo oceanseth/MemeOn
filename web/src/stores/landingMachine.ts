@@ -13,53 +13,70 @@ export type LandingEvent =
   | { type: 'LOGIN' }
   | { type: 'FAIL'; err: string }
 
-/**
- * Landing source of truth. loading → ready; login may go loggingIn → loginError.
- * Frame fetch failures stay ready with empty frames, matching the page.
- */
+/** Frame readiness and login activity settle independently. */
 export const landingMachine = setup({
   types: {
     context: {} as LandingContext,
     events: {} as LandingEvent,
   },
+  actions: {
+    startLogin: () => {},
+  },
 }).createMachine({
   id: 'landing',
+  type: 'parallel',
   context: {
     frames: {},
     busy: false,
     err: null,
   },
-  initial: 'loading',
   states: {
-    loading: {
-      on: {
-        SET_FRAMES: {
-          target: 'ready',
-          actions: assign({ frames: ({ event }) => event.frames }),
+    frames: {
+      initial: 'loading',
+      states: {
+        loading: {
+          on: {
+            SET_FRAMES: {
+              target: 'ready',
+              actions: assign({ frames: ({ event }) => event.frames }),
+            },
+          },
+        },
+        ready: {
+          on: {
+            SET_FRAMES: {
+              actions: assign({ frames: ({ event }) => event.frames }),
+            },
+          },
         },
       },
     },
-    ready: {
-      on: {
-        LOGIN: {
-          target: 'loggingIn',
-          actions: assign({ busy: true, err: null }),
+    login: {
+      initial: 'idle',
+      states: {
+        idle: {
+          on: {
+            LOGIN: {
+              target: 'loggingIn',
+              actions: [assign({ busy: true, err: null }), 'startLogin'],
+            },
+          },
         },
-      },
-    },
-    loggingIn: {
-      on: {
-        FAIL: {
-          target: 'loginError',
-          actions: assign({ busy: false, err: ({ event }) => event.err }),
+        loggingIn: {
+          on: {
+            FAIL: {
+              target: 'loginError',
+              actions: assign({ busy: false, err: ({ event }) => event.err }),
+            },
+          },
         },
-      },
-    },
-    loginError: {
-      on: {
-        LOGIN: {
-          target: 'loggingIn',
-          actions: assign({ busy: true, err: null }),
+        loginError: {
+          on: {
+            LOGIN: {
+              target: 'loggingIn',
+              actions: [assign({ busy: true, err: null }), 'startLogin'],
+            },
+          },
         },
       },
     },

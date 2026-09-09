@@ -8,24 +8,13 @@ import { AppShell } from '../organisms/AppShell'
 /** App chrome as a function of its model. QuestBar and AlertsBell take model props. */
 export function AppShellScreen({
   children,
-  user,
-  steps,
-  packMemes,
-  packReward,
-  packBusy,
-  alerts,
-  alertsOpen,
   showNav,
   showToolbar,
-  showAvatar,
-  showQuest,
   coinsText,
-  profileHref,
-  bellRef,
-  onLogout,
-  onClaimPack,
-  onDismissPack,
-  onOpenAlerts,
+  avatar,
+  alertsBell,
+  questBar,
+  logoutButtonProps,
 }: AppShellScreenModel & { children: ReactNode }) {
   const nav = showNav ? (
     <nav className="nav-links">
@@ -37,31 +26,22 @@ export function AppShellScreen({
     </nav>
   ) : undefined
 
-  const toolbar = showToolbar && user ? (
+  const toolbar = showToolbar ? (
     <>
       <span className="coins" title="Braincells">
         {coinsText}
       </span>
-      <AlertsBell alerts={alerts} open={alertsOpen} onOpenChange={onOpenAlerts} rootRef={bellRef} />
-      {showAvatar && user.picture && (
-        <Link to={profileHref}>
-          <img className="avatar" src={user.picture} alt={user.name} />
+      <AlertsBell model={alertsBell} />
+      {avatar && (
+        <Link {...avatar.linkProps}>
+          <img className="avatar" {...avatar.imageProps} />
         </Link>
       )}
-      <button onClick={onLogout}>Log out</button>
+      <button {...logoutButtonProps}>Log out</button>
     </>
   ) : undefined
 
-  const quest = showQuest ? (
-    <QuestBar
-      steps={steps ?? []}
-      packMemes={packMemes}
-      packReward={packReward}
-      busy={packBusy}
-      onClaimPack={onClaimPack}
-      onDismissPack={onDismissPack}
-    />
-  ) : undefined
+  const quest = questBar ? <QuestBar model={questBar} /> : undefined
 
   return (
     <AppShell nav={nav} toolbar={toolbar} quest={quest}>

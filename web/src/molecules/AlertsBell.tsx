@@ -1,46 +1,29 @@
-import type { Ref } from 'react'
 import { Link } from 'react-router-dom'
-import type { Alert } from '../lib/types'
+import type { AlertsBellModel } from '../lib/alertsBellModel'
 
 /**
  * Alerts popover. Parent owns the list, open state, and mark-as-read.
  */
-export function AlertsBell({
-  alerts,
-  open,
-  onOpenChange,
-  rootRef,
-}: {
-  alerts: Alert[]
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  rootRef?: Ref<HTMLDivElement> | undefined
-}) {
-  const unread = alerts.filter((a) => !a.read)
-
+export function AlertsBell({ model }: { model: AlertsBellModel }) {
   return (
-    <div className="bell" ref={rootRef}>
-      <button onClick={() => onOpenChange(!open)} aria-label="Alerts">
+    <div className="bell" {...model.rootProps}>
+      <button {...model.triggerProps}>
         🔔
-        {unread.length > 0 && <span className="bell-badge">{unread.length}</span>}
+        {model.unreadLabel && <span className="bell-badge">{model.unreadLabel}</span>}
       </button>
-      {open && (
+      {model.open && (
         <div className="alerts-pop">
-          {alerts.length === 0 && <div className="alert-row">No alerts yet — go make noise.</div>}
-          {alerts.map((a) => (
-            <div key={a.id} className={`alert-row ${a.read ? '' : 'unread'}`}>
-              {a.memeId ? (
-                <Link to={`/m/${a.memeId}`} onClick={() => onOpenChange(false)}>
-                  {a.message}
-                </Link>
-              ) : a.subjectSub ? (
-                <Link to={`/u/${encodeURIComponent(a.subjectSub)}`} onClick={() => onOpenChange(false)}>
-                  {a.message}
+          {model.empty && <div className="alert-row">No alerts yet — go make noise.</div>}
+          {model.rows.map((row) => (
+            <div key={row.id} className={`alert-row ${row.unread ? 'unread' : ''}`}>
+              {row.linkProps ? (
+                <Link {...row.linkProps}>
+                  {row.message}
                 </Link>
               ) : (
-                a.message
+                row.message
               )}
-              <time>{new Date(a.createdAt).toLocaleString()}</time>
+              <time>{row.timeLabel}</time>
             </div>
           ))}
         </div>

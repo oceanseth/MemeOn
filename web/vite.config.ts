@@ -14,7 +14,7 @@ const proxy = {
     changeOrigin: true,
     secure: false
   },
-  '/m': {
+  '/m/': {
     target: 'http://localhost:3001',
     changeOrigin: true,
     secure: false
@@ -22,6 +22,9 @@ const proxy = {
 };
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    include: ['msw-storybook-addon/csf3'],
+  },
   server: {
     port: 5173,
     proxy
@@ -39,7 +42,20 @@ export default defineConfig({
       test: {
         name: 'unit',
         environment: 'node',
-        include: ['src/**/*.test.ts']
+        include: ['src/**/*.test.ts', '.storybook/**/*.test.ts']
+      }
+    }, {
+      extends: true,
+      test: {
+        name: 'runtime',
+        include: ['src/**/*.runtime.test.tsx'],
+        browser: {
+          enabled: true,
+          headless: true,
+          screenshotDirectory: path.join(dirname, 'node_modules/.cache/runtime-screenshots'),
+          provider: playwright({}),
+          instances: [{ browser: 'chromium' }]
+        }
       }
     }, {
       extends: true,

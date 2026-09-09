@@ -3,12 +3,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { fn } from 'storybook/test'
 import { giftablePaper, meLou, paperMeme } from '../../.storybook/fixtures'
 import type { BinderScreenModel } from '../hooks/useBinderScreen'
+import { buildMemeCardModel } from '../lib/memeCardModel'
+import { buildSortChipsModel } from '../lib/sortChipsModel'
 import { BinderScreen } from './BinderScreen'
-
-const handlers = {
-  onShowPrivateChange: fn(),
-  onSortChange: fn(),
-} satisfies Partial<BinderScreenModel>
 
 const empty: BinderScreenModel = {
   phase: 'empty',
@@ -16,15 +13,14 @@ const empty: BinderScreenModel = {
   showCollection: true,
   showPrivateToggle: false,
   privateCount: 0,
-  showPrivate: false,
-  sortKey: 'new',
-  sortDir: 'desc',
-  visible: [],
+  privateToggleProps: { checked: false, onChange: fn() },
+  sortChips: buildSortChipsModel({ sortKey: 'new', dir: 'desc', onChange: fn() }),
+  createLinkProps: { to: '/binder/new' },
+  cards: [],
   showLoading: false,
   showEmpty: true,
   emptyMessage: 'Your binder is empty. Mint your first meme and start the grind to ✨Shiny✨.',
   showGrid: false,
-  ...handlers,
 }
 
 const meta = {
@@ -44,6 +40,7 @@ export const Loading: Story = {
 export const Empty: Story = {}
 
 export const Error: Story = {
+  name: 'Error (prop fixture only)',
   args: {
     phase: 'error',
     emptyMessage: 'could not load binder',
@@ -55,7 +52,7 @@ export const Ready: Story = {
     phase: 'ready',
     showEmpty: false,
     showGrid: true,
-    visible: [giftablePaper],
+    cards: [{ id: giftablePaper.id, memeCard: buildMemeCardModel(giftablePaper), sharesLabel: '12/100 shares', showCreator: false, showPrivate: false }],
   },
 }
 
@@ -75,7 +72,7 @@ export const ShowingPrivate: Story = {
     showGrid: true,
     showPrivateToggle: true,
     privateCount: 1,
-    showPrivate: true,
-    visible: [{ ...paperMeme, private: true, myShares: 4, isCreator: true }],
+    privateToggleProps: { checked: true, onChange: fn() },
+    cards: [{ id: paperMeme.id, memeCard: buildMemeCardModel(paperMeme), sharesLabel: '4/100 shares', showCreator: true, showPrivate: true }],
   },
 }

@@ -3,16 +3,16 @@ import type { InviteScreenModel } from '../hooks/useInviteScreen'
 
 /** Invite landing as a function of its model. Every engine state is one set of args. */
 export function InviteScreen({
-  data,
   err,
-  busy,
   isSelf,
   showFatalError,
   showSpinner,
   showAcceptError,
   showHighlights,
   acceptLabel,
-  onAccept,
+  inviter,
+  cards,
+  acceptButtonProps,
 }: InviteScreenModel) {
   if (showFatalError)
     return (
@@ -28,17 +28,14 @@ export function InviteScreen({
       </main>
     )
 
-  if (!data) return null
-
-  const { inviter, topMemes } = data
+  if (!inviter) return null
 
   return (
     <main className="container">
       <section className="hero" style={{ paddingBottom: 24 }}>
-        {inviter.picture && (
+        {inviter.hasPicture && (
           <img
-            src={inviter.picture}
-            alt={inviter.name}
+            {...inviter.imageProps}
             style={{
               width: 96,
               height: 96,
@@ -52,8 +49,7 @@ export function InviteScreen({
           <span className="grad">{inviter.name}</span> invited you to MemeOn
         </h1>
         <p>
-          📚 {inviter.collectionSize} memes collected · 🧠 {inviter.portfolioValue.toLocaleString()}{' '}
-          portfolio · ⭐ {inviter.followers} followers
+          {inviter.statsLabel}
         </p>
         <p>
           MemeOn turns memes into trading cards. Mint them, watch them climb foil rarity tiers as
@@ -62,14 +58,13 @@ export function InviteScreen({
         {isSelf ? (
           <p className="notice ok">This is your own invite link — send it to a friend!</p>
         ) : (
-          <button className="primary login-btn" onClick={onAccept} disabled={busy}>
+          <button className="primary login-btn" {...acceptButtonProps}>
             {acceptLabel}
           </button>
         )}
         {showAcceptError && <p className="notice error">{err}</p>}
         <p style={{ fontSize: 13, color: 'var(--text-dim)' }}>
-          Joining creates your account with Masky single sign-on and instantly makes you and{' '}
-          {inviter.name} friends.
+          {inviter.acceptanceNote}
         </p>
       </section>
 
@@ -79,8 +74,8 @@ export function InviteScreen({
             {inviter.name}'s binder highlights
           </h2>
           <div className="card-grid">
-            {topMemes.map((m) => (
-              <MemeCard key={m.id} meme={m} />
+            {cards.map((card) => (
+              <MemeCard key={card.id} model={card.memeCard} />
             ))}
           </div>
         </>

@@ -1,10 +1,12 @@
-import { useMachine } from '@xstate/react'
+import { useProjectedActor } from './useProjectedActor'
 import { autorun } from 'mobx'
-import { useCallback, useRef, type Ref } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useRef, type ButtonHTMLAttributes, type ImgHTMLAttributes, type Ref } from 'react'
+import { useNavigate, type LinkProps } from 'react-router-dom'
+import { buildAlertsBellModel, type AlertsBellModel } from '../lib/alertsBellModel'
 import { apiFetch, post } from '../lib/api'
+import { buildQuestBarModel, type QuestBarModel } from '../lib/questBarModel'
 import type { Alert, Meme, Me, QuestKey, QuestStep } from '../lib/types'
-import { appShellMachine, type AppShellPhase } from '../stores/appShellMachine'
+import { appShellMachine, type AppShellContext, type AppShellPhase } from '../stores/appShellMachine'
 import { useStores } from '../stores/StoresContext'
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
@@ -18,24 +20,64 @@ function allDone(user: Me | null): boolean {
 
 export interface AppShellScreenModel {
   phase: AppShellPhase
-  user: Me | null
-  steps: QuestStep[] | null
-  packMemes: Meme[] | null
-  packReward: number
-  packBusy: boolean
-  alerts: Alert[]
-  alertsOpen: boolean
   showNav: boolean
   showToolbar: boolean
-  showAvatar: boolean
-  showQuest: boolean
   coinsText: string
-  profileHref: string
-  bellRef: Ref<HTMLDivElement>
+  avatar: {
+    linkProps: Pick<LinkProps, 'to'>
+    imageProps: Pick<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt'>
+  } | null
+  alertsBell: AlertsBellModel
+  questBar: QuestBarModel | null
+  logoutButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
+}
+
+export function buildAppShellScreenModel({
+  phase,
+  user,
+  context,
+  bellRef,
+  onLogout,
+  onClaimPack,
+  onDismissPack,
+  onOpenAlerts,
+}: {
+  phase: AppShellPhase
+  user: Me | null
+  context: AppShellContext
+  bellRef?: Ref<HTMLDivElement> | undefined
   onLogout: () => void
   onClaimPack: () => void
   onDismissPack: () => void
   onOpenAlerts: (open: boolean) => void
+}): AppShellScreenModel {
+  const showQuest = (!!user && !allDone(user) && !!context.steps) || !!context.packMemes
+
+  return {
+    phase,
+    showNav: !!user,
+    showToolbar: !!user,
+    coinsText: user ? `🧠 ${user.coins.toLocaleString()}` : '',
+    avatar: user?.picture ? {
+      linkProps: { to: `/u/${encodeURIComponent(user.sub)}` },
+      imageProps: { src: user.picture, alt: user.name },
+    } : null,
+    alertsBell: buildAlertsBellModel({
+      alerts: context.alerts,
+      open: context.alertsOpen,
+      onOpenChange: onOpenAlerts,
+      rootRef: bellRef,
+    }),
+    questBar: showQuest ? buildQuestBarModel({
+      steps: context.steps ?? [],
+      packMemes: context.packMemes,
+      packReward: context.packReward,
+      busy: context.packBusy,
+      onClaimPack,
+      onDismissPack,
+    }) : null,
+    logoutButtonProps: { onClick: onLogout },
+  }
 }
 
 /** Everything `AppShellScreen` renders. The hook is the engine; the screen is the terminal. */
@@ -43,7 +85,7 @@ export function useAppShellScreen(): AppShellScreenModel {
   const { user, logout, refresh } = useAuth()
   const { auth } = useStores()
   const navigate = useNavigate()
-  const [snapshot, send, actor] = useMachine(appShellMachine)
+  const [snapshot, send, actor] = useProjectedActor(appShellMachine)
   const bellRef = useRef<HTMLDivElement>(null)
   const ctx = snapshot.context
   const phase = snapshot.value as AppShellPhase
@@ -122,27 +164,14 @@ export function useAppShellScreen(): AppShellScreenModel {
     navigate('/')
   }, [logout, navigate])
 
-  const showQuest = (!!user && !allDone(user) && !!ctx.steps) || !!ctx.packMemes
-
-  return {
+  return buildAppShellScreenModel({
     phase,
     user,
-    steps: ctx.steps,
-    packMemes: ctx.packMemes,
-    packReward: ctx.packReward,
-    packBusy: ctx.packBusy,
-    alerts: ctx.alerts,
-    alertsOpen: ctx.alertsOpen,
-    showNav: !!user,
-    showToolbar: !!user,
-    showAvatar: !!user?.picture,
-    showQuest,
-    coinsText: user ? `🧠 ${user.coins.toLocaleString()}` : '',
-    profileHref: user ? `/u/${encodeURIComponent(user.sub)}` : '',
+    context: ctx,
     bellRef,
     onLogout,
     onClaimPack: () => void onClaimPack(),
     onDismissPack: () => send({ type: 'DISMISS_PACK' }),
     onOpenAlerts: (open) => void onOpenAlerts(open),
-  }
+  })
 }

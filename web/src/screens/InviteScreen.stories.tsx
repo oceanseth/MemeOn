@@ -3,24 +3,29 @@ import { MemoryRouter } from 'react-router-dom'
 import { fn } from 'storybook/test'
 import { inviteLou, invitePal } from '../../.storybook/fixtures'
 import type { InviteScreenModel } from '../hooks/useInviteScreen'
+import { buildMemeCardModel } from '../lib/memeCardModel'
 import { InviteScreen } from './InviteScreen'
 
-const handlers = {
-  onAccept: fn(),
-} satisfies Partial<InviteScreenModel>
+const inviteModel = (data: typeof invitePal) => ({
+  name: data.inviter.name,
+  hasPicture: !!data.inviter.picture,
+  imageProps: { src: data.inviter.picture ?? '', alt: data.inviter.name },
+  statsLabel: `📚 ${data.inviter.collectionSize} memes collected · 🧠 ${data.inviter.portfolioValue.toLocaleString()} portfolio · ⭐ ${data.inviter.followers} followers`,
+  acceptanceNote: `Joining creates your account with Masky single sign-on and instantly makes you and ${data.inviter.name} friends.`,
+})
 
 const empty: InviteScreenModel = {
   phase: 'loading',
-  data: null,
   err: null,
-  busy: false,
   isSelf: false,
   showFatalError: false,
   showSpinner: true,
   showAcceptError: false,
   showHighlights: false,
+  inviter: null,
+  cards: [],
+  acceptButtonProps: { onClick: fn(), disabled: false },
   acceptLabel: '🎭 Accept invite — join with Masky',
-  ...handlers,
 }
 
 const meta = {
@@ -47,7 +52,8 @@ export const Error: Story = {
 export const Ready: Story = {
   args: {
     phase: 'ready',
-    data: invitePal,
+    inviter: inviteModel(invitePal),
+    cards: invitePal.topMemes.map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) })),
     showSpinner: false,
     showHighlights: true,
   },
@@ -56,7 +62,8 @@ export const Ready: Story = {
 export const LoggedIn: Story = {
   args: {
     phase: 'ready',
-    data: invitePal,
+    inviter: inviteModel(invitePal),
+    cards: invitePal.topMemes.map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) })),
     showSpinner: false,
     showHighlights: true,
     acceptLabel: '🤝 Accept & befriend pal',
@@ -66,7 +73,8 @@ export const LoggedIn: Story = {
 export const Self: Story = {
   args: {
     phase: 'ready',
-    data: inviteLou,
+    inviter: inviteModel(inviteLou),
+    cards: inviteLou.topMemes.map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) })),
     isSelf: true,
     showSpinner: false,
     showHighlights: true,
@@ -76,8 +84,9 @@ export const Self: Story = {
 export const Accepting: Story = {
   args: {
     phase: 'accepting',
-    data: invitePal,
-    busy: true,
+    inviter: inviteModel(invitePal),
+    cards: invitePal.topMemes.map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) })),
+    acceptButtonProps: { onClick: fn(), disabled: true },
     showSpinner: false,
     showHighlights: true,
     acceptLabel: 'Opening Masky…',
@@ -87,7 +96,8 @@ export const Accepting: Story = {
 export const AcceptError: Story = {
   args: {
     phase: 'ready',
-    data: invitePal,
+    inviter: inviteModel(invitePal),
+    cards: invitePal.topMemes.map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) })),
     err: 'something went wrong',
     showSpinner: false,
     showAcceptError: true,

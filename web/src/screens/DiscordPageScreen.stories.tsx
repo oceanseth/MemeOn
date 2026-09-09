@@ -6,10 +6,14 @@ import { DiscordPageScreen } from './DiscordPageScreen'
 
 const empty: DiscordPageScreenModel = {
   phase: 'loading',
-  installUrl: null,
-  loaded: false,
   showInstall: false,
   showPending: false,
+  installLinkProps: {
+    href: undefined,
+    target: '_blank',
+    rel: 'noreferrer',
+    'aria-label': 'Add MemeOn to Discord (opens Discord in a new tab)',
+  },
 }
 
 const meta = {
@@ -27,18 +31,20 @@ export const Loading: Story = {}
 export const Ready: Story = {
   args: {
     phase: 'ready',
-    installUrl: discordInstallUrl,
-    loaded: true,
     showInstall: true,
     showPending: false,
+    installLinkProps: {
+      href: discordInstallUrl,
+      target: '_blank',
+      rel: 'noreferrer',
+      'aria-label': 'Add MemeOn to Discord (opens Discord in a new tab)',
+    },
   },
 }
 
 export const NotConfigured: Story = {
   args: {
     phase: 'ready',
-    installUrl: null,
-    loaded: true,
     showInstall: false,
     showPending: true,
   },

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
-import { fn } from 'storybook/test'
+import { expect, fn, userEvent, within } from 'storybook/test'
 import {
   giphyCat,
   giphyCategories,
@@ -8,36 +8,44 @@ import {
   paperMeme,
   videoMeme,
 } from '../../.storybook/fixtures'
-import type { CreateMemeScreenModel } from '../hooks/useCreateMemeScreen'
+import {
+  buildCreateMemeScreenModel,
+  type CreateMemeScreenActions,
+} from '../hooks/useCreateMemeScreen'
+import type { CreateMemeContext, CreateMemePhase } from '../stores/createMemeMachine'
 import { CreateMemeScreen } from './CreateMemeScreen'
 
-const handlers = {
-  onSelectMode: fn(),
-  onTitleChange: fn(),
-  onTagsChange: fn(),
-  onPromptChange: fn(),
-  onRemixOutputChange: fn(),
-  onVideoModeChange: fn(),
-  onMotionPromptChange: fn(),
-  onGiphyQueryChange: fn(),
-  onGiphySearch: fn(),
-  onPickGiphy: fn(),
-  onUrlChange: fn(),
-  onResolvePageUrl: fn(),
-  onApplyGiphyEdit: fn(),
-  onApplyUrlEdit: fn(),
-  onImageFile: fn(),
-  onVideoFile: fn(),
-  onRemix: fn(),
-  onAnimateEdited: fn(),
-  onGenerate: fn(),
-  onMint: fn(),
-} satisfies Partial<CreateMemeScreenModel>
+const actions = {
+  selectMode: fn(),
+  setTitle: fn(),
+  setTags: fn(),
+  setPrompt: fn(),
+  setRemixOutput: fn(),
+  setVideoMode: fn(),
+  setMotionPrompt: fn(),
+  setGiphyQuery: fn(),
+  searchGiphy: fn(),
+  pickGiphy: fn(),
+  setUrl: fn(),
+  resolvePageUrl: fn(),
+  applyGiphyEdit: fn(),
+  applyUrlEdit: fn(),
+  uploadImage: fn(),
+  uploadVideo: fn(),
+  remix: fn(),
+  animateEdited: fn(),
+  generate: fn(),
+  mint: fn(),
+} satisfies CreateMemeScreenActions
 
-const empty: CreateMemeScreenModel = {
-  phase: 'generate',
+const baseContext: CreateMemeContext = {
+  remixId: null,
   mode: 'generate',
-  showRemixModeButton: false,
+  remixSource: null,
+  remixOutput: 'image',
+  videoMode: 'edit',
+  motionPrompt: '',
+  editedFrame: null,
   title: '',
   tags: '',
   prompt: '',
@@ -45,199 +53,138 @@ const empty: CreateMemeScreenModel = {
   videoUrl: '',
   busy: null,
   err: null,
-  remixSource: null,
-  remixOutput: 'image',
-  videoMode: 'edit',
-  motionPrompt: '',
-  editedFrame: null,
   giphyCategories: [],
   giphyQuery: '',
   giphyResults: [],
   giphyPick: null,
-  remixPromptLabel: 'Edit prompt (runs on your Masky credits)',
-  remixPromptPlaceholder: 'same scene but everyone is a skeleton and it is raining',
-  generatePromptPlaceholder: 'a capybara in a business suit ignoring a burning office, cinematic',
-  remixButtonLabel: 'Remix image',
-  generateButtonLabel: 'Generate image',
-  mintHint: 'add a title · add artwork',
-  canMint: false,
-  showRemixPanel: false,
-  showGiphyPanel: false,
-  showUrlPanel: false,
-  showUploadPanel: false,
-  showGeneratePanel: true,
-  showVideoRemixStyle: false,
-  showEditedFrameApproval: false,
-  showGiphyResults: false,
-  showGiphyPick: false,
-  showGiphyRemixButton: false,
-  showUrlApplyEdit: false,
-  showBusy: false,
-  showErr: false,
-  showImagePreview: false,
-  showVideoPreview: false,
-  showMintHint: true,
-  ...handlers,
+  edited: false,
+  resolvedSource: null,
+  mintedId: null,
+}
+
+function model(
+  context: Partial<CreateMemeContext> = {},
+  phase: CreateMemePhase = context.mode ?? baseContext.mode,
+) {
+  return buildCreateMemeScreenModel(phase, { ...baseContext, ...context }, actions)
 }
 
 const meta = {
   title: 'Screens/CreateMemeScreen',
   component: CreateMemeScreen,
-  args: empty,
+  args: model(),
   decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
 } satisfies Meta<typeof CreateMemeScreen>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const ChooseMode: Story = { args: { phase: 'chooseMode' } }
+export const ChooseMode: Story = { name: 'Choose mode (transient)', args: model({}, 'chooseMode') }
 
-export const Generate: Story = {}
+export const Generate: Story = { args: model() }
 
-export const Video: Story = {
-  args: {
-    phase: 'video',
-    mode: 'video',
-    generateButtonLabel: 'Generate video',
-    mintHint: 'add a title · add artwork · finish the video',
-  },
-}
+export const Video: Story = { args: model({ mode: 'video' }) }
 
-export const Url: Story = {
-  args: {
-    phase: 'url',
-    mode: 'url',
-    showGeneratePanel: false,
-    showUrlPanel: true,
-  },
-}
+export const Url: Story = { args: model({ mode: 'url' }) }
 
 export const Upload: Story = {
-  args: {
-    phase: 'upload',
-    mode: 'upload',
-    showGeneratePanel: false,
-    showUploadPanel: true,
+  args: model({ mode: 'upload' }),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const image = new File(['image'], 'cat.png', { type: 'image/png' })
+    const video = new File(['video'], 'cat.mp4', { type: 'video/mp4' })
+    await userEvent.upload(canvas.getByLabelText(/^Image \(optional/), image)
+    await userEvent.upload(canvas.getByLabelText(/^Video \(optional/), video)
+    await expect(actions.uploadImage).toHaveBeenCalledWith(image)
+    await expect(actions.uploadVideo).toHaveBeenCalledWith(video)
   },
 }
 
 export const RemixLoading: Story = {
-  args: {
-    phase: 'remix',
-    mode: 'remix',
-    showRemixModeButton: true,
-    showGeneratePanel: false,
-    showRemixPanel: true,
-    remixSource: null,
-  },
+  args: model({ mode: 'remix', remixId: paperMeme.id }),
 }
 
 export const RemixReady: Story = {
-  args: {
-    phase: 'remix',
-    mode: 'remix',
-    showRemixModeButton: true,
-    showGeneratePanel: false,
-    showRemixPanel: true,
-    remixSource: paperMeme,
-  },
+  args: model({ mode: 'remix', remixId: paperMeme.id, remixSource: paperMeme }),
 }
 
 export const RemixEditedFrame: Story = {
-  args: {
-    phase: 'remix',
+  args: model({
     mode: 'remix',
-    showRemixModeButton: true,
-    showGeneratePanel: false,
-    showRemixPanel: true,
+    remixId: videoMeme.id,
     remixSource: videoMeme,
     remixOutput: 'video',
     videoMode: 'edit',
-    remixPromptLabel: 'What to change (runs on your Masky credits)',
-    remixPromptPlaceholder: 'add a claude icon to the tshirt he is wearing',
-    remixButtonLabel: 'Remix into video',
-    showVideoRemixStyle: true,
-    showEditedFrameApproval: true,
     editedFrame: paperMeme.imageUrl,
     imageUrl: paperMeme.imageUrl,
-    showImagePreview: true,
     title: 'moving paper',
     prompt: 'add a claude icon',
-    mintHint: 'finish the video',
-  },
+  }),
 }
 
 export const GiphyBrowse: Story = {
-  args: {
-    phase: 'giphy',
-    mode: 'giphy',
-    showGeneratePanel: false,
-    showGiphyPanel: true,
-    giphyCategories,
-  },
+  args: model({ mode: 'giphy', giphyCategories }),
 }
 
 export const GiphyResults: Story = {
-  args: {
-    phase: 'giphy',
+  args: model({
     mode: 'giphy',
-    showGeneratePanel: false,
-    showGiphyPanel: true,
     giphyCategories,
     giphyQuery: 'cat',
     giphyResults: [giphyCat, giphyDog],
-    showGiphyResults: true,
+  }),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const search = canvas.getByRole('searchbox', { name: 'Search Giphy' })
+    search.focus()
+    await userEvent.keyboard('{Enter}')
+    await expect(actions.searchGiphy).toHaveBeenCalledWith('cat')
+
+    const result = canvas.getByRole('button', { name: giphyCat.title })
+    await expect(result).toHaveAttribute('aria-pressed', 'false')
+    result.focus()
+    await userEvent.keyboard('{Enter}')
+    await expect(actions.pickGiphy).toHaveBeenCalledWith(giphyCat)
   },
 }
 
 export const GiphyPicked: Story = {
-  args: {
-    phase: 'giphy',
+  args: model({
     mode: 'giphy',
-    showGeneratePanel: false,
-    showGiphyPanel: true,
     giphyCategories,
     giphyQuery: 'cat',
     giphyResults: [giphyCat, giphyDog],
     giphyPick: giphyCat,
-    showGiphyResults: true,
-    showGiphyPick: true,
     imageUrl: giphyCat.gifUrl,
-    showImagePreview: true,
     title: 'cat keyboard',
-    mintHint: '',
-    canMint: true,
-    showMintHint: false,
-  },
+  }),
 }
 
 export const Submitting: Story = {
-  args: {
-    phase: 'submitting',
-    prompt: 'a capybara in a business suit',
-    busy: 'Rendering your masterpiece (uses your Masky credits)…',
-    showBusy: true,
-    showMintHint: false,
-  },
+  args: model(
+    {
+      prompt: 'a capybara in a business suit',
+      busy: 'Rendering your masterpiece (uses your Masky credits)…',
+    },
+    'submitting',
+  ),
 }
 
 export const Error: Story = {
-  args: {
-    phase: 'error',
-    prompt: 'a capybara in a business suit',
-    err: 'generation failed',
-    showErr: true,
-  },
+  args: model(
+    { prompt: 'a capybara in a business suit', err: 'generation failed' },
+    'error',
+  ),
 }
 
 export const Success: Story = {
-  args: {
-    phase: 'success',
-    title: 'fresh paper',
-    imageUrl: paperMeme.imageUrl,
-    showImagePreview: true,
-    canMint: true,
-    showMintHint: false,
-    prompt: 'a capybara in a business suit',
-  },
+  name: 'Success (before navigation)',
+  args: model(
+    {
+      title: 'fresh paper',
+      imageUrl: paperMeme.imageUrl,
+      prompt: 'a capybara in a business suit',
+    },
+    'success',
+  ),
 }

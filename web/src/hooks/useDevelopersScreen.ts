@@ -1,6 +1,15 @@
-import { useMachine } from '@xstate/react'
-import { useCallback } from 'react'
+import { useProjectedActor } from './useProjectedActor'
+import { createElement, Fragment, useCallback } from 'react'
+import type {
+  ButtonHTMLAttributes,
+  HTMLAttributes,
+  InputHTMLAttributes,
+} from 'react'
 import { apiFetch, post } from '../lib/api'
+import {
+  buildConfirmDialogModel,
+  type ConfirmDialogModel,
+} from '../lib/confirmDialogModel'
 import {
   developersMachine,
   type DevelopersPhase,
@@ -10,32 +19,44 @@ import { useMountEffect } from './useMountEffect'
 
 export type { KeyRow }
 
+export interface DeveloperKeyRowModel {
+  prefix: string
+  label: string
+  createdLabel: string
+  revokeButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-label'>
+}
+
+export type DeveloperLabelInputProps = Pick<
+  InputHTMLAttributes<HTMLInputElement>,
+  'value' | 'onChange' | 'maxLength' | 'aria-label'
+>
+
+export type DeveloperActionButtonProps = Pick<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  'onClick' | 'disabled' | 'aria-busy' | 'aria-label'
+>
+
 export interface DevelopersScreenModel {
   phase: DevelopersPhase
-  keys: KeyRow[] | null
-  label: string
+  keys: DeveloperKeyRowModel[] | null
   freshKey: string | null
-  revoking: KeyRow | null
   err: string | null
-  copied: boolean
   showSpinner: boolean
   showEmpty: boolean
   showKeys: boolean
   showErr: boolean
   showFreshKey: boolean
-  showRevoke: boolean
   copyLabel: string
-  onLabelChange: (label: string) => void
-  onCreate: () => void
-  onCopyKey: () => void
-  onRevoke: (row: KeyRow) => void
-  onRevokeCancel: () => void
-  onRevokeConfirm: () => void
+  labelInputProps: DeveloperLabelInputProps
+  createButtonProps: DeveloperActionButtonProps
+  copyButtonProps: DeveloperActionButtonProps
+  errorNoticeProps: Pick<HTMLAttributes<HTMLParagraphElement>, 'role'>
+  confirmDialog: ConfirmDialogModel
 }
 
 /** Everything `DevelopersScreen` renders. The hook is the engine; the screen is the terminal. */
 export function useDevelopersScreen(): DevelopersScreenModel {
-  const [snapshot, send, actor] = useMachine(developersMachine)
+  const [snapshot, send, actor] = useProjectedActor(developersMachine)
   const ctx = snapshot.context
   const phase = snapshot.value as DevelopersPhase
 
@@ -79,27 +100,61 @@ export function useDevelopersScreen(): DevelopersScreenModel {
   }, [actor, load, send])
 
   const keys = ctx.keys
+  const onRevokeCancel = () => send({ type: 'REVOKE_CANCEL' })
+  const keyRows = keys?.map((row) => ({
+    prefix: row.prefix,
+    label: row.label,
+    createdLabel: new Date(row.createdAt).toLocaleDateString(),
+    revokeButtonProps: {
+      onClick: () => send({ type: 'REVOKE', row }),
+      'aria-label': `Revoke API key ${row.label}`,
+    },
+  }))
+  const confirmDialog = buildConfirmDialogModel({
+    open: !!ctx.revoking,
+    danger: true,
+    title: 'Revoke this API key?',
+    message: createElement(
+      Fragment,
+      null,
+      createElement('code', null, `${ctx.revoking?.prefix}…`),
+      ` (${ctx.revoking?.label}) will stop working immediately. Anything using it breaks.`,
+    ),
+    confirmLabel: 'Revoke it',
+    onCancel: onRevokeCancel,
+    onConfirm: () => void onRevokeConfirm(),
+  })
 
   return {
     phase,
-    keys,
-    label: ctx.label,
+    keys: keyRows ?? null,
     freshKey: ctx.freshKey,
-    revoking: ctx.revoking,
     err: ctx.err,
-    copied: ctx.copied,
     showSpinner: keys === null,
     showEmpty: keys !== null && keys.length === 0,
     showKeys: keys !== null && keys.length > 0,
     showErr: !!ctx.err,
     showFreshKey: !!ctx.freshKey,
-    showRevoke: !!ctx.revoking,
     copyLabel: ctx.copied ? 'Copied ✓' : 'Copy key',
-    onLabelChange: (label) => send({ type: 'SET_LABEL', label }),
-    onCreate: () => void onCreate(),
-    onCopyKey: () => void onCopyKey(),
-    onRevoke: (row) => send({ type: 'REVOKE', row }),
-    onRevokeCancel: () => send({ type: 'REVOKE_CANCEL' }),
-    onRevokeConfirm: () => void onRevokeConfirm(),
+    labelInputProps: {
+      value: ctx.label,
+      onChange: (event) => send({ type: 'SET_LABEL', label: event.currentTarget.value }),
+      maxLength: 60,
+      'aria-label': 'API key label',
+    },
+    createButtonProps: {
+      onClick: () => void onCreate(),
+      disabled: false,
+      'aria-busy': false,
+      'aria-label': 'Generate API key',
+    },
+    copyButtonProps: {
+      onClick: () => void onCopyKey(),
+      disabled: !ctx.freshKey,
+      'aria-busy': false,
+      'aria-label': 'Copy API key',
+    },
+    errorNoticeProps: { role: 'alert' },
+    confirmDialog,
   }
 }

@@ -6,14 +6,12 @@ import type { Me } from '../lib/types'
 export interface AuthModel {
   user: Me | null
   loading: boolean
+  error: string | null
   refresh: () => Promise<void>
   logout: () => void
 }
 
-/**
- * Headless auth. Same fields AuthContext used to expose so pages do not change
- * in this slice. Subscribes through MobX; no observer() required on callers yet.
- */
+/** Auth state and actions, subscribed through the MobX snapshot projection. */
 export function useAuth(): AuthModel {
   const { auth } = useStores()
   const subscribe = useCallback(
@@ -30,9 +28,10 @@ export function useAuth(): AuthModel {
     () => ({
       user: auth.user,
       loading: auth.loading,
+      error: auth.error,
       refresh: () => auth.refresh(),
       logout: () => auth.logout(),
     }),
-    [auth, auth.user, auth.loading, auth.snapshot],
+    [auth, auth.user, auth.loading, auth.error, auth.snapshot],
   )
 }

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { glowStyleFor } from '../../../shared/tiers'
-import type { Meme } from '../lib/types'
+import type { MemeCardModel } from '../lib/memeCardModel'
 
 const SHEEN_TIERS = new Set(['holo', 'chrome', 'gold', 'prismatic', 'shiny'])
 
@@ -11,40 +11,43 @@ export function tierClasses(tierKey: string): string {
   return `glow-border tier-${tierKey}${sheen}${sparkle}`
 }
 
-export function MemeCard({ meme, footer }: { meme: Meme; footer?: ReactNode | undefined }) {
+export function MemeCard({
+  model,
+  footer,
+}: {
+  model: MemeCardModel
+  footer?: ReactNode | undefined
+}) {
   return (
     <div
-      className={`meme-card ${tierClasses(meme.tier.key)}`}
-      data-glow-style={glowStyleFor(meme.tier.key)}
+      className={`meme-card ${tierClasses(model.tierKey)}`}
+      data-glow-style={glowStyleFor(model.tierKey)}
     >
       <div className="meme-card-inner">
-        <Link to={`/m/${meme.id}`}>
-          {meme.mediaType === 'video' && meme.videoUrl ? (
-            <video className="meme-art" src={meme.videoUrl} muted loop playsInline autoPlay poster={meme.imageUrl} />
+        <Link {...model.detailLinkProps}>
+          {model.media.kind === 'video' ? (
+            <video className="meme-art" {...model.media.videoProps} />
           ) : (
-            <img className="meme-art" src={meme.imageUrl} alt={meme.title} loading="lazy" />
+            <img className="meme-art" {...model.media.imageProps} />
           )}
         </Link>
         <div className="meme-meta">
-          <span className="meme-title">{meme.title}</span>
+          <span className="meme-title">{model.title}</span>
           <span>
-            <span className="tier-chip" style={{ color: meme.tier.color }}>
-              {meme.tier.name} · {meme.tier.rarity}
+            <span className="tier-chip" style={{ color: model.tierColor }}>
+              {model.tierLabel}
             </span>
           </span>
           <span className="meme-sub">
             <span>
-              👁️ {(meme.views ?? meme.reshares).toLocaleString()} · 🔁{' '}
-              {(meme.reshareCount ?? 0).toLocaleString()}
+              👁️ {model.viewsLabel} · 🔁 {model.resharesLabel}
             </span>
-            <span>🧠 {meme.value.toLocaleString()}</span>
+            <span>🧠 {model.valueLabel}</span>
           </span>
-          {meme.listing && meme.listing.shares > 0 && (
+          {model.listing && (
             <span className="meme-sub">
               <span className="badge">for sale</span>
-              <span>
-                {meme.listing.shares} sh @ 🧠{meme.listing.pricePerShare}
-              </span>
+              <span>{model.listing.sharesLabel}</span>
             </span>
           )}
           {footer}

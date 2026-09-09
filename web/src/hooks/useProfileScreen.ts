@@ -1,53 +1,67 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
 import type { Meme } from '../lib/types'
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
+import { useProjectedActor } from './useProjectedActor'
+import { profileMachine, type ProfileData, type ProfileTab } from '../stores/profileMachine'
+import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
+import type { ButtonHTMLAttributes, ImgHTMLAttributes } from 'react'
+import type { LinkProps } from 'react-router-dom'
 
-export type ProfileTab = 'created' | 'binder'
-
-export interface ProfileData {
-  profile: {
-    sub: string
-    name: string
-    picture: string | null
-    followers: number
-    collectionSize: number
-    portfolioValue: number
-  }
-  followingByMe: boolean
-  friendStatus: 'incoming' | 'outgoing' | 'accepted' | null
-  created: Meme[]
-  binder: (Meme & { shares: number })[]
-}
+export type { ProfileData, ProfileTab } from '../stores/profileMachine'
 
 export interface ProfileScreenModel {
-  tab: ProfileTab
   err: string | null
   showErr: boolean
   showLoading: boolean
-  profile: ProfileData['profile'] | null
-  followingByMe: boolean
-  friendStatus: ProfileData['friendStatus']
-  isSelf: boolean
+  profile: ProfileViewModel | null
   showActions: boolean
   showJoin: boolean
-  followPrimary: boolean
+  followButtonClassName: string
   followLabel: string
   friendLabel: string
-  friendDisabled: boolean
   createdCount: number
   binderCount: number
-  memes: (Meme & { shares?: number })[]
+  cards: readonly ProfileCardModel[]
   showEmpty: boolean
   showGrid: boolean
-  onTabChange: (tab: ProfileTab) => void
-  onToggleFollow: () => void
-  onFriendAction: () => void
+  createdTabClassName: string
+  binderTabClassName: string
+  createdTabButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-pressed'>
+  binderTabButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-pressed'>
+  followButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-pressed'>
+  friendButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'disabled'>
+  joinLinkProps: Pick<LinkProps, 'to'>
 }
 
-/** Everything `ProfileScreen` renders. Tabs are controlled from initialTab; hook owns fetch. */
+interface ProfileCardModel {
+  id: string
+  memeCard: MemeCardModel
+  sharesLabel: string | null
+}
+
+interface ProfileViewModel {
+  name: string
+  hasPicture: boolean
+  imageProps: Pick<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt'>
+  statsLabel: string
+}
+
+export function buildProfileTabProps(
+  tab: ProfileTab,
+  onTabChange: (tab: ProfileTab) => void,
+): Pick<ProfileScreenModel, 'createdTabClassName' | 'binderTabClassName' | 'createdTabButtonProps' | 'binderTabButtonProps'> {
+  return {
+    createdTabClassName: tab === 'created' ? 'primary' : '',
+    binderTabClassName: tab === 'binder' ? 'primary' : '',
+    createdTabButtonProps: { 'aria-pressed': tab === 'created', onClick: () => onTabChange('created') },
+    binderTabButtonProps: { 'aria-pressed': tab === 'binder', onClick: () => onTabChange('binder') },
+  }
+}
+
+/** Everything `ProfileScreen` renders. The route actor owns data, errors, and tabs. */
 export function useProfileScreen({
   initialTab = 'created',
 }: {
@@ -55,16 +69,15 @@ export function useProfileScreen({
 } = {}): ProfileScreenModel {
   const { sub } = useParams<{ sub: string }>()
   const { user } = useAuth()
-  const [data, setData] = useState<ProfileData | null>(null)
-  const [tab, setTab] = useState<ProfileTab>(initialTab)
-  const [err, setErr] = useState<string | null>(null)
+  const [snapshot, send] = useProjectedActor(profileMachine, { input: { initialTab } })
+  const { data, tab, err } = snapshot.context
 
   const load = useCallback(() => {
     if (!sub) return
     apiFetch<ProfileData>(`/api/users/${encodeURIComponent(sub)}/profile`)
-      .then(setData)
-      .catch(() => setErr('profile not found'))
-  }, [sub])
+      .then((data) => send({ type: 'DONE', data }))
+      .catch(() => send({ type: 'FAIL', err: 'profile not found' }))
+  }, [send, sub])
 
   useMountEffect(() => {
     load()
@@ -106,27 +119,37 @@ export function useProfileScreen({
   }, [friendStatus, load, profile])
 
   return {
-    tab,
     err,
     showErr: !!err,
     showLoading: !err && !data,
-    profile,
-    followingByMe,
-    friendStatus,
-    isSelf,
+    profile: profile
+      ? {
+          name: profile.name,
+          hasPicture: !!profile.picture,
+          imageProps: { src: profile.picture ?? '', alt: profile.name },
+          statsLabel: `⭐ ${profile.followers} followers · 📚 ${profile.collectionSize} memes · portfolio 🧠 ${profile.portfolioValue.toLocaleString()}`,
+        }
+      : null,
     showActions: !isSelf && !!user && !!profile,
     showJoin: !user && !!profile,
-    followPrimary: !followingByMe,
+    followButtonClassName: followingByMe ? '' : 'primary',
     followLabel: followingByMe ? '★ Following' : '☆ Follow',
     friendLabel,
-    friendDisabled: friendStatus === 'accepted' || friendStatus === 'outgoing',
     createdCount: data?.created.length ?? 0,
     binderCount: data?.binder.length ?? 0,
-    memes,
+    cards: memes.map((meme) => ({
+      id: `${tab}-${meme.id}`,
+      memeCard: buildMemeCardModel(meme),
+      sharesLabel: meme.shares === undefined ? null : `${meme.shares}/100 shares`,
+    })),
     showEmpty: !!data && memes.length === 0,
     showGrid: !!data && memes.length > 0,
-    onTabChange: setTab,
-    onToggleFollow,
-    onFriendAction,
+    ...buildProfileTabProps(tab, (tab) => send({ type: 'SET_TAB', tab })),
+    followButtonProps: { onClick: onToggleFollow, 'aria-pressed': followingByMe },
+    friendButtonProps: {
+      onClick: onFriendAction,
+      disabled: friendStatus === 'accepted' || friendStatus === 'outgoing',
+    },
+    joinLinkProps: { to: '/' },
   }
 }

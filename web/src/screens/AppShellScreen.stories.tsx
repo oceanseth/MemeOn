@@ -1,44 +1,34 @@
-import { createRef } from 'react'
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
-import { fn } from 'storybook/test'
-import {
-  meLou,
-  paperMeme,
-  questStepsFresh,
-  questStepsPackDone,
-  unreadSale,
-} from '../../.storybook/fixtures'
-import type { AppShellScreenModel } from '../hooks/useAppShellScreen'
+import { expect, fn, userEvent, within } from 'storybook/test'
+import { meLou, paperMeme, questStepsFresh, questStepsPackDone, unreadSale } from '../../.storybook/fixtures'
+import { buildAppShellScreenModel } from '../hooks/useAppShellScreen'
+import type { AppShellContext } from '../stores/appShellMachine'
 import { AppShellScreen } from './AppShellScreen'
 
-const bellRef = createRef<HTMLDivElement>()
-
-const handlers = {
-  onLogout: fn(),
-  onClaimPack: fn(),
-  onDismissPack: fn(),
-  onOpenAlerts: fn(),
-} satisfies Partial<AppShellScreenModel>
-
-const loggedOut: AppShellScreenModel = {
-  phase: 'loggedOut',
-  user: null,
+const context: AppShellContext = {
   steps: null,
   packMemes: null,
   packReward: 0,
   packBusy: false,
   alerts: [],
   alertsOpen: false,
-  showNav: false,
-  showToolbar: false,
-  showAvatar: false,
-  showQuest: false,
-  coinsText: '',
-  profileHref: '',
-  bellRef,
-  ...handlers,
 }
+
+const actions = {
+  onLogout: fn(),
+  onClaimPack: fn(),
+  onDismissPack: fn(),
+  onOpenAlerts: fn(),
+}
+
+const loggedOut = buildAppShellScreenModel({ phase: 'loggedOut', user: null, context, ...actions })
+const loggedIn = buildAppShellScreenModel({
+  phase: 'loggedIn',
+  user: meLou,
+  context: { ...context, alerts: [unreadSale] },
+  ...actions,
+})
 
 const meta = {
   title: 'Screens/AppShellScreen',
@@ -54,58 +44,47 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const LoggedOut: Story = {}
+export const LoggedIn: Story = { args: loggedIn }
 
-export const LoggedIn: Story = {
-  args: {
+export const WithAvatar: Story = {
+  args: buildAppShellScreenModel({
     phase: 'loggedIn',
-    user: meLou,
-    showNav: true,
-    showToolbar: true,
-    coinsText: `🧠 ${meLou.coins.toLocaleString()}`,
-    profileHref: `/u/${encodeURIComponent(meLou.sub)}`,
-    alerts: [unreadSale],
+    user: { ...meLou, sub: 'mask/avatar + one', picture: '/brand/memeon-logo-circle-64.png' },
+    context,
+    ...actions,
+  }),
+  play: async ({ canvasElement, args }) => {
+    const canvas = within(canvasElement)
+    const avatar = canvas.getByRole('img', { name: meLou.name })
+    await expect(avatar).toHaveAttribute('src', '/brand/memeon-logo-circle-64.png')
+    await expect(avatar.closest('a')).toHaveAttribute('href', '/u/mask%2Favatar%20%2B%20one')
+    await userEvent.click(canvas.getByRole('button', { name: 'Log out' }))
+    await expect(args.logoutButtonProps.onClick).toHaveBeenCalledTimes(1)
   },
 }
 
 export const WithQuests: Story = {
-  args: {
-    phase: 'loggedIn',
-    user: meLou,
-    steps: questStepsFresh,
-    showNav: true,
-    showToolbar: true,
-    showQuest: true,
-    coinsText: `🧠 ${meLou.coins.toLocaleString()}`,
-    profileHref: `/u/${encodeURIComponent(meLou.sub)}`,
-    alerts: [unreadSale],
-  },
+  args: buildAppShellScreenModel({
+    phase: 'loggedIn', user: meLou,
+    context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
+    ...actions,
+  }),
 }
 
 export const AlertsOpen: Story = {
-  args: {
-    phase: 'loggedIn',
-    user: meLou,
-    showNav: true,
-    showToolbar: true,
-    coinsText: `🧠 ${meLou.coins.toLocaleString()}`,
-    profileHref: `/u/${encodeURIComponent(meLou.sub)}`,
-    alerts: [unreadSale],
-    alertsOpen: true,
-  },
+  args: buildAppShellScreenModel({
+    phase: 'loggedIn', user: meLou,
+    context: { ...context, alerts: [unreadSale], alertsOpen: true },
+    ...actions,
+  }),
 }
 
 export const PackOpened: Story = {
-  args: {
-    phase: 'loggedIn',
-    user: meLou,
-    steps: questStepsPackDone,
-    packMemes: [paperMeme],
-    packReward: 20,
-    showNav: true,
-    showToolbar: true,
-    showQuest: true,
-    coinsText: `🧠 ${meLou.coins.toLocaleString()}`,
-    profileHref: `/u/${encodeURIComponent(meLou.sub)}`,
-    alerts: [unreadSale],
-  },
+  args: buildAppShellScreenModel({
+    phase: 'loggedIn', user: meLou,
+    context: {
+      ...context, steps: questStepsPackDone, packMemes: [paperMeme], packReward: 20, alerts: [unreadSale],
+    },
+    ...actions,
+  }),
 }

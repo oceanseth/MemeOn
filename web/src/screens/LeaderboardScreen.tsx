@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { LeaderboardScreenModel } from '../hooks/useLeaderboardScreen'
 
-const MEDALS = ['🥇', '🥈', '🥉']
-
 /** Top Brains as a function of its model. Every engine state is one set of args. */
 export function LeaderboardScreen({
   leaders,
@@ -31,18 +29,18 @@ export function LeaderboardScreen({
         <div className="empty">{emptyMessage}</div>
       ) : showList ? (
         <div className="row-list">
-          {leaders.map((l, i) => (
-            <Link key={l.sub} to={`/u/${encodeURIComponent(l.sub)}`} className="person-row leader-row">
-              <span className="leader-rank">{MEDALS[i] ?? `#${i + 1}`}</span>
-              {l.picture && <img className="avatar" src={l.picture} alt="" />}
+          {leaders.map((l) => (
+            <Link key={l.sub} {...l.profileLinkProps} className="person-row leader-row">
+              <span className="leader-rank">{l.rankLabel}</span>
+              {l.avatarImageProps && <img className="avatar" {...l.avatarImageProps} />}
               <div>
                 <div className="person-name">{l.name}</div>
                 <div className="person-stats">
-                  📚 {l.collectionSize} memes · portfolio 🧠 {l.portfolioValue.toLocaleString()}
+                  {l.statsLabel}
                 </div>
               </div>
               <span className="spacer" />
-              <span className="leader-cells">🧠 {l.braincells.toLocaleString()}</span>
+              <span className="leader-cells">{l.braincellsLabel}</span>
             </Link>
           ))}
         </div>

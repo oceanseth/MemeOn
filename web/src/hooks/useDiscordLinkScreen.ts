@@ -1,4 +1,4 @@
-import { useMachine } from '@xstate/react'
+import { useProjectedActor } from './useProjectedActor'
 import { autorun } from 'mobx'
 import { useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -25,16 +25,17 @@ export interface DiscordLinkScreenModel {
 export function useDiscordLinkScreen(): DiscordLinkScreenModel {
   const [params] = useSearchParams()
   const { auth } = useStores()
-  const [snapshot, send] = useMachine(discordLinkMachine)
+  const [snapshot, send] = useProjectedActor(discordLinkMachine)
   const ran = useRef(false)
+  const tokenRef = useRef<string | null>(null)
+  tokenRef.current = params.get('token') ?? sessionStorage.getItem(DISCORD_LINK_KEY)
   const ctx = snapshot.context
   const phase = snapshot.value as DiscordLinkPhase
 
   useMountEffect(() => {
-    const tokenAtMount = params.get('token') ?? sessionStorage.getItem(DISCORD_LINK_KEY)
     const dispose = autorun(() => {
       if (auth.loading || ran.current) return
-      const token = tokenAtMount ?? params.get('token') ?? sessionStorage.getItem(DISCORD_LINK_KEY)
+      const token = tokenRef.current ?? sessionStorage.getItem(DISCORD_LINK_KEY)
       if (!token) {
         send({ type: 'FAIL', err: 'missing link token — run /memeon-connect in Discord again' })
         return

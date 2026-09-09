@@ -1,6 +1,8 @@
 import { createActor, fromPromise } from 'xstate'
-import { expect, test, vi } from 'vitest'
+import { autorun, configure, isObservable } from 'mobx'
+import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../lib/types'
+import { AuthStore } from './AuthStore'
 import { authMachine } from './authMachine'
 import { createStores } from './createStores'
 
@@ -18,13 +20,24 @@ const me: Me = {
   unreadAlerts: 0,
 }
 
+const owned: ReturnType<typeof createStores>[] = []
+
+afterEach(async () => {
+  for (const stores of owned.splice(0)) stores.dispose()
+  await Promise.resolve()
+  vi.restoreAllMocks()
+})
+
 function storesWithLoadMe(loadMe: () => Promise<Me | null>) {
   const authActor = createActor(
     authMachine.provide({
       actors: { loadMe: fromPromise(loadMe) },
+      actions: { clearSessionAndFirebase: () => {} },
     }),
   )
-  return { stores: createStores(authActor), authActor }
+  const stores = createStores(authActor)
+  owned.push(stores)
+  return { stores, authActor }
 }
 
 test('refresh settles after dispose then retain (StrictMode remount)', async () => {
@@ -49,10 +62,96 @@ test('refresh settles after dispose then retain (StrictMode remount)', async () 
   expect(authActor.getSnapshot().status).toBe('active')
 })
 
-test('dispose without retain stops the actor after the current turn', async () => {
+test('disposal without renewed retention stops the actor after the current turn', async () => {
   const { stores, authActor } = storesWithLoadMe(async () => null)
   stores.retain()
   stores.dispose()
   await Promise.resolve()
   expect(authActor.getSnapshot().status).toBe('stopped')
+})
+
+test('imperative retention starts once and repeated disposal disconnects and stops once', async () => {
+  const loadMe = vi.fn(async () => me)
+  const { stores, authActor } = storesWithLoadMe(loadMe)
+  const start = vi.spyOn(authActor, 'start')
+  const stop = vi.spyOn(authActor, 'stop')
+  const subscribe = vi.spyOn(authActor, 'subscribe')
+  stores.retain()
+  stores.retain()
+  expect(start).toHaveBeenCalledOnce()
+  expect(subscribe).toHaveBeenCalledOnce()
+  const unsubscribe = vi.spyOn(subscribe.mock.results[0]!.value, 'unsubscribe')
+  expect(loadMe).not.toHaveBeenCalled()
+  await stores.auth.refresh()
+  expect(stores.auth.user).toBe(me)
+
+  stores.dispose()
+  stores.dispose()
+  expect(unsubscribe).not.toHaveBeenCalled()
+  expect(stop).not.toHaveBeenCalled()
+  await Promise.resolve()
+  expect(unsubscribe).toHaveBeenCalledOnce()
+  expect(stop).toHaveBeenCalledOnce()
+  expect(authActor.getSnapshot().status).toBe('stopped')
+  stores.retain()
+  expect(start).toHaveBeenCalledOnce()
+})
+
+test('disposing an unretained bag acquires no actor resources', async () => {
+  const { stores, authActor } = storesWithLoadMe(async () => null)
+  const start = vi.spyOn(authActor, 'start')
+  const stop = vi.spyOn(authActor, 'stop')
+  const subscribe = vi.spyOn(authActor, 'subscribe')
+  stores.dispose()
+  await Promise.resolve()
+  expect(start).not.toHaveBeenCalled()
+  expect(stop).not.toHaveBeenCalled()
+  expect(subscribe).not.toHaveBeenCalled()
+})
+
+test('projection connection catches up by exact reference inside an action and is reversible', async () => {
+  const actor = createActor(authMachine.provide({
+    actors: { loadMe: fromPromise<Me | null>(async () => me) },
+    actions: { clearSessionAndFirebase: () => {} },
+  }))
+  const subscribe = vi.spyOn(actor, 'subscribe')
+  const auth = new AuthStore(actor)
+  const initial = actor.getSnapshot()
+  expect(auth.snapshot).toBe(initial)
+  expect(isObservable(auth.snapshot.context)).toBe(false)
+  expect(subscribe).not.toHaveBeenCalled()
+  const observed: unknown[] = []
+  const unobserve = autorun(() => observed.push(auth.snapshot))
+  const warning = vi.spyOn(console, 'warn')
+  configure({ enforceActions: 'always' })
+  try {
+    actor.start()
+    actor.send({ type: 'LOGOUT' })
+    const beforeConnect = actor.getSnapshot()
+    expect(auth.snapshot).toBe(initial)
+    auth.connect()
+    auth.connect()
+    expect(subscribe).toHaveBeenCalledOnce()
+    expect(auth.snapshot).toBe(beforeConnect)
+    expect(observed).toEqual([initial, beforeConnect])
+    const unsubscribe = vi.spyOn(subscribe.mock.results[0]!.value, 'unsubscribe')
+    await auth.refresh()
+    expect(auth.snapshot).toBe(actor.getSnapshot())
+    expect(auth.user).toBe(me)
+    auth.disconnect()
+    auth.disconnect()
+    expect(unsubscribe).toHaveBeenCalledOnce()
+    const disconnected = auth.snapshot
+    actor.send({ type: 'LOGOUT' })
+    expect(auth.snapshot).toBe(disconnected)
+    auth.connect()
+    expect(auth.snapshot).toBe(actor.getSnapshot())
+    expect(auth.user).toBeNull()
+    expect(warning).not.toHaveBeenCalled()
+  } finally {
+    unobserve()
+    auth.disconnect()
+    actor.stop()
+    configure({ enforceActions: 'observed' })
+  }
 })

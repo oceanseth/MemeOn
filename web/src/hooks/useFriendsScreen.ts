@@ -1,5 +1,5 @@
-import { useMachine } from '@xstate/react'
-import { useCallback, useRef } from 'react'
+import { useProjectedActor } from './useProjectedActor'
+import { useCallback, useRef, type ChangeEventHandler, type ImgHTMLAttributes } from 'react'
 import { useAuth } from './useAuth'
 import { apiFetch, post } from '../lib/api'
 import { watchPresence } from '../lib/presence'
@@ -11,20 +11,26 @@ import {
   type UserHit,
 } from '../stores/friendsMachine'
 import { useMountEffect } from './useMountEffect'
+import {
+  buildGiftDialogModel,
+  type GiftDialogModel,
+} from '../lib/giftDialogModel'
+import type { ButtonHTMLAttributes, InputHTMLAttributes } from 'react'
+import type { LinkProps } from 'react-router-dom'
 
 export type { FriendsPhase, GiftTarget, UserHit }
 
 export interface FriendsScreenModel {
   phase: FriendsPhase
-  query: string
-  hits: UserHit[]
+  searchInputProps: Pick<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'>
   msg: string | null
   inviteLabel: string
-  onlineFriends: FriendEntry[]
-  incoming: FriendEntry[]
-  outgoing: FriendEntry[]
-  accepted: FriendEntry[]
-  onlineSubs: string[]
+  inviteButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
+  onlineFriends: readonly FriendLinkModel[]
+  hits: readonly FriendHitModel[]
+  incoming: readonly IncomingFriendModel[]
+  outgoing: readonly OutgoingFriendModel[]
+  accepted: readonly AcceptedFriendModel[]
   showMsg: boolean
   showOnline: boolean
   showHits: boolean
@@ -33,31 +39,42 @@ export interface FriendsScreenModel {
   showEmpty: boolean
   showCircle: boolean
   emptyMessage: string
-  gifting: GiftTarget | null
-  giftMemes: Meme[]
-  giftQuery: string
-  giftPick: Meme | null
-  giftShares: number
-  giftBusy: boolean
-  giftErr: string | null
-  giftOpen: boolean
-  onQueryChange: (q: string) => void
-  onCopyInvite: () => void
-  onRequest: (userId: string) => void
-  onRespond: (userId: string, accept: boolean) => void
-  onRemove: (userId: string) => void
-  onGiftOpen: (friend: GiftTarget) => void
-  onGiftQueryChange: (q: string) => void
-  onGiftPick: (m: Meme) => void
-  onGiftSharesChange: (n: number) => void
-  onGiftClose: () => void
-  onGiftSubmit: () => void
+  giftDialog: GiftDialogModel
+}
+
+export interface FriendLinkModel {
+  sub: string
+  name: string
+  profileLinkProps: Pick<LinkProps, 'to'>
+  onlineLinkProps: Pick<LinkProps, 'to' | 'title'>
+  avatarImageProps: Pick<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt'> | null
+  onlineAvatarImageProps: Pick<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt'> | null
+}
+
+interface FriendHitModel extends FriendLinkModel {
+  requestButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
+}
+
+interface IncomingFriendModel extends FriendLinkModel {
+  acceptButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
+  declineButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
+}
+
+interface OutgoingFriendModel extends FriendLinkModel {
+  cancelButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
+}
+
+interface AcceptedFriendModel extends FriendLinkModel {
+  isOnline: boolean
+  statsLabel: string
+  giftButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
+  removeButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
 }
 
 /** Everything `FriendsScreen` renders. The hook is the engine; the screen is the terminal. */
 export function useFriendsScreen(): FriendsScreenModel {
   const { user } = useAuth()
-  const [snapshot, send, actor] = useMachine(friendsMachine)
+  const [snapshot, send, actor] = useProjectedActor(friendsMachine)
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const ctx = snapshot.context
@@ -189,17 +206,54 @@ export function useFriendsScreen(): FriendsScreenModel {
     ? (ctx.err ?? 'could not load friends')
     : 'No friends yet. Search above and build your trading circle.'
 
+  const searchInputProps: Pick<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> = {
+    value: ctx.query,
+    onChange: ((event) => onQueryChange(event.target.value)) as ChangeEventHandler<HTMLInputElement>,
+  }
+  const friendLink = buildFriendLinkModel
+  const giftDialog = buildGiftDialogModel({
+    open: !!ctx.gifting,
+    recipient: ctx.gifting,
+    memes: ctx.giftMemes,
+    query: ctx.giftQuery,
+    pick: ctx.giftPick,
+    shares: ctx.giftShares,
+    busy: ctx.giftBusy,
+    error: ctx.giftErr,
+    onClose: () => send({ type: 'CLOSE_GIFT' }),
+    onQueryChange: (query) => send({ type: 'SET_GIFT_QUERY', query }),
+    onPick: (pick) => send({ type: 'SET_GIFT_PICK', pick }),
+    onSharesChange: (shares) => send({ type: 'SET_GIFT_SHARES', shares }),
+    onSubmit: onGiftSubmit,
+  })
+
   return {
     phase,
-    query: ctx.query,
-    hits: ctx.hits,
+    searchInputProps,
     msg: ctx.msg,
     inviteLabel: ctx.copied ? 'Invite link copied ✓' : '💌 Invite a friend',
-    onlineFriends,
-    incoming,
-    outgoing,
-    accepted,
-    onlineSubs: ctx.onlineSubs,
+    inviteButtonProps: { onClick: onCopyInvite },
+    onlineFriends: onlineFriends.map(friendLink),
+    hits: ctx.hits.map((hit) => ({
+      ...friendLink(hit),
+      requestButtonProps: { onClick: () => onRequest(hit.sub) },
+    })),
+    incoming: incoming.map((friend) => ({
+      ...friendLink(friend),
+      acceptButtonProps: { onClick: () => onRespond(friend.sub, true) },
+      declineButtonProps: { onClick: () => onRespond(friend.sub, false) },
+    })),
+    outgoing: outgoing.map((friend) => ({
+      ...friendLink(friend),
+      cancelButtonProps: { onClick: () => onRemove(friend.sub) },
+    })),
+    accepted: accepted.map((friend) => ({
+      ...friendLink(friend),
+      isOnline: ctx.onlineSubs.includes(friend.sub),
+      statsLabel: `📚 ${friend.collectionSize} memes · 🧠 ${friend.portfolioValue.toLocaleString()} portfolio`,
+      giftButtonProps: { onClick: () => onGiftOpen({ sub: friend.sub, name: friend.name }) },
+      removeButtonProps: { onClick: () => onRemove(friend.sub) },
+    })),
     showMsg: !!ctx.msg,
     showOnline: onlineFriends.length > 0,
     showHits: ctx.hits.length > 0,
@@ -208,24 +262,19 @@ export function useFriendsScreen(): FriendsScreenModel {
     showEmpty,
     showCircle: phase === 'ready',
     emptyMessage,
-    gifting: ctx.gifting,
-    giftMemes: ctx.giftMemes,
-    giftQuery: ctx.giftQuery,
-    giftPick: ctx.giftPick,
-    giftShares: ctx.giftShares,
-    giftBusy: ctx.giftBusy,
-    giftErr: ctx.giftErr,
-    giftOpen: !!ctx.gifting,
-    onQueryChange,
-    onCopyInvite,
-    onRequest,
-    onRespond,
-    onRemove,
-    onGiftOpen,
-    onGiftQueryChange: (q) => send({ type: 'SET_GIFT_QUERY', query: q }),
-    onGiftPick: (m) => send({ type: 'SET_GIFT_PICK', pick: m }),
-    onGiftSharesChange: (n) => send({ type: 'SET_GIFT_SHARES', shares: n }),
-    onGiftClose: () => send({ type: 'CLOSE_GIFT' }),
-    onGiftSubmit,
+    giftDialog,
+  }
+}
+
+/** Turns nullable social-avatar data into safe element props before markup sees it. */
+export function buildFriendLinkModel(friend: { sub: string; name: string; picture: string | null }): FriendLinkModel {
+  const profileLinkProps = { to: `/u/${encodeURIComponent(friend.sub)}` }
+  return {
+    sub: friend.sub,
+    name: friend.name,
+    profileLinkProps,
+    onlineLinkProps: { ...profileLinkProps, title: friend.name },
+    avatarImageProps: friend.picture ? { src: friend.picture, alt: '' } : null,
+    onlineAvatarImageProps: friend.picture ? { src: friend.picture, alt: friend.name } : null,
   }
 }

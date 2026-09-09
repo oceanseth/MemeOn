@@ -4,23 +4,19 @@ import { ConfirmDialog } from '../molecules/ConfirmDialog'
 /** Developers API-key page as a function of its model. Every engine state is one set of args. */
 export function DevelopersScreen({
   keys,
-  label,
   freshKey,
-  revoking,
   err,
   showSpinner,
   showEmpty,
   showKeys,
   showErr,
   showFreshKey,
-  showRevoke,
   copyLabel,
-  onLabelChange,
-  onCreate,
-  onCopyKey,
-  onRevoke,
-  onRevokeCancel,
-  onRevokeConfirm,
+  labelInputProps,
+  createButtonProps,
+  copyButtonProps,
+  errorNoticeProps,
+  confirmDialog,
 }: DevelopersScreenModel) {
   return (
     <main className="container">
@@ -44,21 +40,19 @@ export function DevelopersScreen({
         <div className="filter-bar">
           <input
             placeholder="Key label (e.g. my-trading-bot)"
-            value={label}
-            onChange={(e) => onLabelChange(e.target.value)}
-            maxLength={60}
             style={{ minWidth: 240 }}
+            {...labelInputProps}
           />
-          <button className="primary" onClick={onCreate}>
+          <button className="primary" {...createButtonProps}>
             ＋ Generate key
           </button>
         </div>
-        {showErr && <p className="notice error" style={{ marginTop: 10 }}>{err}</p>}
+        {showErr && <p className="notice error" style={{ marginTop: 10 }} {...errorNoticeProps}>{err}</p>}
         {showFreshKey && (
           <div className="notice ok" style={{ marginTop: 12, wordBreak: 'break-all' }}>
             <strong>Copy it now — shown once:</strong>
             <div style={{ fontFamily: 'monospace', margin: '8px 0' }}>{freshKey}</div>
-            <button onClick={onCopyKey}>
+            <button {...copyButtonProps}>
               {copyLabel}
             </button>
           </div>
@@ -78,8 +72,8 @@ export function DevelopersScreen({
                 <span style={{ fontFamily: 'monospace' }}>{k.prefix}…</span>
                 <span className="person-stats">{k.label}</span>
                 <span className="spacer" />
-                <span className="person-stats">{new Date(k.createdAt).toLocaleDateString()}</span>
-                <button className="danger" onClick={() => onRevoke(k)}>
+                <span className="person-stats">{k.createdLabel}</span>
+                <button className="danger" {...k.revokeButtonProps}>
                   Revoke
                 </button>
               </div>
@@ -88,20 +82,7 @@ export function DevelopersScreen({
         </div>
       </div>
 
-      <ConfirmDialog
-        open={showRevoke}
-        danger
-        title="Revoke this API key?"
-        message={
-          <>
-            <code>{revoking?.prefix}…</code> ({revoking?.label}) will stop working immediately.
-            Anything using it breaks.
-          </>
-        }
-        confirmLabel="Revoke it"
-        onCancel={onRevokeCancel}
-        onConfirm={onRevokeConfirm}
-      />
+      <ConfirmDialog model={confirmDialog} />
     </main>
   )
 }

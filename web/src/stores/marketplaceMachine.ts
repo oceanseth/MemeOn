@@ -1,6 +1,6 @@
 import { assign, setup } from 'xstate'
 import type { Meme } from '../lib/types'
-import type { SortDir, SortKey } from '../molecules/SortChips'
+import type { SortDir, SortKey } from '../lib/sorting'
 
 export type MarketplacePhase = 'loading' | 'ready' | 'empty' | 'error'
 

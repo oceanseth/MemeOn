@@ -10,11 +10,13 @@ export interface AuthContext {
   error: string | null
 }
 
-async function loadMe(): Promise<Me | null> {
+async function loadMe({ signal }: { signal: AbortSignal }): Promise<Me | null> {
   if (!sessionToken()) return null
   try {
-    return await apiFetch<Me>('/api/me')
+    return await apiFetch<Me>('/api/me', { signal })
   } catch (err) {
+    // A canceled load must not clear credentials from a later login.
+    if (signal.aborted) return null
     if (err instanceof ApiError && err.status === 401) {
       clearSession()
       return null
@@ -23,9 +25,13 @@ async function loadMe(): Promise<Me | null> {
   }
 }
 
+function authErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'auth failed'
+}
+
 /**
  * Auth source of truth. MobX copies the snapshot; do not add React state here.
- * Non-401 fetch failures stay user=null and leave loading, matching AuthContext.
+ * Initial failures settle without a user; refresh failures retain the current user.
  */
 export const authMachine = setup({
   types: {
@@ -45,6 +51,12 @@ export const authMachine = setup({
   id: 'auth',
   context: { user: null, error: null },
   initial: 'idle',
+  on: {
+    LOGOUT: {
+      target: '.unauthenticated',
+      actions: [assign({ user: null, error: null }), 'clearSessionAndFirebase'],
+    },
+  },
   states: {
     idle: {
       on: { START: 'loading' },
@@ -63,19 +75,22 @@ export const authMachine = setup({
             actions: assign({ user: () => null, error: null }),
           },
         ],
-        onError: {
-          target: 'unauthenticated',
-          actions: assign({
-            user: () => null,
-            error: ({ event }) =>
-              event.error instanceof Error ? event.error.message : 'auth failed',
-          }),
-        },
+        onError: [
+          {
+            guard: ({ context }) => context.user !== null,
+            target: 'ready',
+            actions: assign({ error: ({ event }) => authErrorMessage(event.error) }),
+          },
+          {
+            target: 'error',
+            actions: assign({ user: null, error: ({ event }) => authErrorMessage(event.error) }),
+          },
+        ],
       },
     },
     ready: {
       tags: ['settled'],
-      on: { START: 'loading', LOGOUT: { target: 'unauthenticated', actions: 'clearSessionAndFirebase' } },
+      on: { START: 'loading' },
     },
     unauthenticated: {
       tags: ['settled'],

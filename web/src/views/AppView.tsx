@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { observer } from 'mobx-react-lite'
-import { Navigate, Route, Routes, useParams } from 'react-router-dom'
+import { Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { AuthCallback, MobileAuthForward } from '../lib/legacyAuthPages'
 import { AppShellView } from './AppShellView'
@@ -50,6 +50,19 @@ function MemeDetailRoute() {
   return <MemeDetailView key={id} />
 }
 
+/** A remix source is actor input, so changing it needs a fresh mint engine. */
+export function CreateMemeRoute() {
+  const [params] = useSearchParams()
+  const remixId = params.get('remix')
+  return <CreateMemeView key={remixId ?? ''} />
+}
+
+/** An inviter is actor input, so changing it needs a fresh invite engine. */
+export function InviteRoute() {
+  const { sub } = useParams<{ sub: string }>()
+  return <InviteView key={sub} />
+}
+
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth()
   if (loading)
@@ -69,7 +82,7 @@ export const AppView = observer(function AppView() {
         <Route path="/" element={<LandingView />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/auth/mobile" element={<MobileAuthForward />} />
-        <Route path="/invite/:sub" element={<InviteView />} />
+        <Route path="/invite/:sub" element={<InviteRoute />} />
         <Route path="/discord" element={<DiscordPageView />} />
         <Route path="/discord/link" element={<DiscordLinkView />} />
         <Route path="/privacy" element={<PrivacyView />} />
@@ -104,7 +117,7 @@ export const AppView = observer(function AppView() {
           path="/binder/new"
           element={
             <RequireAuth>
-              <CreateMemeView />
+              <CreateMemeRoute />
             </RequireAuth>
           }
         />
