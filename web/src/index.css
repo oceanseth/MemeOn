@@ -364,6 +364,31 @@ textarea:focus {
     0 0 80px oklch(0.875 0.094 317.581 / 0.25);
 }
 
+/* Display P3: same L and H per stop, chroma scaled to the wider gamut */
+@media (color-gamut: p3) {
+  .tier-holo {
+    background: linear-gradient(120deg, oklch(0.81 0.143 223.189), oklch(0.597 0.248 285.527), oklch(0.732 0.319 335.845), oklch(0.81 0.143 223.189));
+  }
+
+  .tier-prismatic {
+    background: conic-gradient(
+      from 0deg,
+      oklch(0.691 0.253 23.908),
+      oklch(0.832 0.17 71.035),
+      oklch(0.965 0.187 112.028),
+      oklch(0.893 0.227 147.883),
+      oklch(0.818 0.133 225.012),
+      oklch(0.634 0.227 288.555),
+      oklch(0.739 0.335 331.668),
+      oklch(0.691 0.253 23.908)
+    );
+  }
+
+  .tier-shiny {
+    background: linear-gradient(120deg, oklch(0.852 0.222 172.455), oklch(0.932 0.115 171.454), oklch(0.818 0.133 225.012), oklch(0.875 0.104 317.581), oklch(0.892 0.165 89.311), oklch(0.852 0.222 172.455));
+  }
+}
+
 /* large variant for the meme detail page: same card, bigger everything */
 .meme-card-lg .meme-title {
   font-size: 22px;
