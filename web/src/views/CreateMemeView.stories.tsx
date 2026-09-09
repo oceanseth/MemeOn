@@ -97,7 +97,7 @@ export const GenerationFailure: Story = {
     await userEvent.type(canvas.getByRole('textbox', { name: /^Prompt/ }), 'fail')
     await userEvent.click(canvas.getByRole('button', { name: 'Render the image' }))
     const alert = await canvas.findByRole('alert')
-    await expect(alert).toHaveTextContent('credits exhausted')
+    await waitFor(() => expect(alert).toHaveTextContent('credits exhausted'))
     await expect(alert).toHaveTextContent('Top up Masky credits')
   },
 }

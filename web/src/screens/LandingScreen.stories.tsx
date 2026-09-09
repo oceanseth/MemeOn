@@ -145,8 +145,8 @@ export const FrameFailed: Story = {
     const failed = canvasElement.querySelectorAll('.tier-frame-slot[data-state="error"]')
     await expect(failed).toHaveLength(TIERS.length)
     await expect(canvasElement.querySelectorAll('.tier-frame-img')).toHaveLength(0)
-    const cards = canvasElement.querySelectorAll<HTMLElement>('.tier-card')
-    await expect(cards[0].offsetHeight).toBe(cards[6].offsetHeight)
+    const frames = canvasElement.querySelectorAll<HTMLElement>('.tier-frame-slot')
+    await expect(frames[0].offsetHeight).toBe(frames[6].offsetHeight)
   },
 }
 
