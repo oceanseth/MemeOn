@@ -47,7 +47,6 @@ const EXCEPTIONS = new Map([
   ["components/SortChips.tsx", "legacy component pending tier migration"],
   ["pages/AuthCallback.tsx", "OAuth redirect callback"],
   ["pages/Binder.tsx", "legacy route pending screen migration"],
-  ["pages/CreateMeme.tsx", "legacy route pending screen migration"],
   ["pages/Developers.tsx", "legacy route pending screen migration"],
   ["pages/DiscordLink.tsx", "legacy route pending screen migration"],
   ["pages/DiscordPage.tsx", "legacy route pending screen migration"],

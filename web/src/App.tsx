@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes, useParams } from 'react-router-dom'
+import { Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom'
 
 function LegacyMemeRedirect() {
   const { id } = useParams<{ id: string }>()
@@ -25,12 +25,12 @@ import Leaderboard from './pages/Leaderboard'
 import Profile from './pages/Profile'
 import Marketplace from './pages/Marketplace'
 import Binder from './pages/Binder'
-import CreateMeme from './pages/CreateMeme'
 import Friends from './pages/Friends'
 import Trades from './pages/Trades'
 import MemeDetail from './pages/MemeDetail'
 import type { ReactNode } from 'react'
 import { AppShellView } from './views/AppShellView'
+import { CreateMemeView } from './views/CreateMemeView'
 import { DevelopersView } from './views/DevelopersView'
 import { DiscordLinkView } from './views/DiscordLinkView'
 import { DiscordPageView } from './views/DiscordPageView'
@@ -51,7 +51,14 @@ function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
-function InviteRoute() {
+/** A remix source is route input, so changing it needs a fresh mint engine. */
+export function CreateMemeRoute() {
+  const [params] = useSearchParams()
+  const remixId = params.get('remix')
+  return <CreateMemeView key={remixId ?? ''} />
+}
+
+export function InviteRoute() {
   const { sub } = useParams<{ sub: string }>()
   return <InviteView key={sub} />
 }
@@ -98,7 +105,7 @@ export default function App() {
           path="/binder/new"
           element={
             <RequireAuth>
-              <CreateMeme />
+              <CreateMemeRoute />
             </RequireAuth>
           }
         />
