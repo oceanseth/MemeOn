@@ -1,4 +1,24 @@
+import type { ReactNode } from 'react'
+import { observer } from 'mobx-react-lite'
 import { Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
+import { AuthCallback, MobileAuthForward } from '../lib/legacyAuthPages'
+import { AppShellView } from './AppShellView'
+import { BinderView } from './BinderView'
+import { CreateMemeView } from './CreateMemeView'
+import { DevelopersView } from './DevelopersView'
+import { DiscordLinkView } from './DiscordLinkView'
+import { DiscordPageView } from './DiscordPageView'
+import { FriendsView } from './FriendsView'
+import { InviteView } from './InviteView'
+import { LandingView } from './LandingView'
+import { LeaderboardView } from './LeaderboardView'
+import { MarketplaceView } from './MarketplaceView'
+import { MemeDetailView } from './MemeDetailView'
+import { PrivacyView } from './PrivacyView'
+import { ProfileView } from './ProfileView'
+import { TermsView } from './TermsView'
+import { TradesView } from './TradesView'
 
 function LegacyMemeRedirect() {
   const { id } = useParams<{ id: string }>()
@@ -23,31 +43,24 @@ function ProfileRoute() {
   const { sub } = useParams<{ sub: string }>()
   return <ProfileView key={sub} />
 }
-import { useAuth } from './context/AuthContext'
-import AuthCallback from './pages/AuthCallback'
-import MobileAuthForward from './pages/MobileAuthForward'
-import type { ReactNode } from 'react'
-import { AppShellView } from './views/AppShellView'
-import { CreateMemeView } from './views/CreateMemeView'
-import { DevelopersView } from './views/DevelopersView'
-import { DiscordLinkView } from './views/DiscordLinkView'
-import { DiscordPageView } from './views/DiscordPageView'
-import { InviteView } from './views/InviteView'
-import { LandingView } from './views/LandingView'
-import { PrivacyView } from './views/PrivacyView'
-import { TermsView } from './views/TermsView'
-import { MarketplaceView } from './views/MarketplaceView'
-import { MemeDetailView } from './views/MemeDetailView'
-import { TradesView } from './views/TradesView'
-import { BinderView } from './views/BinderView'
-import { ProfileView } from './views/ProfileView'
-import { FriendsView } from './views/FriendsView'
-import { LeaderboardView } from './views/LeaderboardView'
 
-/** Fresh machine per meme id so links do not reuse the previous detail actor. */
+/** Fresh machine per meme id so remix/cap-table links do not reuse the previous actor. */
 function MemeDetailRoute() {
   const { id } = useParams<{ id: string }>()
   return <MemeDetailView key={id} />
+}
+
+/** A remix source is actor input, so changing it needs a fresh mint engine. */
+export function CreateMemeRoute() {
+  const [params] = useSearchParams()
+  const remixId = params.get('remix')
+  return <CreateMemeView key={remixId ?? ''} />
+}
+
+/** An inviter is actor input, so changing it needs a fresh invite engine. */
+export function InviteRoute() {
+  const { sub } = useParams<{ sub: string }>()
+  return <InviteView key={sub} />
 }
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -62,19 +75,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
-/** A remix source is route input, so changing it needs a fresh mint engine. */
-export function CreateMemeRoute() {
-  const [params] = useSearchParams()
-  const remixId = params.get('remix')
-  return <CreateMemeView key={remixId ?? ''} />
-}
-
-export function InviteRoute() {
-  const { sub } = useParams<{ sub: string }>()
-  return <InviteView key={sub} />
-}
-
-export default function App() {
+export const AppView = observer(function AppView() {
   return (
     <AppShellView>
       <Routes>
@@ -153,4 +154,4 @@ export default function App() {
       </Routes>
     </AppShellView>
   )
-}
+})

@@ -9,7 +9,7 @@ import { clearSession, maskyAccessToken, sessionToken, setMaskyAccessToken, setS
 import { authMachine } from '../stores/authMachine'
 import { createStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
-import AppView from '../App'
+import { AppView } from './AppView'
 
 const meta = {
   title: 'Views/AppView',

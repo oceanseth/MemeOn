@@ -9,7 +9,7 @@ import { clearSession, setSessionToken } from "../lib/api";
 import { authMachine } from "../stores/authMachine";
 import { createStores } from "../stores/createStores";
 import { StoresProvider } from "../stores/StoresContext";
-import { CreateMemeRoute, InviteRoute } from "../App";
+import { CreateMemeRoute, InviteRoute } from "./AppView";
 import { DiscordLinkView } from "./DiscordLinkView";
 
 function pathOf(input: RequestInfo | URL): string {

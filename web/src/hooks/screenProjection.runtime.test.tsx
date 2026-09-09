@@ -23,7 +23,7 @@ import { useDiscordPageScreen } from './useDiscordPageScreen'
 import { useDiscordLinkScreen } from './useDiscordLinkScreen'
 import { useDevelopersScreen } from './useDevelopersScreen'
 import { ProfileView } from '../views/ProfileView'
-import AppView from '../App'
+import { AppView } from '../views/AppView'
 
 vi.mock('../lib/presence', () => ({ watchPresence: vi.fn(() => vi.fn()) }))
 vi.mock('../lib/firebase', () => ({ firebaseSignOut: vi.fn() }))
