@@ -51,7 +51,7 @@ include mutation failures. A successful creation navigates away from its screen.
 
 ```
 main.tsx ── StoresProvider + AuthRuntime + BrowserRouter
-└─ App.tsx (re-export) ── AppView
+└─ App.ts (re-export) ── AppView
    ├─ RequireAuth · BinderOwnRedirect · BinderRoute · ProfileRoute · MemeDetailRoute · LegacyMemeRedirect
    └─ AppShellView ── useAppShellScreen → AppShellScreen
       ├─ AppShell
