@@ -7,6 +7,7 @@ const onConfirm = fn()
 const onCancel = fn()
 const baseInput = {
   open: true,
+  id: 'confirm-story',
   title: 'Delete forever?',
   message: "This can't be undone.",
   confirmLabel: 'Delete it',
@@ -27,26 +28,59 @@ type Story = StoryObj<typeof meta>
 
 export const Open: Story = {
   play: async ({ canvasElement }) => {
+    onCancel.mockClear()
     const canvas = within(canvasElement)
-    const dialog = canvas.getByRole('alertdialog')
-    await expect(dialog).toHaveAttribute('aria-modal', 'true')
+    const dialog = canvas.getByRole('alertdialog', { name: 'Delete forever?' })
+    // the platform supplies containment and initial focus: the first control inside the dialog
+    await expect(dialog.contains(document.activeElement)).toBe(true)
     await userEvent.click(canvas.getByRole('heading', { name: 'Delete forever?' }))
     await expect(onCancel).not.toHaveBeenCalled()
     await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }))
     await expect(onCancel).toHaveBeenCalledOnce()
+    // Escape is the platform's own close watcher: it only answers trusted key events, so it is
+    // covered in confirmDialogModel.test.ts (onCancel passes it through, onClose reports it back).
   },
 }
 export const Closed: Story = {
   args: { model: buildConfirmDialogModel({ ...baseInput, open: false }) },
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).queryByRole('alertdialog')).toBeNull()
+  },
 }
 export const Danger: Story = {
   args: { model: buildConfirmDialogModel({ ...baseInput, danger: true }) },
 }
 export const Busy: Story = {
-  args: { model: buildConfirmDialogModel({ ...baseInput, busy: true }) },
+  args: { model: buildConfirmDialogModel({ ...baseInput, danger: true, busy: true }) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: 'Cancel' })).toBeDisabled()
-    await expect(canvas.getByRole('button', { name: 'Working…' })).toBeDisabled()
+    const confirm = canvas.getByRole('button', { name: 'Working…' })
+    await expect(confirm).toHaveAttribute('aria-busy', 'true')
+    await expect(confirm).toHaveAttribute('aria-disabled', 'true')
+    await expect(confirm).toBeEnabled()
+  },
+}
+export const Prompt: Story = {
+  args: {
+    model: buildConfirmDialogModel({
+      ...baseInput,
+      id: 'claim-story',
+      title: 'Claim this meme?',
+      message: 'This card is sitting in the archive. Tell us why it belongs to you and we’ll take a look.',
+      confirmLabel: 'File the claim',
+      prompt: {
+        label: 'Why is this meme yours?',
+        value: '',
+        placeholder: 'the original post, your handle, anything that proves it',
+        maxLength: 400,
+        hint: 'Links help your case.',
+        onChange: fn(),
+      },
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('textbox', { name: /Why is this meme yours/ })).toHaveAttribute('maxlength', '400')
   },
 }

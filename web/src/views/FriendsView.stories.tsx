@@ -27,13 +27,13 @@ export const SearchRequestRespondAndGift: Story = {
     const canvas = within(canvasElement)
     await expect(await canvas.findByText('incoming pal')).toBeInTheDocument()
     await expect(canvas.getByRole('link', { name: 'pal' })).toHaveAttribute('href', '/u/user-pal')
-    await userEvent.type(canvas.getByRole('searchbox', { name: '' }), 'first')
-    const add = await canvas.findByRole('button', { name: 'Add friend' })
+    await userEvent.type(canvas.getByRole('searchbox', { name: 'Find people by name' }), 'first')
+    const add = await canvas.findByRole('button', { name: /^Add friend — / })
     await userEvent.click(add)
     await expect(await canvas.findByText('Friend request sent 👋')).toBeInTheDocument()
-    await userEvent.click(canvas.getByRole('button', { name: 'Accept' }))
+    await userEvent.click(canvas.getByRole('button', { name: "Accept incoming pal's request" }))
     await waitFor(() => expect(canvas.queryByRole('heading', { name: 'Requests for you' })).not.toBeInTheDocument())
-    await userEvent.click(canvas.getAllByTitle('Gift shares')[0]!)
+    await userEvent.click(canvas.getAllByRole('button', { name: /^Gift shares to / })[0]!)
     const dialog = await canvas.findByRole('dialog', { name: /Gift to pal/ })
     await userEvent.click(await within(dialog).findByRole('button', { name: /fresh paper/ }))
     await expect(within(dialog).getByRole('spinbutton')).toHaveValue(1)
@@ -45,10 +45,15 @@ export const SearchRequestRespondAndGift: Story = {
   },
 }
 
-export const InitialFailureIsEmpty: Story = {
+export const InitialFailureShowsError: Story = {
   loaders: [connectedLoader({ failures: { 'GET /api/friends': { error: 'offline' } } })], beforeEach: async (context) => connectedBeforeEach(context),
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><FriendsView /></ConnectedStory>,
-  play: async ({ canvasElement }) => { await expect(await within(canvasElement).findByText(/No friends yet/)).toBeInTheDocument() },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByText(/Couldn't load your friends/)).toBeInTheDocument()
+    await expect(canvas.queryByText(/No friends yet/)).not.toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: 'Retry' })).toBeInTheDocument()
+  },
 }
 
 export const LoadingThenReady: Story = {
@@ -58,5 +63,11 @@ export const LoadingThenReady: Story = {
 
 export const GiftFailureStaysInOverlay: Story = {
   loaders: [connectedLoader({ failures: { 'POST /api/gift': { error: 'gift unavailable' } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><FriendsView /></ConnectedStory>,
-  play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click((await canvas.findAllByTitle('Gift shares'))[0]!); const dialog = await canvas.findByRole('dialog', { name: /Gift to pal/ }); await userEvent.click(await within(dialog).findByRole('button', { name: /fresh paper/ })); await userEvent.click(within(dialog).getByRole('button', { name: /Gift 1 of/ })); await expect(await within(dialog).findByText('gift unavailable')).toBeInTheDocument() },
+  play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click((await canvas.findAllByRole('button', { name: /^Gift shares to / }))[0]!); const dialog = await canvas.findByRole('dialog', { name: /Gift to pal/ }); await userEvent.click(await within(dialog).findByRole('button', { name: /fresh paper/ })); await userEvent.click(within(dialog).getByRole('button', { name: /Gift 1 of/ })); await expect(await within(dialog).findByText('gift unavailable')).toBeInTheDocument()
+    /* Escape on a showModal() dialog is the platform's own cancel default: a synthetic key event
+       cannot run it, so the story fires the cancel the platform would and proves the wiring. */
+    dialog.dispatchEvent(new Event('cancel', { cancelable: true }))
+    await waitFor(() => expect(dialog).not.toHaveAttribute('open'))
+    await expect(canvas.queryByRole('dialog')).toBeNull()
+  },
 }

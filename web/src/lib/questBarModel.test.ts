@@ -18,18 +18,73 @@ describe('buildQuestBarModel', () => {
     const done = buildQuestBarModel({ ...fresh, steps: questStepsPackDone })
     expect(freshModel.completionLabel).toBe('0/5')
     expect(freshModel.chips[0]).toMatchObject({ kind: 'claim', buttonProps: { disabled: false } })
-    expect(opening.chips[0]).toMatchObject({ kind: 'claim', label: 'Opening…', buttonProps: { disabled: true } })
+    expect(opening.chips[0]).toMatchObject({
+      kind: 'claim',
+      label: 'Opening…',
+      buttonProps: { disabled: true, 'aria-busy': true },
+    })
     expect(done.completionLabel).toBe('1/5')
-    expect(done.chips[0]).toMatchObject({ kind: 'step', done: true, linkProps: null })
+    expect(buildQuestBarModel({ ...fresh, steps: questStepsPackDone, expanded: true }).chips[0])
+      .toMatchObject({ kind: 'step', done: true, linkProps: null })
+  })
+
+  it('collapses to the next step and keeps the rest one disclosure away', () => {
+    const collapsed = buildQuestBarModel({ ...fresh, steps: questStepsPackDone })
+    expect(collapsed.chips).toHaveLength(1)
+    expect(collapsed.chips[0]).toMatchObject({ kind: 'step', key: 'mint', done: false })
+    expect(collapsed.hint).toBe(questStepsPackDone[1]!.hint)
+    expect(collapsed.toggleLabel).toBe('4 more')
+    expect(collapsed.toggleProps?.['aria-label']).toBe('4 more — show all quests')
+    expect(collapsed.toggleProps?.['aria-expanded']).toBe(false)
+
+    const expanded = buildQuestBarModel({ ...fresh, steps: questStepsPackDone, expanded: true })
+    expect(expanded.chips).toHaveLength(5)
+    expect(expanded.toggleLabel).toBe('Show less')
+    expect(expanded.toggleProps?.['aria-label']).toBe('Show less — hide the rest of your quests')
+
+    const finished = buildQuestBarModel({
+      ...fresh,
+      steps: questStepsFresh.map((step) => ({ ...step, done: true })),
+    })
+    expect(finished.chips).toHaveLength(5)
+    expect(finished.hint).toBeNull()
+    expect(finished.toggleProps).toBeNull()
+  })
+
+  it('names each step state and reward without relying on a glyph or a hover', () => {
+    const model = buildQuestBarModel({ ...fresh, steps: questStepsPackDone, expanded: true })
+    expect(model.chips[0]).toMatchObject({
+      kind: 'step',
+      statusLabel: 'Done.',
+      rewardAriaLabel: 'rewards 20 braincells',
+    })
+    expect(model.chips[1]).toMatchObject({
+      kind: 'step',
+      statusLabel: 'Not done yet.',
+      rewardLabel: '+100🧠',
+      rewardAriaLabel: 'rewards 100 braincells',
+    })
+    expect(model.dismissProps['aria-label']).toBe('Later — hide quests for now')
   })
 
   it('offers task destinations only for unfinished steps', () => {
-    const model = buildQuestBarModel(fresh)
+    const model = buildQuestBarModel({ ...fresh, expanded: true })
     expect(model.chips.slice(1).map((chip) => chip.kind === 'step' ? chip.linkProps?.to : null))
       .toEqual(['/binder/new', '/binder', '/friends', '/marketplace'])
-    const completed = buildQuestBarModel({ ...fresh, steps: questStepsFresh.map((step) => ({ ...step, done: true })) })
+    const completed = buildQuestBarModel({
+      ...fresh,
+      steps: questStepsFresh.map((step) => ({ ...step, done: true })),
+      expanded: true,
+    })
     expect(completed.chips.every((chip) => chip.kind === 'step' && chip.linkProps === null)).toBe(true)
     expect(completed.completionLabel).toBe('5/5')
+  })
+
+  it('surfaces a failed one-shot claim instead of returning to the button', () => {
+    const failed = buildQuestBarModel({ ...fresh, claimError: "Pack didn't open — tap to try again." })
+    expect(failed.errorMessage).toBe("Pack didn't open — tap to try again.")
+    expect(failed.errorProps.role).toBe('alert')
+    expect(buildQuestBarModel(fresh).errorMessage).toBeNull()
   })
 
   it('keeps an empty-vault reward visible even when there are no quest steps', () => {
@@ -43,12 +98,15 @@ describe('buildQuestBarModel', () => {
     expect(emptyVault.pack?.description).toBe('The vault was empty, so you got 20 🧠 braincells instead. Spend them wisely.')
   })
 
-  it('builds reward copy, card media, and binder destination for an opened pack', () => {
+  it('builds reward copy, card media, and a single-element binder exit for an opened pack', () => {
     const model = buildQuestBarModel({ ...fresh, packMemes: [paperMeme], packReward: 20 })
     expect(model.pack?.showCards).toBe(true)
     expect(model.pack?.description).toBe('You now hold 10 shares in each of these — plus 20 🧠 braincells.')
     expect(model.pack?.cards[0]?.detailLinkProps.to).toBe(`/m/${paperMeme.id}`)
-    expect(model.pack?.cards[0]?.media).toMatchObject({ kind: 'image', imageProps: { src: paperMeme.imageUrl, alt: paperMeme.title } })
+    // the card's title and link already name it; the image is decorative inside the pack too
+    expect(model.pack?.cards[0]?.media).toMatchObject({ kind: 'image', imageProps: { src: paperMeme.imageUrl, alt: '' } })
     expect(model.pack?.binderLinkProps.to).toBe('/binder')
+    expect(model.pack?.dialogProps['aria-labelledby']).toBe(model.pack?.titleId)
+    expect(model.pack?.closeButtonProps['aria-label']).toBe('Close')
   })
 })

@@ -139,7 +139,11 @@ export const RespondToProposal: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><TradesView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(await canvas.findByRole('button', { name: 'Accept' }))
+    await userEvent.click(await canvas.findByRole('button', { name: "Accept pal's trade" }))
+    // the irreversible action restates the deal before it fires
+    const dialog = within(await canvas.findByRole('alertdialog'))
+    await expect(dialog.getByText('Accept this trade?')).toBeInTheDocument()
+    await userEvent.click(dialog.getByRole('button', { name: 'Accept' }))
     await expect(await canvas.findByText('Trade executed 🤝')).toBeInTheDocument()
     await expect(loaded.scenario.requests.find((request: { path: string }) => request.path === '/api/trades/trade-1/respond')?.body).toEqual({ action: 'accept' })
     await waitFor(() => expect(loaded.scenario.stores.auth.snapshot.hasTag('settled')).toBe(true))
@@ -162,15 +166,20 @@ export const MemeTitleCacheIsMountLocal: Story = {
 
 export const LoadingThenReady: Story = {
   loaders: [connectedLoader({ overrides: { 'GET /api/trades': async (_request, scenario) => { await scenario.waitForRelease('trades'); return { body: { trades: scenario.trades } } } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><TradesView /></ConnectedStory>,
-  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('.spin')).not.toBeNull()); loaded.scenario.release('trades'); await expect(await canvas.findByText(/fresh paper/)).toBeInTheDocument() },
+  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('.skeleton')).not.toBeNull()); loaded.scenario.release('trades'); await expect(await canvas.findByText(/fresh paper/)).toBeInTheDocument() },
 }
 
-export const InitialFailureIsEmpty: Story = {
+/** a failed load is an error with a way out, never a fake "nothing pending" */
+export const InitialFailureOffersRetry: Story = {
   loaders: [connectedLoader({ failures: { 'GET /api/trades': { error: 'offline' } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><TradesView /></ConnectedStory>,
-  play: async ({ canvasElement }) => { await expect(await within(canvasElement).findByText(/Nothing pending/)).toBeInTheDocument() },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByRole('button', { name: 'Try again' })).toBeInTheDocument()
+    await expect(canvas.queryByText(/Nothing pending/)).not.toBeInTheDocument()
+  },
 }
 
 export const ProposalFailureStaysInComposer: Story = {
   loaders: [connectedLoader({ failures: { 'POST /api/trades': { error: 'proposal rejected', status: 409 } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><TradesView /></ConnectedStory>,
-  play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click(await canvas.findByRole('button', { name: /Propose a trade/ })); const selects = await canvas.findAllByRole('combobox'); await waitFor(() => expect(selects[0]).toHaveTextContent('pal')); await userEvent.selectOptions(selects[0]!, 'user-pal'); await userEvent.click(canvas.getByRole('button', { name: 'Propose trade' })); await expect(await canvas.findByText('proposal rejected')).toBeInTheDocument(); await expect(canvas.getByRole('button', { name: 'Close' })).toBeInTheDocument() },
+  play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click(await canvas.findByRole('button', { name: /Propose a trade/ })); const selects = await canvas.findAllByRole('combobox'); await waitFor(() => expect(selects[0]).toHaveTextContent('pal')); await userEvent.selectOptions(selects[0]!, 'user-pal'); await userEvent.type(canvas.getAllByRole('spinbutton')[1]!, '5'); await userEvent.click(canvas.getByRole('button', { name: 'Propose trade' })); await expect(await canvas.findByText('proposal rejected')).toBeInTheDocument(); await expect(canvas.getByRole('button', { name: 'Close' })).toBeInTheDocument() },
 }

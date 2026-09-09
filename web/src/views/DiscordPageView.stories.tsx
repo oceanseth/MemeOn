@@ -38,5 +38,11 @@ export const Unconfigured: Story = {
 export const LoadingThenConfigured: Story = {
   loaders: [connectedLoader({ overrides: { 'GET /api/discord/config': async (_request, scenario) => { await scenario.waitForRelease('discord-config'); return { body: { configured: true, installUrl: discordInstallUrl } } } } })], beforeEach: async (context) => connectedBeforeEach(context),
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DiscordPageView /></ConnectedStory>,
-  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await expect(canvas.queryByRole('link', { name: /Add MemeOn to Discord/ })).not.toBeInTheDocument(); loaded.scenario.release('discord-config'); await expect(await canvas.findByRole('link', { name: /Add MemeOn to Discord/ })).toBeInTheDocument(); await waitFor(() => expect(loaded.scenario.unexpected).toEqual([])) },
+  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await expect(canvas.queryByRole('link', { name: /Add MemeOn to Discord/ })).not.toBeInTheDocument(); await expect(canvas.getByText('Checking Discord…')).toBeInTheDocument(); loaded.scenario.release('discord-config'); await expect(await canvas.findByRole('link', { name: /Add MemeOn to Discord/ })).toBeInTheDocument(); await waitFor(() => expect(loaded.scenario.unexpected).toEqual([])) },
+}
+
+export const ConfigUnreachable: Story = {
+  loaders: [connectedLoader({ failures: { 'GET /api/discord/config': { error: 'boom', status: 500 } } })], beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DiscordPageView /></ConnectedStory>,
+  play: async ({ canvasElement }) => { const canvas = within(canvasElement); await expect(await canvas.findByText(/Couldn't reach MemeOn/)).toBeInTheDocument(); await expect(canvas.queryByText(/Almost live/)).not.toBeInTheDocument() },
 }

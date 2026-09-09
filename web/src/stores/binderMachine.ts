@@ -15,11 +15,12 @@ export interface BinderContext {
 export type BinderEvent =
   | { type: 'DONE'; memes: Meme[] }
   | { type: 'FAIL'; err: string }
+  | { type: 'RETRY' }
   | { type: 'SET_SHOW_PRIVATE'; showPrivate: boolean }
   | { type: 'SET_SORT'; sortKey: SortKey; sortDir: SortDir }
 
 /**
- * Own-binder source of truth. loading → ready|empty|error.
+ * Own-binder source of truth. loading → ready|empty|error, and error → loading on RETRY.
  * Filter/sort live in context; the hook drives fetch.
  */
 export const binderMachine = setup({
@@ -59,6 +60,10 @@ export const binderMachine = setup({
     FAIL: {
       target: '.error',
       actions: assign({ err: ({ event }) => event.err }),
+    },
+    RETRY: {
+      target: '.loading',
+      actions: assign({ err: null }),
     },
   },
   states: {

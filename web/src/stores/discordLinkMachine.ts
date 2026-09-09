@@ -1,15 +1,31 @@
 import { assign, setup } from 'xstate'
 
-export type DiscordLinkPhase = 'working' | 'done' | 'error'
+export type DiscordLinkPhase =
+  | 'checking'
+  | 'confirm'
+  | 'redirecting'
+  | 'working'
+  | 'done'
+  | 'error'
+
+/** Why the link failed, in product terms. The hook maps transport detail onto exactly one of these. */
+export type DiscordLinkFailure = 'missing-token' | 'expired' | 'login' | 'unreachable'
 
 export interface DiscordLinkContext {
-  err: string | null
+  failure: DiscordLinkFailure | null
 }
 
-export type DiscordLinkEvent = { type: 'DONE' } | { type: 'FAIL'; err: string }
+export type DiscordLinkEvent =
+  | { type: 'READY' }
+  | { type: 'LOGIN' }
+  | { type: 'LINK' }
+  | { type: 'RETRY' }
+  | { type: 'DONE' }
+  | { type: 'FAIL'; failure: DiscordLinkFailure }
 
 /**
- * Discord account-link source of truth. working → done|error.
+ * Discord account-link source of truth. checking → confirm → redirecting|working → done|error,
+ * and error → working on RETRY. Joining two identities waits for a person to say so.
  * The hook drives login + POST and sends events.
  */
 export const discordLinkMachine = setup({
@@ -19,19 +35,22 @@ export const discordLinkMachine = setup({
   },
 }).createMachine({
   id: 'discordLink',
-  context: { err: null },
-  initial: 'working',
-  states: {
-    working: {
-      on: {
-        DONE: 'done',
-        FAIL: {
-          target: 'error',
-          actions: assign({ err: ({ event }) => event.err }),
-        },
-      },
+  context: { failure: null },
+  initial: 'checking',
+  on: {
+    FAIL: {
+      target: '.error',
+      actions: assign({ failure: ({ event }) => event.failure }),
     },
+  },
+  states: {
+    checking: { on: { READY: 'confirm', LINK: 'working' } },
+    confirm: { on: { LOGIN: 'redirecting', LINK: 'working' } },
+    redirecting: {},
+    working: { on: { DONE: 'done' } },
     done: {},
-    error: {},
+    error: {
+      on: { RETRY: { target: 'working', actions: assign({ failure: null }) } },
+    },
   },
 })

@@ -19,4 +19,4 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const Default: Story = { play: async ({ canvasElement }) => { const canvas = within(canvasElement); await expect(canvas.getByRole('heading', { name: 'Privacy Policy' })).toBeInTheDocument(); await expect(canvas.getAllByRole('link', { name: 'seth@voicecert.com' })[0]).toHaveAttribute('href', 'mailto:seth@voicecert.com') } }
+export const Default: Story = { play: async ({ canvasElement }) => { const canvas = within(canvasElement); await expect(canvas.getByRole('heading', { name: 'Privacy Policy' })).toBeInTheDocument(); await expect(canvas.getAllByRole('link', { name: 'seth@voicecert.com' })[0]).toHaveAttribute('href', 'mailto:seth@voicecert.com?subject=MemeOn%20account%20deletion'); await expect(document.title).toBe('Privacy Policy — MemeOn') } }

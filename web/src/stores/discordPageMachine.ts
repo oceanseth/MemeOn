@@ -1,16 +1,16 @@
 import { assign, setup } from 'xstate'
 
-export type DiscordPagePhase = 'loading' | 'ready'
+export type DiscordPagePhase = 'loading' | 'ready' | 'errored'
 
 export interface DiscordPageContext {
   installUrl: string | null
-  loaded: boolean
 }
 
-export type DiscordPageEvent = { type: 'DONE'; installUrl: string | null }
+export type DiscordPageEvent = { type: 'DONE'; installUrl: string | null } | { type: 'FAIL' }
 
 /**
- * Discord landing source of truth. loading → ready (with or without an install URL).
+ * Discord landing source of truth. loading → ready (with or without an install URL) | errored.
+ * "Configured without an install URL" and "we never reached the API" are different answers.
  */
 export const discordPageMachine = setup({
   types: {
@@ -21,7 +21,6 @@ export const discordPageMachine = setup({
   id: 'discordPage',
   context: {
     installUrl: null,
-    loaded: false,
   },
   initial: 'loading',
   on: {
@@ -29,12 +28,13 @@ export const discordPageMachine = setup({
       target: '.ready',
       actions: assign({
         installUrl: ({ event }) => event.installUrl,
-        loaded: true,
       }),
     },
+    FAIL: { target: '.errored' },
   },
   states: {
     loading: {},
     ready: {},
+    errored: {},
   },
 })

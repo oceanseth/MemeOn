@@ -20,7 +20,12 @@ const meta = {
   component: AppShellView,
   tags: ['!autodocs'],
   args: {
-    children: <main className="container"><p>page body</p><CurrentRoute /></main>,
+    children: (
+      <main className="container" id="main" tabIndex={-1}>
+        <p>page body</p>
+        <CurrentRoute />
+      </main>
+    ),
   },
   decorators: [
     (Story) => (
@@ -110,7 +115,7 @@ export const AlertsToggleAndLinks: Story = {
   ...connected,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    const trigger = canvas.getByRole('button', { name: 'Alerts' })
+    const trigger = canvas.getByRole('button', { name: /^Alerts/ })
     await waitFor(() => expect(trigger).toHaveTextContent('2'))
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
     await userEvent.click(trigger)
@@ -120,14 +125,15 @@ export const AlertsToggleAndLinks: Story = {
 
     await userEvent.click(trigger)
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
-    await expect(canvas.queryByRole('link', { name: unreadSale.message })).not.toBeInTheDocument()
+    await expect(canvas.queryByText(unreadSale.message)).not.toBeInTheDocument()
     await userEvent.click(trigger)
-    await userEvent.click(canvas.getByRole('link', { name: unreadSale.message }))
+    // the alert row itself is the link, so its name carries the unread cue and the timestamp too
+    await userEvent.click(canvas.getByText(unreadSale.message))
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
     await expect(canvas.getByRole('status', { name: 'Current route' })).toHaveTextContent(`/m/${unreadSale.memeId}`)
 
     await userEvent.click(trigger)
-    await userEvent.click(canvas.getByRole('link', { name: unreadFriend.message }))
+    await userEvent.click(canvas.getByText(unreadFriend.message))
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
     await expect(canvas.getByRole('status', { name: 'Current route' })).toHaveTextContent(`/u/${encodeURIComponent(unreadFriend.subjectSub!)}`)
     await userEvent.click(trigger)
@@ -148,14 +154,15 @@ export const ClaimPackAndDismissOverlay: Story = {
     await expect(loaded.requests.packClaims).toBe(1)
 
     loaded.requests.resolvePack(Response.json({ memes: [paperMeme], reward: 20 }))
-    const modal = await canvas.findByRole('dialog', { name: 'Starter pack opened' })
-    await expect(canvas.getByText(/your braincells/)).toHaveTextContent('1/5')
+    const modal = await canvas.findByRole('dialog', { name: /Starter pack opened/ })
+    await expect(canvas.getByText('1/5')).toBeInTheDocument()
     await expect(within(modal).getByText(/You now hold 10 shares/)).toHaveTextContent('plus 20')
     await expect(within(modal).getByRole('link', { name: new RegExp(paperMeme.title) })).toHaveAttribute('href', `/m/${paperMeme.id}`)
     await userEvent.click(within(modal).getByRole('heading'))
     await expect(modal).toBeInTheDocument()
-    await userEvent.click(modal.parentElement!)
-    await expect(canvas.queryByRole('dialog')).not.toBeInTheDocument()
+    /* the platform's Escape/cancel path ends in close; the shell clears the pack from context */
+    ;(modal as HTMLDialogElement).close()
+    await waitFor(() => expect(canvas.queryByRole('dialog')).not.toBeInTheDocument())
     await expect(canvas.queryByRole('button', { name: /claim your starter pack/i })).not.toBeInTheDocument()
   },
 }
@@ -166,11 +173,11 @@ export const EmptyVaultAndBinderDismiss: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(await canvas.findByRole('button', { name: /claim your starter pack/i }))
     loaded.requests.resolvePack(Response.json({ memes: [], reward: 20 }))
-    const modal = await canvas.findByRole('dialog', { name: 'Starter pack opened' })
+    const modal = await canvas.findByRole('dialog', { name: /Starter pack opened/ })
     await expect(within(modal).getByText(/The vault was empty/)).toHaveTextContent('20')
     await expect(within(modal).queryByRole('link', { name: new RegExp(paperMeme.title) })).not.toBeInTheDocument()
-    await userEvent.click(within(modal).getByRole('button', { name: 'View in My Binder' }))
-    await expect(canvas.queryByRole('dialog')).not.toBeInTheDocument()
+    await userEvent.click(within(modal).getByRole('link', { name: 'View in My Binder' }))
+    await waitFor(() => expect(canvas.queryByRole('dialog')).not.toBeInTheDocument())
     await expect(canvas.getByRole('status', { name: 'Current route' })).toHaveTextContent('/binder')
   },
 }

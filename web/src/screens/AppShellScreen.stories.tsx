@@ -11,8 +11,13 @@ const context: AppShellContext = {
   packMemes: null,
   packReward: 0,
   packBusy: false,
+  claimError: null,
   alerts: [],
   alertsOpen: false,
+  alertsError: false,
+  wasUnread: [],
+  questExpanded: false,
+  questDismissed: false,
 }
 
 const actions = {
@@ -20,6 +25,8 @@ const actions = {
   onClaimPack: fn(),
   onDismissPack: fn(),
   onOpenAlerts: fn(),
+  onToggleQuests: fn(),
+  onDismissQuests: fn(),
 }
 
 const loggedOut = buildAppShellScreenModel({ phase: 'loggedOut', user: null, context, ...actions })
@@ -30,12 +37,22 @@ const loggedIn = buildAppShellScreenModel({
   ...actions,
 })
 
+/** 390×844: the nav has to reach a second row instead of collapsing to zero width. */
+const phone = {
+  parameters: {
+    viewport: {
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+    },
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
+}
+
 const meta = {
   title: 'Screens/AppShellScreen',
   component: AppShellScreen,
   args: {
     ...loggedOut,
-    children: <main className="container"><p>page body</p></main>,
+    children: <main className="container" id="main" tabIndex={-1}><p>page body</p></main>,
   },
   decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
 } satisfies Meta<typeof AppShellScreen>
@@ -55,9 +72,10 @@ export const WithAvatar: Story = {
   }),
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
-    const avatar = canvas.getByRole('img', { name: meLou.name })
-    await expect(avatar).toHaveAttribute('src', '/brand/memeon-logo-circle-64.png')
-    await expect(avatar.closest('a')).toHaveAttribute('href', '/u/mask%2Favatar%20%2B%20one')
+    const profile = canvas.getByRole('link', { name: 'Your profile' })
+    await expect(profile).toHaveAttribute('href', '/u/mask%2Favatar%20%2B%20one')
+    await expect(profile.querySelector('img')).toHaveAttribute('src', '/brand/memeon-logo-circle-64.png')
+    await expect(canvas.getByText(`${meLou.coins.toLocaleString()} braincells`)).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', { name: 'Log out' }))
     await expect(args.logoutButtonProps.onClick).toHaveBeenCalledTimes(1)
   },
@@ -69,6 +87,27 @@ export const WithQuests: Story = {
     context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
     ...actions,
   }),
+}
+
+export const WithQuestsExpanded: Story = {
+  args: buildAppShellScreenModel({
+    phase: 'loggedIn', user: meLou,
+    context: { ...context, steps: questStepsFresh, questExpanded: true, alerts: [unreadSale] },
+    ...actions,
+  }),
+}
+
+/** 'Later' hides the strip until the next completion; the chrome is the route's again. */
+export const QuestsDismissed: Story = {
+  args: buildAppShellScreenModel({
+    phase: 'loggedIn', user: meLou,
+    context: { ...context, steps: questStepsFresh, questDismissed: true, alerts: [unreadSale] },
+    ...actions,
+  }),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).queryByText('0/5')).toBeNull()
+    await expect(within(canvasElement).queryByRole('button', { name: 'Later — hide quests for now' })).toBeNull()
+  },
 }
 
 export const AlertsOpen: Story = {
@@ -87,4 +126,26 @@ export const PackOpened: Story = {
     },
     ...actions,
   }),
+}
+
+/** Ten chrome controls precede the page: the first Tab must offer a way past them. */
+export const SkipLinkFocused: Story = {
+  args: loggedIn,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await userEvent.tab()
+    const skip = canvas.getByRole('link', { name: 'Skip to content' })
+    await expect(skip).toHaveFocus()
+    await expect(skip).toHaveAttribute('href', '#main')
+    await expect(canvasElement.querySelector('#main')).toBeInTheDocument()
+  },
+}
+
+export const Mobile390: Story = {
+  args: buildAppShellScreenModel({
+    phase: 'loggedIn', user: meLou,
+    context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
+    ...actions,
+  }),
+  ...phone,
 }

@@ -19,6 +19,8 @@ test('login failure is retained when authentication settles before frames', () =
 
   expect(actor.getSnapshot().context).toEqual({
     frames: { gold: '/gold.png' },
+    fallbackFrames: [],
+    brokenFrames: [],
     busy: false,
     err: 'Masky is unavailable',
   })
@@ -34,6 +36,8 @@ test('login failure is visible when frames settle before authentication', () => 
 
   expect(actor.getSnapshot().context).toEqual({
     frames: { paper: '/paper.png' },
+    fallbackFrames: [],
+    brokenFrames: [],
     busy: false,
     err: 'Masky is unavailable',
   })
@@ -67,5 +71,34 @@ test('an empty frame result does not block login', () => {
 
   expect(actor.getSnapshot().context.busy).toBe(true)
   expect(actor.getSnapshot().context.err).toBeNull()
+  actor.stop()
+})
+
+test('a frame that cannot load is recorded once, never twice, and never hidden by hand', () => {
+  const actor = startLanding()
+
+  actor.send({ type: 'SET_FRAMES', frames: { paper: '/paper.png' } })
+  actor.send({ type: 'FRAME_FALLBACK', key: 'paper' })
+  actor.send({ type: 'FRAME_FALLBACK', key: 'paper' })
+  expect(actor.getSnapshot().context.fallbackFrames).toEqual(['paper'])
+  expect(actor.getSnapshot().context.brokenFrames).toEqual([])
+
+  actor.send({ type: 'FRAME_FAILED', key: 'paper' })
+  actor.send({ type: 'FRAME_FAILED', key: 'gold' })
+  expect(actor.getSnapshot().context.brokenFrames).toEqual(['paper', 'gold'])
+  actor.stop()
+})
+
+test('a fresh frame payload retries every tier', () => {
+  const actor = startLanding()
+
+  actor.send({ type: 'FRAME_FALLBACK', key: 'gold' })
+  actor.send({ type: 'SET_FRAMES', frames: { gold: '/gold.png' } })
+  actor.send({ type: 'FRAME_FAILED', key: 'gold' })
+  actor.send({ type: 'SET_FRAMES', frames: { gold: '/gold-v2.png' } })
+
+  expect(actor.getSnapshot().context.fallbackFrames).toEqual([])
+  expect(actor.getSnapshot().context.brokenFrames).toEqual([])
+  expect(actor.getSnapshot().context.frames).toEqual({ gold: '/gold-v2.png' })
   actor.stop()
 })

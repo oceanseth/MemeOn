@@ -9,7 +9,33 @@ describe('leaderboard row model', () => {
     }, 3)
     const noAvatar = buildLeaderboardRowModel({ ...row, picture: null, braincells: 42, collectionSize: 4, portfolioValue: 500 }, 0)
 
-    expect(row).toMatchObject({ rankLabel: '#4', profileLinkProps: { to: '/u/top-brain' }, avatarImageProps: { src: '/top-brain.png', alt: '' } })
+    expect(row).toMatchObject({ rankNumeral: '4', medalLabel: '', profileLinkProps: { to: '/u/top-brain' }, avatarImageProps: { src: '/top-brain.png', alt: '' } })
     expect(noAvatar.avatarImageProps).toBeNull()
+    expect(noAvatar.avatarInitial).toBe('T')
+    expect(noAvatar.medalLabel).toBe('🥇')
+  })
+
+  it('names the whole row once so the emoji columns can stay decorative', () => {
+    const row = buildLeaderboardRowModel({
+      sub: 'user-pal', name: 'pal', picture: null, braincells: 1240, collectionSize: 8, portfolioValue: 90,
+    }, 0)
+
+    expect(row).toMatchObject({
+      linkLabel: 'Rank 1, pal, 1,240 braincells',
+      collectionLabel: '📚 8 memes',
+      portfolioLabel: 'portfolio 🧠 90',
+      braincellsLabel: '🧠 1,240',
+      isMe: false,
+    })
+  })
+
+  it('marks the signed-in player and leads their row label with "You"', () => {
+    const leader = { sub: 'user-lou', name: 'lou', picture: null, braincells: 1, collectionSize: 3, portfolioValue: 40 }
+
+    expect(buildLeaderboardRowModel(leader, 1, 'user-lou')).toMatchObject({
+      isMe: true,
+      linkLabel: 'You, rank 2, lou, 1 braincell',
+    })
+    expect(buildLeaderboardRowModel(leader, 1, 'user-pal').isMe).toBe(false)
   })
 })

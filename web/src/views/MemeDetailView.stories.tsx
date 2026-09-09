@@ -78,7 +78,11 @@ export const MissingIsEmpty: Story = {
   loaders: [connectedLoader({ failures: { [`GET /api/memes/${listedHolo.id}`]: { error: 'missing', status: 404 } } })],
   beforeEach: async (context) => connectedBeforeEach(context),
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><MemeDetailView /></ConnectedStory>,
-  play: async ({ canvasElement }) => { await expect(await within(canvasElement).findByText(/doesn't exist/)).toBeInTheDocument() },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByText(/may have been deleted or made private/)).toBeInTheDocument()
+    await expect(canvas.getByRole('link', { name: 'Browse the marketplace' })).toBeInTheDocument()
+  },
 }
 
 export const HolderNameCacheIsMountLocal: Story = {

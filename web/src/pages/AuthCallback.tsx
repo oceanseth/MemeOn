@@ -37,7 +37,7 @@ export default function AuthCallback() {
   }, [params, navigate, refresh])
 
   return (
-    <main className="container" style={{ paddingTop: 90, textAlign: 'center' }}>
+    <main className="container" id="main" tabIndex={-1} style={{ paddingTop: 90, textAlign: 'center' }}>
       {err ? (
         <>
           <p className="notice error">{err}</p>

@@ -8,9 +8,9 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
 
   return (
     <div className="panel" style={{ marginTop: 16 }}>
-      <strong>🕸️ Memeplex</strong>
+      <h3>🕸️ Memeplex</h3>
       {model.ancestors.length > 0 && (
-        <p style={{ color: 'var(--text-dim)', fontSize: 13.5, margin: '8px 0' }}>
+        <p className="muted" style={{ fontSize: 13.5, margin: '8px 0' }}>
           Descended from{' '}
           {model.ancestors.map((ancestor, index) => (
             <span key={ancestor.id}>
@@ -23,11 +23,11 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
       )}
 
       {model.family.length > 0 ? (
-        <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', marginTop: 10 }}>
+        <div className="card-grid memeplex-grid" style={{ marginTop: 10 }}>
           {model.family.map((card) => <MemeCard key={card.id} model={card} />)}
         </div>
       ) : (
-        <p style={{ color: 'var(--text-dim)', fontSize: 13.5 }}>No relatives yet — remix this meme or link related ones.</p>
+        <p className="muted" style={{ fontSize: 13.5 }}>No relatives yet — remix this meme or link related ones.</p>
       )}
 
       {model.canEdit && (
@@ -41,7 +41,8 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
           {model.showPastedLink && <button className="primary" {...model.pastedLinkButtonProps}>Link</button>}
         </div>
       )}
-      {model.notice && <p className="notice ok" style={{ marginTop: 8 }}>{model.notice}</p>}
+      <div {...model.noticeProps}>{model.notice && <p className="notice ok">{model.notice}</p>}</div>
+      <div {...model.errorProps}>{model.error && <p className="notice error">{model.error}</p>}</div>
     </div>
   )
 }

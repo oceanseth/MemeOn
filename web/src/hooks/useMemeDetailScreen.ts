@@ -1,24 +1,57 @@
 import { useProjectedActor } from './useProjectedActor'
 import { autorun } from 'mobx'
-import { createElement, Fragment, useCallback, useRef, type ChangeEventHandler } from 'react'
+import { createElement, Fragment, useCallback, useRef, type ChangeEventHandler, type HTMLAttributes } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { TIERS } from '../../../shared/tiers'
 import { apiFetch, post } from '../lib/api'
+import { beginMaskyLogin } from '../lib/auth'
 import { buildConfirmDialogModel, type ConfirmDialogModel } from '../lib/confirmDialogModel'
 import { createDetailBinderGate } from '../lib/detailBinderGate'
+import { plural, pluralWord } from '../lib/plural'
 import type { Meme, Memeplex, Position } from '../lib/types'
-import { memeDetailMachine, type MemeDetailPhase, type MemeStats } from '../stores/memeDetailMachine'
+import { clampPrice, clampShares, memeDetailMachine, type MemeDetailPhase, type MemeStats } from '../stores/memeDetailMachine'
 import { buildMemeplexPanelModel, type MemeplexPanelModel } from '../organisms/memeplexPanelModel'
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
 import { useStores } from '../stores/StoresContext'
 
 const ARCHIVE_SUB = 'meme_archive'
+/** braincell spend that earns a restatement before it leaves the wallet */
+const CONFIRM_SPEND_OVER = 25
 
 export interface CapRow { userId: string; sharesLabel: string; label: string }
 export type DetailMediaModel =
-  | { kind: 'image'; imageProps: { src: string; alt: string } }
+  | { kind: 'image'; imageProps: { src: string; alt: string; loading: 'eager'; fetchpriority: 'high'; decoding: 'async' } }
   | { kind: 'video'; videoProps: { src: string; controls: true; loop: true; autoPlay: true; muted: true; playsInline: true; poster: string; 'aria-label': string } }
 export interface DetailActionModel { label: string; className?: 'danger' | undefined; buttonProps: { onClick: () => void } }
+export type DetailLiveRegionProps = Pick<HTMLAttributes<HTMLDivElement>, 'role' | 'aria-live'>
+export interface DetailNotFoundModel {
+  message: string
+  linkProps: { to: string }
+  linkLabel: string
+}
+export interface DetailSignedOutModel {
+  title: string
+  body: string
+  loginLabel: string
+  loginButtonProps: { onClick: () => void; disabled: boolean; 'aria-busy': boolean; 'aria-label': string }
+  browseLinkProps: { to: string }
+  browseLabel: string
+  error: string | null
+  errorProps: Pick<HTMLAttributes<HTMLParagraphElement>, 'role'>
+}
+export interface DetailTierLadderModel {
+  nextLabel: string
+  fillStyle: { width: string }
+  meterProps: {
+    role: 'progressbar'
+    'aria-label': string
+    'aria-valuemin': number
+    'aria-valuemax': number
+    'aria-valuenow': number
+    'aria-valuetext': string
+  }
+}
 export interface DetailListingModel {
   cardLabel: string
   saleLabel: string
@@ -26,16 +59,22 @@ export interface DetailListingModel {
   priceLabel: string
   showBuy: boolean
   showUnlist: boolean
-  buyInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }
+  buyLabel: string
+  balanceLabel: string | null
+  disabledReason: string | null
+  buyInputProps: { value: number; min: number; max: number; step: 1; onChange: ChangeEventHandler<HTMLInputElement> }
   buyButtonLabel: string
-  buyButtonProps: { onClick: () => void; disabled: boolean }
-  unlistButtonProps: { onClick: () => void; disabled: boolean }
+  buyButtonProps: { onClick: () => void; disabled: boolean; 'aria-busy': boolean }
+  unlistButtonLabel: string
+  unlistButtonProps: { onClick: () => void; disabled: boolean; 'aria-busy': boolean }
 }
 export interface DetailListModel {
   show: boolean
-  sharesInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }
+  disabledReason: string | null
+  sharesInputProps: { value: number; min: number; max: number; step: 1; onChange: ChangeEventHandler<HTMLInputElement> }
   priceInputProps: { value: number; min: number; step: number; onChange: ChangeEventHandler<HTMLInputElement> }
-  listButtonProps: { onClick: () => void; disabled: boolean }
+  listButtonLabel: string
+  listButtonProps: { onClick: () => void; disabled: boolean; 'aria-busy': boolean }
 }
 export interface DetailSourceModel { id: string; label: string; viewsLabel: string; linkProps?: { href: string; target: '_blank'; rel: 'noreferrer' } | undefined }
 export interface MemeDetailModel {
@@ -46,6 +85,7 @@ export interface MemeDetailModel {
   tierColor: string
   tierLabel: string
   tierHype: string
+  tierLadder: DetailTierLadderModel
   media: DetailMediaModel
   creatorLinkProps: { to: string }
   creatorName: string
@@ -57,29 +97,79 @@ export interface MemeDetailModel {
   sourceLabel?: string | undefined
   viewsLabel: string
   resharesLabel: string
+  /** the nouns agree with the figures beside them: real cards do have exactly 1 reshare */
+  viewsWord: string
+  resharesWord: string
   valueLabel: string
+  /** spoken names for the compact stat row, whose glyphs are decorative */
+  statsSrLabel: string
+  valueSrLabel: string
   holdingsLabel: string | null
-  shareInputProps: { value: string; readOnly: true }
+  shareInputProps: { value: string; readOnly: true; 'aria-label': string }
   copyButtonLabel: string
   copyButtonProps: { onClick: () => void }
   previewLinkProps: { href: string; target: '_blank'; rel: 'noreferrer' }
+  signedOut: DetailSignedOutModel | null
   actions: readonly DetailActionModel[]
   notice: string | null
+  noticeProps: DetailLiveRegionProps
   error: string | null
+  errorProps: DetailLiveRegionProps
   listing: DetailListingModel | null
   list: DetailListModel
   sources: readonly DetailSourceModel[]
   plex: MemeplexPanelModel
+  capTableTitle: string
   capTable: readonly CapRow[]
   deleteDialog: ConfirmDialogModel
+  buyDialog: ConfirmDialogModel
+  claimDialog: ConfirmDialogModel
 }
-export interface MemeDetailScreenModel { phase: MemeDetailPhase; showNotFound: boolean; showLoading: boolean; detail: MemeDetailModel | null }
+export interface MemeDetailScreenModel {
+  phase: MemeDetailPhase
+  showNotFound: boolean
+  showLoading: boolean
+  notFound: DetailNotFoundModel
+  loadingLabel: string
+  detail: MemeDetailModel | null
+}
 
 function holderLabel(userId: string, meSub: string | null, names: Record<string, string>, cache: Map<string, string>): string {
   if (meSub && userId === meSub) return 'You'
-  return names[userId] ?? cache.get(userId) ?? `${userId.slice(0, 10)}…`
+  return names[userId] ?? cache.get(userId) ?? 'another collector'
 }
 function numberFromInput(event: React.ChangeEvent<HTMLInputElement>): number { return Number(event.target.value) }
+
+/** Where this card sits on the rarity ladder, and what the next rung costs. */
+export function buildTierLadderModel(tierKey: string, views: number): DetailTierLadderModel {
+  const index = Math.max(0, TIERS.findIndex((tier) => tier.key === tierKey))
+  const tier = TIERS[index]
+  const next = TIERS[index + 1]
+  if (!next) {
+    return {
+      nextLabel: `Top of the ladder — ${tier.name} is as rare as it gets ✨`,
+      fillStyle: { width: '100%' },
+      meterProps: {
+        role: 'progressbar', 'aria-label': 'Progress to the next tier',
+        'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': 100,
+        'aria-valuetext': `${tier.name} is the top tier`,
+      },
+    }
+  }
+  const span = Math.max(1, next.minReshares - tier.minReshares)
+  const progress = Math.min(100, Math.max(0, Math.round(((views - tier.minReshares) / span) * 100)))
+  const remaining = Math.max(0, next.minReshares - views)
+  const nextLabel = `${remaining.toLocaleString()} more views → ${next.name}`
+  return {
+    nextLabel,
+    fillStyle: { width: `${progress}%` },
+    meterProps: {
+      role: 'progressbar', 'aria-label': 'Progress to the next tier',
+      'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': progress,
+      'aria-valuetext': nextLabel,
+    },
+  }
+}
 
 /** Detail loading, auth-aware binder access, user actions, and element props. */
 export function useMemeDetailScreen(): MemeDetailScreenModel {
@@ -89,27 +179,30 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
   const { auth } = useStores()
   const [snapshot, send, actor] = useProjectedActor(memeDetailMachine, { input: { id: id ?? null } })
   const holderNameCache = useRef(new Map<string, string>())
-  const holderNameRequests = useRef(new Set<string>())
+  const holderNamesRequested = useRef(false)
   const binderGate = useRef(createDetailBinderGate())
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const context = snapshot.context
   const phase = snapshot.value as MemeDetailPhase
 
+  // one directory lookup per mount resolves every holder: the cap table used to fire an identical
+  // request per unknown holder (20 holders → 20 concurrent identical requests).
   const resolveHolderNames = useCallback((positions: Position[], meSub: string | null) => {
-    for (const position of positions) {
-      if ((meSub && position.userId === meSub) || holderNameCache.current.has(position.userId) || holderNameRequests.current.has(position.userId)) continue
-      holderNameRequests.current.add(position.userId)
-      apiFetch<{ users: { sub: string; name: string }[] }>('/api/users?q=')
-        .then((result) => {
-          const hit = result.users.find((candidate) => candidate.sub === position.userId)
-          if (hit) {
-            holderNameCache.current.set(hit.sub, hit.name)
-            send({ type: 'SET_HOLDER_NAME', sub: hit.sub, name: hit.name })
-          }
-        })
-        .catch(() => {})
-        .finally(() => holderNameRequests.current.delete(position.userId))
-    }
+    if (holderNamesRequested.current) return
+    const unknown = positions.filter((position) => !(meSub && position.userId === meSub) && !holderNameCache.current.has(position.userId))
+    if (unknown.length === 0) return
+    holderNamesRequested.current = true
+    apiFetch<{ users: { sub: string; name: string }[] }>('/api/users?q=')
+      .then((result) => {
+        const names: Record<string, string> = {}
+        for (const candidate of result.users) {
+          if (!unknown.some((position) => position.userId === candidate.sub)) continue
+          holderNameCache.current.set(candidate.sub, candidate.name)
+          names[candidate.sub] = candidate.name
+        }
+        if (Object.keys(names).length > 0) send({ type: 'SET_HOLDER_NAMES', names })
+      })
+      .catch(() => { holderNamesRequested.current = false })
   }, [send])
 
   const load = useCallback(() => {
@@ -159,13 +252,19 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
     catch (error) { send({ type: 'FAIL', err: error instanceof Error ? error.message : 'action failed' }) }
   }, [load, refresh, send])
 
+  const notFound: DetailNotFoundModel = {
+    message: "This meme isn't here — it may have been deleted or made private.",
+    linkProps: { to: '/marketplace' },
+    linkLabel: 'Browse the marketplace',
+  }
   const meme = context.meme
   const myShares = context.positions.find((position) => position.userId === user?.sub)?.shares ?? 0
   const isSeller = meme?.listing?.sellerId === user?.sub
   const shareUrl = meme ? `${window.location.origin}/m/${meme.id}` : ''
   const showNotFound = phase === 'empty' || (phase === 'error' && !meme)
   const showLoading = !showNotFound && (phase === 'loading' || !meme)
-  if (!meme) return { phase, showNotFound, showLoading, detail: null }
+  const loadingLabel = 'Pulling the card…'
+  if (!meme) return { phase, showNotFound, showLoading, notFound, loadingLabel, detail: null }
 
   const buySharesChange: ChangeEventHandler<HTMLInputElement> = (event) => send({ type: 'SET_BUY_SHARES', shares: numberFromInput(event) })
   const sellSharesChange: ChangeEventHandler<HTMLInputElement> = (event) => send({ type: 'SET_SELL_SHARES', shares: numberFromInput(event) })
@@ -178,44 +277,131 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
     const live = actor.getSnapshot().context
     if (!live.meme) return
     const linked = new Set([live.meme.id, ...(live.plex?.ancestors.map((candidate) => candidate.id) ?? []), ...(live.plex?.remixes.map((candidate) => candidate.id) ?? []), ...(live.plex?.related.map((candidate) => candidate.id) ?? [])])
-    if (linked.has(memeId)) { send({ type: 'SET_PLEX_MSG', msg: memeId === live.meme.id ? "That's this meme — already the center of its own memeplex." : 'Already in the memeplex.' }); return }
+    if (linked.has(memeId)) { send({ type: 'SET_PLEX_ERR', err: memeId === live.meme.id ? "That's this meme — already the center of its own memeplex." : 'Already in the memeplex.' }); return }
     send({ type: 'SET_PLEX_MSG', msg: null })
     void post(`/api/memes/${live.meme.id}/memeplex`, { memeId }).then(() => {
       send({ type: 'SET_PLEX_MSG', msg: 'Added to the memeplex 🕸️' }); send({ type: 'SET_PLEX_PICK', pick: '' }); send({ type: 'SET_PLEX_PASTED', pasted: '' })
       return apiFetch<Memeplex>(`/api/memes/${live.meme!.id}/memeplex`).then((plex) => send({ type: 'SET_PLEX', plex }))
-    }).catch((error) => send({ type: 'SET_PLEX_MSG', msg: error instanceof Error ? error.message : 'failed to add' }))
+    }).catch((error) => send({ type: 'SET_PLEX_ERR', err: error instanceof Error ? error.message : 'failed to add' }))
   }
-  const listing = meme.listing && meme.listing.shares > 0 ? {
+
+  const coins = user?.coins ?? 0
+  /* `reshares` is the legacy name of the same share-link counter `views` reports, and it is what
+     the tier the API returned was computed from — the fallback is one metric, not a borrowed one. */
+  const views = meme.views ?? meme.reshares
+  const reshareCount = meme.reshareCount ?? 0
+  const pricePerShare = meme.listing?.pricePerShare ?? 0
+  const buyShares = context.buyShares
+  const buyTotal = Math.ceil(buyShares * pricePerShare)
+  const shortBy = Math.max(0, buyTotal - coins)
+  const buyReason = buyShares < 1 ? 'Pick at least 1 share.' : shortBy > 0 ? `🧠${shortBy.toLocaleString()} short — sell some shares or open a pack first.` : null
+  const runBuy = () => void act(() => post(`/api/memes/${meme.id}/buy`, { shares: clampShares(actor.getSnapshot().context.buyShares, meme.listing?.shares ?? 100) }), 'Shares acquired 💼', 'buy')
+  const sellShares = context.sellShares
+  const listReason = sellShares < 1
+    ? 'Pick at least 1 share.'
+    : sellShares > myShares
+      ? `You only hold ${myShares} shares.`
+      : context.price < 0.01
+        ? 'Set a price of at least 🧠0.01 per share.'
+        : null
+
+  const listing: DetailListingModel | null = meme.listing && meme.listing.shares > 0 ? {
     cardLabel: `${meme.listing.shares} sh @ 🧠${meme.listing.pricePerShare}`,
     saleLabel: `On sale: ${meme.listing.shares} shares @ 🧠${meme.listing.pricePerShare}/share`,
     sharesLabel: `${meme.listing.shares} shares`, priceLabel: `🧠${meme.listing.pricePerShare}/share`, showBuy: !!user && !isSeller, showUnlist: !!isSeller,
-    buyInputProps: { value: context.buyShares, min: 1, max: meme.listing.shares, onChange: buySharesChange },
-    buyButtonLabel: `Buy for 🧠${Math.ceil(context.buyShares * meme.listing.pricePerShare)}`,
-    buyButtonProps: { onClick: () => void act(() => post(`/api/memes/${meme.id}/buy`, { shares: actor.getSnapshot().context.buyShares }), 'Shares acquired 💼', 'buy'), disabled: phase === 'buying' },
-    unlistButtonProps: { onClick: () => void act(() => post(`/api/memes/${meme.id}/unlist`, {}), 'Delisted'), disabled: phase === 'listing' },
+    buyLabel: 'shares to buy',
+    balanceLabel: user ? `🧠${coins.toLocaleString()} available` : null,
+    disabledReason: buyReason,
+    buyInputProps: { value: buyShares, min: 1, max: meme.listing.shares, step: 1, onChange: buySharesChange },
+    buyButtonLabel: phase === 'buying' ? 'Buying…' : buyShares < 1 ? 'Buy shares' : `Buy for 🧠${buyTotal}`,
+    buyButtonProps: {
+      onClick: () => { if (buyTotal > CONFIRM_SPEND_OVER) send({ type: 'SET_CONFIRMING_BUY', confirming: true }); else runBuy() },
+      disabled: phase === 'buying' || !!buyReason,
+      'aria-busy': phase === 'buying',
+    },
+    unlistButtonLabel: phase === 'listing' ? 'Removing…' : 'Remove listing',
+    unlistButtonProps: { onClick: () => void act(() => post(`/api/memes/${meme.id}/unlist`, {}), 'Delisted'), disabled: phase === 'listing', 'aria-busy': phase === 'listing' },
   } : null
+
   const actions: DetailActionModel[] = []
   if (user) actions.push({ label: '🧬 Create a meme from this', buttonProps: { onClick: () => navigate(`/binder/new?remix=${meme.id}`) } })
-  if (user && meme.creatorId === ARCHIVE_SUB) actions.push({ label: '📼 This is my meme — claim it', buttonProps: { onClick: () => { const note = window.prompt('Tell us why this meme is yours (links help your case):'); if (note !== null) void act(() => post(`/api/memes/${meme.id}/claim`, { note }), 'Claim filed 📼 — we’ll review it and transfer the card if it checks out.') } } })
+  if (user && meme.creatorId === ARCHIVE_SUB) actions.push({ label: '📼 This is my meme — claim it', buttonProps: { onClick: () => send({ type: 'SET_CONFIRMING_CLAIM', confirming: true }) } })
   if (myShares === 100) actions.push({ label: meme.private ? '🌐 Make public' : '🙈 Make private', buttonProps: { onClick: () => void act(() => post(`/api/memes/${meme.id}/visibility`, { private: !meme.private }), meme.private ? 'Back on the marketplace 🌐' : 'Hidden from the marketplace 🙈 (still in your binder)') } })
   if (myShares === 100 && meme.private) actions.push({ label: '🗑️ Delete forever', className: 'danger', buttonProps: { onClick: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: true }) } })
 
+  const signedOut: DetailSignedOutModel | null = user ? null : {
+    title: 'Own a piece of this',
+    body: 'Log in with Masky to buy shares, remix it, or mint your own.',
+    loginLabel: context.loggingIn ? 'Redirecting…' : '🎭 Log in with Masky',
+    loginButtonProps: {
+      onClick: () => { send({ type: 'LOGIN_START' }); void beginMaskyLogin().catch((error) => send({ type: 'LOGIN_FAIL', err: error instanceof Error ? error.message : 'login failed' })) },
+      disabled: context.loggingIn,
+      'aria-busy': context.loggingIn,
+      'aria-label': context.loggingIn ? 'Redirecting to Masky' : 'Log in with Masky',
+    },
+    browseLinkProps: { to: '/marketplace' },
+    browseLabel: 'Browse the marketplace',
+    error: context.loginErr,
+    errorProps: { role: 'alert' },
+  }
+
   return {
-    phase, showNotFound, showLoading,
+    phase, showNotFound, showLoading, notFound, loadingLabel,
     detail: {
       id: meme.id, title: meme.title, private: !!meme.private, tierKey: meme.tier.key, tierColor: meme.tier.color, tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`, tierHype: meme.tier.hype,
-      media: meme.mediaType === 'video' && meme.videoUrl ? { kind: 'video', videoProps: { src: meme.videoUrl, controls: true, loop: true, autoPlay: true, muted: true, playsInline: true, poster: meme.imageUrl, 'aria-label': meme.title } } : { kind: 'image', imageProps: { src: meme.imageUrl, alt: meme.title } },
+      tierLadder: buildTierLadderModel(meme.tier.key, views),
+      media: meme.mediaType === 'video' && meme.videoUrl ? { kind: 'video', videoProps: { src: meme.videoUrl, controls: true, loop: true, autoPlay: true, muted: true, playsInline: true, poster: meme.imageUrl, 'aria-label': meme.title } } : { kind: 'image', imageProps: { src: meme.imageUrl, alt: meme.title, loading: 'eager', fetchpriority: 'high', decoding: 'async' } },
       creatorLinkProps: { to: `/u/${encodeURIComponent(meme.creatorId)}` }, creatorName: meme.creatorName, ownerLinkProps: { to: `/u/${encodeURIComponent(meme.ownerId)}` }, ownerName: meme.ownerName,
       tagsLabel: meme.tags.length ? meme.tags.map((tag) => `#${tag}`).join(' ') : null, remixLinkProps: meme.remixOf ? { to: `/m/${meme.remixOf}` } : undefined,
       sourceLinkProps: meme.source ? { href: meme.source.url, target: '_blank', rel: 'noreferrer' } : undefined, sourceLabel: meme.source ? `via ${meme.source.provider.toUpperCase()}${meme.source.author ? ` (@${meme.source.author})` : ''}` : undefined,
-      viewsLabel: (meme.views ?? meme.reshares).toLocaleString(), resharesLabel: (meme.reshareCount ?? 0).toLocaleString(), valueLabel: meme.value.toLocaleString(), holdingsLabel: myShares > 0 ? `${myShares}/100` : null,
-      shareInputProps: { value: shareUrl, readOnly: true }, copyButtonLabel: context.copied ? 'Copied ✓' : 'Copy link', copyButtonProps: { onClick: onCopy }, previewLinkProps: { href: `/api/memes/${meme.id}/og.png`, target: '_blank', rel: 'noreferrer' }, actions, notice: context.msg, error: context.err,
+      viewsLabel: views.toLocaleString(), resharesLabel: reshareCount.toLocaleString(), valueLabel: meme.value.toLocaleString(),
+      viewsWord: pluralWord(views, 'view'), resharesWord: pluralWord(reshareCount, 'reshare'),
+      statsSrLabel: `${plural(views, 'view')}, ${plural(reshareCount, 'reshare')}`,
+      valueSrLabel: `${meme.value.toLocaleString()} braincells card value`,
+      holdingsLabel: myShares > 0 ? `${myShares}/100` : null,
+      shareInputProps: { value: shareUrl, readOnly: true, 'aria-label': 'Share link for this meme' }, copyButtonLabel: context.copied ? 'Copied ✓' : 'Copy link', copyButtonProps: { onClick: onCopy }, previewLinkProps: { href: `/api/memes/${meme.id}/og.png`, target: '_blank', rel: 'noreferrer' },
+      signedOut, actions,
+      notice: context.msg, noticeProps: { role: 'status', 'aria-live': 'polite' },
+      error: context.err, errorProps: { role: 'alert', 'aria-live': 'assertive' },
       listing,
-      list: { show: !listing && myShares > 0, sharesInputProps: { value: context.sellShares, min: 1, max: myShares, onChange: sellSharesChange }, priceInputProps: { value: context.price, min: 0.01, step: 0.01, onChange: priceChange }, listButtonProps: { onClick: () => void act(() => post(`/api/memes/${meme.id}/list`, { shares: actor.getSnapshot().context.sellShares, pricePerShare: actor.getSnapshot().context.price }), 'Listed on the marketplace 🏷️', 'list'), disabled: phase === 'listing' } },
+      list: {
+        show: !listing && myShares > 0,
+        disabledReason: listReason,
+        sharesInputProps: { value: sellShares, min: 1, max: Math.max(1, myShares), step: 1, onChange: sellSharesChange },
+        priceInputProps: { value: context.price, min: 0.01, step: 0.01, onChange: priceChange },
+        listButtonLabel: phase === 'listing' ? 'Listing…' : 'List',
+        listButtonProps: {
+          onClick: () => void act(() => post(`/api/memes/${meme.id}/list`, { shares: clampShares(actor.getSnapshot().context.sellShares, Math.max(1, myShares)), pricePerShare: clampPrice(actor.getSnapshot().context.price) }), 'Listed on the marketplace 🏷️', 'list'),
+          disabled: phase === 'listing' || !!listReason,
+          'aria-busy': phase === 'listing',
+        },
+      },
       sources: (context.stats?.sources ?? []).map((source) => ({ id: source.source, label: source.source, viewsLabel: source.views.toLocaleString(), linkProps: source.url ? { href: source.url, target: '_blank', rel: 'noreferrer' } : undefined })),
-      plex: buildMemeplexPanelModel({ meme, plex: context.plex, canEdit: !!user && (meme.creatorId === user.sub || myShares > 0), binder: context.plexBinder, pick: context.plexPick, pasted: context.plexPasted, notice: context.plexMsg, onPickChange: (pick) => send({ type: 'SET_PLEX_PICK', pick }), onPastedChange: (pasted) => send({ type: 'SET_PLEX_PASTED', pasted }), onAdd: onPlexAdd }),
+      plex: buildMemeplexPanelModel({ meme, plex: context.plex, canEdit: !!user && (meme.creatorId === user.sub || myShares > 0), binder: context.plexBinder, pick: context.plexPick, pasted: context.plexPasted, notice: context.plexMsg, error: context.plexErr, onPickChange: (pick) => send({ type: 'SET_PLEX_PICK', pick }), onPastedChange: (pasted) => send({ type: 'SET_PLEX_PASTED', pasted }), onAdd: onPlexAdd }),
+      capTableTitle: 'Who holds this card',
       capTable: context.positions.map((position) => ({ userId: position.userId, sharesLabel: `${position.shares}/100`, label: holderLabel(position.userId, user?.sub ?? null, context.holderNames, holderNameCache.current) })),
-      deleteDialog: buildConfirmDialogModel({ open: context.confirmingDelete, danger: true, busy: context.deleting || phase === 'deleting', title: 'Delete this meme forever?', message: createElement(Fragment, null, createElement('strong', null, `"${meme.title}"`), ' will be permanently removed — its card, share link, view history, and memeplex links all go with it. This cannot be undone.'), confirmLabel: 'Delete it forever', onCancel: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: false }), onConfirm: () => { const live = actor.getSnapshot().context.meme; if (!live) return; send({ type: 'DELETE' }); void apiFetch(`/api/memes/${live.id}`, { method: 'DELETE' }).then(() => { send({ type: 'DONE' }); navigate('/binder') }).catch((error) => send({ type: 'FAIL', err: error instanceof Error ? error.message : 'delete failed' })) } }),
+      deleteDialog: buildConfirmDialogModel({ open: context.confirmingDelete, id: 'delete-meme', danger: true, busy: context.deleting || phase === 'deleting', title: 'Delete this meme forever?', message: createElement(Fragment, null, createElement('strong', null, `"${meme.title}"`), ' will be permanently removed — its card, share link, view history, and memeplex links all go with it. This cannot be undone.'), confirmLabel: 'Delete it forever', onCancel: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: false }), onConfirm: () => { const live = actor.getSnapshot().context.meme; if (!live) return; send({ type: 'DELETE' }); void apiFetch(`/api/memes/${live.id}`, { method: 'DELETE' }).then(() => { send({ type: 'DONE' }); navigate('/binder') }).catch((error) => send({ type: 'FAIL', err: error instanceof Error ? error.message : 'delete failed' })) } }),
+      buyDialog: buildConfirmDialogModel({ open: context.confirmingBuy, id: 'buy-shares', busy: phase === 'buying', title: `Spend 🧠${buyTotal}?`, message: createElement(Fragment, null, `${buyShares} ${buyShares === 1 ? 'share' : 'shares'} of `, createElement('strong', null, `"${meme.title}"`), ` at 🧠${pricePerShare}/share. You hold 🧠${coins.toLocaleString()}, and purchases are final.`), confirmLabel: `Buy ${buyShares} ${buyShares === 1 ? 'share' : 'shares'}`, onCancel: () => send({ type: 'SET_CONFIRMING_BUY', confirming: false }), onConfirm: runBuy }),
+      claimDialog: buildConfirmDialogModel({
+        open: context.confirmingClaim, id: 'claim-meme',
+        title: 'Claim this meme?',
+        message: 'This card is sitting in the archive. Tell us why it belongs to you and we’ll take a look.',
+        confirmLabel: 'File the claim',
+        prompt: {
+          label: 'Why is this meme yours?',
+          value: context.claimNote,
+          placeholder: 'the original post, your handle, anything that proves it',
+          maxLength: 400,
+          hint: 'Links help your case.',
+          onChange: (note) => send({ type: 'SET_CLAIM_NOTE', note }),
+        },
+        onCancel: () => send({ type: 'SET_CONFIRMING_CLAIM', confirming: false }),
+        onConfirm: () => {
+          const note = actor.getSnapshot().context.claimNote
+          send({ type: 'SET_CONFIRMING_CLAIM', confirming: false })
+          void act(() => post(`/api/memes/${meme.id}/claim`, { note }), 'Claim filed 📼 — we’ll review it and transfer the card if it checks out.')
+        },
+      }),
     },
   }
 }

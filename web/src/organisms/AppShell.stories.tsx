@@ -20,8 +20,9 @@ const nav = (
 
 const toolbar = (
   <>
-    <span className="coins" title="Braincells">
-      🧠 {meLou.coins.toLocaleString()}
+    <span className="coins">
+      <span aria-hidden="true">🧠 {meLou.coins.toLocaleString()}</span>
+      <span className="sr-only">{meLou.coins.toLocaleString()} braincells</span>
     </span>
     <AlertsBell model={buildAlertsBellModel({ alerts: [unreadSale], open: false, onOpenChange: fn() })} />
     <button>Log out</button>
@@ -33,7 +34,7 @@ const meta = {
   component: AppShell,
   decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
   args: {
-    children: <main className="container"><p>page body</p></main>,
+    children: <main className="container" id="main" tabIndex={-1}><p>page body</p></main>,
   },
 } satisfies Meta<typeof AppShell>
 

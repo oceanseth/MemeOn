@@ -9,13 +9,17 @@ import { useMountEffect } from './useMountEffect'
 
 export type DiscordInstallLinkProps = Pick<
   AnchorHTMLAttributes<HTMLAnchorElement>,
-  'href' | 'target' | 'rel' | 'aria-label'
+  'href' | 'target' | 'rel'
 >
 
 export interface DiscordPageScreenModel {
   phase: DiscordPagePhase
+  showLoading: boolean
   showInstall: boolean
   showPending: boolean
+  showError: boolean
+  /** first sentence of the install steps: the FAQ may not point at a button that is not there */
+  installSteps: string
   installLinkProps: DiscordInstallLinkProps
 }
 
@@ -28,18 +32,24 @@ export function useDiscordPageScreen(): DiscordPageScreenModel {
   useMountEffect(() => {
     apiFetch<{ configured: boolean; installUrl: string | null }>('/api/discord/config')
       .then((r) => send({ type: 'DONE', installUrl: r.installUrl }))
-      .catch(() => send({ type: 'DONE', installUrl: null }))
+      .catch(() => send({ type: 'FAIL' }))
   })
+
+  const showInstall = phase === 'ready' && !!ctx.installUrl
 
   return {
     phase,
-    showInstall: ctx.loaded && !!ctx.installUrl,
-    showPending: ctx.loaded && !ctx.installUrl,
+    showLoading: phase === 'loading',
+    showInstall,
+    showPending: phase === 'ready' && !ctx.installUrl,
+    showError: phase === 'errored',
+    installSteps: showInstall
+      ? 'Hit the button above.'
+      : 'The button above goes live the moment the app is registered.',
     installLinkProps: {
       href: ctx.installUrl ?? undefined,
       target: '_blank',
       rel: 'noreferrer',
-      'aria-label': 'Add MemeOn to Discord (opens Discord in a new tab)',
     },
   }
 }

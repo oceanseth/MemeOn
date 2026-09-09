@@ -1,24 +1,27 @@
-import type { ReactNode } from 'react'
+import { lazy, Suspense, type ReactNode } from 'react'
 import { observer } from 'mobx-react-lite'
 import { Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { AuthCallback, MobileAuthForward } from '../lib/legacyAuthPages'
 import { AppShellView } from './AppShellView'
-import { BinderView } from './BinderView'
-import { CreateMemeView } from './CreateMemeView'
-import { DevelopersView } from './DevelopersView'
 import { DiscordLinkView } from './DiscordLinkView'
 import { DiscordPageView } from './DiscordPageView'
-import { FriendsView } from './FriendsView'
 import { InviteView } from './InviteView'
 import { LandingView } from './LandingView'
-import { LeaderboardView } from './LeaderboardView'
-import { MarketplaceView } from './MarketplaceView'
 import { MemeDetailView } from './MemeDetailView'
 import { PrivacyView } from './PrivacyView'
 import { ProfileView } from './ProfileView'
 import { TermsView } from './TermsView'
-import { TradesView } from './TradesView'
+
+/* Landing, legal and the public share routes stay eager so first paint is unchanged;
+   everything only a signed-in player can reach arrives with its route. */
+const BinderView = lazy(() => import('./BinderView').then((m) => ({ default: m.BinderView })))
+const CreateMemeView = lazy(() => import('./CreateMemeView').then((m) => ({ default: m.CreateMemeView })))
+const DevelopersView = lazy(() => import('./DevelopersView').then((m) => ({ default: m.DevelopersView })))
+const FriendsView = lazy(() => import('./FriendsView').then((m) => ({ default: m.FriendsView })))
+const LeaderboardView = lazy(() => import('./LeaderboardView').then((m) => ({ default: m.LeaderboardView })))
+const MarketplaceView = lazy(() => import('./MarketplaceView').then((m) => ({ default: m.MarketplaceView })))
+const TradesView = lazy(() => import('./TradesView').then((m) => ({ default: m.TradesView })))
 
 function LegacyMemeRedirect() {
   const { id } = useParams<{ id: string }>()
@@ -35,7 +38,12 @@ function BinderOwnRedirect() {
 function BinderRoute() {
   const { sub } = useParams<{ sub: string }>()
   const { user } = useAuth()
-  if (user && sub === user.sub) return <BinderView />
+  if (user && sub === user.sub)
+    return (
+      <Suspense fallback={<AuthSpinner />}>
+        <BinderView />
+      </Suspense>
+    )
   return <ProfileView key={sub} initialTab="binder" />
 }
 
@@ -63,16 +71,23 @@ export function InviteRoute() {
   return <InviteView key={sub} />
 }
 
+/** The one named waiting state for a guarded route: auth resolving, then the chunk arriving. */
+function AuthSpinner() {
+  return (
+    <main className="container" id="main" tabIndex={-1}>
+      <div className="loading-state" role="status">
+        <span className="spin" aria-hidden="true" />
+        Checking your session…
+      </div>
+    </main>
+  )
+}
+
 function RequireAuth({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth()
-  if (loading)
-    return (
-      <div className="container" style={{ paddingTop: 80, textAlign: 'center' }}>
-        <span className="spin" />
-      </div>
-    )
+  if (loading) return <AuthSpinner />
   if (!user) return <Navigate to="/" replace />
-  return <>{children}</>
+  return <Suspense fallback={<AuthSpinner />}>{children}</Suspense>
 }
 
 export const AppView = observer(function AppView() {

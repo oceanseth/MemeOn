@@ -6,22 +6,28 @@ import type {
   HTMLAttributes,
   ImgHTMLAttributes,
   InputHTMLAttributes,
-  KeyboardEvent,
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
   VideoHTMLAttributes,
 } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import type { LinkProps } from 'react-router-dom'
+import { glowStyleFor, tierFor } from '../../../shared/tiers'
 import { apiFetch, post } from '../lib/api'
 import { extractPoster } from '../lib/extractPoster'
 import type { GiphyResult, Meme } from '../lib/types'
 import {
+  boundTitle,
+  countTitle,
   createMemeMachine,
+  TITLE_MAX,
   type CreateMemeContext,
+  type CreateMemeDraft,
+  type CreateMemeEvent,
   type CreateMemeMode,
   type CreateMemePhase,
   type RemixOutput,
+  type ResolvedSource,
   type VideoRemixStyle,
 } from '../stores/createMemeMachine'
 import { useMountEffect } from './useMountEffect'
@@ -43,22 +49,70 @@ export interface SelectedGiphyModel {
   authorLabel: string | null
 }
 
+/** A Giphy result is a real button around a real image, so the browser owns the keyboard behaviour. */
+export interface GiphyCellModel {
+  buttonProps: ButtonProps
+  imageProps: ImgHTMLAttributes<HTMLImageElement>
+}
+
+export type CreateMemeMediaModel =
+  | { kind: 'image'; imageProps: ImgHTMLAttributes<HTMLImageElement> }
+  | { kind: 'video'; videoProps: VideoHTMLAttributes<HTMLVideoElement> }
+
+/** The meme as it will ship: the same card the marketplace renders, assembled while you type. */
+export interface CreateMemeCardModel {
+  cardProps: HTMLAttributes<HTMLDivElement>
+  media: CreateMemeMediaModel
+  title: string
+  titleIsPlaceholder: boolean
+  tierLabel: string
+  tierColor: string
+  statsLabel: string
+  valueLabel: string
+  originLabel: string | null
+}
+
 export interface CreateMemeScreenModel {
   phase: CreateMemePhase
   mode: CreateMemeMode
   showRemixModeButton: boolean
+  modeGroupProps: HTMLAttributes<HTMLDivElement>
   busy: string | null
+  busyElapsedLabel: string | null
   err: string | null
+  errorNextStep: string | null
   remixSource: CreateMemeSourceModel | null
+  remixSourceLoadingText: string
   giphyCategories: string[]
   giphyResults: GiphyResult[]
   giphyPick: SelectedGiphyModel | null
+  giphyStatusText: string
   remixPromptLabel: string
   remixPromptPlaceholder: string
   generatePromptPlaceholder: string
+  generatePromptHelpText: string
   remixButtonLabel: string
   generateButtonLabel: string
+  fetchUrlButtonLabel: string
   mintHint: string
+  titlePlaceholder: string
+  titleHelpText: string
+  titleCounterLabel: string
+  tagsPlaceholder: string
+  tagsHelpText: string
+  tagsCounterLabel: string
+  urlPlaceholder: string
+  urlHelpText: string
+  uploadImageHelpText: string
+  uploadVideoHelpText: string
+  helpIds: {
+    title: string
+    tags: string
+    url: string
+    prompt: string
+    uploadImage: string
+    uploadVideo: string
+  }
   showRemixPanel: boolean
   showGiphyPanel: boolean
   showUrlPanel: boolean
@@ -66,15 +120,17 @@ export interface CreateMemeScreenModel {
   showGeneratePanel: boolean
   showVideoRemixStyle: boolean
   showEditedFrameApproval: boolean
+  showRemixButton: boolean
   showGiphyResults: boolean
   showGiphyPick: boolean
   showGiphyRemixButton: boolean
   showUrlApplyEdit: boolean
   showBusy: boolean
   showErr: boolean
-  showImagePreview: boolean
-  showVideoPreview: boolean
+  showPreviewCard: boolean
+  showPreviewSkeleton: boolean
   showMintHint: boolean
+  showSuccess: boolean
   formProps: HTMLAttributes<HTMLDivElement>
   getModeButtonProps: (mode: CreateMemeMode) => ButtonProps
   titleInputProps: InputProps
@@ -89,21 +145,34 @@ export interface CreateMemeScreenModel {
   giphyCategorySelectProps: SelectProps
   giphyQueryInputProps: InputProps
   giphySearchButtonProps: ButtonProps
-  getGiphyResultProps: (result: GiphyResult) => ImgHTMLAttributes<HTMLImageElement>
+  getGiphyResultProps: (result: GiphyResult) => GiphyCellModel
   giphyPromptTextareaProps: TextareaProps
   applyGiphyEditButtonProps: ButtonProps
   urlInputProps: InputProps
+  fetchUrlButtonProps: ButtonProps
   urlPromptTextareaProps: TextareaProps
   applyUrlEditButtonProps: ButtonProps
   imageFileInputProps: InputProps
+  uploadImageLabel: string
   videoFileInputProps: InputProps
+  uploadVideoLabel: string
   generatePromptTextareaProps: TextareaProps
   generateButtonProps: ButtonProps
   mintButtonProps: ButtonProps
-  busyNoticeProps: HTMLAttributes<HTMLParagraphElement>
-  errorNoticeProps: HTMLAttributes<HTMLParagraphElement>
-  imagePreviewProps: ImgHTMLAttributes<HTMLImageElement>
-  videoPreviewProps: VideoHTMLAttributes<HTMLVideoElement>
+  /** Persistent live regions, mounted empty: the text swaps, the element never remounts. */
+  busyNoticeProps: HTMLAttributes<HTMLDivElement>
+  errorNoticeProps: HTMLAttributes<HTMLDivElement>
+  giphyStatusProps: HTMLAttributes<HTMLDivElement>
+  previewCard: CreateMemeCardModel
+  successCard: CreateMemeCardModel
+  /** the mint's own live-region line: '' while composing, so the region is already in the DOM */
+  mintStatus: string
+  successHeading: string
+  successBody: string
+  copyShareLinkLabel: string
+  copyShareLinkButtonProps: ButtonProps
+  shareUrlInputProps: InputProps
+  openMintedLinkProps: Pick<LinkProps, 'to'>
 }
 
 type MaybeAsyncAction = () => void | Promise<void>
@@ -129,6 +198,7 @@ export interface CreateMemeScreenActions {
   animateEdited: MaybeAsyncAction
   generate: MaybeAsyncAction
   mint: MaybeAsyncAction
+  copyShareLink: MaybeAsyncAction
 }
 
 function isRemixOutput(value: string): value is RemixOutput {
@@ -143,8 +213,93 @@ function firstFile(event: ChangeEvent<HTMLInputElement>): File | null {
   return event.currentTarget.files?.[0] ?? null
 }
 
-function isActivationKey(event: KeyboardEvent<HTMLElement>): boolean {
-  return event.key === 'Enter' || event.key === ' '
+/** Upload ceilings. The field copy and the guard read the same number, so they cannot drift. */
+export const MAX_IMAGE_BYTES = 8 * 1024 * 1024
+export const MAX_VIDEO_BYTES = 50 * 1024 * 1024
+
+const megabytes = (bytes: number): number => Math.max(1, Math.round(bytes / (1024 * 1024)))
+
+export function overCapMessage(kind: 'image' | 'video', size: number, cap: number): string {
+  const advice = kind === 'video' ? 'try a shorter clip' : 'try a smaller file'
+  return `that ${kind} is ${megabytes(size)}MB — the cap is ${megabytes(cap)}MB, ${advice}`
+}
+
+/** Tags are a handful of words, not a paragraph. */
+export const TAGS_MAX = 5
+
+export function boundTags(value: string): string {
+  const parts = value.split(',')
+  return parts.length <= TAGS_MAX ? value : parts.slice(0, TAGS_MAX).join(',')
+}
+
+const countTags = (value: string): number =>
+  value
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean).length
+
+const HELP_IDS = {
+  title: 'create-title-help',
+  tags: 'create-tags-help',
+  url: 'create-url-help',
+  prompt: 'create-prompt-help',
+  uploadImage: 'create-image-help',
+  uploadVideo: 'create-video-help',
+} as const
+
+const FRESH_TIER = tierFor(0)
+
+function originLabelFor(source: ResolvedSource | null): string | null {
+  if (!source) return null
+  const provider = source.provider === 'giphy' ? 'GIPHY' : source.provider
+  return source.author ? `from ${provider} · @${source.author}` : `from ${provider}`
+}
+
+/** One card recipe for both the live preview and the minted hold. */
+function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
+  const title = ctx.title.trim()
+  const label = title ? `"${title}"` : 'your meme'
+  return {
+    cardProps: {
+      className: 'meme-card glow-border tier-paper',
+      'data-glow-style': glowStyleFor(FRESH_TIER.key),
+    } as HTMLAttributes<HTMLDivElement>,
+    media: ctx.videoUrl
+      ? {
+          kind: 'video',
+          videoProps: {
+            className: 'meme-art',
+            src: ctx.videoUrl,
+            poster: ctx.imageUrl || undefined,
+            muted: true,
+            loop: true,
+            playsInline: true,
+            autoPlay: true,
+            controls: true,
+            'aria-label': 'Video preview',
+          },
+        }
+      : {
+          kind: 'image',
+          imageProps: { className: 'meme-art', src: ctx.imageUrl, alt: `Preview of ${label}` },
+        },
+    title: title || 'Untitled',
+    titleIsPlaceholder: !title,
+    tierLabel: `${FRESH_TIER.name} · ${FRESH_TIER.rarity}`,
+    tierColor: FRESH_TIER.color,
+    statsLabel: '👁️ 0 · 🔁 0',
+    valueLabel: '🧠 0',
+    originLabel: originLabelFor(ctx.artworkSource),
+  }
+}
+
+function nextStepFor(err: string | null): string | null {
+  if (!err) return null
+  if (/credit|402|quota|balance/i.test(err)) {
+    return 'Top up Masky credits, or switch to Upload and bring your own image.'
+  }
+  if (/upload failed|413|too large/i.test(err)) return 'Try a smaller file, or a shorter clip.'
+  return null
 }
 
 /** Builds the terminal contract from machine state and domain actions. */
@@ -155,23 +310,32 @@ export function buildCreateMemeScreenModel(
 ): CreateMemeScreenModel {
   const isBusy = !!ctx.busy
   const remixPromptIsPrecise = ctx.remixOutput === 'video' && ctx.videoMode === 'edit'
+  /* "New video" means a video, whichever door the user came through — mints are final */
+  const needsVideo = ctx.mode === 'video' || (ctx.mode === 'remix' && ctx.remixOutput === 'video')
   const canMint =
-    !!ctx.title.trim() && !!ctx.imageUrl && (ctx.mode !== 'video' || !!ctx.videoUrl) && !isBusy
+    !!ctx.title.trim() && !!ctx.imageUrl && (!needsVideo || !!ctx.videoUrl) && !isBusy
   const mintHint =
     [
       !ctx.title.trim() && 'add a title',
       !ctx.imageUrl && 'add artwork',
-      ctx.mode === 'video' && !ctx.videoUrl && 'finish the video',
+      needsVideo &&
+        !ctx.videoUrl &&
+        (ctx.mode === 'remix' ? 'animate the frame' : 'finish the video'),
     ]
       .filter(Boolean)
       .join(' · ') || '…'
+  const showEditedFrameApproval =
+    ctx.remixOutput === 'video' && ctx.videoMode === 'edit' && !!ctx.editedFrame && !ctx.videoUrl
 
   return {
     phase,
     mode: ctx.mode,
     showRemixModeButton: !!ctx.remixId,
+    modeGroupProps: { role: 'group', 'aria-label': 'Source' },
     busy: ctx.busy,
+    busyElapsedLabel: ctx.busyElapsed,
     err: ctx.err,
+    errorNextStep: nextStepFor(ctx.err),
     remixSource: ctx.remixSource
       ? {
           imageProps: { src: ctx.remixSource.imageUrl, alt: ctx.remixSource.title },
@@ -180,6 +344,7 @@ export function buildCreateMemeScreenModel(
           creatorName: ctx.remixSource.creatorName,
         }
       : null,
+    remixSourceLoadingText: 'Loading the meme you are remixing…',
     giphyCategories: ctx.giphyCategories,
     giphyResults: ctx.giphyResults,
     giphyPick: ctx.giphyPick
@@ -188,6 +353,12 @@ export function buildCreateMemeScreenModel(
           authorLabel: ctx.giphyPick.author ? ` (@${ctx.giphyPick.author})` : null,
         }
       : null,
+    giphyStatusText:
+      ctx.giphyResults.length > 0
+        ? `${ctx.giphyResults.length} GIPHY results for "${ctx.giphyQuery}"`
+        : ctx.giphySearched
+          ? `Nothing for "${ctx.giphyQuery}" — try a broader word or pick a category.`
+          : 'Pick a category or search to browse GIPHY.',
     remixPromptLabel: remixPromptIsPrecise
       ? 'What to change (runs on your Masky credits)'
       : 'Edit prompt (runs on your Masky credits)',
@@ -198,41 +369,62 @@ export function buildCreateMemeScreenModel(
           : 'make the whole scene look like a vaporwave painting'
         : 'same scene but everyone is a skeleton and it is raining',
     generatePromptPlaceholder: 'a capybara in a business suit ignoring a burning office, cinematic',
+    generatePromptHelpText:
+      'Describe the whole scene — subject, style, chaos level. Runs on your Masky credits.',
     remixButtonLabel: ctx.remixOutput === 'video' ? 'Remix into video' : 'Remix image',
-    generateButtonLabel: ctx.mode === 'video' ? 'Generate video' : 'Generate image',
+    generateButtonLabel: ctx.mode === 'video' ? 'Render the video' : 'Render the image',
+    fetchUrlButtonLabel: 'Fetch image',
     mintHint,
+    titlePlaceholder: 'e.g. cursed capybara',
+    titleHelpText: `Up to ${TITLE_MAX} characters — it has to fit the card banner.`,
+    titleCounterLabel: `${countTitle(ctx.title)} / ${TITLE_MAX}`,
+    tagsPlaceholder: 'animals, chaos',
+    tagsHelpText: `Up to ${TAGS_MAX} tags, comma-separated — this is how people find it.`,
+    tagsCounterLabel: `${countTags(ctx.tags)} / ${TAGS_MAX}`,
+    urlPlaceholder: 'https://…/meme.png',
+    urlHelpText:
+      'Paste a direct image link, or a giphy/imgur/reddit page — we grab the main image.',
+    uploadImageHelpText: `PNG, JPG, GIF or WebP, max ${megabytes(MAX_IMAGE_BYTES)}MB. Optional for videos — we grab the first frame.`,
+    uploadVideoHelpText: `MP4, MOV or WebM, max ${megabytes(MAX_VIDEO_BYTES)}MB. Adding one makes it a video meme.`,
+    helpIds: HELP_IDS,
     showRemixPanel: ctx.mode === 'remix',
     showGiphyPanel: ctx.mode === 'giphy',
     showUrlPanel: ctx.mode === 'url',
     showUploadPanel: ctx.mode === 'upload',
     showGeneratePanel: ctx.mode === 'generate' || ctx.mode === 'video',
     showVideoRemixStyle: ctx.remixOutput === 'video' && ctx.remixSource?.mediaType === 'video',
-    showEditedFrameApproval:
-      ctx.remixOutput === 'video' && ctx.videoMode === 'edit' && !!ctx.editedFrame && !ctx.videoUrl,
+    showEditedFrameApproval,
+    /* while the frame is up for approval the only remix on screen is the panel's own re-run */
+    showRemixButton: !showEditedFrameApproval,
     showGiphyResults: ctx.giphyResults.length > 0,
     showGiphyPick: !!ctx.giphyPick,
     showGiphyRemixButton: !!ctx.prompt.trim() && !!ctx.giphyPick,
     showUrlApplyEdit: !!ctx.prompt.trim() && !!ctx.imageUrl && !ctx.edited,
     showBusy: isBusy,
     showErr: !!ctx.err,
-    showImagePreview: !!ctx.imageUrl,
-    showVideoPreview: !!ctx.videoUrl,
+    showPreviewCard: !!ctx.imageUrl || !!ctx.videoUrl,
+    showPreviewSkeleton: isBusy && !ctx.imageUrl && !ctx.videoUrl,
     showMintHint: !canMint && !isBusy,
+    showSuccess: phase === 'success',
     formProps: { 'aria-busy': isBusy },
     getModeButtonProps: (candidate) => ({
       type: 'button',
-      className: ctx.mode === candidate ? 'primary' : '',
+      className: ctx.mode === candidate ? 'sort-chip active' : 'sort-chip',
       'aria-pressed': ctx.mode === candidate,
+      disabled: isBusy,
       onClick: () => actions.selectMode(candidate),
     }),
     titleInputProps: {
+      id: 'create-title',
       value: ctx.title,
-      maxLength: 20,
-      onChange: (event) => actions.setTitle(event.currentTarget.value.slice(0, 20)),
+      'aria-describedby': HELP_IDS.title,
+      onChange: (event) => actions.setTitle(boundTitle(event.currentTarget.value)),
     },
     tagsInputProps: {
       value: ctx.tags,
-      onChange: (event) => actions.setTags(event.currentTarget.value),
+      maxLength: 80,
+      'aria-describedby': HELP_IDS.tags,
+      onChange: (event) => actions.setTags(boundTags(event.currentTarget.value)),
     },
     remixOutputSelectProps: {
       value: ctx.remixOutput,
@@ -275,7 +467,7 @@ export function buildCreateMemeScreenModel(
     },
     giphyCategorySelectProps: {
       value: '',
-      'aria-label': 'Browse Giphy categories',
+      disabled: isBusy,
       onChange: (event) => {
         if (event.currentTarget.value) void actions.searchGiphy(event.currentTarget.value)
       },
@@ -283,7 +475,6 @@ export function buildCreateMemeScreenModel(
     giphyQueryInputProps: {
       type: 'search',
       value: ctx.giphyQuery,
-      'aria-label': 'Search Giphy',
       onChange: (event) => actions.setGiphyQuery(event.currentTarget.value),
       onKeyDown: (event) => {
         if (event.key !== 'Enter') return
@@ -296,21 +487,24 @@ export function buildCreateMemeScreenModel(
       disabled: !ctx.giphyQuery.trim() || isBusy,
       onClick: () => void actions.searchGiphy(ctx.giphyQuery),
     },
-    getGiphyResultProps: (result) => ({
-      src: result.gifUrl,
-      alt: result.title,
-      title: result.title,
-      role: 'button',
-      tabIndex: 0,
-      className: ctx.giphyPick?.id === result.id ? 'giphy-cell picked' : 'giphy-cell',
-      'aria-pressed': ctx.giphyPick?.id === result.id,
-      onClick: () => actions.pickGiphy(result),
-      onKeyDown: (event) => {
-        if (!isActivationKey(event)) return
-        event.preventDefault()
-        actions.pickGiphy(result)
-      },
-    }),
+    /* only the picked cell animates: fifty looping originals is a payload and a 2.2.2 failure */
+    getGiphyResultProps: (result) => {
+      const picked = ctx.giphyPick?.id === result.id
+      return {
+        buttonProps: {
+          type: 'button',
+          className: picked ? 'giphy-cell picked' : 'giphy-cell',
+          'aria-pressed': picked,
+          onClick: () => actions.pickGiphy(result),
+        },
+        imageProps: {
+          src: picked ? result.gifUrl : result.stillUrl,
+          alt: result.title,
+          loading: 'lazy',
+          decoding: 'async',
+        },
+      }
+    },
     giphyPromptTextareaProps: {
       value: ctx.prompt,
       onChange: (event) => actions.setPrompt(event.currentTarget.value),
@@ -321,7 +515,9 @@ export function buildCreateMemeScreenModel(
       onClick: () => void actions.applyGiphyEdit(),
     },
     urlInputProps: {
-      value: ctx.imageUrl,
+      type: 'url',
+      value: ctx.urlDraft,
+      'aria-describedby': HELP_IDS.url,
       onChange: (event) => actions.setUrl(event.currentTarget.value),
       onBlur: () => void actions.resolvePageUrl(),
       onKeyDown: (event) => {
@@ -329,6 +525,11 @@ export function buildCreateMemeScreenModel(
         event.preventDefault()
         void actions.resolvePageUrl()
       },
+    },
+    fetchUrlButtonProps: {
+      type: 'button',
+      disabled: !ctx.urlDraft.trim() || isBusy,
+      onClick: () => void actions.resolvePageUrl(),
     },
     urlPromptTextareaProps: {
       value: ctx.prompt,
@@ -342,21 +543,26 @@ export function buildCreateMemeScreenModel(
     imageFileInputProps: {
       type: 'file',
       accept: 'image/png,image/jpeg,image/gif,image/webp',
+      'aria-describedby': HELP_IDS.uploadImage,
       onChange: (event) => {
         const file = firstFile(event)
         if (file) void actions.uploadImage(file)
       },
     },
+    uploadImageLabel: 'Image',
     videoFileInputProps: {
       type: 'file',
       accept: 'video/mp4,video/quicktime,video/webm',
+      'aria-describedby': HELP_IDS.uploadVideo,
       onChange: (event) => {
         const file = firstFile(event)
         if (file) void actions.uploadVideo(file)
       },
     },
+    uploadVideoLabel: 'Video',
     generatePromptTextareaProps: {
       value: ctx.prompt,
+      'aria-describedby': HELP_IDS.prompt,
       onChange: (event) => actions.setPrompt(event.currentTarget.value),
     },
     generateButtonProps: {
@@ -371,8 +577,29 @@ export function buildCreateMemeScreenModel(
     },
     busyNoticeProps: { role: 'status', 'aria-live': 'polite' },
     errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' },
-    imagePreviewProps: { src: ctx.imageUrl, alt: 'preview' },
-    videoPreviewProps: { src: ctx.videoUrl, controls: true, 'aria-label': 'Video preview' },
+    /* one live region for the whole panel: intro, empty search, and "results arrived" */
+    giphyStatusProps: {
+      role: 'status',
+      className: ctx.giphyResults.length > 0 ? 'sr-only' : 'empty',
+    },
+    previewCard: buildCard(ctx),
+    successCard: buildCard(ctx),
+    mintStatus:
+      phase === 'success'
+        ? ctx.shareCopied
+          ? 'Share link copied to your clipboard.'
+          : 'Minted. Your card is live and the share link is ready.'
+        : '',
+    successHeading: '🧠 Minted. It is live.',
+    successBody:
+      'All 100 shares are yours. Send the link — every reshare pushes the card up the tier ladder.',
+    copyShareLinkLabel: ctx.shareCopied ? 'Copied ✓' : '🔗 Copy share link',
+    copyShareLinkButtonProps: {
+      type: 'button',
+      onClick: () => void actions.copyShareLink(),
+    },
+    shareUrlInputProps: { value: ctx.shareUrl, readOnly: true, 'aria-label': 'Share link' },
+    openMintedLinkProps: { to: `/m/${ctx.mintedId ?? ''}` },
   }
 }
 
@@ -435,6 +662,48 @@ export function pendingVideoMatchesRemix(
   return (pendingRemixId ?? null) === remixId
 }
 
+export interface PendingVideoRecord {
+  generationId: string
+  startedAt: number
+  imageUrl: string
+  remixId: string | null
+  draft: CreateMemeDraft
+}
+
+/** The typed half of the resume record: a finished render is useless without the draft around it. */
+export function draftOf(ctx: CreateMemeContext): CreateMemeDraft {
+  return {
+    mode: ctx.mode,
+    title: ctx.title,
+    tags: ctx.tags,
+    prompt: ctx.prompt,
+    motionPrompt: ctx.motionPrompt,
+    remixOutput: ctx.remixOutput,
+    videoUrl: ctx.videoUrl,
+  }
+}
+
+export function pendingVideoRecord(
+  ctx: CreateMemeContext,
+  generationId: string,
+  startedAt: number,
+): PendingVideoRecord {
+  return {
+    generationId,
+    startedAt,
+    imageUrl: ctx.imageUrl,
+    remixId: ctx.remixId,
+    draft: draftOf(ctx),
+  }
+}
+
+export function elapsedLabel(ms: number): string {
+  const seconds = Math.max(0, Math.round(ms / 1000))
+  return seconds < 60
+    ? `${seconds}s`
+    : `${Math.floor(seconds / 60)}m${String(seconds % 60).padStart(2, '0')}s`
+}
+
 function clearPendingVideoIfOwned(generationId: string, startedAt: number): void {
   const raw = sessionStorage.getItem(PENDING_VIDEO_KEY)
   if (!raw) return
@@ -450,7 +719,6 @@ function clearPendingVideoIfOwned(generationId: string, startedAt: number): void
 
 /** Everything `CreateMemeScreen` renders. The hook is the engine; the screen is the terminal. */
 export function useCreateMemeScreen(): CreateMemeScreenModel {
-  const navigate = useNavigate()
   const [params] = useSearchParams()
   const remixId = params.get('remix')
   const [snapshot, send, actor] = useProjectedActor(createMemeMachine, {
@@ -460,6 +728,53 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
   const pollRunRef = useRef<VideoPollRun | null>(null)
   const ctx = snapshot.context
   const phase = snapshot.value as CreateMemePhase
+  const tickerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const stopElapsed = useCallback(() => {
+    if (tickerRef.current) clearInterval(tickerRef.current)
+    tickerRef.current = null
+  }, [])
+
+  /** Every job that can run for minutes gets the same live counter, not just the video poller. */
+  const beginBusy = useCallback(
+    (busy: string, since = Date.now()) => {
+      send({ type: 'SUBMIT', busy })
+      stopElapsed()
+      send({ type: 'TICK', elapsed: elapsedLabel(Date.now() - since) })
+      tickerRef.current = setInterval(
+        () => send({ type: 'TICK', elapsed: elapsedLabel(Date.now() - since) }),
+        1000,
+      )
+    },
+    [send, stopElapsed],
+  )
+
+  const settleBusy = useCallback(
+    (event: CreateMemeEvent) => {
+      stopElapsed()
+      send(event)
+    },
+    [send, stopElapsed],
+  )
+
+  /** Keep the resume record in step with the form, but only while a render is actually pending. */
+  const persistDraft = useCallback(() => {
+    if (draftTimerRef.current) clearTimeout(draftTimerRef.current)
+    draftTimerRef.current = setTimeout(() => {
+      const raw = sessionStorage.getItem(PENDING_VIDEO_KEY)
+      if (!raw) return
+      try {
+        const pending = JSON.parse(raw) as PendingVideoRecord
+        sessionStorage.setItem(
+          PENDING_VIDEO_KEY,
+          JSON.stringify({ ...pending, draft: draftOf(actor.getSnapshot().context) }),
+        )
+      } catch {
+        /* A malformed record is handled by the mount-time recovery path. */
+      }
+    }, 400)
+  }, [actor])
 
   const cancelPollRun = useCallback((run: VideoPollRun) => {
     if (run.settled) return
@@ -482,12 +797,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         const live = actor.getSnapshot().context
         sessionStorage.setItem(
           PENDING_VIDEO_KEY,
-          JSON.stringify({
-            generationId,
-            startedAt,
-            imageUrl: live.imageUrl,
-            remixId: live.remixId,
-          }),
+          JSON.stringify(pendingVideoRecord(live, generationId, startedAt)),
         )
         const finish = (fn: () => void) => {
           if (!owner.active || pollRunRef.current !== run) {
@@ -505,16 +815,11 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
             cancelPollRun(run)
             return
           }
-          const elapsed = Math.round((Date.now() - startedAt) / 1000)
-          send({
-            type: 'BUSY',
-            busy: `Rendering video… ${Math.floor(elapsed / 60)}m${String(elapsed % 60).padStart(2, '0')}s — hold the vibe.`,
-          })
           if (Date.now() - startedAt > POLL_TIMEOUT_MS) {
             return finish(() =>
               reject(
                 new Error(
-                  `render is taking longer than 8 minutes — it may still finish on Masky (job ${generationId}); come back to this page to resume waiting`,
+                  `Still rendering after 8 minutes. It may finish on Masky (job ${generationId}) — reopen this page to pick the render back up.`,
                 ),
               ),
             )
@@ -560,26 +865,26 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     const raw = sessionStorage.getItem(PENDING_VIDEO_KEY)
     if (raw) {
       try {
-        const pending = JSON.parse(raw) as {
+        const pending = JSON.parse(raw) as Partial<PendingVideoRecord> & {
           generationId: string
           startedAt: number
-          imageUrl?: string
-          remixId?: string | null
         }
         if (Date.now() - pending.startedAt > POLL_TIMEOUT_MS) {
           sessionStorage.removeItem(PENDING_VIDEO_KEY)
         } else if (pendingVideoMatchesRemix(pending.remixId, remixId)) {
           if (pending.imageUrl) send({ type: 'SET_IMAGE_URL', imageUrl: pending.imageUrl })
-          send({ type: 'SUBMIT', busy: 'Resuming a video render already in progress…' })
+          /* the render survives a reload; so must the title, tags and prompt it belongs to */
+          if (pending.draft) send({ type: 'RESTORE_DRAFT', draft: pending.draft })
+          beginBusy('Resuming a video render already in progress…', pending.startedAt)
           void pollVideo(pending.generationId, pending.startedAt, owner)
             .then((url) => {
               assertActive(owner)
               send({ type: 'SET_VIDEO_URL', videoUrl: url })
-              send({ type: 'DONE' })
+              settleBusy({ type: 'DONE' })
             })
             .catch((e) => {
               if (!owner.active || isLifetimeCancellation(e)) return
-              send({ type: 'FAIL', err: e instanceof Error ? e.message : 'render failed' })
+              settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'render failed' })
             })
         }
       } catch {
@@ -590,6 +895,8 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     return () => {
       owner.active = false
       if (lifetimeRef.current === owner) lifetimeRef.current = null
+      stopElapsed()
+      if (draftTimerRef.current) clearTimeout(draftTimerRef.current)
       const pollRun = pollRunRef.current
       if (pollRun?.owner === owner) cancelPollRun(pollRun)
     }
@@ -614,28 +921,33 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     async (q: string) => {
       if (!q.trim()) return
       send({ type: 'SET_GIPHY_QUERY', query: q })
-      send({ type: 'SUBMIT', busy: 'Searching Giphy…' })
+      beginBusy('Searching Giphy…')
       try {
         const r = await apiFetch<{ results: GiphyResult[] }>(
           `/api/giphy/search?q=${encodeURIComponent(q)}`,
         )
-        send({
-          type: 'SET_GIPHY_RESULTS',
-          results: r.results,
-          emptyMessage: r.results.length === 0 ? `Giphy came up empty for "${q}"` : null,
-        })
-        send({ type: 'DONE' })
+        send({ type: 'SET_GIPHY_RESULTS', results: r.results })
+        settleBusy({ type: 'DONE' })
       } catch (e) {
-        send({ type: 'FAIL', err: e instanceof Error ? e.message : 'giphy search failed' })
+        settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'giphy search failed' })
       }
     },
-    [send],
+    [beginBusy, send, settleBusy],
   )
 
   const onResolvePageUrl = useCallback(async () => {
-    const url = actor.getSnapshot().context.imageUrl.trim()
-    if (!url || !/^https?:\/\//.test(url) || /\.(png|jpe?g|gif|webp)($|\?)/i.test(url)) return
-    send({ type: 'SUBMIT', busy: 'Finding the main image on that page…' })
+    const url = actor.getSnapshot().context.urlDraft.trim()
+    if (!url) return
+    if (!/^https?:\/\//.test(url)) {
+      send({ type: 'FAIL', err: 'that is not a link — paste a full https:// address' })
+      return
+    }
+    /* a direct image link needs no resolver: promote it as-is */
+    if (/\.(png|jpe?g|gif|webp)($|\?)/i.test(url)) {
+      send({ type: 'SET_RESOLVED', imageUrl: url, videoUrl: null, source: null })
+      return
+    }
+    beginBusy('Finding the main image on that page…')
     try {
       const out = await post<{
         imageUrl: string
@@ -653,27 +965,27 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         videoUrl: out.videoUrl,
         source: out.source,
       })
-      send({ type: 'DONE' })
+      settleBusy({ type: 'DONE' })
     } catch (e) {
-      send({ type: 'FAIL', err: e instanceof Error ? e.message : 'could not resolve that page' })
+      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'could not resolve that page' })
     }
-  }, [actor, send])
+  }, [actor, beginBusy, send, settleBusy])
 
   const applyEdit = useCallback(
     async (sourceUrl: string) => {
-      send({ type: 'SUBMIT', busy: 'Remixing with Masky (uses your credits)…' })
+      beginBusy('Remixing with Masky (uses your credits)…')
       try {
         const out = await post<{ imageUrl: string }>('/api/aigen/image-edit', {
           prompt: actor.getSnapshot().context.prompt,
           imageUrls: [sourceUrl],
         })
         send({ type: 'SET_IMAGE_URL', imageUrl: out.imageUrl, edited: true })
-        send({ type: 'DONE' })
+        settleBusy({ type: 'DONE' })
       } catch (e) {
-        send({ type: 'FAIL', err: e instanceof Error ? e.message : 'edit failed' })
+        settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'edit failed' })
       }
     },
-    [actor, send],
+    [actor, beginBusy, send, settleBusy],
   )
 
   const onRemix = useCallback(async () => {
@@ -689,7 +1001,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
             live.remixSource.videoUrl
           ? 'Restyling the whole video (uses your Masky credits)…'
           : 'Applying your edit to the frame (uses your Masky credits)…'
-    send({ type: 'SUBMIT', busy: remixBusy })
+    beginBusy(remixBusy)
     try {
       if (live.remixOutput === 'image') {
         const out = await post<{ imageUrl: string }>('/api/aigen/image-edit', {
@@ -725,19 +1037,19 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         send({ type: 'SET_EDITED_FRAME', imageUrl: edited.imageUrl })
       }
       assertActive(owner)
-      send({ type: 'DONE' })
+      settleBusy({ type: 'DONE' })
     } catch (e) {
       if (!owner.active || isLifetimeCancellation(e)) return
-      send({ type: 'FAIL', err: e instanceof Error ? e.message : 'remix failed' })
+      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'remix failed' })
     }
-  }, [actor, pollVideo, send])
+  }, [actor, beginBusy, pollVideo, send, settleBusy])
 
   const onGenerate = useCallback(async () => {
     const owner = lifetimeRef.current
     if (!owner?.active) return
     const live = actor.getSnapshot().context
     if (live.mode === 'video') {
-      send({ type: 'SUBMIT', busy: 'Starting video render (1–3 min, uses your Masky credits)…' })
+      beginBusy('Starting video render (usually 1–3 minutes, uses your Masky credits)…')
       try {
         const thumb = await post<{ imageUrl: string }>('/api/aigen/image', {
           prompt: `${live.prompt} — single dramatic still frame, meme thumbnail`,
@@ -747,18 +1059,18 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         send({ type: 'SET_IMAGE_URL', imageUrl: thumb.imageUrl })
         const started = await post<{ generationId: string }>('/api/aigen/video', { prompt: live.prompt })
         assertActive(owner)
-        send({ type: 'BUSY', busy: 'Rendering video… this takes a minute or three. Hold the vibe.' })
+        send({ type: 'BUSY', busy: 'Rendering the video — hold the vibe.' })
         const videoUrl = await pollVideo(started.generationId, Date.now(), owner)
         assertActive(owner)
         send({ type: 'SET_VIDEO_URL', videoUrl })
-        send({ type: 'DONE' })
+        settleBusy({ type: 'DONE' })
       } catch (e) {
         if (!owner.active || isLifetimeCancellation(e)) return
-        send({ type: 'FAIL', err: e instanceof Error ? e.message : 'video generation failed' })
+        settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'video generation failed' })
       }
       return
     }
-    send({ type: 'SUBMIT', busy: 'Rendering your masterpiece (uses your Masky credits)…' })
+    beginBusy('Rendering your masterpiece (uses your Masky credits)…')
     try {
       const out = await post<{ imageUrl: string }>('/api/aigen/image', {
         prompt: live.prompt,
@@ -766,19 +1078,19 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       })
       assertActive(owner)
       send({ type: 'SET_IMAGE_URL', imageUrl: out.imageUrl })
-      send({ type: 'DONE' })
+      settleBusy({ type: 'DONE' })
     } catch (e) {
       if (!owner.active || isLifetimeCancellation(e)) return
-      send({ type: 'FAIL', err: e instanceof Error ? e.message : 'generation failed' })
+      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'generation failed' })
     }
-  }, [actor, pollVideo, send])
+  }, [actor, beginBusy, pollVideo, send, settleBusy])
 
   const onAnimateEdited = useCallback(async () => {
     const owner = lifetimeRef.current
     if (!owner?.active) return
     const live = actor.getSnapshot().context
     if (!live.editedFrame) return
-    send({ type: 'SUBMIT', busy: 'Animating the approved frame (uses your Masky credits)…' })
+    beginBusy('Animating the approved frame (uses your Masky credits)…')
     try {
       const isVideoSource = live.remixSource?.mediaType === 'video' && live.remixSource.videoUrl
       const started = await post<{ generationId: string }>('/api/aigen/video', {
@@ -793,16 +1105,16 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       assertActive(owner)
       send({ type: 'SET_VIDEO_URL', videoUrl })
       send({ type: 'CLEAR_EDITED_FRAME' })
-      send({ type: 'DONE' })
+      settleBusy({ type: 'DONE' })
     } catch (e) {
       if (!owner.active || isLifetimeCancellation(e)) return
-      send({ type: 'FAIL', err: e instanceof Error ? e.message : 'animation failed' })
+      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'animation failed' })
     }
-  }, [actor, pollVideo, send])
+  }, [actor, beginBusy, pollVideo, send, settleBusy])
 
   const onMint = useCallback(async () => {
     const live = actor.getSnapshot().context
-    send({ type: 'SUBMIT', busy: 'Minting…' })
+    beginBusy('Minting…')
     try {
       const isVideo =
         live.mode === 'video' ||
@@ -813,46 +1125,55 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         mediaType: isVideo ? 'video' : 'image',
         videoUrl: isVideo ? live.videoUrl : null,
         remixOf: live.mode === 'remix' ? live.remixId : null,
-        source:
-          live.mode === 'giphy' && live.giphyPick && !live.edited
-            ? {
-                provider: 'giphy',
-                id: live.giphyPick.id,
-                url: live.giphyPick.url,
-                author: live.giphyPick.author,
-              }
-            : live.mode === 'url' && live.resolvedSource && !live.edited
-              ? live.resolvedSource
-              : null,
+        /* attribution rides on the artwork, not on whichever chip is lit when Mint is pressed */
+        source: live.artworkSource,
         tags: live.tags
           .split(',')
           .map((t) => t.trim())
           .filter(Boolean),
       }
       const out = await post<{ meme: Meme }>('/api/memes', body)
-      send({ type: 'MINTED', id: out.meme.id })
-      navigate(`/m/${out.meme.id}`)
+      settleBusy({
+        type: 'MINTED',
+        id: out.meme.id,
+        shareUrl: `${window.location.origin}/m/${out.meme.id}`,
+      })
     } catch (e) {
-      send({ type: 'FAIL', err: e instanceof Error ? e.message : 'mint failed' })
+      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'mint failed' })
     }
-  }, [actor, navigate, send])
+  }, [actor, beginBusy, settleBusy])
+
+  const onCopyShareLink = useCallback(async () => {
+    const { shareUrl } = actor.getSnapshot().context
+    if (!shareUrl) return
+    await navigator.clipboard.writeText(shareUrl)
+    send({ type: 'SHARE_COPIED' })
+  }, [actor, send])
 
   const onImageFile = useCallback(
     async (file: File) => {
-      send({ type: 'SUBMIT', busy: 'Uploading image…' })
+      if (file.size > MAX_IMAGE_BYTES) {
+        send({ type: 'FAIL', err: overCapMessage('image', file.size, MAX_IMAGE_BYTES) })
+        return
+      }
+      beginBusy('Uploading image…')
       try {
         send({ type: 'SET_IMAGE_URL', imageUrl: await uploadFile(file) })
-        send({ type: 'DONE' })
+        settleBusy({ type: 'DONE' })
       } catch (er) {
-        send({ type: 'FAIL', err: er instanceof Error ? er.message : 'upload failed' })
+        settleBusy({ type: 'FAIL', err: er instanceof Error ? er.message : 'upload failed' })
       }
     },
-    [send],
+    [beginBusy, send, settleBusy],
   )
 
   const onVideoFile = useCallback(
     async (file: File) => {
-      send({ type: 'SUBMIT', busy: 'Uploading video…' })
+      if (file.size > MAX_VIDEO_BYTES) {
+        send({ type: 'FAIL', err: overCapMessage('video', file.size, MAX_VIDEO_BYTES) })
+        return
+      }
+      beginBusy('Uploading video…')
       try {
         send({ type: 'SET_VIDEO_URL', videoUrl: await uploadFile(file) })
         if (!actor.getSnapshot().context.imageUrl) {
@@ -860,26 +1181,38 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
           const poster = await extractPoster(file)
           send({ type: 'SET_IMAGE_URL', imageUrl: await uploadFile(poster, 'image/png') })
         }
-        send({ type: 'DONE' })
+        settleBusy({ type: 'DONE' })
       } catch (er) {
-        send({ type: 'FAIL', err: er instanceof Error ? er.message : 'upload failed' })
+        settleBusy({ type: 'FAIL', err: er instanceof Error ? er.message : 'upload failed' })
       }
     },
-    [actor, send],
+    [actor, beginBusy, send, settleBusy],
   )
 
   return buildCreateMemeScreenModel(phase, ctx, {
     selectMode: onSelectMode,
-    setTitle: (title) => send({ type: 'SET_TITLE', title }),
-    setTags: (tags) => send({ type: 'SET_TAGS', tags }),
-    setPrompt: (prompt) => send({ type: 'SET_PROMPT', prompt }),
+    setTitle: (title) => {
+      send({ type: 'SET_TITLE', title })
+      persistDraft()
+    },
+    setTags: (tags) => {
+      send({ type: 'SET_TAGS', tags })
+      persistDraft()
+    },
+    setPrompt: (prompt) => {
+      send({ type: 'SET_PROMPT', prompt })
+      persistDraft()
+    },
     setRemixOutput: (remixOutput) => send({ type: 'SET_REMIX_OUTPUT', remixOutput }),
     setVideoMode: (videoMode) => send({ type: 'SET_VIDEO_MODE', videoMode }),
-    setMotionPrompt: (motionPrompt) => send({ type: 'SET_MOTION_PROMPT', motionPrompt }),
+    setMotionPrompt: (motionPrompt) => {
+      send({ type: 'SET_MOTION_PROMPT', motionPrompt })
+      persistDraft()
+    },
     setGiphyQuery: (query) => send({ type: 'SET_GIPHY_QUERY', query }),
     searchGiphy: onGiphySearch,
     pickGiphy: (pick) => send({ type: 'PICK_GIPHY', pick }),
-    setUrl: (imageUrl) => send({ type: 'SET_IMAGE_URL', imageUrl, edited: false }),
+    setUrl: (urlDraft) => send({ type: 'SET_URL_DRAFT', urlDraft }),
     resolvePageUrl: onResolvePageUrl,
     applyGiphyEdit: () => {
       const pick = actor.getSnapshot().context.giphyPick
@@ -895,5 +1228,6 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     animateEdited: onAnimateEdited,
     generate: onGenerate,
     mint: onMint,
+    copyShareLink: onCopyShareLink,
   })
 }

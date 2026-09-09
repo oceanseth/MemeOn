@@ -10,7 +10,8 @@ export function AppShellScreen({
   children,
   showNav,
   showToolbar,
-  coinsText,
+  navItems,
+  coins,
   avatar,
   alertsBell,
   questBar,
@@ -18,19 +19,23 @@ export function AppShellScreen({
 }: AppShellScreenModel & { children: ReactNode }) {
   const nav = showNav ? (
     <nav className="nav-links">
-      <NavLink to="/marketplace">Marketplace</NavLink>
-      <NavLink to="/binder">My Binder</NavLink>
-      <NavLink to="/friends">Friends</NavLink>
-      <NavLink to="/trade">Trade</NavLink>
-      <NavLink to="/leaderboard">🏆 Top Brains</NavLink>
+      {navItems.map((item) => (
+        <NavLink key={item.to} to={item.to}>
+          {item.emoji ? `${item.emoji} ` : ''}
+          {item.label}
+        </NavLink>
+      ))}
     </nav>
   ) : undefined
 
   const toolbar = showToolbar ? (
     <>
-      <span className="coins" title="Braincells">
-        {coinsText}
-      </span>
+      {coins && (
+        <span className="coins">
+          <span aria-hidden="true">{coins.text}</span>
+          <span className="sr-only">{coins.label}</span>
+        </span>
+      )}
       <AlertsBell model={alertsBell} />
       {avatar && (
         <Link {...avatar.linkProps}>

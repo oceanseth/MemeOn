@@ -11,7 +11,10 @@ import { StoresProvider } from '../stores/StoresContext'
 import { MemeDetailView } from '../views/MemeDetailView'
 import { MarketplaceView } from '../views/MarketplaceView'
 
-vi.mock('../lib/firebase', () => ({ firebaseSignOut: vi.fn() }))
+vi.mock('../lib/firebase', () => ({
+  firebaseSignOut: vi.fn(),
+  firebaseSignIn: vi.fn(async () => {}),
+}))
 
 function deferred<T>() {
   let resolve!: (value: T) => void
@@ -231,7 +234,8 @@ describe('MemeDetailView mutation overlap', () => {
     await click(button('Make public'))
     await eventually(() => expect(detailReads).toBe(2))
     await click(button('Delete forever'))
-    let dialog = host.querySelector('[role="alertdialog"]')!
+    // the confirmations are native <dialog>s: they stay mounted and open/close in the top layer
+    let dialog = host.querySelector('dialog[open][role="alertdialog"]')!
     await click(button('Delete it forever', dialog))
     expect(deleteRequests).toBe(1)
 
@@ -246,12 +250,12 @@ describe('MemeDetailView mutation overlap', () => {
     })
 
     await eventually(() => expect(host.querySelector('.notice.error')?.textContent).toContain('delete conflicted'))
-    expect(host.querySelector('[role="alertdialog"]')).toBeNull()
+    expect(host.querySelector('dialog[open][role="alertdialog"]')).toBeNull()
     expect(host.querySelector('.pack-overlay')).toBeNull()
     expect(button('Delete forever').disabled).toBe(false)
 
     await click(button('Delete forever'))
-    dialog = host.querySelector('[role="alertdialog"]')!
+    dialog = host.querySelector('dialog[open][role="alertdialog"]')!
     await click(button('Delete it forever', dialog))
     await eventually(() => expect(host.querySelector('output[aria-label="Current route"]')?.textContent).toBe('/binder'))
     expect(deleteRequests).toBe(2)
@@ -329,7 +333,7 @@ describe('MarketplaceView continuously visible pagination', () => {
     expect(sentinel()).toBeNull()
   })
 
-  it('keeps existing cards and removes the cursor after a paging failure', async () => {
+  it('keeps existing cards and offers a retry after a paging failure', async () => {
     installVisibleObserver()
     const requests = marketFetch({
       initial: { memes: [paperMeme], nextCursor: 'cursor-a' },
@@ -340,10 +344,13 @@ describe('MarketplaceView continuously visible pagination', () => {
     await eventually(() => {
       expect(requests).toEqual(['initial', 'cursor-a'])
       expect(cardTitles()).toEqual([paperMeme.title])
-      expect(sentinel()).toBeNull()
+      expect(host.textContent).toContain("Couldn't pull the next page.")
     })
+    // the cursor survives the failure, and the observer stops auto-firing until it is retried
     await macrotask(30)
     expect(requests).toEqual(['initial', 'cursor-a'])
+    expect(sentinel()).not.toBeNull()
+    expect(button('Try again').disabled).toBe(false)
   })
 
   it('guards a pending continuation from duplicate callbacks and disconnects on unmount', async () => {
