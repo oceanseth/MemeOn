@@ -37,8 +37,8 @@
   content: '';
   pointer-events: none;
   -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
+    linear-gradient(oklch(0 0 0) 0 0) content-box,
+    linear-gradient(oklch(0 0 0) 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   animation: glow-border-turn var(--glow-duration) linear infinite;
@@ -58,13 +58,13 @@
 
 :where(.glow-border[data-glow-style='graphite-gradient-still']) {
   --glow-stops:
-    #242932 0deg,
-    #515967 58deg,
-    #a8b0bd 104deg,
-    #5f6877 154deg,
-    #2c323d 218deg,
-    #737c8b 292deg,
-    #242932 360deg;
+    oklch(0.28 0.018 262.202) 0deg,
+    oklch(0.462 0.025 261.679) 58deg,
+    oklch(0.755 0.021 260.166) 104deg,
+    oklch(0.515 0.026 260.673) 154deg,
+    oklch(0.316 0.021 262.549) 218deg,
+    oklch(0.584 0.025 260.691) 292deg,
+    oklch(0.28 0.018 262.202) 360deg;
   --glow-duration: 12s;
   --glow-play-state: paused;
   --glow-phase: -26deg;
@@ -74,14 +74,14 @@
 
 :where(.glow-border[data-glow-style='silver-highlight-still']) {
   --glow-stops:
-    #596370 0deg,
-    #8793a2 82deg,
-    #e8f0f8 116deg,
-    #fff 130deg,
-    #c8d3e0 148deg,
-    #707b89 196deg,
-    #aab5c3 286deg,
-    #596370 360deg;
+    oklch(0.496 0.024 255.021) 0deg,
+    oklch(0.659 0.026 254.02) 82deg,
+    oklch(0.951 0.014 247.972) 116deg,
+    oklch(1 0 0) 130deg,
+    oklch(0.862 0.022 252.515) 148deg,
+    oklch(0.579 0.025 254.483) 196deg,
+    oklch(0.769 0.023 254.426) 286deg,
+    oklch(0.496 0.024 255.021) 360deg;
   --glow-duration: 12s;
   --glow-play-state: paused;
   --glow-phase: 34deg;
@@ -91,13 +91,13 @@
 
 :where(.glow-border[data-glow-style='cyan-magenta-gradient-drift']) {
   --glow-stops:
-    #38cfff 0deg,
-    #7fd4ff 48deg,
-    #5f71ff 112deg,
-    #a45cff 176deg,
-    #ff73db 238deg,
-    #8f6cff 302deg,
-    #38cfff 360deg;
+    oklch(0.798 0.138 224.636) 0deg,
+    oklch(0.832 0.102 231.822) 48deg,
+    oklch(0.613 0.21 273.093) 112deg,
+    oklch(0.637 0.231 300.17) 176deg,
+    oklch(0.755 0.206 338.493) 238deg,
+    oklch(0.64 0.209 290.189) 302deg,
+    oklch(0.798 0.138 224.636) 360deg;
   --glow-duration: 6s;
   --glow-phase: -42deg;
   --glow-blur: 20px;
@@ -106,14 +106,14 @@
 
 :where(.glow-border[data-glow-style='silver-single-beam-chase']) {
   --glow-stops:
-    #303746 0deg 62deg,
-    #596477 116deg,
-    #b8c6e8 151deg,
-    #fff 169deg,
-    #dce7ff 181deg,
-    #7d8bac 205deg,
-    #3b4355 241deg,
-    #303746 360deg;
+    oklch(0.337 0.028 265.309) 0deg 62deg,
+    oklch(0.501 0.033 261.365) 116deg,
+    oklch(0.827 0.05 267.614) 151deg,
+    oklch(1 0 0) 169deg,
+    oklch(0.927 0.035 265.994) 181deg,
+    oklch(0.637 0.052 266.918) 205deg,
+    oklch(0.383 0.033 266.125) 241deg,
+    oklch(0.337 0.028 265.309) 360deg;
   --glow-duration: 4.5s;
   --glow-phase: -108deg;
   --glow-blur: 17px;
@@ -122,19 +122,19 @@
 
 :where(.glow-border[data-glow-style='gold-gradient-counter-sweep']) {
   --glow-stops:
-    #5d3e13 0deg,
-    #83581c 30deg,
-    #ad7c45 72deg,
-    #c69f71 120deg,
-    #e6b34a 150deg,
-    #f4dea7 180deg,
-    #fff4dc 195deg,
-    #fdd997 210deg,
-    #db9d1c 240deg,
-    #ac7517 270deg,
-    #7b5010 310deg,
-    #53350d 345deg,
-    #5d3e13 360deg;
+    oklch(0.391 0.072 71.265) 0deg,
+    oklch(0.496 0.093 70.99) 30deg,
+    oklch(0.624 0.094 67.768) 72deg,
+    oklch(0.727 0.077 70.756) 120deg,
+    oklch(0.794 0.134 82.498) 150deg,
+    oklch(0.906 0.075 88.76) 180deg,
+    oklch(0.969 0.034 86.305) 195deg,
+    oklch(0.901 0.092 82.169) 210deg,
+    oklch(0.737 0.147 78.894) 240deg,
+    oklch(0.605 0.121 74.145) 270deg,
+    oklch(0.469 0.094 70.875) 310deg,
+    oklch(0.357 0.068 69.43) 345deg,
+    oklch(0.391 0.072 71.265) 360deg;
   --glow-duration: 5s;
   --glow-direction: reverse;
   --glow-blur: 20px;
@@ -143,14 +143,14 @@
 
 :where(.glow-border[data-glow-style='rainbow-gradient-drift']) {
   --glow-stops:
-    #ff6487 0deg,
-    #ffb86b 54deg,
-    #f6ef78 104deg,
-    #69f0b2 158deg,
-    #62dcff 214deg,
-    #8d78ff 270deg,
-    #ff72e1 322deg,
-    #ff6487 360deg;
+    oklch(0.709 0.19 9.532) 0deg,
+    oklch(0.834 0.125 66.878) 54deg,
+    oklch(0.934 0.141 105.773) 104deg,
+    oklch(0.864 0.149 160.909) 158deg,
+    oklch(0.838 0.118 219.759) 214deg,
+    oklch(0.657 0.193 286.977) 270deg,
+    oklch(0.756 0.211 336.449) 322deg,
+    oklch(0.709 0.19 9.532) 360deg;
   --glow-duration: 12s;
   --glow-phase: -18deg;
   --glow-blur: 24px;
@@ -159,17 +159,17 @@
 
 :where(.glow-border[data-glow-style='mint-gold-highlight-orbit']) {
   --glow-stops:
-    #0d6f67 0deg,
-    #15bfa5 58deg,
-    #9fffe0 116deg,
-    #d8fff4 156deg,
-    #fff8d6 176deg,
-    #ffd76a 192deg,
-    #fffce9 204deg,
-    #bfffea 220deg,
-    #43e1c2 250deg,
-    #38b5c8 300deg,
-    #0d6f67 360deg;
+    oklch(0.489 0.083 185.94) 0deg,
+    oklch(0.721 0.13 178.023) 58deg,
+    oklch(0.932 0.101 171.454) 116deg,
+    oklch(0.969 0.043 176.459) 156deg,
+    oklch(0.976 0.045 97.542) 176deg,
+    oklch(0.892 0.135 89.311) 192deg,
+    oklch(0.988 0.025 99.515) 204deg,
+    oklch(0.951 0.07 172.538) 220deg,
+    oklch(0.821 0.137 176.532) 250deg,
+    oklch(0.714 0.109 209.783) 300deg,
+    oklch(0.489 0.083 185.94) 360deg;
   --glow-duration: 3.5s;
   --glow-direction: reverse;
   --glow-phase: 76deg;

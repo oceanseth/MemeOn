@@ -1,17 +1,17 @@
 @import url('./tier-glow-borders.css');
 
 :root {
-  --bg: #0b0d14;
-  --bg-raised: #131722;
-  --bg-card: #171c2a;
-  --border: #262d40;
-  --text: #e8ecf4;
-  --text-dim: #97a0b5;
-  --accent: #7fd4ff;
-  --accent-2: #ff9af5;
-  --gold: #ffd76a;
-  --danger: #ff7a7a;
-  --ok: #7dffb2;
+  --bg: oklch(0.16 0.015 272.199);
+  --bg-raised: oklch(0.206 0.023 268.889);
+  --bg-card: oklch(0.228 0.028 268.958);
+  --border: oklch(0.299 0.036 268.582);
+  --text: oklch(0.942 0.012 264.509);
+  --text-dim: oklch(0.705 0.032 267.093);
+  --accent: oklch(0.832 0.102 231.822);
+  --accent-2: oklch(0.819 0.164 330.583);
+  --gold: oklch(0.892 0.135 89.311);
+  --danger: oklch(0.735 0.163 21.864);
+  --ok: oklch(0.906 0.158 155.414);
   --radius: 14px;
   color-scheme: dark;
 }
@@ -23,8 +23,8 @@
 body {
   margin: 0;
   background:
-    radial-gradient(1200px 600px at 80% -10%, #1b2140 0%, transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, #241436 0%, transparent 55%),
+    radial-gradient(1200px 600px at 80% -10%, oklch(0.26 0.059 273.393) 0%, transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, oklch(0.232 0.065 303.446) 0%, transparent 55%),
     var(--bg);
   color: var(--text);
   font-family:
@@ -66,13 +66,13 @@ button:disabled {
 }
 
 button.primary {
-  background: linear-gradient(135deg, #2c7fd8, #7a3fd8);
+  background: linear-gradient(135deg, oklch(0.593 0.157 253.41), oklch(0.527 0.219 295.496));
   border-color: transparent;
   font-weight: 600;
 }
 
 button.danger {
-  border-color: #5b2733;
+  border-color: oklch(0.349 0.077 7.441);
   color: var(--danger);
 }
 
@@ -107,7 +107,7 @@ textarea:focus {
   top: 0;
   z-index: 20;
   backdrop-filter: blur(12px);
-  background: rgba(11, 13, 20, 0.8);
+  background: oklch(0.16 0.015 272.199 / 0.8);
   border-bottom: 1px solid var(--border);
 }
 
@@ -174,7 +174,7 @@ textarea:focus {
 }
 
 .discord-link:hover {
-  color: #5865f2;
+  color: oklch(0.577 0.209 273.85);
 }
 
 .coins {
@@ -202,7 +202,7 @@ textarea:focus {
   top: -4px;
   right: -4px;
   background: var(--danger);
-  color: #fff;
+  color: oklch(1 0 0);
   font-size: 10px;
   font-weight: 700;
   border-radius: 999px;
@@ -219,7 +219,7 @@ textarea:focus {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 18px 50px oklch(0 0 0 / 0.55);
   padding: 8px;
 }
 
@@ -231,7 +231,7 @@ textarea:focus {
 }
 
 .alert-row.unread {
-  background: rgba(127, 212, 255, 0.08);
+  background: oklch(0.832 0.102 231.822 / 0.08);
 }
 
 .alert-row time {
@@ -277,7 +277,7 @@ textarea:focus {
   width: 100%;
   object-fit: cover;
   display: block;
-  background: #0a0c12;
+  background: oklch(0.155 0.013 270.435);
 }
 
 .meme-meta {
@@ -314,53 +314,53 @@ textarea:focus {
   text-transform: uppercase;
   padding: 3px 9px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.45);
+  background: oklch(0 0 0 / 0.45);
   border: 1px solid currentColor;
 }
 
 /* Tier frames: the card's padding-background IS the frame. Foil mechanics per tier. */
 
 .tier-paper {
-  background: linear-gradient(160deg, #3a4152, #262c3a);
+  background: linear-gradient(160deg, oklch(0.376 0.031 267.399), oklch(0.294 0.027 266.652));
 }
 
 .tier-silver {
-  background: linear-gradient(160deg, #9aa7b8, #5c6778, #aeb9c9);
+  background: linear-gradient(160deg, oklch(0.724 0.029 255.132), oklch(0.511 0.03 259.031), oklch(0.782 0.026 257.656));
 }
 
 .tier-holo {
-  background: linear-gradient(120deg, #46d3ff, #7a5cff, #ff5ce1, #46d3ff);
+  background: linear-gradient(120deg, oklch(0.81 0.132 223.189), oklch(0.597 0.23 285.527), oklch(0.732 0.242 335.845), oklch(0.81 0.132 223.189));
 }
 
 .tier-chrome {
-  background: linear-gradient(105deg, #cfd8ff 0%, #6f7ba8 20%, #f4f7ff 40%, #8a96c8 60%, #dde4ff 80%, #707ca9 100%);
+  background: linear-gradient(105deg, oklch(0.888 0.055 275.009) 0%, oklch(0.591 0.071 272.573) 20%, oklch(0.976 0.011 269.551) 40%, oklch(0.682 0.075 273.815) 60%, oklch(0.922 0.038 274.103) 80%, oklch(0.594 0.07 272.588) 100%);
 }
 
 .tier-gold {
-  background: linear-gradient(120deg, #b8860b, #ffd76a, #fff3c4, #ffd76a, #8f6508);
-  box-shadow: 0 0 24px rgba(255, 215, 106, 0.25);
+  background: linear-gradient(120deg, oklch(0.652 0.132 81.572), oklch(0.892 0.135 89.311), oklch(0.962 0.062 95.396), oklch(0.892 0.135 89.311), oklch(0.537 0.109 79.315));
+  box-shadow: 0 0 24px oklch(0.892 0.135 89.311 / 0.25);
 }
 
 .tier-prismatic {
   background: conic-gradient(
     from 0deg,
-    #ff5c5c,
-    #ffb85c,
-    #f7ff5c,
-    #6bff8a,
-    #5cd4ff,
-    #8a6bff,
-    #ff5cf0,
-    #ff5c5c
+    oklch(0.691 0.199 23.908),
+    oklch(0.832 0.136 71.035),
+    oklch(0.965 0.18 112.028),
+    oklch(0.893 0.203 147.883),
+    oklch(0.818 0.122 225.012),
+    oklch(0.634 0.21 288.555),
+    oklch(0.739 0.252 331.668),
+    oklch(0.691 0.199 23.908)
   );
-  box-shadow: 0 0 28px rgba(255, 154, 245, 0.35);
+  box-shadow: 0 0 28px oklch(0.819 0.164 330.583 / 0.35);
 }
 
 .tier-shiny {
-  background: linear-gradient(120deg, #0ff0c3, #9fffe0, #5cd4ff, #f0c3ff, #ffd76a, #0ff0c3);
+  background: linear-gradient(120deg, oklch(0.852 0.163 172.455), oklch(0.932 0.101 171.454), oklch(0.818 0.122 225.012), oklch(0.875 0.094 317.581), oklch(0.892 0.135 89.311), oklch(0.852 0.163 172.455));
   box-shadow:
-    0 0 34px rgba(159, 255, 224, 0.45),
-    0 0 80px rgba(240, 195, 255, 0.25);
+    0 0 34px oklch(0.932 0.101 171.454 / 0.45),
+    0 0 80px oklch(0.875 0.094 317.581 / 0.25);
 }
 
 /* large variant for the meme detail page: same card, bigger everything */
@@ -396,9 +396,9 @@ textarea:focus {
   background: linear-gradient(
     115deg,
     transparent 30%,
-    rgba(255, 255, 255, 0.14) 45%,
-    rgba(255, 255, 255, 0.32) 50%,
-    rgba(255, 255, 255, 0.14) 55%,
+    oklch(1 0 0 / 0.14) 45%,
+    oklch(1 0 0 / 0.32) 50%,
+    oklch(1 0 0 / 0.14) 55%,
     transparent 70%
   );
   background-size: 300% 300%;
@@ -414,11 +414,11 @@ textarea:focus {
   pointer-events: none;
   z-index: 2;
   background-image:
-    radial-gradient(2px 2px at 20% 30%, #fff 40%, transparent 60%),
-    radial-gradient(1.6px 1.6px at 70% 20%, #fff 40%, transparent 60%),
-    radial-gradient(2.4px 2.4px at 85% 65%, #fff 40%, transparent 60%),
-    radial-gradient(1.8px 1.8px at 40% 80%, #fff 40%, transparent 60%),
-    radial-gradient(1.4px 1.4px at 10% 60%, #fff 40%, transparent 60%);
+    radial-gradient(2px 2px at 20% 30%, oklch(1 0 0) 40%, transparent 60%),
+    radial-gradient(1.6px 1.6px at 70% 20%, oklch(1 0 0) 40%, transparent 60%),
+    radial-gradient(2.4px 2.4px at 85% 65%, oklch(1 0 0) 40%, transparent 60%),
+    radial-gradient(1.8px 1.8px at 40% 80%, oklch(1 0 0) 40%, transparent 60%),
+    radial-gradient(1.4px 1.4px at 10% 60%, oklch(1 0 0) 40%, transparent 60%);
   animation: twinkle 2.2s ease-in-out infinite alternate;
   mix-blend-mode: screen;
 }
@@ -445,7 +445,7 @@ textarea:focus {
 /* ---------- onboarding quests ---------- */
 
 .questbar {
-  background: linear-gradient(90deg, rgba(44, 127, 216, 0.14), rgba(122, 63, 216, 0.14));
+  background: linear-gradient(90deg, oklch(0.593 0.157 253.41 / 0.14), oklch(0.527 0.219 295.496 / 0.14));
   border-bottom: 1px solid var(--border);
 }
 
@@ -496,7 +496,7 @@ textarea:focus {
 
 .quest-chip.done {
   color: var(--ok);
-  border-color: rgba(125, 255, 178, 0.35);
+  border-color: oklch(0.906 0.158 155.414 / 0.35);
 }
 
 .quest-chip em {
@@ -512,7 +512,7 @@ textarea:focus {
 .pack-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(5, 7, 12, 0.8);
+  background: oklch(0.128 0.013 263.618 / 0.8);
   backdrop-filter: blur(6px);
   z-index: 60;
   display: flex;
@@ -530,7 +530,7 @@ textarea:focus {
   width: 100%;
   max-height: 86vh;
   overflow-y: auto;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 30px 80px oklch(0 0 0 / 0.6);
 }
 
 .pack-modal h3 {
@@ -576,7 +576,7 @@ textarea:focus {
 
 .gift-row.picked {
   border-color: var(--gold);
-  background: rgba(255, 215, 106, 0.08);
+  background: oklch(0.892 0.135 89.311 / 0.08);
 }
 
 .site-footer {
@@ -602,10 +602,10 @@ textarea:focus {
 }
 
 .confirm-modal.confirm-danger {
-  border-color: #5b2733;
+  border-color: oklch(0.349 0.077 7.441);
   box-shadow:
-    0 0 0 1px rgba(255, 122, 122, 0.25),
-    0 30px 80px rgba(0, 0, 0, 0.6);
+    0 0 0 1px oklch(0.735 0.163 21.864 / 0.25),
+    0 30px 80px oklch(0 0 0 / 0.6);
 }
 
 .confirm-message {
@@ -615,9 +615,9 @@ textarea:focus {
 }
 
 .confirm-danger-btn {
-  background: #a12b3a;
+  background: oklch(0.477 0.153 18.308);
   border-color: transparent;
-  color: #fff;
+  color: oklch(1 0 0);
   font-weight: 700;
 }
 
@@ -722,7 +722,7 @@ textarea:focus {
   aspect-ratio: 3 / 4;
   object-fit: cover;
   border-radius: 8px;
-  background: #0a0c12;
+  background: oklch(0.155 0.013 270.435);
 }
 
 .tier-name {
@@ -773,7 +773,7 @@ textarea:focus {
   position: sticky;
   top: 53px; /* just under the topbar */
   z-index: 15;
-  background: rgba(11, 13, 20, 0.92);
+  background: oklch(0.16 0.015 272.199 / 0.92);
   backdrop-filter: blur(10px);
   margin: 0 -20px;
   padding: 0 20px 10px;
@@ -936,12 +936,12 @@ textarea:focus {
 }
 
 .notice.error {
-  background: rgba(255, 122, 122, 0.12);
+  background: oklch(0.735 0.163 21.864 / 0.12);
   color: var(--danger);
 }
 
 .notice.ok {
-  background: rgba(125, 255, 178, 0.1);
+  background: oklch(0.906 0.158 155.414 / 0.1);
   color: var(--ok);
 }
 
@@ -1046,7 +1046,7 @@ textarea:focus {
 .sort-chip.active {
   border-color: var(--accent);
   color: var(--text);
-  background: rgba(127, 212, 255, 0.1);
+  background: oklch(0.832 0.102 231.822 / 0.1);
 }
 
 .sort-arrow {
@@ -1077,7 +1077,7 @@ textarea:focus {
   border-radius: 10px;
   border: 2px solid var(--border);
   cursor: pointer;
-  background: #0a0c12;
+  background: oklch(0.155 0.013 270.435);
 }
 
 .giphy-cell:hover {
@@ -1086,7 +1086,7 @@ textarea:focus {
 
 .giphy-cell.picked {
   border-color: var(--gold);
-  box-shadow: 0 0 12px rgba(255, 215, 106, 0.4);
+  box-shadow: 0 0 12px oklch(0.892 0.135 89.311 / 0.4);
 }
 
 .spin {
