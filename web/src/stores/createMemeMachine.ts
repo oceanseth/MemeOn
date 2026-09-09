@@ -223,6 +223,9 @@ export const createMemeMachine = setup({
     giphy: {},
     submitting: {
       on: {
+        SELECT_MODE: {
+          actions: assign({ mode: ({ event }) => event.mode }),
+        },
         DONE: returnToMode.map((branch) => ({
           ...branch,
           actions: assign({ busy: null }),

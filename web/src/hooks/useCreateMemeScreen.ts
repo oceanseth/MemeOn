@@ -402,6 +402,32 @@ function fetchVideoStatus(id: string): Promise<{
 export const PENDING_VIDEO_KEY = 'memeon_pending_video'
 const POLL_TIMEOUT_MS = 8 * 60_000
 
+interface CreationLifetime {
+  active: boolean
+}
+
+interface VideoPollRun {
+  owner: CreationLifetime
+  interval: ReturnType<typeof setInterval> | null
+  reject: (reason: Error) => void
+  settled: boolean
+}
+
+class CreationLifetimeCancelledError extends Error {
+  constructor() {
+    super('creation lifetime ended')
+    this.name = 'CreationLifetimeCancelledError'
+  }
+}
+
+function assertActive(owner: CreationLifetime): void {
+  if (!owner.active) throw new CreationLifetimeCancelledError()
+}
+
+function isLifetimeCancellation(error: unknown): boolean {
+  return error instanceof CreationLifetimeCancelledError
+}
+
 export function pendingVideoMatchesRemix(
   pendingRemixId: string | null | undefined,
   remixId: string | null,
@@ -430,17 +456,28 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
   const [snapshot, send, actor] = useProjectedActor(createMemeMachine, {
     input: { remixId },
   })
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const pollRunRef = useRef(0)
+  const lifetimeRef = useRef<CreationLifetime | null>(null)
+  const pollRunRef = useRef<VideoPollRun | null>(null)
   const ctx = snapshot.context
   const phase = snapshot.value as CreateMemePhase
 
+  const cancelPollRun = useCallback((run: VideoPollRun) => {
+    if (run.settled) return
+    run.settled = true
+    if (run.interval) clearInterval(run.interval)
+    if (pollRunRef.current === run) pollRunRef.current = null
+    run.reject(new CreationLifetimeCancelledError())
+  }, [])
+
   const pollVideo = useCallback(
-    (generationId: string, startedAt: number): Promise<string> =>
+    (generationId: string, startedAt: number, owner: CreationLifetime): Promise<string> =>
       new Promise<string>((resolve, reject) => {
-        if (pollRef.current) clearInterval(pollRef.current)
-        pollRef.current = null
-        const run = pollRunRef.current + 1
+        if (!owner.active) {
+          reject(new CreationLifetimeCancelledError())
+          return
+        }
+        if (pollRunRef.current) cancelPollRun(pollRunRef.current)
+        const run: VideoPollRun = { owner, interval: null, reject, settled: false }
         pollRunRef.current = run
         const live = actor.getSnapshot().context
         sessionStorage.setItem(
@@ -452,14 +489,22 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
             remixId: live.remixId,
           }),
         )
-        let interval: ReturnType<typeof setInterval> | null = null
         const finish = (fn: () => void) => {
-          if (interval) clearInterval(interval)
-          if (pollRef.current === interval) pollRef.current = null
-          if (pollRunRef.current === run) clearPendingVideoIfOwned(generationId, startedAt)
+          if (!owner.active || pollRunRef.current !== run) {
+            cancelPollRun(run)
+            return
+          }
+          run.settled = true
+          if (run.interval) clearInterval(run.interval)
+          pollRunRef.current = null
+          clearPendingVideoIfOwned(generationId, startedAt)
           fn()
         }
-        interval = setInterval(async () => {
+        run.interval = setInterval(async () => {
+          if (!owner.active || pollRunRef.current !== run) {
+            cancelPollRun(run)
+            return
+          }
           const elapsed = Math.round((Date.now() - startedAt) / 1000)
           send({
             type: 'BUSY',
@@ -476,26 +521,40 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
           }
           try {
             const st = await fetchVideoStatus(generationId)
+            if (!owner.active || pollRunRef.current !== run) {
+              cancelPollRun(run)
+              return
+            }
             if (st.status === 'video' && st.videoUrl) {
               const url = st.videoUrl
               finish(() => resolve(url))
             } else if (st.status === 'error') {
               finish(() => reject(new Error(st.errorMessage ?? 'video generation failed')))
             }
-          } catch {
+          } catch (error) {
+            if (!owner.active || pollRunRef.current !== run) {
+              cancelPollRun(run)
+              return
+            }
+            if (isLifetimeCancellation(error)) return
             /* transient poll failure — keep going until timeout */
           }
         }, 5000)
-        pollRef.current = interval
       }),
-    [actor, send],
+    [actor, cancelPollRun, send],
   )
 
   useMountEffect(() => {
+    const owner: CreationLifetime = { active: true }
+    lifetimeRef.current = owner
     if (remixId) {
       apiFetch<{ meme: Meme }>(`/api/memes/${remixId}`)
-        .then((r) => send({ type: 'SET_REMIX_SOURCE', meme: r.meme }))
-        .catch(() => send({ type: 'REMIX_SOURCE_MISSING' }))
+        .then((r) => {
+          if (owner.active) send({ type: 'SET_REMIX_SOURCE', meme: r.meme })
+        })
+        .catch(() => {
+          if (owner.active) send({ type: 'REMIX_SOURCE_MISSING' })
+        })
     }
 
     const raw = sessionStorage.getItem(PENDING_VIDEO_KEY)
@@ -512,12 +571,16 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         } else if (pendingVideoMatchesRemix(pending.remixId, remixId)) {
           if (pending.imageUrl) send({ type: 'SET_IMAGE_URL', imageUrl: pending.imageUrl })
           send({ type: 'SUBMIT', busy: 'Resuming a video render already in progress…' })
-          void pollVideo(pending.generationId, pending.startedAt)
+          void pollVideo(pending.generationId, pending.startedAt, owner)
             .then((url) => {
+              assertActive(owner)
               send({ type: 'SET_VIDEO_URL', videoUrl: url })
               send({ type: 'DONE' })
             })
-            .catch((e) => send({ type: 'FAIL', err: e instanceof Error ? e.message : 'render failed' }))
+            .catch((e) => {
+              if (!owner.active || isLifetimeCancellation(e)) return
+              send({ type: 'FAIL', err: e instanceof Error ? e.message : 'render failed' })
+            })
         }
       } catch {
         sessionStorage.removeItem(PENDING_VIDEO_KEY)
@@ -525,9 +588,10 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     }
 
     return () => {
-      if (pollRef.current) clearInterval(pollRef.current)
-      pollRef.current = null
-      pollRunRef.current += 1
+      owner.active = false
+      if (lifetimeRef.current === owner) lifetimeRef.current = null
+      const pollRun = pollRunRef.current
+      if (pollRun?.owner === owner) cancelPollRun(pollRun)
     }
   })
 
@@ -613,6 +677,8 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
   )
 
   const onRemix = useCallback(async () => {
+    const owner = lifetimeRef.current
+    if (!owner?.active) return
     const live = actor.getSnapshot().context
     if (!live.remixSource) return
     const remixBusy =
@@ -630,6 +696,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
           prompt: live.prompt,
           imageUrls: [live.remixSource.imageUrl],
         })
+        assertActive(owner)
         send({ type: 'SET_IMAGE_URL', imageUrl: out.imageUrl })
         send({ type: 'SET_VIDEO_URL', videoUrl: '' })
       } else if (
@@ -643,23 +710,31 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
           prompt: live.prompt,
           srcVideo: live.remixSource.videoUrl,
         })
+        assertActive(owner)
         send({ type: 'BUSY', busy: 'Rendering video remix… hold the vibe.' })
-        send({ type: 'SET_VIDEO_URL', videoUrl: await pollVideo(started.generationId, Date.now()) })
+        const videoUrl = await pollVideo(started.generationId, Date.now(), owner)
+        assertActive(owner)
+        send({ type: 'SET_VIDEO_URL', videoUrl })
       } else {
         send({ type: 'BUSY', busy: 'Applying your edit to the frame (uses your Masky credits)…' })
         const edited = await post<{ imageUrl: string }>('/api/aigen/image-edit', {
           prompt: `${live.prompt}, keep everything else identical`,
           imageUrls: [live.remixSource.imageUrl],
         })
+        assertActive(owner)
         send({ type: 'SET_EDITED_FRAME', imageUrl: edited.imageUrl })
       }
+      assertActive(owner)
       send({ type: 'DONE' })
     } catch (e) {
+      if (!owner.active || isLifetimeCancellation(e)) return
       send({ type: 'FAIL', err: e instanceof Error ? e.message : 'remix failed' })
     }
   }, [actor, pollVideo, send])
 
   const onGenerate = useCallback(async () => {
+    const owner = lifetimeRef.current
+    if (!owner?.active) return
     const live = actor.getSnapshot().context
     if (live.mode === 'video') {
       send({ type: 'SUBMIT', busy: 'Starting video render (1–3 min, uses your Masky credits)…' })
@@ -668,12 +743,17 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
           prompt: `${live.prompt} — single dramatic still frame, meme thumbnail`,
           aspectRatio: '1:1',
         })
+        assertActive(owner)
         send({ type: 'SET_IMAGE_URL', imageUrl: thumb.imageUrl })
         const started = await post<{ generationId: string }>('/api/aigen/video', { prompt: live.prompt })
+        assertActive(owner)
         send({ type: 'BUSY', busy: 'Rendering video… this takes a minute or three. Hold the vibe.' })
-        send({ type: 'SET_VIDEO_URL', videoUrl: await pollVideo(started.generationId, Date.now()) })
+        const videoUrl = await pollVideo(started.generationId, Date.now(), owner)
+        assertActive(owner)
+        send({ type: 'SET_VIDEO_URL', videoUrl })
         send({ type: 'DONE' })
       } catch (e) {
+        if (!owner.active || isLifetimeCancellation(e)) return
         send({ type: 'FAIL', err: e instanceof Error ? e.message : 'video generation failed' })
       }
       return
@@ -684,14 +764,18 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         prompt: live.prompt,
         aspectRatio: '1:1',
       })
+      assertActive(owner)
       send({ type: 'SET_IMAGE_URL', imageUrl: out.imageUrl })
       send({ type: 'DONE' })
     } catch (e) {
+      if (!owner.active || isLifetimeCancellation(e)) return
       send({ type: 'FAIL', err: e instanceof Error ? e.message : 'generation failed' })
     }
   }, [actor, pollVideo, send])
 
   const onAnimateEdited = useCallback(async () => {
+    const owner = lifetimeRef.current
+    if (!owner?.active) return
     const live = actor.getSnapshot().context
     if (!live.editedFrame) return
     send({ type: 'SUBMIT', busy: 'Animating the approved frame (uses your Masky credits)…' })
@@ -704,10 +788,14 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         image: live.editedFrame,
         ...(isVideoSource ? { srcVideo: live.remixSource!.videoUrl } : {}),
       })
-      send({ type: 'SET_VIDEO_URL', videoUrl: await pollVideo(started.generationId, Date.now()) })
+      assertActive(owner)
+      const videoUrl = await pollVideo(started.generationId, Date.now(), owner)
+      assertActive(owner)
+      send({ type: 'SET_VIDEO_URL', videoUrl })
       send({ type: 'CLEAR_EDITED_FRAME' })
       send({ type: 'DONE' })
     } catch (e) {
+      if (!owner.active || isLifetimeCancellation(e)) return
       send({ type: 'FAIL', err: e instanceof Error ? e.message : 'animation failed' })
     }
   }, [actor, pollVideo, send])
