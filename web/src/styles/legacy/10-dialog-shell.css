@@ -1,7 +1,0 @@
-/* Emptied by WP2-shell; delete in WP3.
-
-   WP2-dialogs took `dialog.confirm-modal` off this file and left the `.pack-modal` half for the
-   shell package. The starter-pack dialog in `molecules/QuestBar.tsx` is a `DialogFrame` (Base UI
-   Dialog) now, so nothing writes `.pack-modal`, `.dialog-head` or `.modal-close` any more — and
-   `web/src` has no `<dialog>` element left at all, which retires `dialog:not([open])` and
-   `body:has(dialog[open])` with them (Base UI owns the scroll lock). */

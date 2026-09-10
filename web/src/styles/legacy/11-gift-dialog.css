@@ -1,3 +1,0 @@
-/* Emptied by WP2-shell; delete in WP3. WP2-dialogs left one rule here — the thin scrollbar shared by
-   `.alerts-pop` and `.pack-modal` — for the shell package. Both surfaces are migrated: the alerts
-   popover and `DialogFrame` each carry `[scrollbar-width:thin]` as a utility. */

@@ -165,9 +165,8 @@ export const Focused: Story = {
 }
 
 /**
- * The detail-page hero: `size="lg"` is the utility twin of the legacy `.meme-card-lg` block that
- * `MemeDetailScreen` still writes around duplicated card markup — contained art so a wide joke
- * letterboxes instead of losing its caption, a 22px wrapping title, roomier meta, no hover lift.
+ * The detail-page hero, the one `size="lg"` caller: contained art so a wide joke letterboxes
+ * instead of losing its caption, a 22px wrapping title, roomier meta, no hover lift.
  */
 export const Large: Story = {
   args: { model: buildMemeCardModel(longTitleMeme), size: 'lg' },

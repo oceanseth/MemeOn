@@ -43,4 +43,16 @@ describe('cn', () => {
   it('keeps utilities that only differ by variant', () => {
     expect(cn('rounded-card', 'max-lg:rounded-pill')).toBe('rounded-card max-lg:rounded-pill')
   })
+
+  /* Why `atoms/Button.tsx` spells its baseline line-height as an arbitrary property. `font-size`
+     and `leading` share one conflict group, so a caller's `text-*` deletes a `leading-*` that
+     sorts before it — which silently made every `text-xs` button preflight-tall. The
+     arbitrary-property group does not conflict with `text-*`, and another `[line-height:…]`
+     still overrides it. */
+  it('keeps an arbitrary line-height through a caller font size, unlike leading-[…]', () => {
+    expect(cn('leading-[normal]', 'text-xs')).toBe('text-xs')
+    expect(cn('[line-height:normal]', 'text-xs')).toBe('[line-height:normal] text-xs')
+    expect(cn('[line-height:normal]', 'text-[17px]')).toBe('[line-height:normal] text-[17px]')
+    expect(cn('[line-height:normal]', '[line-height:1.125]')).toBe('[line-height:1.125]')
+  })
 })

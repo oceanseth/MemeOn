@@ -3,7 +3,7 @@ import { Avatar } from '../atoms/Avatar'
 import { Badge } from '../atoms/Badge'
 import { Button, buttonClasses } from '../atoms/Button'
 import { EmptyActions, EmptyState } from '../atoms/EmptyState'
-import { MemeCard } from '../atoms/MemeCard'
+import { MemeCard, memeCardSubClasses } from '../atoms/MemeCard'
 import { Notice } from '../atoms/Notice'
 import { PageContainer } from '../atoms/PageContainer'
 import { Skeleton, SkeletonBlock, SkeletonCard } from '../atoms/Skeleton'
@@ -170,7 +170,7 @@ export function ProfileScreen({
               model={card.memeCard}
               footer={
                 card.sharesLabel !== null ? (
-                  <span className="meme-sub">
+                  <span className={memeCardSubClasses}>
                     <span>{card.sharesLabel}</span>
                   </span>
                 ) : undefined

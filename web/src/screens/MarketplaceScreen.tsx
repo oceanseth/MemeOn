@@ -37,13 +37,13 @@ const marketControls = cn(
   'lg:[padding-inline:calc(max(0px,50vw-var(--container-page)/2)+20px)]',
 )
 
-/** `.card-grid` + the ≤560 two-up rule, list reset included. */
+/** The card grid, two-up under 561px, list reset included. */
 const cardGrid = 'm-0 grid list-none grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5 p-0 max-sm:grid-cols-2 max-sm:gap-3'
 
 /**
- * `.card-slot`: skip-rendering box around a card. `content-visibility` must not sit on the card
- * itself — it would clip the blurred glow bloom, which the padding/negative margin pair contains
- * without moving the grid track.
+ * Skip-rendering box around a card. `content-visibility` must not sit on the card itself — it
+ * would clip the blurred glow bloom, which the padding / negative-margin pair contains without
+ * moving the grid track.
  */
 const cardSlot = cn(
   '[content-visibility:auto] [contain-intrinsic-size:auto_340px]',

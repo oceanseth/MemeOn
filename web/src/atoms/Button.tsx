@@ -34,17 +34,21 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   ),
 }
 
-/** The look react-router `<Link>`s wear to pass as `a.btn`; combine with `aria-disabled` for a locked link. */
+/** The look react-router `<Link>`s wear to pass as a button; combine with `aria-disabled` for a locked link. */
 export function buttonClasses(variant: ButtonVariant = 'default'): string {
   return cn(
     BASE,
     VARIANT_CLASSES[variant],
-    /* `leading-[normal]` is the CSS keyword, not Tailwind's `leading-normal` (which is 1.5): the
-       legacy rule never set a line-height, so `font: inherit` picked up the UA default off `body`.
-       Preflight sets `html { line-height: 1.5 }`, so without this a button renders ~5-6px tall.
-       Placed last: tailwind-merge treats `font-size` (login's `text-[17px]`) as conflicting with
-       `leading` and drops whichever of the two comes first, so this must sort after it. */
-    'leading-[normal]',
+    /* The CSS keyword `normal`, not Tailwind's `leading-normal` (a fixed 1.5): a button's height is
+       its label's own line box, and preflight's `html { line-height: 1.5 }` would otherwise add
+       ~5px to every one of them.
+       Spelled as an arbitrary *property* rather than `leading-[normal]` on purpose: tailwind-merge
+       puts `font-size` and `leading` in one conflict group, so a caller's own `text-*` — the
+       Marketplace "Clear filters" chip is `text-xs` — silently deletes a `leading-*` that sorts
+       before it. The arbitrary-property group has no such conflict, so this survives any `text-*`
+       and is still overridable by another `[line-height:…]` (see `AlertsBell`'s taller emoji row).
+       Covered by `lib/cn.test.ts`. */
+    '[line-height:normal]',
   )
 }
 

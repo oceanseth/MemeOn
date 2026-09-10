@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, buttonClasses } from '../atoms/Button'
 import { EmptyState } from '../atoms/EmptyState'
@@ -11,6 +11,11 @@ import {
   Hint,
 } from '../atoms/Field'
 import { Input } from '../atoms/Input'
+/* the foil sheet, not the card atom: this screen paints a card frame out of its own markup,
+   and the mint route is code-split — pulling the atom's module in would put `MemeCard.tsx`,
+   `Badge` and their imports on the critical path of a `lazy()` route that renders none of them.
+   `atoms/foil.css` is the dependency-free half of that seam. */
+import '../atoms/foil.css'
 import { Notice } from '../atoms/Notice'
 import { PageContainer } from '../atoms/PageContainer'
 import { FilterBar, PageHead } from '../atoms/PageHead'
@@ -53,9 +58,15 @@ const LIVE_REGION = 'empty:sr-only [&:not(:empty)]:mb-4'
 /* preflight drops the UA heading weight the page title was rendered at */
 const PAGE_TITLE = 'mt-7 mb-5 flex flex-wrap items-center justify-between gap-4'
 const HEADING = 'm-0 text-[24px] font-bold'
-/* the sort-chip scale on top of the button chrome. `leading-[normal]` because the chip labels lead
-   with an emoji, and the taller emoji line box is what set the chip's height before the migration. */
-const CHIP = 'rounded-pill px-[11px] py-[5px] text-xs leading-[normal]'
+/* A caption row sits 4px under its control on this form, where `Field`'s own rhythm is the 6px it
+   puts between a label and its control. `-mt-0.5` spends the difference, so the pair reads as one
+   unit; `[&>*]:mt-0` inside `FieldFooter` keeps its children from adding a second offset. */
+const CAPTION_OFFSET = '-mt-0.5'
+
+/* the sort-chip scale on top of the button chrome. The chip labels lead with an emoji and the
+   taller emoji line box is what sizes them, which is exactly what `buttonClasses()`'s
+   `[line-height:normal]` preserves through this `text-xs`. */
+const CHIP = 'rounded-pill px-[11px] py-[5px] text-xs'
 /* selected outranks focus by fill and weight, not border colour */
 const CHIP_SELECTED = cn(
   'border-(--state-selected-border) bg-(--state-selected-bg) font-semibold text-text',
@@ -96,26 +107,67 @@ function ModeChip({
   )
 }
 
-/** The meme as it will ship. Same card vocabulary as the marketplace, assembled while you type. */
+/* The mint preview's box model: the marketplace card at its default scale, spelled out here
+   because the meme has no id, no link and no `MemeCardModel` until it is minted, so there is no
+   `MemeCard` to render. `atoms/MemeCard.tsx` is the source of truth for these values; the foil
+   itself comes from the sheet imported above via the `glow-border tier-*` classes the engine puts
+   on `cardProps`. */
+const PREVIEW_CARD = cn(
+  'group relative isolate overflow-visible rounded-card p-(--glow-width)',
+  'transition-transform duration-(--dur-base) ease-[ease] motion-reduce:transition-none',
+  'pointer-coarse:active:scale-[0.99]',
+)
+const PREVIEW_INNER = cn(
+  'relative flex h-full flex-col overflow-hidden [contain:paint]',
+  'rounded-[calc(var(--radius-card)_-_var(--glow-width))] bg-bg-card',
+)
+const PREVIEW_ART = 'block aspect-square w-full bg-bg-media object-cover'
+const PREVIEW_META = 'flex flex-col gap-1.5 px-3 pt-2.5 pb-3'
+const PREVIEW_TITLE = 'overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-bold text-text'
+const PREVIEW_CHIP = cn(
+  'inline-flex max-w-full items-center gap-[5px] rounded-pill border border-current',
+  'bg-[rgba(0,0,0,0.45)] px-[9px] py-[3px] text-center text-[11px] font-extrabold uppercase',
+  'tracking-[0.8px] [overflow-wrap:anywhere] text-(color:--tier)',
+)
+const PREVIEW_SUB = cn(
+  'flex items-center justify-between gap-2 text-xs/[1.5] text-text-dim tabular-nums',
+  'max-sm:flex-wrap max-sm:gap-y-0.5',
+)
+
+/** The meme as it will ship, assembled while you type. */
 function PreviewCard({ card }: { card: CreateMemeCardModel }) {
   return (
-    <div {...card.cardProps}>
-      <div className="meme-card-inner">
-        <span className="foil-media">
+    <div
+      {...card.cardProps}
+      data-slot="meme-card"
+      className={cn(PREVIEW_CARD, card.cardProps.className)}
+    >
+      <div data-slot="meme-card-inner" className={PREVIEW_INNER}>
+        <span data-slot="foil-media" className="foil-media">
           {card.media.kind === 'video' ? (
-            <video {...card.media.videoProps} />
+            <video
+              data-slot="meme-art"
+              className={PREVIEW_ART}
+              {...card.media.videoProps}
+            />
           ) : (
-            <img {...card.media.imageProps} />
+            <img data-slot="meme-art" className={PREVIEW_ART} {...card.media.imageProps} />
           )}
         </span>
-        <div className="meme-meta">
-          <span className="meme-title">{card.title}</span>
+        <div data-slot="meme-meta" className={PREVIEW_META}>
+          <span data-slot="meme-title" className={PREVIEW_TITLE}>
+            {card.title}
+          </span>
           <span>
-            <span className="tier-chip" style={{ color: card.tierColor }}>
+            <span
+              data-slot="tier-chip"
+              className={PREVIEW_CHIP}
+              style={{ '--tier': card.tierColor } as CSSProperties}
+            >
               {card.tierLabel}
             </span>
           </span>
-          <span className="meme-sub">
+          <span data-slot="meme-sub" className={PREVIEW_SUB}>
             <span>{card.statsLabel}</span>
             <span>{card.valueLabel}</span>
           </span>
@@ -268,12 +320,10 @@ export function CreateMemeScreen({
               <ModeChip model={getModeButtonProps('url')}>🔗 From URL</ModeChip>
             </FilterBar>
 
-            {/* the caption rows drop their own top margin: the field's 6px gap already spaces them,
-                and the legacy pair sat 4px under the control, not 10px */}
             <Field>
               <FieldLabel>Title</FieldLabel>
               <Input {...titleInputProps} placeholder={titlePlaceholder} />
-              <FieldFooter className="mt-0">
+              <FieldFooter className={CAPTION_OFFSET}>
                 <FieldHint id={helpIds.title}>{titleHelpText}</FieldHint>
                 <FieldCounter>{titleCounterLabel}</FieldCounter>
               </FieldFooter>
@@ -282,7 +332,7 @@ export function CreateMemeScreen({
             <Field>
               <FieldLabel>Tags</FieldLabel>
               <Input {...tagsInputProps} placeholder={tagsPlaceholder} />
-              <FieldFooter className="mt-0">
+              <FieldFooter className={CAPTION_OFFSET}>
                 <FieldHint id={helpIds.tags}>{tagsHelpText}</FieldHint>
                 <FieldCounter>{tagsCounterLabel}</FieldCounter>
               </FieldFooter>
@@ -435,7 +485,7 @@ export function CreateMemeScreen({
                 <Field>
                   <FieldLabel>Image or page URL</FieldLabel>
                   <Input {...urlInputProps} placeholder={urlPlaceholder} />
-                  <FieldHint className="mt-0" id={helpIds.url}>
+                  <FieldHint className={CAPTION_OFFSET} id={helpIds.url}>
                     {urlHelpText}
                   </FieldHint>
                 </Field>
@@ -465,14 +515,14 @@ export function CreateMemeScreen({
                 <Field>
                   <FieldLabel>{uploadImageLabel}</FieldLabel>
                   <Input {...imageFileInputProps} className={FILE_INPUT} />
-                  <FieldHint className="mt-0" id={helpIds.uploadImage}>
+                  <FieldHint className={CAPTION_OFFSET} id={helpIds.uploadImage}>
                     {uploadImageHelpText}
                   </FieldHint>
                 </Field>
                 <Field>
                   <FieldLabel>{uploadVideoLabel}</FieldLabel>
                   <Input {...videoFileInputProps} className={FILE_INPUT} />
-                  <FieldHint className="mt-0" id={helpIds.uploadVideo}>
+                  <FieldHint className={CAPTION_OFFSET} id={helpIds.uploadVideo}>
                     {uploadVideoHelpText}
                   </FieldHint>
                 </Field>
@@ -486,7 +536,7 @@ export function CreateMemeScreen({
                     rows={3}
                     placeholder={generatePromptPlaceholder}
                   />
-                  <FieldHint className="mt-0" id={helpIds.prompt}>
+                  <FieldHint className={CAPTION_OFFSET} id={helpIds.prompt}>
                     {generatePromptHelpText}
                   </FieldHint>
                 </Field>

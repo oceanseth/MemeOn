@@ -39,9 +39,6 @@ const EXCEPTIONS = new Map([
   ["pages/AuthCallback.tsx", "OAuth redirect callback"],
   ["pages/MobileAuthForward.tsx", "mobile deep-link redirect"],
   ["context/AuthContext.tsx", "compatibility re-export of useAuth"],
-  ["stories/Button.tsx", "Storybook CLI example"],
-  ["stories/Header.tsx", "Storybook CLI example"],
-  ["stories/Page.tsx", "Storybook CLI example"],
   ["main.tsx", "application bootstrap"],
   ["stores/StoresContext.tsx", "root store provider"],
 ])

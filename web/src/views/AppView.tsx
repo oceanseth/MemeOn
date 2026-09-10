@@ -77,7 +77,7 @@ export function InviteRoute() {
 function AuthSpinner() {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      {/* `.loading-state`: a labelled spinner row, never a bare spinner */}
+      {/* a labelled spinner row, never a bare spinner */}
       <div
         data-slot="loading-state"
         className="flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-text-dim"

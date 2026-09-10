@@ -143,7 +143,7 @@ describe('CreateMemeRoute settling requests', () => {
     await click(button('Upload'))
 
     expect(button('Upload').getAttribute('aria-pressed')).toBe('true')
-    expect(host.querySelector<HTMLImageElement>('img.meme-art')?.getAttribute('src')).toBe('/finished.png')
+    expect(host.querySelector<HTMLImageElement>('img[data-slot="meme-art"]')?.getAttribute('src')).toBe('/finished.png')
     expect(host.querySelector('[data-slot="form-grid"]')?.getAttribute('aria-busy')).toBe('false')
     expect(button('Mint').disabled).toBe(false)
     expect(host.textContent).not.toContain('Rendering your masterpiece')

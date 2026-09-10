@@ -3,7 +3,7 @@ import { PageContainer } from '../atoms/PageContainer'
 import { cn } from '../lib/cn'
 
 /* `my-4` restores the browser's default `<p>` margin (1em ≈ 16px) that preflight zeroes;
-   `<li>` call sites cancel it back to 0 since `.legal li` never had one. */
+   `<li>` call sites cancel it back to 0, which is where legal copy has always sat. */
 const P = 'my-4 text-base leading-[1.65] text-text'
 const H2 = 'mt-[26px] mb-2 text-[18px] font-bold [scroll-margin-top:calc(var(--topbar-h)+16px)]'
 const A = 'underline underline-offset-2 decoration-1 decoration-[color-mix(in_oklab,currentColor_60%,transparent)] hover:decoration-current focus-visible:decoration-current'

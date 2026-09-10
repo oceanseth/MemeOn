@@ -1,7 +1,0 @@
-/* `.landing-close` and `.section-sub` emptied by WP2-landing (no remaining users; delete in WP3).
-   `.section-title` stays: InviteScreen.tsx (social package) still renders it. */
-.section-title {
-  font-size: 26px;
-  margin: 56px 0 6px;
-}
-

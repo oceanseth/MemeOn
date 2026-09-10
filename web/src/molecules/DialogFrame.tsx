@@ -94,7 +94,7 @@ export interface DialogFrameProps {
 /**
  * The app's one modal frame, on Base UI's Dialog. Base UI owns modality, the focus trap, Escape,
  * focus restoration to the opener and the scroll lock; this file owns the paint — the legacy
- * `dialog.pack-modal` box, its scrim, its title/close row and the ≤720px bottom sheet.
+ * modal box, its scrim, its title/close row and the ≤720px bottom sheet.
  *
  * Render it always and drive it from `open`; every dismissal (Escape, a press on the scrim, the ✕)
  * arrives as `onOpenChange(false)`, so a caller that is mid-request can simply refuse it.

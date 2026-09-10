@@ -6,7 +6,7 @@ import { cn } from '../lib/cn'
 import type { DiscordPageScreenModel } from '../hooks/useDiscordPageScreen'
 import { FaqItem } from '../molecules/FaqItem'
 
-/** `.hero h1 .grad`, shared with InviteScreen (social) — same gradient, same fallback stack. */
+/** The hero headline's gradient text, shared with `InviteScreen` — same stops, same fallback. */
 const GRAD = cn(
   'bg-[linear-gradient(90deg,var(--color-accent),var(--color-accent-2),var(--color-gold))] bg-clip-text text-transparent',
   'supports-[not(background-clip:text)]:bg-none supports-[not(background-clip:text)]:text-accent',
@@ -14,10 +14,9 @@ const GRAD = cn(
 )
 
 /**
- * The app's `login` gradient, unmodified: legacy `19-login-btn.css` only sized this CTA, and the
- * blue→purple fill came from `.btn.primary`'s gradient (`02-controls.css`), same as every other
- * `login`-styled CTA (e.g. `MobileAuthForward`'s "Open MemeOn"). `--brand-discord` never painted a
- * button in the legacy stylesheet — it only colored the header's `.discord-link` text.
+ * The app's `login` CTA, unmodified: this button is sized and filled like every other `login`
+ * button (e.g. `MobileAuthForward`'s "Open MemeOn"), so it wears the blue→purple primary gradient.
+ * `--color-brand-discord` is the wordmark's blurple and has never painted a button here.
  */
 const discordCta = buttonClasses('login')
 

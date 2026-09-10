@@ -40,7 +40,9 @@ export function FaqItem({ question, children, defaultOpen = false, className }: 
         >
           <path d="M5 2.5 11 8l-6 5.5z" />
         </svg>
-        <h3 className="m-0 text-base">{question}</h3>
+        {/* the row's height is the question's own line box: `text-base` alone would pair 1.5rem
+            with it and stand every FAQ row 6px taller than the rest of the page's controls */}
+        <h3 className="m-0 text-base leading-[normal]">{question}</h3>
       </Collapsible.Trigger>
       <Collapsible.Panel data-slot="faq-panel" className="px-[18px] pb-3.5 text-text-dim leading-[1.55]">
         {children}

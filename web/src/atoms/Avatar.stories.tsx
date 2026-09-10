@@ -48,7 +48,7 @@ export const BrokenImage: Story = {
   },
 }
 
-/** The 40px `.person-row` disc, carrying the `loading="lazy"` the Friends and Leaderboard lists set. */
+/** The 40px people-row disc, carrying the `loading="lazy"` the Friends and Leaderboard lists set. */
 export const PersonRow: Story = {
   args: { size: 'md', src: LOGO, alt: 'lou', loading: 'lazy' },
   play: async ({ canvasElement }) => {

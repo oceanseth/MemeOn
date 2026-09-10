@@ -15,12 +15,12 @@ import { ConfirmDialog } from '../molecules/ConfirmDialog'
 /** UA paragraph rhythm, which preflight resets: the disclaimer copy reads as prose, not a stack. */
 const prose = 'leading-[1.55] [margin-block:1em]'
 
-/** `.person-row`, reproduced with utilities: one key row, still shared with Friends/Leaderboard's literal class. */
+/** One API-key row: the same shape Friends, Leaderboard and the cap table use. */
 const keyRow = cn(
   'flex flex-wrap items-center gap-3 gap-y-2 rounded-[12px] border border-border bg-bg-raised p-3',
 )
 
-/** `.row-list` */
+/** A stack of rows, evenly spaced. */
 const rowList = 'mt-2.5 flex flex-col gap-2.5'
 
 /** Developers API-key page as a function of its model. Every engine state is one set of args. */
@@ -119,7 +119,7 @@ export function DevelopersScreen({
           {showOk && <Notice tone="ok">{okMsg}</Notice>}
         </div>
         {showSpinner && (
-          /* `.loading-state`: a labelled spinner row, never a bare spinner */
+          /* a labelled spinner row, never a bare spinner */
           <div
             data-slot="loading-state"
             className="flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-text-dim"

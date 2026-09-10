@@ -101,7 +101,7 @@ export const AtLimit: Story = {
 }
 
 /**
- * Most `.field-hint` / `.field-help` in the app has no label and no control around it, so the
+ * Most caption text in the app has no label and no control around it, so the
  * standalone pair renders the same caption without a `<Field>` — where Base UI's parts would throw.
  */
 export const Standalone: Story = {

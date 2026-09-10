@@ -21,7 +21,7 @@ const NO_MEME = '— braincells only, no meme —'
 /** A silent region spends none of its column's rhythm until it has something to say. */
 const liveRegion = 'empty:sr-only [&:not(:empty)]:mb-4'
 
-/** `.form-grid` */
+/** The compose form's column: one measure, one rhythm. */
 const formGrid = 'flex max-w-[560px] flex-col gap-3.5'
 
 /**
@@ -36,7 +36,7 @@ const composeGrid = cn(
   '2xl:[&>*:not([data-slot=fieldset])]:col-span-full',
 )
 
-/** `.row-list` */
+/** A stack of rows, evenly spaced. */
 const rowList = 'flex flex-col gap-2.5'
 
 /** the section headings the two lists sit under */

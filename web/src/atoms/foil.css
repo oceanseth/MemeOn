@@ -6,41 +6,36 @@
    that is where Tailwind emits its own `@layer properties` block — the `@supports` fallback that
    seeds every `--tw-*` for engines without `@property` — and it has to stay *below* `utilities`, or
    those `initial`s would beat the utilities that set them. `scripts/check-layers.mjs` reads the
-   built CSS back and fails the build if any of it ever ranks `components` under `legacy`. */
-@layer properties, theme, base, legacy, components, utilities;
+   built CSS back and fails the build if any bundle ever ranks these differently. */
+@layer properties, theme, base, components, utilities;
 
 /* The foil system: the parts of a card's frame no utility can express — the animated
    `--glow-angle`, the masked conic-gradient ring and its blurred bloom, the per-tier stop sets,
    the sheen sweep and the sparkle twinkle.
 
-   Copied here verbatim (values byte-for-byte) from `src/tier-glow-borders.css` and
-   `src/styles/legacy/08-meme-card.css` into `@layer components`, one layer above `legacy`, so the
-   effect survives the legacy sheet's deletion in WP3. Both legacy files stay in place under the
-   MANIFEST's emptying rule — every selector in them still has a writer this package does not own:
-   `.glow-border` and `.tier-paper` come from `hooks/useCreateMemeScreen.ts`, and `CreateMemeScreen`
-   does not import this atom, so in a Storybook story of that screen alone this sheet is never
-   loaded and emptying `tier-glow-borders.css` would strip the create preview's graphite ring;
-   `.meme-card*`/`.meme-art`/`.meme-meta`/`.meme-title`/`.meme-sub`/`.tier-chip`/`.foil-media` are
-   still written by `MemeDetailScreen`, `CreateMemeScreen`, `ProfileScreen`, `BinderScreen`,
-   `GiftDialog` and `LandingScreen`. `08-meme-card.css`'s only rule this package emptied of users is
-   `.meme-media-toggle` (now `[data-slot='media-toggle']`); it is left byte-unchanged so the split
-   stays verifiable against `6319b06`, and belongs on WP3's delete list. The duplicate is inert:
-   every declaration below is identical to the one it out-ranks. Keyframes carry a `card-` prefix so they can
-   never collide with the legacy `glow-border-turn` / `sheen-sweep` / `twinkle` still declared in
-   `legacy` — `21-tier-showcase.css` animates its loading slot with the legacy `sheen-sweep`, which
-   is why that name is left alone rather than renamed.
+   ── Public effect API ─────────────────────────────────────────────────────────────────────────
+   This file is the one owner of the foil, and it is deliberately class-based rather than
+   `data-slot`-only: surfaces that are not the `MemeCard` atom put the same frame on their own
+   markup.
 
-   Public effect API — other surfaces write these class names by hand and must keep working:
-     `glow-border tier-<key> [sheen] [sparkle]` + `data-glow-style="<stop set>"` on the frame,
-     `foil-media` on the box the sheen and the sparkle are bounded to.
-   `atoms/MemeCard.tsx` exports `tierClasses(tierKey)`, which assembles the first three. The other
-   writers are `screens/LandingScreen.tsx` (`.tier-card`), `screens/MemeDetailScreen.tsx`
-   (`.meme-card.meme-card-lg`) and `hooks/useCreateMemeScreen.ts` (the create preview), so every
-   selector below still names those legacy hosts as well as this atom's `[data-slot='meme-card']`.
+     `glow-border tier-<key> [sheen] [sparkle]`   on the frame element, paired with
+     `data-glow-style="<stop set>"`               on the same element (`shared/tiers`), and
+     `foil-media`                                 on the box the sheen and sparkle are bounded to,
+                                                  so neither sweep crosses the meta text.
 
-   Cascade: `:where()` keeps the shared base at zero specificity exactly as the pre-migration sheet
-   wrote it, so a host's own `.meme-card` / `.tier-card` rules still decide position and overflow.
-   This atom states its winners as utilities instead (`relative isolate overflow-visible`). */
+   `atoms/foil.ts` exports `tierClasses(tierKey)`, which assembles the first three; it has no React
+   import (unlike `atoms/MemeCard.tsx`, which re-exports it for compatibility), so a code-split
+   route can pull in the classes without dragging the atom's module graph onto its critical path.
+   The hand-rolled hosts are `screens/LandingScreen.tsx` (the tier ladder, which also writes
+   `.tier-card` / `.tier-card-inner` for the `--glow-width` and the media rounding below) and
+   `screens/CreateMemeScreen.tsx` (the live mint preview, which wears the `MemeCard` atom's
+   `[data-slot='meme-card']` instead). Anything else that wants a foil frame writes the four names
+   above; nothing else in this file is addressable from outside.
+
+   Cascade: `:where()` keeps the shared base at zero specificity, so a host's own utilities decide
+   position and overflow without `!important`. The `MemeCard` atom states its winners as utilities
+   (`relative isolate overflow-visible`). Keyframes carry a `card-` prefix so a keyframe name this
+   file does not own can never shadow them from another sheet in the same bundle. */
 @layer components {
   @property --glow-angle {
     syntax: '<angle>';
@@ -87,8 +82,8 @@
   }
 
   /* a card frame is 3px, not the 2px default. Must follow the block above: same (zero) specificity,
-     and `08-meme-card.css` can no longer decide it for a card that has dropped `.meme-card`. */
-  :where(.meme-card, .tier-card, [data-slot='meme-card']) {
+     so source order decides. */
+  :where(.tier-card, [data-slot='meme-card']) {
     --glow-width: 3px;
   }
 
@@ -333,10 +328,8 @@
       0 0 80px rgba(240, 195, 255, 0.25);
   }
 
-  /* Foil mechanics are host-agnostic (.meme-card, .tier-card and this atom alike) and bounded to
-     the art box via .foil-media, so the sweep never crosses the meta text. The
-     :where(:not(:has(.foil-media))) form is the interim for hosts that have not added the wrapper
-     yet — `MemeDetailScreen` is the live one: same gradient, clipped to the top square. */
+  /* Foil mechanics are host-agnostic — this atom and the tier ladder alike — and bounded to the
+     art box via `.foil-media`, so the sweep never crosses the meta text. */
   .foil-media {
     position: relative;
     display: block;
@@ -348,11 +341,7 @@
   }
 
   /* sheen sweep over holo+ tiers */
-  .sheen .foil-media::after,
-  :where(.meme-card, .tier-card, [data-slot='meme-card']).sheen
-    :where(.meme-card-inner, .tier-card-inner):where(
-      :not(:has(.foil-media))
-    )::after {
+  .sheen .foil-media::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -370,24 +359,8 @@
     mix-blend-mode: screen;
   }
 
-  :where(.meme-card, .tier-card, [data-slot='meme-card']).sheen
-    :where(.meme-card-inner, .tier-card-inner):where(
-      :not(:has(.foil-media))
-    )::after,
-  :where(.meme-card, .tier-card, [data-slot='meme-card']).sparkle
-    :where(.meme-card-inner, .tier-card-inner):where(
-      :not(:has(.foil-media))
-    )::before {
-    inset: 0 0 auto 0;
-    aspect-ratio: 1;
-  }
-
   /* sparkles for the shiny tier */
-  .sparkle .foil-media::before,
-  :where(.meme-card, .tier-card, [data-slot='meme-card']).sparkle
-    :where(.meme-card-inner, .tier-card-inner):where(
-      :not(:has(.foil-media))
-    )::before {
+  .sparkle .foil-media::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -403,22 +376,20 @@
     mix-blend-mode: screen;
   }
 
-  /* Freeze, never delete: the static foil stays painted. These restate `51-a11y-media.css` and the
-     reduced-motion tail of `tier-glow-borders.css`, which now sit a layer below and would lose. */
+  /* Freeze, never delete: the static foil stays painted, so a rarity is still legible without the
+     motion that normally carries it. */
   @media (prefers-reduced-motion: reduce) {
     :where(.glow-border)::before,
     :where(.glow-border)::after {
       animation-play-state: paused;
     }
 
-    .sheen .foil-media::after,
-    .sheen :where(.meme-card-inner, .tier-card-inner)::after {
+    .sheen .foil-media::after {
       animation: none;
       background-position: 50% 0;
     }
 
-    .sparkle .foil-media::before,
-    .sparkle :where(.meme-card-inner, .tier-card-inner)::before {
+    .sparkle .foil-media::before {
       animation: none;
       opacity: 0.6;
     }
@@ -431,23 +402,21 @@
     }
 
     .sheen .foil-media::after,
-    .sparkle .foil-media::before,
-    .sheen :where(.meme-card-inner, .tier-card-inner)::after,
-    .sparkle :where(.meme-card-inner, .tier-card-inner)::before {
+    .sparkle .foil-media::before {
       display: none;
     }
 
     /* non-colour rarity ladder: solid -> double -> heavy double */
-    :where(.meme-card, .tier-card, [data-slot='meme-card']) {
+    :where(.tier-card, [data-slot='meme-card']) {
       border: 1px solid CanvasText;
     }
 
-    :where(.meme-card, .tier-card, [data-slot='meme-card']).sheen {
+    :where(.tier-card, [data-slot='meme-card']).sheen {
       border-width: 3px;
       border-style: double;
     }
 
-    :where(.meme-card, .tier-card, [data-slot='meme-card']).sparkle {
+    :where(.tier-card, [data-slot='meme-card']).sparkle {
       border-width: 4px;
     }
   }

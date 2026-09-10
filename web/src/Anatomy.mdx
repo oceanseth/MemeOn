@@ -16,8 +16,8 @@ or moving a component. `npm run check-tiers` runs recursively and must pass;
 
 | Tier | Folder | What lives there | Owns state? |
 |---|---|---|---|
-| **Atoms** | `src/atoms/` | `MemeCard` (plus `tierClasses`) | No |
-| **Molecules** | `src/molecules/` | `ConfirmDialog`, `SortChips`, `GiftDialog`, `QuestBar`, `AlertsBell` | No |
+| **Atoms** | `src/atoms/` | `Avatar`, `Badge`, `Button`, `Checkbox`, `EmptyState`, `Field`, `Fieldset`, `Input`, `MemeCard` (plus `tierClasses`, `memeCardSubClasses`), `Notice`, `PageContainer`, `PageHead`, `Panel`, `Select`, `Skeleton`, `Spinner`, `Textarea` | No |
+| **Molecules** | `src/molecules/` | `AlertsBell`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `QuestBar`, `SideSummary`, `SortChips`, `TradeCard` | No |
 | **Organisms** | `src/organisms/` | `AppShell` (slots), `MemeplexPanel` | No |
 | **Screens** | `src/screens/` | One model object per route/chrome surface | No |
 | **Views** | `src/views/` | Engine wired to screen; `observer` wrap; `AppView` is the route switch | Via hooks |
@@ -117,7 +117,9 @@ to settle any pending refresh.
 - Every component has a sibling `*.stories.tsx` titled `"<Tier>/<Name>"`.
 - Views opt out of autodocs (`!autodocs`) and wrap with `MemoryRouter`.
 - Do not put `observer` or `useState` below `views/`.
-- No redesign while moving: class names and markup stay.
+- Presentation is Tailwind utilities on the component, in `@layer utilities`. Only effects no
+  utility can express (the card foil, the skeleton sweep, the spinner) get a co-located `.css`
+  file, and it restates the layer order. See [DESIGN.md](../../DESIGN.md).
 
 ## Talking about it
 
@@ -136,11 +138,10 @@ state and import boundaries but do not need stories.
 
 | Path | Why it stays |
 |---|---|
-| `components/HeroVideo.tsx` (+ `.css`) | Imperative media element; Landing hook injects it as `hero` |
+| `components/HeroVideo.tsx` | Imperative media element; Landing hook injects it as `hero` |
 | `pages/AuthCallback.tsx` | OAuth redirect ritual |
 | `pages/MobileAuthForward.tsx` | Deep-link forward ritual |
 | `context/AuthContext.tsx` | Compatibility re-export of `useAuth` |
-| `stories/Button.tsx`, `stories/Header.tsx`, `stories/Page.tsx` | Storybook CLI examples |
 | `main.tsx` | Application bootstrap |
 | `stores/StoresContext.tsx` | Root store provider |
 

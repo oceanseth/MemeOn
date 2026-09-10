@@ -1,5 +1,0 @@
-/* emptied by WP2-dev: DiscordPageScreen.tsx (dev) was the last user of `.faq`, `.faq details`,
-   `.faq summary`, `.faq p`, `.faq-actions` and `.cta-slot` — it now renders its FAQ through
-   `molecules/FaqItem.tsx` (Base UI Collapsible, same as the landing package's FAQ) and reproduces
-   `.faq-actions`/`.cta-slot` with utilities. `.faq summary :where(h3, .faq-q)` was already emptied
-   by WP2-landing. No remaining user in web/src (delete in WP3). */

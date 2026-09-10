@@ -1,6 +1,0 @@
-/* Emptied by WP2-shell; delete in WP3.
-
-   `molecules/AlertsBell.tsx` is Base UI's Popover painted in utilities. Two selectors elsewhere now
-   match nothing and belong to the final package: `17-numeric.css`'s `.bell-badge` and
-   `50-input-modality.css`'s `.alert-row` 44px target — reproduced as `tabular-nums` and
-   `pointer-coarse:min-h-11` on the badge and the rows. */

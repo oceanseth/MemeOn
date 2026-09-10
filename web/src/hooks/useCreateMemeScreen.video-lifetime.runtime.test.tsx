@@ -322,7 +322,7 @@ describe('CreateMemeRoute video lifetime ownership', () => {
     await renderAt('/binder/new?remix=remix-a')
     await act(async () => { await vi.advanceTimersByTimeAsync(5000); await settle() })
 
-    expect(host.querySelector<HTMLVideoElement>('video.meme-art')?.getAttribute('src')).toBe('/finished-a.mp4')
+    expect(host.querySelector<HTMLVideoElement>('video[data-slot="meme-art"]')?.getAttribute('src')).toBe('/finished-a.mp4')
     expect(host.querySelector('[data-slot="form-grid"]')?.getAttribute('aria-busy')).toBe('false')
     expect(sessionStorage.getItem(PENDING_VIDEO_KEY)).toBeNull()
   })

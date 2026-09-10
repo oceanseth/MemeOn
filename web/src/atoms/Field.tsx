@@ -12,8 +12,8 @@ import { cn } from '../lib/cn'
 export type Styled<P> = Omit<P, 'className'> & { className?: string | undefined }
 
 /**
- * The `.field-label` box: a column that carries the label typography, so the control inside
- * inherits weight 600 through the preflight `font: inherit` exactly as the legacy label did.
+ * The labelled-control column: it carries the label typography, and the control inside inherits
+ * weight 600 through preflight's `font: inherit` rather than restating it.
  */
 export function Field({ className, ...props }: Styled<FieldRootProps>) {
   return (
@@ -30,7 +30,7 @@ export function Field({ className, ...props }: Styled<FieldRootProps>) {
 
 export const labelChrome = 'text-sm leading-normal font-semibold text-text-dim'
 
-/** `.field-hint` / `.field-help`, at the regular weight the screens render it in today. */
+/** The caption under a control, at the regular weight — a hint is not a second label. */
 export const hintChrome = 'mt-1 block text-xs leading-normal font-normal text-text-dim'
 
 export const errorChrome = 'mt-1 block text-xs leading-normal font-normal text-danger'
@@ -54,10 +54,10 @@ export function FieldError({ className, ...props }: Styled<FieldErrorProps>) {
 }
 
 /**
- * The standalone shape: most `.field-hint` / `.field-help` in the app is loose caption text with no
- * label and no control, and Base UI's `Field.Description` throws outside a `<Field>`. These carry the
- * same look with no context, and take an `id` so a call site can wire `aria-describedby` by hand.
- * `as="span"` is for the sites that sit inside a bare `<label>`, where a `<p>` would be invalid.
+ * The standalone shape: most caption text in the app has no label and no control around it, and
+ * Base UI's `Field.Description` throws outside a `<Field>`. These carry the same look with no
+ * context, and take an `id` so a call site can wire `aria-describedby` by hand. `as="span"` is for
+ * the sites that sit inside a bare `<label>`, where a `<p>` would be invalid.
  */
 export type TextProps = ComponentPropsWithoutRef<'p'> & { as?: 'p' | 'span' | undefined }
 
@@ -70,9 +70,9 @@ export function ErrorText({ as: Tag = 'p', className, ...props }: TextProps) {
 }
 
 /**
- * `.field-counter` floated right, so the help text kept the same line and wrapped around it. In a
- * flex column that float is inert, so the pair gets an explicit row instead. `[&>*]:mt-0` drops the
- * children's own top margin — the row owns the 4px gap once, not once per child.
+ * A caption and its counter share one line. The pre-migration counter floated right so the help
+ * text wrapped around it; in a flex column a float is inert, so the pair gets an explicit row
+ * instead. `[&>*]:mt-0` drops the children's own top margin — the row owns the offset once.
  */
 export function FieldFooter({ className, ...props }: ComponentPropsWithoutRef<'div'>) {
   return (

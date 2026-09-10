@@ -4,28 +4,22 @@ import { glowStyleFor } from '../../../shared/tiers'
 import { cn } from '../lib/cn'
 import type { MemeCardModel } from '../lib/memeCardModel'
 import { Badge } from './Badge'
-import './MemeCard.css'
-
-const SHEEN_TIERS = new Set(['holo', 'chrome', 'gold', 'prismatic', 'shiny'])
+import { tierClasses } from './foil'
+import './foil.css'
 
 /**
- * The foil effect API, unchanged: `glow-border tier-<key> [sheen] [sparkle]`, paired with
- * `data-glow-style={glowStyleFor(tierKey)}` on the same element. `MemeCard.css` implements every
- * one of those class names for this atom and for the surfaces that write them by hand —
- * `LandingScreen` (`.tier-card`), `MemeDetailScreen` (`.meme-card.meme-card-lg`) and the
- * `useCreateMemeScreen` preview — so the contract outlives the legacy sheet.
+ * Re-exported from the dependency-free `atoms/foil` module for compatibility: this atom used to
+ * own `tierClasses` outright, and every existing caller still imports it as `MemeCard`'s export.
+ * `atoms/foil.ts` is the module a code-split route should reach for instead, since it carries no
+ * React import.
  */
-export function tierClasses(tierKey: string): string {
-  const sheen = SHEEN_TIERS.has(tierKey) ? ' sheen' : ''
-  const sparkle = tierKey === 'shiny' ? ' sparkle' : ''
-  return `glow-border tier-${tierKey}${sheen}${sparkle}`
-}
+export { tierClasses }
 
 /** `default` is the grid thumb; `lg` is the detail-page hero. See {@link MemeCardProps.size}. */
 export type MemeCardSize = 'default' | 'lg'
 
 /* The frame. `overflow-visible` and `isolate` are the glow ring's own base, restated here as
-   utilities because `MemeCard.css` keeps that base at `:where()` zero specificity for its other
+   utilities because `foil.css` keeps that base at `:where()` zero specificity for its other
    hosts; `relative` and the 3px `--glow-width` padding are the card's. The background is *not* a
    utility — a `bg-*` class would out-cascade every `.tier-*` frame. */
 const CARD = cn(
@@ -41,7 +35,7 @@ const CARD = cn(
 )
 
 /* The hover lift is the grid thumb's alone: a detail hero is already the page's subject and has
-   nowhere to lift to (`.meme-card-lg:hover { transform: none }`). */
+   nowhere to lift to. */
 const CARD_LIFT = cn(
   '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-1',
   '[@media(hover:hover)_and_(pointer:fine)]:hover:scale-[1.01]',
@@ -79,9 +73,7 @@ const TOGGLE = cn(
 
 const META = 'flex flex-col'
 
-/* `meme-title` is retained only as a query hook for `hooks/market-regressions.runtime.test.tsx`,
-   which is owned by another package; every property the legacy rule sets is restated below. */
-const TITLE = 'meme-title overflow-hidden text-ellipsis font-bold text-text'
+const TITLE = 'overflow-hidden text-ellipsis font-bold text-text'
 
 /* the rarity is product language: on a 169px 2-up card it wraps to a second line rather than
    being clipped mid-word by the inner's overflow */
@@ -98,13 +90,11 @@ const SUB = cn(
   'max-sm:flex-wrap max-sm:gap-y-0.5',
 )
 
-/* The two card scales, spelled out per element. `lg` reproduces `.meme-card-lg` from
-   `styles/legacy/08-meme-card.css` exactly:
-     art `object-fit: contain` · title 22px, wrapping · meta 14/16/16 with a 9px gap ·
+/* The two card scales, spelled out per element:
+     `lg` — art `object-fit: contain` · title 22px, wrapping · meta 14/16/16 with a 9px gap ·
      sub 15px · chip 13px / 4px 12px · no hover lift.
-   `leading-[1.5]` on the default sub because the legacy rule set only a font size and inherited
-   the root 1.5 — Tailwind's paired 1rem would shave 2px off every row; `text-[15px]` sets no
-   line-height of its own, so `lg` inherits the same 1.5. */
+   `text-xs/[1.5]` on the default sub, not a bare `text-xs`: Tailwind's paired 1rem line-height
+   would shave 2px off every row. `text-[15px]` sets none of its own, so `lg` inherits the 1.5. */
 const SIZES: Record<MemeCardSize, Record<'card' | 'art' | 'meta' | 'title' | 'chip' | 'sub', string>> = {
   default: {
     card: CARD_LIFT,
@@ -126,17 +116,19 @@ const SIZES: Record<MemeCardSize, Record<'card' | 'art' | 'meta' | 'title' | 'ch
   },
 }
 
+/**
+ * The meta row a `footer` has to line up with: `BinderScreen` and `ProfileScreen` add their own
+ * stats line under the card's, and it has to be the same row this atom already paints.
+ */
+export const memeCardSubClasses = cn(SUB, SIZES.default.sub)
+
 export interface MemeCardProps {
   model: MemeCardModel
   /** extra meta rows under the stats — a buy button, a binder tag, a quest hint */
   footer?: ReactNode | undefined
   /**
    * `default` (the grid thumb) or `lg`, the detail-page hero: contained art, a 22px wrapping
-   * title, roomier meta and no hover lift. `lg` is the utility-side twin of the legacy
-   * `.meme-card-lg` block, which `screens/MemeDetailScreen.tsx` still writes by hand around
-   * duplicated card markup; that screen can drop the duplicate and render
-   * `<MemeCard model={…} size="lg" footer={…} />` once its detail model exposes a
-   * `MemeCardModel`. The legacy `.meme-card-lg` rules stay in place until it does.
+   * title, roomier meta and no hover lift. `screens/MemeDetailScreen.tsx` is the only `lg` caller.
    */
   size?: MemeCardSize | undefined
 }
