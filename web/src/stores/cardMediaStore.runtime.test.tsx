@@ -17,13 +17,14 @@ interface Card {
 
 function mountCard({ autoplay = 'on' }: { autoplay?: 'on' | 'off' } = {}): Card {
   const card = document.createElement('article')
-  card.className = 'meme-card'
+  card.dataset.slot = 'meme-card'
   card.dataset.mediaAutoplay = autoplay
-  card.innerHTML = '<video></video><button class="meme-media-toggle" aria-pressed="false"></button>'
+  card.innerHTML =
+    '<video></video><button data-slot="media-toggle" aria-pressed="false"></button>'
   document.body.append(card)
 
   const video = card.querySelector('video')!
-  const toggle = card.querySelector<HTMLButtonElement>('.meme-media-toggle')!
+  const toggle = card.querySelector<HTMLButtonElement>('[data-slot="media-toggle"]')!
   const play = vi.fn(async () => {
     Object.defineProperty(video, 'paused', { value: false, configurable: true })
   })

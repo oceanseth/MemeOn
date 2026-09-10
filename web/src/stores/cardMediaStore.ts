@@ -15,7 +15,7 @@ const videoIn = (card: Element | null): HTMLVideoElement | null =>
   card?.querySelector('video') ?? null
 
 const toggleIn = (card: Element | null): Element | null =>
-  card?.querySelector('.meme-media-toggle') ?? null
+  card?.querySelector('[data-slot="media-toggle"]') ?? null
 
 /**
  * Manual control wins over the observer for the rest of the card's life: a player who pauses a
@@ -44,7 +44,7 @@ function stopCard(card: HTMLElement, video: HTMLVideoElement): void {
 /**
  * What one viewport entry does to one card, extracted so the suite can drive it directly:
  * off screen the foil ring is paused (--glow-play-state, already parameterised in
- * tier-glow-borders.css) and the video is paused. The property is *removed* rather than set to
+ * atoms/MemeCard.css) and the video is paused. The property is *removed* rather than set to
  * `running` on the way back in, so Paper and Silver keep the paused ring their own tier rule asks for.
  */
 export function applyCardVisibility(card: HTMLElement, visible: boolean): void {
@@ -109,7 +109,7 @@ export const cardMediaRef: RefCallback<HTMLElement> = (element) => {
 
 /** The card's own pause/play control. Stable for the same reason as the ref. */
 export function toggleCardMedia(event: MouseEvent<HTMLButtonElement>): void {
-  const card = event.currentTarget.closest('.meme-card')
+  const card = event.currentTarget.closest('[data-slot="meme-card"]')
   const video = videoIn(card)
   if (!video || !(card instanceof HTMLElement)) return
   if (video.paused) {
