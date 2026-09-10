@@ -1,9 +1,51 @@
 import { Link } from 'react-router-dom'
+import { Button, buttonClasses } from '../atoms/Button'
+import { EmptyActions, EmptyState } from '../atoms/EmptyState'
+import { Field, FieldHint, FieldLabel } from '../atoms/Field'
+import { Fieldset, FieldsetLegend } from '../atoms/Fieldset'
+import { Input } from '../atoms/Input'
+import { Notice } from '../atoms/Notice'
+import { PageContainer } from '../atoms/PageContainer'
+import { PageHead } from '../atoms/PageHead'
+import { Panel } from '../atoms/Panel'
+import { Select, type SelectOption } from '../atoms/Select'
+import { SkeletonRow } from '../atoms/Skeleton'
+import { cn } from '../lib/cn'
 import type { TradesScreenModel } from '../hooks/useTradesScreen'
 import { ConfirmDialog } from '../molecules/ConfirmDialog'
 import { TradeCard } from '../molecules/TradeCard'
 
 const SKELETON_ROWS = ['a', 'b', 'c']
+const NO_MEME = '— braincells only, no meme —'
+
+/** A silent region spends none of its column's rhythm until it has something to say. */
+const liveRegion = 'empty:sr-only [&:not(:empty)]:mb-4'
+
+/** `.form-grid` */
+const formGrid = 'flex max-w-[560px] flex-col gap-3.5'
+
+/**
+ * Give and want are one comparison: side by side once the panel is wider than two 560px forms,
+ * instead of a single column down the left half of a 1,140px card.
+ */
+const composeGrid = cn(
+  formGrid,
+  '[&>[data-slot=fieldset]+[data-slot=fieldset]]:mt-2',
+  '2xl:grid 2xl:max-w-none 2xl:grid-cols-[repeat(2,minmax(0,1fr))] 2xl:gap-x-6',
+  '2xl:[&>[data-slot=fieldset]+[data-slot=fieldset]]:mt-0',
+  '2xl:[&>*:not([data-slot=fieldset])]:col-span-full',
+)
+
+/** `.row-list` */
+const rowList = 'flex flex-col gap-2.5'
+
+/** the section headings the two lists sit under */
+const listHeading = 'mt-0 mb-2 text-lg leading-[1.2] font-bold'
+
+const withNoMeme = (options: readonly { id: string; label: string }[]): SelectOption[] => [
+  { value: '', label: NO_MEME },
+  ...options.map((option) => ({ value: option.id, label: option.label })),
+]
 
 /** Trade lists and a controlled compose panel as a function of its model. */
 export function TradesScreen({
@@ -25,60 +67,62 @@ export function TradesScreen({
   showLists,
   confirmDialog,
 }: TradesScreenModel) {
-  return <main className="container" id="main" tabIndex={-1}>
-    <div className="page-head"><h2>Trade</h2><button className="primary" {...newTradeButtonProps}>{newTradeButtonLabel}</button></div>
+  return <PageContainer as="main" id="main" tabIndex={-1}>
+    <PageHead title="Trade" className="[&_:where(h1,h2)]:font-bold">
+      <Button variant="primary" {...newTradeButtonProps}>{newTradeButtonLabel}</Button>
+    </PageHead>
     {/* both regions are mounted in every state and only their text swaps: a live region inserted
         together with its content is commonly missed, and this is the irreversible surface */}
-    <div className="live-region" {...noticeProps}>{msg && <p className="notice ok">{msg}</p>}</div>
-    <div className="live-region" {...errorNoticeProps}>{showErrorNotice && <p className="notice error">{err}</p>}</div>
-    <div className="stack-lg">
+    <div className={liveRegion} {...noticeProps}>{msg && <Notice tone="ok" role="none">{msg}</Notice>}</div>
+    <div className={liveRegion} {...errorNoticeProps}>{showErrorNotice && <Notice tone="error" role="none">{err}</Notice>}</div>
+    <div className="[&>*+*]:mt-6">
       {compose && (compose.noFriends
-        ? <div className="empty">
+        ? <EmptyState role="none">
             <p>Trading needs a friend first.</p>
-            <div className="empty-actions"><Link className="btn primary" to="/friends">Find your people</Link></div>
-          </div>
-        : <div className="panel">
-            <form className="form-grid trade-compose" {...compose.formProps}>
-              <fieldset className="trade-fieldset">
-                <legend>You give</legend>
-                <div className="form-grid">
-                  <label>Trade with<select {...compose.friendSelectProps}><option value="">Pick a friend…</option>{compose.friends.map((friend) => <option key={friend.sub} value={friend.sub}>{friend.name}</option>)}</select></label>
-                  <label>You give (from your binder)<select {...compose.offerMemeSelectProps}><option value="">— braincells only, no meme —</option>{compose.binderOptions.map((meme) => <option key={meme.id} value={meme.id}>{meme.label}</option>)}</select></label>
-                  {compose.showOfferShares && <label>Shares to give<input type="number" {...compose.offerSharesInputProps} /><span className="field-hint">{compose.offerSharesHint}</span></label>}
-                  <label>Braincells you add<input type="number" {...compose.offerCoinsInputProps} /><span className="field-hint">{compose.offerCoinsHint}</span></label>
+            <EmptyActions><Link className={buttonClasses('primary')} to="/friends">Find your people</Link></EmptyActions>
+          </EmptyState>
+        : <Panel>
+            <form className={composeGrid} {...compose.formProps}>
+              <Fieldset>
+                <FieldsetLegend>You give</FieldsetLegend>
+                <div className={formGrid}>
+                  <Field><FieldLabel>Trade with</FieldLabel><Select items={[{ value: '', label: 'Pick a friend…' }, ...compose.friends.map((friend) => ({ value: friend.sub, label: friend.name }))]} {...compose.friendSelectProps} /></Field>
+                  <Field><FieldLabel>You give (from your binder)</FieldLabel><Select items={withNoMeme(compose.binderOptions)} {...compose.offerMemeSelectProps} /></Field>
+                  {compose.showOfferShares && <Field><FieldLabel>Shares to give</FieldLabel><Input type="number" {...compose.offerSharesInputProps} /><FieldHint>{compose.offerSharesHint}</FieldHint></Field>}
+                  <Field><FieldLabel>Braincells you add</FieldLabel><Input type="number" {...compose.offerCoinsInputProps} /><FieldHint>{compose.offerCoinsHint}</FieldHint></Field>
                 </div>
-              </fieldset>
-              <fieldset className="trade-fieldset">
-                <legend>You want</legend>
-                <div className="form-grid">
-                  <label>You want (their memes)<select {...compose.askMemeSelectProps}><option value="">— braincells only, no meme —</option>{compose.theirMemeOptions.map((meme) => <option key={meme.id} value={meme.id}>{meme.label}</option>)}</select></label>
-                  {compose.showAskShares && <label>Shares you want<input type="number" {...compose.askSharesInputProps} /></label>}
-                  <label>Braincells you want<input type="number" {...compose.askCoinsInputProps} /></label>
+              </Fieldset>
+              <Fieldset>
+                <FieldsetLegend>You want</FieldsetLegend>
+                <div className={formGrid}>
+                  <Field><FieldLabel>You want (their memes)</FieldLabel><Select items={withNoMeme(compose.theirMemeOptions)} {...compose.askMemeSelectProps} /></Field>
+                  {compose.showAskShares && <Field><FieldLabel>Shares you want</FieldLabel><Input type="number" {...compose.askSharesInputProps} /></Field>}
+                  <Field><FieldLabel>Braincells you want</FieldLabel><Input type="number" {...compose.askCoinsInputProps} /></Field>
                 </div>
-              </fieldset>
-              {compose.error && <p className="notice error" {...compose.errorNoticeProps}>{compose.error}</p>}
-              <div><button className="primary" type="submit" {...compose.proposeButtonProps}>Propose trade</button></div>
+              </Fieldset>
+              {compose.error && <Notice tone="error" {...compose.errorNoticeProps}>{compose.error}</Notice>}
+              <div><Button variant="primary" type="submit" {...compose.proposeButtonProps}>Propose trade</Button></div>
             </form>
-          </div>)}
-      {showLoading && <div className="row-list" {...loadingProps}>
+          </Panel>)}
+      {showLoading && <div className={rowList} {...loadingProps}>
         <span className="sr-only">{loadingLabel}</span>
-        {SKELETON_ROWS.map((row) => <div key={row} className="skeleton skeleton-row trade-card-skeleton" aria-hidden="true" />)}
+        {SKELETON_ROWS.map((row) => <SkeletonRow key={row} className="min-h-[180px]" />)}
       </div>}
-      {showError && <div className="empty error" {...errorNoticeProps}>
+      {showError && <EmptyState error {...errorNoticeProps}>
         <p><strong>{err}</strong></p>
-        <div className="empty-actions"><button className="primary" {...retryButtonProps}>Try again</button></div>
-      </div>}
+        <EmptyActions><Button variant="primary" {...retryButtonProps}>Try again</Button></EmptyActions>
+      </EmptyState>}
       {showLists && <>
         <section aria-labelledby="trades-open">
-          <h3 id="trades-open">Open proposals</h3>
-          {open.length === 0 ? <div className="empty">Nothing pending. Propose something outrageous.</div> : <div className="row-list">{open.map((trade) => <TradeCard key={trade.id} model={trade} />)}</div>}
+          <h3 id="trades-open" className={listHeading}>Open proposals</h3>
+          {open.length === 0 ? <EmptyState role="none">Nothing pending. Propose something outrageous.</EmptyState> : <div className={rowList}>{open.map((trade) => <TradeCard key={trade.id} model={trade} />)}</div>}
         </section>
         <section aria-labelledby="trades-history">
-          <h3 id="trades-history">History</h3>
-          {history.length === 0 ? <div className="empty">No trade history yet.</div> : <div className="row-list">{history.map((trade) => <TradeCard key={trade.id} model={trade} />)}</div>}
+          <h3 id="trades-history" className={listHeading}>History</h3>
+          {history.length === 0 ? <EmptyState role="none">No trade history yet.</EmptyState> : <div className={rowList}>{history.map((trade) => <TradeCard key={trade.id} model={trade} />)}</div>}
         </section>
       </>}
     </div>
     <ConfirmDialog model={confirmDialog} />
-  </main>
+  </PageContainer>
 }

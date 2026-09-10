@@ -40,14 +40,14 @@ export interface MarketplaceScreenModel {
   typeSelectProps: {
     value: string
     'aria-label': string
-    onChange: ChangeEventHandler<HTMLSelectElement>
+    onValueChange: (value: string | null) => void
   }
   tierSelectProps: {
     value: string
     'aria-label': string
-    onChange: ChangeEventHandler<HTMLSelectElement>
+    onValueChange: (value: string | null) => void
   }
-  listedInputProps: { checked: boolean; onChange: ChangeEventHandler<HTMLInputElement> }
+  listedInputProps: { checked: boolean; onCheckedChange: (checked: boolean) => void }
   sortChips: SortChipsModel
   createLinkProps: { to: string }
   filtersToggleProps: {
@@ -217,18 +217,18 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
     syncUrl()
     scheduleFetch()
   }
-  const onTypeChange: ChangeEventHandler<HTMLSelectElement> = (event) => {
-    send({ type: 'SET_TYPE', value: event.target.value })
+  const onTypeChange = (value: string | null) => {
+    send({ type: 'SET_TYPE', value: value ?? '' })
     syncUrl()
     scheduleFetch()
   }
-  const onTierChange: ChangeEventHandler<HTMLSelectElement> = (event) => {
-    send({ type: 'SET_TIER', value: event.target.value })
+  const onTierChange = (value: string | null) => {
+    send({ type: 'SET_TIER', value: value ?? '' })
     syncUrl()
     scheduleFetch()
   }
-  const onListedChange: ChangeEventHandler<HTMLInputElement> = (event) => {
-    send({ type: 'SET_LISTED', listed: event.target.checked })
+  const onListedChange = (listed: boolean) => {
+    send({ type: 'SET_LISTED', listed })
     syncUrl()
     scheduleFetch()
   }
@@ -272,14 +272,14 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
     typeSelectProps: {
       value: context.type,
       'aria-label': 'Filter by media type',
-      onChange: onTypeChange,
+      onValueChange: onTypeChange,
     },
     tierSelectProps: {
       value: context.tier,
       'aria-label': 'Filter by tier',
-      onChange: onTierChange,
+      onValueChange: onTierChange,
     },
-    listedInputProps: { checked: context.listed, onChange: onListedChange },
+    listedInputProps: { checked: context.listed, onCheckedChange: onListedChange },
     sortChips: buildSortChipsModel({
       sortKey: context.sortKey,
       dir: context.sortDir,

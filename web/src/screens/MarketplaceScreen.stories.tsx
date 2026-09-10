@@ -15,9 +15,9 @@ const empty: MarketplaceScreenModel = {
     value: '', placeholder: 'Search memes or tags',
     'aria-label': 'Search memes, tags and creators', onChange: fn(),
   },
-  typeSelectProps: { value: '', 'aria-label': 'Filter by media type', onChange: fn() },
-  tierSelectProps: { value: '', 'aria-label': 'Filter by tier', onChange: fn() },
-  listedInputProps: { checked: false, onChange: fn() },
+  typeSelectProps: { value: '', 'aria-label': 'Filter by media type', onValueChange: fn() },
+  tierSelectProps: { value: '', 'aria-label': 'Filter by tier', onValueChange: fn() },
+  listedInputProps: { checked: false, onCheckedChange: fn() },
   sortChips: buildSortChipsModel({
     sortKey: 'new', dir: 'desc', onChange: fn(), disabledReason: SORT_REASON,
   }),
@@ -83,9 +83,9 @@ export const LoadMoreFailed: Story = {
 export const FiltersNarrowed: Story = {
   args: {
     ...ready,
-    typeSelectProps: { value: 'image', 'aria-label': 'Filter by media type', onChange: fn() },
-    tierSelectProps: { value: 'holo', 'aria-label': 'Filter by tier', onChange: fn() },
-    listedInputProps: { checked: true, onChange: fn() },
+    typeSelectProps: { value: 'image', 'aria-label': 'Filter by media type', onValueChange: fn() },
+    tierSelectProps: { value: 'holo', 'aria-label': 'Filter by tier', onValueChange: fn() },
+    listedInputProps: { checked: true, onCheckedChange: fn() },
     filtersToggleLabel: 'Filters · 3',
     filtersToggleProps: { onClick: fn(), 'aria-expanded': true, 'aria-controls': 'market-filters' },
     filtersPanelProps: { id: 'market-filters', 'data-collapsed': 'false' },

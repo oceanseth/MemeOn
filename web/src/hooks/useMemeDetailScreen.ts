@@ -23,7 +23,7 @@ export interface CapRow { userId: string; sharesLabel: string; label: string }
 export type DetailMediaModel =
   | { kind: 'image'; imageProps: { src: string; alt: string; loading: 'eager'; fetchpriority: 'high'; decoding: 'async' } }
   | { kind: 'video'; videoProps: { src: string; controls: true; loop: true; autoPlay: true; muted: true; playsInline: true; poster: string; 'aria-label': string } }
-export interface DetailActionModel { label: string; className?: 'danger' | undefined; buttonProps: { onClick: () => void } }
+export interface DetailActionModel { label: string; variant?: 'danger' | undefined; buttonProps: { onClick: () => void } }
 export type DetailLiveRegionProps = Pick<HTMLAttributes<HTMLDivElement>, 'role' | 'aria-live'>
 export interface DetailNotFoundModel {
   message: string
@@ -327,7 +327,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
   if (user) actions.push({ label: '🧬 Create a meme from this', buttonProps: { onClick: () => navigate(`/binder/new?remix=${meme.id}`) } })
   if (user && meme.creatorId === ARCHIVE_SUB) actions.push({ label: '📼 This is my meme — claim it', buttonProps: { onClick: () => send({ type: 'SET_CONFIRMING_CLAIM', confirming: true }) } })
   if (myShares === 100) actions.push({ label: meme.private ? '🌐 Make public' : '🙈 Make private', buttonProps: { onClick: () => void act(() => post(`/api/memes/${meme.id}/visibility`, { private: !meme.private }), meme.private ? 'Back on the marketplace 🌐' : 'Hidden from the marketplace 🙈 (still in your binder)') } })
-  if (myShares === 100 && meme.private) actions.push({ label: '🗑️ Delete forever', className: 'danger', buttonProps: { onClick: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: true }) } })
+  if (myShares === 100 && meme.private) actions.push({ label: '🗑️ Delete forever', variant: 'danger', buttonProps: { onClick: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: true }) } })
 
   const signedOut: DetailSignedOutModel | null = user ? null : {
     title: 'Own a piece of this',

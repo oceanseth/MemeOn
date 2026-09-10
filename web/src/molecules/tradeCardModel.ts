@@ -41,7 +41,8 @@ export interface TradeSideSummaryModel {
 export interface TradeActionModel {
   kind: TradeAction
   label: string
-  className: 'primary' | 'danger'
+  /** which button the row wears: the constructive answer is the loudest control */
+  variant: 'primary' | 'danger'
   buttonProps: Pick<
     ButtonHTMLAttributes<HTMLButtonElement>,
     'onClick' | 'disabled' | 'aria-busy' | 'aria-label'
@@ -160,7 +161,7 @@ export function buildTradeCardModel({
             {
               kind: 'cancel',
               label: running('cancel') ? 'Withdrawing…' : 'Withdraw',
-              className: 'danger',
+              variant: 'danger',
               buttonProps: {
                 onClick: () => onRespond(trade, 'cancel'),
                 disabled: locked,
@@ -173,7 +174,7 @@ export function buildTradeCardModel({
             {
               kind: 'accept',
               label: running('accept') ? 'Accepting…' : 'Accept',
-              className: 'primary',
+              variant: 'primary',
               buttonProps: {
                 onClick: () => onRespond(trade, 'accept'),
                 disabled: locked,
@@ -184,7 +185,7 @@ export function buildTradeCardModel({
             {
               kind: 'decline',
               label: running('decline') ? 'Declining…' : 'Decline',
-              className: 'danger',
+              variant: 'danger',
               buttonProps: {
                 onClick: () => onRespond(trade, 'decline'),
                 disabled: locked,

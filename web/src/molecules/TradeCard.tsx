@@ -1,34 +1,45 @@
-import type { TradeCardModel } from './tradeCardModel'
+import { Badge } from '../atoms/Badge'
+import { Button } from '../atoms/Button'
+import { FilterBar } from '../atoms/PageHead'
 import { SideSummary } from './SideSummary'
+import type { TradeCardModel } from './tradeCardModel'
 
 export function TradeCard({ model }: { model: TradeCardModel }) {
   return (
-    <div className="trade-card">
-      <div className="trade-card-head">
-        <div className="trade-parties">
+    <div data-slot="trade-card" className="rounded-card border border-border bg-bg-raised p-4">
+      <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <strong>{model.partiesLabel}</strong>
-          <span className="badge">{model.statusLabel}</span>
+          <Badge>{model.statusLabel}</Badge>
         </div>
-        <span className="spacer" />
-        <time className="trade-time" dateTime={model.createdAtIso} title={model.createdTitle}>
+        <span className="flex-1" />
+        <time
+          className="text-xs text-text-dim"
+          dateTime={model.createdAtIso}
+          title={model.createdTitle}
+        >
           {model.createdLabel}
         </time>
       </div>
-      <div className="trade-sides">
+      {/* ≤760 the deal reads give-above / get-below */}
+      <div className="my-3 grid grid-cols-[1fr_auto_1fr] items-center gap-3.5 [&>*]:min-w-0 max-xl:grid-cols-1 max-xl:gap-2.5">
         <SideSummary model={model.offer} />
-        <div className="trade-swap" aria-hidden="true">
+        <div
+          aria-hidden="true"
+          className="text-[22px] leading-none max-xl:rotate-90 max-xl:justify-self-center"
+        >
           ⇄
         </div>
         <SideSummary model={model.ask} />
       </div>
       {model.actions.length > 0 && (
-        <div className="filter-bar">
+        <FilterBar>
           {model.actions.map((action) => (
-            <button key={action.kind} className={action.className} {...action.buttonProps}>
+            <Button key={action.kind} variant={action.variant} {...action.buttonProps}>
               {action.label}
-            </button>
+            </Button>
           ))}
-        </div>
+        </FilterBar>
       )}
     </div>
   )

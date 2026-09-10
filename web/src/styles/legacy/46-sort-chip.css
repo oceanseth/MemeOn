@@ -13,9 +13,6 @@ button.sort-chip.active {
   box-shadow: inset 0 0 0 1px var(--state-selected-border);
 }
 
-.sort-arrow {
-  margin-left: 4px;
-  color: var(--accent);
-  font-weight: 800;
-}
+/* .sort-arrow emptied by WP2-market (SortChips migrated); delete the rest in WP3 once
+   hooks/useCreateMemeScreen.ts stops writing `sort-chip active` for its mode buttons */
 

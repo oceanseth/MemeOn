@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter, useLocation } from 'react-router-dom'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
 import type { ConnectedScenario } from '../../.storybook/connected-scenario'
 import { MarketplaceView } from './MarketplaceView'
@@ -24,6 +24,13 @@ type Story = StoryObj<typeof meta>
 /** The shareable half of the surface, so a play test can assert the link the filters produce. */
 function CurrentSearch() {
   return <p aria-label="Current search">{useLocation().search}</p>
+}
+
+/** The Base UI trigger opens a portalled listbox, so the option is picked from `screen`. */
+async function pickOption(trigger: HTMLElement, optionName: string): Promise<void> {
+  await userEvent.click(trigger)
+  const listbox = await screen.findByRole('listbox')
+  await userEvent.click(within(listbox).getByRole('option', { name: optionName }))
 }
 
 const marketCalls = (scenario: ConnectedScenario, match = ''): number =>
@@ -52,8 +59,8 @@ export const FiltersSortAndStyles: Story = {
     await userEvent.type(search, 'holo')
     await waitFor(() => expect(canvas.queryByRole('link', { name: /fresh paper/i })).not.toBeInTheDocument())
     await expect(canvas.getByRole('link', { name: /holo hit/i })).toBeInTheDocument()
-    await userEvent.selectOptions(canvas.getByRole('combobox', { name: /media type/i }), 'image')
-    await userEvent.selectOptions(canvas.getByRole('combobox', { name: /tier/i }), 'holo')
+    await pickOption(canvas.getByRole('combobox', { name: /media type/i }), 'Images')
+    await pickOption(canvas.getByRole('combobox', { name: /tier/i }), 'Holo')
     await userEvent.click(canvas.getByRole('checkbox', { name: /for sale/i }))
     await waitFor(() => expect(loaded.scenario.requests.some((request: { path: string }) => request.path.includes('listed=true'))).toBe(true))
     // the filter set is linkable and survives a reload
@@ -131,7 +138,7 @@ export const LoadingThenReady: Story = {
   beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><MarketplaceView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await waitFor(() => expect(canvasElement.querySelector('.skeleton-card')).not.toBeNull())
+    await waitFor(() => expect(canvasElement.querySelector('[data-slot="skeleton-card"]')).not.toBeNull())
     await expect(canvas.getByRole('status')).toHaveTextContent('Searching the market…')
     loaded.scenario.release('market')
     await expect(await canvas.findByRole('link', { name: /fresh paper/ })).toBeInTheDocument()

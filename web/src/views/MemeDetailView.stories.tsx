@@ -104,7 +104,7 @@ export const HolderNameCacheIsMountLocal: Story = {
 
 export const LoadingThenReady: Story = {
   loaders: [connectedLoader({ overrides: { [`GET /api/memes/${listedHolo.id}`]: async (_request, scenario) => { await scenario.waitForRelease('detail'); return { body: { meme: scenario.memes.find((candidate) => candidate.id === listedHolo.id), positions: [{ userId: meLou.sub, shares: 100 }] } } } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><MemeDetailView /></ConnectedStory>,
-  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('.spin')).not.toBeNull()); loaded.scenario.release('detail'); await expect(await canvas.findByRole('heading', { name: listedHolo.title })).toBeInTheDocument() },
+  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('[data-slot="spinner"]')).not.toBeNull()); loaded.scenario.release('detail'); await expect(await canvas.findByRole('heading', { name: listedHolo.title })).toBeInTheDocument() },
 }
 
 export const ListShares: Story = {
