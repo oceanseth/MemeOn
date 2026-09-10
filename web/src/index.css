@@ -22,6 +22,12 @@
    nothing asks for. Path is relative to this file. */
 @source not './lib/cn.test.ts';
 
+/* The `--container-*` theme namespace and `data-slot="page-container"` are enough for the source
+   scanner to manufacture a `container` utility candidate on its own, even though nothing in
+   `web/src` wears the class `container`. Without this exclusion the built stylesheet ships
+   `.container{}` plus a `max-width` rule per breakpoint that nothing uses. */
+@source not inline('container');
+
 @theme static {
   --color-bg: #0b0d14;
   --color-bg-raised: #131722;
