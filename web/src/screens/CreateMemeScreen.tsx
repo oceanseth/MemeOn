@@ -71,6 +71,12 @@ const GIPHY_CELL_PICKED = cn(
 const GIPHY_MARK =
   'text-[11px] font-extrabold tracking-[0.6px] whitespace-nowrap text-text-dim uppercase'
 const LOADING_STATE = 'flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-text-dim'
+/* preflight strips the file-selector-button down to unstyled inline text (border/padding/radius: 0);
+   this rebuilds the UA's own dark-scheme ButtonFace/ButtonText chrome the baseline screenshot shows —
+   an achromatic grey button, not the app's navy control fill, since it stands in for OS chrome. */
+const FILE_INPUT =
+  'file:mr-1.5 file:cursor-pointer file:rounded-xs file:border-0 file:bg-neutral-500 ' +
+  'file:px-2.5 file:py-0.5 file:font-medium file:text-white hover:file:bg-neutral-400'
 
 /** One source chip. The engine names the state; the chrome for that state lives here. */
 function ModeChip({
@@ -458,14 +464,14 @@ export function CreateMemeScreen({
               <>
                 <Field>
                   <FieldLabel>{uploadImageLabel}</FieldLabel>
-                  <Input {...imageFileInputProps} />
+                  <Input {...imageFileInputProps} className={FILE_INPUT} />
                   <FieldHint className="mt-0" id={helpIds.uploadImage}>
                     {uploadImageHelpText}
                   </FieldHint>
                 </Field>
                 <Field>
                   <FieldLabel>{uploadVideoLabel}</FieldLabel>
-                  <Input {...videoFileInputProps} />
+                  <Input {...videoFileInputProps} className={FILE_INPUT} />
                   <FieldHint className="mt-0" id={helpIds.uploadVideo}>
                     {uploadVideoHelpText}
                   </FieldHint>
@@ -500,8 +506,13 @@ export function CreateMemeScreen({
                    inline-flex, so the notice still shrink-wraps its copy the way the block did */
                 <Notice tone="busy" role="none" className="inline-flex items-center gap-2">
                   <Spinner />
-                  {busy}
-                  {busyElapsedLabel && <FieldCounter>{busyElapsedLabel}</FieldCounter>}
+                  {/* the counter is grouped with the busy copy, not a third flex item, so it lands
+                      flush against the text the way the legacy floated `.field-counter` did — the
+                      row's own gap-2 (spinner-to-text) stays untouched */}
+                  <span>
+                    {busy}
+                    {busyElapsedLabel && <FieldCounter>{busyElapsedLabel}</FieldCounter>}
+                  </span>
                 </Notice>
               )}
             </div>
