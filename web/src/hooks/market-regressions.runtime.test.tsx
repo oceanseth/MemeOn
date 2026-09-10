@@ -126,13 +126,14 @@ async function click(element: HTMLElement): Promise<void> {
   })
 }
 
+/** Each card names itself through `aria-labelledby`, so the list reads as its accessible names. */
 function cardTitles(): string[] {
-  return [...host.querySelectorAll<HTMLElement>('.meme-title')]
-    .map((element) => element.textContent ?? '')
+  return [...host.querySelectorAll<HTMLElement>('article[aria-labelledby]')]
+    .map((card) => document.getElementById(card.getAttribute('aria-labelledby') ?? '')?.textContent ?? '')
 }
 
 function sentinel(): HTMLElement | null {
-  return host.querySelector('.card-grid + div')
+  return host.querySelector('[data-slot="load-more"]')
 }
 
 let host: HTMLDivElement
@@ -249,9 +250,10 @@ describe('MemeDetailView mutation overlap', () => {
       await settle()
     })
 
-    await eventually(() => expect(host.querySelector('.notice.error')?.textContent).toContain('delete conflicted'))
+    await eventually(() => expect(host.querySelector('[data-slot="notice"]')?.textContent).toContain('delete conflicted'))
     expect(host.querySelector('dialog[open][role="alertdialog"]')).toBeNull()
-    expect(host.querySelector('.pack-overlay')).toBeNull()
+    // the failure ends the request: nothing on the page is still presented as in flight
+    expect(host.querySelector('[aria-busy="true"]')).toBeNull()
     expect(button('Delete forever').disabled).toBe(false)
 
     await click(button('Delete forever'))

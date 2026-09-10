@@ -8,7 +8,11 @@ export interface MemeplexPanelModel {
   showOriginalLabel: boolean
   family: readonly MemeCardModel[]
   canEdit: boolean
-  pickerProps: { value: string; 'aria-label': string; onChange: ChangeEventHandler<HTMLSelectElement> }
+  pickerProps: {
+    value: string
+    'aria-label': string
+    onValueChange: (value: string | null) => void
+  }
   linkable: readonly { id: string; title: string }[]
   pickLinkButtonProps: { onClick: MouseEventHandler<HTMLButtonElement>; disabled: boolean }
   showPickLink: boolean
@@ -79,7 +83,11 @@ export function buildMemeplexPanelModel({
     showOriginalLabel: !!plex?.original && plex.ancestors[0]?.id === plex.original.id,
     family: family.map(buildMemeCardModel),
     canEdit,
-    pickerProps: { value: pick, 'aria-label': 'Link a meme from your binder', onChange: (event) => onPickChange(event.target.value) },
+    pickerProps: {
+      value: pick,
+      'aria-label': 'Link a meme from your binder',
+      onValueChange: (value) => onPickChange(value ?? ''),
+    },
     linkable: linkable.map((candidate) => ({ id: candidate.id, title: candidate.title })),
     pickLinkButtonProps: { onClick: () => onAdd(pick), disabled: !pick },
     showPickLink: !!pick,

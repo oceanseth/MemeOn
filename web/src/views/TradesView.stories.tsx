@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
-import { expect, userEvent, waitFor, within } from 'storybook/test'
+import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory, RemountStory } from '../../.storybook/connected-story'
 import { friendAccepted, giftablePaper, paperMeme, silverMeme } from '../../.storybook/fixtures'
 import { TradesView } from './TradesView'
@@ -23,6 +23,23 @@ type Story = StoryObj<typeof meta>
 
 async function flushDeliveredCallbacks(): Promise<void> {
   await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+}
+
+/** The Base UI trigger opens a portalled listbox, so the option is picked from `screen`. */
+async function pickOption(trigger: HTMLElement, optionName: string | RegExp): Promise<void> {
+  await userEvent.click(trigger)
+  const listbox = await screen.findByRole('listbox')
+  await userEvent.click(within(listbox).getByRole('option', { name: optionName }))
+}
+
+/**
+ * The trigger is as wide as its widest option, so it carries a hidden copy of every label —
+ * `toHaveTextContent` reads the option list. The chosen value is what is left without that copy.
+ */
+function chosenLabel(trigger: HTMLElement): string {
+  const withoutSizer = trigger.cloneNode(true) as HTMLElement
+  withoutSizer.querySelector('[data-slot="select-sizer"]')?.remove()
+  return withoutSizer.textContent?.trim() ?? ''
 }
 
 export const CloseReopenRejectsLateComposeAndProposes: Story = {
@@ -66,9 +83,9 @@ export const CloseReopenRejectsLateComposeAndProposes: Story = {
     await expect(selects[2]).not.toHaveTextContent('Ask A')
     loaded.scenario.release('friends-b'); loaded.scenario.release('binder-b'); loaded.scenario.release('memes-b')
     await waitFor(() => expect(selects[0]).toHaveTextContent('Friend B'))
-    await userEvent.selectOptions(selects[0]!, 'friend-b')
-    await userEvent.selectOptions(selects[1]!, 'offer-b')
-    await userEvent.selectOptions(selects[2]!, 'ask-b')
+    await pickOption(selects[0]!, 'Friend B')
+    await pickOption(selects[1]!, /^Offer B/)
+    await pickOption(selects[2]!, 'Ask B')
     await expect(selects[0]).not.toHaveTextContent('Friend A')
     await expect(selects[1]).not.toHaveTextContent('Offer A')
     await expect(selects[2]).not.toHaveTextContent('Ask A')
@@ -116,16 +133,16 @@ export const BReadyRejectsLateAComposeResults: Story = {
       expect(selects[0]).toHaveTextContent('Friend B')
       expect(selects[1]).toHaveTextContent('Offer B')
     })
-    await userEvent.selectOptions(selects[0]!, 'friend-b')
+    await pickOption(selects[0]!, 'Friend B')
     await waitFor(() => expect(selects[2]).toHaveTextContent('Ask B'))
-    await userEvent.selectOptions(selects[1]!, 'offer-b')
-    await userEvent.selectOptions(selects[2]!, 'ask-b')
+    await pickOption(selects[1]!, /^Offer B/)
+    await pickOption(selects[2]!, 'Ask B')
     loaded.scenario.release('late-friends-a'); loaded.scenario.release('late-binder-a'); loaded.scenario.release('late-memes-a')
     await waitFor(() => expect(loaded.scenario.checkpoints).toEqual(expect.arrayContaining(['late-friends-a-returned', 'late-binder-a-returned', 'late-memes-a-returned'])))
     await flushDeliveredCallbacks()
-    await expect(selects[0]).toHaveValue('friend-b')
-    await expect(selects[1]).toHaveValue('offer-b')
-    await expect(selects[2]).toHaveValue('ask-b')
+    await expect(chosenLabel(selects[0]!)).toBe('Friend B')
+    await expect(chosenLabel(selects[1]!)).toMatch(/^Offer B/)
+    await expect(chosenLabel(selects[2]!)).toBe('Ask B')
     await expect(selects[0]).not.toHaveTextContent('Friend A')
     await expect(selects[1]).not.toHaveTextContent('Offer A')
     await expect(selects[2]).not.toHaveTextContent('Ask A')
@@ -166,7 +183,7 @@ export const MemeTitleCacheIsMountLocal: Story = {
 
 export const LoadingThenReady: Story = {
   loaders: [connectedLoader({ overrides: { 'GET /api/trades': async (_request, scenario) => { await scenario.waitForRelease('trades'); return { body: { trades: scenario.trades } } } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><TradesView /></ConnectedStory>,
-  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('.skeleton')).not.toBeNull()); loaded.scenario.release('trades'); await expect(await canvas.findByText(/fresh paper/)).toBeInTheDocument() },
+  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('[data-slot="skeleton-row"]')).not.toBeNull()); loaded.scenario.release('trades'); await expect(await canvas.findByText(/fresh paper/)).toBeInTheDocument() },
 }
 
 /** a failed load is an error with a way out, never a fake "nothing pending" */
@@ -181,5 +198,5 @@ export const InitialFailureOffersRetry: Story = {
 
 export const ProposalFailureStaysInComposer: Story = {
   loaders: [connectedLoader({ failures: { 'POST /api/trades': { error: 'proposal rejected', status: 409 } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><TradesView /></ConnectedStory>,
-  play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click(await canvas.findByRole('button', { name: /Propose a trade/ })); const selects = await canvas.findAllByRole('combobox'); await waitFor(() => expect(selects[0]).toHaveTextContent('pal')); await userEvent.selectOptions(selects[0]!, 'user-pal'); await userEvent.type(canvas.getAllByRole('spinbutton')[1]!, '5'); await userEvent.click(canvas.getByRole('button', { name: 'Propose trade' })); await expect(await canvas.findByText('proposal rejected')).toBeInTheDocument(); await expect(canvas.getByRole('button', { name: 'Close' })).toBeInTheDocument() },
+  play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click(await canvas.findByRole('button', { name: /Propose a trade/ })); const selects = await canvas.findAllByRole('combobox'); await waitFor(() => expect(selects[0]).toHaveTextContent('pal')); await pickOption(selects[0]!, 'pal'); await userEvent.type(canvas.getAllByRole('spinbutton')[1]!, '5'); await userEvent.click(canvas.getByRole('button', { name: 'Propose trade' })); await expect(await canvas.findByText('proposal rejected')).toBeInTheDocument(); await expect(canvas.getByRole('button', { name: 'Close' })).toBeInTheDocument() },
 }

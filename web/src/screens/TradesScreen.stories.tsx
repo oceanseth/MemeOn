@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, fireEvent, fn, userEvent, within } from 'storybook/test'
+import { expect, fireEvent, fn, screen, userEvent, within } from 'storybook/test'
 import { MemoryRouter } from 'react-router-dom'
 import type { ChangeEvent } from 'react'
 import { friendAccepted, giftablePaper, meLou, paperMeme, proposedTrade, silverMeme } from '../../.storybook/fixtures'
@@ -9,6 +9,12 @@ import { buildTradeCardModel, type TradeMemeInfoMap } from '../molecules/tradeCa
 import { TradesScreen } from './TradesScreen'
 
 const noop = fn()
+/** The Base UI trigger opens a portalled listbox, so the option is picked from `screen`. */
+async function pickOption(trigger: HTMLElement, optionName: string): Promise<void> {
+  await userEvent.click(trigger)
+  const listbox = await screen.findByRole('listbox')
+  await userEvent.click(within(listbox).getByRole('option', { name: optionName }))
+}
 const composerActions = {
   friend: fn(), offerMeme: fn(), offerShares: fn(), offerCoins: fn(), askMeme: fn(), askShares: fn(), askCoins: fn(), propose: fn(), submit: fn(),
 }
@@ -31,12 +37,12 @@ const empty: TradesScreenModel = {
 const compose: TradeComposerModel = {
   formProps: { id: 'trade-composer', onSubmit: (event) => { event.preventDefault(); composerActions.submit() } },
   noFriends: false,
-  friendSelectProps: { value: '', onChange: (event: ChangeEvent<HTMLSelectElement>) => composerActions.friend(event.target.value) }, friends: [friendAccepted],
-  offerMemeSelectProps: { value: '', onChange: (event: ChangeEvent<HTMLSelectElement>) => composerActions.offerMeme(event.target.value) },
+  friendSelectProps: { value: '', onValueChange: (value: string | null) => composerActions.friend(value) }, friends: [friendAccepted],
+  offerMemeSelectProps: { value: '', onValueChange: (value: string | null) => composerActions.offerMeme(value) },
   binderOptions: [{ id: giftablePaper.id, label: `${giftablePaper.title} (you hold ${giftablePaper.myShares})` }], showOfferShares: true,
   offerSharesInputProps: { value: 5, min: 1, max: 12, onChange: (event: ChangeEvent<HTMLInputElement>) => composerActions.offerShares(Number(event.target.value)) }, offerSharesHint: 'you hold 12',
   offerCoinsInputProps: { value: 0, min: 0, max: meLou.coins, onChange: (event: ChangeEvent<HTMLInputElement>) => composerActions.offerCoins(Number(event.target.value)) }, offerCoinsHint: `🧠 ${meLou.coins} available`,
-  askMemeSelectProps: { value: '', onChange: (event: ChangeEvent<HTMLSelectElement>) => composerActions.askMeme(event.target.value) }, theirMemeOptions: [{ id: silverMeme.id, label: silverMeme.title }], showAskShares: true,
+  askMemeSelectProps: { value: '', onValueChange: (value: string | null) => composerActions.askMeme(value) }, theirMemeOptions: [{ id: silverMeme.id, label: silverMeme.title }], showAskShares: true,
   askSharesInputProps: { value: 5, min: 1, max: 100, onChange: (event: ChangeEvent<HTMLInputElement>) => composerActions.askShares(Number(event.target.value)) },
   askCoinsInputProps: { value: 0, min: 0, onChange: (event: ChangeEvent<HTMLInputElement>) => composerActions.askCoins(Number(event.target.value)) },
   error: null, errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' }, proposeButtonProps: { onClick: composerActions.propose, disabled: false },
@@ -74,7 +80,7 @@ export const Proposed: Story = {
 }
 export const Composing: Story = {
   args: { phase: 'composing', newTradeButtonLabel: 'Close', newTradeButtonProps: { onClick: noop, 'aria-expanded': true, 'aria-controls': 'trade-composer' }, compose },
-  play: async ({ canvasElement }) => { const canvas = within(canvasElement); const selects = canvas.getAllByRole('combobox'); await userEvent.selectOptions(selects[0]!, friendAccepted.sub); await userEvent.selectOptions(selects[1]!, giftablePaper.id); await userEvent.selectOptions(selects[2]!, silverMeme.id); const inputs = canvas.getAllByRole('spinbutton'); for (const [input, value] of [[inputs[0], '7'], [inputs[1], '12'], [inputs[2], '6'], [inputs[3], '8']] as const) await fireEvent.change(input!, { target: { value } }); await userEvent.click(canvas.getByRole('button', { name: 'Propose trade' })); await expect(composerActions.friend).toHaveBeenCalledWith(friendAccepted.sub); await expect(composerActions.offerMeme).toHaveBeenCalledWith(giftablePaper.id); await expect(composerActions.askMeme).toHaveBeenCalledWith(silverMeme.id); await expect(composerActions.offerShares).toHaveBeenLastCalledWith(7); await expect(composerActions.offerCoins).toHaveBeenLastCalledWith(12); await expect(composerActions.askShares).toHaveBeenLastCalledWith(6); await expect(composerActions.askCoins).toHaveBeenLastCalledWith(8); await expect(composerActions.submit).toHaveBeenCalledOnce() },
+  play: async ({ canvasElement }) => { const canvas = within(canvasElement); const selects = canvas.getAllByRole('combobox'); await pickOption(selects[0]!, friendAccepted.name); await pickOption(selects[1]!, `${giftablePaper.title} (you hold ${giftablePaper.myShares})`); await pickOption(selects[2]!, silverMeme.title); const inputs = canvas.getAllByRole('spinbutton'); for (const [input, value] of [[inputs[0], '7'], [inputs[1], '12'], [inputs[2], '6'], [inputs[3], '8']] as const) await fireEvent.change(input!, { target: { value } }); await userEvent.click(canvas.getByRole('button', { name: 'Propose trade' })); await expect(composerActions.friend).toHaveBeenCalledWith(friendAccepted.sub); await expect(composerActions.offerMeme).toHaveBeenCalledWith(giftablePaper.id); await expect(composerActions.askMeme).toHaveBeenCalledWith(silverMeme.id); await expect(composerActions.offerShares).toHaveBeenLastCalledWith(7); await expect(composerActions.offerCoins).toHaveBeenLastCalledWith(12); await expect(composerActions.askShares).toHaveBeenLastCalledWith(6); await expect(composerActions.askCoins).toHaveBeenLastCalledWith(8); await expect(composerActions.submit).toHaveBeenCalledOnce() },
 }
 /** nothing on either side: the button cannot post a nothing-for-nothing proposal */
 export const ComposingEmptyProposal: Story = {

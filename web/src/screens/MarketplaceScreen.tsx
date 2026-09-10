@@ -1,8 +1,55 @@
 import { Link } from 'react-router-dom'
 import { TIERS } from '../../../shared/tiers'
+import { Button, buttonClasses } from '../atoms/Button'
+import { Checkbox } from '../atoms/Checkbox'
+import { EmptyActions, EmptyState, PageState } from '../atoms/EmptyState'
+import { Input } from '../atoms/Input'
 import { MemeCard } from '../atoms/MemeCard'
+import { Notice } from '../atoms/Notice'
+import { PageContainer } from '../atoms/PageContainer'
+import { FilterBar, PageHead } from '../atoms/PageHead'
+import { Select, type SelectOption } from '../atoms/Select'
+import { SkeletonCard } from '../atoms/Skeleton'
+import { cn } from '../lib/cn'
 import type { MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
 import { SortChips } from '../molecules/SortChips'
+
+const MEDIA_ITEMS: readonly SelectOption[] = [
+  { value: '', label: 'All media' },
+  { value: 'image', label: 'Images' },
+  { value: 'video', label: 'Videos' },
+]
+
+const TIER_ITEMS: readonly SelectOption[] = [
+  { value: '', label: 'All tiers' },
+  ...TIERS.map((tier) => ({ value: tier.key, label: tier.name })),
+]
+
+/**
+ * `.market-controls`: a full-bleed plate that docks under the topbar while the grid scrolls. A
+ * phone has no vertical budget to pin filters, so ≤720 the whole treatment is simply absent.
+ */
+const marketControls = cn(
+  'border-b border-border pt-0 pb-2.5',
+  'lg:sticky lg:top-(--topbar-h) lg:z-(--z-sticky)',
+  'lg:bg-[color-mix(in_oklab,var(--color-bg)_92%,transparent)] lg:backdrop-blur-[10px]',
+  'lg:[margin-inline:calc(50%-50vw)]',
+  'lg:[padding-inline:calc(max(0px,50vw-var(--container-page)/2)+20px)]',
+)
+
+/** `.card-grid` + the ≤560 two-up rule, list reset included. */
+const cardGrid = 'm-0 grid list-none grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5 p-0 max-sm:grid-cols-2 max-sm:gap-3'
+
+/**
+ * `.card-slot`: skip-rendering box around a card. `content-visibility` must not sit on the card
+ * itself — it would clip the blurred glow bloom, which the padding/negative margin pair contains
+ * without moving the grid track.
+ */
+const cardSlot = cn(
+  '[content-visibility:auto] [contain-intrinsic-size:auto_340px]',
+  'pointer-events-none p-[30px] [margin:-30px] [&>*]:pointer-events-auto',
+  'max-sm:p-5 max-sm:[margin:-20px]',
+)
 
 /** Marketplace list as a function of its engine-provided model. */
 export function MarketplaceScreen({
@@ -13,65 +60,83 @@ export function MarketplaceScreen({
   loadMoreError, endOfListLabel, sentinelRef,
 }: MarketplaceScreenModel) {
   return (
-    <main className="container" id="main" tabIndex={-1}>
-      <div className="market-controls">
-        <div className="page-head">
-          <h2>Marketplace</h2>
-          <div className="filter-bar">
-            <input type="search" {...queryInputProps} />
-            <button type="button" className="market-filters-toggle" {...filtersToggleProps}>
+    <PageContainer as="main" id="main" tabIndex={-1}>
+      <div data-slot="market-controls" className={marketControls}>
+        <PageHead title="Marketplace" className="mt-[14px] mb-2.5 [&_:where(h1,h2)]:font-bold">
+          <FilterBar>
+            <Input
+              type="search"
+              className="max-w-[420px] min-w-[220px] flex-[1_1_220px]"
+              {...queryInputProps}
+            />
+            <Button
+              className="hidden max-lg:inline-flex"
+              data-slot="market-filters-toggle"
+              {...filtersToggleProps}
+            >
               {filtersToggleLabel}
-            </button>
-            <Link {...createLinkProps} className="btn primary">＋ Mint a meme</Link>
-          </div>
-        </div>
-        <div className="market-filters" {...filtersPanelProps}>
-          <div className="filter-bar">
-            <select {...typeSelectProps}>
-              <option value="">All media</option><option value="image">Images</option><option value="video">Videos</option>
-            </select>
-            <select {...tierSelectProps}>
-              <option value="">All tiers</option>
-              {TIERS.map((tier) => <option key={tier.key} value={tier.key}>{tier.name}</option>)}
-            </select>
-            <label><input type="checkbox" {...listedInputProps} /> For sale</label>
-          </div>
+            </Button>
+            <Link {...createLinkProps} className={buttonClasses('primary')}>＋ Mint a meme</Link>
+          </FilterBar>
+        </PageHead>
+        {/* on phones the filter rows collapse behind a disclosure so the grid starts on the first screenful */}
+        <div
+          data-slot="market-filters"
+          className="flex flex-col gap-2.5 max-lg:data-[collapsed=true]:hidden"
+          {...filtersPanelProps}
+        >
+          <FilterBar>
+            <Select items={MEDIA_ITEMS} {...typeSelectProps} />
+            <Select items={TIER_ITEMS} {...tierSelectProps} />
+            <Checkbox label="For sale" {...listedInputProps} />
+          </FilterBar>
           <SortChips model={sortChips} />
         </div>
-        <div className="market-summary" {...statusProps}>
+        {/* one status line under the chips: count, active filters, clear. Also the surface's live region. */}
+        <div
+          data-slot="market-summary"
+          className="mt-2.5 flex flex-wrap items-center gap-2 text-sm text-text-dim"
+          {...statusProps}
+        >
           <span>{resultsLabel}</span>
-          {clearFiltersProps && <button type="button" {...clearFiltersProps}>Clear filters</button>}
+          {clearFiltersProps && (
+            <Button className="rounded-pill px-2.5 py-1 text-xs" {...clearFiltersProps}>
+              Clear filters
+            </Button>
+          )}
         </div>
       </div>
       {showLoading ? (
-        <div className="card-grid market-grid" aria-hidden="true">
+        <div className={cn(cardGrid, 'mt-[18px]')} aria-hidden="true">
           {Array.from({ length: skeletonCount }, (_, slot) => (
-            <div key={slot} className="skeleton skeleton-card" />
+            <SkeletonCard key={slot} />
           ))}
         </div>
       ) : showError ? (
-        <div className="empty error" role="alert">
+        <EmptyState error>
           <p>{errorMessage}</p>
-          <div className="empty-actions">
-            <button type="button" className="primary" {...retryButtonProps}>{retryLabel}</button>
-          </div>
-        </div>
+          <EmptyActions>
+            <Button variant="primary" {...retryButtonProps}>{retryLabel}</Button>
+          </EmptyActions>
+        </EmptyState>
       ) : showEmpty ? (
-        <div className="empty">No memes match. Be the change — mint one!</div>
+        <EmptyState role="none">No memes match. Be the change — mint one!</EmptyState>
       ) : showGrid ? <>
-        <div className="card-grid market-grid" role="list">
+        <div data-slot="market-grid" className={cn(cardGrid, 'mt-[18px]')} role="list">
           {cards.map((card) => (
-            <div key={card.id} className="card-slot" role="listitem"><MemeCard model={card} /></div>
+            <div key={card.id} className={cardSlot} role="listitem"><MemeCard model={card} /></div>
           ))}
         </div>
         {showMore && (
-          <div className="empty-actions" ref={sentinelRef}>
-            {loadMoreError && <p className="notice error" role="alert">{loadMoreError}</p>}
-            <button type="button" {...loadMoreProps}>{loadMoreLabel}</button>
+          <div ref={sentinelRef} data-slot="load-more">
+            <EmptyActions>
+              {loadMoreError && <Notice tone="error">{loadMoreError}</Notice>}
+              <Button {...loadMoreProps}>{loadMoreLabel}</Button>
+            </EmptyActions>
           </div>
         )}
-        {endOfListLabel && <p className="page-state">{endOfListLabel}</p>}
+        {endOfListLabel && <PageState>{endOfListLabel}</PageState>}
       </> : null}
-    </main>
+    </PageContainer>
   )
 }

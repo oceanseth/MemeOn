@@ -1,31 +1,69 @@
 import { Link } from 'react-router-dom'
 import { glowStyleFor } from '../../../shared/tiers'
+import { Badge } from '../atoms/Badge'
+import { Button, buttonClasses } from '../atoms/Button'
+import { EmptyActions, EmptyState, Muted } from '../atoms/EmptyState'
+import { Field, FieldLabel, Hint } from '../atoms/Field'
+import { Input } from '../atoms/Input'
 import { tierClasses } from '../atoms/MemeCard'
+import { Notice } from '../atoms/Notice'
+import { PageContainer } from '../atoms/PageContainer'
+import { FilterBar } from '../atoms/PageHead'
+import { Panel } from '../atoms/Panel'
+import { Spinner } from '../atoms/Spinner'
+import { cn } from '../lib/cn'
 import type { MemeDetailScreenModel } from '../hooks/useMemeDetailScreen'
 import { ConfirmDialog } from '../molecules/ConfirmDialog'
 import { MemeplexPanel } from '../organisms/MemeplexPanel'
 
+/** UA paragraph rhythm, which preflight resets: the column reads as prose, not as a stack. */
+const prose = 'leading-[1.55] [margin-block:1em]'
+
+/** `.person-row`: the sources list and the cap table are the same row. */
+const personRow = cn(
+  'flex flex-wrap items-center gap-3 gap-y-2 rounded-[12px] border border-border bg-bg-raised p-3',
+  '[&>*]:min-w-0',
+)
+
+/** `.row-list` */
+const rowList = 'mt-2.5 flex flex-col gap-2.5'
+
+/** the caption under a panel title */
+const panelCaption = 'mt-1.5 mb-2.5 text-[13.5px] leading-[1.55] text-text-dim'
+
 /** Meme detail as a function of its engine-provided model. */
 export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingLabel, detail }: MemeDetailScreenModel) {
   if (showNotFound) return (
-    <main className="container" id="main" tabIndex={-1}>
-      <div className="empty" role="status" style={{ marginTop: 60 }}>
+    <PageContainer as="main" id="main" tabIndex={-1}>
+      <EmptyState className="mt-[60px]">
         <p>{notFound.message}</p>
-        <div className="empty-actions"><Link className="btn" {...notFound.linkProps}>{notFound.linkLabel}</Link></div>
-      </div>
-    </main>
+        <EmptyActions><Link className={buttonClasses()} {...notFound.linkProps}>{notFound.linkLabel}</Link></EmptyActions>
+      </EmptyState>
+    </PageContainer>
   )
   if (showLoading || !detail) return (
-    <main className="container" id="main" tabIndex={-1}>
-      <div className="loading-state" role="status"><span className="spin" aria-hidden="true" />{loadingLabel}</div>
-    </main>
+    <PageContainer as="main" id="main" tabIndex={-1}>
+      {/* `.loading-state`: a labelled spinner row, never a bare spinner */}
+      <div
+        data-slot="loading-state"
+        className="flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-text-dim"
+        role="status"
+      >
+        <Spinner />{loadingLabel}
+      </div>
+    </PageContainer>
   )
 
   return (
-    <main className="container" id="main" tabIndex={-1}>
-      <div className="detail-layout">
-        <div className="detail-rail" style={{ alignSelf: 'start' }}>
-          <div className={`meme-card meme-card-lg ${tierClasses(detail.tierKey)}`} data-glow-style={glowStyleFor(detail.tierKey)}>
+    <PageContainer as="main" id="main" tabIndex={-1}>
+      {/* stacks ~140px before the rail would drop under the card's own width */}
+      <div className="mt-7 grid grid-cols-[minmax(280px,420px)_1fr] gap-7 max-2xl:grid-cols-1">
+        <div className="self-start">
+          {/* the hero card still wears the card package's foil classes; only its ≤900 cap is ours */}
+          <div
+            className={`meme-card meme-card-lg ${tierClasses(detail.tierKey)} max-2xl:mx-auto max-2xl:w-full max-2xl:max-w-[480px]`}
+            data-glow-style={glowStyleFor(detail.tierKey)}
+          >
             <div className="meme-card-inner">
               {detail.media.kind === 'video' ? <video className="meme-art" {...detail.media.videoProps} /> : <img className="meme-art" {...detail.media.imageProps} />}
               <div className="meme-meta">
@@ -35,68 +73,71 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
                   <span><span aria-hidden="true">👁️ {detail.viewsLabel} · 🔁 {detail.resharesLabel}</span><span className="sr-only">{detail.statsSrLabel}</span></span>
                   <span><span aria-hidden="true">🧠 {detail.valueLabel}</span><span className="sr-only">{detail.valueSrLabel}</span></span>
                 </span>
-                {detail.listing && <span className="meme-sub"><span className="badge">for sale</span><span>{detail.listing.cardLabel}</span></span>}
+                {detail.listing && <span className="meme-sub"><Badge>for sale</Badge><span>{detail.listing.cardLabel}</span></span>}
               </div>
             </div>
           </div>
-          <div className="tier-ladder" style={{ color: detail.tierColor }}>
-            <div className="tier-ladder-track" {...detail.tierLadder.meterProps}><div className="tier-ladder-fill" style={detail.tierLadder.fillStyle} /></div>
-            <p className="tier-ladder-next">{detail.tierLadder.nextLabel}</p>
+          {/* the tier meter, in the card's own foil colour (currentColor from the inline tint) */}
+          <div className="mt-3" style={{ color: detail.tierColor }}>
+            <div className="h-1.5 overflow-hidden rounded-pill bg-bg-raised" {...detail.tierLadder.meterProps}>
+              <div className="h-full rounded-pill bg-current" style={detail.tierLadder.fillStyle} />
+            </div>
+            <p className="mt-1.5 mb-0 text-sm text-text-dim">{detail.tierLadder.nextLabel}</p>
           </div>
         </div>
         <div>
-          <h2 style={{ marginTop: 0 }}>{detail.title}{detail.private && <span className="badge" style={{ marginLeft: 10, verticalAlign: 'middle' }}>🙈 private</span>}</h2>
-          <p className="muted">
-            minted by <Link {...detail.creatorLinkProps}>{detail.creatorName}</Link> · owned by <Link {...detail.ownerLinkProps}>{detail.ownerName}</Link>
+          <h2 className="mt-0 mb-2 text-xl font-bold">{detail.title}{detail.private && <Badge className="ml-2.5 align-middle">🙈 private</Badge>}</h2>
+          <p className={cn(prose, 'text-text-dim')}>
+            minted by <Link className="text-accent no-underline" {...detail.creatorLinkProps}>{detail.creatorName}</Link> · owned by <Link className="text-accent no-underline" {...detail.ownerLinkProps}>{detail.ownerName}</Link>
             {detail.tagsLabel && <> · {detail.tagsLabel}</>}
-            {detail.remixLinkProps && <> · <Link {...detail.remixLinkProps}>🧬 remix</Link></>}
-            {detail.sourceLinkProps && <> · <a {...detail.sourceLinkProps}>{detail.sourceLabel}</a></>}
+            {detail.remixLinkProps && <> · <Link className="text-accent no-underline" {...detail.remixLinkProps}>🧬 remix</Link></>}
+            {detail.sourceLinkProps && <> · <a className="text-accent no-underline" {...detail.sourceLinkProps}>{detail.sourceLabel}</a></>}
           </p>
-          <p style={{ fontSize: 18 }}>👁️ <strong>{detail.viewsLabel}</strong> {detail.viewsWord} · 🔁 <strong>{detail.resharesLabel}</strong> {detail.resharesWord} · 🧠 <strong>{detail.valueLabel}</strong> card value{detail.holdingsLabel && <> · you hold <strong>{detail.holdingsLabel}</strong></>}</p>
-          <p className="muted" style={{ fontSize: 14 }}>{detail.tierHype}</p>
-          {detail.signedOut && <div className="panel" style={{ marginBottom: 16 }}>
+          <p className={cn(prose, 'text-[18px]')}>👁️ <strong>{detail.viewsLabel}</strong> {detail.viewsWord} · 🔁 <strong>{detail.resharesLabel}</strong> {detail.resharesWord} · 🧠 <strong>{detail.valueLabel}</strong> card value{detail.holdingsLabel && <> · you hold <strong>{detail.holdingsLabel}</strong></>}</p>
+          <p className={cn(prose, 'text-sm text-text-dim')}>{detail.tierHype}</p>
+          {detail.signedOut && <Panel className="mb-4">
             <h3>{detail.signedOut.title}</h3>
-            <p className="muted" style={{ fontSize: 13.5, margin: '6px 0 10px' }}>{detail.signedOut.body}</p>
-            <div className="filter-bar">
-              <button className="primary" {...detail.signedOut.loginButtonProps}>{detail.signedOut.loginLabel}</button>
-              <Link className="btn" {...detail.signedOut.browseLinkProps}>{detail.signedOut.browseLabel}</Link>
-            </div>
-            {detail.signedOut.error && <p className="notice error" {...detail.signedOut.errorProps}>{detail.signedOut.error}</p>}
-          </div>}
-          <div className="panel" style={{ marginBottom: 16 }}>
-            <h3>Share to go viral</h3><p className="muted" style={{ fontSize: 13.5, margin: '6px 0 10px' }}>Every load of this link counts a view (views drive the tier ladder); each new place it's shared — a subreddit, a group chat, an unfurl — counts a reshare.</p>
-            <div className="filter-bar"><input {...detail.shareInputProps} style={{ flex: 1, minWidth: 200 }} /><button className="primary" {...detail.copyButtonProps}>{detail.copyButtonLabel}</button><a className="btn" {...detail.previewLinkProps}>Preview card</a></div>
-          </div>
-          {detail.actions.length > 0 && <div className="filter-bar" style={{ marginBottom: 16 }}>{detail.actions.map((action) => <button key={action.label} className={action.className} {...action.buttonProps}>{action.label}</button>)}</div>}
-          <div {...detail.noticeProps}>{detail.notice && <p className="notice ok">{detail.notice}</p>}</div>
-          <div {...detail.errorProps}>{detail.error && <p className="notice error">{detail.error}</p>}</div>
-          {detail.listing ? <div className="panel" style={{ marginBottom: 16 }}>
+            <p className={panelCaption}>{detail.signedOut.body}</p>
+            <FilterBar>
+              <Button variant="primary" {...detail.signedOut.loginButtonProps}>{detail.signedOut.loginLabel}</Button>
+              <Link className={buttonClasses()} {...detail.signedOut.browseLinkProps}>{detail.signedOut.browseLabel}</Link>
+            </FilterBar>
+            {detail.signedOut.error && <Notice tone="error" {...detail.signedOut.errorProps}>{detail.signedOut.error}</Notice>}
+          </Panel>}
+          <Panel className="mb-4">
+            <h3>Share to go viral</h3><p className={panelCaption}>Every load of this link counts a view (views drive the tier ladder); each new place it's shared — a subreddit, a group chat, an unfurl — counts a reshare.</p>
+            <FilterBar><Input className="min-w-[200px] flex-1" {...detail.shareInputProps} /><Button variant="primary" {...detail.copyButtonProps}>{detail.copyButtonLabel}</Button><a className={buttonClasses()} {...detail.previewLinkProps}>Preview card</a></FilterBar>
+          </Panel>
+          {detail.actions.length > 0 && <FilterBar className="mb-4">{detail.actions.map((action) => <Button key={action.label} variant={action.variant} {...action.buttonProps}>{action.label}</Button>)}</FilterBar>}
+          <div {...detail.noticeProps}>{detail.notice && <Notice tone="ok" role="none">{detail.notice}</Notice>}</div>
+          <div {...detail.errorProps}>{detail.error && <Notice tone="error" role="none">{detail.error}</Notice>}</div>
+          {detail.listing ? <Panel className="mb-4">
             <h3>{detail.listing.saleLabel}</h3>
             {detail.listing.showBuy && <>
-              <div className="filter-bar" style={{ marginTop: 10 }}>
-                <label className="field-label">{detail.listing.buyLabel}<input type="number" {...detail.listing.buyInputProps} style={{ width: 90 }} /></label>
-                <button className="primary" {...detail.listing.buyButtonProps}>{detail.listing.buyButtonLabel}</button>
-                {detail.listing.balanceLabel && <span className="muted" style={{ fontSize: 13 }}>{detail.listing.balanceLabel}</span>}
-              </div>
-              {detail.listing.disabledReason && <p className="field-hint">{detail.listing.disabledReason}</p>}
+              <FilterBar className="mt-2.5">
+                <Field><FieldLabel>{detail.listing.buyLabel}</FieldLabel><Input type="number" className="w-[90px]" {...detail.listing.buyInputProps} /></Field>
+                <Button variant="primary" {...detail.listing.buyButtonProps}>{detail.listing.buyButtonLabel}</Button>
+                {detail.listing.balanceLabel && <Muted className="text-[13px]">{detail.listing.balanceLabel}</Muted>}
+              </FilterBar>
+              {detail.listing.disabledReason && <Hint>{detail.listing.disabledReason}</Hint>}
             </>}
-            {detail.listing.showUnlist && <div className="filter-bar" style={{ marginTop: 10 }}><button className="danger" {...detail.listing.unlistButtonProps}>{detail.listing.unlistButtonLabel}</button></div>}
-          </div> : detail.list.show ? <div className="panel" style={{ marginBottom: 16 }}>
-            <h3>List shares for sale</h3><div className="filter-bar" style={{ marginTop: 10 }}>
-              <label className="field-label">shares <input type="number" {...detail.list.sharesInputProps} style={{ width: 80 }} /></label>
-              <label className="field-label"><span><span aria-hidden="true">🧠/share</span><span className="sr-only">braincells per share</span></span><input type="number" {...detail.list.priceInputProps} style={{ width: 90 }} /></label>
-              <button className="primary" {...detail.list.listButtonProps}>{detail.list.listButtonLabel}</button>
-            </div>
-            {detail.list.disabledReason && <p className="field-hint">{detail.list.disabledReason}</p>}
-          </div> : null}
-          {detail.sources.length > 0 && <div className="panel" style={{ marginBottom: 16 }}><h3>📡 Where it's spreading</h3><div className="row-list" style={{ marginTop: 10 }}>{detail.sources.map((source) => <div key={source.id} className="person-row" style={{ padding: 9 }}><span style={{ fontSize: 13.5 }}>{source.linkProps ? <a {...source.linkProps}>{source.label}</a> : source.label}</span><span className="spacer" /><span className="muted" style={{ fontSize: 13 }}>👁️ {source.viewsLabel}</span></div>)}</div></div>}
+            {detail.listing.showUnlist && <FilterBar className="mt-2.5"><Button variant="danger" {...detail.listing.unlistButtonProps}>{detail.listing.unlistButtonLabel}</Button></FilterBar>}
+          </Panel> : detail.list.show ? <Panel className="mb-4">
+            <h3>List shares for sale</h3><FilterBar className="mt-2.5">
+              <Field><FieldLabel>shares</FieldLabel><Input type="number" className="w-[80px]" {...detail.list.sharesInputProps} /></Field>
+              <Field><FieldLabel><span aria-hidden="true">🧠/share</span><span className="sr-only">braincells per share</span></FieldLabel><Input type="number" className="w-[90px]" {...detail.list.priceInputProps} /></Field>
+              <Button variant="primary" {...detail.list.listButtonProps}>{detail.list.listButtonLabel}</Button>
+            </FilterBar>
+            {detail.list.disabledReason && <Hint>{detail.list.disabledReason}</Hint>}
+          </Panel> : null}
+          {detail.sources.length > 0 && <Panel className="mb-4"><h3>📡 Where it's spreading</h3><div className={rowList}>{detail.sources.map((source) => <div key={source.id} className={cn(personRow, 'p-[9px]')}><span className="text-[13.5px]">{source.linkProps ? <a className="text-accent no-underline" {...source.linkProps}>{source.label}</a> : source.label}</span><span className="flex-1" /><Muted className="text-[13px]">👁️ {source.viewsLabel}</Muted></div>)}</div></Panel>}
           <MemeplexPanel model={detail.plex} />
-          <div className="panel" style={{ marginTop: 16 }}><h3>{detail.capTableTitle}</h3><div className="row-list" style={{ marginTop: 10 }}>{detail.capTable.map((holder) => <div key={holder.userId} className="person-row cap-row"><span className="person-name">{holder.label}</span><span className="spacer" /><span>{holder.sharesLabel}</span></div>)}</div></div>
+          <Panel className="mt-4"><h3>{detail.capTableTitle}</h3><div className={rowList}>{detail.capTable.map((holder) => <div key={holder.userId} className={cn(personRow, 'tabular-nums')}><span className="overflow-hidden font-semibold text-ellipsis whitespace-nowrap">{holder.label}</span><span className="flex-1" /><span>{holder.sharesLabel}</span></div>)}</div></Panel>
         </div>
       </div>
       <ConfirmDialog model={detail.deleteDialog} />
       <ConfirmDialog model={detail.buyDialog} />
       <ConfirmDialog model={detail.claimDialog} />
-    </main>
+    </PageContainer>
   )
 }

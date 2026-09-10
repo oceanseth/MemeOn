@@ -12,11 +12,11 @@ export interface TradeComposerModel {
   formProps: { id: string; onSubmit: FormEventHandler<HTMLFormElement> }
   /** friends loaded and none of them accepted: the form has nothing to work with */
   noFriends: boolean
-  friendSelectProps: { value: string; onChange: ChangeEventHandler<HTMLSelectElement> }; friends: readonly FriendEntry[]
-  offerMemeSelectProps: { value: string; onChange: ChangeEventHandler<HTMLSelectElement> }; binderOptions: readonly { id: string; label: string }[]; showOfferShares: boolean
+  friendSelectProps: { value: string; onValueChange: (value: string | null) => void }; friends: readonly FriendEntry[]
+  offerMemeSelectProps: { value: string; onValueChange: (value: string | null) => void }; binderOptions: readonly { id: string; label: string }[]; showOfferShares: boolean
   offerSharesInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }; offerSharesHint: string
   offerCoinsInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }; offerCoinsHint: string
-  askMemeSelectProps: { value: string; onChange: ChangeEventHandler<HTMLSelectElement> }; theirMemeOptions: readonly { id: string; label: string }[]; showAskShares: boolean
+  askMemeSelectProps: { value: string; onValueChange: (value: string | null) => void }; theirMemeOptions: readonly { id: string; label: string }[]; showAskShares: boolean
   askSharesInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }; askCoinsInputProps: { value: number; min: number; onChange: ChangeEventHandler<HTMLInputElement> }
   error: string | null; errorNoticeProps: HTMLAttributes<HTMLParagraphElement>; proposeButtonProps: { onClick: () => void; disabled: boolean }
 }
@@ -129,7 +129,7 @@ export function useTradesScreen(): TradesScreenModel {
     if (actor.getSnapshot().context.showNew) send({ type: 'CLOSE_COMPOSE' })
     else { send({ type: 'OPEN_COMPOSE' }); loadCompose(actor.getSnapshot().context.composeGeneration) }
   }
-  const onToIdChange: ChangeEventHandler<HTMLSelectElement> = (event) => send({ type: 'SET_TO_ID', toId: event.target.value })
+  const onToIdChange = (value: string | null) => send({ type: 'SET_TO_ID', toId: value ?? '' })
   const performRespond = (trade: Trade, action: TradeAction) => {
     send({ type: 'RESPOND', tradeId: trade.id, action })
     void post(`/api/trades/${trade.id}/respond`, { action })
@@ -162,7 +162,7 @@ export function useTradesScreen(): TradesScreenModel {
   const compose: TradeComposerModel | null = showNew ? {
     formProps: { id: COMPOSE_FORM_ID, onSubmit: (event) => { event.preventDefault(); propose() } },
     noFriends,
-    friendSelectProps: { value: context.toId, onChange: onToIdChange }, friends: context.friends, offerMemeSelectProps: { value: context.offerMeme, onChange: (event) => send({ type: 'SET_OFFER_MEME', memeId: event.target.value }) }, binderOptions: context.binder.map((meme) => ({ id: meme.id, label: `${meme.title} (you hold ${meme.myShares})` })), showOfferShares: !!context.offerMeme, offerSharesInputProps: { value: context.offerShares, min: 1, max: offerSharesMax, onChange: (event) => send({ type: 'SET_OFFER_SHARES', shares: clampInt(event.target.value, 0, offerSharesMax) }) }, offerSharesHint: `you hold ${heldShares}`, offerCoinsInputProps: { value: context.offerCoins, min: 0, max: availableCoins, onChange: (event) => send({ type: 'SET_OFFER_COINS', coins: clampInt(event.target.value, 0, availableCoins) }) }, offerCoinsHint: `🧠 ${availableCoins.toLocaleString()} available`, askMemeSelectProps: { value: context.askMeme, onChange: (event) => send({ type: 'SET_ASK_MEME', memeId: event.target.value }) }, theirMemeOptions: theirMemes.map((meme) => ({ id: meme.id, label: meme.title })), showAskShares: !!context.askMeme, askSharesInputProps: { value: context.askShares, min: 1, max: 100, onChange: (event) => send({ type: 'SET_ASK_SHARES', shares: clampInt(event.target.value, 0, 100) }) }, askCoinsInputProps: { value: context.askCoins, min: 0, onChange: (event) => send({ type: 'SET_ASK_COINS', coins: clampInt(event.target.value, 0, MAX_COINS) }) }, error: context.composeErr, errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' }, proposeButtonProps: { onClick: propose, disabled: !context.toId || context.busy || noFriends || emptyProposal || zeroShares },
+    friendSelectProps: { value: context.toId, onValueChange: onToIdChange }, friends: context.friends, offerMemeSelectProps: { value: context.offerMeme, onValueChange: (value) => send({ type: 'SET_OFFER_MEME', memeId: value ?? '' }) }, binderOptions: context.binder.map((meme) => ({ id: meme.id, label: `${meme.title} (you hold ${meme.myShares})` })), showOfferShares: !!context.offerMeme, offerSharesInputProps: { value: context.offerShares, min: 1, max: offerSharesMax, onChange: (event) => send({ type: 'SET_OFFER_SHARES', shares: clampInt(event.target.value, 0, offerSharesMax) }) }, offerSharesHint: `you hold ${heldShares}`, offerCoinsInputProps: { value: context.offerCoins, min: 0, max: availableCoins, onChange: (event) => send({ type: 'SET_OFFER_COINS', coins: clampInt(event.target.value, 0, availableCoins) }) }, offerCoinsHint: `🧠 ${availableCoins.toLocaleString()} available`, askMemeSelectProps: { value: context.askMeme, onValueChange: (value) => send({ type: 'SET_ASK_MEME', memeId: value ?? '' }) }, theirMemeOptions: theirMemes.map((meme) => ({ id: meme.id, label: meme.title })), showAskShares: !!context.askMeme, askSharesInputProps: { value: context.askShares, min: 1, max: 100, onChange: (event) => send({ type: 'SET_ASK_SHARES', shares: clampInt(event.target.value, 0, 100) }) }, askCoinsInputProps: { value: context.askCoins, min: 0, onChange: (event) => send({ type: 'SET_ASK_COINS', coins: clampInt(event.target.value, 0, MAX_COINS) }) }, error: context.composeErr, errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' }, proposeButtonProps: { onClick: propose, disabled: !context.toId || context.busy || noFriends || emptyProposal || zeroShares },
   } : null
   const actingId = phase === 'acting' ? context.actingTradeId : null
   const actingAction = phase === 'acting' ? context.actingAction : null

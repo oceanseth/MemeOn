@@ -2,16 +2,21 @@ import { describe, expect, it, vi } from 'vitest'
 import { buildSortChipsModel } from './sortChipsModel'
 
 describe('buildSortChipsModel', () => {
-  it('marks and labels the active chip through supplied DOM props', () => {
+  it('marks and labels the selected chip as state the row can render', () => {
     const model = buildSortChipsModel({ sortKey: 'views', dir: 'asc', onChange: vi.fn() })
     const views = model.chips.find((chip) => chip.key === 'views')
     const newest = model.chips.find((chip) => chip.key === 'new')
 
-    expect(views).toMatchObject({ active: true, arrow: '↑', directionLabel: 'ascending' })
-    expect(views?.buttonProps['aria-pressed']).toBe(true)
+    expect(model.selected).toBe('views')
+    expect(model.direction).toBe('asc')
+    expect(views).toMatchObject({
+      selected: true,
+      direction: 'asc',
+      arrow: '↑',
+      directionLabel: 'ascending',
+    })
     expect(views?.buttonProps['aria-label']).toBe('👁️ Views, ascending')
-    expect(newest).toMatchObject({ active: false, arrow: null, directionLabel: null })
-    expect(newest?.buttonProps['aria-pressed']).toBe(false)
+    expect(newest).toMatchObject({ selected: false, direction: null, arrow: null, directionLabel: null })
     expect(newest?.buttonProps['aria-label']).toBe('Newest')
   })
 
@@ -20,10 +25,10 @@ describe('buildSortChipsModel', () => {
 
     expect(model.groupProps).toEqual({ role: 'group', 'aria-label': 'Sort by' })
     expect(model.reason).toBeNull()
-    expect(model.chips.every((chip) => chip.buttonProps.disabled === undefined)).toBe(true)
+    expect(model.disabled).toBe(false)
   })
 
-  it('disables every chip and describes the row when ranking is unavailable', () => {
+  it('disables the row and describes it when ranking is unavailable', () => {
     const reason = 'Newest first for now.'
     const model = buildSortChipsModel({
       sortKey: 'new',
@@ -34,14 +39,14 @@ describe('buildSortChipsModel', () => {
 
     expect(model.reason).toBe(reason)
     expect(model.groupProps['aria-describedby']).toBe(model.reasonProps.id)
-    expect(model.chips.every((chip) => chip.buttonProps.disabled)).toBe(true)
+    expect(model.disabled).toBe(true)
   })
 
-  it('flips direction when the active chip is clicked', () => {
+  it('flips direction when the selected chip is pressed again', () => {
     const onChange = vi.fn()
     const model = buildSortChipsModel({ sortKey: 'views', dir: 'desc', onChange })
 
-    model.chips.find((chip) => chip.key === 'views')?.buttonProps.onClick({} as never)
+    model.flip()
 
     expect(onChange).toHaveBeenCalledWith('views', 'asc')
   })
@@ -50,7 +55,7 @@ describe('buildSortChipsModel', () => {
     const onChange = vi.fn()
     const model = buildSortChipsModel({ sortKey: 'views', dir: 'asc', onChange })
 
-    model.chips.find((chip) => chip.key === 'value')?.buttonProps.onClick({} as never)
+    model.select('value')
 
     expect(onChange).toHaveBeenCalledWith('value', 'desc')
   })
