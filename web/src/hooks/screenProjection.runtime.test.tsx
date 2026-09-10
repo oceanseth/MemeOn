@@ -167,7 +167,7 @@ it('actual MemeDetailView in the app route observes deferred loading and later d
   await act(() => root.render(<StrictMode><StoresProvider stores={stores}>
     <MemoryRouter initialEntries={['/m/meme-paper']}><AppView /></MemoryRouter>
   </StoresProvider></StrictMode>))
-  expect(host.querySelector('main .spin')).not.toBeNull()
+  expect(host.querySelector('main [data-slot="spinner"]')).not.toBeNull()
   expect(host.querySelector('h2')).toBeNull()
   expect(requests.filter((request) => request.path === '/api/memes/meme-paper')).toHaveLength(2)
 
@@ -178,7 +178,7 @@ it('actual MemeDetailView in the app route observes deferred loading and later d
     }))
     await detail.promise
   })
-  expect(host.querySelector('main .spin')).toBeNull()
+  expect(host.querySelector('main [data-slot="spinner"]')).toBeNull()
   expect(host.querySelector('h2')?.textContent).toContain(paperMeme.title)
   expect(host.textContent).toContain('you hold 100/100')
   await act(() => button('Delete forever').click())
