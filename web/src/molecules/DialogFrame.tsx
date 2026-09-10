@@ -35,7 +35,7 @@ const SIZE = {
 
 /** A hairline of danger around the frame, over the same modal shadow. */
 const DANGER =
-  'border-[oklch(0.349_0.077_21.864)] ' +
+  'border-[oklch(0.349_0.077_7.441)] ' +
   '[box-shadow:0_0_0_1px_color-mix(in_oklab,var(--color-danger)_25%,transparent),var(--shadow-modal)]'
 
 const CLOSE = cn(

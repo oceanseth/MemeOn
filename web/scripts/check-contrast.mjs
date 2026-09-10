@@ -87,7 +87,7 @@ const [scale, loOffset, loClip, deltaYmin] = [1.14, 0.027, 0.1, 0.0005]
 const screenY = ([r, g, b]) => Rco * r ** 2.4 + Gco * g ** 2.4 + Bco * b ** 2.4
 const softClamp = (y) => (y < blkThrs ? y + (blkThrs - y) ** blkClmp : y)
 
-/** Signed lightness contrast of text on a background, -108..108. Negative = dark text on light. */
+/** Signed lightness contrast of text on a background, -108..108. Negative = light text on dark background. */
 function apcaLc(text, background) {
   const Yt = softClamp(screenY(text))
   const Yb = softClamp(screenY(background))
