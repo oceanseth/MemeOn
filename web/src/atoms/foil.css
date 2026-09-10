@@ -328,6 +328,79 @@
       0 0 80px oklch(0.875 0.094 317.581 / 0.25);
   }
 
+  /* Display P3: same L and H per stop, chroma scaled to the wider gamut.
+     Every stop in the three chromatic glow styles above and in the holo, prismatic and shiny
+     foils sits ON the sRGB gamut boundary — that is what makes a foil read as foil, and it is
+     also why they all clip to the same wall on a wide-gamut display and lose the separation
+     between tiers. Each stop here keeps its L and H and takes the same *fraction* of the P3
+     maximum chroma it took of the sRGB one, which is 8-36% more chroma depending on hue. An sRGB
+     display never matches the query, so nothing about the ladder changes there.
+
+     Placement: after both families, because these are the same selectors at the same specificity
+     (`:where()` for the stop sets, one class for the foils) and source order is what decides.
+     Values are #26's, verbatim. */
+  @media (color-gamut: p3) {
+    :where(.glow-border[data-glow-style='cyan-magenta-gradient-drift']) {
+      --glow-stops:
+        oklch(0.798 0.149 224.636) 0deg,
+        oklch(0.832 0.111 231.822) 48deg,
+        oklch(0.613 0.226 273.093) 112deg,
+        oklch(0.637 0.251 300.17) 176deg,
+        oklch(0.755 0.272 338.493) 238deg,
+        oklch(0.64 0.226 290.189) 302deg,
+        oklch(0.798 0.149 224.636) 360deg;
+    }
+
+    :where(.glow-border[data-glow-style='rainbow-gradient-drift']) {
+      --glow-stops:
+        oklch(0.709 0.243 9.532) 0deg,
+        oklch(0.834 0.157 66.878) 54deg,
+        oklch(0.934 0.164 105.773) 104deg,
+        oklch(0.864 0.204 160.909) 158deg,
+        oklch(0.838 0.128 219.759) 214deg,
+        oklch(0.657 0.209 286.977) 270deg,
+        oklch(0.756 0.28 336.449) 322deg,
+        oklch(0.709 0.243 9.532) 360deg;
+    }
+
+    :where(.glow-border[data-glow-style='mint-gold-highlight-orbit']) {
+      --glow-stops:
+        oklch(0.489 0.112 185.94) 0deg,
+        oklch(0.721 0.176 178.023) 58deg,
+        oklch(0.932 0.115 171.454) 116deg,
+        oklch(0.969 0.048 176.459) 156deg,
+        oklch(0.976 0.053 97.542) 176deg,
+        oklch(0.892 0.165 89.311) 192deg,
+        oklch(0.988 0.029 99.515) 204deg,
+        oklch(0.951 0.079 172.538) 220deg,
+        oklch(0.821 0.186 176.532) 250deg,
+        oklch(0.714 0.145 209.783) 300deg,
+        oklch(0.489 0.112 185.94) 360deg;
+    }
+
+    .tier-holo {
+      background: linear-gradient(120deg, oklch(0.81 0.143 223.189), oklch(0.597 0.248 285.527), oklch(0.732 0.319 335.845), oklch(0.81 0.143 223.189));
+    }
+
+    .tier-prismatic {
+      background: conic-gradient(
+        from 0deg,
+        oklch(0.691 0.253 23.908),
+        oklch(0.832 0.17 71.035),
+        oklch(0.965 0.187 112.028),
+        oklch(0.893 0.227 147.883),
+        oklch(0.818 0.133 225.012),
+        oklch(0.634 0.227 288.555),
+        oklch(0.739 0.335 331.668),
+        oklch(0.691 0.253 23.908)
+      );
+    }
+
+    .tier-shiny {
+      background: linear-gradient(120deg, oklch(0.852 0.222 172.455), oklch(0.932 0.115 171.454), oklch(0.818 0.133 225.012), oklch(0.875 0.104 317.581), oklch(0.892 0.165 89.311), oklch(0.852 0.222 172.455));
+    }
+  }
+
   /* Foil mechanics are host-agnostic — this atom and the tier ladder alike — and bounded to the
      art box via `.foil-media`, so the sweep never crosses the meta text. */
   .foil-media {
