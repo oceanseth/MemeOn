@@ -7,6 +7,7 @@ import { apiFetch, post } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
 import { buildConfirmDialogModel, type ConfirmDialogModel } from '../lib/confirmDialogModel'
 import { createDetailBinderGate } from '../lib/detailBinderGate'
+import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import { plural, pluralWord } from '../lib/plural'
 import type { Meme, Memeplex, Position } from '../lib/types'
 import { clampPrice, clampShares, memeDetailMachine, type MemeDetailPhase, type MemeStats } from '../stores/memeDetailMachine'
@@ -20,9 +21,6 @@ const ARCHIVE_SUB = 'meme_archive'
 const CONFIRM_SPEND_OVER = 25
 
 export interface CapRow { userId: string; sharesLabel: string; label: string }
-export type DetailMediaModel =
-  | { kind: 'image'; imageProps: { src: string; alt: string; loading: 'eager'; fetchpriority: 'high'; decoding: 'async' } }
-  | { kind: 'video'; videoProps: { src: string; controls: true; loop: true; autoPlay: true; muted: true; playsInline: true; poster: string; 'aria-label': string } }
 export interface DetailActionModel { label: string; variant?: 'danger' | undefined; buttonProps: { onClick: () => void } }
 export type DetailLiveRegionProps = Pick<HTMLAttributes<HTMLDivElement>, 'role' | 'aria-live'>
 export interface DetailNotFoundModel {
@@ -86,7 +84,8 @@ export interface MemeDetailModel {
   tierLabel: string
   tierHype: string
   tierLadder: DetailTierLadderModel
-  media: DetailMediaModel
+  /** the hero frame: the same `MemeCardModel` every grid thumb renders, at `size="lg"` */
+  card: MemeCardModel
   creatorLinkProps: { to: string }
   creatorName: string
   ownerLinkProps: { to: string }
@@ -345,12 +344,22 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
     errorProps: { role: 'alert' },
   }
 
+  /* the same stable factory every grid thumb builds its card from; the one deviation is `loading`,
+     since the hero is always above the fold and the factory's `lazy` default is a grid thumb's
+     assumption, not this page's. */
+  const heroCard: MemeCardModel = (() => {
+    const built = buildMemeCardModel(meme)
+    return built.media.kind === 'image'
+      ? { ...built, media: { ...built.media, imageProps: { ...built.media.imageProps, loading: 'eager' } } }
+      : built
+  })()
+
   return {
     phase, showNotFound, showLoading, notFound, loadingLabel,
     detail: {
       id: meme.id, title: meme.title, private: !!meme.private, tierKey: meme.tier.key, tierColor: meme.tier.color, tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`, tierHype: meme.tier.hype,
       tierLadder: buildTierLadderModel(meme.tier.key, views),
-      media: meme.mediaType === 'video' && meme.videoUrl ? { kind: 'video', videoProps: { src: meme.videoUrl, controls: true, loop: true, autoPlay: true, muted: true, playsInline: true, poster: meme.imageUrl, 'aria-label': meme.title } } : { kind: 'image', imageProps: { src: meme.imageUrl, alt: meme.title, loading: 'eager', fetchpriority: 'high', decoding: 'async' } },
+      card: heroCard,
       creatorLinkProps: { to: `/u/${encodeURIComponent(meme.creatorId)}` }, creatorName: meme.creatorName, ownerLinkProps: { to: `/u/${encodeURIComponent(meme.ownerId)}` }, ownerName: meme.ownerName,
       tagsLabel: meme.tags.length ? meme.tags.map((tag) => `#${tag}`).join(' ') : null, remixLinkProps: meme.remixOf ? { to: `/m/${meme.remixOf}` } : undefined,
       sourceLinkProps: meme.source ? { href: meme.source.url, target: '_blank', rel: 'noreferrer' } : undefined, sourceLabel: meme.source ? `via ${meme.source.provider.toUpperCase()}${meme.source.author ? ` (@${meme.source.author})` : ''}` : undefined,

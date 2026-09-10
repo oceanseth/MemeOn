@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { listedHolo, memeplexFamily, paperMeme } from '../../.storybook/fixtures'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
+import { buildMemeCardModel } from '../lib/memeCardModel'
 import { plural, pluralWord } from '../lib/plural'
 import { buildMemeplexPanelModel } from '../organisms/memeplexPanelModel'
 import { buildTierLadderModel, type DetailListingModel, type MemeDetailModel, type MemeDetailScreenModel } from '../hooks/useMemeDetailScreen'
@@ -13,7 +14,7 @@ const closedDialog = (id: string) => buildConfirmDialogModel({ open: false, id, 
 const detail = (meme = paperMeme): MemeDetailModel => ({
   id: meme.id, title: meme.title, private: !!meme.private, tierKey: meme.tier.key, tierColor: meme.tier.color, tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`, tierHype: meme.tier.hype,
   tierLadder: buildTierLadderModel(meme.tier.key, meme.views ?? meme.reshares),
-  media: { kind: 'image', imageProps: { src: meme.imageUrl, alt: meme.title, loading: 'eager', fetchpriority: 'high', decoding: 'async' } }, creatorLinkProps: { to: `/u/${meme.creatorId}` }, creatorName: meme.creatorName, ownerLinkProps: { to: `/u/${meme.ownerId}` }, ownerName: meme.ownerName, tagsLabel: null, viewsLabel: String(meme.views ?? meme.reshares), resharesLabel: String(meme.reshareCount ?? 0), viewsWord: pluralWord(meme.views ?? meme.reshares, 'view'), resharesWord: pluralWord(meme.reshareCount ?? 0, 'reshare'), valueLabel: String(meme.value), statsSrLabel: `${plural(meme.views ?? meme.reshares, 'view')}, ${plural(meme.reshareCount ?? 0, 'reshare')}`, valueSrLabel: `${meme.value} braincells card value`, holdingsLabel: '100/100', shareInputProps: { value: `https://memeon.ai/m/${meme.id}`, readOnly: true, 'aria-label': 'Share link for this meme' }, copyButtonLabel: 'Copy link', copyButtonProps: { onClick: noop }, previewLinkProps: { href: `/api/memes/${meme.id}/og.png`, target: '_blank', rel: 'noreferrer' }, signedOut: null, actions: [], notice: null, noticeProps: { role: 'status', 'aria-live': 'polite' }, error: null, errorProps: { role: 'alert', 'aria-live': 'assertive' }, listing: null,
+  card: buildMemeCardModel(meme), creatorLinkProps: { to: `/u/${meme.creatorId}` }, creatorName: meme.creatorName, ownerLinkProps: { to: `/u/${meme.ownerId}` }, ownerName: meme.ownerName, tagsLabel: null, viewsLabel: String(meme.views ?? meme.reshares), resharesLabel: String(meme.reshareCount ?? 0), viewsWord: pluralWord(meme.views ?? meme.reshares, 'view'), resharesWord: pluralWord(meme.reshareCount ?? 0, 'reshare'), valueLabel: String(meme.value), statsSrLabel: `${plural(meme.views ?? meme.reshares, 'view')}, ${plural(meme.reshareCount ?? 0, 'reshare')}`, valueSrLabel: `${meme.value} braincells card value`, holdingsLabel: '100/100', shareInputProps: { value: `https://memeon.ai/m/${meme.id}`, readOnly: true, 'aria-label': 'Share link for this meme' }, copyButtonLabel: 'Copy link', copyButtonProps: { onClick: noop }, previewLinkProps: { href: `/api/memes/${meme.id}/og.png`, target: '_blank', rel: 'noreferrer' }, signedOut: null, actions: [], notice: null, noticeProps: { role: 'status', 'aria-live': 'polite' }, error: null, errorProps: { role: 'alert', 'aria-live': 'assertive' }, listing: null,
   list: { show: true, disabledReason: null, sharesInputProps: { value: 10, min: 1, max: 100, step: 1, onChange: noop }, priceInputProps: { value: 1, min: .01, step: .01, onChange: noop }, listButtonLabel: 'List', listButtonProps: { onClick: noop, disabled: false, 'aria-busy': false } }, sources: [], plex: buildMemeplexPanelModel({ meme, plex: memeplexFamily, canEdit: true, binder: [], pick: '', pasted: '', notice: null, error: null, onPickChange: noop, onPastedChange: noop, onAdd: noop }), capTableTitle: 'Who holds this card', capTable: [{ userId: 'me', label: 'You', sharesLabel: '100/100' }], deleteDialog: buildConfirmDialogModel({ open: false, id: 'delete-meme', title: 'Delete this meme forever?', message: 'This cannot be undone.', danger: true, onCancel: noop, onConfirm: noop }), buyDialog: closedDialog('buy-shares'), claimDialog: closedDialog('claim-meme'),
 })
 const listingModel = (overrides: Partial<DetailListingModel> = {}): DetailListingModel => ({
@@ -24,10 +25,16 @@ const listingModel = (overrides: Partial<DetailListingModel> = {}): DetailListin
   unlistButtonLabel: 'Remove listing', unlistButtonProps: { onClick: noop, disabled: false, 'aria-busy': false },
   ...overrides,
 })
-const listed = (overrides: Partial<DetailListingModel> = {}): MemeDetailModel => ({
-  ...detail(listedHolo), list: { ...detail(listedHolo).list, show: false }, holdingsLabel: null,
-  capTable: [{ userId: 'seller', label: 'lou', sharesLabel: '100/100' }], listing: listingModel(overrides),
-})
+const listed = (overrides: Partial<DetailListingModel> = {}): MemeDetailModel => {
+  const base = detail(listedHolo)
+  const listing = listingModel(overrides)
+  return {
+    ...base, list: { ...base.list, show: false }, holdingsLabel: null,
+    capTable: [{ userId: 'seller', label: 'lou', sharesLabel: '100/100' }], listing,
+    // the hero's "for sale" badge mirrors this mocked listing price, not listedHolo's own
+    card: { ...base.card, listing: { ...base.card.listing!, sharesLabel: listing.cardLabel } },
+  }
+}
 const base: MemeDetailScreenModel = {
   phase: 'ready', showNotFound: false, showLoading: false,
   notFound: { message: "This meme isn't here — it may have been deleted or made private.", linkProps: { to: '/marketplace' }, linkLabel: 'Browse the marketplace' },
@@ -178,7 +185,7 @@ export const WideArt: Story = {
   args: {
     detail: {
       ...detail(),
-      media: { kind: 'image', imageProps: { src: WIDE_ART, alt: 'MY IDEA / MY IDEA AFTER ASKING CHATGPT', loading: 'eager', fetchpriority: 'high', decoding: 'async' } },
+      card: { ...detail().card, media: { kind: 'image', imageProps: { src: WIDE_ART, alt: 'MY IDEA / MY IDEA AFTER ASKING CHATGPT', loading: 'eager' } } },
     },
   },
 }
@@ -191,13 +198,15 @@ export const SingleReshare: Story = {
       viewsLabel: '1', resharesLabel: '1',
       viewsWord: pluralWord(1, 'view'), resharesWord: pluralWord(1, 'reshare'),
       statsSrLabel: `${plural(1, 'view')}, ${plural(1, 'reshare')}`,
+      card: { ...detail().card, viewsLabel: '1', resharesLabel: '1', statsA11yLabel: '1 views, 1 reshares' },
     },
   },
 }
 
 /** A card one rung from the top: the ladder states the next threshold instead of implying it. */
 export const TierLadderMaxed: Story = {
-  args: { detail: { ...detail(), tierKey: 'shiny', tierColor: '#9fffe0', tierLabel: 'Shiny · Mythic Shiny', tierLadder: buildTierLadderModel('shiny', 41_000), viewsLabel: '41,000', statsSrLabel: `${plural(41_000, 'view')}, ${plural(900, 'reshare')}` } },
+  args: { detail: { ...detail(), tierKey: 'shiny', tierColor: '#9fffe0', tierLabel: 'Shiny · Mythic Shiny', tierLadder: buildTierLadderModel('shiny', 41_000), viewsLabel: '41,000', statsSrLabel: `${plural(41_000, 'view')}, ${plural(900, 'reshare')}`,
+    card: { ...detail().card, tierKey: 'shiny', tierColor: '#9fffe0', tierLabel: 'Shiny · Mythic Shiny', viewsLabel: '41,000' } } },
 }
 export const CapTableUnresolved: Story = {
   args: { detail: { ...detail(), holdingsLabel: '40/100', capTable: [{ userId: 'me', label: 'You', sharesLabel: '40/100' }, { userId: 'a', label: 'another collector', sharesLabel: '35/100' }, { userId: 'b', label: 'another collector', sharesLabel: '25/100' }] } },
