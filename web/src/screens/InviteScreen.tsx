@@ -34,11 +34,11 @@ export function InviteScreen({
   if (showFatalError)
     return (
       <PageContainer as="main" id="main" tabIndex={-1}>
-        <section className="px-4 pt-[72px] pb-10 text-center">
+        <section className="px-4 pt-[72px] pb-6 text-center">
           <h1 className="m-0 mb-3.5 text-[clamp(34px,6vw,60px)] leading-[1.05] font-bold">{fatalActions.title}</h1>
           <Notice tone="error">{err}</Notice>
           <EmptyActions>
-            <Button variant="primary" {...fatalActions.joinButtonProps}>
+            <Button variant="login" {...fatalActions.joinButtonProps}>
               {fatalActions.joinLabel}
             </Button>
             <Link to={fatalActions.homeHref}>{fatalActions.homeLabel}</Link>
@@ -61,7 +61,7 @@ export function InviteScreen({
 
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <section className="px-4 pt-[72px] pb-10 text-center">
+      <section className="px-4 pt-[72px] pb-6 text-center">
         <Avatar name={inviter.name} src={inviter.avatarSrc} size="lg" loading="eager" className="mx-auto mb-3.5 block" />
         <h1 className="m-0 mb-3.5 text-[clamp(34px,6vw,60px)] leading-[1.05] font-bold">
           <span className="bg-[linear-gradient(90deg,var(--color-accent),var(--color-accent-2),var(--color-gold))] bg-clip-text text-transparent">
@@ -84,7 +84,7 @@ export function InviteScreen({
           <>
             <Notice tone="ok">{selfActions.note}</Notice>
             <EmptyActions>
-              <Button variant="primary" {...selfActions.copyButtonProps}>
+              <Button variant="login" {...selfActions.copyButtonProps}>
                 {selfActions.copyLabel}
               </Button>
               <Link to={selfActions.friendsHref}>{selfActions.friendsLabel}</Link>
@@ -96,7 +96,7 @@ export function InviteScreen({
         ) : showAcceptSuccess ? null : (
           // the offer retires once it is taken: the confirmation below is the whole state
           <EmptyActions>
-            <Button variant="primary" {...acceptButtonProps}>
+            <Button variant="login" {...acceptButtonProps}>
               {showAcceptSpinner && <Spinner />}
               {acceptLabel}
             </Button>
@@ -111,7 +111,7 @@ export function InviteScreen({
 
       {showHighlights && (
         <>
-          <h2 className="mx-0 mt-14 mb-1.5 text-[26px] font-bold">{highlightsTitle}</h2>
+          <h2 className="mx-0 mt-2.5 mb-1.5 text-[26px] font-bold">{highlightsTitle}</h2>
           <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5 max-sm:grid-cols-2 max-sm:gap-3">
             {cards.map((card) => (
               <MemeCard key={card.id} model={card.memeCard} />

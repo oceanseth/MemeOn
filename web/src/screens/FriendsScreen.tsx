@@ -116,7 +116,7 @@ export function FriendsScreen({
           {showHits && (
             <div className="flex flex-col gap-2.5">
               {hits.map((u) => (
-                <div className={personRow} key={u.sub}>
+                <div className={personRow} data-slot="person-row" key={u.sub}>
                   <Link {...u.profileLinkProps} className={identityLink}>
                     <Avatar name={u.name} src={u.avatarSrc} size="md" className="max-sm:size-8" loading="lazy" />
                     <span className={personName}>{u.name}</span>
@@ -136,7 +136,7 @@ export function FriendsScreen({
           <h3 className="mt-6 mb-2 text-lg font-bold">Requests for you</h3>
           <div className="mb-[22px] flex flex-col gap-2.5">
             {incoming.map((f) => (
-              <div className={personRow} key={f.sub}>
+              <div className={personRow} data-slot="person-row" key={f.sub}>
                 <Link {...f.profileLinkProps} className={identityLink}>
                   <Avatar name={f.name} src={f.avatarSrc} size="md" className="max-sm:size-8" loading="lazy" />
                   <span className={personName}>{f.name}</span>
@@ -158,7 +158,7 @@ export function FriendsScreen({
           <h3 className="mt-6 mb-2 text-lg font-bold">Requests you sent</h3>
           <div className="mb-[22px] flex flex-col gap-2.5">
             {outgoing.map((f) => (
-              <div className={personRow} key={f.sub}>
+              <div className={personRow} data-slot="person-row" key={f.sub}>
                 <Link {...f.profileLinkProps} className={identityLink}>
                   <Avatar name={f.name} src={f.avatarSrc} size="md" className="max-sm:size-8" loading="lazy" />
                   <span className={personName}>{f.name}</span>
@@ -205,7 +205,7 @@ export function FriendsScreen({
           <h3 className="mt-6 mb-2 text-lg font-bold">Your circle</h3>
           <div className="flex flex-col gap-2.5">
             {accepted.map((f) => (
-              <div className={personRow} key={f.sub}>
+              <div className={personRow} data-slot="person-row" key={f.sub}>
                 <Link {...f.profileLinkProps} className={identityLink}>
                   <Avatar name={f.name} src={f.avatarSrc} size="md" className="max-sm:size-8" loading="lazy" />
                   <div className="min-w-0">
