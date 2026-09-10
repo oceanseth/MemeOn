@@ -1,3 +1,14 @@
+/* The cascade contract `src/index.css` declares, restated because a layer's rank is fixed the first
+   time its name is seen and this file can still reach a stylesheet ahead of `index.css` (an async
+   CSS chunk of its own, a story, a second entry). `main.tsx` imports `index.css` first so the app
+   bundle already opens with this order; the restatement is what keeps every other bundle honest,
+   and re-declaring an order that already exists is a no-op. `properties` leads the list because
+   that is where Tailwind emits its own `@layer properties` block — the `@supports` fallback that
+   seeds every `--tw-*` for engines without `@property` — and it has to stay *below* `utilities`, or
+   those `initial`s would beat the utilities that set them. `scripts/check-layers.mjs` reads the
+   built CSS back and fails the build if any of it ever ranks `components` under `legacy`. */
+@layer properties, theme, base, legacy, components, utilities;
+
 @layer components {
   /* Named uniquely (not `skeleton-sweep`) so this can never collide with the byte-identical
      legacy `49-loading.css` `@keyframes skeleton-sweep` — verified independent of the legacy
