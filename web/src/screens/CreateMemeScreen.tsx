@@ -126,7 +126,7 @@ const PREVIEW_META = 'flex flex-col gap-1.5 px-3 pt-2.5 pb-3'
 const PREVIEW_TITLE = 'overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-bold text-text'
 const PREVIEW_CHIP = cn(
   'inline-flex max-w-full items-center gap-[5px] rounded-pill border border-current',
-  'bg-[rgba(0,0,0,0.45)] px-[9px] py-[3px] text-center text-[11px] font-extrabold uppercase',
+  'bg-[oklch(0_0_0_/_0.45)] px-[9px] py-[3px] text-center text-[11px] font-extrabold uppercase',
   'tracking-[0.8px] [overflow-wrap:anywhere] text-(color:--tier)',
 )
 const PREVIEW_SUB = cn(

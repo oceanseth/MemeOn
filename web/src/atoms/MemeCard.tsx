@@ -31,7 +31,7 @@ const CARD = cn(
      tier; the dark halo separates it from a light foil frame */
   'has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-text',
   'has-[a:focus-visible]:outline-offset-[3px]',
-  'has-[a:focus-visible]:shadow-[0_0_0_5px_rgba(0,0,0,0.7)]',
+  'has-[a:focus-visible]:shadow-[0_0_0_5px_oklch(0_0_0_/_0.7)]',
 )
 
 /* The hover lift is the grid thumb's alone: a detail hero is already the page's subject and has
@@ -79,7 +79,7 @@ const TITLE = 'overflow-hidden text-ellipsis font-bold text-text'
    being clipped mid-word by the inner's overflow */
 const CHIP = cn(
   'inline-flex max-w-full items-center gap-[5px] rounded-pill border border-current',
-  'bg-[rgba(0,0,0,0.45)] text-center font-extrabold uppercase',
+  'bg-[oklch(0_0_0_/_0.45)] text-center font-extrabold uppercase',
   'tracking-[0.8px] [overflow-wrap:anywhere] text-(color:--tier)',
 )
 

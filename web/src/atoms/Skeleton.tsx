@@ -6,7 +6,7 @@ import './Skeleton.css'
 const BASE = cn(
   'relative overflow-hidden rounded-card border border-border bg-bg-raised',
   "after:content-[''] after:absolute after:inset-0 after:-translate-x-full",
-  'after:bg-[linear-gradient(90deg,transparent,rgba(232,236,244,0.06),transparent)]',
+  'after:bg-[linear-gradient(90deg,transparent,oklch(0.942_0.012_264.509_/_0.06),transparent)]',
   'after:animate-[atom-skeleton-sweep_1.4s_linear_infinite] motion-reduce:after:animate-none',
 )
 

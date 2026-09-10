@@ -8,7 +8,7 @@ import { DialogFrame } from './DialogFrame'
 
 /** 0-1-1 in the legacy sheet, so the white label beat `button.danger`; here it just wins the merge. */
 const DANGER_BUTTON =
-  'bg-[#a12b3a] border-transparent text-text-inverse font-bold ' +
+  'bg-danger-fill border-transparent text-text-inverse font-bold ' +
   '[&:not(:disabled):hover]:border-danger'
 
 /**

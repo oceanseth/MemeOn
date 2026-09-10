@@ -24,7 +24,7 @@ const INNER = 'relative mx-auto flex max-w-page flex-wrap items-center gap-2.5 p
 const SCROLLER = cn(
   'max-lg:flex-nowrap max-lg:overflow-x-auto max-lg:py-1.5',
   'max-lg:[scroll-snap-type:x_mandatory] max-lg:[scrollbar-width:none]',
-  'max-lg:[mask-image:linear-gradient(to_right,#000_90%,transparent)]',
+  'max-lg:[mask-image:linear-gradient(to_right,oklch(0_0_0)_90%,transparent)]',
   'max-lg:[&::-webkit-scrollbar]:hidden',
   'max-lg:[&>*]:flex-none max-lg:[&>*]:[scroll-snap-align:start]',
 )

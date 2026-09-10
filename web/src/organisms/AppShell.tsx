@@ -56,7 +56,7 @@ export const NAV_LINKS = cn(
   // ≤760: a full-width swipeable row under the mark, with an edge fade for the overflow
   'max-xl:order-3 max-xl:[flex:1_0_100%] max-xl:mx-[-20px] max-xl:mt-1.5 max-xl:px-5 max-xl:pb-0.5',
   'max-xl:[scroll-snap-type:x_proximity] max-xl:[-webkit-overflow-scrolling:touch]',
-  'max-xl:[mask-image:linear-gradient(to_right,#000_88%,transparent)]',
+  'max-xl:[mask-image:linear-gradient(to_right,oklch(0_0_0)_88%,transparent)]',
 )
 
 /** Location is a shape hover never produces and touch never loses: an inset underline, not a tint. */

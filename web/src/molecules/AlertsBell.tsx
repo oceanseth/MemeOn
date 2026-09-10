@@ -35,7 +35,9 @@ const TRIGGER = cn(buttonClasses(), '[line-height:1.125]')
 
 const BADGE = cn(
   'absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center px-1',
-  'rounded-pill bg-danger text-[10px] leading-none font-bold text-text-inverse tabular-nums',
+  /* the fill token, not `--color-danger`: white on the light red read at APCA Lc 54 / WCAG 2.5:1,
+     and this badge is 10px bold — on `--color-danger-fill` the same white reads at Lc 89. */
+  'rounded-pill bg-danger-fill text-[10px] leading-none font-bold text-text-inverse tabular-nums',
 )
 
 /**

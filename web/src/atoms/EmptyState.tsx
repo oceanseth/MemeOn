@@ -21,7 +21,7 @@ export function EmptyState({ error = false, role, className, children, ...rest }
         '[&_:where(h2,h3)]:mt-0 [&_:where(h2,h3)]:mb-1.5 [&_:where(h2,h3)]:text-lg [&_:where(h2,h3)]:text-text',
         '[&_p]:m-0 [&_p]:mb-1.5',
         error &&
-          'border-solid border-[#5b2733] bg-(--state-error-bg) text-danger [&_strong]:text-text',
+          'border-solid border-[oklch(0.349_0.077_7.441)] bg-(--state-error-bg) text-danger [&_strong]:text-text',
         className,
       )}
     >

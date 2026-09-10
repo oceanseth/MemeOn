@@ -29,27 +29,31 @@
 @source not inline('container');
 
 @theme static {
-  --color-bg: #0b0d14;
-  --color-bg-raised: #131722;
-  --color-bg-card: #171c2a;
-  --color-bg-media: #0a0c12;
-  --color-border: #262d40;
+  --color-bg: oklch(0.16 0.015 272.199);
+  --color-bg-raised: oklch(0.206 0.023 268.889);
+  --color-bg-card: oklch(0.228 0.028 268.958);
+  --color-bg-media: oklch(0.155 0.013 270.435);
+  --color-border: oklch(0.299 0.036 268.582);
   /* control chrome floor: 3.72:1 on bg, 3.43:1 on bg-raised, 3.26:1 on bg-card. --color-border stays decorative. */
-  --color-border-strong: #5f6c8f;
-  --color-text: #e8ecf4;
-  --color-text-dim: #97a0b5;
-  --color-text-inverse: #fff;
-  --color-accent: #7fd4ff;
-  --color-accent-2: #ff9af5;
-  --color-gold: #ffd76a;
-  --color-danger: #ff7a7a;
-  --color-danger-border: #b0485a;
-  --color-ok: #7dffb2;
-  --color-brand-discord: #5865f2;
-  --color-scrim: rgba(5, 7, 12, 0.8);
+  --color-border-strong: oklch(0.534 0.057 268.638);
+  --color-text: oklch(0.942 0.012 264.509);
+  /* L raised from 0.705 so 11-18px dim copy clears APCA Lc 60 on bg/bg-raised/bg-card (web/scripts/check-contrast.mjs) */
+  --color-text-dim: oklch(0.77 0.032 267.093);
+  --color-text-inverse: oklch(1 0 0);
+  --color-accent: oklch(0.832 0.102 231.822);
+  --color-accent-2: oklch(0.819 0.164 330.583);
+  --color-gold: oklch(0.892 0.135 89.311);
+  /* L raised from 0.735 (C trimmed to stay in sRGB) for the same Lc 60 floor as --color-text-dim */
+  --color-danger: oklch(0.8 0.115 21.864);
+  /* the dark red a danger *surface* is filled with: white on it reads at Lc 89 */
+  --color-danger-fill: oklch(0.477 0.153 18.308);
+  --color-danger-border: oklch(0.544 0.136 21.864);
+  --color-ok: oklch(0.906 0.158 155.414);
+  --color-brand-discord: oklch(0.577 0.209 273.85);
+  --color-scrim: oklch(0.128 0.013 263.618 / 0.8);
   /* primary gradient stops, luminance-tuned so --color-text clears 4.5:1 on both ends (5.44:1 / 7.36:1) */
-  --color-primary-from: #1e5fa8;
-  --color-primary-to: #5c2ea8;
+  --color-primary-from: oklch(0.485 0.134 254.38);
+  --color-primary-to: oklch(0.434 0.183 294.832);
 
   --radius-card: 14px;
   --radius-control: 10px;
@@ -64,8 +68,8 @@
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --shadow-pop: 0 18px 50px rgba(0, 0, 0, 0.55);
-  --shadow-modal: 0 30px 80px rgba(0, 0, 0, 0.6);
+  --shadow-pop: 0 18px 50px oklch(0 0 0 / 0.55);
+  --shadow-modal: 0 30px 80px oklch(0 0 0 / 0.6);
 
   --container-page: 1180px;
 
@@ -124,8 +128,8 @@
      instead of stranding 400px of empty page. */
   body {
     background:
-      radial-gradient(1200px 600px at 80% -10%, #1b2140 0%, transparent 60%),
-      radial-gradient(900px 500px at -10% 110%, #241436 0%, transparent 55%),
+      radial-gradient(1200px 600px at 80% -10%, oklch(0.26 0.059 273.393) 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, oklch(0.232 0.065 303.446) 0%, transparent 55%),
       var(--color-bg);
     color: var(--color-text);
     font-family: var(--font-sans);
