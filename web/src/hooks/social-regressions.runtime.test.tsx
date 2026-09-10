@@ -127,15 +127,16 @@ function giftRequests(requests: RecordedRequest[]): RecordedRequest[] {
   return requests.filter((request) => request.method === 'POST' && request.path === '/api/gift')
 }
 
-async function openAndPickGift(): Promise<HTMLDialogElement> {
+async function openAndPickGift(): Promise<HTMLElement> {
   await click(host.querySelector<HTMLElement>('[aria-label^="Gift shares to"]')!)
-  const dialog = host.querySelector('dialog.pack-modal')!
+  const dialog = host.querySelector<HTMLElement>('[data-slot="dialog"]')!
   await click(button(giftablePaper.title, dialog))
-  return dialog as HTMLDialogElement
+  return dialog
 }
 
+// the dialog is a Base UI popup: mounted means open, so presence is the whole state
 function giftDialogOpen(): boolean {
-  return host.querySelector<HTMLDialogElement>('dialog.pack-modal')?.open ?? false
+  return host.querySelector('[data-slot="dialog"]') !== null
 }
 
 let host: HTMLDivElement
@@ -198,7 +199,7 @@ describe('FriendsView gift lifetime', () => {
     expect(button('Gifting', dialog).disabled).toBe(true)
 
     // in flight every control says so instead of looking operable, and the dialog stays put
-    expect(dialog.querySelector<HTMLButtonElement>('.modal-close')!.disabled).toBe(true)
+    expect(dialog.querySelector<HTMLButtonElement>('[data-slot="dialog-close"]')!.disabled).toBe(true)
     expect(button('Cancel', dialog).disabled).toBe(true)
     expect(button(giftablePaper.title, dialog).disabled).toBe(true)
     await click(button('Cancel', dialog))
@@ -233,7 +234,7 @@ describe('FriendsView gift lifetime', () => {
       firstGift.resolve(json({ error: 'gift unavailable' }, 503))
       await settle()
     })
-    expect(dialog.querySelector('.notice.error')?.textContent).toContain('gift unavailable')
+    expect(dialog.querySelector('[data-slot="notice"]')?.textContent).toContain('gift unavailable')
     expect(button('Gift 1 of', dialog).disabled).toBe(false)
     expect(giftRequests(api.requests)).toHaveLength(1)
 

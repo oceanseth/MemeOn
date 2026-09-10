@@ -1,9 +1,5 @@
-import type {
-  ButtonHTMLAttributes,
-  DialogHTMLAttributes,
-  ReactNode,
-  TextareaHTMLAttributes,
-} from 'react'
+import type { ButtonHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
+import { trackDialogOpener, type DialogOpenerRef } from './dialogOpener'
 
 export interface ConfirmPromptInput {
   label: string
@@ -33,6 +29,8 @@ export interface ConfirmPromptModel {
   label: string
   hint: string | null
   hintId: string
+  /** `used/limit`, so a 400-character cap is visible before it bites */
+  counterLabel: string
   textareaProps: Pick<
     TextareaHTMLAttributes<HTMLTextAreaElement>,
     'value' | 'placeholder' | 'maxLength' | 'rows' | 'onChange' | 'disabled' | 'aria-describedby'
@@ -41,6 +39,13 @@ export interface ConfirmPromptModel {
 
 export interface ConfirmDialogModel {
   open: boolean
+  /**
+   * Whatever was focused when the dialog opened. The frame hands focus back to it on the way out,
+   * because a dialog opened from state has no trigger for Base UI to return to on its own.
+   */
+  opener?: DialogOpenerRef | undefined
+  /** unique per dialog on the page; the frame builds its portal anchor from it */
+  id: string
   title: string
   titleId: string
   message: ReactNode
@@ -49,13 +54,10 @@ export interface ConfirmDialogModel {
   busy: boolean
   prompt: ConfirmPromptModel | null
   /**
-   * Spread onto the native `<dialog>`: the platform supplies focus containment, the top layer and
-   * Escape; these props supply the name, the description, the busy guard and backdrop dismissal.
+   * The single dismissal channel Base UI reports into: Escape and a press on the scrim both arrive
+   * as `false`. In flight it is a no-op, so the request owns the dialog until it answers.
    */
-  dialogProps: Pick<
-    DialogHTMLAttributes<HTMLDialogElement>,
-    'role' | 'aria-labelledby' | 'aria-describedby' | 'onClick' | 'onCancel' | 'onClose'
-  >
+  onOpenChange: (open: boolean) => void
   cancelLabel: string
   confirmLabel: string
   cancelButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'disabled'>
@@ -82,12 +84,13 @@ export function buildConfirmDialogModel({
   const titleId = `${id}-title`
   const messageId = `${id}-message`
   const hintId = `${id}-hint`
-  const dismiss = () => {
-    if (!busy) onCancel()
-  }
+  const maxLength = prompt?.maxLength ?? 400
 
   return {
     open,
+    // read during the build that first reports open, while the opener still holds focus
+    opener: trackDialogOpener(id, open),
+    id,
     title: danger ? `⚠️ ${title}` : title,
     titleId,
     message,
@@ -99,10 +102,11 @@ export function buildConfirmDialogModel({
         label: prompt.label,
         hint: prompt.hint ?? null,
         hintId,
+        counterLabel: `${prompt.value.length}/${maxLength}`,
         textareaProps: {
           value: prompt.value,
           placeholder: prompt.placeholder,
-          maxLength: prompt.maxLength ?? 400,
+          maxLength,
           rows: 3,
           disabled: busy,
           'aria-describedby': prompt.hint ? hintId : undefined,
@@ -110,25 +114,10 @@ export function buildConfirmDialogModel({
         },
       }
       : null,
-    dialogProps: {
-      role: 'alertdialog',
-      'aria-labelledby': titleId,
-      'aria-describedby': messageId,
-      // backdrop (and only the backdrop) dismisses, and never while the request is in flight
-      onClick: (event) => {
-        if (event.target === event.currentTarget) dismiss()
-      },
-      // Escape while a request is in flight is refused; otherwise the platform closes and onClose
-      // reports it back, so the DOM and the model can never disagree about being open.
-      onCancel: (event) => {
-        if (busy) event.preventDefault()
-      },
-      onClose: (event) => {
-        // `close()` fires this asynchronously, so our own close can land after the dialog has
-        // already been reopened; the element, not the stale event, says whether it is still shut.
-        if (event.currentTarget?.open) return
-        if (open && !busy) onCancel()
-      },
+    // Escape and the scrim are Base UI's to detect; whether they are obeyed is this model's call,
+    // and a request in flight refuses, so the DOM and the model can never disagree about being open.
+    onOpenChange: (nextOpen) => {
+      if (!nextOpen && !busy) onCancel()
     },
     cancelLabel,
     confirmLabel: busy ? 'Working…' : confirmLabel,

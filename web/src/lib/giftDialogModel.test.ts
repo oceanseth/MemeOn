@@ -61,7 +61,6 @@ describe('gift dialog model', () => {
       tierKey: 'paper',
       tierLabel: 'Paper',
       tierColor: giftablePaper.tier.color,
-      thumbClassName: 'gift-thumb tier-paper',
       listed: false,
       sharesLabel: 'you hold 12 of 100',
     })
@@ -75,36 +74,35 @@ describe('gift dialog model', () => {
     const onSubmit = vi.fn()
     const model = buildModel({ onPick, onClose, onSubmit })
 
-    const dialogNode = {}
     model.rows[1]?.buttonProps.onClick?.({} as never)
-    model.dialogProps.onClick?.({ target: dialogNode, currentTarget: dialogNode } as never)
-    model.dialogProps.onClick?.({ target: {}, currentTarget: dialogNode } as never)
+    // opening is the caller's business; only a dismissal is the model's
+    model.onOpenChange(true)
+    model.onOpenChange(false)
     model.submitButtonProps.onClick?.({} as never)
 
     expect(model.rows[0]?.selected).toBe(true)
     expect(model.rows[0]?.buttonProps['aria-pressed']).toBe(true)
     expect(onPick).toHaveBeenCalledWith(giftableSilver)
-    // only the backdrop dismisses; a click inside the dialog does not
     expect(onClose).toHaveBeenCalledOnce()
-    expect(model.dialogProps).toMatchObject({ 'aria-labelledby': 'gift-dialog-title' })
+    expect(model.id).toBe('gift-dialog')
+    expect(model.titleId).toBe('gift-dialog-title')
+    expect(model.hintId).toBe('gift-dialog-hint')
     expect(model.submitButtonProps.disabled).toBe(false)
     expect(onSubmit).toHaveBeenCalledOnce()
     expect(buildModel({ pick: null }).submitButtonProps.disabled).toBe(true)
     expect(buildModel({ busy: true }).submitButtonProps.disabled).toBe(true)
   })
 
-  it('gives an empty binder a way out: close button, cancel, and Escape', () => {
+  it('gives an empty binder a way out: the ✕, cancel, and Escape', () => {
     const onClose = vi.fn()
     const model = buildModel({ onClose, memes: [] })
-    const preventDefault = vi.fn()
 
-    expect(model.closeButtonProps['aria-label']).toBe('Close gift dialog')
-    model.closeButtonProps.onClick?.({} as never)
+    expect(model.closeLabel).toBe('Close gift dialog')
+    // the ✕, the scrim and Escape are all one channel now
+    model.onOpenChange(false)
     model.cancelButtonProps.onClick?.({} as never)
-    model.dialogProps.onCancel?.({ preventDefault } as never)
 
-    expect(onClose).toHaveBeenCalledTimes(3)
-    expect(preventDefault).toHaveBeenCalledOnce()
+    expect(onClose).toHaveBeenCalledTimes(2)
   })
 
   it('will not dismiss itself while a gift is in flight', () => {
@@ -112,7 +110,7 @@ describe('gift dialog model', () => {
     const model = buildModel({ onClose, busy: true })
 
     model.cancelButtonProps.onClick?.({} as never)
-    model.dialogProps.onCancel?.({ preventDefault: vi.fn() } as never)
+    model.onOpenChange(false)
 
     expect(onClose).not.toHaveBeenCalled()
     expect(model.submitButtonProps['aria-busy']).toBe(true)
@@ -121,14 +119,14 @@ describe('gift dialog model', () => {
   it('says so on every control while a gift is in flight, instead of looking operable', () => {
     const model = buildModel({ busy: true })
 
-    expect(model.closeButtonProps.disabled).toBe(true)
+    expect(model.busy).toBe(true)
     expect(model.cancelButtonProps.disabled).toBe(true)
     expect(model.searchInputProps.disabled).toBe(true)
     expect(model.sharesInputProps.disabled).toBe(true)
     expect(model.rows.every((row) => row.buttonProps.disabled)).toBe(true)
 
     const idle = buildModel()
-    expect(idle.closeButtonProps.disabled).toBe(false)
+    expect(idle.busy).toBe(false)
     expect(idle.cancelButtonProps.disabled).toBe(false)
     expect(idle.searchInputProps.disabled).toBe(false)
     expect(idle.sharesInputProps.disabled).toBe(false)
@@ -138,5 +136,18 @@ describe('gift dialog model', () => {
   it('never dead-ends an empty binder', () => {
     expect(buildModel({ memes: [] }).emptyMessage).toBe('Nothing to gift here — you need shares in a meme first.')
     expect(buildModel({ query: 'zzz' }).emptyMessage).toBe('Nothing in your binder matches "zzz".')
+  })
+
+  it('records the opener, so the frame can hand focus back on the way out', () => {
+    const opener = { focus: () => {}, isConnected: true } as unknown as HTMLElement
+    vi.stubGlobal('document', { activeElement: opener, body: { nodeName: 'BODY' } })
+
+    // no recipient is not a dialog at all: nothing is open, so nothing is recorded
+    expect(buildModel({ recipient: null }).opener).toBeUndefined()
+    // opened from state, with no Dialog.Trigger for Base UI to return to
+    expect(buildModel().opener?.current).toBe(opener)
+    // closed, the record goes with it: the next open belongs to whoever opens it next
+    expect(buildModel({ open: false }).opener).toBeUndefined()
+    vi.unstubAllGlobals()
   })
 })

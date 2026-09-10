@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, fn, userEvent, within } from 'storybook/test'
+import { useState } from 'react'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
+import { Button } from '../atoms/Button'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
 import { ConfirmDialog } from './ConfirmDialog'
 
@@ -31,14 +33,16 @@ export const Open: Story = {
     onCancel.mockClear()
     const canvas = within(canvasElement)
     const dialog = canvas.getByRole('alertdialog', { name: 'Delete forever?' })
-    // the platform supplies containment and initial focus: the first control inside the dialog
-    await expect(dialog.contains(document.activeElement)).toBe(true)
+    // Base UI supplies containment and initial focus: the first control inside the dialog
+    await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true))
     await userEvent.click(canvas.getByRole('heading', { name: 'Delete forever?' }))
     await expect(onCancel).not.toHaveBeenCalled()
     await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }))
     await expect(onCancel).toHaveBeenCalledOnce()
-    // Escape is the platform's own close watcher: it only answers trusted key events, so it is
-    // covered in confirmDialogModel.test.ts (onCancel passes it through, onClose reports it back).
+    // Escape is Base UI's own dismissal now, not the platform close watcher, so it answers a
+    // synthetic key event and can finally be covered here.
+    await userEvent.keyboard('{Escape}')
+    await expect(onCancel).toHaveBeenCalledTimes(2)
   },
 }
 export const Closed: Story = {
@@ -59,6 +63,55 @@ export const Busy: Story = {
     await expect(confirm).toHaveAttribute('aria-busy', 'true')
     await expect(confirm).toHaveAttribute('aria-disabled', 'true')
     await expect(confirm).toBeEnabled()
+  },
+}
+/**
+ * A screen opens this dialog from state, not from a `Dialog.Trigger`, so the model records whoever
+ * was focused and the frame hands focus back there. The `tabIndex={-1}` wrapper stands in for the
+ * `<main>` landmark the app portals into: it is the focusable ancestor a press on the scrim moves
+ * focus to, and the reason the restore has to be explicit.
+ */
+function FocusRestoreHarness() {
+  const [open, setOpen] = useState(false)
+  const close = () => setOpen(false)
+  return (
+    <div tabIndex={-1}>
+      <Button onClick={() => setOpen(true)}>Remove Pal</Button>
+      <ConfirmDialog
+        model={buildConfirmDialogModel({
+          ...baseInput,
+          id: 'focus-restore-story',
+          open,
+          onConfirm: close,
+          onCancel: close,
+        })}
+      />
+    </div>
+  )
+}
+
+export const RestoresFocusToItsOpener: Story = {
+  render: () => <FocusRestoreHarness />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const opener = canvas.getByRole('button', { name: 'Remove Pal' })
+    const dismissals = {
+      scrim: async () => {
+        const backdrop = canvasElement.querySelector('[data-slot="dialog-backdrop"]')
+        await expect(backdrop).not.toBeNull()
+        await userEvent.click(backdrop as HTMLElement)
+      },
+      escape: () => userEvent.keyboard('{Escape}'),
+      cancel: () => userEvent.click(canvas.getByRole('button', { name: 'Cancel' })),
+    }
+
+    for (const dismiss of Object.values(dismissals)) {
+      await userEvent.click(opener)
+      await expect(canvas.getByRole('alertdialog', { name: 'Delete forever?' })).toBeVisible()
+      await dismiss()
+      await waitFor(() => expect(canvas.queryByRole('alertdialog')).toBeNull())
+      await waitFor(() => expect(document.activeElement).toBe(opener))
+    }
   },
 }
 export const Prompt: Story = {

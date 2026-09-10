@@ -1,12 +1,14 @@
+/* WP2-dialogs migrated ConfirmDialog and GiftDialog off this file, so every `dialog.confirm-modal`
+   selector is gone. `.pack-modal` stays: the starter-pack dialog in molecules/QuestBar.tsx (shell,
+   un-migrated) is still a native <dialog> wearing these classes. Delete with that surface. */
 .pack-modal h3 {
   margin: 0 0 6px;
   font-size: 22px;
 }
 
 /* Native <dialog> shell: Escape, focus containment, inert background and the top layer come from the
-   platform. Every modal in the app is a <dialog>, so this is the only box the shell needs. */
-dialog.pack-modal,
-dialog.confirm-modal {
+   platform. */
+dialog.pack-modal {
   margin: auto;
   inset: 0;
   width: min(640px, calc(100vw - 24px));
@@ -21,12 +23,7 @@ dialog.confirm-modal {
   box-shadow: var(--shadow-modal);
 }
 
-dialog.confirm-modal {
-  width: min(440px, calc(100vw - 24px));
-}
-
-dialog.pack-modal::backdrop,
-dialog.confirm-modal::backdrop {
+dialog.pack-modal::backdrop {
   background: var(--scrim);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
@@ -72,17 +69,11 @@ body:has(dialog[open]) {
 
 /* bottom sheet on phones so the keyboard pushes the dialog instead of burying it */
 @media (max-width: 720px) {
-  dialog.pack-modal,
-  dialog.confirm-modal {
+  dialog.pack-modal {
     max-width: none;
     width: 100%;
     border-radius: var(--radius) var(--radius) 0 0;
     padding-bottom: max(24px, env(safe-area-inset-bottom));
-  }
-
-  dialog.pack-modal,
-  dialog.confirm-modal {
     margin-block-end: 0;
   }
 }
-

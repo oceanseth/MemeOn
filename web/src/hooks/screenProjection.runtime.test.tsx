@@ -182,10 +182,10 @@ it('actual MemeDetailView in the app route observes deferred loading and later d
   expect(host.querySelector('h2')?.textContent).toContain(paperMeme.title)
   expect(host.textContent).toContain('you hold 100/100')
   await act(() => button('Delete forever').click())
-  // the confirmations are native <dialog>s: they stay mounted and open/close in the top layer
-  expect(host.querySelector('dialog[open][role="alertdialog"]')).not.toBeNull()
+  // the confirmations are Base UI popups: mounted means open, so presence is the whole state
+  expect(host.querySelector('[role="alertdialog"]')).not.toBeNull()
   await act(() => button('Cancel').click())
-  expect(host.querySelector('dialog[open][role="alertdialog"]')).toBeNull()
+  expect(host.querySelector('[role="alertdialog"]')).toBeNull()
   expect(requests.every((request) => !request.init?.method || request.init.method === 'GET')).toBe(true)
 })
 

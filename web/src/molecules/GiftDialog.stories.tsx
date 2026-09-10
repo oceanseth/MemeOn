@@ -58,7 +58,9 @@ export const Busy: Story = {
     await expect(canvas.getByRole('searchbox', { name: 'Search your binder' })).toBeDisabled()
     await expect(canvas.getByRole('spinbutton', { name: /Shares to gift/ })).toBeDisabled()
     await expect(canvas.getByRole('button', { name: /Gifting/ })).toBeDisabled()
-    for (const row of canvasElement.querySelectorAll('.gift-row')) {
+    const rows = canvasElement.querySelectorAll('[data-slot="gift-list"] [data-slot="button"]')
+    await expect(rows).toHaveLength(4)
+    for (const row of rows) {
       await expect(row).toBeDisabled()
     }
   },
