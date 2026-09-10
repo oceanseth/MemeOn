@@ -10,14 +10,16 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "check-tiers": "node scripts/check-tiers.mjs src",
+    "check-contrast": "node scripts/check-contrast.mjs",
     "test:check-tiers": "node --test scripts/check-tiers.test.mjs",
     "test:check-layers": "node --test scripts/check-layers.test.mjs",
+    "test:check-contrast": "node --test scripts/check-contrast.test.mjs",
     "test:proxy": "npm run build && node scripts/vite-proxy.test.mjs",
     "test:unit": "vitest run --project=unit",
     "test:runtime": "vitest run --project=runtime",
     "test:stories": "vitest run --project=storybook",
     "test": "vitest run --project=unit --project=runtime",
-    "check": "npm run check-tiers && npm run test:check-layers && npm run test:proxy && npm run test:unit && npm run test:runtime && npm run test:stories"
+    "check": "npm run check-tiers && npm run check-contrast && npm run test:check-layers && npm run test:check-contrast && npm run test:proxy && npm run test:unit && npm run test:runtime && npm run test:stories"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
