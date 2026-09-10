@@ -1,14 +1,2 @@
-/* account-link ritual: one centred measure, the h1 keeps full contrast (so not .page-state) */
-.link-status {
-  max-width: 480px;
-  margin: 0 auto;
-  padding-top: calc(2 * var(--space-8));
-  text-align: center;
-}
-
-@media (max-width: 640px) {
-  .link-status {
-    padding-top: var(--space-6);
-  }
-}
-
+/* emptied by WP2-dev: DiscordLinkScreen.tsx (dev) reproduces `.link-status` with utilities;
+   no remaining user in web/src (delete in WP3). */

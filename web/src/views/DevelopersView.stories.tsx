@@ -92,7 +92,7 @@ export const DoubleSubmitMintsOneKey: Story = {
 export const LoadingThenReady: Story = {
   loaders: [connectedLoader({ overrides: { 'GET /api/developers/keys': async (_request, scenario) => { await scenario.waitForRelease('keys'); return { body: { keys: scenario.keys } } } } })], beforeEach: async (context) => connectedBeforeEach(context),
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DevelopersView /></ConnectedStory>,
-  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('.spin')).not.toBeNull()); await expect(canvas.getByText('Loading your API keys…')).toBeInTheDocument(); loaded.scenario.release('keys'); await expect(await canvas.findByText('my-trading-bot')).toBeInTheDocument() },
+  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('[data-slot=spinner]')).not.toBeNull()); await expect(canvas.getByText('Loading your API keys…')).toBeInTheDocument(); loaded.scenario.release('keys'); await expect(await canvas.findByText('my-trading-bot')).toBeInTheDocument() },
 }
 
 /** A failed list fetch is an unknown list, never an empty account. */

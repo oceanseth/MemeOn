@@ -83,8 +83,10 @@
   white-space: nowrap;
 }
 
-.person-name.wrap,
-.key-label {
+/* `.key-label` emptied by WP2-dev: DevelopersScreen.tsx (dev) was its only user and now reproduces
+   this with utilities directly (no remaining user; delete in WP3). `.person-name.wrap` stays —
+   already flagged as having no user, left for the final legacy-removal package. */
+.person-name.wrap {
   white-space: normal;
   overflow-wrap: anywhere;
 }

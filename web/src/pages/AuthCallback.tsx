@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Button } from '../atoms/Button'
+import { Notice } from '../atoms/Notice'
+import { PageContainer } from '../atoms/PageContainer'
+import { Spinner } from '../atoms/Spinner'
 import { completeMaskyLogin } from '../lib/auth'
 import { post } from '../lib/api'
 import { useAuth } from '../context/AuthContext'
@@ -37,18 +41,20 @@ export default function AuthCallback() {
   }, [params, navigate, refresh])
 
   return (
-    <main className="container" id="main" tabIndex={-1} style={{ paddingTop: 90, textAlign: 'center' }}>
+    <PageContainer as="main" id="main" tabIndex={-1} className="pt-[90px] text-center">
       {err ? (
         <>
-          <p className="notice error">{err}</p>
-          <button onClick={() => navigate('/')}>Back home</button>
+          <Notice tone="error">{err}</Notice>
+          <div className="mt-3.5">
+            <Button onClick={() => navigate('/')}>Back home</Button>
+          </div>
         </>
       ) : (
         <>
-          <span className="spin" />
-          <p style={{ color: 'var(--text-dim)' }}>Completing Masky login…</p>
+          <Spinner />
+          <p className="[margin-block:1em] text-text-dim">Completing Masky login…</p>
         </>
       )}
-    </main>
+    </PageContainer>
   )
 }

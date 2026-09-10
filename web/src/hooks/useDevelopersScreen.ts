@@ -6,6 +6,7 @@ import type {
   HTMLAttributes,
   InputHTMLAttributes,
 } from 'react'
+import { Notice } from '../atoms/Notice'
 import { apiFetch, post } from '../lib/api'
 import {
   buildConfirmDialogModel,
@@ -189,9 +190,7 @@ export function useDevelopersScreen(): DevelopersScreenModel {
       createElement('code', null, `${ctx.revoking?.prefix}…`),
       ` (${ctx.revoking?.label}) will stop working immediately. Anything using it breaks.`,
       // the page behind an open modal is inert, so the failure has to land inside the dialog
-      ctx.revokeErr
-        ? createElement('p', { className: 'notice error', role: 'alert' }, ctx.revokeErr)
-        : null,
+      ctx.revokeErr ? createElement(Notice, { tone: 'error' }, ctx.revokeErr) : null,
     ),
     confirmLabel: 'Revoke it',
     onCancel: onRevokeCancel,

@@ -1,5 +1,14 @@
 import { Link } from 'react-router-dom'
+import { Button, buttonClasses } from '../atoms/Button'
+import { EmptyActions } from '../atoms/EmptyState'
+import { Notice } from '../atoms/Notice'
+import { PageContainer } from '../atoms/PageContainer'
+import { Spinner } from '../atoms/Spinner'
+import { cn } from '../lib/cn'
 import type { DiscordLinkScreenModel } from '../hooks/useDiscordLinkScreen'
+
+/** UA paragraph rhythm, which preflight resets: `.muted` copy reads as prose, not a stack. */
+const muted = cn('leading-[1.55] [margin-block:1em] text-text-dim')
 
 /** Discord connect ritual as a function of its model. Every engine state is one set of args. */
 export function DiscordLinkScreen({
@@ -16,66 +25,64 @@ export function DiscordLinkScreen({
   onRetry,
 }: DiscordLinkScreenModel) {
   return (
-    <main className="container" id="main" tabIndex={-1}>
-      <div className="link-status">
+    <PageContainer as="main" id="main" tabIndex={-1}>
+      <div className="mx-auto max-w-[480px] pt-20 text-center max-md:pt-6">
         {/* one region for the whole ritual, mounted in every phase, so the swap is announced */}
         <div role="status" aria-live="polite" aria-atomic="true">
-          {heading && <h1>{heading}</h1>}
+          {heading && <h1 className="font-bold">{heading}</h1>}
           {showConfirm && (
             <>
-              <p className="muted">
+              <p className={muted}>
                 Your Discord name is never shown to other MemeOn users — <code>/memeon</code> just
                 ranks your own binder 💼 and your friends' memes 🤝 first.
               </p>
-              <div className="empty-actions">
-                <button className="primary" onClick={onConfirm}>
+              <EmptyActions>
+                <Button variant="primary" onClick={onConfirm}>
                   Connect Discord
-                </button>
-                <Link className="btn" to="/discord">
+                </Button>
+                <Link className={buttonClasses()} to="/discord">
                   Not now
                 </Link>
-              </div>
+              </EmptyActions>
             </>
           )}
           {showBusy && (
             <>
-              <span className="spin" aria-hidden="true" />
-              <p className="muted">{busyMessage}</p>
+              <Spinner />
+              <p className={muted}>{busyMessage}</p>
             </>
           )}
           {showDone && (
             <>
-              <p className="muted">
+              <p className={muted}>
                 Head back to Discord — <code>/memeon</code> now ranks your binder 💼 and friends'
                 memes 🤝 first.
               </p>
-              <div className="empty-actions">
-                <Link className="btn" to="/discord">
+              <EmptyActions>
+                <Link className={buttonClasses()} to="/discord">
                   Back to MemeOn
                 </Link>
-              </div>
+              </EmptyActions>
             </>
           )}
         </div>
         {showError && (
           <>
-            <h1>{errTitle}</h1>
-            <p className="notice error" role="alert">
-              {errBody}
-            </p>
-            <div className="empty-actions">
+            <h1 className="font-bold">{errTitle}</h1>
+            <Notice tone="error">{errBody}</Notice>
+            <EmptyActions>
               {canRetry && (
-                <button className="primary" onClick={onRetry}>
+                <Button variant="primary" onClick={onRetry}>
                   Try again
-                </button>
+                </Button>
               )}
-              <Link className="btn" to="/discord">
+              <Link className={buttonClasses()} to="/discord">
                 Back to MemeOn
               </Link>
-            </div>
+            </EmptyActions>
           </>
         )}
       </div>
-    </main>
+    </PageContainer>
   )
 }

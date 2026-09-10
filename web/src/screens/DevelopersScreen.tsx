@@ -1,5 +1,27 @@
+import { Badge } from '../atoms/Badge'
+import { Button, buttonClasses } from '../atoms/Button'
+import { EmptyActions, EmptyState } from '../atoms/EmptyState'
+import { Hint } from '../atoms/Field'
+import { Input } from '../atoms/Input'
+import { Notice } from '../atoms/Notice'
+import { PageContainer } from '../atoms/PageContainer'
+import { PageHead } from '../atoms/PageHead'
+import { Panel } from '../atoms/Panel'
+import { Spinner } from '../atoms/Spinner'
+import { cn } from '../lib/cn'
 import type { DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { ConfirmDialog } from '../molecules/ConfirmDialog'
+
+/** UA paragraph rhythm, which preflight resets: the disclaimer copy reads as prose, not a stack. */
+const prose = 'leading-[1.55] [margin-block:1em]'
+
+/** `.person-row`, reproduced with utilities: one key row, still shared with Friends/Leaderboard's literal class. */
+const keyRow = cn(
+  'flex flex-wrap items-center gap-3 gap-y-2 rounded-[12px] border border-border bg-bg-raised p-3',
+)
+
+/** `.row-list` */
+const rowList = 'mt-2.5 flex flex-col gap-2.5'
 
 /** Developers API-key page as a function of its model. Every engine state is one set of args. */
 export function DevelopersScreen({
@@ -37,14 +59,13 @@ export function DevelopersScreen({
   confirmDialog,
 }: DevelopersScreenModel) {
   return (
-    <main className="container narrow" id="main" tabIndex={-1}>
-      <div className="page-head">
-        <h2>🔧 Developers</h2>
-        <a className="btn" href="/skill.md" target="_blank" rel="noreferrer">
+    <PageContainer as="main" narrow id="main" tabIndex={-1}>
+      <PageHead title="🔧 Developers" className="[&_:where(h1,h2)]:font-bold">
+        <a className={buttonClasses()} href="/skill.md" target="_blank" rel="noreferrer">
           📜 API skill.md
         </a>
-      </div>
-      <p className="muted">
+      </PageHead>
+      <p className={cn(prose, 'text-text-dim')}>
         API keys act as <strong>your account</strong>: they can mint memes, gift shares (including
         to users your own site knows only by Masky avatar id), trade, and read everything you can.
         Full endpoint reference lives in{' '}
@@ -54,81 +75,107 @@ export function DevelopersScreen({
         (also at <code>/.well-known/skill.md</code> for agents). Treat keys like passwords.
       </p>
 
-      <div className="panel" style={{ marginTop: 16 }}>
-        <form className="filter-bar" {...createFormProps}>
-          <input
+      <Panel className="mt-4">
+        <form className="flex flex-wrap items-center gap-2.5" {...createFormProps}>
+          <Input
             placeholder="Key label (e.g. my-trading-bot)"
-            style={{ flex: '1 1 240px', minWidth: 240 }}
+            className="min-w-60 flex-[1_1_240px]"
             {...labelInputProps}
           />
-          <button className="primary" type="submit" {...createButtonProps}>
+          <Button variant="primary" type="submit" {...createButtonProps}>
             <span aria-hidden="true">＋</span> {createLabel}
-          </button>
+          </Button>
         </form>
-        {quotaNote && <p className="field-hint">{quotaNote}</p>}
-        {showErr && <p className="notice error" {...errorNoticeProps}>{err}</p>}
+        {quotaNote && <Hint>{quotaNote}</Hint>}
+        {showErr && (
+          <Notice tone="error" {...errorNoticeProps}>
+            {err}
+          </Notice>
+        )}
         <div {...freshKeyRegionProps}>
           {showFreshKey && (
-            <div className="notice ok">
+            <Notice tone="ok">
               <strong>Copy it now — shown once:</strong>
-              <div className="key-string" {...freshKeyProps}>{freshKey}</div>
-              <button {...copyButtonProps}>
+              <div
+                className="my-2 font-mono text-sm [overflow-wrap:anywhere] select-all"
+                {...freshKeyProps}
+              >
+                {freshKey}
+              </div>
+              <Button {...copyButtonProps}>
                 {copyLabel}
                 {copyDone && <span aria-hidden="true"> ✓</span>}
-              </button>
-            </div>
+              </Button>
+            </Notice>
           )}
         </div>
-      </div>
+      </Panel>
 
-      <div className="panel" style={{ marginTop: 16 }}>
+      <Panel className="mt-4">
         <h3>
-          Your keys{quotaLabel && <> <span className="badge">{quotaLabel}</span></>}
+          Your keys{quotaLabel && <> <Badge>{quotaLabel}</Badge></>}
         </h3>
         <div {...statusRegionProps}>
-          {showOk && <p className="notice ok">{okMsg}</p>}
+          {showOk && <Notice tone="ok">{okMsg}</Notice>}
         </div>
         {showSpinner && (
-          <div className="loading-state" {...loadingProps}>
-            <span className="spin" aria-hidden="true" />
+          /* `.loading-state`: a labelled spinner row, never a bare spinner */
+          <div
+            data-slot="loading-state"
+            className="flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-text-dim"
+            {...loadingProps}
+          >
+            <Spinner />
             {loadingLabel}
           </div>
         )}
         {showLoadError && (
-          <div className="empty error" {...loadErrorProps}>
-            <p><strong>{loadErrorMessage}</strong></p>
-            <div className="empty-actions">
-              <button className="primary" {...retryButtonProps}>Try again</button>
-            </div>
-          </div>
+          <EmptyState error {...loadErrorProps}>
+            <p>
+              <strong>{loadErrorMessage}</strong>
+            </p>
+            <EmptyActions>
+              <Button variant="primary" {...retryButtonProps}>
+                Try again
+              </Button>
+            </EmptyActions>
+          </EmptyState>
         )}
         {showEmpty && (
-          <div className="empty">
+          <EmptyState>
             <p>{emptyCopy}</p>
             <p>{emptyHint}</p>
-          </div>
+          </EmptyState>
         )}
         {showKeys && keys && (
-          <ul className="row-list" style={{ marginTop: 10 }}>
+          <ul className={rowList}>
             {keys.map((k) => (
-              <li key={k.prefix} className="person-row">
-                <div className="person-identity">
-                  <span className="person-name key-label">{k.label}</span>
-                  <span className="key-meta">
+              <li key={k.prefix} className={keyRow}>
+                <div className="min-w-0 flex-1 leading-[normal]">
+                  {/* `.key-label`/`.key-meta` never set a line-height, so they rendered at the UA
+                      default off `body`. Preflight's `html { line-height: 1.5 }` would otherwise
+                      inflate each row ~7-15px; `leading-[normal]` is the CSS keyword (Tailwind's
+                      `leading-normal` is a fixed 1.5). It's set on this wrapper div too, not just
+                      the spans: the label span is `inline`, so its line box takes its *containing
+                      block's* line-height as a minimum ("strut"), not just its own. */}
+                  <span className="font-semibold whitespace-normal leading-[normal] [overflow-wrap:anywhere]">
+                    {k.label}
+                  </span>
+                  <span className="mt-1 flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-xs leading-[normal] text-text-dim [font-variant-numeric:tabular-nums]">
                     <code>{k.prefix}…</code>
                     <time dateTime={k.createdAt}>{k.createdLabel}</time>
                   </span>
                 </div>
-                <button className="danger" {...k.revokeButtonProps}>
+                <Button variant="danger" className="shrink-0" {...k.revokeButtonProps}>
                   Revoke
-                </button>
+                </Button>
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </Panel>
 
       <ConfirmDialog model={confirmDialog} />
-    </main>
+    </PageContainer>
   )
 }
