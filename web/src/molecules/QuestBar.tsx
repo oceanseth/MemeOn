@@ -61,7 +61,7 @@ const TEXT_BUTTON = cn(
  */
 const CLAIM_BUTTON = cn(buttonClasses('primary'), 'px-3 py-1 text-xs')
 
-/** `.card-grid` with the starter pack's tighter tracks; the ≤560 rule only takes the gap. */
+/** The card grid with the starter pack's tighter tracks; under 561px only the gap tightens. */
 const PACK_GRID = 'm-0 grid list-none grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-5 p-0 max-sm:gap-3'
 
 /**

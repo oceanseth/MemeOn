@@ -1,6 +1,0 @@
-/* Emptied by WP2-shell; delete in WP3.
-
-   `organisms/AppShell.tsx` paints the footer in utilities. `14-prose-links.css`'s `.site-footer a`
-   underline rules (including `a[aria-current='page']` and the `a.btn` exception) and
-   `50-input-modality.css`'s `.site-footer a` 44px target now match nothing; each is reproduced on
-   the footer links themselves, and the selectors are the final package's to drop. */

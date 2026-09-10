@@ -1,23 +1,25 @@
-/* Cascade contract for the Tailwind migration.
-   theme, base            Tailwind's tokens and preflight.
-   legacy                 The pre-Tailwind sheet (styles/legacy/, one file per owner). Beats preflight, so
-                          un-migrated markup keeps its look; loses to components/utilities, so migrated
-                          markup wins. The final migration package deletes it.
-   components, utilities  Tailwind. */
-@layer theme, base, legacy, components, utilities;
+/* The cascade contract, declared once, here, and restated by every co-located component sheet
+   (`atoms/*.css`, `organisms/AppShell.css`, `screens/LandingScreen.css`) because a layer's rank is
+   fixed the first time its name is seen in a bundle:
+
+     properties  Tailwind's own `@property` fallback block. It has to rank BELOW `utilities`, or its
+                 `initial`s would beat the utilities that set them. Tailwind emits it; nothing else
+                 writes it, which is why this file's statement does not name it and the co-located
+                 sheets — which can reach a bundle ahead of this file — do.
+     theme, base Tailwind's tokens and preflight, plus the element-level typography and chrome this
+                 app authors on top of preflight (below, in `@layer base`).
+     components  Effects no utility can express: the foil ring, the skeleton sweep, the spinner.
+     utilities   Tailwind. Every migrated surface paints here, so it beats `base` without `!`.
+
+   `main.tsx` imports this file first so the app bundle opens with the statement above;
+   `scripts/check-layers.mjs` reads the built CSS back and fails the build if any stylesheet ever
+   ranks them differently. */
+@layer theme, base, components, utilities;
 @import 'tailwindcss';
-@import './styles/legacy/index.css' layer(legacy);
 
-/* legacy markup already wears this class with its own meaning (the 1180px page measure); Tailwind's
-   responsive container would out-cascade it */
-@source not inline('container');
-
-/* Auto source detection reads these as markup and mines class names out of them: declaration values in
-   the legacy sheet (`display: flex` -> `.flex`), the MANIFEST's prose (`mx-auto max-w-page`) and the
-   `cn` fixtures. Nothing asks for those utilities, but each one it emits lands in `utilities` and would
-   out-cascade legacy the moment any markup used the name. Paths are relative to this file; the
-   directory rule covers MANIFEST.md. */
-@source not './styles/legacy';
+/* Auto source detection reads every file as markup and mines class names out of it. `cn`'s fixtures
+   are class-name literals that no markup wears; each one Tailwind emitted would ship a utility
+   nothing asks for. Path is relative to this file. */
 @source not './lib/cn.test.ts';
 
 @theme static {
@@ -61,8 +63,8 @@
 
   --container-page: 1180px;
 
-  /* the widths the legacy sheet branches on. Tailwind writes `bp:` as (width >= N) and `max-bp:` as
-     (width < N), so a legacy `max-width: N` is exact at N + 1 and a legacy `min-width: N` at N. */
+  /* the widths this app branches on. Tailwind writes `bp:` as (width >= N) and `max-bp:` as
+     (width < N), so a `max-width: N` breakpoint is exact at N + 1 and a `min-width: N` at N. */
   --breakpoint-*: initial;
   --breakpoint-xs: 481px; /* max-xs ≙ max-width: 480px (discord link, alerts popover) */
   --breakpoint-sm: 561px; /* max-sm ≙ max-width: 560px (2-up grids, leaderboard and person rows, login CTA) */
@@ -76,67 +78,141 @@
 
 @layer base {
   :root {
-    /* the legacy names, aliased onto the theme so both vocabularies paint one value */
-    --bg: var(--color-bg);
-    --bg-raised: var(--color-bg-raised);
-    --bg-card: var(--color-bg-card);
-    --bg-media: var(--color-bg-media);
-    --border: var(--color-border);
-    --border-strong: var(--color-border-strong);
-    --text: var(--color-text);
-    --text-dim: var(--color-text-dim);
-    --text-inverse: var(--color-text-inverse);
-    --accent: var(--color-accent);
-    --accent-2: var(--color-accent-2);
-    --gold: var(--color-gold);
-    --danger: var(--color-danger);
-    --danger-border: var(--color-danger-border);
-    --ok: var(--color-ok);
-    --brand-discord: var(--color-brand-discord);
-    --scrim: var(--color-scrim);
-    --primary-from: var(--color-primary-from);
-    --primary-to: var(--color-primary-to);
-    --radius: var(--radius-card);
-    --fs-xs: var(--text-xs);
-    --fs-sm: var(--text-sm);
-    --fs-md: var(--text-base);
-    --fs-lg: var(--text-lg);
-    --fs-xl: var(--text-xl);
-    --fs-2xl: var(--text-2xl);
-    --page-max: var(--container-page);
-    /* 4px space scale; Tailwind's rem scale (p-1 … p-10) lands on the same pixels at a 16px root */
-    --space-1: 4px;
-    --space-2: 8px;
-    --space-3: 12px;
-    --space-4: 16px;
-    --space-5: 20px;
-    --space-6: 24px;
-    --space-7: 32px;
-    --space-8: 40px;
-    /* no Tailwind namespace: layers, durations, chrome height (the sticky contract .market-controls docks under) */
+    /* No Tailwind namespace owns these, so they stay hand-written custom properties and are read
+       back as `z-(--z-header)`, `duration-(--dur-base)`, `top-(--topbar-h)` and friends. */
     --z-sticky: 15;
     --z-header: 20;
     --z-modal: 60;
     --dur-fast: 0.08s;
     --dur-base: 0.15s;
+    /* the height every descendant of <main> docks under; organisms/AppShell.css re-authors it for
+       the two-row topbar */
     --topbar-h: 65px;
-    --selection-bg: color-mix(in srgb, var(--accent) 30%, transparent);
+    --selection-bg: color-mix(in srgb, var(--color-accent) 30%, transparent);
     /* focus vocabulary */
-    --focus-ring: var(--accent);
+    --focus-ring: var(--color-accent);
     --focus-offset: 2px;
-    /* state vocabulary, expressed once at the current rendered values */
-    --state-hover-border: var(--accent);
-    --state-selected-bg: color-mix(in oklab, var(--accent) 22%, transparent);
-    --state-selected-border: var(--accent);
+    /* state vocabulary, expressed once at the rendered values */
+    --state-hover-border: var(--color-accent);
+    --state-selected-bg: color-mix(in oklab, var(--color-accent) 22%, transparent);
+    --state-selected-border: var(--color-accent);
     --state-disabled-opacity: 0.5;
-    --state-error-bg: color-mix(in oklab, var(--danger) 12%, transparent);
-    --state-success-bg: color-mix(in oklab, var(--ok) 12%, transparent);
-    --state-unread-bg: color-mix(in oklab, var(--accent) 14%, transparent);
+    --state-error-bg: color-mix(in oklab, var(--color-danger) 12%, transparent);
+    --state-success-bg: color-mix(in oklab, var(--color-ok) 12%, transparent);
+    --state-unread-bg: color-mix(in oklab, var(--color-accent) 14%, transparent);
     color-scheme: dark;
     /* browser-owned surfaces carry the palette: checkboxes, caret, scrollbars (colour inherits) */
-    accent-color: var(--accent);
-    caret-color: var(--accent);
-    scrollbar-color: var(--border-strong) transparent;
+    accent-color: var(--color-accent);
+    caret-color: var(--color-accent);
+    scrollbar-color: var(--color-border-strong) transparent;
     scrollbar-width: thin;
+  }
+
+  ::selection {
+    background: var(--selection-bg);
+    color: var(--color-text);
+  }
+
+  /* The page itself: the two ambient washes, the palette, and a column tall enough that a low-data
+     route (an empty trade list, a new account's friends page) still puts the footer on the fold
+     instead of stranding 400px of empty page. */
+  body {
+    background:
+      radial-gradient(1200px 600px at 80% -10%, #1b2140 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, #241436 0%, transparent 55%),
+      var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    min-height: 100dvh;
+  }
+
+  #root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
+
+  /* width:100% because `atoms/PageContainer.tsx` centres itself with auto margins, and a flex item
+     with an auto cross-axis margin shrink-wraps instead of stretching */
+  #root > main {
+    flex: 1 0 auto;
+    width: 100%;
+  }
+
+  /* every route's <main> is the bypass link's target; it scrolls clear of the sticky topbar */
+  main {
+    scroll-margin-top: var(--topbar-h);
+  }
+
+  /* Preflight resets headings to `font-size: inherit`, so the ladder is authored here: one size per
+     level, one rhythm, and no component has to restate it to get a heading that reads as one. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0 0 8px;
+    line-height: 1.2;
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+  }
+
+  h4 {
+    font-size: var(--text-base);
+  }
+
+  p {
+    line-height: 1.55;
+  }
+
+  /* the one thing a user must type verbatim never breaks mid-token */
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    color: var(--color-text);
+    background: var(--color-bg-raised);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 1px 5px;
+    white-space: nowrap;
+  }
+
+  a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  /* One authored focus ring for everything the browser can focus. `:where()` keeps it at zero
+     specificity, so a component's own ring wins without `!important`. */
+  :where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
+  @media (forced-colors: active) {
+    :where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
+      outline-color: Highlight;
+    }
+  }
+
+  @media (prefers-contrast: more) {
+    :root {
+      --color-border: var(--color-border-strong);
+      --state-unread-bg: color-mix(in oklab, var(--color-accent) 24%, transparent);
+      --state-selected-bg: color-mix(in oklab, var(--color-accent) 32%, transparent);
+    }
+
+    :where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
+      outline-width: 3px;
+    }
   }
 }

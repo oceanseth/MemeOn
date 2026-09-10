@@ -1,4 +1,0 @@
-/* Emptied by WP2-shell; delete in WP3. The ≤720 scroller and the hidden `.questbar-words` are
-   `max-lg:` utilities in `molecules/QuestBar.tsx`, applied instead of the expanded treatment rather
-   than under it — the legacy pair leaned on `.questbar-inner.expanded` out-specifying the media
-   query, which utilities cannot express. */

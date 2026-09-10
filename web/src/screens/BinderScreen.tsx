@@ -3,17 +3,29 @@ import { Badge } from '../atoms/Badge'
 import { Button, buttonClasses } from '../atoms/Button'
 import { Checkbox } from '../atoms/Checkbox'
 import { EmptyActions, EmptyState } from '../atoms/EmptyState'
-import { MemeCard } from '../atoms/MemeCard'
+import { MemeCard, memeCardSubClasses } from '../atoms/MemeCard'
 import { PageContainer } from '../atoms/PageContainer'
 import { FilterBar, PageHead } from '../atoms/PageHead'
 import { SkeletonCard } from '../atoms/Skeleton'
 import type { BinderScreenModel } from '../hooks/useBinderScreen'
+import { cn } from '../lib/cn'
 import { SortChips } from '../molecules/SortChips'
 
 /** Skeleton tiles hold the grid geometry while the binder loads, so nothing jumps on arrival. */
 const SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6'] as const
 
 const cardGrid = 'grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5 max-sm:grid-cols-2 max-sm:gap-3'
+
+/**
+ * Skip-rendering box around a card. `content-visibility` must not sit on the card itself — it would
+ * clip the blurred glow bloom, which the padding / negative-margin pair contains without moving the
+ * grid track.
+ */
+const cardSlot = cn(
+  '[content-visibility:auto] [contain-intrinsic-size:auto_340px]',
+  'pointer-events-none p-[30px] [margin:-30px] [&>*]:pointer-events-auto',
+  'max-sm:p-5 max-sm:[margin:-20px]',
+)
 
 /** Own binder as a function of its model. Every engine state is one set of args. */
 export function BinderScreen({
@@ -97,12 +109,12 @@ export function BinderScreen({
       ) : showGrid ? (
         <ul className={cardGrid}>
           {cards.map((card) => (
-            <li key={card.id} className="card-slot" aria-label={card.ariaLabel}>
+            <li key={card.id} className={cardSlot} aria-label={card.ariaLabel}>
               <MemeCard
                 model={card.memeCard}
                 footer={
                   <>
-                    <span className="meme-sub">
+                    <span className={memeCardSubClasses}>
                       <span className="text-sm font-semibold text-gold tabular-nums">{card.sharesLabel}</span>
                       <span className="flex flex-wrap items-center justify-end gap-1.5">
                         {card.showCreator && <span>you minted this</span>}

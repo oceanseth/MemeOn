@@ -7,19 +7,19 @@
  * A cascade layer's rank is fixed where its name FIRST appears in a stylesheet — a statement
  * (`@layer a, b, c;`) and a block (`@layer a { … }`) both count. So a bare `@layer components
  * { … }` emitted ahead of the order statement silently makes `components` the *lowest* layer
- * in the bundle, below `legacy` and below preflight. Nothing errors and no selector changes;
- * every migrated component just quietly loses to the sheet it was supposed to replace.
+ * in the bundle, below preflight. Nothing errors and no selector changes; every component sheet
+ * just quietly loses to the base rules it was supposed to sit above.
  *
  * This reads the shipped CSS rather than the source, because that emission order is decided by
  * the module graph (`main.tsx`'s import order, Vite's chunking) and not by any one stylesheet —
  * and because Tailwind and lightningcss rewrite the order statement on the way out: with
- * `index.css` first, `@layer theme, base, legacy, components, utilities;` is emitted as
- * Tailwind's own `@layer properties { … }` block followed by its `theme`/`base` blocks, the
- * legacy block, a bare `@layer components;` and the `utilities` block. That is the same order,
- * spelled with blocks, so the check is on the order the file *establishes*, not on its syntax.
+ * `index.css` first, `@layer theme, base, components, utilities;` is emitted as Tailwind's own
+ * `@layer properties { … }` block followed by its `theme`/`base` blocks, a bare
+ * `@layer components;` and the `utilities` block. That is the same order, spelled with blocks,
+ * so the check is on the order the file *establishes*, not on its syntax.
  *
  * Fails (exit 1) on any `<dist>/assets/*.css` whose first mention of each layer does not rank
- * theme, base, legacy, components, utilities in that relative order, or that ranks Tailwind's
+ * theme, base, components, utilities in that relative order, or that ranks Tailwind's
  * `properties` layer at or above `theme` (above `utilities` its `initial`s would beat the
  * utilities that set them).
  *
@@ -35,8 +35,8 @@ const display = (path) => {
 }
 
 // The relative order every stylesheet has to agree on. Other names may sit between them.
-const REQUIRED = ["theme", "base", "legacy", "components", "utilities"]
-// The layers the migration writes into: the ones a stray early block would demote.
+const REQUIRED = ["theme", "base", "components", "utilities"]
+// The layers this app writes into: the ones a stray early block would demote.
 const MIGRATED = ["components", "utilities"]
 
 const args = process.argv.slice(2)

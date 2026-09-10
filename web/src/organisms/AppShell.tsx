@@ -49,7 +49,7 @@ const LOGO = cn(
 
 /**
  * The nav row. `data-slot="nav-links"` is load-bearing: `AppShell.css` reads it to raise
- * `--topbar-h` for the two-row topbar, exactly as the legacy sheet read `.nav-links`.
+ * `--topbar-h` when the topbar wraps to two rows.
  */
 export const NAV_LINKS = cn(
   'flex min-w-0 flex-1 gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',

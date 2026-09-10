@@ -275,23 +275,22 @@ function originLabelFor(source: ResolvedSource | null): string | null {
 }
 
 /**
- * One card recipe for both the live preview and the minted hold. The class names here are the
- * marketplace card vocabulary (`08-meme-card.css`, owned by the card package), not create-form
- * chrome: the preview has to keep painting the same foil frame the card atom does.
+ * One card recipe for both the live preview and the minted hold. The only presentation this engine
+ * names is the foil effect API (`atoms/MemeCard.css`): which tier frame to paint, and the stop set
+ * that drives its ring. The box model around it belongs to `CreateMemeScreen`.
  */
 function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
   const title = ctx.title.trim()
   const label = title ? `"${title}"` : 'your meme'
   return {
     cardProps: {
-      className: 'meme-card glow-border tier-paper',
+      className: `glow-border tier-${FRESH_TIER.key}`,
       'data-glow-style': glowStyleFor(FRESH_TIER.key),
     } as HTMLAttributes<HTMLDivElement>,
     media: ctx.videoUrl
       ? {
           kind: 'video',
           videoProps: {
-            className: 'meme-art',
             src: ctx.videoUrl,
             poster: ctx.imageUrl || undefined,
             muted: true,
@@ -304,7 +303,7 @@ function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
         }
       : {
           kind: 'image',
-          imageProps: { className: 'meme-art', src: ctx.imageUrl, alt: `Preview of ${label}` },
+          imageProps: { src: ctx.imageUrl, alt: `Preview of ${label}` },
         },
     title: title || 'Untitled',
     titleIsPlaceholder: !title,

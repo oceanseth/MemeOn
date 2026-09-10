@@ -5,7 +5,7 @@ import { cn } from '../lib/cn'
 import type { SortChipsModel } from '../lib/sortChipsModel'
 import type { SortKey } from '../lib/sorting'
 
-/** `.sort-chip`: the button chrome at chip scale, with the selected fill winning over hover. */
+/** The button chrome at chip scale, with the selected fill winning over hover. */
 const chipChrome = cn(
   'inline-flex items-center justify-center whitespace-nowrap',
   'rounded-pill border border-border-strong bg-bg-raised text-text',

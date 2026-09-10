@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, buttonClasses } from '../atoms/Button'
 import { EmptyState } from '../atoms/EmptyState'
@@ -11,6 +11,10 @@ import {
   Hint,
 } from '../atoms/Field'
 import { Input } from '../atoms/Input'
+/* the foil sheet, not the card atom: this screen paints a card frame out of its own markup,
+   and the mint route is code-split — pulling the atom's module in would put `MemeCard.tsx`,
+   `Badge` and their imports on the critical path of a `lazy()` route that renders none of them */
+import '../atoms/MemeCard.css'
 import { Notice } from '../atoms/Notice'
 import { PageContainer } from '../atoms/PageContainer'
 import { FilterBar, PageHead } from '../atoms/PageHead'
@@ -96,26 +100,67 @@ function ModeChip({
   )
 }
 
-/** The meme as it will ship. Same card vocabulary as the marketplace, assembled while you type. */
+/* The mint preview's box model: the marketplace card at its default scale, spelled out here
+   because the meme has no id, no link and no `MemeCardModel` until it is minted, so there is no
+   `MemeCard` to render. `atoms/MemeCard.tsx` is the source of truth for these values; the foil
+   itself comes from the sheet imported above via the `glow-border tier-*` classes the engine puts
+   on `cardProps`. */
+const PREVIEW_CARD = cn(
+  'group relative isolate overflow-visible rounded-card p-(--glow-width)',
+  'transition-transform duration-(--dur-base) ease-[ease] motion-reduce:transition-none',
+  'pointer-coarse:active:scale-[0.99]',
+)
+const PREVIEW_INNER = cn(
+  'relative flex h-full flex-col overflow-hidden [contain:paint]',
+  'rounded-[calc(var(--radius-card)_-_var(--glow-width))] bg-bg-card',
+)
+const PREVIEW_ART = 'block aspect-square w-full bg-bg-media object-cover'
+const PREVIEW_META = 'flex flex-col gap-1.5 px-3 pt-2.5 pb-3'
+const PREVIEW_TITLE = 'overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-bold text-text'
+const PREVIEW_CHIP = cn(
+  'inline-flex max-w-full items-center gap-[5px] rounded-pill border border-current',
+  'bg-[rgba(0,0,0,0.45)] px-[9px] py-[3px] text-center text-[11px] font-extrabold uppercase',
+  'tracking-[0.8px] [overflow-wrap:anywhere] text-(color:--tier)',
+)
+const PREVIEW_SUB = cn(
+  'flex items-center justify-between gap-2 text-xs/[1.5] text-text-dim tabular-nums',
+  'max-sm:flex-wrap max-sm:gap-y-0.5',
+)
+
+/** The meme as it will ship, assembled while you type. */
 function PreviewCard({ card }: { card: CreateMemeCardModel }) {
   return (
-    <div {...card.cardProps}>
-      <div className="meme-card-inner">
-        <span className="foil-media">
+    <div
+      {...card.cardProps}
+      data-slot="meme-card"
+      className={cn(PREVIEW_CARD, card.cardProps.className)}
+    >
+      <div data-slot="meme-card-inner" className={PREVIEW_INNER}>
+        <span data-slot="foil-media" className="foil-media">
           {card.media.kind === 'video' ? (
-            <video {...card.media.videoProps} />
+            <video
+              data-slot="meme-art"
+              className={PREVIEW_ART}
+              {...card.media.videoProps}
+            />
           ) : (
-            <img {...card.media.imageProps} />
+            <img data-slot="meme-art" className={PREVIEW_ART} {...card.media.imageProps} />
           )}
         </span>
-        <div className="meme-meta">
-          <span className="meme-title">{card.title}</span>
+        <div data-slot="meme-meta" className={PREVIEW_META}>
+          <span data-slot="meme-title" className={PREVIEW_TITLE}>
+            {card.title}
+          </span>
           <span>
-            <span className="tier-chip" style={{ color: card.tierColor }}>
+            <span
+              data-slot="tier-chip"
+              className={PREVIEW_CHIP}
+              style={{ '--tier': card.tierColor } as CSSProperties}
+            >
               {card.tierLabel}
             </span>
           </span>
-          <span className="meme-sub">
+          <span data-slot="meme-sub" className={PREVIEW_SUB}>
             <span>{card.statsLabel}</span>
             <span>{card.valueLabel}</span>
           </span>

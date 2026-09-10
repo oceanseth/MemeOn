@@ -17,7 +17,7 @@ const ROW_PICKED = cn(
 )
 
 /**
- * The rarity chip, rebuilt from `.tier-chip` so the row carries its own paint. The gradient frame
+ * The rarity chip, rebuilt so the row carries its own paint. The gradient frame
  * around the art still borrows `tier-<key>` from the un-migrated card sheet: seven tier gradients
  * belong to that package, not to this one, and the class dies with it.
  */

@@ -4,8 +4,9 @@ import { cn } from '../lib/cn'
 import type { Styled } from './Field'
 
 /**
- * The legacy `input, select, textarea` chrome, plus the one authored `:focus-visible` ring and the
- * coarse-pointer floor. `max(16px, 1em)` is the iOS zoom floor: label typography never shrinks a control.
+ * The shared control chrome — every `input`, `select` and `textarea` in the app wears this — plus
+ * the authored `:focus-visible` ring and the coarse-pointer target floor. `max(16px, 1em)` is the
+ * iOS zoom floor: label typography never shrinks a control below the size that stops focus-zoom.
  */
 export const controlChrome =
   'rounded-control border border-border-strong bg-bg-raised px-3 py-2 text-[length:max(16px,1em)] leading-[1.3] text-text ' +
@@ -20,7 +21,7 @@ export const controlChrome =
 /** The placeholder reads as a filled value: same size, regular weight, dimmed against the control fill. */
 export const placeholderChrome =
   'placeholder:font-normal placeholder:opacity-100 ' +
-  'placeholder:text-[color-mix(in_oklab,var(--text-dim)_80%,var(--bg-raised))]'
+  'placeholder:text-[color-mix(in_oklab,var(--color-text-dim)_80%,var(--color-bg-raised))]'
 
 export function Input({ className, ...props }: Styled<InputProps>) {
   return (

@@ -23,20 +23,20 @@ const runChecker = (files) => {
   }
 }
 
-const ORDER = "@layer properties,theme,base,legacy,components,utilities;"
-const BODY = "@layer components{.a{color:red}}@layer legacy{.a{color:blue}}@layer utilities{.b{color:teal}}"
+const ORDER = "@layer properties,theme,base,components,utilities;"
+const BODY = "@layer components{.a{color:red}}@layer utilities{.b{color:teal}}"
 // What Tailwind and lightningcss actually emit once `index.css` leads the bundle: the order
 // statement is gone, respelled as blocks in the same order with a bare `@layer components;`
 // standing in for the layer this app fills from its own stylesheets.
 const RESPELLED =
   "@layer properties{*{--tw-x:0}}@layer theme{:root{--color-bg:#000}}@layer base{*{margin:0}}" +
-  "@layer legacy{.a{color:blue}}@layer components;@layer utilities{.b{color:teal}}"
+  "@layer components;@layer utilities{.b{color:teal}}"
 
 test("accepts a bundle that opens with the order statement, with or without properties", () => {
   const result = runChecker({
     "assets/index-abc123.css": ORDER + BODY,
     "assets/Skeleton-def456.css":
-      "@layer theme,base,legacy,components,utilities;@layer components{@keyframes s{to{opacity:1}}}",
+      "@layer theme,base,components,utilities;@layer components{@keyframes s{to{opacity:1}}}",
     "assets/fonts-789.css": "@font-face{font-family:x;src:url(x.woff2)}",
   })
 
@@ -56,36 +56,36 @@ test("rejects a bundle whose first declaration is a bare components block", () =
   })
 
   assert.equal(result.status, 1, result.output)
-  assert.match(result.output, /ranks its layers components < properties < theme < base < legacy < utilities/)
-  assert.match(result.output, /has to rank theme < base < legacy < components < utilities/)
+  assert.match(result.output, /ranks its layers components < properties < theme < base < utilities/)
+  assert.match(result.output, /has to rank theme < base < components < utilities/)
   assert.match(result.output, /opens with a bare @layer components \{ … \} block/)
 })
 
-test("rejects a components block wedged in ahead of legacy", () => {
+test("rejects a components block wedged in ahead of base", () => {
   const result = runChecker({
     "assets/index-abc123.css":
-      "@layer theme{:root{--a:1}}@layer base{*{margin:0}}@layer components{.a{color:red}}@layer legacy{.a{color:blue}}@layer utilities{.b{color:teal}}",
+      "@layer theme{:root{--a:1}}@layer components{.a{color:red}}@layer base{*{margin:0}}@layer utilities{.b{color:teal}}",
   })
 
   assert.equal(result.status, 1, result.output)
-  assert.match(result.output, /ranks its layers theme < base < components < legacy < utilities/)
+  assert.match(result.output, /ranks its layers theme < components < base < utilities/)
   // the sheet does not open with the offending block, so only the order is reported
   assert.doesNotMatch(result.output, /opens with a bare/)
 })
 
-test("rejects an order statement that inverts legacy and components, or drops a layer", () => {
-  const inverted = runChecker({ "assets/index-abc123.css": "@layer theme,base,components,legacy,utilities;" + BODY })
-  const incomplete = runChecker({ "assets/index-abc123.css": "@layer theme,base,components,utilities;" + BODY })
+test("rejects an order statement that inverts base and components, or drops a layer", () => {
+  const inverted = runChecker({ "assets/index-abc123.css": "@layer theme,components,base,utilities;" + BODY })
+  const incomplete = runChecker({ "assets/index-abc123.css": "@layer theme,base,utilities;" + BODY })
 
   assert.equal(inverted.status, 1, inverted.output)
-  assert.match(inverted.output, /has to rank theme < base < legacy < components < utilities/)
+  assert.match(inverted.output, /has to rank theme < base < components < utilities/)
   assert.equal(incomplete.status, 1, incomplete.output)
-  assert.match(incomplete.output, /has to rank theme < base < legacy < components < utilities/)
+  assert.match(incomplete.output, /has to rank theme < base < components < utilities/)
 })
 
 test("rejects properties ranked above theme, where Tailwind's @property fallbacks would beat utilities", () => {
   const result = runChecker({
-    "assets/index-abc123.css": "@layer theme,base,legacy,components,utilities;" + BODY + "@layer properties{*{--tw-x:0}}",
+    "assets/index-abc123.css": "@layer theme,base,components,utilities;" + BODY + "@layer properties{*{--tw-x:0}}",
   })
 
   assert.equal(result.status, 1, result.output)

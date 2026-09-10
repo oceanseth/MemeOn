@@ -6,13 +6,12 @@
    that is where Tailwind emits its own `@layer properties` block — the `@supports` fallback that
    seeds every `--tw-*` for engines without `@property` — and it has to stay *below* `utilities`, or
    those `initial`s would beat the utilities that set them. `scripts/check-layers.mjs` reads the
-   built CSS back and fails the build if any of it ever ranks `components` under `legacy`. */
-@layer properties, theme, base, legacy, components, utilities;
+   built CSS back and fails the build if any bundle ever ranks these differently. */
+@layer properties, theme, base, components, utilities;
 
-/* Tier-frame slot states. Selectors key off `data-slot`/`data-state`, not a legacy class, so this
-   file owns the whole effect (including the reduced-motion pause 51-a11y-media.css used to give
-   the old `.tier-frame-slot[data-state='loading']` selector — that file is shared-atoms and does
-   not know about `data-slot`). */
+/* Tier-frame slot states: the three async outcomes of one frame image, kept visibly different
+   without moving the box. Selectors key off `data-slot`/`data-state`, so this file owns the whole
+   effect including its own reduced-motion pause. */
 @layer components {
   @keyframes landing-tier-shimmer {
     0% {

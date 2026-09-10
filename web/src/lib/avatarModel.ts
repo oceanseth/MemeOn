@@ -9,9 +9,9 @@ const escapeGlyph = (glyph: string): string =>
   glyph.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
 /**
- * The same monogram `.avatar-fallback` paints, as an image source. The disc and the border come
- * from `.avatar`; only the glyph colour is repeated here (it mirrors `--text-dim`), because a
- * `data:` document cannot read the page's custom properties.
+ * The monogram the `Avatar` atom's fallback paints, as an image source. The disc, the border and
+ * the fill come from the atom; only the glyph colour is repeated here (it mirrors
+ * `--color-text-dim`), because a `data:` document cannot read the page's custom properties.
  */
 export function avatarMonogramSrc(name: string): string {
   const svg =

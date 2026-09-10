@@ -4,8 +4,8 @@ import { avatarInitial } from '../lib/avatarModel'
 import { cn } from '../lib/cn'
 
 /**
- * `sm` is the 32px `.avatar` disc, `md` the 40px `.person-row .avatar` (the app's most common one),
- * `lg` the 96px `.profile-avatar` / `.invite-avatar` identity ring.
+ * `sm` is the 32px topbar disc, `md` the 40px people-row disc (the app's most common one),
+ * `lg` the 96px identity ring on a profile or an invite.
  */
 export type AvatarSize = 'sm' | 'md' | 'lg'
 
@@ -15,7 +15,7 @@ const rootChrome: Record<AvatarSize, string> = {
   lg: 'size-24 border-[3px] border-accent bg-bg-raised',
 }
 
-/** Legacy `.avatar-fallback` sets one monogram size for both disc sizes; only the ring scales up. */
+/** One monogram size for both disc sizes; only the ring scales up with `lg`. */
 const fallbackChrome: Record<AvatarSize, string> = {
   sm: 'text-[15px] font-bold text-text-dim',
   md: 'text-[15px] font-bold text-text-dim',

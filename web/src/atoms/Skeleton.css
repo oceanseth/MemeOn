@@ -6,13 +6,12 @@
    that is where Tailwind emits its own `@layer properties` block — the `@supports` fallback that
    seeds every `--tw-*` for engines without `@property` — and it has to stay *below* `utilities`, or
    those `initial`s would beat the utilities that set them. `scripts/check-layers.mjs` reads the
-   built CSS back and fails the build if any of it ever ranks `components` under `legacy`. */
-@layer properties, theme, base, legacy, components, utilities;
+   built CSS back and fails the build if any bundle ever ranks these differently. */
+@layer properties, theme, base, components, utilities;
 
 @layer components {
-  /* Named uniquely (not `skeleton-sweep`) so this can never collide with the byte-identical
-     legacy `49-loading.css` `@keyframes skeleton-sweep` — verified independent of the legacy
-     import: builds with `web/src/index.css`'s legacy import removed still ship this rule intact. */
+  /* Prefixed rather than named `skeleton-sweep`, so a keyframe name this atom does not own can
+     never shadow it from another sheet in the same bundle. */
   @keyframes atom-skeleton-sweep {
     to {
       transform: translateX(100%);

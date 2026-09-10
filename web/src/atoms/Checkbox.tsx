@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { cn } from '../lib/cn'
 import type { Styled } from './Field'
 
-/** The `.checkbox-label` row: the whole 44px line is the target, pulled back 8px so the box still aligns. */
+/** The label row: the whole 44px line is the target, pulled back 8px so the box still aligns. */
 export const checkboxLabelChrome =
   'inline-flex min-h-11 -ms-2 cursor-pointer items-center gap-2 px-2 py-1 text-sm leading-normal ' +
   'has-[[data-disabled]]:cursor-not-allowed has-[[data-disabled]]:opacity-(--state-disabled-opacity)'

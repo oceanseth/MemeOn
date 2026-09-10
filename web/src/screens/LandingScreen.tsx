@@ -84,16 +84,16 @@ export function LandingScreen({
             key={t.key}
             data-slot="tier-card"
             data-glow-style={t.glowStyle}
-            /* `tier-card` stays: the card package's forced-colors border (tier-glow-borders.css)
-               keys off this literal class, not a data-slot. Its own box-model rule is superseded
-               by the utilities below. */
-            className={cn('tier-card rounded-(--radius) p-(--glow-width)', tierClasses(t.key))}
+            /* `tier-card` is part of the foil effect API (`atoms/MemeCard.css`): it is what sets
+               this frame's `--glow-width` to a card's 3px and what the forced-colors rarity
+               border keys off. The box model around it is this screen's. */
+            className={cn('tier-card rounded-card p-(--glow-width)', tierClasses(t.key))}
           >
             <div
               data-slot="tier-card-inner"
-              /* `tier-card-inner` stays too: 08-meme-card.css rounds `.foil-media` from it, and
-                 51-a11y-media.css pauses the sheen/sparkle sweep on it under reduced motion. */
-              className="tier-card-inner relative flex h-full flex-col gap-2 overflow-hidden rounded-[calc(var(--radius)-var(--glow-width))] bg-bg-card p-3.5"
+              /* `tier-card-inner` is effect API too: `atoms/MemeCard.css` rounds the `.foil-media`
+                 inside it to the frame's inner radius. */
+              className="tier-card-inner relative flex h-full flex-col gap-2 overflow-hidden rounded-[calc(var(--radius-card)-var(--glow-width))] bg-bg-card p-3.5"
             >
               {/* the slot is permanent, so loading, ready and failed all keep the same box */}
               <div className="foil-media">

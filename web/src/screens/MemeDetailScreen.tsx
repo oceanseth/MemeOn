@@ -18,13 +18,13 @@ import { MemeplexPanel } from '../organisms/MemeplexPanel'
 /** UA paragraph rhythm, which preflight resets: the column reads as prose, not as a stack. */
 const prose = 'leading-[1.55] [margin-block:1em]'
 
-/** `.person-row`: the sources list and the cap table are the same row. */
+/** The people row: the sources list and the cap table are the same shape. */
 const personRow = cn(
   'flex flex-wrap items-center gap-3 gap-y-2 rounded-[12px] border border-border bg-bg-raised p-3',
   '[&>*]:min-w-0',
 )
 
-/** `.row-list` */
+/** A stack of rows, evenly spaced. */
 const rowList = 'mt-2.5 flex flex-col gap-2.5'
 
 /** the caption under a panel title */
@@ -42,7 +42,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
   )
   if (showLoading || !detail) return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      {/* `.loading-state`: a labelled spinner row, never a bare spinner */}
+      {/* a labelled spinner row, never a bare spinner */}
       <div
         data-slot="loading-state"
         className="flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-text-dim"
