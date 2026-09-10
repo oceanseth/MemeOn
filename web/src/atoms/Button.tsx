@@ -36,7 +36,16 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
 
 /** The look react-router `<Link>`s wear to pass as `a.btn`; combine with `aria-disabled` for a locked link. */
 export function buttonClasses(variant: ButtonVariant = 'default'): string {
-  return cn(BASE, VARIANT_CLASSES[variant])
+  return cn(
+    BASE,
+    VARIANT_CLASSES[variant],
+    /* `leading-[normal]` is the CSS keyword, not Tailwind's `leading-normal` (which is 1.5): the
+       legacy rule never set a line-height, so `font: inherit` picked up the UA default off `body`.
+       Preflight sets `html { line-height: 1.5 }`, so without this a button renders ~5-6px tall.
+       Placed last: tailwind-merge treats `font-size` (login's `text-[17px]`) as conflicting with
+       `leading` and drops whichever of the two comes first, so this must sort after it. */
+    'leading-[normal]',
+  )
 }
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -71,7 +80,11 @@ export function Button({
       className={cn(
         buttonClasses(variant),
         isBusy
-          ? 'opacity-100 cursor-progress'
+          /* `!` forces `!important` so busy always beats BASE's `aria-disabled:opacity-*` — that
+             utility carries an attribute-selector specificity bump that would otherwise outrank a
+             plain (non-important) `opacity-100` regardless of class order, dimming a busy-and-
+             aria-disabled button (e.g. InviteScreen's join button while it submits). */
+          ? 'opacity-100! cursor-progress'
           : 'disabled:opacity-(--state-disabled-opacity) disabled:cursor-not-allowed',
         className,
       )}

@@ -7,7 +7,8 @@ import { binderMachine, type BinderPhase } from '../stores/binderMachine'
 import { useMountEffect } from './useMountEffect'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import { buildSortChipsModel, type SortChipsModel } from '../lib/sortChipsModel'
-import { useCallback, type InputHTMLAttributes } from 'react'
+import type { CheckboxRootProps } from '@base-ui/react/checkbox'
+import { useCallback } from 'react'
 import { useSearchParams, type LinkProps } from 'react-router-dom'
 
 export type { BinderPhase }
@@ -25,7 +26,7 @@ export interface BinderScreenModel {
   statusMessage: string
   showPrivateToggle: boolean
   privateCount: number
-  privateToggleProps: Pick<InputHTMLAttributes<HTMLInputElement>, 'checked' | 'onChange'>
+  privateToggleProps: Pick<CheckboxRootProps, 'checked' | 'onCheckedChange'>
   sortChips: SortChipsModel
   createLinkProps: Pick<LinkProps, 'to'>
   cards: readonly BinderCardModel[]
@@ -151,7 +152,7 @@ export function useBinderScreen(): BinderScreenModel {
     privateCount,
     privateToggleProps: {
       checked: ctx.showPrivate,
-      onChange: (event) => setShowPrivate(event.target.checked),
+      onCheckedChange: (checked) => setShowPrivate(checked),
     },
     sortChips: buildSortChipsModel({
       sortKey: ctx.sortKey,

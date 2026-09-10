@@ -76,9 +76,11 @@ const meta = {
   title: 'Atoms/MemeCard',
   component: MemeCard,
   decorators: [
-    (Story) => (
+    /* a card is sized by its grid track: 280px is the marketplace column, and `cardWidth` lets the
+       detail-hero story ask for the 420px one without moving any other story's frame */
+    (Story, context) => (
       <MemoryRouter>
-        <div style={{ maxWidth: 280 }}>
+        <div style={{ maxWidth: (context.parameters['cardWidth'] as number | undefined) ?? 280 }}>
           <Story />
         </div>
       </MemoryRouter>
@@ -159,6 +161,25 @@ export const Focused: Story = {
     const canvas = within(canvasElement)
     await userEvent.tab()
     await expect(canvas.getByRole('link', { name: `Open ${holoMeme.title}` })).toHaveFocus()
+  },
+}
+
+/**
+ * The detail-page hero: `size="lg"` is the utility twin of the legacy `.meme-card-lg` block that
+ * `MemeDetailScreen` still writes around duplicated card markup — contained art so a wide joke
+ * letterboxes instead of losing its caption, a 22px wrapping title, roomier meta, no hover lift.
+ */
+export const Large: Story = {
+  args: { model: buildMemeCardModel(longTitleMeme), size: 'lg' },
+  parameters: { cardWidth: 420 },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const card = canvas.getByRole('article', { name: longTitleMeme.title })
+    await expect(card.dataset.size).toBe('lg')
+    // the hero title wraps rather than ellipsizing: nothing about the meme is cropped away
+    await expect(within(card).getByText(longTitleMeme.title)).toHaveStyle({
+      whiteSpace: 'normal',
+    })
   },
 }
 

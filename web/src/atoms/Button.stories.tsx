@@ -52,6 +52,23 @@ export const BusyViaAriaBusyStringProp: Story = {
   },
 }
 
+/**
+ * Real call sites (InviteScreen, ProfileScreen) spread both `aria-disabled` and `aria-busy` while
+ * a request is in flight — a button that is disabled-looking at rest but must read at full
+ * opacity the moment it goes busy. BASE's `aria-disabled:opacity-*` carries an attribute-selector
+ * specificity bump that would otherwise outrank a plain `opacity-100`, so busy must win with `!`.
+ */
+export const BusyWhileAriaDisabled: Story = {
+  args: { variant: 'primary', busy: true, 'aria-disabled': true },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = canvas.getByRole('button', { name: 'Do the thing' })
+    await expect(button).toHaveAttribute('aria-busy', 'true')
+    await expect(button).toHaveAttribute('aria-disabled', 'true')
+    await expect(getComputedStyle(button).opacity).toBe('1')
+  },
+}
+
 export const Disabled: Story = {
   args: { disabled: true },
   play: async ({ canvasElement }) => {

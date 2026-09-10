@@ -86,5 +86,5 @@ export const InitialFailureShowsRetry: Story = {
 export const LoadingThenReady: Story = {
   loaders: [connectedLoader({ overrides: { 'GET /api/binder': async (_request, scenario) => { await scenario.waitForRelease('binder'); return { body: { memes: scenario.memes } } } } })], beforeEach: async (context) => connectedBeforeEach(context),
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><BinderView /></ConnectedStory>,
-  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelectorAll('.skeleton-card').length).toBeGreaterThan(0)); loaded.scenario.release('binder'); await expect(await canvas.findByRole('link', { name: /fresh paper/ })).toBeInTheDocument() },
+  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelectorAll('[data-slot="skeleton-card"]').length).toBeGreaterThan(0)); loaded.scenario.release('binder'); await expect(await canvas.findByRole('link', { name: /fresh paper/ })).toBeInTheDocument() },
 }

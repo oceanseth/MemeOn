@@ -1,14 +1,14 @@
 import { useCallback } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
 import { ApiError, apiFetch, post } from '../lib/api'
-import { avatarErrorHandler } from '../lib/avatarModel'
 import type { Meme } from '../lib/types'
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
 import { useProjectedActor } from './useProjectedActor'
 import { profileMachine, type ProfileData, type ProfileTab } from '../stores/profileMachine'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
-import type { ButtonHTMLAttributes, ImgHTMLAttributes } from 'react'
+import type { ButtonVariant } from '../atoms/Button'
+import type { ButtonHTMLAttributes } from 'react'
 import type { LinkProps } from 'react-router-dom'
 
 export type { ProfileData, ProfileTab } from '../stores/profileMachine'
@@ -25,7 +25,7 @@ export interface ProfileScreenModel {
   loadingLabel: string
   profile: ProfileViewModel | null
   showActions: boolean
-  followButtonClassName: string
+  followButtonVariant: ButtonVariant
   followGlyph: string
   followText: string
   followButtonProps: Pick<
@@ -57,8 +57,8 @@ export interface ProfileScreenModel {
   emptyLinkLabel: string
   emptyLinkProps: Pick<LinkProps, 'to'>
   showGrid: boolean
-  createdTabClassName: string
-  binderTabClassName: string
+  createdTabVariant: ButtonVariant
+  binderTabVariant: ButtonVariant
   createdTabButtonProps: ProfileTabButtonProps
   binderTabButtonProps: ProfileTabButtonProps
   gridProps: ProfileGridProps
@@ -88,19 +88,10 @@ export interface ProfileStat {
   text: string
 }
 
-type ProfileAvatarModel =
-  | {
-      kind: 'image'
-      imageProps: Pick<
-        ImgHTMLAttributes<HTMLImageElement>,
-        'src' | 'alt' | 'width' | 'height' | 'loading' | 'referrerPolicy' | 'onError'
-      >
-    }
-  | { kind: 'initial'; initial: string }
-
 interface ProfileViewModel {
   name: string
-  avatar: ProfileAvatarModel
+  /** `<Avatar>` draws the monogram fallback itself whenever there is no picture. */
+  avatarSrc: string | null
   stats: readonly ProfileStat[]
 }
 
@@ -112,11 +103,11 @@ export function buildProfileTabProps(
   onTabChange: (tab: ProfileTab) => void,
 ): Pick<
   ProfileScreenModel,
-  'createdTabClassName' | 'binderTabClassName' | 'createdTabButtonProps' | 'binderTabButtonProps' | 'gridProps'
+  'createdTabVariant' | 'binderTabVariant' | 'createdTabButtonProps' | 'binderTabButtonProps' | 'gridProps'
 > {
   return {
-    createdTabClassName: tab === 'created' ? 'primary' : '',
-    binderTabClassName: tab === 'binder' ? 'primary' : '',
+    createdTabVariant: tab === 'created' ? 'primary' : 'default',
+    binderTabVariant: tab === 'binder' ? 'primary' : 'default',
     createdTabButtonProps: {
       'aria-pressed': tab === 'created',
       'aria-controls': CARDS_ID,
@@ -136,8 +127,6 @@ export function buildProfileTabProps(
 }
 
 const plural = (count: number, word: string): string => `${count} ${word}${count === 1 ? '' : 's'}`
-
-const firstGrapheme = (name: string): string => [...name][0]?.toUpperCase() ?? '?'
 
 /** Everything `ProfileScreen` renders. The route actor owns data, errors, tabs and action state. */
 export function useProfileScreen({
@@ -250,20 +239,7 @@ export function useProfileScreen({
     profile: profile
       ? {
           name: profile.name,
-          avatar: profile.picture
-            ? {
-                kind: 'image',
-                imageProps: {
-                  src: profile.picture,
-                  alt: '',
-                  width: 96,
-                  height: 96,
-                  loading: 'lazy',
-                  referrerPolicy: 'no-referrer',
-                  onError: avatarErrorHandler(profile.name),
-                },
-              }
-            : { kind: 'initial', initial: firstGrapheme(profile.name) },
+          avatarSrc: profile.picture,
           stats: [
             { id: 'followers', glyph: '⭐', text: plural(profile.followers, 'follower') },
             { id: 'collection', glyph: '📚', text: `${profile.collectionSize} in collection` },
@@ -272,7 +248,7 @@ export function useProfileScreen({
         }
       : null,
     showActions: !isSelf && !!user && !!profile,
-    followButtonClassName: followingByMe ? '' : 'primary',
+    followButtonVariant: followingByMe ? 'default' : 'primary',
     followGlyph: followingByMe ? '★' : '☆',
     followText: busy ? (followingByMe ? 'Unfollowing…' : 'Following…') : followingByMe ? 'Following' : 'Follow',
     followButtonProps: {

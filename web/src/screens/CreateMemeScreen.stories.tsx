@@ -274,7 +274,9 @@ export const Submitting: Story = {
     /* the mode row locks with the rest of the form: no reshaping a running request */
     await expect(canvas.getByRole('button', { name: /Upload/ })).toBeDisabled()
     /* the busy text lands in a region that was already mounted and silent, not one inserted with it */
-    const busyNotice = canvas.getByText(/Rendering your masterpiece/).closest('.live-region')
+    const busyNotice = canvas
+      .getByText(/Rendering your masterpiece/)
+      .closest('[data-slot="live-region"]')
     await expect(busyNotice).toHaveAttribute('role', 'status')
     await expect(busyNotice).toHaveTextContent('12s')
   },

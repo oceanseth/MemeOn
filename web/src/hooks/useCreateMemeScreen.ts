@@ -6,7 +6,6 @@ import type {
   HTMLAttributes,
   ImgHTMLAttributes,
   InputHTMLAttributes,
-  SelectHTMLAttributes,
   TextareaHTMLAttributes,
   VideoHTMLAttributes,
 } from 'react'
@@ -34,8 +33,18 @@ import { useMountEffect } from './useMountEffect'
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement>
 type InputProps = InputHTMLAttributes<HTMLInputElement>
-type SelectProps = SelectHTMLAttributes<HTMLSelectElement>
 type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement>
+
+/**
+ * The `Select` atom is controlled by value rather than by a change event, so a picker's model is a
+ * value plus the callback that receives the next one. The option copy stays in the screen with the
+ * rest of the words.
+ */
+export interface CreateMemeSelectModel {
+  value: string
+  disabled?: boolean
+  onValueChange: (value: string | null) => void
+}
 
 export interface CreateMemeSourceModel {
   imageProps: ImgHTMLAttributes<HTMLImageElement>
@@ -53,6 +62,14 @@ export interface SelectedGiphyModel {
 export interface GiphyCellModel {
   buttonProps: ButtonProps
   imageProps: ImgHTMLAttributes<HTMLImageElement>
+  /** Semantic state, not a class name: the screen owns the picked chrome. */
+  picked: boolean
+}
+
+/** One source chip. The engine names the state; the screen picks the chrome for it. */
+export interface CreateMemeModeButtonModel {
+  buttonProps: ButtonProps
+  selected: boolean
 }
 
 export type CreateMemeMediaModel =
@@ -127,22 +144,24 @@ export interface CreateMemeScreenModel {
   showUrlApplyEdit: boolean
   showBusy: boolean
   showErr: boolean
+  /** Results are on screen, so the panel's status line only has to reach a screen reader. */
+  giphyStatusHidden: boolean
   showPreviewCard: boolean
   showPreviewSkeleton: boolean
   showMintHint: boolean
   showSuccess: boolean
   formProps: HTMLAttributes<HTMLDivElement>
-  getModeButtonProps: (mode: CreateMemeMode) => ButtonProps
+  getModeButtonProps: (mode: CreateMemeMode) => CreateMemeModeButtonModel
   titleInputProps: InputProps
   tagsInputProps: InputProps
-  remixOutputSelectProps: SelectProps
-  videoModeSelectProps: SelectProps
+  remixOutputSelectProps: CreateMemeSelectModel
+  videoModeSelectProps: CreateMemeSelectModel
   remixPromptTextareaProps: TextareaProps
   motionPromptTextareaProps: TextareaProps
   animateEditedButtonProps: ButtonProps
   rerunEditButtonProps: ButtonProps
   remixButtonProps: ButtonProps
-  giphyCategorySelectProps: SelectProps
+  giphyCategorySelectProps: CreateMemeSelectModel
   giphyQueryInputProps: InputProps
   giphySearchButtonProps: ButtonProps
   getGiphyResultProps: (result: GiphyResult) => GiphyCellModel
@@ -255,7 +274,11 @@ function originLabelFor(source: ResolvedSource | null): string | null {
   return source.author ? `from ${provider} · @${source.author}` : `from ${provider}`
 }
 
-/** One card recipe for both the live preview and the minted hold. */
+/**
+ * One card recipe for both the live preview and the minted hold. The class names here are the
+ * marketplace card vocabulary (`08-meme-card.css`, owned by the card package), not create-form
+ * chrome: the preview has to keep painting the same foil frame the card atom does.
+ */
 function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
   const title = ctx.title.trim()
   const label = title ? `"${title}"` : 'your meme'
@@ -402,17 +425,20 @@ export function buildCreateMemeScreenModel(
     showUrlApplyEdit: !!ctx.prompt.trim() && !!ctx.imageUrl && !ctx.edited,
     showBusy: isBusy,
     showErr: !!ctx.err,
+    giphyStatusHidden: ctx.giphyResults.length > 0,
     showPreviewCard: !!ctx.imageUrl || !!ctx.videoUrl,
     showPreviewSkeleton: isBusy && !ctx.imageUrl && !ctx.videoUrl,
     showMintHint: !canMint && !isBusy,
     showSuccess: phase === 'success',
     formProps: { 'aria-busy': isBusy },
     getModeButtonProps: (candidate) => ({
-      type: 'button',
-      className: ctx.mode === candidate ? 'sort-chip active' : 'sort-chip',
-      'aria-pressed': ctx.mode === candidate,
-      disabled: isBusy,
-      onClick: () => actions.selectMode(candidate),
+      selected: ctx.mode === candidate,
+      buttonProps: {
+        type: 'button',
+        'aria-pressed': ctx.mode === candidate,
+        disabled: isBusy,
+        onClick: () => actions.selectMode(candidate),
+      },
     }),
     titleInputProps: {
       id: 'create-title',
@@ -428,18 +454,14 @@ export function buildCreateMemeScreenModel(
     },
     remixOutputSelectProps: {
       value: ctx.remixOutput,
-      onChange: (event) => {
-        if (isRemixOutput(event.currentTarget.value)) {
-          actions.setRemixOutput(event.currentTarget.value)
-        }
+      onValueChange: (value) => {
+        if (value && isRemixOutput(value)) actions.setRemixOutput(value)
       },
     },
     videoModeSelectProps: {
       value: ctx.videoMode,
-      onChange: (event) => {
-        if (isVideoRemixStyle(event.currentTarget.value)) {
-          actions.setVideoMode(event.currentTarget.value)
-        }
+      onValueChange: (value) => {
+        if (value && isVideoRemixStyle(value)) actions.setVideoMode(value)
       },
     },
     remixPromptTextareaProps: {
@@ -466,10 +488,11 @@ export function buildCreateMemeScreenModel(
       onClick: () => void actions.remix(),
     },
     giphyCategorySelectProps: {
+      /* the picker never holds a value: a category runs a search and the row goes back to browsing */
       value: '',
       disabled: isBusy,
-      onChange: (event) => {
-        if (event.currentTarget.value) void actions.searchGiphy(event.currentTarget.value)
+      onValueChange: (value) => {
+        if (value) void actions.searchGiphy(value)
       },
     },
     giphyQueryInputProps: {
@@ -491,9 +514,9 @@ export function buildCreateMemeScreenModel(
     getGiphyResultProps: (result) => {
       const picked = ctx.giphyPick?.id === result.id
       return {
+        picked,
         buttonProps: {
           type: 'button',
-          className: picked ? 'giphy-cell picked' : 'giphy-cell',
           'aria-pressed': picked,
           onClick: () => actions.pickGiphy(result),
         },
@@ -578,10 +601,7 @@ export function buildCreateMemeScreenModel(
     busyNoticeProps: { role: 'status', 'aria-live': 'polite' },
     errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' },
     /* one live region for the whole panel: intro, empty search, and "results arrived" */
-    giphyStatusProps: {
-      role: 'status',
-      className: ctx.giphyResults.length > 0 ? 'sr-only' : 'empty',
-    },
+    giphyStatusProps: { role: 'status' },
     previewCard: buildCard(ctx),
     successCard: buildCard(ctx),
     mintStatus:

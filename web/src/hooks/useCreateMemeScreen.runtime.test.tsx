@@ -87,7 +87,7 @@ async function renderAt(): Promise<void> {
     await settle()
   })
   /* the route view is lazy: wait for the mounted form rather than guessing a tick count */
-  for (let attempt = 0; attempt < 20 && !host.querySelector('.form-grid'); attempt += 1) {
+  for (let attempt = 0; attempt < 20 && !host.querySelector('[data-slot="form-grid"]'); attempt += 1) {
     await act(async () => {
       await macrotask()
       await settle()
@@ -95,10 +95,10 @@ async function renderAt(): Promise<void> {
   }
 }
 
-function setControlValue(control: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, value: string): void {
+function setControlValue(control: HTMLInputElement | HTMLTextAreaElement, value: string): void {
   const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(control), 'value')
   descriptor?.set?.call(control, value)
-  control.dispatchEvent(new Event(control instanceof HTMLSelectElement ? 'change' : 'input', { bubbles: true }))
+  control.dispatchEvent(new Event('input', { bubbles: true }))
 }
 
 function button(label: string, occurrence: 'first' | 'last' = 'first'): HTMLButtonElement {
@@ -116,7 +116,7 @@ async function click(element: HTMLElement): Promise<void> {
   })
 }
 
-async function change(control: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, value: string): Promise<void> {
+async function change(control: HTMLInputElement | HTMLTextAreaElement, value: string): Promise<void> {
   await act(async () => {
     setControlValue(control, value)
     await settle()
@@ -144,7 +144,7 @@ describe('CreateMemeRoute settling requests', () => {
 
     expect(button('Upload').getAttribute('aria-pressed')).toBe('true')
     expect(host.querySelector<HTMLImageElement>('img.meme-art')?.getAttribute('src')).toBe('/finished.png')
-    expect(host.querySelector('.form-grid')?.getAttribute('aria-busy')).toBe('false')
+    expect(host.querySelector('[data-slot="form-grid"]')?.getAttribute('aria-busy')).toBe('false')
     expect(button('Mint').disabled).toBe(false)
     expect(host.textContent).not.toContain('Rendering your masterpiece')
   })
@@ -166,7 +166,7 @@ describe('CreateMemeRoute settling requests', () => {
 
     expect(host.querySelector('[role="alert"]')?.textContent).toContain('credits exhausted')
     expect(host.querySelector('[role="alert"]')?.textContent).toContain('Top up Masky credits')
-    expect(host.querySelector('.form-grid')?.getAttribute('aria-busy')).toBe('false')
+    expect(host.querySelector('[data-slot="form-grid"]')?.getAttribute('aria-busy')).toBe('false')
     expect(host.textContent).not.toContain('Rendering your masterpiece')
     await click(button('Upload'))
     await click(button('Generate image'))
