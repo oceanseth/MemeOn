@@ -1,5 +1,5 @@
 import { useRef, useState, useSyncExternalStore } from 'react'
-import './HeroVideo.css'
+import { cn } from '../lib/cn'
 
 /**
  * Landing-page hero video.
@@ -61,6 +61,21 @@ export interface HeroVideoProps {
   autoplay?: boolean
 }
 
+const FRAME = cn(
+  'relative aspect-video overflow-hidden rounded-card border border-border bg-bg-card',
+  'shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-accent)_6%,transparent),0_18px_60px_-28px_color-mix(in_oklab,var(--color-accent)_45%,transparent)]',
+  'max-md:rounded-none max-md:border-x-0',
+)
+
+/* the shared pill chrome: font/line-height are reset so each pill can size its own text */
+const PILL = cn(
+  'absolute cursor-pointer rounded-pill border border-border font-[inherit] leading-none text-text',
+  'bg-[color-mix(in_oklab,var(--color-bg)_72%,transparent)] backdrop-blur-[6px]',
+  '[transition:background_var(--dur-base)_ease,border-color_var(--dur-base)_ease]',
+  'motion-reduce:transition-none',
+  'hover:bg-[color-mix(in_oklab,var(--color-bg)_90%,transparent)] hover:border-accent',
+)
+
 export default function HeroVideo({ autoplay }: HeroVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [muted, setMuted] = useState(true)
@@ -91,11 +106,14 @@ export default function HeroVideo({ autoplay }: HeroVideoProps) {
   }
 
   return (
-    <div className="hero-video">
-      <div className="hero-video-frame">
+    <div
+      data-slot="hero-video"
+      className="mx-auto mt-1 mb-[30px] max-w-[1080px] px-4 max-md:mx-[calc(50%-50vw)] max-md:max-w-none max-md:px-0"
+    >
+      <div className={FRAME} data-slot="hero-video-frame">
         <video
           ref={videoRef}
-          className="hero-video-el"
+          className="block h-full w-full object-cover"
           src="/promo/memeon-promo.mp4"
           poster="/promo/memeon-promo-poster.jpg"
           autoPlay={shouldAutoplay}
@@ -108,17 +126,28 @@ export default function HeroVideo({ autoplay }: HeroVideoProps) {
           aria-label="MemeOn in 50 seconds: mint a meme, watch it climb the virality tiers, trade it."
         />
         {!shouldAutoplay && !started && (
-          <button type="button" className="hero-video-play" onClick={start}>
+          <button
+            type="button"
+            onClick={start}
+            className={cn(
+              PILL,
+              'top-1/2 left-1/2 min-h-11 -translate-x-1/2 -translate-y-1/2 px-5 py-3 text-[15px] font-semibold',
+            )}
+          >
             <span aria-hidden="true">▶</span> Play the 50-second tour
           </button>
         )}
         {(shouldAutoplay || started) && (
           <button
             type="button"
-            className="hero-video-sound"
             onClick={toggleSound}
             aria-pressed={!muted}
             aria-label={muted ? 'Unmute the video' : 'Mute the video'}
+            className={cn(
+              PILL,
+              'right-3 bottom-3 px-3.5 py-2 text-[13px]',
+              'max-md:top-2 max-md:right-2 max-md:bottom-auto max-md:px-[11px] max-md:py-[7px] max-md:text-xs',
+            )}
           >
             {muted ? '🔇 Sound on' : '🔊 Sound off'}
           </button>

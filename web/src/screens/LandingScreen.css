@@ -1,0 +1,35 @@
+/* Tier-frame slot states. Selectors key off `data-slot`/`data-state`, not a legacy class, so this
+   file owns the whole effect (including the reduced-motion pause 51-a11y-media.css used to give
+   the old `.tier-frame-slot[data-state='loading']` selector — that file is shared-atoms and does
+   not know about `data-slot`). */
+@layer components {
+  @keyframes landing-tier-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    60%,
+    100% {
+      background-position: -100% 0;
+    }
+  }
+
+  [data-slot='tier-frame-slot'][data-state='loading']::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    background-size: 300% 300%;
+    animation: landing-tier-shimmer 3.8s ease-in-out infinite;
+  }
+
+  [data-slot='tier-frame-slot'][data-state='error'] {
+    background: color-mix(in oklab, currentColor 18%, var(--color-bg-media));
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, currentColor 45%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-slot='tier-frame-slot'][data-state='loading']::after {
+      animation: none;
+    }
+  }
+}

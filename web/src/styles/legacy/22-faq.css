@@ -19,11 +19,10 @@
   min-height: 44px;
 }
 
-.faq summary :where(h3, .faq-q) {
-  display: inline;
-  font: inherit;
-  margin: 0;
-}
+/* `.faq summary :where(h3, .faq-q)` emptied by WP2-landing: the landing FAQ now renders through
+   `molecules/FaqItem.tsx` (Base UI Collapsible), not `<details>/<summary>` (no remaining user;
+   delete in WP3). The rest of this file stays — DiscordPageScreen.tsx (dev package) still
+   renders raw `<details>/<summary>` inside `.faq`. */
 
 .faq p {
   color: var(--text-dim);
