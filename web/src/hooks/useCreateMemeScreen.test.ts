@@ -85,10 +85,6 @@ function textareaChange(value: string) {
   return { currentTarget: { value } } as ChangeEvent<HTMLTextAreaElement>
 }
 
-function selectChange(value: string) {
-  return { currentTarget: { value } } as ChangeEvent<HTMLSelectElement>
-}
-
 function keyEvent(key: string) {
   return { key, preventDefault: vi.fn() } as unknown as KeyboardEvent<HTMLElement>
 }
@@ -120,13 +116,15 @@ describe('buildCreateMemeScreenModel', () => {
       prompt: 'current prompt',
     }, calls)
 
+    /* the chip's chrome is the screen's business: the model only names the state */
     const selectedMode = model.getModeButtonProps('remix')
-    expect(selectedMode).toMatchObject({ className: 'sort-chip active', 'aria-pressed': true })
-    selectedMode.onClick?.(clickEvent())
+    expect(selectedMode).toMatchObject({ selected: true, buttonProps: { 'aria-pressed': true } })
+    expect(selectedMode.buttonProps).not.toHaveProperty('className')
+    selectedMode.buttonProps.onClick?.(clickEvent())
     expect(calls.selectMode).toHaveBeenCalledWith('remix')
     expect(model.getModeButtonProps('generate')).toMatchObject({
-      className: 'sort-chip',
-      'aria-pressed': false,
+      selected: false,
+      buttonProps: { 'aria-pressed': false },
     })
 
     model.titleInputProps.onChange?.(inputChange('12345678901234567890overflow'))
@@ -149,10 +147,12 @@ describe('buildCreateMemeScreenModel', () => {
     expect(calls.setPrompt).toHaveBeenNthCalledWith(4, 'draw a cat')
     expect(calls.setMotionPrompt).toHaveBeenCalledWith('short loop')
 
-    model.remixOutputSelectProps.onChange?.(selectChange('invalid'))
-    model.remixOutputSelectProps.onChange?.(selectChange('video'))
-    model.videoModeSelectProps.onChange?.(selectChange('invalid'))
-    model.videoModeSelectProps.onChange?.(selectChange('restyle'))
+    /* the pickers take a value, not an event: a cleared or unknown one never reaches the machine */
+    model.remixOutputSelectProps.onValueChange(null)
+    model.remixOutputSelectProps.onValueChange('invalid')
+    model.remixOutputSelectProps.onValueChange('video')
+    model.videoModeSelectProps.onValueChange('invalid')
+    model.videoModeSelectProps.onValueChange('restyle')
     expect(calls.setRemixOutput).toHaveBeenCalledTimes(1)
     expect(calls.setRemixOutput).toHaveBeenCalledWith('video')
     expect(calls.setVideoMode).toHaveBeenCalledTimes(1)
@@ -168,8 +168,12 @@ describe('buildCreateMemeScreenModel', () => {
       giphyResults: [giphyResult],
     }, calls)
 
-    model.giphyCategorySelectProps.onChange?.(selectChange(''))
-    model.giphyCategorySelectProps.onChange?.(selectChange('Animals'))
+    /* results are on screen, so the panel's status line only has to reach a screen reader */
+    expect(model.giphyStatusHidden).toBe(true)
+
+    expect(model.giphyCategorySelectProps.value).toBe('')
+    model.giphyCategorySelectProps.onValueChange('')
+    model.giphyCategorySelectProps.onValueChange('Animals')
     expect(calls.searchGiphy).toHaveBeenCalledTimes(1)
     expect(calls.searchGiphy).toHaveBeenCalledWith('Animals')
 
@@ -193,11 +197,9 @@ describe('buildCreateMemeScreenModel', () => {
       loading: 'lazy',
       decoding: 'async',
     })
-    expect(cell.buttonProps).toMatchObject({
-      type: 'button',
-      className: 'giphy-cell',
-      'aria-pressed': false,
-    })
+    expect(cell.buttonProps).toMatchObject({ type: 'button', 'aria-pressed': false })
+    expect(cell.buttonProps).not.toHaveProperty('className')
+    expect(cell.picked).toBe(false)
     cell.buttonProps.onClick?.(clickEvent())
     expect(calls.pickGiphy).toHaveBeenCalledWith(giphyResult)
 
@@ -206,9 +208,9 @@ describe('buildCreateMemeScreenModel', () => {
       mode: 'giphy',
       giphyPick: giphyResult,
     }, calls)
-    expect(selected.getGiphyResultProps(giphyResult).buttonProps).toMatchObject({
-      className: 'giphy-cell picked',
-      'aria-pressed': true,
+    expect(selected.getGiphyResultProps(giphyResult)).toMatchObject({
+      picked: true,
+      buttonProps: { 'aria-pressed': true },
     })
     expect(selected.getGiphyResultProps(giphyResult).imageProps.src).toBe('/cat.gif')
     expect(selected.giphyPick).toEqual({ title: 'Keyboard cat', authorLabel: ' (@catlord)' })
@@ -333,14 +335,14 @@ describe('buildCreateMemeScreenModel', () => {
       actions(),
     )
     expect(carried.previewCard.originLabel).toBe('from GIPHY · @catlord')
-    expect(carried.getModeButtonProps('giphy').disabled).toBe(false)
+    expect(carried.getModeButtonProps('giphy').buttonProps.disabled).toBe(false)
 
     const running = buildCreateMemeScreenModel(
       'submitting',
       { ...baseContext, busy: 'Rendering…', busyElapsed: '1m04s' },
       actions(),
     )
-    expect(running.getModeButtonProps('giphy').disabled).toBe(true)
+    expect(running.getModeButtonProps('giphy').buttonProps.disabled).toBe(true)
     expect(running.busyElapsedLabel).toBe('1m04s')
     expect(running.showPreviewSkeleton).toBe(true)
   })
@@ -352,7 +354,8 @@ describe('buildCreateMemeScreenModel', () => {
       actions(),
     )
     expect(searched.err).toBeNull()
-    expect(searched.giphyStatusProps.className).toBe('empty')
+    expect(searched.giphyStatusProps).toEqual({ role: 'status' })
+    expect(searched.giphyStatusHidden).toBe(false)
     expect(searched.giphyStatusText).toContain('Nothing for "zzz"')
 
     const fresh = buildCreateMemeScreenModel('giphy', { ...baseContext, mode: 'giphy' }, actions())

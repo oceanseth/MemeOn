@@ -105,7 +105,7 @@ async function renderAt(entry = '/binder/new', strict = false): Promise<void> {
     await settle()
   })
   /* the route view is lazy: wait for the mounted form rather than guessing a tick count */
-  for (let attempt = 0; attempt < 20 && !host.querySelector('.form-grid'); attempt += 1) {
+  for (let attempt = 0; attempt < 20 && !host.querySelector('[data-slot="form-grid"]'); attempt += 1) {
     await act(async () => {
       await macrotask()
       await settle()
@@ -113,10 +113,10 @@ async function renderAt(entry = '/binder/new', strict = false): Promise<void> {
   }
 }
 
-function setControlValue(control: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, value: string): void {
+function setControlValue(control: HTMLInputElement | HTMLTextAreaElement, value: string): void {
   const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(control), 'value')
   descriptor?.set?.call(control, value)
-  control.dispatchEvent(new Event(control instanceof HTMLSelectElement ? 'change' : 'input', { bubbles: true }))
+  control.dispatchEvent(new Event('input', { bubbles: true }))
 }
 
 function button(label: string, occurrence: 'first' | 'last' = 'first'): HTMLButtonElement {
@@ -134,12 +134,21 @@ function link(label: string): HTMLAnchorElement {
   return found
 }
 
-function labelledSelect(label: string): HTMLSelectElement {
-  const control = [...host.querySelectorAll<HTMLLabelElement>('label')]
-    .find((candidate) => candidate.textContent?.includes(label))
-    ?.querySelector<HTMLSelectElement>('select')
-  if (!control) throw new Error(`Missing select: ${label}`)
-  return control
+/** The pickers are Base UI selects: a trigger button and a portalled listbox, not a native control. */
+function selectTrigger(label: string): HTMLElement {
+  const trigger = [...host.querySelectorAll<HTMLElement>('[data-slot="field"]')]
+    .find((field) => field.querySelector('[data-slot="field-label"]')?.textContent === label)
+    ?.querySelector<HTMLElement>('[data-slot="select"]')
+  if (!trigger) throw new Error(`Missing select: ${label}`)
+  return trigger
+}
+
+/* the trigger opens on mousedown and an item commits on a click that started with a pointerdown,
+   so the raw events have to carry the same shape a real mouse does */
+function press(element: Element, type: string, init: PointerEventInit = {}): void {
+  element.dispatchEvent(
+    new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerType: 'mouse', ...init }),
+  )
 }
 
 async function click(element: HTMLElement): Promise<void> {
@@ -149,9 +158,27 @@ async function click(element: HTMLElement): Promise<void> {
   })
 }
 
-async function change(control: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement, value: string): Promise<void> {
+async function change(control: HTMLInputElement | HTMLTextAreaElement, value: string): Promise<void> {
   await act(async () => {
     setControlValue(control, value)
+    await settle()
+  })
+}
+
+async function pick(label: string, option: string): Promise<void> {
+  const trigger = selectTrigger(label)
+  /* the keyboard path opens the popup in the same tick; the pointer path defers to a frame */
+  await act(async () => {
+    trigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }))
+    trigger.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 }))
+    await settle()
+  })
+  const item = [...document.querySelectorAll<HTMLElement>('[data-slot="select-item"]')]
+    .find((candidate) => candidate.textContent?.includes(option))
+  if (!item) throw new Error(`Missing option: ${option}`)
+  await act(async () => {
+    press(item, 'pointerdown')
+    press(item, 'click', { detail: 1 })
     await settle()
   })
 }
@@ -166,8 +193,8 @@ async function startVideo(kind: StartKind, prompt: string): Promise<void> {
     return
   }
 
-  await change(labelledSelect('Output'), 'video')
-  if (kind === 'restyle') await change(labelledSelect('Video remix style'), 'restyle')
+  await pick('Output', 'New video')
+  if (kind === 'restyle') await pick('Video remix style', 'Restyle the whole video')
   const promptControl = [...host.querySelectorAll<HTMLTextAreaElement>('textarea')]
     .find((candidate) => candidate.parentElement?.textContent?.includes('What to change') || candidate.parentElement?.textContent?.includes('Edit prompt'))!
   await change(promptControl, prompt)
@@ -296,7 +323,7 @@ describe('CreateMemeRoute video lifetime ownership', () => {
     await act(async () => { await vi.advanceTimersByTimeAsync(5000); await settle() })
 
     expect(host.querySelector<HTMLVideoElement>('video.meme-art')?.getAttribute('src')).toBe('/finished-a.mp4')
-    expect(host.querySelector('.form-grid')?.getAttribute('aria-busy')).toBe('false')
+    expect(host.querySelector('[data-slot="form-grid"]')?.getAttribute('aria-busy')).toBe('false')
     expect(sessionStorage.getItem(PENDING_VIDEO_KEY)).toBeNull()
   })
 
