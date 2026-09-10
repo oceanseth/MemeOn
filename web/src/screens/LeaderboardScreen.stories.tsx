@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
-import { expect, fireEvent, fn, userEvent, within } from 'storybook/test'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { leaderboardRows, meLou } from '../../.storybook/fixtures'
 import { buildLeaderboardRowModel, type LeaderboardScreenModel } from '../hooks/useLeaderboardScreen'
 import type { LeaderRow } from '../lib/types'
@@ -87,7 +87,7 @@ export const Ready: Story = {
   args: { ...ready, leaders: rows(leaderboardRows) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('list')).toBe(canvasElement.querySelector('ol.row-list'))
+    await expect(canvas.getByRole('list').tagName).toBe('OL')
     await expect(canvas.getAllByRole('listitem')).toHaveLength(2)
     await expect(canvas.getByRole('link', { name: 'Rank 1, pal, 240 braincells' })).toHaveAttribute('href', '/u/user-pal')
     await expect(canvas.getByRole('status')).toHaveTextContent('2 brains on the board')
@@ -101,11 +101,11 @@ export const MixedAvatars: Story = {
     listSummary: '4 brains on the board',
   },
   play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelectorAll('.person-row .avatar')).toHaveLength(4)
+    await expect(canvasElement.querySelectorAll('[data-slot="person-row"] [data-slot="avatar"]')).toHaveLength(4)
   },
 }
 
-/** A picture that never decodes falls back to the player's monogram, not a torn-image glyph. */
+/** A picture that never decodes falls back to the player's own monogram, not a torn-image glyph. */
 export const BrokenAvatars: Story = {
   args: {
     ...ready,
@@ -113,15 +113,15 @@ export const BrokenAvatars: Story = {
     listSummary: '3 brains on the board',
   },
   play: async ({ canvasElement }) => {
-    const avatars = canvasElement.querySelectorAll<HTMLImageElement>('.person-row img.avatar')
-    await expect(avatars).toHaveLength(2)
-    for (const avatar of avatars) await fireEvent.error(avatar)
-    await expect(avatars[0]!.src).toContain('data:image/svg+xml')
-    await expect(decodeURIComponent(avatars[0]!.src)).toContain('>A<')
-    await expect(decodeURIComponent(avatars[1]!.src)).toContain('>I<')
-    // a fallback that itself fails must not re-enter the swap
-    await fireEvent.error(avatars[0]!)
-    await expect(decodeURIComponent(avatars[0]!.src)).toContain('>A<')
+    const personRows = canvasElement.querySelectorAll<HTMLElement>('[data-slot="person-row"]')
+    await expect(personRows).toHaveLength(3)
+    // Carol never had a picture: her monogram renders immediately.
+    await expect(within(personRows[2]!).getByText('C')).toBeInTheDocument()
+    // Alice and Issam carry Google avatar URLs that 404: each falls back to its own monogram
+    // instead of leaving a torn-image glyph in the circle.
+    await waitFor(() => expect(within(personRows[0]!).getByText('A')).toBeInTheDocument())
+    await waitFor(() => expect(within(personRows[1]!).getByText('I')).toBeInTheDocument())
+    await expect(canvasElement.querySelectorAll('[data-slot="avatar"] img')).toHaveLength(0)
   },
 }
 

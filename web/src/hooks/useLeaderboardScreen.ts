@@ -1,11 +1,9 @@
 import { useProjectedActor } from './useProjectedActor'
 import { useAuth } from './useAuth'
 import { apiFetch } from '../lib/api'
-import { avatarErrorHandler, avatarInitial } from '../lib/avatarModel'
 import type { LeaderRow } from '../lib/types'
 import { leaderboardMachine, type LeaderboardPhase } from '../stores/leaderboardMachine'
 import { useMountEffect } from './useMountEffect'
-import type { ImgHTMLAttributes } from 'react'
 import type { LinkProps } from 'react-router-dom'
 
 export type { LeaderboardPhase }
@@ -32,11 +30,8 @@ export interface LeaderboardRowModel {
   sub: string
   name: string
   isMe: boolean
-  avatarImageProps: Pick<
-    ImgHTMLAttributes<HTMLImageElement>,
-    'src' | 'alt' | 'referrerPolicy' | 'onError'
-  > | null
-  avatarInitial: string
+  /** `<Avatar>` draws the monogram fallback itself whenever there is no picture. */
+  avatarSrc: string | null
   rankNumeral: string
   medalLabel: string
   linkLabel: string
@@ -70,17 +65,7 @@ export function buildLeaderboardRowModel(
     sub: leader.sub,
     name: leader.name,
     isMe,
-    /* real rows carry Google avatar URLs: no referrer keeps them from being rate-limited,
-       and a failed one falls back to the same monogram the pictureless rows draw */
-    avatarImageProps: leader.picture
-      ? {
-          src: leader.picture,
-          alt: '',
-          referrerPolicy: 'no-referrer',
-          onError: avatarErrorHandler(leader.name),
-        }
-      : null,
-    avatarInitial: avatarInitial(leader.name),
+    avatarSrc: leader.picture,
     rankNumeral: `${index + 1}`,
     medalLabel: medals[index] ?? '',
     linkLabel: rowLabel(leader, index + 1, isMe),

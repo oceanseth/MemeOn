@@ -58,7 +58,7 @@ export const InitialFailureShowsError: Story = {
 
 export const LoadingThenReady: Story = {
   loaders: [connectedLoader({ overrides: { 'GET /api/friends': async (_request, scenario) => { await scenario.waitForRelease('friends'); return { body: { friends: scenario.friends } } } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><FriendsView /></ConnectedStory>,
-  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('.spin')).not.toBeNull()); loaded.scenario.release('friends'); await expect(await canvas.findByText('incoming pal')).toBeInTheDocument() },
+  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('[data-slot="spinner"]')).not.toBeNull()); loaded.scenario.release('friends'); await expect(await canvas.findByText('incoming pal')).toBeInTheDocument() },
 }
 
 export const GiftFailureStaysInOverlay: Story = {

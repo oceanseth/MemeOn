@@ -2,11 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { fn } from 'storybook/test'
 import { inviteLou, invitePal } from '../../.storybook/fixtures'
-import {
-  buildInviteAvatar,
-  buildInviteStats,
-  type InviteScreenModel,
-} from '../hooks/useInviteScreen'
+import { buildInviteStats, type InviteScreenModel } from '../hooks/useInviteScreen'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { InviteScreen } from './InviteScreen'
 
@@ -18,7 +14,7 @@ const pictured = {
 
 const inviteModel = (data: typeof invitePal, self = false) => ({
   name: data.inviter.name,
-  avatar: buildInviteAvatar(data.inviter),
+  avatarSrc: data.inviter.picture,
   stats: buildInviteStats(data.inviter),
   acceptanceNote: self
     ? "Send this link to a friend — they'll join with Masky and you'll be friends instantly."

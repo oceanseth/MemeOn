@@ -289,7 +289,7 @@ describe('FriendsView friend-request debounce ownership', () => {
     expect(api.userQueries).toEqual(['Alice', 'Bob'])
     // the raw API string never reaches the user; the surface names the problem and the recovery
     expect(host.textContent).toContain("Couldn't send that friend request")
-    expect(host.querySelector('.notice.error')).not.toBeNull()
+    expect(host.querySelector('[data-slot="notice"]')).not.toBeNull()
     expect(host.textContent).toContain('Bob')
     expect(button('Add friend')).toBeTruthy()
   })

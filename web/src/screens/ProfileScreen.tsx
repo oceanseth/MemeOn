@@ -1,8 +1,18 @@
 import { Link } from 'react-router-dom'
+import { Avatar } from '../atoms/Avatar'
+import { Badge } from '../atoms/Badge'
+import { Button, buttonClasses } from '../atoms/Button'
+import { EmptyActions, EmptyState } from '../atoms/EmptyState'
 import { MemeCard } from '../atoms/MemeCard'
+import { Notice } from '../atoms/Notice'
+import { PageContainer } from '../atoms/PageContainer'
+import { Skeleton, SkeletonBlock, SkeletonCard } from '../atoms/Skeleton'
 import type { ProfileScreenModel } from '../hooks/useProfileScreen'
 
 const SKELETON_CARDS = ['a', 'b', 'c', 'd']
+
+const actionsRow = 'flex flex-wrap items-center gap-2.5 max-md:w-full'
+const cardGrid = 'grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5 max-sm:grid-cols-2 max-sm:gap-3'
 
 /** Profile as a function of its model. Tabs, relationship state and copy are controlled props. */
 export function ProfileScreen({
@@ -17,7 +27,7 @@ export function ProfileScreen({
   loadingLabel,
   profile,
   showActions,
-  followButtonClassName,
+  followButtonVariant,
   followGlyph,
   followText,
   followButtonProps,
@@ -43,64 +53,56 @@ export function ProfileScreen({
   emptyLinkLabel,
   emptyLinkProps,
   showGrid,
-  createdTabClassName,
-  binderTabClassName,
+  createdTabVariant,
+  binderTabVariant,
   createdTabButtonProps,
   binderTabButtonProps,
   gridProps,
 }: ProfileScreenModel) {
   if (showErr)
     return (
-      <main className="container" id="main" tabIndex={-1}>
-        <div className="empty error" role="alert">
-          <h2>{errTitle}</h2>
+      <PageContainer as="main" id="main" tabIndex={-1}>
+        <EmptyState error>
+          <h2 className="font-bold">{errTitle}</h2>
           <p>{errBody}</p>
-          <div className="empty-actions">
-            <button className="primary" {...retryButtonProps}>
+          <EmptyActions>
+            <Button variant="primary" {...retryButtonProps}>
               {retryLabel}
-            </button>
-            <Link className="btn" {...errorLinkProps}>
+            </Button>
+            <Link className={buttonClasses()} {...errorLinkProps}>
               {errorLinkLabel}
             </Link>
-          </div>
-        </div>
-      </main>
+          </EmptyActions>
+        </EmptyState>
+      </PageContainer>
     )
   if (showLoading || !profile)
     return (
-      <main className="container" id="main" tabIndex={-1} role="status" aria-live="polite">
+      <PageContainer as="main" id="main" tabIndex={-1} role="status" aria-live="polite">
         <span className="sr-only">{loadingLabel}</span>
-        <div className="page-head profile-hero" aria-hidden="true">
-          <div className="profile-identity">
-            <div className="skeleton profile-avatar" />
-            <div className="profile-identity-copy">
-              <div className="skeleton skeleton-block profile-skeleton-name" />
-              <div className="skeleton skeleton-block profile-skeleton-stats" />
-            </div>
+        <div className="mx-0 mt-7 mb-5 flex flex-wrap items-center gap-4" aria-hidden="true">
+          <Skeleton className="size-24 rounded-full" />
+          <div className="min-w-0">
+            <SkeletonBlock className="mb-2.5 h-[26px] w-[180px]" />
+            <SkeletonBlock className="w-[260px] max-w-full" />
           </div>
         </div>
-        <div className="card-grid" aria-hidden="true">
+        <div className={cardGrid} aria-hidden="true">
           {SKELETON_CARDS.map((key) => (
-            <div key={key} className="skeleton skeleton-card profile-skeleton-card" />
+            <SkeletonCard key={key} />
           ))}
         </div>
-      </main>
+      </PageContainer>
     )
 
   return (
-    <main className="container" id="main" tabIndex={-1}>
-      <header className="page-head profile-hero">
-        <div className="profile-identity">
-          {profile.avatar.kind === 'image' ? (
-            <img className="profile-avatar" {...profile.avatar.imageProps} />
-          ) : (
-            <span className="profile-avatar avatar-fallback" aria-hidden="true">
-              {profile.avatar.initial}
-            </span>
-          )}
-          <div className="profile-identity-copy">
-            <h1>{profile.name}</h1>
-            <ul className="profile-stats">
+    <PageContainer as="main" id="main" tabIndex={-1}>
+      <header className="mx-0 mt-7 mb-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-4">
+          <Avatar name={profile.name} src={profile.avatarSrc} size="lg" loading="lazy" />
+          <div className="min-w-0">
+            <h1 className="text-2xl leading-[1.15] font-bold [overflow-wrap:anywhere]">{profile.name}</h1>
+            <ul className="flex flex-wrap gap-x-3.5 gap-y-0.5 text-sm text-text-dim">
               {profile.stats.map((stat) => (
                 <li key={stat.id}>
                   <span aria-hidden="true">{stat.glyph}</span> {stat.text}
@@ -111,61 +113,57 @@ export function ProfileScreen({
         </div>
 
         {showActions && (
-          <div className="filter-bar" role="group" aria-label="Profile actions">
-            <button className={followButtonClassName} {...followButtonProps}>
+          <div className={actionsRow} role="group" aria-label="Profile actions">
+            <Button variant={followButtonVariant} {...followButtonProps}>
               <span aria-hidden="true">{followGlyph}</span> {followText}
-            </button>
+            </Button>
             {showFriendButton && (
-              <button {...friendButtonProps}>
+              <Button {...friendButtonProps}>
                 <span aria-hidden="true">{friendGlyph}</span> {friendText}
-              </button>
+              </Button>
             )}
             {showFriendChip && (
-              <span className="badge state">
+              <Badge state>
                 <span aria-hidden="true">{friendChipGlyph}</span> {friendChipText}
-              </span>
+              </Badge>
             )}
           </div>
         )}
 
         {showJoin && (
-          <div className="filter-bar">
-            <Link className="btn primary login-btn" {...joinLinkProps}>
+          <div className={actionsRow}>
+            <Link className={buttonClasses('login')} {...joinLinkProps}>
               {joinLabel}
             </Link>
           </div>
         )}
       </header>
 
-      {showActionErr && (
-        <p className="notice error" role="alert">
-          {actionErr}
-        </p>
-      )}
+      {showActionErr && <Notice tone="error">{actionErr}</Notice>}
 
-      <div className="filter-bar profile-tabs" role="group" aria-label="Profile section">
-        <button className={createdTabClassName} {...createdTabButtonProps}>
+      <div className="mb-[18px] flex flex-wrap items-center gap-2.5" role="group" aria-label="Profile section">
+        <Button variant={createdTabVariant} {...createdTabButtonProps}>
           Created ({createdCount})
-        </button>
-        <button className={binderTabClassName} {...binderTabButtonProps}>
+        </Button>
+        <Button variant={binderTabVariant} {...binderTabButtonProps}>
           Binder ({binderCount})
-        </button>
+        </Button>
       </div>
 
       {showEmpty ? (
-        <div className="empty" role="status" {...gridProps}>
-          <h2>{emptyTitle}</h2>
+        <EmptyState {...gridProps}>
+          <h2 className="font-bold">{emptyTitle}</h2>
           <p>{emptyBody}</p>
           {showEmptyLink && (
-            <div className="empty-actions">
-              <Link className="btn primary" {...emptyLinkProps}>
+            <EmptyActions>
+              <Link className={buttonClasses('primary')} {...emptyLinkProps}>
                 {emptyLinkLabel}
               </Link>
-            </div>
+            </EmptyActions>
           )}
-        </div>
+        </EmptyState>
       ) : showGrid ? (
-        <div className="card-grid" role="group" {...gridProps}>
+        <div className={cardGrid} role="group" {...gridProps}>
           {cards.map((card) => (
             <MemeCard
               key={card.id}
@@ -181,6 +179,6 @@ export function ProfileScreen({
           ))}
         </div>
       ) : null}
-    </main>
+    </PageContainer>
   )
 }
