@@ -31,14 +31,16 @@ export const Open: Story = {
     onCancel.mockClear()
     const canvas = within(canvasElement)
     const dialog = canvas.getByRole('alertdialog', { name: 'Delete forever?' })
-    // the platform supplies containment and initial focus: the first control inside the dialog
+    // Base UI supplies containment and initial focus: the first control inside the dialog
     await expect(dialog.contains(document.activeElement)).toBe(true)
     await userEvent.click(canvas.getByRole('heading', { name: 'Delete forever?' }))
     await expect(onCancel).not.toHaveBeenCalled()
     await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }))
     await expect(onCancel).toHaveBeenCalledOnce()
-    // Escape is the platform's own close watcher: it only answers trusted key events, so it is
-    // covered in confirmDialogModel.test.ts (onCancel passes it through, onClose reports it back).
+    // Escape is Base UI's own dismissal now, not the platform close watcher, so it answers a
+    // synthetic key event and can finally be covered here.
+    await userEvent.keyboard('{Escape}')
+    await expect(onCancel).toHaveBeenCalledTimes(2)
   },
 }
 export const Closed: Story = {

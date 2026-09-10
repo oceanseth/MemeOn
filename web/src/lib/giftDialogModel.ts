@@ -1,7 +1,6 @@
 import type {
   ButtonHTMLAttributes,
   ChangeEventHandler,
-  DialogHTMLAttributes,
   FocusEventHandler,
   ImgHTMLAttributes,
   InputHTMLAttributes,
@@ -18,8 +17,6 @@ export interface GiftDialogRowModel {
   tierKey: string
   tierLabel: string
   tierColor: string
-  /** tier frame classes for the thumbnail wrapper, so rarity is visible before you give it away */
-  thumbClassName: string
   listed: boolean
   listedLabel: string
   imageProps: Pick<
@@ -34,22 +31,22 @@ export interface GiftDialogRowModel {
 
 export interface GiftDialogModel {
   open: boolean
+  /** unique per dialog on the page; the frame builds its portal anchor from it */
+  id: string
   recipientName: string | null
   title: string
   titleId: string
   hint: string
+  hintId: string
+  /** every control locks while the transfer runs, and so does every exit */
+  busy: boolean
   /**
-   * Spread onto the native `<dialog>`: the platform supplies focus containment, Escape, the top
-   * layer and focus restoration; these props supply the name and backdrop dismissal.
+   * The single dismissal channel Base UI reports into: Escape, a press on the scrim and the ✕ all
+   * arrive as `false`. In flight it is a no-op, so the transfer owns the dialog until it answers.
    */
-  dialogProps: Pick<
-    DialogHTMLAttributes<HTMLDialogElement>,
-    'aria-labelledby' | 'onClick' | 'onCancel'
-  >
-  closeButtonProps: Pick<
-    ButtonHTMLAttributes<HTMLButtonElement>,
-    'onClick' | 'aria-label' | 'disabled'
-  >
+  onOpenChange: (open: boolean) => void
+  /** accessible name for the ✕; the dialog's only exit for a screen reader on a touch device */
+  closeLabel: string
   cancelLabel: string
   cancelButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'disabled'>
   searchInputProps: Pick<
@@ -131,7 +128,6 @@ export function buildGiftDialogModel({
       tierKey: meme.tier.key,
       tierLabel: meme.tier.name,
       tierColor: meme.tier.color,
-      thumbClassName: `gift-thumb tier-${meme.tier.key}`,
       listed: !!meme.listing && meme.listing.shares > 0,
       listedLabel: 'Listed',
       imageProps: {
@@ -161,24 +157,19 @@ export function buildGiftDialogModel({
 
   return {
     open: open && !!recipient,
+    id: 'gift-dialog',
     recipientName: recipient?.name ?? null,
     title: `🎁 Gift to ${recipient?.name ?? ''}`,
     titleId: 'gift-dialog-title',
     hint: 'Pick a meme you hold shares in — the transfer is free and instant.',
-    dialogProps: {
-      'aria-labelledby': 'gift-dialog-title',
-      // backdrop (and only the backdrop) dismisses, and never while the gift is in flight
-      onClick: (event) => {
-        if (event.target === event.currentTarget) dismiss()
-      },
-      // Escape: React stays the single source of truth for open/closed, so cancel the native close
-      onCancel: (event) => {
-        event.preventDefault()
-        dismiss()
-      },
+    hintId: 'gift-dialog-hint',
+    busy,
+    // Escape, the scrim and the ✕ are Base UI's to detect; dismiss() is a no-op while busy, so
+    // every exit says so instead of looking operable
+    onOpenChange: (nextOpen) => {
+      if (!nextOpen) dismiss()
     },
-    // dismiss() is a no-op while busy, so every exit says so instead of looking operable
-    closeButtonProps: { onClick: dismiss, 'aria-label': 'Close gift dialog', disabled: busy },
+    closeLabel: 'Close gift dialog',
     cancelLabel: 'Cancel',
     cancelButtonProps: { onClick: dismiss, disabled: busy },
     searchInputProps: {

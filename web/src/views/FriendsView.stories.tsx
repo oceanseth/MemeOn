@@ -64,10 +64,9 @@ export const LoadingThenReady: Story = {
 export const GiftFailureStaysInOverlay: Story = {
   loaders: [connectedLoader({ failures: { 'POST /api/gift': { error: 'gift unavailable' } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><FriendsView /></ConnectedStory>,
   play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click((await canvas.findAllByRole('button', { name: /^Gift shares to / }))[0]!); const dialog = await canvas.findByRole('dialog', { name: /Gift to pal/ }); await userEvent.click(await within(dialog).findByRole('button', { name: /fresh paper/ })); await userEvent.click(within(dialog).getByRole('button', { name: /Gift 1 of/ })); await expect(await within(dialog).findByText('gift unavailable')).toBeInTheDocument()
-    /* Escape on a showModal() dialog is the platform's own cancel default: a synthetic key event
-       cannot run it, so the story fires the cancel the platform would and proves the wiring. */
-    dialog.dispatchEvent(new Event('cancel', { cancelable: true }))
-    await waitFor(() => expect(dialog).not.toHaveAttribute('open'))
-    await expect(canvas.queryByRole('dialog')).toBeNull()
+    /* Escape belongs to Base UI's dismissal now, not to a showModal() close watcher, so a
+       synthetic key event reaches it and the wiring is proved for real rather than simulated. */
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull())
   },
 }

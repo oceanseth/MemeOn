@@ -234,8 +234,8 @@ describe('MemeDetailView mutation overlap', () => {
     await click(button('Make public'))
     await eventually(() => expect(detailReads).toBe(2))
     await click(button('Delete forever'))
-    // the confirmations are native <dialog>s: they stay mounted and open/close in the top layer
-    let dialog = host.querySelector('dialog[open][role="alertdialog"]')!
+    // the confirmations are Base UI popups: mounted means open, so presence is the whole state
+    let dialog = host.querySelector('[role="alertdialog"]')!
     await click(button('Delete it forever', dialog))
     expect(deleteRequests).toBe(1)
 
@@ -250,12 +250,12 @@ describe('MemeDetailView mutation overlap', () => {
     })
 
     await eventually(() => expect(host.querySelector('.notice.error')?.textContent).toContain('delete conflicted'))
-    expect(host.querySelector('dialog[open][role="alertdialog"]')).toBeNull()
+    expect(host.querySelector('[role="alertdialog"]')).toBeNull()
     expect(host.querySelector('.pack-overlay')).toBeNull()
     expect(button('Delete forever').disabled).toBe(false)
 
     await click(button('Delete forever'))
-    dialog = host.querySelector('dialog[open][role="alertdialog"]')!
+    dialog = host.querySelector('[role="alertdialog"]')!
     await click(button('Delete it forever', dialog))
     await eventually(() => expect(host.querySelector('output[aria-label="Current route"]')?.textContent).toBe('/binder'))
     expect(deleteRequests).toBe(2)
