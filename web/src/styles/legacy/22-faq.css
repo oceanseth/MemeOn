@@ -1,48 +1,5 @@
-.faq {
-  max-width: 780px;
-}
-
-/* the padding lives on the control, so the whole card is the hit target */
-.faq details {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0;
-  margin-bottom: 10px;
-  background: var(--bg-raised);
-}
-
-.faq summary {
-  font-weight: 600;
-  cursor: pointer;
-  padding: 14px 18px;
-  margin: 0;
-  min-height: 44px;
-}
-
-/* `.faq summary :where(h3, .faq-q)` emptied by WP2-landing: the landing FAQ now renders through
-   `molecules/FaqItem.tsx` (Base UI Collapsible), not `<details>/<summary>` (no remaining user;
-   delete in WP3). The rest of this file stays — DiscordPageScreen.tsx (dev package) still
-   renders raw `<details>/<summary>` inside `.faq`. */
-
-.faq p {
-  color: var(--text-dim);
-  line-height: 1.55;
-  padding: 0 18px 14px;
-}
-
-/* logo + download links inside a FAQ answer */
-.faq-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-}
-
-/* the install CTA's four phases share one box, so the FAQ below never moves */
-.cta-slot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 55px;
-}
-
+/* emptied by WP2-dev: DiscordPageScreen.tsx (dev) was the last user of `.faq`, `.faq details`,
+   `.faq summary`, `.faq p`, `.faq-actions` and `.cta-slot` — it now renders its FAQ through
+   `molecules/FaqItem.tsx` (Base UI Collapsible, same as the landing package's FAQ) and reproduces
+   `.faq-actions`/`.cta-slot` with utilities. `.faq summary :where(h3, .faq-q)` was already emptied
+   by WP2-landing. No remaining user in web/src (delete in WP3). */

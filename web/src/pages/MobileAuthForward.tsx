@@ -1,5 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { buttonClasses } from '../atoms/Button'
+import { PageContainer } from '../atoms/PageContainer'
 
 /**
  * Masky OAuth only allows https redirect URIs, so the mobile app uses
@@ -23,13 +25,13 @@ export default function MobileAuthForward() {
   }, [deepLink])
 
   return (
-    <main className="container" id="main" tabIndex={-1} style={{ paddingTop: 90, textAlign: 'center' }}>
-      <p style={{ color: 'var(--text-dim)' }}>Returning to the MemeOn app…</p>
-      <p>
-        <a href={deepLink}>
-          <button className="primary">Open MemeOn</button>
+    <PageContainer as="main" id="main" tabIndex={-1} className="pt-[90px] text-center">
+      <p className="[margin-block:1em] text-text-dim">Returning to the MemeOn app…</p>
+      <p className="[margin-block:1em]">
+        <a href={deepLink} className={buttonClasses('primary')}>
+          Open MemeOn
         </a>
       </p>
-    </main>
+    </PageContainer>
   )
 }
