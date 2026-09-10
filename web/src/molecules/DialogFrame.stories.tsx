@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, fn, userEvent, within } from 'storybook/test'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { Button } from '../atoms/Button'
 import { FilterBar } from '../atoms/PageHead'
 import { DialogFrame } from './DialogFrame'
@@ -37,7 +37,10 @@ export const Default: Story = {
     // the popup stays inside the tree it was written in, so a screen's own canvas query finds it
     await expect(canvasElement.contains(dialog)).toBe(true)
     await expect(dialog).toHaveAttribute('aria-describedby', 'frame-story-description')
-    await expect(dialog.contains(document.activeElement)).toBe(true)
+    // Base UI never sets it: a screen reader that constrains its cursor by aria-modal needs it
+    await expect(dialog).toHaveAttribute('aria-modal', 'true')
+    // Base UI moves focus on the next frame, so this is a wait, not a read
+    await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true))
   },
 }
 
@@ -72,7 +75,9 @@ export const DangerAlert: Story = {
     description: "This can't be undone.",
   },
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByRole('alertdialog')).toBeVisible()
+    const alert = within(canvasElement).getByRole('alertdialog')
+    await expect(alert).toBeVisible()
+    await expect(alert).toHaveAttribute('aria-modal', 'true')
   },
 }
 

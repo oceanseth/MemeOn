@@ -32,6 +32,8 @@ export function ConfirmDialog({ model }: { model: ConfirmDialogModel }) {
       id={model.id}
       open={model.open}
       onOpenChange={model.onOpenChange}
+      // the model recorded the opener; without it a press on the scrim strands focus on <main>
+      finalFocus={model.opener}
       role="alertdialog"
       size="sm"
       danger={model.danger}

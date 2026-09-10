@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
+import { trackDialogOpener, type DialogOpenerRef } from './dialogOpener'
 
 export interface ConfirmPromptInput {
   label: string
@@ -38,6 +39,11 @@ export interface ConfirmPromptModel {
 
 export interface ConfirmDialogModel {
   open: boolean
+  /**
+   * Whatever was focused when the dialog opened. The frame hands focus back to it on the way out,
+   * because a dialog opened from state has no trigger for Base UI to return to on its own.
+   */
+  opener?: DialogOpenerRef | undefined
   /** unique per dialog on the page; the frame builds its portal anchor from it */
   id: string
   title: string
@@ -82,6 +88,8 @@ export function buildConfirmDialogModel({
 
   return {
     open,
+    // read during the build that first reports open, while the opener still holds focus
+    opener: trackDialogOpener(id, open),
     id,
     title: danger ? `⚠️ ${title}` : title,
     titleId,

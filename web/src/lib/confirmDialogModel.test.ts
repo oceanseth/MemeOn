@@ -24,6 +24,24 @@ describe('buildConfirmDialogModel', () => {
     expect(model.messageId).toBe('delete-meme-message')
   })
 
+  it('records the opener, so the frame can hand focus back on the way out', () => {
+    const opener = { focus: () => {}, isConnected: true } as unknown as HTMLElement
+    vi.stubGlobal('document', { activeElement: opener, body: { nodeName: 'BODY' } })
+    const input = {
+      id: 'restore-focus',
+      title: 'Remove Pal?',
+      message: 'They lose the thread.',
+      onConfirm: vi.fn(),
+      onCancel: vi.fn(),
+    }
+
+    // opened from state, with no Dialog.Trigger for Base UI to return to
+    expect(buildConfirmDialogModel({ ...input, open: true }).opener?.current).toBe(opener)
+    // closed, the record goes with it: the next open belongs to whoever opens it next
+    expect(buildConfirmDialogModel({ ...input, open: false }).opener).toBeUndefined()
+    vi.unstubAllGlobals()
+  })
+
   it('defaults its id, so an unnamed dialog still has stable aria ids', () => {
     const model = buildConfirmDialogModel({
       open: true,

@@ -38,6 +38,8 @@ export function GiftDialog({ model }: { model: GiftDialogModel }) {
       id={model.id}
       open={model.open}
       onOpenChange={model.onOpenChange}
+      // the model recorded the opener; without it a press on the scrim strands focus on <main>
+      finalFocus={model.opener}
       title={model.title}
       titleId={model.titleId}
       description={model.hint}

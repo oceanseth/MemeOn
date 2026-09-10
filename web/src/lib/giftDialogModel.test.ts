@@ -137,4 +137,17 @@ describe('gift dialog model', () => {
     expect(buildModel({ memes: [] }).emptyMessage).toBe('Nothing to gift here — you need shares in a meme first.')
     expect(buildModel({ query: 'zzz' }).emptyMessage).toBe('Nothing in your binder matches "zzz".')
   })
+
+  it('records the opener, so the frame can hand focus back on the way out', () => {
+    const opener = { focus: () => {}, isConnected: true } as unknown as HTMLElement
+    vi.stubGlobal('document', { activeElement: opener, body: { nodeName: 'BODY' } })
+
+    // no recipient is not a dialog at all: nothing is open, so nothing is recorded
+    expect(buildModel({ recipient: null }).opener).toBeUndefined()
+    // opened from state, with no Dialog.Trigger for Base UI to return to
+    expect(buildModel().opener?.current).toBe(opener)
+    // closed, the record goes with it: the next open belongs to whoever opens it next
+    expect(buildModel({ open: false }).opener).toBeUndefined()
+    vi.unstubAllGlobals()
+  })
 })

@@ -81,6 +81,12 @@ export interface DialogFrameProps {
   close?: DialogFrameCloseModel | undefined
   /** Base UI focuses the first tabbable element by default; override when that is not the task */
   initialFocus?: DialogPopupProps['initialFocus'] | undefined
+  /**
+   * Where focus lands on the way out. Pass the opener a model recorded when it turned open: these
+   * dialogs have no `Dialog.Trigger`, and without an explicit target a press on the scrim leaves
+   * focus wherever the browser dropped it when the popup was removed.
+   */
+  finalFocus?: DialogPopupProps['finalFocus'] | undefined
   className?: string | undefined
   children?: ReactNode
 }
@@ -105,8 +111,8 @@ export interface DialogFrameProps {
  * 2. The portal is gated on `open` instead of being left to Base UI's own unmount. Base UI keeps a
  *    closed popup in the DOM for the frame an exit animation would have used, and this frame has
  *    none — `open` is the whole truth, so a dismissal is gone in the same commit that reports it,
- *    exactly as `<dialog>.close()` was. Focus still returns to the opener; Base UI's focus manager
- *    restores it from its unmount cleanup.
+ *    exactly as `<dialog>.close()` was. Focus returns to whoever `finalFocus` names; without one,
+ *    a same-commit removal beats Base UI's own restore and focus is left on the `<main>` landmark.
  */
 export function DialogFrame({
   open,
@@ -123,6 +129,7 @@ export function DialogFrame({
   danger = false,
   close,
   initialFocus,
+  finalFocus,
   className,
   children,
 }: DialogFrameProps) {
@@ -150,7 +157,10 @@ export function DialogFrame({
           />
           <Dialog.Popup
             role={role}
+            // Base UI leaves it off, and a screen reader that honours it needs it on both roles
+            aria-modal="true"
             initialFocus={initialFocus}
+            finalFocus={finalFocus}
             className={cn(POPUP, SIZE[size], danger ? DANGER : 'shadow-modal', className)}
             data-slot="dialog"
           >

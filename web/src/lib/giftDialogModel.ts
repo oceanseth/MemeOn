@@ -5,6 +5,7 @@ import type {
   ImgHTMLAttributes,
   InputHTMLAttributes,
 } from 'react'
+import { trackDialogOpener, type DialogOpenerRef } from './dialogOpener'
 import type { Meme } from './types'
 
 export type GiftRecipient = { sub: string; name: string }
@@ -31,6 +32,11 @@ export interface GiftDialogRowModel {
 
 export interface GiftDialogModel {
   open: boolean
+  /**
+   * Whatever was focused when the dialog opened. The frame hands focus back to it on the way out,
+   * because a dialog opened from state has no trigger for Base UI to return to on its own.
+   */
+  opener?: DialogOpenerRef | undefined
   /** unique per dialog on the page; the frame builds its portal anchor from it */
   id: string
   recipientName: string | null
@@ -154,9 +160,13 @@ export function buildGiftDialogModel({
   const onSearchChange: ChangeEventHandler<HTMLInputElement> = (event) => onQueryChange(event.target.value)
   const onShareChange: ChangeEventHandler<HTMLInputElement> = (event) => onSharesChange(event.target.value)
   const onShareBlur: FocusEventHandler<HTMLInputElement> = () => onSharesBlur?.()
+  // a gift with no recipient is not a dialog at all, so the frame and the opener agree on one flag
+  const isOpen = open && !!recipient
 
   return {
-    open: open && !!recipient,
+    open: isOpen,
+    // read during the build that first reports open, while the opener still holds focus
+    opener: trackDialogOpener('gift-dialog', isOpen),
     id: 'gift-dialog',
     recipientName: recipient?.name ?? null,
     title: `🎁 Gift to ${recipient?.name ?? ''}`,
