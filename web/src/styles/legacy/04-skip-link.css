@@ -1,23 +1,11 @@
-/* bypass block: costs nothing until focused */
-.skip-link {
-  position: absolute;
-  left: 12px;
-  top: -60px;
-  z-index: calc(var(--z-header) + 10);
-  padding: 10px 16px;
-  border-radius: var(--radius);
-  background: var(--bg-raised);
-  color: var(--text);
-  border: 1px solid var(--accent);
-  text-decoration: none;
-  transition: top var(--dur-base) ease;
-}
+/* `.skip-link` emptied by WP2-shell (organisms/AppShell.tsx paints the bypass block in utilities).
+   The rule below stays: it is an element selector every route's `<main>` landmark still relies on —
+   `atoms/PageContainer.tsx` renders `<main>` on Marketplace, Meme detail, Binder, Profile, Friends,
+   Leaderboard, Trades, Create, Developers, Discord, Invite, Landing and the legal pages alike, and
+   the bypass link's target scrolls clear of the sticky topbar because of it. Delete in WP3.
 
-.skip-link:focus {
-  top: 12px;
-}
-
+   `--topbar-h` still resolves correctly here at both widths: `organisms/AppShell.css` re-authors the
+   ≤760 override that `39-bp-topbar.css` used to key off `.nav-links`. */
 main {
   scroll-margin-top: var(--topbar-h);
 }
-

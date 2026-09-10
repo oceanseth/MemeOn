@@ -116,7 +116,7 @@ it('keeps the legacy mint draft mounted while a post-pack refresh replaces an ol
     held[1]!.resolve(Response.json(held[1]!.snapshot))
     await nextTick()
   })
-  expect(host.querySelector('.coins')?.textContent).toContain('52')
+  expect(host.querySelector('[data-slot="coins"]')?.textContent).toContain('52')
   expect(host.querySelector<HTMLInputElement>('input#create-title')).toBe(title)
   expect(title.value).toBe('Keep my draft')
   expect(prompt.value).toBe('Draft prompt survives account refresh')

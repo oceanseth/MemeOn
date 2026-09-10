@@ -1,11 +1,6 @@
-import type {
-  ButtonHTMLAttributes,
-  DialogHTMLAttributes,
-  HTMLAttributes,
-  MouseEvent,
-  RefAttributes,
-} from 'react'
+import type { ButtonHTMLAttributes, HTMLAttributes } from 'react'
 import type { LinkProps } from 'react-router-dom'
+import { trackDialogOpener, type DialogOpenerRef } from './dialogOpener'
 import { buildMemeCardModel, type MemeCardModel } from './memeCardModel'
 import type { Meme, QuestKey, QuestStep } from './types'
 
@@ -16,12 +11,8 @@ const QUEST_LINKS: Partial<Record<QuestKey, string>> = {
   trade: '/marketplace',
 }
 
+const PACK_ID = 'pack'
 const PACK_TITLE_ID = 'pack-title'
-
-/** The platform owns focus, Escape and inertness once the node is in the top layer. */
-const openPackDialog = (node: HTMLDialogElement | null) => {
-  if (node && !node.open) node.showModal()
-}
 
 type QuestButtonProps = Pick<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -29,7 +20,14 @@ type QuestButtonProps = Pick<
 >
 
 export type QuestChipModel =
-  | { kind: 'claim'; key: QuestKey; label: string; buttonProps: QuestButtonProps }
+  | {
+      kind: 'claim'
+      key: QuestKey
+      label: string
+      /** The one-shot claim is in flight: full opacity, progress cursor, no second press. */
+      busy: boolean
+      buttonProps: QuestButtonProps
+    }
   | {
       kind: 'step'
       key: QuestKey
@@ -42,13 +40,26 @@ export type QuestChipModel =
     }
 
 export interface QuestPackModel {
+  /** The `DialogFrame` contract: the frame stays mounted and this is its whole truth. */
+  open: boolean
+  /**
+   * Every dismissal Base UI recognises lands here with `false` — Escape, a press on the scrim and
+   * the ✕ alike.
+   */
+  onOpenChange: (open: boolean) => void
+  /**
+   * Whatever was focused when the pack opened. A dialog opened from state has no trigger for Base
+   * UI to return to on its own, so the frame is handed the opener explicitly.
+   */
+  opener?: DialogOpenerRef | undefined
+  /** unique per dialog on the page; the frame builds its portal anchor and default ids from it */
+  id: string
+  titleId: string
   description: string
   cards: MemeCardModel[]
   showCards: boolean
-  titleId: string
-  dialogProps: RefAttributes<HTMLDialogElement> &
-    Pick<DialogHTMLAttributes<HTMLDialogElement>, 'onClose' | 'onClick' | 'aria-labelledby'>
-  closeButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-label'>
+  /** accessible name for the ✕; it is one of the dialog's two exits */
+  closeLabel: string
   binderLinkProps: Pick<LinkProps, 'to' | 'onClick'>
   exploreButtonProps: QuestButtonProps
 }
@@ -70,7 +81,8 @@ export interface QuestBarModel {
   dismissProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-label'>
   errorMessage: string | null
   errorProps: Pick<HTMLAttributes<HTMLSpanElement>, 'role'>
-  pack: QuestPackModel | null
+  /** Always present, never conditional: the frame owns focus restoration and needs to outlive a dismissal. */
+  pack: QuestPackModel
 }
 
 export function buildQuestBarModel({
@@ -100,9 +112,10 @@ export function buildQuestBarModel({
   const nextStep = nextIndex < 0 ? null : steps[nextIndex]!
   const shown = expanded || !nextStep ? steps : [nextStep]
   const hiddenCount = steps.length - shown.length
+  const packOpen = packMemes !== null
 
   return {
-    visible: steps.length > 0 || packMemes !== null,
+    visible: steps.length > 0 || packOpen,
     showSteps: steps.length > 0,
     completionLabel: `${steps.filter((step) => step.done).length}/${steps.length}`,
     chips: shown.map((step): QuestChipModel => {
@@ -111,6 +124,7 @@ export function buildQuestBarModel({
           kind: 'claim',
           key: step.key,
           label: busy ? 'Opening…' : `${step.title} (+${step.reward} 🧠)`,
+          busy,
           buttonProps: { onClick: onClaimPack, disabled: busy, 'aria-busy': busy },
         }
       }
@@ -145,22 +159,21 @@ export function buildQuestBarModel({
     dismissProps: { onClick: onDismissSteps, 'aria-label': 'Later — hide quests for now' },
     errorMessage: claimError,
     errorProps: { role: 'alert' },
-    pack: packMemes === null ? null : {
-      description: packMemes.length > 0
-        ? `You now hold 10 shares in each of these — plus ${packReward} 🧠 braincells.`
-        : `The vault was empty, so you got ${packReward} 🧠 braincells instead. Spend them wisely.`,
-      cards: packMemes.map(buildMemeCardModel),
-      showCards: packMemes.length > 0,
-      titleId: PACK_TITLE_ID,
-      dialogProps: {
-        ref: openPackDialog,
-        onClose: onDismissPack,
-        onClick: (event: MouseEvent<HTMLDialogElement>) => {
-          if (event.target === event.currentTarget) onDismissPack()
-        },
-        'aria-labelledby': PACK_TITLE_ID,
+    pack: {
+      open: packOpen,
+      onOpenChange: (next: boolean) => {
+        if (!next) onDismissPack()
       },
-      closeButtonProps: { onClick: onDismissPack, 'aria-label': 'Close' },
+      opener: trackDialogOpener(PACK_ID, packOpen),
+      id: PACK_ID,
+      titleId: PACK_TITLE_ID,
+      description:
+        packMemes && packMemes.length > 0
+          ? `You now hold 10 shares in each of these — plus ${packReward} 🧠 braincells.`
+          : `The vault was empty, so you got ${packReward} 🧠 braincells instead. Spend them wisely.`,
+      cards: (packMemes ?? []).map(buildMemeCardModel),
+      showCards: (packMemes?.length ?? 0) > 0,
+      closeLabel: 'Close',
       binderLinkProps: { to: '/binder', onClick: onDismissPack },
       exploreButtonProps: { onClick: onDismissPack },
     },

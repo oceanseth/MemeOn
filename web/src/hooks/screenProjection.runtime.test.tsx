@@ -126,7 +126,8 @@ async function mountHook<Model>(useModel: () => Model, read: (model: Model) => s
 it('AppShell projects alert-open events', async () => {
   const probe = await mountHook(useAppShellScreen, (m) => `${m.phase}:${m.alertsBell.open}`)
   expect(probe.text()).toBe('loggedIn:false')
-  await act(() => probe.current().alertsBell.triggerProps.onClick?.({} as never))
+  // Base UI's Popover reports the disclosure through onOpenChange; the trigger owns no handler
+  await act(() => probe.current().alertsBell.onOpenChange(true))
   expect(probe.text()).toBe('loggedIn:true')
 })
 

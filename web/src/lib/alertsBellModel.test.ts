@@ -6,13 +6,17 @@ const NOW = new Date(FIXED_NOW).getTime()
 
 describe('buildAlertsBellModel', () => {
   it('counts unread alerts and supplies the current disclosure state', () => {
+    const onOpenChange = vi.fn()
     const model = buildAlertsBellModel({
-      alerts: [unreadSale, unreadFriend, readSale], open: true, onOpenChange: vi.fn(),
+      alerts: [unreadSale, unreadFriend, readSale], open: true, onOpenChange,
     })
     expect(model.unreadLabel).toBe('2')
     expect(model.triggerProps['aria-label']).toBe('Alerts, 2 unread')
-    expect(model.triggerProps['aria-expanded']).toBe(true)
-    expect(model.triggerProps['aria-controls']).toBe(model.popoverProps.id)
+    /* `aria-expanded`, `aria-haspopup` and `aria-controls` are Base UI's — the model carries the
+       state the popover is driven by, and the name the bell glyph cannot give it */
+    expect(model.open).toBe(true)
+    expect(model.onOpenChange).toBe(onOpenChange)
+    expect(model.popupProps['aria-label']).toBe('Alerts')
     expect(model.badgeProps['aria-hidden']).toBe(true)
     expect(model.rows.map((row) => row.unread)).toEqual([true, true, false])
     expect(model.rows.map((row) => row.statusLabel)).toEqual(['Unread.', 'Unread.', null])

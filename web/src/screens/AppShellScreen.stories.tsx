@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
-import { expect, fn, userEvent, within } from 'storybook/test'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { meLou, paperMeme, questStepsFresh, questStepsPackDone, unreadSale } from '../../.storybook/fixtures'
+import { PageContainer } from '../atoms/PageContainer'
 import { buildAppShellScreenModel } from '../hooks/useAppShellScreen'
 import type { AppShellContext } from '../stores/appShellMachine'
 import { AppShellScreen } from './AppShellScreen'
@@ -52,7 +53,7 @@ const meta = {
   component: AppShellScreen,
   args: {
     ...loggedOut,
-    children: <main className="container" id="main" tabIndex={-1}><p>page body</p></main>,
+    children: <PageContainer as="main" id="main" tabIndex={-1}><p>page body</p></PageContainer>,
   },
   decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
 } satisfies Meta<typeof AppShellScreen>
@@ -74,7 +75,10 @@ export const WithAvatar: Story = {
     const canvas = within(canvasElement)
     const profile = canvas.getByRole('link', { name: 'Your profile' })
     await expect(profile).toHaveAttribute('href', '/u/mask%2Favatar%20%2B%20one')
-    await expect(profile.querySelector('img')).toHaveAttribute('src', '/brand/memeon-logo-circle-64.png')
+    // the Avatar atom paints the monogram until the picture has actually loaded
+    await waitFor(() =>
+      expect(profile.querySelector('img')).toHaveAttribute('src', '/brand/memeon-logo-circle-64.png'),
+    )
     await expect(canvas.getByText(`${meLou.coins.toLocaleString()} braincells`)).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', { name: 'Log out' }))
     await expect(args.logoutButtonProps.onClick).toHaveBeenCalledTimes(1)

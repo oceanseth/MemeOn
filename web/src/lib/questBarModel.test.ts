@@ -21,6 +21,7 @@ describe('buildQuestBarModel', () => {
     expect(opening.chips[0]).toMatchObject({
       kind: 'claim',
       label: 'Opening…',
+      busy: true,
       buttonProps: { disabled: true, 'aria-busy': true },
     })
     expect(done.completionLabel).toBe('1/5')
@@ -91,22 +92,38 @@ describe('buildQuestBarModel', () => {
     const hidden = buildQuestBarModel({ ...fresh, steps: [] })
     const emptyVault = buildQuestBarModel({ ...fresh, steps: [], packMemes: [], packReward: 20 })
     expect(hidden.visible).toBe(false)
-    expect(hidden.pack).toBeNull()
+    /* the frame is always modelled, never conditional: it owns focus restoration, so it has to
+       outlive the dismissal that closes it */
+    expect(hidden.pack.open).toBe(false)
+    expect(hidden.pack.cards).toEqual([])
     expect(emptyVault.visible).toBe(true)
     expect(emptyVault.showSteps).toBe(false)
-    expect(emptyVault.pack?.showCards).toBe(false)
-    expect(emptyVault.pack?.description).toBe('The vault was empty, so you got 20 🧠 braincells instead. Spend them wisely.')
+    expect(emptyVault.pack.open).toBe(true)
+    expect(emptyVault.pack.showCards).toBe(false)
+    expect(emptyVault.pack.description).toBe('The vault was empty, so you got 20 🧠 braincells instead. Spend them wisely.')
   })
 
   it('builds reward copy, card media, and a single-element binder exit for an opened pack', () => {
     const model = buildQuestBarModel({ ...fresh, packMemes: [paperMeme], packReward: 20 })
-    expect(model.pack?.showCards).toBe(true)
-    expect(model.pack?.description).toBe('You now hold 10 shares in each of these — plus 20 🧠 braincells.')
-    expect(model.pack?.cards[0]?.detailLinkProps.to).toBe(`/m/${paperMeme.id}`)
+    expect(model.pack.open).toBe(true)
+    expect(model.pack.showCards).toBe(true)
+    expect(model.pack.description).toBe('You now hold 10 shares in each of these — plus 20 🧠 braincells.')
+    expect(model.pack.cards[0]?.detailLinkProps.to).toBe(`/m/${paperMeme.id}`)
     // the card's title and link already name it; the image is decorative inside the pack too
-    expect(model.pack?.cards[0]?.media).toMatchObject({ kind: 'image', imageProps: { src: paperMeme.imageUrl, alt: '' } })
-    expect(model.pack?.binderLinkProps.to).toBe('/binder')
-    expect(model.pack?.dialogProps['aria-labelledby']).toBe(model.pack?.titleId)
-    expect(model.pack?.closeButtonProps['aria-label']).toBe('Close')
+    expect(model.pack.cards[0]?.media).toMatchObject({ kind: 'image', imageProps: { src: paperMeme.imageUrl, alt: '' } })
+    expect(model.pack.binderLinkProps.to).toBe('/binder')
+    expect(model.pack.id).toBe('pack')
+    expect(model.pack.titleId).toBe('pack-title')
+    expect(model.pack.closeLabel).toBe('Close')
+  })
+
+  it('reports every Base UI dismissal as one call to the parent, and never a re-open', () => {
+    const onDismissPack = vi.fn()
+    const model = buildQuestBarModel({ ...fresh, onDismissPack, packMemes: [paperMeme], packReward: 20 })
+    model.pack.onOpenChange(false)
+    expect(onDismissPack).toHaveBeenCalledTimes(1)
+    // only the engine opens the pack; a stray `true` from the frame is not a claim
+    model.pack.onOpenChange(true)
+    expect(onDismissPack).toHaveBeenCalledTimes(1)
   })
 })

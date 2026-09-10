@@ -1,0 +1,36 @@
+/* The cascade contract `src/index.css` declares, restated because a layer's rank is fixed the first
+   time its name is seen and this file can still reach a stylesheet ahead of `index.css` (an async
+   CSS chunk of its own, a story, a second entry). `main.tsx` imports `index.css` first so the app
+   bundle already opens with this order; the restatement is what keeps every other bundle honest,
+   and re-declaring an order that already exists is a no-op. `properties` leads the list because
+   that is where Tailwind emits its own `@layer properties` block — the `@supports` fallback that
+   seeds every `--tw-*` for engines without `@property` — and it has to stay *below* `utilities`, or
+   those `initial`s would beat the utilities that set them. `scripts/check-layers.mjs` reads the
+   built CSS back and fails the build if any of it ever ranks `components` under `legacy`. */
+@layer properties, theme, base, legacy, components, utilities;
+
+@layer components {
+  /*
+   * The sticky-chrome contract. `--topbar-h` is the height every descendant of `<main>` docks
+   * under: `main { scroll-margin-top }` (styles/legacy/04-skip-link.css), the marketplace's sticky
+   * control band (`lg:top-(--topbar-h)`), the create rail and the legal `<h2>` scroll margins.
+   *
+   * The legacy sheet raised it from the `:root` default (65px) at ≤760 with
+   * `:root:has(.nav-links) { --topbar-h: 127px }` (styles/legacy/39-bp-topbar.css, a read-only
+   * spec file). Migrated nav markup no longer wears `.nav-links`, so that selector stops matching
+   * and the same declaration is re-authored here against the slot the shell writes instead.
+   * `components` beats `legacy`, so both rules paint one value while the legacy sheet lives.
+   *
+   * It has to be a rule rather than an inline style: the custom property must be readable from
+   * `:root` down, and `AppShell` renders a fragment — there is no element wrapping both the
+   * header and `<main>` (`#root > main { flex: 1 0 auto }` depends on `main` staying a direct
+   * child of `#root`).
+   *
+   * 10 + 44 (row 1) + 10 gap + 6 + 44 + 2 (nav row) + 10 + 1 border = 127.
+   */
+  @media (max-width: 760px) {
+    :root:has([data-slot='nav-links']) {
+      --topbar-h: 127px;
+    }
+  }
+}

@@ -4,6 +4,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { createActor, fromPromise } from 'xstate'
 import { meLou, paperMeme, questStepsFresh, questStepsPackDone, unreadFriend, unreadSale } from '../../.storybook/fixtures'
 import { createRequestGuard } from '../../.storybook/request-accounting'
+import { PageContainer } from '../atoms/PageContainer'
 import type { Me } from '../lib/types'
 import { authMachine } from '../stores/authMachine'
 import { createStores } from '../stores/createStores'
@@ -21,10 +22,10 @@ const meta = {
   tags: ['!autodocs'],
   args: {
     children: (
-      <main className="container" id="main" tabIndex={-1}>
+      <PageContainer as="main" id="main" tabIndex={-1}>
         <p>page body</p>
         <CurrentRoute />
-      </main>
+      </PageContainer>
     ),
   },
   decorators: [
@@ -125,7 +126,7 @@ export const AlertsToggleAndLinks: Story = {
 
     await userEvent.click(trigger)
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
-    await expect(canvas.queryByText(unreadSale.message)).not.toBeInTheDocument()
+    await waitFor(() => expect(canvas.queryByText(unreadSale.message)).not.toBeInTheDocument())
     await userEvent.click(trigger)
     // the alert row itself is the link, so its name carries the unread cue and the timestamp too
     await userEvent.click(canvas.getByText(unreadSale.message))
@@ -160,8 +161,8 @@ export const ClaimPackAndDismissOverlay: Story = {
     await expect(within(modal).getByRole('link', { name: new RegExp(paperMeme.title) })).toHaveAttribute('href', `/m/${paperMeme.id}`)
     await userEvent.click(within(modal).getByRole('heading'))
     await expect(modal).toBeInTheDocument()
-    /* the platform's Escape/cancel path ends in close; the shell clears the pack from context */
-    ;(modal as HTMLDialogElement).close()
+    /* Escape is Base UI's own cancel path; the shell clears the pack from context */
+    await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(canvas.queryByRole('dialog')).not.toBeInTheDocument())
     await expect(canvas.queryByRole('button', { name: /claim your starter pack/i })).not.toBeInTheDocument()
   },

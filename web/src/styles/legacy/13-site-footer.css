@@ -1,18 +1,6 @@
-.site-footer {
-  border-top: 1px solid var(--border);
-  margin-top: 48px;
-  padding: 22px 20px max(34px, env(safe-area-inset-bottom));
-  text-align: center;
-  font-size: 13px;
-  color: var(--text-dim);
-}
+/* Emptied by WP2-shell; delete in WP3.
 
-.site-footer a {
-  color: var(--text-dim);
-  margin: 0 10px;
-}
-
-.site-footer a:hover {
-  color: var(--text);
-}
-
+   `organisms/AppShell.tsx` paints the footer in utilities. `14-prose-links.css`'s `.site-footer a`
+   underline rules (including `a[aria-current='page']` and the `a.btn` exception) and
+   `50-input-modality.css`'s `.site-footer a` 44px target now match nothing; each is reproduced on
+   the footer links themselves, and the selectors are the final package's to drop. */

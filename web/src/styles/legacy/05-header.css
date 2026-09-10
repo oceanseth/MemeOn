@@ -1,105 +1,19 @@
 /* ---------- header ---------- */
 
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: var(--z-header);
-  backdrop-filter: blur(12px);
-  background: color-mix(in oklab, var(--bg) 80%, transparent);
-  border-bottom: 1px solid var(--border);
-}
+/* Emptied by WP2-shell except the rule below. `.topbar`, `.topbar-inner`, `.logo`, `.logo-img`,
+   `.nav-links`, `.topbar-right`, `.discord-link` and `.coins` are painted in utilities by
+   `organisms/AppShell.tsx` and `screens/AppShellScreen.tsx`; no markup writes those class names.
 
-.topbar-inner {
-  max-width: var(--page-max);
-  margin: 0 auto;
-  /* the border-bottom is the last pixel of --topbar-h */
-  min-height: calc(var(--topbar-h) - 1px);
-  padding: 10px 20px;
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
+   Three selectors in other files now match nothing and are the final package's to drop:
+   `18-hero.css`'s `@supports not (background-clip: text) { .logo }`, `51-a11y-media.css`'s
+   `@media (forced-colors: active) { .hero h1 .grad, .logo }` and `17-numeric.css`'s `.coins`. All
+   three are reproduced on the shell's own markup as `not-supports-[background-clip:text]:`,
+   `forced-colors:` and `tabular-nums` utilities.
 
-.logo {
-  font-weight: 800;
-  font-size: 20px;
-  letter-spacing: 0.5px;
-  background: linear-gradient(
-    90deg,
-    var(--accent),
-    var(--accent-2),
-    var(--gold)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.logo-img {
-  width: 30px;
-  height: 30px;
-}
-
-.nav-links {
-  display: flex;
-  gap: 4px;
-  flex: 1;
-  min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.nav-links::-webkit-scrollbar {
-  display: none;
-}
-
-.nav-links a {
-  color: var(--text-dim);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.nav-links a:hover {
-  color: var(--text);
-  background: var(--bg-raised);
-}
-
-/* location is a shape hover never produces and touch never loses */
-.nav-links a.active {
-  color: var(--text);
-  background: var(--bg-raised);
-  box-shadow: inset 0 -2px 0 var(--accent);
-}
-
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.discord-link {
-  color: var(--text-dim);
-  display: inline-flex;
-  align-items: center;
-  transition: color var(--dur-base) ease;
-}
-
-.discord-link:hover {
-  color: var(--brand-discord);
-}
-
-.coins {
-  font-weight: 700;
-  color: var(--gold);
-  white-space: nowrap;
-}
-
+   `.avatar` stays: `screens/FriendsScreen.tsx`, `screens/LeaderboardScreen.tsx` and
+   `screens/ProfileScreen.tsx` (social, un-migrated) still write it, as do `30-person-rows.css`
+   (`.avatar-fallback`) and `41-bp-560.css` (`.person-row .avatar`). The shell's own avatar is the
+   `Avatar` atom's `sm` disc now. Delete with the social surfaces. */
 .avatar {
   width: 32px;
   height: 32px;
@@ -109,4 +23,3 @@
   /* a transparent, still-loading or monogram-fallback avatar is a filled disc, never a hole */
   background: var(--bg-card);
 }
-
