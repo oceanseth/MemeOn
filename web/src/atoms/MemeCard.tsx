@@ -4,27 +4,22 @@ import { glowStyleFor } from '../../../shared/tiers'
 import { cn } from '../lib/cn'
 import type { MemeCardModel } from '../lib/memeCardModel'
 import { Badge } from './Badge'
-import './MemeCard.css'
-
-const SHEEN_TIERS = new Set(['holo', 'chrome', 'gold', 'prismatic', 'shiny'])
+import { tierClasses } from './foil'
+import './foil.css'
 
 /**
- * The foil effect API: `glow-border tier-<key> [sheen] [sparkle]`, paired with
- * `data-glow-style={glowStyleFor(tierKey)}` on the same element. `MemeCard.css` implements those
- * class names for this atom and for the one surface that assembles a frame by hand from its own
- * markup — `LandingScreen`'s tier ladder, which puts them on an `<li>`.
+ * Re-exported from the dependency-free `atoms/foil` module for compatibility: this atom used to
+ * own `tierClasses` outright, and every existing caller still imports it as `MemeCard`'s export.
+ * `atoms/foil.ts` is the module a code-split route should reach for instead, since it carries no
+ * React import.
  */
-export function tierClasses(tierKey: string): string {
-  const sheen = SHEEN_TIERS.has(tierKey) ? ' sheen' : ''
-  const sparkle = tierKey === 'shiny' ? ' sparkle' : ''
-  return `glow-border tier-${tierKey}${sheen}${sparkle}`
-}
+export { tierClasses }
 
 /** `default` is the grid thumb; `lg` is the detail-page hero. See {@link MemeCardProps.size}. */
 export type MemeCardSize = 'default' | 'lg'
 
 /* The frame. `overflow-visible` and `isolate` are the glow ring's own base, restated here as
-   utilities because `MemeCard.css` keeps that base at `:where()` zero specificity for its other
+   utilities because `foil.css` keeps that base at `:where()` zero specificity for its other
    hosts; `relative` and the 3px `--glow-width` padding are the card's. The background is *not* a
    utility — a `bg-*` class would out-cascade every `.tier-*` frame. */
 const CARD = cn(

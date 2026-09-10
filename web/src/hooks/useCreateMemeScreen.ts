@@ -12,6 +12,7 @@ import type {
 import { useSearchParams } from 'react-router-dom'
 import type { LinkProps } from 'react-router-dom'
 import { glowStyleFor, tierFor } from '../../../shared/tiers'
+import { tierClasses } from '../atoms/foil'
 import { apiFetch, post } from '../lib/api'
 import { extractPoster } from '../lib/extractPoster'
 import type { GiphyResult, Meme } from '../lib/types'
@@ -276,15 +277,15 @@ function originLabelFor(source: ResolvedSource | null): string | null {
 
 /**
  * One card recipe for both the live preview and the minted hold. The only presentation this engine
- * names is the foil effect API (`atoms/MemeCard.css`): which tier frame to paint, and the stop set
- * that drives its ring. The box model around it belongs to `CreateMemeScreen`.
+ * names is the foil effect API (`atoms/foil.css`, `atoms/foil.ts`): which tier frame to paint, and
+ * the stop set that drives its ring. The box model around it belongs to `CreateMemeScreen`.
  */
 function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
   const title = ctx.title.trim()
   const label = title ? `"${title}"` : 'your meme'
   return {
     cardProps: {
-      className: `glow-border tier-${FRESH_TIER.key}`,
+      className: tierClasses(FRESH_TIER.key),
       'data-glow-style': glowStyleFor(FRESH_TIER.key),
     } as HTMLAttributes<HTMLDivElement>,
     media: ctx.videoUrl

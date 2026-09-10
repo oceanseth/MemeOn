@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
 import { Button, buttonClasses } from '../atoms/Button'
-import { tierClasses } from '../atoms/MemeCard'
+import { tierClasses } from '../atoms/foil'
+/* the foil sheet, imported directly (not by way of `atoms/MemeCard`'s side effect): this screen
+   assembles the tier-ladder frame from its own markup, on the dependency-free half of the seam */
+import '../atoms/foil.css'
 import { Notice } from '../atoms/Notice'
 import { PageContainer } from '../atoms/PageContainer'
 import { cn } from '../lib/cn'
@@ -84,14 +87,14 @@ export function LandingScreen({
             key={t.key}
             data-slot="tier-card"
             data-glow-style={t.glowStyle}
-            /* `tier-card` is part of the foil effect API (`atoms/MemeCard.css`): it is what sets
+            /* `tier-card` is part of the foil effect API (`atoms/foil.css`): it is what sets
                this frame's `--glow-width` to a card's 3px and what the forced-colors rarity
                border keys off. The box model around it is this screen's. */
             className={cn('tier-card rounded-card p-(--glow-width)', tierClasses(t.key))}
           >
             <div
               data-slot="tier-card-inner"
-              /* `tier-card-inner` is effect API too: `atoms/MemeCard.css` rounds the `.foil-media`
+              /* `tier-card-inner` is effect API too: `atoms/foil.css` rounds the `.foil-media`
                  inside it to the frame's inner radius. */
               className="tier-card-inner relative flex h-full flex-col gap-2 overflow-hidden rounded-[calc(var(--radius-card)-var(--glow-width))] bg-bg-card p-3.5"
             >

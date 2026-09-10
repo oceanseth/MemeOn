@@ -15,22 +15,25 @@
 
    ── Public effect API ─────────────────────────────────────────────────────────────────────────
    This file is the one owner of the foil, and it is deliberately class-based rather than
-   `data-slot`-only: surfaces that are not this atom put the same frame on their own markup.
+   `data-slot`-only: surfaces that are not the `MemeCard` atom put the same frame on their own
+   markup.
 
      `glow-border tier-<key> [sheen] [sparkle]`   on the frame element, paired with
      `data-glow-style="<stop set>"`               on the same element (`shared/tiers`), and
      `foil-media`                                 on the box the sheen and sparkle are bounded to,
                                                   so neither sweep crosses the meta text.
 
-   `atoms/MemeCard.tsx` exports `tierClasses(tierKey)`, which assembles the first three. The
-   hand-rolled hosts are `screens/LandingScreen.tsx` (the tier ladder, which also writes
+   `atoms/foil.ts` exports `tierClasses(tierKey)`, which assembles the first three; it has no React
+   import (unlike `atoms/MemeCard.tsx`, which re-exports it for compatibility), so a code-split
+   route can pull in the classes without dragging the atom's module graph onto its critical path.
+   The hand-rolled hosts are `screens/LandingScreen.tsx` (the tier ladder, which also writes
    `.tier-card` / `.tier-card-inner` for the `--glow-width` and the media rounding below) and
-   `screens/CreateMemeScreen.tsx` (the live mint preview, which wears this atom's
+   `screens/CreateMemeScreen.tsx` (the live mint preview, which wears the `MemeCard` atom's
    `[data-slot='meme-card']` instead). Anything else that wants a foil frame writes the four names
    above; nothing else in this file is addressable from outside.
 
    Cascade: `:where()` keeps the shared base at zero specificity, so a host's own utilities decide
-   position and overflow without `!important`. This atom states its winners as utilities
+   position and overflow without `!important`. The `MemeCard` atom states its winners as utilities
    (`relative isolate overflow-visible`). Keyframes carry a `card-` prefix so a keyframe name this
    file does not own can never shadow them from another sheet in the same bundle. */
 @layer components {

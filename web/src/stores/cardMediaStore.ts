@@ -44,7 +44,7 @@ function stopCard(card: HTMLElement, video: HTMLVideoElement): void {
 /**
  * What one viewport entry does to one card, extracted so the suite can drive it directly:
  * off screen the foil ring is paused (--glow-play-state, already parameterised in
- * atoms/MemeCard.css) and the video is paused. The property is *removed* rather than set to
+ * atoms/foil.css) and the video is paused. The property is *removed* rather than set to
  * `running` on the way back in, so Paper and Silver keep the paused ring their own tier rule asks for.
  */
 export function applyCardVisibility(card: HTMLElement, visible: boolean): void {

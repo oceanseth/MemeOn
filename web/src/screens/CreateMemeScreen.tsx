@@ -13,8 +13,9 @@ import {
 import { Input } from '../atoms/Input'
 /* the foil sheet, not the card atom: this screen paints a card frame out of its own markup,
    and the mint route is code-split — pulling the atom's module in would put `MemeCard.tsx`,
-   `Badge` and their imports on the critical path of a `lazy()` route that renders none of them */
-import '../atoms/MemeCard.css'
+   `Badge` and their imports on the critical path of a `lazy()` route that renders none of them.
+   `atoms/foil.css` is the dependency-free half of that seam. */
+import '../atoms/foil.css'
 import { Notice } from '../atoms/Notice'
 import { PageContainer } from '../atoms/PageContainer'
 import { FilterBar, PageHead } from '../atoms/PageHead'
