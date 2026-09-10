@@ -1,0 +1,25 @@
+@layer components {
+  /*
+   * The sticky-chrome contract. `--topbar-h` is the height every descendant of `<main>` docks
+   * under: `main { scroll-margin-top }` (styles/legacy/04-skip-link.css), the marketplace's sticky
+   * control band (`lg:top-(--topbar-h)`), the create rail and the legal `<h2>` scroll margins.
+   *
+   * The legacy sheet raised it from the `:root` default (65px) at ≤760 with
+   * `:root:has(.nav-links) { --topbar-h: 127px }` (styles/legacy/39-bp-topbar.css, a read-only
+   * spec file). Migrated nav markup no longer wears `.nav-links`, so that selector stops matching
+   * and the same declaration is re-authored here against the slot the shell writes instead.
+   * `components` beats `legacy`, so both rules paint one value while the legacy sheet lives.
+   *
+   * It has to be a rule rather than an inline style: the custom property must be readable from
+   * `:root` down, and `AppShell` renders a fragment — there is no element wrapping both the
+   * header and `<main>` (`#root > main { flex: 1 0 auto }` depends on `main` staying a direct
+   * child of `#root`).
+   *
+   * 10 + 44 (row 1) + 10 gap + 6 + 44 + 2 (nav row) + 10 + 1 border = 127.
+   */
+  @media (max-width: 760px) {
+    :root:has([data-slot='nav-links']) {
+      --topbar-h: 127px;
+    }
+  }
+}

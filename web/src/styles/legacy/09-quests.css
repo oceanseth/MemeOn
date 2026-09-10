@@ -1,47 +1,15 @@
 /* ---------- onboarding quests ---------- */
 
-.questbar {
-  background: linear-gradient(
-    90deg,
-    color-mix(in oklab, var(--primary-from) 14%, transparent),
-    color-mix(in oklab, var(--primary-to) 14%, transparent)
-  );
-  border-bottom: 1px solid var(--border);
-}
+/* Emptied by WP2-shell except the rule below. `.questbar`, `.questbar-inner` (+ `.expanded`),
+   `.questbar-title`, `.questbar-words`, `.quest-chip*`, `.quest-more`/`.quest-later`,
+   `.quest-hint` and `.questbar-error` are painted in utilities by `molecules/QuestBar.tsx`.
+   `50-input-modality.css`'s `.quest-chip-btn` / `.quest-chip-link` 44px targets now match nothing
+   (reproduced as `pointer-coarse:min-h-11`) and are the final package's to drop.
 
-.questbar-inner {
-  position: relative; /* contains the chips' .sr-only text inside the <=720 scroller */
-  max-width: var(--page-max);
-  margin: 0 auto;
-  padding: 8px 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-/* "show all" is a request for the whole ladder: rows, no scroller, no edge fade (0-2-0 beats the <=720 block) */
-.questbar-inner.expanded {
-  flex-wrap: wrap;
-  overflow-x: visible;
-  mask-image: none;
-}
-
-/* rows may shrink and wrap their text; the scroller's fixed-basis items would otherwise widen the page */
-.questbar-inner.expanded > * {
-  flex: 0 1 auto;
-  min-width: 0;
-}
-
-.questbar-title {
-  font-weight: 800;
-  font-size: var(--fs-sm);
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-
+   `.braincell-img` stays: `screens/LeaderboardScreen.tsx` (social, un-migrated) still writes it in
+   its `<h2>`. The `.lg` FAQ variant is gone — WP2-landing put those declarations straight onto the
+   coin in `screens/LandingScreen.tsx`, so no markup writes `braincell-img lg`. Delete the base rule
+   with the Leaderboard surface. */
 .braincell-img {
   width: 26px;
   height: 26px;
@@ -49,72 +17,3 @@
   object-fit: cover;
   vertical-align: middle;
 }
-
-/* the FAQ's floated hero coin */
-.braincell-img.lg {
-  width: 72px;
-  height: 72px;
-  float: right;
-  margin: 6px 0 6px 12px;
-}
-
-.quest-chip {
-  font-size: 12px;
-  color: var(--text-dim);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  padding: 3px 10px;
-  white-space: nowrap;
-}
-
-.quest-chip-link {
-  text-decoration: none;
-}
-
-.quest-chip-link:hover .quest-chip {
-  border-color: var(--accent);
-  color: var(--text);
-}
-
-.quest-chip.done {
-  color: var(--ok);
-  border-color: color-mix(in oklab, var(--ok) 35%, transparent);
-}
-
-.quest-chip em {
-  font-style: normal;
-  color: var(--gold);
-}
-
-.quest-chip-btn {
-  font-size: var(--fs-xs);
-  padding: 4px 12px;
-}
-
-/* disclosure and dismiss are text-weight so the claim CTA stays the only loud control in the strip */
-.quest-more,
-.quest-later {
-  background: none;
-  border: 0;
-  color: var(--text-dim);
-  padding: 6px 8px;
-}
-
-.quest-more:hover,
-.quest-later:hover {
-  color: var(--text);
-}
-
-/* the next step's instructions, a step below the claim button */
-.quest-hint {
-  color: var(--text-dim);
-  font-size: var(--fs-xs);
-  line-height: 1.4;
-}
-
-/* failed one-shot claim, inline with role="alert" (token value: mo-2us) */
-.questbar-error {
-  color: var(--danger);
-  font-size: var(--fs-sm);
-}
-

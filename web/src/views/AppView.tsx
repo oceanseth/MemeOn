@@ -1,6 +1,8 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { observer } from 'mobx-react-lite'
 import { Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom'
+import { PageContainer } from '../atoms/PageContainer'
+import { Spinner } from '../atoms/Spinner'
 import { useAuth } from '../hooks/useAuth'
 import { AuthCallback, MobileAuthForward } from '../lib/legacyAuthPages'
 import { AppShellView } from './AppShellView'
@@ -74,12 +76,17 @@ export function InviteRoute() {
 /** The one named waiting state for a guarded route: auth resolving, then the chunk arriving. */
 function AuthSpinner() {
   return (
-    <main className="container" id="main" tabIndex={-1}>
-      <div className="loading-state" role="status">
-        <span className="spin" aria-hidden="true" />
+    <PageContainer as="main" id="main" tabIndex={-1}>
+      {/* `.loading-state`: a labelled spinner row, never a bare spinner */}
+      <div
+        data-slot="loading-state"
+        className="flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-text-dim"
+        role="status"
+      >
+        <Spinner />
         Checking your session…
       </div>
-    </main>
+    </PageContainer>
   )
 }
 

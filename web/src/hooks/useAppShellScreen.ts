@@ -1,17 +1,9 @@
 import { useProjectedActor } from './useProjectedActor'
 import { autorun } from 'mobx'
-import {
-  useCallback,
-  useRef,
-  type AnchorHTMLAttributes,
-  type ButtonHTMLAttributes,
-  type ImgHTMLAttributes,
-  type Ref,
-} from 'react'
+import { useCallback, type AnchorHTMLAttributes, type ButtonHTMLAttributes } from 'react'
 import { useNavigate, type LinkProps } from 'react-router-dom'
 import { buildAlertsBellModel, type AlertsBellModel } from '../lib/alertsBellModel'
 import { apiFetch, post } from '../lib/api'
-import { avatarErrorHandler } from '../lib/avatarModel'
 import { buildQuestBarModel, type QuestBarModel } from '../lib/questBarModel'
 import type { Alert, Meme, Me, QuestKey, QuestStep } from '../lib/types'
 import { appShellMachine, type AppShellContext, type AppShellPhase } from '../stores/appShellMachine'
@@ -43,10 +35,10 @@ export interface AppShellScreenModel {
   coins: { text: string; label: string } | null
   avatar: {
     linkProps: Pick<LinkProps, 'to'> & Pick<AnchorHTMLAttributes<HTMLAnchorElement>, 'aria-label'>
-    imageProps: Pick<
-      ImgHTMLAttributes<HTMLImageElement>,
-      'src' | 'alt' | 'referrerPolicy' | 'onError'
-    >
+    /* third-party avatar hosts 404: the slot keeps its shape and stays *your* monogram,
+       never the MemeOn mark, which is a different identity in the same 32px circle */
+    name: string
+    src: string
   } | null
   alertsBell: AlertsBellModel
   questBar: QuestBarModel | null
@@ -57,7 +49,6 @@ export function buildAppShellScreenModel({
   phase,
   user,
   context,
-  bellRef,
   onLogout,
   onClaimPack,
   onDismissPack,
@@ -68,7 +59,6 @@ export function buildAppShellScreenModel({
   phase: AppShellPhase
   user: Me | null
   context: AppShellContext
-  bellRef?: Ref<HTMLDivElement> | undefined
   onLogout: () => void
   onClaimPack: () => void
   onDismissPack: () => void
@@ -92,20 +82,13 @@ export function buildAppShellScreenModel({
       : null,
     avatar: user?.picture ? {
       linkProps: { to: `/u/${encodeURIComponent(user.sub)}`, 'aria-label': 'Your profile' },
-      imageProps: {
-        src: user.picture,
-        alt: '',
-        referrerPolicy: 'no-referrer',
-        /* third-party avatar hosts 404: the slot keeps its shape and stays *your* monogram,
-           never the MemeOn mark, which is a different identity in the same 32px circle */
-        onError: avatarErrorHandler(user.name),
-      },
+      name: user.name,
+      src: user.picture,
     } : null,
     alertsBell: buildAlertsBellModel({
       alerts: context.alerts,
       open: context.alertsOpen,
       onOpenChange: onOpenAlerts,
-      rootRef: bellRef,
       wasUnread: context.wasUnread,
       failed: context.alertsError,
     }),
@@ -131,7 +114,6 @@ export function useAppShellScreen(): AppShellScreenModel {
   const { auth } = useStores()
   const navigate = useNavigate()
   const [snapshot, send, actor] = useProjectedActor(appShellMachine)
-  const bellRef = useRef<HTMLDivElement>(null)
   const ctx = snapshot.context
   const phase = snapshot.value as AppShellPhase
 
@@ -183,16 +165,12 @@ export function useAppShellScreen(): AppShellScreenModel {
     const onVisibility = () => refetchOnVisible()
     document.addEventListener('visibilitychange', onVisibility)
 
-    const onClick = (e: MouseEvent) => {
-      if (!bellRef.current?.contains(e.target as Node)) send({ type: 'CLOSE_ALERTS' })
-    }
-    document.addEventListener('mousedown', onClick)
-
+    /* Base UI's Popover owns dismissal now — an outside press, Escape and a focus-out all arrive
+       through `onOpenChange`, so the shell no longer watches the document for stray clicks. */
     return () => {
       disposeUser()
       disposeLoads()
       document.removeEventListener('visibilitychange', onVisibility)
-      document.removeEventListener('mousedown', onClick)
     }
   })
 
@@ -231,7 +209,6 @@ export function useAppShellScreen(): AppShellScreenModel {
     phase,
     user,
     context: ctx,
-    bellRef,
     onLogout,
     onClaimPack: () => void onClaimPack(),
     onDismissPack: () => send({ type: 'DISMISS_PACK' }),

@@ -1,18 +1,10 @@
-import type {
-  ButtonHTMLAttributes,
-  FocusEvent,
-  HTMLAttributes,
-  KeyboardEvent,
-  RefAttributes,
-  TimeHTMLAttributes,
-} from 'react'
+import type { ButtonHTMLAttributes, HTMLAttributes, TimeHTMLAttributes } from 'react'
 import type { LinkProps } from 'react-router-dom'
 import type { Alert } from './types'
 
 /** One popover holds a session's worth of alerts; older ones live on the server. */
 const MAX_ROWS = 20
 const MAX_BADGE = 99
-const POPOVER_ID = 'alerts-pop'
 
 /** Recency is the useful unit in a notification list; the exact stamp stays in the tooltip. */
 export function formatWhen(iso: string, now: number = Date.now()): string {
@@ -38,14 +30,21 @@ export interface AlertRowModel {
 }
 
 export interface AlertsBellModel {
-  rootProps: RefAttributes<HTMLDivElement> &
-    Pick<HTMLAttributes<HTMLDivElement>, 'onKeyDown' | 'onBlur'>
-  triggerProps: Pick<
-    ButtonHTMLAttributes<HTMLButtonElement>,
-    'onClick' | 'aria-label' | 'aria-expanded' | 'aria-haspopup' | 'aria-controls'
-  >
-  popoverProps: Pick<HTMLAttributes<HTMLDivElement>, 'id' | 'role' | 'aria-label'>
+  /**
+   * Base UI's `Popover.Root` contract. Every dismissal it recognises — Escape, an outside press,
+   * a focus-out — arrives at `onOpenChange` with `false`; the popover is controlled, so nothing
+   * opens or closes until the engine says so.
+   */
   open: boolean
+  onOpenChange: (open: boolean) => void
+  /**
+   * `aria-expanded`, `aria-haspopup` and `aria-controls` come from `Popover.Trigger`, which owns
+   * the popup's id. Only the name is ours: a bell glyph names nothing, and the unread count has to
+   * reach a screen reader that never sees the badge.
+   */
+  triggerProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label'>
+  /** `Popover.Popup` is a `role="dialog"`; without a `Popover.Title` it needs an explicit name. */
+  popupProps: Pick<HTMLAttributes<HTMLDivElement>, 'aria-label'>
   empty: boolean
   emptyLabel: string
   unreadLabel: string | null
@@ -58,7 +57,6 @@ export function buildAlertsBellModel({
   alerts,
   open,
   onOpenChange,
-  rootRef,
   wasUnread = [],
   failed = false,
   now,
@@ -66,7 +64,6 @@ export function buildAlertsBellModel({
   alerts: Alert[]
   open: boolean
   onOpenChange: (open: boolean) => void
-  rootRef?: RefAttributes<HTMLDivElement>['ref']
   /** Ids that were unread when the popover was opened: reading them must not erase them. */
   wasUnread?: string[]
   failed?: boolean
@@ -77,29 +74,12 @@ export function buildAlertsBellModel({
   const stillUnread = new Set(wasUnread)
 
   return {
-    rootProps: {
-      ref: rootRef,
-      onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
-        if (!open || event.key !== 'Escape') return
-        event.stopPropagation()
-        close()
-        event.currentTarget.querySelector('button')?.focus()
-      },
-      onBlur: (event: FocusEvent<HTMLDivElement>) => {
-        if (!open) return
-        if (event.currentTarget.contains(event.relatedTarget)) return
-        close()
-      },
-    },
-    triggerProps: {
-      onClick: () => onOpenChange(!open),
-      'aria-label': unreadCount > 0 ? `Alerts, ${unreadCount} unread` : 'Alerts',
-      'aria-expanded': open,
-      'aria-haspopup': 'true',
-      'aria-controls': POPOVER_ID,
-    },
-    popoverProps: { id: POPOVER_ID, role: 'group', 'aria-label': 'Alerts' },
     open,
+    onOpenChange,
+    triggerProps: {
+      'aria-label': unreadCount > 0 ? `Alerts, ${unreadCount} unread` : 'Alerts',
+    },
+    popupProps: { 'aria-label': 'Alerts' },
     empty: alerts.length === 0,
     emptyLabel: failed
       ? "Alerts are offline — we'll retry in a moment."
@@ -118,6 +98,8 @@ export function buildAlertsBellModel({
         unread,
         statusLabel: unread ? 'Unread.' : null,
         message: alert.message,
+        /* a row that navigates has done its job; leaving the popover open over the new route
+           would be a second thing to dismiss */
         linkProps: to ? { to, onClick: close } : null,
         timeLabel: formatWhen(alert.createdAt, now),
         timeProps: {

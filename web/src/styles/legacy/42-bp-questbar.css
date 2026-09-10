@@ -1,26 +1,4 @@
-/* one swipeable quest row with a truncation cue instead of a four-row block */
-@media (max-width: 720px) {
-  .questbar-inner {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    mask-image: linear-gradient(to right, #000 90%, transparent);
-    padding-block: 6px;
-    scrollbar-width: none;
-  }
-
-  .questbar-inner::-webkit-scrollbar {
-    display: none;
-  }
-
-  .questbar-inner > * {
-    scroll-snap-align: start;
-    flex: 0 0 auto;
-  }
-
-  /* the mark + count stay; the words would push the claim CTA off the first screenful */
-  .questbar-words {
-    display: none;
-  }
-}
-
+/* Emptied by WP2-shell; delete in WP3. The ≤720 scroller and the hidden `.questbar-words` are
+   `max-lg:` utilities in `molecules/QuestBar.tsx`, applied instead of the expanded treatment rather
+   than under it — the legacy pair leaned on `.questbar-inner.expanded` out-specifying the media
+   query, which utilities cannot express. */

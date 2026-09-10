@@ -126,7 +126,8 @@ async function mountHook<Model>(useModel: () => Model, read: (model: Model) => s
 it('AppShell projects alert-open events', async () => {
   const probe = await mountHook(useAppShellScreen, (m) => `${m.phase}:${m.alertsBell.open}`)
   expect(probe.text()).toBe('loggedIn:false')
-  await act(() => probe.current().alertsBell.triggerProps.onClick?.({} as never))
+  // Base UI's Popover reports the disclosure through onOpenChange; the trigger owns no handler
+  await act(() => probe.current().alertsBell.onOpenChange(true))
   expect(probe.text()).toBe('loggedIn:true')
 })
 
@@ -167,7 +168,7 @@ it('actual MemeDetailView in the app route observes deferred loading and later d
   await act(() => root.render(<StrictMode><StoresProvider stores={stores}>
     <MemoryRouter initialEntries={['/m/meme-paper']}><AppView /></MemoryRouter>
   </StoresProvider></StrictMode>))
-  expect(host.querySelector('main .spin')).not.toBeNull()
+  expect(host.querySelector('main [data-slot="spinner"]')).not.toBeNull()
   expect(host.querySelector('h2')).toBeNull()
   expect(requests.filter((request) => request.path === '/api/memes/meme-paper')).toHaveLength(2)
 
@@ -178,7 +179,7 @@ it('actual MemeDetailView in the app route observes deferred loading and later d
     }))
     await detail.promise
   })
-  expect(host.querySelector('main .spin')).toBeNull()
+  expect(host.querySelector('main [data-slot="spinner"]')).toBeNull()
   expect(host.querySelector('h2')?.textContent).toContain(paperMeme.title)
   expect(host.textContent).toContain('you hold 100/100')
   await act(() => button('Delete forever').click())

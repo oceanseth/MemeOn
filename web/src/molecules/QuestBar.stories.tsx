@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { useState } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { paperMeme, questStepsFresh, questStepsPackDone, silverMeme } from '../../.storybook/fixtures'
@@ -100,7 +101,7 @@ export const PackOpened: Story = {
     const canvas = within(canvasElement)
     onDismissPack.mockClear()
     const modal = canvas.getByRole('dialog', { name: /Starter pack opened/ })
-    await expect(modal).toHaveAttribute('open')
+    await expect(modal).toBeVisible()
     const cardLink = within(modal).getByRole('link', { name: new RegExp(paperMeme.title) })
     await expect(cardLink).toHaveAttribute('href', `/m/${paperMeme.id}`)
 
@@ -119,21 +120,41 @@ export const PackOpened: Story = {
   },
 }
 
-/** Escape is the exit a keyboard user reaches for; the native dialog supplies it. */
+/**
+ * Escape is the exit a keyboard user reaches for; Base UI's Dialog supplies it. The frame is
+ * controlled, so the story owns the state the dismissal reports into — exactly as the shell does.
+ */
+function StatefulPack() {
+  const [packMemes, setPackMemes] = useState<typeof paperMeme[] | null>([paperMeme])
+  return (
+    <QuestBar
+      model={buildQuestBarModel({
+        ...fresh,
+        steps: questStepsPackDone,
+        packMemes,
+        packReward: 20,
+        onDismissPack: () => {
+          onDismissPack()
+          setPackMemes(null)
+        },
+      })}
+    />
+  )
+}
+
 export const PackOpenedKeyboard: Story = {
   args: {
     model: buildQuestBarModel({ ...fresh, steps: questStepsPackDone, packMemes: [paperMeme], packReward: 20 }),
   },
+  render: () => <StatefulPack />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     onDismissPack.mockClear()
     const modal = canvas.getByRole('dialog', { name: /Starter pack opened/ })
     await expect(within(modal).getByRole('button', { name: 'Close' })).toBeInTheDocument()
-    /* Escape is the platform's own cancel on a showModal() dialog; a synthetic key event cannot
-       run that default action, so the story proves the close wiring the platform will fire. */
-    ;(modal as HTMLDialogElement).close()
+    await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(onDismissPack).toHaveBeenCalledTimes(1))
-    await expect(modal).not.toHaveAttribute('open')
+    await waitFor(() => expect(canvas.queryByRole('dialog')).not.toBeInTheDocument())
   },
 }
 

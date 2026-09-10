@@ -1,17 +1,3 @@
-@media (max-width: 480px) {
-  .discord-link {
-    display: none; /* the footer already carries a Discord link */
-  }
-
-  .alerts-pop {
-    position: fixed;
-    left: 12px;
-    right: 12px;
-    top: var(--topbar-h);
-    width: auto;
-    /* fixed to the top bar, so the list may run to the bottom of the screen: at 420px a real
-       seven-alert queue was sliced mid-row with 300px of empty page under the popover */
-    max-height: calc(100dvh - var(--topbar-h) - 24px);
-  }
-}
-
+/* Emptied by WP2-shell; delete in WP3. Both rules moved onto their markup as `max-xs:` utilities:
+   the Discord link hides in `organisms/AppShell.tsx`, and the alerts popover leaves its anchor to
+   pin itself under the whole topbar in `molecules/AlertsBell.tsx`. */
