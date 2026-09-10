@@ -14,11 +14,12 @@ const GRAD = cn(
 )
 
 /**
- * Deliberately not the app's `login` gradient: this is the one CTA that carries Discord's own
- * brand color instead of MemeOn's primary gradient, per spec. `bg-none` clears `buttonClasses`'
- * gradient `background-image` so the flat `bg-brand-discord` `background-color` shows through.
+ * The app's `login` gradient, unmodified: legacy `19-login-btn.css` only sized this CTA, and the
+ * blue→purple fill came from `.btn.primary`'s gradient (`02-controls.css`), same as every other
+ * `login`-styled CTA (e.g. `MobileAuthForward`'s "Open MemeOn"). `--brand-discord` never painted a
+ * button in the legacy stylesheet — it only colored the header's `.discord-link` text.
  */
-const discordCta = cn(buttonClasses('login'), 'bg-none bg-brand-discord')
+const discordCta = buttonClasses('login')
 
 /** Discord install landing as a function of its model. Every engine state is one set of args. */
 export function DiscordPageScreen({

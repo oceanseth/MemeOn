@@ -151,11 +151,17 @@ export function DevelopersScreen({
           <ul className={rowList}>
             {keys.map((k) => (
               <li key={k.prefix} className={keyRow}>
-                <div className="min-w-0 flex-1">
-                  <span className="font-semibold whitespace-normal [overflow-wrap:anywhere]">
+                <div className="min-w-0 flex-1 leading-[normal]">
+                  {/* `.key-label`/`.key-meta` never set a line-height, so they rendered at the UA
+                      default off `body`. Preflight's `html { line-height: 1.5 }` would otherwise
+                      inflate each row ~7-15px; `leading-[normal]` is the CSS keyword (Tailwind's
+                      `leading-normal` is a fixed 1.5). It's set on this wrapper div too, not just
+                      the spans: the label span is `inline`, so its line box takes its *containing
+                      block's* line-height as a minimum ("strut"), not just its own. */}
+                  <span className="font-semibold whitespace-normal leading-[normal] [overflow-wrap:anywhere]">
                     {k.label}
                   </span>
-                  <span className="mt-1 flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-xs text-text-dim [font-variant-numeric:tabular-nums]">
+                  <span className="mt-1 flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-xs leading-[normal] text-text-dim [font-variant-numeric:tabular-nums]">
                     <code>{k.prefix}…</code>
                     <time dateTime={k.createdAt}>{k.createdLabel}</time>
                   </span>
