@@ -1,11 +1,10 @@
 import { Link } from 'react-router-dom'
-import { glowStyleFor } from '../../../shared/tiers'
 import { Badge } from '../atoms/Badge'
 import { Button, buttonClasses } from '../atoms/Button'
 import { EmptyActions, EmptyState, Muted } from '../atoms/EmptyState'
 import { Field, FieldLabel, Hint } from '../atoms/Field'
 import { Input } from '../atoms/Input'
-import { tierClasses } from '../atoms/MemeCard'
+import { MemeCard } from '../atoms/MemeCard'
 import { Notice } from '../atoms/Notice'
 import { PageContainer } from '../atoms/PageContainer'
 import { FilterBar } from '../atoms/PageHead'
@@ -59,23 +58,10 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
       {/* stacks ~140px before the rail would drop under the card's own width */}
       <div className="mt-7 grid grid-cols-[minmax(280px,420px)_1fr] gap-7 max-2xl:grid-cols-1">
         <div className="self-start">
-          {/* the hero card still wears the card package's foil classes; only its ≤900 cap is ours */}
-          <div
-            className={`meme-card meme-card-lg ${tierClasses(detail.tierKey)} max-2xl:mx-auto max-2xl:w-full max-2xl:max-w-[480px]`}
-            data-glow-style={glowStyleFor(detail.tierKey)}
-          >
-            <div className="meme-card-inner">
-              {detail.media.kind === 'video' ? <video className="meme-art" {...detail.media.videoProps} /> : <img className="meme-art" {...detail.media.imageProps} />}
-              <div className="meme-meta">
-                <span className="meme-title">{detail.title}</span>
-                <span><span className="tier-chip" style={{ color: detail.tierColor }}>{detail.tierLabel}</span></span>
-                <span className="meme-sub">
-                  <span><span aria-hidden="true">👁️ {detail.viewsLabel} · 🔁 {detail.resharesLabel}</span><span className="sr-only">{detail.statsSrLabel}</span></span>
-                  <span><span aria-hidden="true">🧠 {detail.valueLabel}</span><span className="sr-only">{detail.valueSrLabel}</span></span>
-                </span>
-                {detail.listing && <span className="meme-sub"><Badge>for sale</Badge><span>{detail.listing.cardLabel}</span></span>}
-              </div>
-            </div>
+          {/* the hero is the same MemeCard atom every grid thumb renders, at size="lg"; only its
+             ≤900 cap, applied to a wrapper since the atom exposes no className, is ours */}
+          <div className="max-2xl:mx-auto max-2xl:w-full max-2xl:max-w-[480px]">
+            <MemeCard model={detail.card} size="lg" />
           </div>
           {/* the tier meter, in the card's own foil colour (currentColor from the inline tint) */}
           <div className="mt-3" style={{ color: detail.tierColor }}>
