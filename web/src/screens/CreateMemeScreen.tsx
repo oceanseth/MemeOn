@@ -57,9 +57,15 @@ const LIVE_REGION = 'empty:sr-only [&:not(:empty)]:mb-4'
 /* preflight drops the UA heading weight the page title was rendered at */
 const PAGE_TITLE = 'mt-7 mb-5 flex flex-wrap items-center justify-between gap-4'
 const HEADING = 'm-0 text-[24px] font-bold'
-/* the sort-chip scale on top of the button chrome. `leading-[normal]` because the chip labels lead
-   with an emoji, and the taller emoji line box is what set the chip's height before the migration. */
-const CHIP = 'rounded-pill px-[11px] py-[5px] text-xs leading-[normal]'
+/* A caption row sits 4px under its control on this form, where `Field`'s own rhythm is the 6px it
+   puts between a label and its control. `-mt-0.5` spends the difference, so the pair reads as one
+   unit; `[&>*]:mt-0` inside `FieldFooter` keeps its children from adding a second offset. */
+const CAPTION_OFFSET = '-mt-0.5'
+
+/* the sort-chip scale on top of the button chrome. The chip labels lead with an emoji and the
+   taller emoji line box is what sizes them, which is exactly what `buttonClasses()`'s
+   `[line-height:normal]` preserves through this `text-xs`. */
+const CHIP = 'rounded-pill px-[11px] py-[5px] text-xs'
 /* selected outranks focus by fill and weight, not border colour */
 const CHIP_SELECTED = cn(
   'border-(--state-selected-border) bg-(--state-selected-bg) font-semibold text-text',
@@ -313,12 +319,10 @@ export function CreateMemeScreen({
               <ModeChip model={getModeButtonProps('url')}>🔗 From URL</ModeChip>
             </FilterBar>
 
-            {/* the caption rows drop their own top margin: the field's 6px gap already spaces them,
-                and the legacy pair sat 4px under the control, not 10px */}
             <Field>
               <FieldLabel>Title</FieldLabel>
               <Input {...titleInputProps} placeholder={titlePlaceholder} />
-              <FieldFooter className="mt-0">
+              <FieldFooter className={CAPTION_OFFSET}>
                 <FieldHint id={helpIds.title}>{titleHelpText}</FieldHint>
                 <FieldCounter>{titleCounterLabel}</FieldCounter>
               </FieldFooter>
@@ -327,7 +331,7 @@ export function CreateMemeScreen({
             <Field>
               <FieldLabel>Tags</FieldLabel>
               <Input {...tagsInputProps} placeholder={tagsPlaceholder} />
-              <FieldFooter className="mt-0">
+              <FieldFooter className={CAPTION_OFFSET}>
                 <FieldHint id={helpIds.tags}>{tagsHelpText}</FieldHint>
                 <FieldCounter>{tagsCounterLabel}</FieldCounter>
               </FieldFooter>
@@ -480,7 +484,7 @@ export function CreateMemeScreen({
                 <Field>
                   <FieldLabel>Image or page URL</FieldLabel>
                   <Input {...urlInputProps} placeholder={urlPlaceholder} />
-                  <FieldHint className="mt-0" id={helpIds.url}>
+                  <FieldHint className={CAPTION_OFFSET} id={helpIds.url}>
                     {urlHelpText}
                   </FieldHint>
                 </Field>
@@ -510,14 +514,14 @@ export function CreateMemeScreen({
                 <Field>
                   <FieldLabel>{uploadImageLabel}</FieldLabel>
                   <Input {...imageFileInputProps} className={FILE_INPUT} />
-                  <FieldHint className="mt-0" id={helpIds.uploadImage}>
+                  <FieldHint className={CAPTION_OFFSET} id={helpIds.uploadImage}>
                     {uploadImageHelpText}
                   </FieldHint>
                 </Field>
                 <Field>
                   <FieldLabel>{uploadVideoLabel}</FieldLabel>
                   <Input {...videoFileInputProps} className={FILE_INPUT} />
-                  <FieldHint className="mt-0" id={helpIds.uploadVideo}>
+                  <FieldHint className={CAPTION_OFFSET} id={helpIds.uploadVideo}>
                     {uploadVideoHelpText}
                   </FieldHint>
                 </Field>
@@ -531,7 +535,7 @@ export function CreateMemeScreen({
                     rows={3}
                     placeholder={generatePromptPlaceholder}
                   />
-                  <FieldHint className="mt-0" id={helpIds.prompt}>
+                  <FieldHint className={CAPTION_OFFSET} id={helpIds.prompt}>
                     {generatePromptHelpText}
                   </FieldHint>
                 </Field>

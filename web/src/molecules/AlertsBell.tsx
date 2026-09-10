@@ -29,8 +29,9 @@ const anchorContainer = {
   },
 }
 
-/** The emoji line box made the bell 44px beside a 36px Log out; 1.125 × 16px = 18px of content. */
-const TRIGGER = cn(buttonClasses(), 'leading-[1.125]')
+/** The emoji line box made the bell 44px beside a 36px Log out; 1.125 × 16px = 18px of content.
+    Arbitrary property, matching `buttonClasses()`: same tailwind-merge group, so this wins. */
+const TRIGGER = cn(buttonClasses(), '[line-height:1.125]')
 
 const BADGE = cn(
   'absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center px-1',
