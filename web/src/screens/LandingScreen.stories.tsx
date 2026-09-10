@@ -12,10 +12,10 @@ import { LandingScreen } from './LandingScreen'
 
 /** Structurally identical to HeroVideo's DOM, so the stories measure the real page. */
 const hero = (
-  <div className="hero-video">
-    <div className="hero-video-frame">
+  <div data-slot="hero-video" className="mx-auto mt-1 mb-[30px] max-w-[1080px] px-4">
+    <div data-slot="hero-video-frame" className="relative aspect-video overflow-hidden rounded-card border border-border bg-bg-card">
       <img
-        className="hero-video-el"
+        className="block h-full w-full object-cover"
         src="/promo/memeon-promo-poster.jpg"
         alt="MemeOn in 50 seconds"
       />
@@ -98,7 +98,7 @@ type Story = StoryObj<typeof meta>
 export const Loading: Story = {
   args: { phase: 'loading', frameImageProps: {}, frameSlotProps: slots('loading'), showLoginButton: true },
   play: async ({ canvasElement }) => {
-    const shimmering = canvasElement.querySelectorAll('.tier-frame-slot[data-state="loading"]')
+    const shimmering = canvasElement.querySelectorAll('[data-slot="tier-frame-slot"][data-state="loading"]')
     await expect(shimmering).toHaveLength(TIERS.length)
     // the box is reserved before the images exist, so nothing below it moves later
     await expect((shimmering[0] as HTMLElement).offsetHeight).toBeGreaterThan(100)
@@ -121,7 +121,9 @@ export const Ready: Story = {
     await expect(canvas.getByRole('heading', { level: 3, name: 'Shiny' })).toBeInTheDocument()
     await expect(canvas.getByRole('heading', { level: 3, name: 'How do tiers work?' })).toBeInTheDocument()
     const login = canvas.getByRole('button', { name: 'Log in with Masky' })
-    await expect(login).toHaveAttribute('aria-busy', 'false')
+    // the Button atom omits aria-busy entirely when idle rather than writing "false"
+    await expect(login).not.toHaveAttribute('aria-busy')
+    await expect(login).toBeEnabled()
     await expect(canvas.getByText('No email. No real name. Just your Masky avatar.')).toBeInTheDocument()
     // the FAQ no longer ends the page: the CTA repeats under it
     const closing = canvas.getByRole('button', { name: 'Grab your pack with Masky' })
@@ -142,10 +144,10 @@ export const FrameFailed: Story = {
     frameSlotProps: slots('error'),
   },
   play: async ({ canvasElement }) => {
-    const failed = canvasElement.querySelectorAll('.tier-frame-slot[data-state="error"]')
+    const failed = canvasElement.querySelectorAll('[data-slot="tier-frame-slot"][data-state="error"]')
     await expect(failed).toHaveLength(TIERS.length)
-    await expect(canvasElement.querySelectorAll('.tier-frame-img')).toHaveLength(0)
-    const frames = canvasElement.querySelectorAll<HTMLElement>('.tier-frame-slot')
+    await expect(canvasElement.querySelectorAll('[data-slot="tier-frame-img"]')).toHaveLength(0)
+    const frames = canvasElement.querySelectorAll<HTMLElement>('[data-slot="tier-frame-slot"]')
     await expect(frames[0].offsetHeight).toBe(frames[6].offsetHeight)
   },
 }

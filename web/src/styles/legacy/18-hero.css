@@ -39,10 +39,7 @@
   text-wrap: pretty;
 }
 
-/* the trust line is a caption under the button, not a second pitch */
-.hero p.login-reassure {
-  margin: 10px auto 0;
-  max-width: 44ch;
-  font-size: var(--fs-sm);
-}
+/* `.hero p.login-reassure` emptied by WP2-landing (no remaining user; delete in WP3). The rest of
+   this file stays — DiscordPageScreen.tsx (dev) and InviteScreen.tsx (social) still render
+   `.hero`/`.hero h1`/`.hero h1 .grad`/`.hero p`. */
 

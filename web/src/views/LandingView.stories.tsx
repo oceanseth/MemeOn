@@ -11,10 +11,10 @@ const LOGIN_ERROR = "Masky didn't answer. Tap Log in with Masky to try again."
 
 /** Frames are decorative now, so the slot's state — not an alt string — is the assertion. */
 const frameSlots = (canvasElement: HTMLElement, state: 'loading' | 'ready' | 'error') =>
-  canvasElement.querySelectorAll(`.tier-frame-slot[data-state="${state}"]`)
+  canvasElement.querySelectorAll(`[data-slot="tier-frame-slot"][data-state="${state}"]`)
 
 const frameImages = (canvasElement: HTMLElement) =>
-  canvasElement.querySelectorAll<HTMLImageElement>('img.tier-frame-img')
+  canvasElement.querySelectorAll<HTMLImageElement>('img[data-slot="tier-frame-img"]')
 
 function invokeRenderedLogin(button: HTMLButtonElement): void {
   const reactPropsKey = Object.keys(button).find((key) => key.startsWith('__reactProps$'))
@@ -111,7 +111,7 @@ export const FrameFailureStillReady: Story = {
     await expect(await canvas.findByRole('button', { name: 'Log in with Masky' })).toBeEnabled()
     // no payload and no composite: the slots still hold the ladder's height
     await waitFor(() => expect(frameSlots(canvasElement, 'loading')).toHaveLength(0))
-    await expect(canvasElement.querySelectorAll('.tier-frame-slot')).toHaveLength(TIERS.length)
+    await expect(canvasElement.querySelectorAll('[data-slot="tier-frame-slot"]')).toHaveLength(TIERS.length)
     await userEvent.click(canvas.getByRole('button', { name: 'Log in with Masky' }))
     await waitFor(() => expect(loaded.scenario.authorizationNavigations).toHaveLength(1))
     expectAuthorizationUrl(loaded.scenario.authorizationNavigations[0])

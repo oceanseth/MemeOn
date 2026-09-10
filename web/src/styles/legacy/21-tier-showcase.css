@@ -1,21 +1,17 @@
-.tier-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 18px;
-}
+/* `.tier-grid` (+ its >=1100 media query) emptied by WP2-landing: LandingScreen.tsx now builds
+   the grid from utilities and no longer wears the class (no remaining user; delete in WP3). */
 
-/* seven tiers read 4 + 3, never 5 + 2 beside three holes */
-@media (min-width: 1100px) {
-  .tier-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
+/* `.tier-card` stays, though LandingScreen.tsx now paints its box model from utilities: the
+   literal class remains on the tier-ladder `<li>` because tier-glow-borders.css's forced-colors
+   rule (`:where(.meme-card, .tier-card)`, card package, not landing-owned) keys off it. */
 .tier-card {
   padding: var(--glow-width);
   border-radius: var(--radius);
 }
 
+/* `.tier-card-inner` stays for the same reason: 08-meme-card.css rounds `.foil-media` from it
+   (`.tier-card-inner .foil-media`) and 51-a11y-media.css pauses the sheen/sparkle sweep on it
+   under reduced motion. Neither file is landing-owned. */
 .tier-card-inner {
   background: var(--bg-card);
   border-radius: calc(var(--radius) - var(--glow-width));
@@ -28,67 +24,11 @@
   overflow: hidden;
 }
 
-.tier-frame-img {
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  border-radius: 8px;
-  background: var(--bg-media);
-  display: block;
-}
+/* `.tier-frame-img`, `.tier-frame-slot` (+ states) emptied by WP2-landing: LandingScreen.tsx
+   now targets `[data-slot='tier-frame-img'/'tier-frame-slot']` from screens/LandingScreen.css,
+   including its own reduced-motion pause for the loading shimmer (no remaining user; delete in
+   WP3).
 
-/* the slot owns the box, so height is stable from first paint whether or not the image exists;
-   data-state="loading" | "ready" | "error" keeps the three async outcomes visibly different */
-.tier-frame-slot {
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  border-radius: 8px;
-  background: var(--bg-media);
-  overflow: hidden;
-  position: relative;
-}
-
-.tier-frame-slot > .tier-frame-img {
-  height: 100%;
-  aspect-ratio: auto;
-  border-radius: 0;
-}
-
-.tier-frame-slot[data-state='loading']::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    115deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.1) 50%,
-    transparent 70%
-  );
-  background-size: 300% 300%;
-  animation: sheen-sweep 3.8s ease-in-out infinite;
-}
-
-/* failure is a still tint of the tier colour with a hairline edge, so it reads without motion */
-.tier-frame-slot[data-state='error'] {
-  background: color-mix(in oklab, currentColor 18%, var(--bg-media));
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, currentColor 45%, transparent);
-}
-
-.tier-name {
-  font-weight: 800;
-  font-size: 17px;
-}
-
-.tier-req {
-  font-size: 12px;
-  color: var(--text-dim);
-  font-weight: 600;
-  letter-spacing: 0.4px;
-}
-
-.tier-hype {
-  font-size: 13px;
-  color: var(--text-dim);
-  line-height: 1.45;
-}
+   `.tier-name`, `.tier-req`, `.tier-hype` emptied by WP2-landing (no remaining user; delete in
+   WP3). */
 

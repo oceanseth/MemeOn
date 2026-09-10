@@ -1,16 +1,7 @@
-/* the closing beat after the FAQ */
-.landing-close {
-  text-align: center;
-  margin: var(--space-8) 0 var(--space-2);
-}
-
+/* `.landing-close` and `.section-sub` emptied by WP2-landing (no remaining users; delete in WP3).
+   `.section-title` stays: InviteScreen.tsx (social package) still renders it. */
 .section-title {
   font-size: 26px;
   margin: 56px 0 6px;
-}
-
-.section-sub {
-  color: var(--text-dim);
-  margin: 0 0 24px;
 }
 
