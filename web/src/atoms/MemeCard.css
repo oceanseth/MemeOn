@@ -1,0 +1,455 @@
+/* The cascade contract `src/index.css` declares, restated here because Vite emits this file *ahead*
+   of `index.css` — `main.tsx` imports `./App` (which reaches this atom) before `./index.css`, and a
+   layer's rank is fixed the first time its name is seen. Without this line `components` is
+   registered first and the whole `legacy` sheet out-ranks it, which silently inverts the migration.
+   Re-declaring an order that already exists is a no-op, so this is safe wherever the file lands.
+   (The previous `@layer components` files, `Spinner.css` and `Skeleton.css`, hold only `@keyframes`,
+   which are rank-insensitive — that is why the inversion had not surfaced.)
+   `properties` leads the list because that is where Tailwind emits its own `@layer properties`
+   block — the `@supports` fallback that seeds every `--tw-*` for engines without `@property`. It
+   has to stay *below* `utilities`, or those `initial`s would beat the utilities that set them. */
+@layer properties, theme, base, legacy, components, utilities;
+
+/* The foil system: the parts of a card's frame no utility can express — the animated
+   `--glow-angle`, the masked conic-gradient ring and its blurred bloom, the per-tier stop sets,
+   the sheen sweep and the sparkle twinkle.
+
+   Copied here verbatim (values byte-for-byte) from `src/tier-glow-borders.css` and
+   `src/styles/legacy/08-meme-card.css` into `@layer components`, one layer above `legacy`, so the
+   effect survives the legacy sheet's deletion in WP3. Both legacy files stay in place under the
+   MANIFEST's emptying rule — every selector in them still has a writer this package does not own:
+   `.glow-border` and `.tier-paper` come from `hooks/useCreateMemeScreen.ts`, and `CreateMemeScreen`
+   does not import this atom, so in a Storybook story of that screen alone this sheet is never
+   loaded and emptying `tier-glow-borders.css` would strip the create preview's graphite ring;
+   `.meme-card*`/`.meme-art`/`.meme-meta`/`.meme-title`/`.meme-sub`/`.tier-chip`/`.foil-media` are
+   still written by `MemeDetailScreen`, `CreateMemeScreen`, `ProfileScreen`, `BinderScreen`,
+   `GiftDialog` and `LandingScreen`. `08-meme-card.css`'s only rule this package emptied of users is
+   `.meme-media-toggle` (now `[data-slot='media-toggle']`); it is left byte-unchanged so the split
+   stays verifiable against `6319b06`, and belongs on WP3's delete list. The duplicate is inert:
+   every declaration below is identical to the one it out-ranks. Keyframes carry a `card-` prefix so they can
+   never collide with the legacy `glow-border-turn` / `sheen-sweep` / `twinkle` still declared in
+   `legacy` — `21-tier-showcase.css` animates its loading slot with the legacy `sheen-sweep`, which
+   is why that name is left alone rather than renamed.
+
+   Public effect API — other surfaces write these class names by hand and must keep working:
+     `glow-border tier-<key> [sheen] [sparkle]` + `data-glow-style="<stop set>"` on the frame,
+     `foil-media` on the box the sheen and the sparkle are bounded to.
+   `atoms/MemeCard.tsx` exports `tierClasses(tierKey)`, which assembles the first three. The other
+   writers are `screens/LandingScreen.tsx` (`.tier-card`), `screens/MemeDetailScreen.tsx`
+   (`.meme-card.meme-card-lg`) and `hooks/useCreateMemeScreen.ts` (the create preview), so every
+   selector below still names those legacy hosts as well as this atom's `[data-slot='meme-card']`.
+
+   Cascade: `:where()` keeps the shared base at zero specificity exactly as the pre-migration sheet
+   wrote it, so a host's own `.meme-card` / `.tier-card` rules still decide position and overflow.
+   This atom states its winners as utilities instead (`relative isolate overflow-visible`). */
+@layer components {
+  @property --glow-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+  }
+
+  @keyframes card-glow-turn {
+    to {
+      --glow-angle: 360deg;
+    }
+  }
+
+  @keyframes card-sheen-sweep {
+    0% {
+      background-position: 200% 0;
+    }
+    60%,
+    100% {
+      background-position: -100% 0;
+    }
+  }
+
+  @keyframes card-twinkle {
+    from {
+      opacity: 0.25;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  :where(.glow-border) {
+    --glow-width: 2px;
+    --glow-blur: 16px;
+    --glow-opacity: 0.45;
+    --glow-duration: 3s;
+    --glow-direction: normal;
+    --glow-play-state: running;
+    --glow-phase: 0deg;
+    position: relative;
+    isolation: isolate;
+    overflow: visible;
+  }
+
+  /* a card frame is 3px, not the 2px default. Must follow the block above: same (zero) specificity,
+     and `08-meme-card.css` can no longer decide it for a card that has dropped `.meme-card`. */
+  :where(.meme-card, .tier-card, [data-slot='meme-card']) {
+    --glow-width: 3px;
+  }
+
+  :where(.glow-border)::before,
+  :where(.glow-border)::after {
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    border-radius: inherit;
+    padding: var(--glow-width);
+    background: conic-gradient(
+      from calc(var(--glow-angle) + var(--glow-phase)),
+      var(--glow-stops)
+    );
+    content: '';
+    pointer-events: none;
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: card-glow-turn var(--glow-duration) linear infinite;
+    animation-direction: var(--glow-direction);
+    animation-play-state: var(--glow-play-state);
+  }
+
+  :where(.glow-border)::before {
+    z-index: 0;
+  }
+
+  :where(.glow-border)::after {
+    z-index: -1;
+    filter: blur(var(--glow-blur));
+    opacity: var(--glow-opacity);
+  }
+
+  :where(.glow-border[data-glow-style='graphite-gradient-still']) {
+    --glow-stops:
+      #242932 0deg,
+      #515967 58deg,
+      #6a7180 104deg,
+      #5f6877 154deg,
+      #2c323d 218deg,
+      #5a6270 292deg,
+      #242932 360deg;
+    --glow-duration: 12s;
+    --glow-play-state: paused;
+    --glow-phase: -26deg;
+    --glow-blur: 10px;
+    --glow-opacity: 0.12;
+  }
+
+  /* Paper's blurred layer is paused at 0.12 opacity: pure paint cost, no visible bloom. Drop it. */
+  :where(.glow-border[data-glow-style='graphite-gradient-still'])::after {
+    display: none;
+  }
+
+  :where(.glow-border[data-glow-style='silver-highlight-still']) {
+    --glow-stops:
+      #596370 0deg,
+      #8793a2 82deg,
+      #e8f0f8 116deg,
+      #fff 130deg,
+      #c8d3e0 148deg,
+      #707b89 196deg,
+      #aab5c3 286deg,
+      #596370 360deg;
+    --glow-duration: 12s;
+    --glow-play-state: paused;
+    --glow-phase: 34deg;
+    --glow-blur: 12px;
+    --glow-opacity: 0.34;
+  }
+
+  :where(.glow-border[data-glow-style='cyan-magenta-gradient-drift']) {
+    --glow-stops:
+      #38cfff 0deg,
+      #7fd4ff 48deg,
+      #5f71ff 112deg,
+      #a45cff 176deg,
+      #ff73db 238deg,
+      #8f6cff 302deg,
+      #38cfff 360deg;
+    --glow-duration: 6s;
+    --glow-phase: -42deg;
+    --glow-blur: 20px;
+    --glow-opacity: 0.5;
+  }
+
+  :where(.glow-border[data-glow-style='silver-single-beam-chase']) {
+    --glow-stops:
+      #303746 0deg 62deg,
+      #596477 116deg,
+      #9fd8ff 128deg,
+      #b8c6e8 151deg,
+      #fff 169deg,
+      #dce7ff 181deg,
+      #7d8bac 205deg,
+      #3b4355 241deg,
+      #303746 360deg;
+    --glow-duration: 4.5s;
+    --glow-phase: -108deg;
+    --glow-blur: 17px;
+    --glow-opacity: 0.52;
+  }
+
+  :where(.glow-border[data-glow-style='gold-gradient-counter-sweep']) {
+    --glow-stops:
+      #5d3e13 0deg,
+      #83581c 30deg,
+      #ad7c45 72deg,
+      #c69f71 120deg,
+      #e6b34a 150deg,
+      #f4dea7 180deg,
+      #fff4dc 195deg,
+      #fdd997 210deg,
+      #db9d1c 240deg,
+      #ac7517 270deg,
+      #7b5010 310deg,
+      #53350d 345deg,
+      #5d3e13 360deg;
+    --glow-duration: 5s;
+    --glow-direction: reverse;
+    --glow-blur: 20px;
+    --glow-opacity: 0.42;
+  }
+
+  :where(.glow-border[data-glow-style='rainbow-gradient-drift']) {
+    --glow-stops:
+      #ff6487 0deg,
+      #ffb86b 54deg,
+      #f6ef78 104deg,
+      #69f0b2 158deg,
+      #62dcff 214deg,
+      #8d78ff 270deg,
+      #ff72e1 322deg,
+      #ff6487 360deg;
+    --glow-duration: 12s;
+    --glow-phase: -18deg;
+    --glow-blur: 24px;
+    --glow-opacity: 0.58;
+  }
+
+  :where(.glow-border[data-glow-style='mint-gold-highlight-orbit']) {
+    --glow-stops:
+      #0d6f67 0deg,
+      #15bfa5 58deg,
+      #9fffe0 116deg,
+      #d8fff4 156deg,
+      #fff8d6 176deg,
+      #ffd76a 192deg,
+      #fffce9 204deg,
+      #bfffea 220deg,
+      #43e1c2 250deg,
+      #38b5c8 300deg,
+      #0d6f67 360deg;
+    --glow-duration: 3.5s;
+    --glow-direction: reverse;
+    --glow-phase: 76deg;
+    --glow-blur: 28px;
+    --glow-opacity: 0.72;
+  }
+
+  /* The frame under every tier: the card's padding-background. Declared before the tier rules so
+     the tier gradient wins on equal specificity, and left out of the utility list on purpose —
+     a `bg-*` utility would out-cascade every `.tier-*` below it. */
+  [data-slot='meme-card'] {
+    background: var(--color-border);
+  }
+
+  /* Tier frames: the card's padding-background IS the frame. Foil mechanics per tier. */
+
+  /* non-hue ladder step: matte edge on Paper, specular edge on Silver. An outline paints above the
+     opaque .glow-border::before ring, where an inset box-shadow would be occluded. */
+  .tier-paper {
+    background: linear-gradient(160deg, #3a4152, #262c3a);
+    outline: 1px solid rgba(0, 0, 0, 0.35);
+    outline-offset: -1px;
+  }
+
+  .tier-silver {
+    background: linear-gradient(160deg, #9aa7b8, #5c6778, #aeb9c9);
+    outline: 1px solid rgba(255, 255, 255, 0.55);
+    outline-offset: -1px;
+  }
+
+  .tier-holo {
+    background: linear-gradient(120deg, #46d3ff, #7a5cff, #ff5ce1, #46d3ff);
+  }
+
+  .tier-chrome {
+    background: linear-gradient(
+      105deg,
+      #cfd8ff 0%,
+      #6f7ba8 20%,
+      #f4f7ff 40%,
+      #8a96c8 60%,
+      #dde4ff 80%,
+      #707ca9 100%
+    );
+  }
+
+  .tier-gold {
+    background: linear-gradient(
+      120deg,
+      #b8860b,
+      #ffd76a,
+      #fff3c4,
+      #ffd76a,
+      #8f6508
+    );
+    box-shadow: 0 0 24px color-mix(in oklab, var(--color-gold) 25%, transparent);
+  }
+
+  .tier-prismatic {
+    background: conic-gradient(
+      from 0deg,
+      #ff5c5c,
+      #ffb85c,
+      #f7ff5c,
+      #6bff8a,
+      #5cd4ff,
+      #8a6bff,
+      #ff5cf0,
+      #ff5c5c
+    );
+    box-shadow: 0 0 28px rgba(255, 154, 245, 0.35);
+  }
+
+  .tier-shiny {
+    background: linear-gradient(
+      120deg,
+      #0ff0c3,
+      #9fffe0,
+      #5cd4ff,
+      #f0c3ff,
+      #ffd76a,
+      #0ff0c3
+    );
+    box-shadow:
+      0 0 34px rgba(159, 255, 224, 0.45),
+      0 0 80px rgba(240, 195, 255, 0.25);
+  }
+
+  /* Foil mechanics are host-agnostic (.meme-card, .tier-card and this atom alike) and bounded to
+     the art box via .foil-media, so the sweep never crosses the meta text. The
+     :where(:not(:has(.foil-media))) form is the interim for hosts that have not added the wrapper
+     yet — `MemeDetailScreen` is the live one: same gradient, clipped to the top square. */
+  .foil-media {
+    position: relative;
+    display: block;
+    overflow: hidden;
+  }
+
+  .tier-card-inner .foil-media {
+    border-radius: 8px;
+  }
+
+  /* sheen sweep over holo+ tiers */
+  .sheen .foil-media::after,
+  :where(.meme-card, .tier-card, [data-slot='meme-card']).sheen
+    :where(.meme-card-inner, .tier-card-inner):where(
+      :not(:has(.foil-media))
+    )::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.14) 45%,
+      rgba(255, 255, 255, 0.32) 50%,
+      rgba(255, 255, 255, 0.14) 55%,
+      transparent 70%
+    );
+    background-size: 300% 300%;
+    animation: card-sheen-sweep 3.8s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+
+  :where(.meme-card, .tier-card, [data-slot='meme-card']).sheen
+    :where(.meme-card-inner, .tier-card-inner):where(
+      :not(:has(.foil-media))
+    )::after,
+  :where(.meme-card, .tier-card, [data-slot='meme-card']).sparkle
+    :where(.meme-card-inner, .tier-card-inner):where(
+      :not(:has(.foil-media))
+    )::before {
+    inset: 0 0 auto 0;
+    aspect-ratio: 1;
+  }
+
+  /* sparkles for the shiny tier */
+  .sparkle .foil-media::before,
+  :where(.meme-card, .tier-card, [data-slot='meme-card']).sparkle
+    :where(.meme-card-inner, .tier-card-inner):where(
+      :not(:has(.foil-media))
+    )::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    background-image:
+      radial-gradient(2px 2px at 20% 30%, #fff 40%, transparent 60%),
+      radial-gradient(1.6px 1.6px at 70% 20%, #fff 40%, transparent 60%),
+      radial-gradient(2.4px 2.4px at 85% 65%, #fff 40%, transparent 60%),
+      radial-gradient(1.8px 1.8px at 40% 80%, #fff 40%, transparent 60%),
+      radial-gradient(1.4px 1.4px at 10% 60%, #fff 40%, transparent 60%);
+    animation: card-twinkle 2.2s ease-in-out infinite alternate;
+    mix-blend-mode: screen;
+  }
+
+  /* Freeze, never delete: the static foil stays painted. These restate `51-a11y-media.css` and the
+     reduced-motion tail of `tier-glow-borders.css`, which now sit a layer below and would lose. */
+  @media (prefers-reduced-motion: reduce) {
+    :where(.glow-border)::before,
+    :where(.glow-border)::after {
+      animation-play-state: paused;
+    }
+
+    .sheen .foil-media::after,
+    .sheen :where(.meme-card-inner, .tier-card-inner)::after {
+      animation: none;
+      background-position: 50% 0;
+    }
+
+    .sparkle .foil-media::before,
+    .sparkle :where(.meme-card-inner, .tier-card-inner)::before {
+      animation: none;
+      opacity: 0.6;
+    }
+  }
+
+  @media (forced-colors: active) {
+    :where(.glow-border)::before,
+    :where(.glow-border)::after {
+      display: none;
+    }
+
+    .sheen .foil-media::after,
+    .sparkle .foil-media::before,
+    .sheen :where(.meme-card-inner, .tier-card-inner)::after,
+    .sparkle :where(.meme-card-inner, .tier-card-inner)::before {
+      display: none;
+    }
+
+    /* non-colour rarity ladder: solid -> double -> heavy double */
+    :where(.meme-card, .tier-card, [data-slot='meme-card']) {
+      border: 1px solid CanvasText;
+    }
+
+    :where(.meme-card, .tier-card, [data-slot='meme-card']).sheen {
+      border-width: 3px;
+      border-style: double;
+    }
+
+    :where(.meme-card, .tier-card, [data-slot='meme-card']).sparkle {
+      border-width: 4px;
+    }
+  }
+}
