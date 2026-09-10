@@ -1,8 +1,7 @@
 import { useProjectedActor } from './useProjectedActor'
-import { useCallback, useRef, type ChangeEventHandler, type ImgHTMLAttributes } from 'react'
+import { useCallback, useRef, type ChangeEventHandler } from 'react'
 import { useAuth } from './useAuth'
 import { apiFetch, post } from '../lib/api'
-import { avatarErrorHandler, avatarInitial } from '../lib/avatarModel'
 import { watchPresence, type PresenceWatch } from '../lib/presence'
 import type { FriendEntry, Meme } from '../lib/types'
 import {
@@ -100,16 +99,8 @@ export interface FriendLinkModel {
   name: string
   profileLinkProps: Pick<LinkProps, 'to'>
   onlineLinkProps: Pick<LinkProps, 'to' | 'title'>
-  /** shown in the fixed avatar slot whenever there is no picture, so no row is a bare word */
-  avatarInitial: string
-  avatarImageProps: Pick<
-    ImgHTMLAttributes<HTMLImageElement>,
-    'src' | 'alt' | 'loading' | 'referrerPolicy' | 'onError'
-  > | null
-  onlineAvatarImageProps: Pick<
-    ImgHTMLAttributes<HTMLImageElement>,
-    'src' | 'alt' | 'loading' | 'referrerPolicy' | 'onError'
-  > | null
+  /** `<Avatar>` draws the monogram fallback itself whenever there is no picture. */
+  avatarSrc: string | null
 }
 
 interface FriendHitModel extends FriendLinkModel {
@@ -485,26 +476,6 @@ export function buildFriendLinkModel(friend: { sub: string; name: string; pictur
     name: friend.name,
     profileLinkProps,
     onlineLinkProps: { ...profileLinkProps, title: friend.name },
-    avatarInitial: avatarInitial(friend.name),
-    /* a Google avatar that 404s or gets rate-limited would leave a torn-image glyph in the
-       slot: no referrer to avoid the throttle, then the monogram in place of the break */
-    avatarImageProps: friend.picture
-      ? {
-          src: friend.picture,
-          alt: '',
-          loading: 'lazy',
-          referrerPolicy: 'no-referrer',
-          onError: avatarErrorHandler(friend.name),
-        }
-      : null,
-    onlineAvatarImageProps: friend.picture
-      ? {
-          src: friend.picture,
-          alt: friend.name,
-          loading: 'lazy',
-          referrerPolicy: 'no-referrer',
-          onError: avatarErrorHandler(friend.name),
-        }
-      : null,
+    avatarSrc: friend.picture,
   }
 }

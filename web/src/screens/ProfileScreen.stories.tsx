@@ -56,11 +56,11 @@ const emptyCreated: ProfileScreenModel = {
   loadingLabel: 'Loading profile',
   profile: {
     name: palProfile.name,
-    avatar: { kind: 'initial', initial: 'P' },
+    avatarSrc: null,
     stats: statsFor(palProfile),
   },
   showActions: true,
-  followButtonClassName: 'primary',
+  followButtonVariant: 'primary',
   followGlyph: '☆',
   followText: 'Follow',
   showFriendButton: true,
@@ -84,8 +84,8 @@ const emptyCreated: ProfileScreenModel = {
   emptyLinkLabel: '',
   emptyLinkProps: { to: '/marketplace' },
   showGrid: false,
-  createdTabClassName: 'primary',
-  binderTabClassName: '',
+  createdTabVariant: 'primary',
+  binderTabVariant: 'default',
   gridProps: { id: 'profile-cards', 'aria-live': 'polite', 'aria-label': 'Created memes, 0 cards' },
   ...handlers,
 }
@@ -137,10 +137,7 @@ export const WithAvatar: Story = {
     ...oneCreatedCard,
     profile: {
       name: palProfile.name,
-      avatar: {
-        kind: 'image',
-        imageProps: { src: AVATAR_SRC, alt: '', width: 96, height: 96, loading: 'lazy' },
-      },
+      avatarSrc: AVATAR_SRC,
       stats: statsFor(palProfile),
     },
   },
@@ -148,8 +145,8 @@ export const WithAvatar: Story = {
 
 export const BinderTab: Story = {
   args: {
-    createdTabClassName: '',
-    binderTabClassName: 'primary',
+    createdTabVariant: 'default',
+    binderTabVariant: 'primary',
     createdTabButtonProps: { 'aria-pressed': false, 'aria-controls': 'profile-cards', onClick: fn() },
     binderTabButtonProps: { 'aria-pressed': true, 'aria-controls': 'profile-cards', onClick: fn() },
     showEmpty: false,
@@ -165,7 +162,7 @@ export const Self: Story = {
     ...oneCreatedCard,
     profile: {
       name: louProfile.name,
-      avatar: { kind: 'initial', initial: 'L' },
+      avatarSrc: null,
       stats: statsFor(louProfile),
     },
     showActions: false,
@@ -177,12 +174,12 @@ export const SelfEmptyBinder: Story = {
   args: {
     profile: {
       name: louProfile.name,
-      avatar: { kind: 'initial', initial: 'L' },
+      avatarSrc: null,
       stats: statsFor(louProfile),
     },
     showActions: false,
-    createdTabClassName: '',
-    binderTabClassName: 'primary',
+    createdTabVariant: 'default',
+    binderTabVariant: 'primary',
     createdTabButtonProps: { 'aria-pressed': false, 'aria-controls': 'profile-cards', onClick: fn() },
     binderTabButtonProps: { 'aria-pressed': true, 'aria-controls': 'profile-cards', onClick: fn() },
     emptyTitle: "You don't hold shares in any memes yet.",
@@ -199,7 +196,7 @@ export const SelfEmptyCreated: Story = {
   args: {
     profile: {
       name: louProfile.name,
-      avatar: { kind: 'initial', initial: 'L' },
+      avatarSrc: null,
       stats: statsFor(louProfile),
     },
     showActions: false,
@@ -214,8 +211,8 @@ export const SelfEmptyCreated: Story = {
 /** someone else's empty binder tab */
 export const EmptyBinder: Story = {
   args: {
-    createdTabClassName: '',
-    binderTabClassName: 'primary',
+    createdTabVariant: 'default',
+    binderTabVariant: 'primary',
     createdTabButtonProps: { 'aria-pressed': false, 'aria-controls': 'profile-cards', onClick: fn() },
     binderTabButtonProps: { 'aria-pressed': true, 'aria-controls': 'profile-cards', onClick: fn() },
     emptyTitle: "pal doesn't hold shares in any memes yet.",
@@ -232,7 +229,7 @@ export const LoggedOutVisitor: Story = {
 export const Following: Story = {
   args: {
     ...oneCreatedCard,
-    followButtonClassName: '',
+    followButtonVariant: 'default',
     followGlyph: '★',
     followText: 'Following',
     followButtonProps: { 'aria-pressed': true, 'aria-busy': false, disabled: false, onClick: fn() },
@@ -277,7 +274,7 @@ export const LongName: Story = {
     ...oneCreatedCard,
     profile: {
       name: 'xX_supermegabraincellcollector_Xx',
-      avatar: { kind: 'initial', initial: 'X' },
+      avatarSrc: null,
       stats: statsFor(palProfile),
     },
   },

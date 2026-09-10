@@ -41,7 +41,7 @@ export const FatalLoadError: Story = {
 
 export const LoadingThenReady: Story = {
   loaders: [connectedLoader({ overrides: { 'GET /api/invite/user-pal': async (_request, scenario) => { await scenario.waitForRelease('invite'); return { body: scenario.inviteData.get('user-pal') } } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><InviteView /></ConnectedStory>,
-  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('.spin')).not.toBeNull()); loaded.scenario.release('invite'); await expect(await canvas.findByRole('heading', { name: /pal invited you/ })).toBeInTheDocument() },
+  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('[data-slot="spinner"]')).not.toBeNull()); loaded.scenario.release('invite'); await expect(await canvas.findByRole('heading', { name: /pal invited you/ })).toBeInTheDocument() },
 }
 
 export const AcceptFailureReturnsToReady: Story = {

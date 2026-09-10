@@ -61,5 +61,5 @@ export const RetryAfterFailure: Story = {
 export const LoadingThenReady: Story = {
   loaders: [connectedLoader({ overrides: { 'GET /api/leaderboard': async (_request, scenario) => { await scenario.waitForRelease('leaders'); return { body: { leaders: leaderboardRows } } } } })], beforeEach: async (context) => connectedBeforeEach(context),
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><LeaderboardView /></ConnectedStory>,
-  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('.skeleton-row')).not.toBeNull()); loaded.scenario.release('leaders'); await expect(await canvas.findByRole('link', { name: /pal/ })).toBeInTheDocument() },
+  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('[data-slot="skeleton-row"]')).not.toBeNull()); loaded.scenario.release('leaders'); await expect(await canvas.findByRole('link', { name: /pal/ })).toBeInTheDocument() },
 }

@@ -8,15 +8,7 @@ describe('friend row model', () => {
 
     expect(withAvatar.profileLinkProps).toEqual({ to: '/u/pal' })
     expect(withAvatar.onlineLinkProps).toEqual({ to: '/u/pal', title: 'Pal' })
-    expect(withAvatar.avatarImageProps).toMatchObject({ src: '/pal.png', alt: '', loading: 'lazy', referrerPolicy: 'no-referrer' })
-    expect(withAvatar.onlineAvatarImageProps).toMatchObject({ src: '/pal.png', alt: 'Pal', loading: 'lazy', referrerPolicy: 'no-referrer' })
-    expect(typeof withAvatar.avatarImageProps?.onError).toBe('function')
-    expect(withoutAvatar.avatarImageProps).toBeNull()
-    expect(withoutAvatar.onlineAvatarImageProps).toBeNull()
-  })
-
-  it('always supplies an avatar slot initial so no row collapses to bare text', () => {
-    expect(buildFriendLinkModel({ sub: 'a', name: 'pal', picture: null }).avatarInitial).toBe('P')
-    expect(buildFriendLinkModel({ sub: 'b', name: '  ', picture: null }).avatarInitial).toBe('?')
+    expect(withAvatar.avatarSrc).toBe('/pal.png')
+    expect(withoutAvatar.avatarSrc).toBeNull()
   })
 })

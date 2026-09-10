@@ -38,7 +38,7 @@ const empty: BinderScreenModel = {
   statusMessage: 'No cards shown · newest first',
   showPrivateToggle: false,
   privateCount: 0,
-  privateToggleProps: { checked: false, onChange: fn() },
+  privateToggleProps: { checked: false, onCheckedChange: fn() },
   sortChips: buildSortChipsModel({ sortKey: 'new', dir: 'desc', onChange: fn() }),
   createLinkProps: { to: '/binder/new' },
   cards: [],
@@ -74,7 +74,7 @@ export const Loading: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('status')).toHaveTextContent('Loading your binder…')
-    await expect(canvasElement.querySelectorAll('.skeleton-card')).toHaveLength(6)
+    await expect(canvasElement.querySelectorAll('[data-slot="skeleton-card"]')).toHaveLength(6)
   },
 }
 
@@ -151,7 +151,7 @@ export const ShowingPrivate: Story = {
     showGrid: true,
     showPrivateToggle: true,
     privateCount: 1,
-    privateToggleProps: { checked: true, onChange: fn() },
+    privateToggleProps: { checked: true, onCheckedChange: fn() },
     cards: [card(paperMeme, 4, { showCreator: true, showPrivate: true })],
   },
 }

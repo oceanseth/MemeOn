@@ -83,5 +83,5 @@ export const BinderTab: Story = {
 
 export const LoadingThenReady: Story = {
   loaders: [connectedLoader({ overrides: { 'GET /api/users/user-pal/profile': async (_request, scenario) => { await scenario.waitForRelease('profile'); return { body: scenario.profiles.get('user-pal') } } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><ProfileView /></ConnectedStory>,
-  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvas.getByRole('status')).toHaveTextContent('Loading profile')); await expect(canvasElement.querySelectorAll('.skeleton-card').length).toBe(4); loaded.scenario.release('profile'); await expect(await canvas.findByRole('heading', { name: 'pal' })).toBeInTheDocument() },
+  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvas.getByRole('status')).toHaveTextContent('Loading profile')); await expect(canvasElement.querySelectorAll('[data-slot="skeleton-card"]').length).toBe(4); loaded.scenario.release('profile'); await expect(await canvas.findByRole('heading', { name: 'pal' })).toBeInTheDocument() },
 }

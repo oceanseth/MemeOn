@@ -1,7 +1,6 @@
 import { useProjectedActor } from './useProjectedActor'
 import { useNavigate, useParams } from 'react-router-dom'
 import { apiFetch, post } from '../lib/api'
-import { avatarErrorHandler } from '../lib/avatarModel'
 import { beginMaskyLogin } from '../lib/auth'
 import {
   inviteMachine,
@@ -11,7 +10,7 @@ import {
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
-import type { ButtonHTMLAttributes, ImgHTMLAttributes } from 'react'
+import type { ButtonHTMLAttributes } from 'react'
 
 export const INVITE_KEY = 'memeon_invite_from'
 
@@ -62,17 +61,6 @@ interface InviteSelfActions {
   friendsHref: string
 }
 
-/** The ring always renders: a monogram stands in when Masky has no picture. */
-export type InviteAvatarModel =
-  | {
-      kind: 'image'
-      imageProps: Pick<
-        ImgHTMLAttributes<HTMLImageElement>,
-        'src' | 'alt' | 'width' | 'height' | 'loading' | 'referrerPolicy' | 'onError'
-      >
-    }
-  | { kind: 'monogram'; initial: string }
-
 export interface InviteStatModel {
   id: string
   emoji: string
@@ -82,7 +70,8 @@ export interface InviteStatModel {
 
 interface InviteInviterModel {
   name: string
-  avatar: InviteAvatarModel
+  /** `<Avatar>` draws the monogram fallback itself whenever there is no picture. */
+  avatarSrc: string | null
   stats: readonly InviteStatModel[]
   acceptanceNote: string
 }
@@ -96,11 +85,6 @@ export function inviteAcceptPayload(inviterId: string): { inviterId: string } {
   return { inviterId }
 }
 
-/** First visible grapheme of a display name, for the monogram fallback. */
-function monogramInitial(name: string): string {
-  return ([...name.trim()][0] ?? '?').toUpperCase()
-}
-
 export function buildInviteStats(inviter: {
   collectionSize: number
   portfolioValue: number
@@ -111,24 +95,6 @@ export function buildInviteStats(inviter: {
     { id: 'braincells', emoji: '🧠', value: inviter.portfolioValue.toLocaleString(), label: 'braincells' },
     { id: 'followers', emoji: '⭐', value: inviter.followers.toLocaleString(), label: 'followers' },
   ]
-}
-
-export function buildInviteAvatar(inviter: { name: string; picture: string | null }): InviteAvatarModel {
-  return inviter.picture
-    ? {
-        kind: 'image',
-        imageProps: {
-          src: inviter.picture,
-          // the h1 already names the inviter; a duplicate alt reads the name twice
-          alt: '',
-          width: 96,
-          height: 96,
-          loading: 'eager',
-          referrerPolicy: 'no-referrer',
-          onError: avatarErrorHandler(inviter.name),
-        },
-      }
-    : { kind: 'monogram', initial: monogramInitial(inviter.name) }
 }
 
 /** Everything `InviteScreen` renders. The hook is the engine; the screen is the terminal. */
@@ -234,7 +200,7 @@ export function useInviteScreen(): InviteScreenModel {
     inviter: inviter
       ? {
           name: inviter.name,
-          avatar: buildInviteAvatar(inviter),
+          avatarSrc: inviter.picture,
           stats: buildInviteStats(inviter),
           acceptanceNote: isSelf
             ? "Send this link to a friend — they'll join with Masky and you'll be friends instantly."
