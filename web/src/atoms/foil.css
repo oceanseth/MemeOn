@@ -9,33 +9,49 @@
    built CSS back and fails the build if any bundle ever ranks these differently. */
 @layer properties, theme, base, components, utilities;
 
-/* The foil system: the parts of a card's frame no utility can express — the animated
-   `--glow-angle`, the masked conic-gradient ring and its blurred bloom, the per-tier stop sets,
-   the sheen sweep and the sparkle twinkle.
+/* The foil system: the parts of a card's tier frame no utility can express — the animated
+   `--glow-angle`, the conic ring that *is* the frame's 3px border on a foil tier, its bloom, the
+   per-tier stop sets, the sheen sweep and the sparkle twinkle.
 
    ── Public effect API ─────────────────────────────────────────────────────────────────────────
    This file is the one owner of the foil, and it is deliberately class-based rather than
    `data-slot`-only: surfaces that are not the `MemeCard` atom put the same frame on their own
    markup.
 
-     `glow-border tier-<key> [sheen] [sparkle]`   on the frame element, paired with
-     `data-glow-style="<stop set>"`               on the same element (`shared/tiers`), and
-     `foil-media`                                 on the box the sheen and sparkle are bounded to,
-                                                  so neither sweep crosses the meta text.
+     `foil-card tier-<key> [sheen] [sparkle]`     on the card, paired with
+     `data-glow-style="<stop set>"`               on the same element (`shared/tiers`), plus
+     `foil-frame`                                 on the image frame, which is where the 3px tier
+                                                  border and (holo and up) the turning ring live,
+     `foil-media`                                 on the box the sheen and the sparkle are bounded
+                                                  to, so neither sweep crosses the meta text.
+                                                  `MemeCard` puts both names on one element: the
+                                                  frame *is* the media box.
+     `glow-border`                                legacy: the older padding frame, where the tier
+                                                  colour is the card's own background behind a
+                                                  `p-(--glow-width)` inset and the ring is drawn as
+                                                  a masked pseudo-element around the whole card.
 
-   `atoms/foil.ts` exports `tierClasses(tierKey)`, which assembles the first three; it has no React
-   import (unlike `atoms/MemeCard.tsx`, which re-exports it for compatibility), so a code-split
-   route can pull in the classes without dragging the atom's module graph onto its critical path.
-   The hand-rolled hosts are `screens/LandingScreen.tsx` (the tier ladder, which also writes
-   `.tier-card` / `.tier-card-inner` for the `--glow-width` and the media rounding below) and
-   `screens/CreateMemeScreen.tsx` (the live mint preview, which wears the `MemeCard` atom's
-   `[data-slot='meme-card']` instead). Anything else that wants a foil frame writes the four names
-   above; nothing else in this file is addressable from outside.
+   Colour comes from the tier tokens (`--color-tier-<key>-frame`, `index.css`), so every frame and
+   every bloom flips with the theme. The still frame is that colour flat; holo, chrome, gold,
+   prismatic and shiny add the turning conic ring and a bloom on top of it, bounded to the image
+   frame. Paper and silver are still by design — the rarity ladder starts quiet.
+
+   `atoms/foil.ts` exports `tierFrameClasses(tierKey)` (Soft Press) and `tierClasses(tierKey)`
+   (the same plus `glow-border`); it has no React import (unlike `atoms/MemeCard.tsx`, which
+   re-exports `tierClasses` for compatibility), so a code-split route can pull in the classes
+   without dragging the atom's module graph onto its critical path. The legacy hosts are
+   `screens/LandingScreen.tsx` (the tier ladder, which also writes `.tier-card` / `.tier-card-inner`
+   for the `--glow-width` and the media rounding below) and `screens/CreateMemeScreen.tsx` (the live
+   mint preview, which wears the `MemeCard` atom's `[data-slot='meme-card']`); both still ask for
+   `tierClasses`. `molecules/GiftDialog.tsx` wears a bare `tier-<key>` as a thumbnail frame.
+   Anything else that wants a foil frame writes the names above; nothing else here is addressable
+   from outside.
 
    Cascade: `:where()` keeps the shared base at zero specificity, so a host's own utilities decide
-   position and overflow without `!important`. The `MemeCard` atom states its winners as utilities
-   (`relative isolate overflow-visible`). Keyframes carry a `card-` prefix so a keyframe name this
-   file does not own can never shadow them from another sheet in the same bundle. */
+   position and overflow without `!important`. `.tier-<key>` sets a *background* for the legacy
+   padding frame; a card that paints its own surface says so with a `bg-*` utility, which wins
+   because `utilities` ranks after `components`. Keyframes carry a `card-` prefix so a keyframe name
+   this file does not own can never shadow them from another sheet in the same bundle. */
 @layer components {
   @property --glow-angle {
     syntax: '<angle>';
@@ -68,10 +84,18 @@
     }
   }
 
-  :where(.glow-border) {
+  /* Every foil variable is declared on the card, and every one of them inherits: the frame, the
+     sheen and the sparkle are descendants. `--glow-play-state` is what `stores/cardMediaStore.ts`
+     sets inline on the card to freeze an off-screen ring, so it must be *declared* here and *read*
+     further down. */
+  :where(.foil-card) {
     --glow-width: 2px;
+    --frame-width: 3px;
+    --tier-frame: var(--color-line);
+    --frame-fill: var(--color-surface-pressed);
+    --glow-bloom: transparent;
     --glow-blur: 16px;
-    --glow-opacity: 0.45;
+    --glow-opacity: 0.32;
     --glow-duration: 3s;
     --glow-direction: normal;
     --glow-play-state: running;
@@ -87,6 +111,39 @@
     --glow-width: 3px;
   }
 
+  /* ── The frame ────────────────────────────────────────────────────────────────────────────────
+     The always-on 3px solid tier border. It is a real border, so `border-radius` and `overflow`
+     come from the host's utilities and the art clips to the frame's inner radius. */
+  .foil-frame {
+    border: var(--frame-width, 3px) solid var(--tier-frame, var(--color-line));
+  }
+
+  /* Holo and up: the same 3px is a conic ring that turns. Two background layers — the frame's own
+     fill clipped to the padding box, the ring clipped to the border box — so the gradient is only
+     ever visible *as the border*, never behind the art, and the bloom is a single blurred shadow
+     in the tier's own colour. Specificity 0-2-0, so `border-color: transparent` beats `.foil-frame`
+     above without `!important`. */
+  .tier-holo .foil-frame,
+  .tier-chrome .foil-frame,
+  .tier-gold .foil-frame,
+  .tier-prismatic .foil-frame,
+  .tier-shiny .foil-frame {
+    border-color: transparent;
+    background-image:
+      linear-gradient(var(--frame-fill), var(--frame-fill)),
+      conic-gradient(from calc(var(--glow-angle) + var(--glow-phase)), var(--glow-stops));
+    background-origin: padding-box, border-box;
+    background-clip: padding-box, border-box;
+    background-repeat: no-repeat;
+    box-shadow: 0 0 var(--glow-blur) var(--glow-bloom);
+    animation: card-glow-turn var(--glow-duration) linear infinite;
+    animation-direction: var(--glow-direction);
+    animation-play-state: var(--glow-play-state);
+  }
+
+  /* ── The legacy padding frame ─────────────────────────────────────────────────────────────────
+     `.glow-border` hosts have no `.foil-frame`: their tier colour is the card's background behind a
+     `p-(--glow-width)` inset, and the ring is a masked pseudo-element around the whole card. */
   :where(.glow-border)::before,
   :where(.glow-border)::after {
     position: absolute;
@@ -120,98 +177,128 @@
     opacity: var(--glow-opacity);
   }
 
-  :where(.glow-border[data-glow-style='graphite-gradient-still']) {
-    --glow-stops:
-      oklch(0.28 0.018 262.202) 0deg,
-      oklch(0.462 0.025 261.679) 58deg,
-      oklch(0.548 0.025 265.616) 104deg,
-      oklch(0.515 0.026 260.673) 154deg,
-      oklch(0.316 0.021 262.549) 218deg,
-      oklch(0.494 0.025 261.695) 292deg,
-      oklch(0.28 0.018 262.202) 360deg;
-    --glow-duration: 12s;
-    --glow-play-state: paused;
-    --glow-phase: -26deg;
-    --glow-blur: 10px;
-    --glow-opacity: 0.12;
+  /* ── Tier frames ──────────────────────────────────────────────────────────────────────────────
+     One source of colour: the tier tokens. `--tier-frame` is the still ring and the border; the
+     bloom is the same colour, mixed down so a light canvas stays clean (the dark arm reads the same
+     percentages against a darker surface, which is why they are conservative). `background` is the
+     legacy padding frame's paint — a card that owns its surface overrides it with `bg-*`. */
+  .tier-paper {
+    --tier-frame: var(--color-tier-paper-frame);
+    background: var(--tier-frame);
   }
 
-  /* Paper's blurred layer is paused at 0.12 opacity: pure paint cost, no visible bloom. Drop it. */
+  .tier-silver {
+    --tier-frame: var(--color-tier-silver-frame);
+    background: var(--tier-frame);
+  }
+
+  .tier-holo {
+    --tier-frame: var(--color-tier-holo-frame);
+    --glow-bloom: color-mix(in oklab, var(--color-tier-holo-frame) 40%, transparent);
+    background: var(--tier-frame);
+  }
+
+  .tier-chrome {
+    --tier-frame: var(--color-tier-chrome-frame);
+    --glow-bloom: color-mix(in oklab, var(--color-tier-chrome-frame) 24%, transparent);
+    background: var(--tier-frame);
+  }
+
+  .tier-gold {
+    --tier-frame: var(--color-tier-gold-frame);
+    --glow-bloom: color-mix(in oklab, var(--color-tier-gold-frame) 40%, transparent);
+    background: var(--tier-frame);
+  }
+
+  .tier-prismatic {
+    --tier-frame: var(--color-tier-prismatic-frame);
+    --glow-bloom: color-mix(in oklab, var(--color-tier-prismatic-frame) 42%, transparent);
+    background: var(--tier-frame);
+  }
+
+  .tier-shiny {
+    --tier-frame: var(--color-tier-shiny-frame);
+    --glow-bloom: color-mix(in oklab, var(--color-tier-shiny-frame) 46%, transparent);
+    background: var(--tier-frame);
+  }
+
+  /* ── Stop sets ────────────────────────────────────────────────────────────────────────────────
+     `shared/tiers.ts` names one per tier and the host echoes it as `data-glow-style`. Paper and
+     silver keep a set for the legacy ring only; their Soft Press frame is the flat token. Every
+     animated set opens and closes on the tier's own frame token, so the ring reads as *that* tier's
+     colour with a foil highlight travelling through it rather than as a rainbow of its own. */
+  :where(.foil-card[data-glow-style='graphite-gradient-still']) {
+    --glow-stops:
+      var(--tier-frame) 0deg,
+      var(--tier-frame) 360deg;
+    --glow-duration: 12s;
+    --glow-play-state: paused;
+    --glow-blur: 10px;
+    --glow-opacity: 0.1;
+  }
+
+  /* Paper's blurred layer is paused at a tenth of an opacity: pure paint cost, no visible bloom. */
   :where(.glow-border[data-glow-style='graphite-gradient-still'])::after {
     display: none;
   }
 
-  :where(.glow-border[data-glow-style='silver-highlight-still']) {
+  :where(.foil-card[data-glow-style='silver-highlight-still']) {
     --glow-stops:
-      oklch(0.496 0.024 255.021) 0deg,
-      oklch(0.659 0.026 254.02) 82deg,
-      oklch(0.951 0.014 247.972) 116deg,
-      oklch(1 0 0) 130deg,
-      oklch(0.862 0.022 252.515) 148deg,
-      oklch(0.579 0.025 254.483) 196deg,
-      oklch(0.769 0.023 254.426) 286deg,
-      oklch(0.496 0.024 255.021) 360deg;
+      var(--tier-frame) 0deg,
+      var(--tier-frame) 96deg,
+      color-mix(in oklab, var(--color-highlight) 70%, var(--tier-frame)) 130deg,
+      var(--tier-frame) 170deg,
+      var(--tier-frame) 360deg;
     --glow-duration: 12s;
     --glow-play-state: paused;
     --glow-phase: 34deg;
     --glow-blur: 12px;
+    --glow-opacity: 0.22;
+  }
+
+  :where(.foil-card[data-glow-style='cyan-magenta-gradient-drift']) {
+    --glow-stops:
+      var(--tier-frame) 0deg,
+      oklch(0.798 0.138 224.636) 48deg,
+      var(--tier-frame) 112deg,
+      oklch(0.755 0.206 338.493) 200deg,
+      var(--tier-frame) 268deg,
+      oklch(0.832 0.102 231.822) 320deg,
+      var(--tier-frame) 360deg;
+    --glow-duration: 6s;
+    --glow-phase: -42deg;
+    --glow-blur: 18px;
     --glow-opacity: 0.34;
   }
 
-  :where(.glow-border[data-glow-style='cyan-magenta-gradient-drift']) {
+  :where(.foil-card[data-glow-style='silver-single-beam-chase']) {
     --glow-stops:
-      oklch(0.798 0.138 224.636) 0deg,
-      oklch(0.832 0.102 231.822) 48deg,
-      oklch(0.613 0.21 273.093) 112deg,
-      oklch(0.637 0.231 300.17) 176deg,
-      oklch(0.755 0.206 338.493) 238deg,
-      oklch(0.64 0.209 290.189) 302deg,
-      oklch(0.798 0.138 224.636) 360deg;
-    --glow-duration: 6s;
-    --glow-phase: -42deg;
-    --glow-blur: 20px;
-    --glow-opacity: 0.5;
-  }
-
-  :where(.glow-border[data-glow-style='silver-single-beam-chase']) {
-    --glow-stops:
-      oklch(0.337 0.028 265.309) 0deg 62deg,
-      oklch(0.501 0.033 261.365) 116deg,
-      oklch(0.857 0.08 238.79) 128deg,
-      oklch(0.827 0.05 267.614) 151deg,
-      oklch(1 0 0) 169deg,
-      oklch(0.927 0.035 265.994) 181deg,
-      oklch(0.637 0.052 266.918) 205deg,
-      oklch(0.383 0.033 266.125) 241deg,
-      oklch(0.337 0.028 265.309) 360deg;
+      var(--tier-frame) 0deg,
+      var(--tier-frame) 128deg,
+      color-mix(in oklab, var(--color-highlight) 85%, var(--tier-frame)) 169deg,
+      var(--tier-frame) 205deg,
+      var(--tier-frame) 360deg;
     --glow-duration: 4.5s;
     --glow-phase: -108deg;
-    --glow-blur: 17px;
-    --glow-opacity: 0.52;
+    --glow-blur: 16px;
+    --glow-opacity: 0.3;
   }
 
-  :where(.glow-border[data-glow-style='gold-gradient-counter-sweep']) {
+  :where(.foil-card[data-glow-style='gold-gradient-counter-sweep']) {
     --glow-stops:
-      oklch(0.391 0.072 71.265) 0deg,
-      oklch(0.496 0.093 70.99) 30deg,
-      oklch(0.624 0.094 67.768) 72deg,
-      oklch(0.727 0.077 70.756) 120deg,
-      oklch(0.794 0.134 82.498) 150deg,
-      oklch(0.906 0.075 88.76) 180deg,
-      oklch(0.969 0.034 86.305) 195deg,
-      oklch(0.901 0.092 82.169) 210deg,
-      oklch(0.737 0.147 78.894) 240deg,
-      oklch(0.605 0.121 74.145) 270deg,
-      oklch(0.469 0.094 70.875) 310deg,
-      oklch(0.357 0.068 69.43) 345deg,
-      oklch(0.391 0.072 71.265) 360deg;
+      var(--tier-frame) 0deg,
+      oklch(0.794 0.134 82.498) 100deg,
+      oklch(0.969 0.034 86.305) 150deg,
+      oklch(0.794 0.134 82.498) 200deg,
+      var(--tier-frame) 300deg,
+      var(--tier-frame) 360deg;
     --glow-duration: 5s;
     --glow-direction: reverse;
-    --glow-blur: 20px;
-    --glow-opacity: 0.42;
+    --glow-blur: 18px;
+    --glow-opacity: 0.3;
   }
 
-  :where(.glow-border[data-glow-style='rainbow-gradient-drift']) {
+  :where(.foil-card[data-glow-style='rainbow-gradient-drift']) {
     --glow-stops:
       oklch(0.709 0.19 9.532) 0deg,
       oklch(0.834 0.125 66.878) 54deg,
@@ -223,135 +310,59 @@
       oklch(0.709 0.19 9.532) 360deg;
     --glow-duration: 12s;
     --glow-phase: -18deg;
-    --glow-blur: 24px;
-    --glow-opacity: 0.58;
+    --glow-blur: 20px;
+    --glow-opacity: 0.34;
   }
 
-  :where(.glow-border[data-glow-style='mint-gold-highlight-orbit']) {
+  :where(.foil-card[data-glow-style='mint-gold-highlight-orbit']) {
     --glow-stops:
-      oklch(0.489 0.083 185.94) 0deg,
-      oklch(0.721 0.13 178.023) 58deg,
-      oklch(0.932 0.101 171.454) 116deg,
-      oklch(0.969 0.043 176.459) 156deg,
-      oklch(0.976 0.045 97.542) 176deg,
-      oklch(0.892 0.135 89.311) 192deg,
-      oklch(0.988 0.025 99.515) 204deg,
-      oklch(0.951 0.07 172.538) 220deg,
-      oklch(0.821 0.137 176.532) 250deg,
-      oklch(0.714 0.109 209.783) 300deg,
-      oklch(0.489 0.083 185.94) 360deg;
+      var(--tier-frame) 0deg,
+      oklch(0.932 0.101 171.454) 80deg,
+      var(--tier-frame) 140deg,
+      oklch(0.976 0.045 97.542) 190deg,
+      var(--tier-frame) 250deg,
+      oklch(0.821 0.137 176.532) 310deg,
+      var(--tier-frame) 360deg;
     --glow-duration: 3.5s;
     --glow-direction: reverse;
     --glow-phase: 76deg;
-    --glow-blur: 28px;
-    --glow-opacity: 0.72;
-  }
-
-  /* The frame under every tier: the card's padding-background. Declared before the tier rules so
-     the tier gradient wins on equal specificity, and left out of the utility list on purpose —
-     a `bg-*` utility would out-cascade every `.tier-*` below it. */
-  [data-slot='meme-card'] {
-    background: var(--color-border);
-  }
-
-  /* Tier frames: the card's padding-background IS the frame. Foil mechanics per tier. */
-
-  /* non-hue ladder step: matte edge on Paper, specular edge on Silver. An outline paints above the
-     opaque .glow-border::before ring, where an inset box-shadow would be occluded. */
-  .tier-paper {
-    background: linear-gradient(160deg, oklch(0.376 0.031 267.399), oklch(0.294 0.027 266.652));
-    outline: 1px solid oklch(0 0 0 / 0.35);
-    outline-offset: -1px;
-  }
-
-  .tier-silver {
-    background: linear-gradient(160deg, oklch(0.724 0.029 255.132), oklch(0.511 0.03 259.031), oklch(0.782 0.026 257.656));
-    outline: 1px solid oklch(1 0 0 / 0.55);
-    outline-offset: -1px;
-  }
-
-  .tier-holo {
-    background: linear-gradient(120deg, oklch(0.81 0.132 223.189), oklch(0.597 0.23 285.527), oklch(0.732 0.242 335.845), oklch(0.81 0.132 223.189));
-  }
-
-  .tier-chrome {
-    background: linear-gradient(
-      105deg,
-      oklch(0.888 0.055 275.009) 0%,
-      oklch(0.591 0.071 272.573) 20%,
-      oklch(0.976 0.011 269.551) 40%,
-      oklch(0.682 0.075 273.815) 60%,
-      oklch(0.922 0.038 274.103) 80%,
-      oklch(0.594 0.07 272.588) 100%
-    );
-  }
-
-  .tier-gold {
-    background: linear-gradient(
-      120deg,
-      oklch(0.652 0.132 81.572),
-      oklch(0.892 0.135 89.311),
-      oklch(0.962 0.062 95.396),
-      oklch(0.892 0.135 89.311),
-      oklch(0.537 0.109 79.315)
-    );
-    box-shadow: 0 0 24px color-mix(in oklab, var(--color-gold) 25%, transparent);
-  }
-
-  .tier-prismatic {
-    background: conic-gradient(
-      from 0deg,
-      oklch(0.691 0.199 23.908),
-      oklch(0.832 0.136 71.035),
-      oklch(0.965 0.18 112.028),
-      oklch(0.893 0.203 147.883),
-      oklch(0.818 0.122 225.012),
-      oklch(0.634 0.21 288.555),
-      oklch(0.739 0.252 331.668),
-      oklch(0.691 0.199 23.908)
-    );
-    box-shadow: 0 0 28px oklch(0.819 0.164 330.583 / 0.35);
-  }
-
-  .tier-shiny {
-    background: linear-gradient(
-      120deg,
-      oklch(0.852 0.163 172.455),
-      oklch(0.932 0.101 171.454),
-      oklch(0.818 0.122 225.012),
-      oklch(0.875 0.094 317.581),
-      oklch(0.892 0.135 89.311),
-      oklch(0.852 0.163 172.455)
-    );
-    box-shadow:
-      0 0 34px oklch(0.932 0.101 171.454 / 0.45),
-      0 0 80px oklch(0.875 0.094 317.581 / 0.25);
+    --glow-blur: 22px;
+    --glow-opacity: 0.4;
   }
 
   /* Display P3: same L and H per stop, chroma scaled to the wider gamut.
-     Every stop in the three chromatic glow styles above and in the holo, prismatic and shiny
-     foils sits ON the sRGB gamut boundary — that is what makes a foil read as foil, and it is
-     also why they all clip to the same wall on a wide-gamut display and lose the separation
-     between tiers. Each stop here keeps its L and H and takes the same *fraction* of the P3
-     maximum chroma it took of the sRGB one, which is 8-36% more chroma depending on hue. An sRGB
-     display never matches the query, so nothing about the ladder changes there.
+     The chromatic stops above sit ON the sRGB gamut boundary — that is what makes a foil read as
+     foil, and it is also why they all clip to the same wall on a wide-gamut display and lose the
+     separation between tiers. Each stop here keeps its L and H and takes the same *fraction* of the
+     P3 maximum chroma it took of the sRGB one. An sRGB display never matches the query, so nothing
+     about the ladder changes there. Token-coloured stops are left alone: `light-dark()` values are
+     already authored in oklch and land inside both gamuts.
 
-     Placement: after both families, because these are the same selectors at the same specificity
-     (`:where()` for the stop sets, one class for the foils) and source order is what decides.
-     Values are #26's, verbatim. */
+     Placement: after the stop sets, because these are the same selectors at the same specificity
+     and source order is what decides. */
   @media (color-gamut: p3) {
-    :where(.glow-border[data-glow-style='cyan-magenta-gradient-drift']) {
+    :where(.foil-card[data-glow-style='cyan-magenta-gradient-drift']) {
       --glow-stops:
-        oklch(0.798 0.149 224.636) 0deg,
-        oklch(0.832 0.111 231.822) 48deg,
-        oklch(0.613 0.226 273.093) 112deg,
-        oklch(0.637 0.251 300.17) 176deg,
-        oklch(0.755 0.272 338.493) 238deg,
-        oklch(0.64 0.226 290.189) 302deg,
-        oklch(0.798 0.149 224.636) 360deg;
+        var(--tier-frame) 0deg,
+        oklch(0.798 0.149 224.636) 48deg,
+        var(--tier-frame) 112deg,
+        oklch(0.755 0.272 338.493) 200deg,
+        var(--tier-frame) 268deg,
+        oklch(0.832 0.111 231.822) 320deg,
+        var(--tier-frame) 360deg;
     }
 
-    :where(.glow-border[data-glow-style='rainbow-gradient-drift']) {
+    :where(.foil-card[data-glow-style='gold-gradient-counter-sweep']) {
+      --glow-stops:
+        var(--tier-frame) 0deg,
+        oklch(0.794 0.158 82.498) 100deg,
+        oklch(0.969 0.039 86.305) 150deg,
+        oklch(0.794 0.158 82.498) 200deg,
+        var(--tier-frame) 300deg,
+        var(--tier-frame) 360deg;
+    }
+
+    :where(.foil-card[data-glow-style='rainbow-gradient-drift']) {
       --glow-stops:
         oklch(0.709 0.243 9.532) 0deg,
         oklch(0.834 0.157 66.878) 54deg,
@@ -363,46 +374,22 @@
         oklch(0.709 0.243 9.532) 360deg;
     }
 
-    :where(.glow-border[data-glow-style='mint-gold-highlight-orbit']) {
+    :where(.foil-card[data-glow-style='mint-gold-highlight-orbit']) {
       --glow-stops:
-        oklch(0.489 0.112 185.94) 0deg,
-        oklch(0.721 0.176 178.023) 58deg,
-        oklch(0.932 0.115 171.454) 116deg,
-        oklch(0.969 0.048 176.459) 156deg,
-        oklch(0.976 0.053 97.542) 176deg,
-        oklch(0.892 0.165 89.311) 192deg,
-        oklch(0.988 0.029 99.515) 204deg,
-        oklch(0.951 0.079 172.538) 220deg,
-        oklch(0.821 0.186 176.532) 250deg,
-        oklch(0.714 0.145 209.783) 300deg,
-        oklch(0.489 0.112 185.94) 360deg;
-    }
-
-    .tier-holo {
-      background: linear-gradient(120deg, oklch(0.81 0.143 223.189), oklch(0.597 0.248 285.527), oklch(0.732 0.319 335.845), oklch(0.81 0.143 223.189));
-    }
-
-    .tier-prismatic {
-      background: conic-gradient(
-        from 0deg,
-        oklch(0.691 0.253 23.908),
-        oklch(0.832 0.17 71.035),
-        oklch(0.965 0.187 112.028),
-        oklch(0.893 0.227 147.883),
-        oklch(0.818 0.133 225.012),
-        oklch(0.634 0.227 288.555),
-        oklch(0.739 0.335 331.668),
-        oklch(0.691 0.253 23.908)
-      );
-    }
-
-    .tier-shiny {
-      background: linear-gradient(120deg, oklch(0.852 0.222 172.455), oklch(0.932 0.115 171.454), oklch(0.818 0.133 225.012), oklch(0.875 0.104 317.581), oklch(0.892 0.165 89.311), oklch(0.852 0.222 172.455));
+        var(--tier-frame) 0deg,
+        oklch(0.932 0.115 171.454) 80deg,
+        var(--tier-frame) 140deg,
+        oklch(0.976 0.053 97.542) 190deg,
+        var(--tier-frame) 250deg,
+        oklch(0.821 0.186 176.532) 310deg,
+        var(--tier-frame) 360deg;
     }
   }
 
-  /* Foil mechanics are host-agnostic — this atom and the tier ladder alike — and bounded to the
-     art box via `.foil-media`, so the sweep never crosses the meta text. */
+  /* ── Bounded effects ──────────────────────────────────────────────────────────────────────────
+     Foil mechanics are host-agnostic — this atom and the tier ladder alike — and bounded to the art
+     box via `.foil-media`, so no sweep ever crosses the meta text. Both pseudo-elements sit at
+     `inset: 0`, which on a `.foil-frame` is the padding box: inside the ring, never over it. */
   .foil-media {
     position: relative;
     display: block;
@@ -422,13 +409,14 @@
     background: linear-gradient(
       115deg,
       transparent 30%,
-      oklch(1 0 0 / 0.14) 45%,
-      oklch(1 0 0 / 0.32) 50%,
-      oklch(1 0 0 / 0.14) 55%,
+      oklch(1 0 0 / 0.12) 45%,
+      oklch(1 0 0 / 0.28) 50%,
+      oklch(1 0 0 / 0.12) 55%,
       transparent 70%
     );
     background-size: 300% 300%;
     animation: card-sheen-sweep 3.8s ease-in-out infinite;
+    animation-play-state: var(--glow-play-state);
     mix-blend-mode: screen;
   }
 
@@ -446,12 +434,18 @@
       radial-gradient(1.8px 1.8px at 40% 80%, oklch(1 0 0) 40%, transparent 60%),
       radial-gradient(1.4px 1.4px at 10% 60%, oklch(1 0 0) 40%, transparent 60%);
     animation: card-twinkle 2.2s ease-in-out infinite alternate;
+    animation-play-state: var(--glow-play-state);
     mix-blend-mode: screen;
   }
 
   /* Freeze, never delete: the static foil stays painted, so a rarity is still legible without the
      motion that normally carries it. */
   @media (prefers-reduced-motion: reduce) {
+    .tier-holo .foil-frame,
+    .tier-chrome .foil-frame,
+    .tier-gold .foil-frame,
+    .tier-prismatic .foil-frame,
+    .tier-shiny .foil-frame,
     :where(.glow-border)::before,
     :where(.glow-border)::after {
       animation-play-state: paused;
@@ -479,17 +473,32 @@
       display: none;
     }
 
-    /* non-colour rarity ladder: solid -> double -> heavy double */
-    :where(.tier-card, [data-slot='meme-card']) {
-      border: 1px solid CanvasText;
+    .foil-frame {
+      background-image: none;
+      border-color: CanvasText;
+      box-shadow: none;
     }
 
-    :where(.tier-card, [data-slot='meme-card']).sheen {
+    /* non-colour rarity ladder: solid -> double -> heavy double */
+    .sheen .foil-frame {
       border-width: 3px;
       border-style: double;
     }
 
-    :where(.tier-card, [data-slot='meme-card']).sparkle {
+    .sparkle .foil-frame {
+      border-width: 4px;
+    }
+
+    :where(.tier-card, [data-slot='meme-card']) {
+      border: 1px solid CanvasText;
+    }
+
+    :where(.tier-card).sheen {
+      border-width: 3px;
+      border-style: double;
+    }
+
+    :where(.tier-card).sparkle {
       border-width: 4px;
     }
   }
