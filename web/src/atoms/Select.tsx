@@ -50,7 +50,6 @@ export const selectItemChrome =
  * The design draws no caret and no check: both are text glyphs, exactly as the boards have them
  * (the Central set WP0 extracted carries neither). `aria-hidden` keeps them out of the name.
  */
-const CHEVRON = '▾'
 const CHECK = '✓'
 
 export function Select({
@@ -108,8 +107,10 @@ export function Select({
             ))}
           </span>
         </span>
+        {/* the ▾ is a pseudo-element so the trigger's textContent stays exactly the value (stories read it) */}
         <SelectIcon className="flex shrink-0 text-ink-muted" aria-hidden="true">
-          {CHEVRON}
+          {/* an empty child: Base UI's Icon falls back to its own ▼ text when it has none */}
+          <span className="after:content-['▾']" />
         </SelectIcon>
       </SelectTrigger>
       <SelectPortal>
