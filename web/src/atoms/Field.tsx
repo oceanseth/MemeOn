@@ -12,14 +12,15 @@ import { cn } from '../lib/cn'
 export type Styled<P> = Omit<P, 'className'> & { className?: string | undefined }
 
 /**
- * The labelled-control column: it carries the label typography, and the control inside inherits
- * weight 600 through preflight's `font: inherit` rather than restating it.
+ * The labelled-control column: label typography, and 6px between the label, the control and the
+ * caption under it (the boards' field rhythm). The control restates its own weight — see
+ * `controlChrome` — so a 600 column never bolds a typed value.
  */
 export function Field({ className, ...props }: Styled<FieldRootProps>) {
   return (
     <BaseField.Root
       className={cn(
-        'flex flex-col gap-1.5 text-sm leading-normal font-semibold text-text-dim',
+        'flex flex-col gap-1.5 text-small font-semibold text-ink',
         className,
       )}
       {...props}
@@ -28,12 +29,13 @@ export function Field({ className, ...props }: Styled<FieldRootProps>) {
   )
 }
 
-export const labelChrome = 'text-sm leading-normal font-semibold text-text-dim'
+/** Onest 14/18 600 ink — the label is the only 600 in the column. */
+export const labelChrome = 'text-small font-semibold text-ink'
 
 /** The caption under a control, at the regular weight — a hint is not a second label. */
-export const hintChrome = 'mt-1 block text-xs leading-normal font-normal text-text-dim'
+export const hintChrome = 'mt-1 block text-[13px]/[18px] font-normal text-ink-muted'
 
-export const errorChrome = 'mt-1 block text-xs leading-normal font-normal text-danger'
+export const errorChrome = 'mt-1 block text-[13px]/[18px] font-normal text-error-text'
 
 export function FieldLabel({ className, ...props }: Styled<FieldLabelProps>) {
   return (
@@ -89,7 +91,7 @@ export function FieldCounter({ className, ...props }: ComponentPropsWithoutRef<'
   return (
     <span
       className={cn(
-        'ml-auto shrink-0 text-xs leading-normal font-normal text-text-dim tabular-nums',
+        'ml-auto shrink-0 text-[13px]/[18px] font-normal text-ink-muted tabular-nums',
         className,
       )}
       {...props}

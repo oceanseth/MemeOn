@@ -11,10 +11,60 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const Default: Story = {}
+export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = canvas.getByRole('button', { name: 'Do the thing' })
+    // the boards' pill: 46 tall, radius 23 (--radius-control)
+    await expect(button.offsetHeight).toBe(46)
+    await expect(getComputedStyle(button).borderRadius).toBe('23px')
+  },
+}
 export const Primary: Story = { args: { variant: 'primary' } }
-export const Danger: Story = { args: { variant: 'danger', children: 'Delete' } }
+
+/** The ultraviolet companion — a second action on a card that must not spend the bubblegum. */
+export const Secondary: Story = { args: { variant: 'secondary', children: 'Show more brains' } }
+export const Danger: Story = { args: { variant: 'danger', children: '🗑️ Delete forever' } }
 export const Login: Story = { args: { variant: 'login', children: 'Continue with Discord' } }
+
+/**
+ * A toggle or tab that is on: the pressed well instead of the raised pill, announced with
+ * `aria-pressed` so the state is not only a colour.
+ */
+export const Pressed: Story = {
+  args: { pressed: true, children: 'All memes' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = canvas.getByRole('button', { name: 'All memes', pressed: true })
+    await expect(button).toHaveAttribute('aria-pressed', 'true')
+    // the pressed material is a well, so the relief runs inset-first
+    await expect(getComputedStyle(button).boxShadow).toContain('inset')
+  },
+}
+
+/** Every variant in one row, which is also the dark twin's subject. */
+export const Variants: Story = {
+  render: () => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: 16 }}>
+      <Button>Load more</Button>
+      <Button variant="primary">＋ Mint a meme</Button>
+      <Button variant="secondary">Show more brains</Button>
+      <Button variant="danger">🗑️ Delete forever</Button>
+      <Button pressed>All memes</Button>
+      <Button disabled>Unavailable</Button>
+      <Button variant="primary" busy>
+        Minting…
+      </Button>
+      <Button variant="login">Log in with Masky</Button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByRole('button')).toHaveLength(8)
+  },
+}
+
+export const Dark: Story = { ...Variants, globals: { theme: 'dark' } }
 
 export const Busy: Story = {
   args: { variant: 'primary', busy: true },

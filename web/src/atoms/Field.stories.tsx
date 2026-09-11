@@ -182,3 +182,5 @@ export const Disabled: Story = {
     await expect(canvas.getByLabelText('Share link')).toBeDisabled()
   },
 }
+
+export const Dark: Story = { ...Invalid, globals: { theme: 'dark' } }

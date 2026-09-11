@@ -25,6 +25,9 @@ export const Default: Story = {
     const canvas = within(canvasElement)
     const input = canvas.getByLabelText('Title')
     await expect(input).toHaveAttribute('data-slot', 'input')
+    // the recessed well: 50 tall, radius 18 (--radius-field)
+    await expect(input.offsetHeight).toBe(50)
+    await expect(getComputedStyle(input).borderRadius).toBe('18px')
     await userEvent.type(input, '!')
     await expect(input).toHaveValue('chrome streak!')
   },
@@ -79,3 +82,6 @@ export const Invalid: Story = {
     await expect(canvas.getByLabelText('Title')).toHaveAttribute('data-invalid')
   },
 }
+
+/** The same well on the dark canvas: the relief flips with the theme, the geometry does not. */
+export const Dark: Story = { ...Default, globals: { theme: 'dark' } }

@@ -92,3 +92,16 @@ export const Row: Story = {
     await expect(canvas.getByText('9')).toBeVisible()
   },
 }
+
+/** The three sizes, squircle and monogram on the ultraviolet fill. */
+export const Sizes: Story = {
+  render: () => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <Avatar name="lou" size="sm" />
+      <Avatar name="ada" size="md" />
+      <Avatar name="CyberSeth" size="lg" />
+    </div>
+  ),
+}
+
+export const Dark: Story = { ...Sizes, globals: { theme: 'dark' } }

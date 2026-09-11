@@ -76,3 +76,5 @@ export const Disabled: Story = {
     await expect(canvas.getByLabelText('Shares to get')).toBeDisabled()
   },
 }
+
+export const Dark: Story = { ...Default, globals: { theme: 'dark' } }

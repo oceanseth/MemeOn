@@ -1,5 +1,6 @@
 import { Select as BaseSelect } from '@base-ui/react/select'
 import { cn } from '../lib/cn'
+import { controlChrome } from './Input'
 
 export const SelectRoot = BaseSelect.Root
 export const SelectTrigger = BaseSelect.Trigger
@@ -22,55 +23,35 @@ export type SelectOption = {
   disabled?: boolean | undefined
 }
 
-/** The native `<select>` chrome, plus the arrow gutter the browser used to reserve for itself. */
-export const selectTriggerChrome =
-  'inline-flex items-center justify-between gap-2 rounded-control border border-border-strong bg-bg-raised ' +
-  'px-3 py-2 text-left text-[length:max(16px,1em)] leading-5 text-text ' +
-  'focus:border-accent data-[popup-open]:border-accent ' +
-  'focus-visible:outline-2 focus-visible:outline-(--focus-ring) focus-visible:outline-offset-(--focus-offset) ' +
-  'contrast-more:focus-visible:outline-3 forced-colors:focus-visible:outline-[color:Highlight] ' +
-  'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-(--state-disabled-opacity) ' +
-  'data-[invalid]:border-danger-border data-[invalid]:bg-(--state-error-bg) ' +
-  'pointer-coarse:min-h-11'
+/**
+ * The trigger is the same recessed well as an `<Input>`, plus the gutter the browser used to
+ * reserve for its own arrow. `justify-between` keeps the ▾ pinned right whatever the value is.
+ */
+export const selectTriggerChrome = cn(
+  controlChrome,
+  'inline-flex items-center justify-between gap-3 text-left',
+  // open is a state, not a focus: the action colour, the same one every selected edge wears
+  'data-[popup-open]:inset-ring-2 data-[popup-open]:inset-ring-action',
+)
 
+/** The popup is a raised card, not a well: it sits above the page, so it wears the lifted shadow. */
 export const selectPopupChrome =
   'z-(--z-modal) max-h-[min(24rem,var(--available-height))] min-w-[var(--anchor-width)] overflow-y-auto ' +
-  'rounded-control border border-border-strong bg-bg-raised py-1 text-text shadow-pop'
+  'rounded-card border-0 bg-surface-raised p-1.5 text-ink shadow-pop'
 
+/** 44px rows, the pressed well as the highlight — the same material the nav uses for "you are here". */
 export const selectItemChrome =
-  'grid grid-cols-[1rem_1fr] items-center gap-2 px-3 py-2 text-[length:max(16px,1em)] leading-[1.3] ' +
+  'grid grid-cols-[1.25rem_1fr] min-h-11 items-center gap-2 rounded-field px-3 text-label ' +
   'cursor-default select-none outline-none ' +
-  'data-[highlighted]:bg-(--state-selected-bg) data-[selected]:text-accent ' +
-  'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-(--state-disabled-opacity) ' +
-  'pointer-coarse:min-h-11'
+  'data-[highlighted]:bg-surface-pressed data-[selected]:font-semibold ' +
+  'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-(--state-disabled-opacity)'
 
-function ChevronIcon() {
-  return (
-    <svg aria-hidden="true" className="size-4" viewBox="0 0 16 16" fill="none">
-      <path
-        d="M4 6.25 8 10.25 12 6.25"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
-function CheckIcon() {
-  return (
-    <svg aria-hidden="true" className="size-4" viewBox="0 0 16 16" fill="none">
-      <path
-        d="m3.5 8.5 3 3 6-7"
-        stroke="currentColor"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
+/**
+ * The design draws no caret and no check: both are text glyphs, exactly as the boards have them
+ * (the Central set WP0 extracted carries neither). `aria-hidden` keeps them out of the name.
+ */
+const CHEVRON = '▾'
+const CHECK = '✓'
 
 export function Select({
   items,
@@ -127,13 +108,13 @@ export function Select({
             ))}
           </span>
         </span>
-        <SelectIcon className="flex shrink-0">
-          <ChevronIcon />
+        <SelectIcon className="flex shrink-0 text-ink-muted" aria-hidden="true">
+          {CHEVRON}
         </SelectIcon>
       </SelectTrigger>
       <SelectPortal>
         {/* the popup sits under the trigger rather than over the selected row: a menu, not a native picker */}
-        <SelectPositioner sideOffset={4} alignItemWithTrigger={false} className="z-(--z-modal)">
+        <SelectPositioner sideOffset={6} alignItemWithTrigger={false} className="z-(--z-modal)">
           <SelectPopup className={selectPopupChrome} data-slot="select-popup">
             <SelectList>
               {items.map((item) => (
@@ -144,8 +125,8 @@ export function Select({
                   className={selectItemChrome}
                   data-slot="select-item"
                 >
-                  <SelectItemIndicator className="col-start-1 text-accent">
-                    <CheckIcon />
+                  <SelectItemIndicator className="col-start-1 text-ink" aria-hidden="true">
+                    {CHECK}
                   </SelectItemIndicator>
                   <SelectItemText className="col-start-2">{item.label}</SelectItemText>
                 </SelectItem>

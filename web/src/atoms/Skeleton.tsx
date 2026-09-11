@@ -4,9 +4,10 @@ import './Skeleton.css'
 
 /** The surface owns the shape (height/aspect-ratio); this recipe never changes. */
 const BASE = cn(
-  'relative overflow-hidden rounded-card border border-border bg-bg-raised',
+  // the recessed well the loading boards draw, swept by the material's own highlight
+  'relative overflow-hidden rounded-card border-0 bg-surface-pressed shadow-pressed',
   "after:content-[''] after:absolute after:inset-0 after:-translate-x-full",
-  'after:bg-[linear-gradient(90deg,transparent,oklch(0.942_0.012_264.509_/_0.06),transparent)]',
+  'after:bg-[linear-gradient(90deg,transparent,var(--color-highlight),transparent)]',
   'after:animate-[atom-skeleton-sweep_1.4s_linear_infinite] motion-reduce:after:animate-none',
 )
 
@@ -45,7 +46,7 @@ export function SkeletonBlock({ className, 'aria-hidden': ariaHidden, ...rest }:
     <div
       data-slot="skeleton-block"
       aria-hidden={ariaHidden ?? 'true'}
-      className={cn(BASE, 'h-3.5 rounded-[8px] bg-bg-card', className)}
+      className={cn(BASE, 'h-3.5 rounded-[8px]', className)}
       {...rest}
     />
   )

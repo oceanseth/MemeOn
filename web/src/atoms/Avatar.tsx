@@ -4,22 +4,23 @@ import { avatarInitial } from '../lib/avatarModel'
 import { cn } from '../lib/cn'
 
 /**
- * `sm` is the 32px topbar disc, `md` the 40px people-row disc (the app's most common one),
- * `lg` the 96px identity ring on a profile or an invite.
+ * `sm` is the 32px topbar squircle, `md` the 40px identity/people-row one (the app's most common,
+ * and the size the sidebar and header draw), `lg` the 56px profile and invite one.
  */
 export type AvatarSize = 'sm' | 'md' | 'lg'
 
+/** Not a circle: `--radius-avatar` is 15px, which is what makes the boards' squircle read. */
 const rootChrome: Record<AvatarSize, string> = {
-  sm: 'size-8 border border-border bg-bg-card',
-  md: 'size-10 border border-border bg-bg-card',
-  lg: 'size-24 border-[3px] border-accent bg-bg-raised',
+  sm: 'size-8',
+  md: 'size-10',
+  lg: 'size-14',
 }
 
-/** One monogram size for both disc sizes; only the ring scales up with `lg`. */
+/** One monogram size for the two small discs; only `lg` scales it up. */
 const fallbackChrome: Record<AvatarSize, string> = {
-  sm: 'text-[15px] font-bold text-text-dim',
-  md: 'text-[15px] font-bold text-text-dim',
-  lg: 'text-[40px] leading-none font-extrabold text-text',
+  sm: 'text-label',
+  md: 'text-label',
+  lg: 'text-[22px] leading-none',
 }
 
 /** Everything not named here lands on the `<img>`, so a list model's `loading="lazy"` survives. */
@@ -34,7 +35,8 @@ export function Avatar({ name, src, alt = '', size = 'sm', className, ...imgProp
   return (
     <BaseAvatar.Root
       className={cn(
-        'inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full select-none',
+        'inline-flex shrink-0 items-center justify-center overflow-hidden select-none',
+        'rounded-avatar border-0 bg-action-secondary shadow-raised',
         rootChrome[size],
         className,
       )}
@@ -52,7 +54,10 @@ export function Avatar({ name, src, alt = '', size = 'sm', className, ...imgProp
       ) : null}
       <BaseAvatar.Fallback
         aria-hidden="true"
-        className={cn('flex size-full items-center justify-center', fallbackChrome[size])}
+        className={cn(
+          'flex size-full items-center justify-center font-semibold text-on-action-secondary',
+          fallbackChrome[size],
+        )}
       >
         {avatarInitial(name)}
       </BaseAvatar.Fallback>

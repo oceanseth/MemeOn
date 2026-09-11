@@ -15,3 +15,5 @@ export const Basic: Story = { args: { style: { width: 120, height: 40 } } }
 export const Card: Story = { render: () => <SkeletonCard style={{ width: 170 }} /> }
 export const Row: Story = { render: () => <SkeletonRow style={{ width: 320 }} /> }
 export const Block: Story = { render: () => <SkeletonBlock style={{ width: 180 }} /> }
+
+export const Dark: Story = { ...Card, globals: { theme: 'dark' } }

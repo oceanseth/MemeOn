@@ -17,11 +17,12 @@ export function EmptyState({ error = false, role, className, children, ...rest }
       data-slot="empty-state"
       role={role ?? (error ? 'alert' : 'status')}
       className={cn(
-        'rounded-card border border-dashed border-border px-5 py-15 text-center text-text-dim',
-        '[&_:where(h2,h3)]:mt-0 [&_:where(h2,h3)]:mb-1.5 [&_:where(h2,h3)]:text-lg [&_:where(h2,h3)]:text-text',
-        '[&_p]:m-0 [&_p]:mb-1.5',
+        // a raised card, centred column: title 23/29 display, body 16/24 muted
+        'rounded-card border-0 bg-surface shadow-raised px-5 py-15 text-center text-body text-ink-muted',
+        '[&_:where(h2,h3)]:mt-0 [&_:where(h2,h3)]:mb-1.5 [&_:where(h2,h3)]:text-title [&_:where(h2,h3)]:text-ink',
+        '[&_p]:m-0 [&_p]:mb-1.5 [&_p]:text-body',
         error &&
-          'border-solid border-[oklch(0.349_0.077_7.441)] bg-(--state-error-bg) text-danger [&_strong]:text-text',
+          'bg-error-surface text-error-text [&_:where(h2,h3)]:text-error-text [&_strong]:text-error-text',
         className,
       )}
     >
@@ -50,12 +51,12 @@ export function EmptyActions({ className, children, ...rest }: HTMLAttributes<HT
 /** Centred page-level state (loading / not found / redirecting): one offset for every route. */
 export function PageState({ className, children, ...rest }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div {...rest} data-slot="page-state" className={cn('pt-20 text-center text-text-dim', className)}>
+    <div {...rest} data-slot="page-state" className={cn('pt-20 text-center text-ink-muted', className)}>
       {children}
     </div>
   )
 }
 
 export function Muted({ className, ...rest }: HTMLAttributes<HTMLSpanElement>) {
-  return <span {...rest} data-slot="muted" className={cn('text-text-dim', className)} />
+  return <span {...rest} data-slot="muted" className={cn('text-ink-muted', className)} />
 }

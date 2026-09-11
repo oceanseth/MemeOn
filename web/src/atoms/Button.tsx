@@ -2,35 +2,52 @@ import type { ButtonHTMLAttributes } from 'react'
 import { cn } from '../lib/cn'
 import { Spinner } from './Spinner'
 
-export type ButtonVariant = 'default' | 'primary' | 'danger' | 'login'
-
-const PRIMARY_BG = 'bg-[linear-gradient(135deg,var(--color-primary-from),var(--color-primary-to))]'
+/**
+ * `default` is the neutral raised pill, `primary` the one bubblegum (sky in dark) action a task or
+ * card is allowed, `secondary` the ultraviolet companion, `danger` the error-surface destructive,
+ * and `login` the wide primary the public pages use. Toggles and tabs wear `pressed` instead of a
+ * variant: the pressed material is a state, not a sixth look.
+ */
+export type ButtonVariant = 'default' | 'primary' | 'secondary' | 'danger' | 'login'
 
 const BASE = cn(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap',
-  'rounded-control border border-border-strong bg-bg-raised text-text',
-  'px-3.5 py-2 text-base cursor-pointer',
-  'pointer-coarse:min-h-11',
-  '[transition:transform_var(--dur-fast)_ease,border-color_var(--dur-base)_ease,background_var(--dur-base)_ease]',
+  'inline-flex items-center justify-center gap-[9px] whitespace-nowrap cursor-pointer',
+  // 46 tall, radius 23, padding-inline 18, Onest 15/18 600 — components.md › Buttons
+  'h-[46px] rounded-control px-[18px] text-label font-semibold',
+  // the material: no border anywhere in Soft Press, the relief is the edge
+  'border-0 bg-surface-raised text-ink shadow-raised',
+  '[transition:transform_var(--dur-fast)_ease,box-shadow_var(--dur-base)_ease,background-color_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
-  '[&:not(:disabled):hover]:border-(--state-hover-border)',
-  '[@media(hover:hover)_and_(pointer:fine)]:[&:not(:disabled):hover]:-translate-y-px',
-  'motion-reduce:[&:not(:disabled):hover]:translate-y-0!',
-  'pointer-coarse:[&:not(:disabled):active]:translate-y-px',
-  'focus-visible:outline-2 focus-visible:outline-(--focus-ring) focus-visible:outline-offset-(--focus-offset)',
-  'contrast-more:focus-visible:outline-3',
+  /* the raised relief one step deeper (0 3px 5px → 0 4px 7px). Scoped off `:active` and off a
+     pressed toggle so only one of the three materials can ever match: hover, active and
+     `aria-pressed` all write `box-shadow`, and the cascade would otherwise pick the winner by
+     stylesheet order rather than by what the finger is doing. */
+  '[&:not(:disabled):not([aria-pressed=true]):hover:not(:active)]:shadow-[var(--color-highlight)_0_1px_1px_inset,var(--color-shadow)_0_-1px_1px_inset,var(--color-shadow)_0_4px_7px]',
+  '[@media(hover:hover)_and_(pointer:fine)]:[&:not(:disabled):not([aria-pressed=true]):hover:not(:active)]:-translate-y-px',
+  'motion-reduce:[&:not(:disabled):not([aria-pressed=true]):hover:not(:active)]:translate-y-0!',
+  '[&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:shadow-pressed',
+  // the design's ring: 3px focus, 2px offset (the base rule says the same; this states it locally)
+  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
+  'contrast-more:focus-visible:outline-4',
   'forced-colors:focus-visible:outline-[Highlight]',
+  // a toggle or tab that is on: the pressed well, whether it came from the prop or a spread
+  'aria-pressed:bg-surface-pressed aria-pressed:text-ink aria-pressed:shadow-pressed',
   'aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed aria-disabled:opacity-(--state-disabled-opacity)',
 )
 
+const PRIMARY = 'bg-action text-on-action'
+
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   default: '',
-  primary: cn(PRIMARY_BG, 'border-transparent font-semibold'),
-  danger: 'border-danger-border text-danger',
+  primary: PRIMARY,
+  secondary: 'bg-action-secondary text-on-action-secondary',
+  danger: 'bg-error-surface text-error-text',
   login: cn(
-    PRIMARY_BG,
-    'border-transparent font-semibold whitespace-normal',
-    'text-[17px] px-[26px] py-[13px] rounded-[12px] min-w-64 max-w-full',
+    PRIMARY,
+    /* the public CTA: the phone's full 350px column, a 256px floor on desktop. It is the one
+       button allowed to wrap, so its height grows from the label instead of being pinned. */
+    'w-full min-w-64 max-w-full md:w-auto',
+    'h-auto min-h-[46px] px-[26px] py-[13px] whitespace-normal',
   ),
 }
 
@@ -39,9 +56,9 @@ export function buttonClasses(variant: ButtonVariant = 'default'): string {
   return cn(
     BASE,
     VARIANT_CLASSES[variant],
-    /* The CSS keyword `normal`, not Tailwind's `leading-normal` (a fixed 1.5): a button's height is
-       its label's own line box, and preflight's `html { line-height: 1.5 }` would otherwise add
-       ~5px to every one of them.
+    /* The CSS keyword `normal`, not Tailwind's `leading-normal` (a fixed 1.5): a button's label
+       sits on its own line box inside the 46px pill, and preflight's `html { line-height: 1.5 }`
+       would push a wrapping `login` label apart.
        Spelled as an arbitrary *property* rather than `leading-[normal]` on purpose: tailwind-merge
        puts `font-size` and `leading` in one conflict group, so a caller's own `text-*` — the
        Marketplace "Clear filters" chip is `text-xs` — silently deletes a `leading-*` that sorts
@@ -55,6 +72,11 @@ export function buttonClasses(variant: ButtonVariant = 'default'): string {
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
   busy?: boolean
+  /**
+   * A toggle/tab that is on: sets `aria-pressed` and swaps the raised material for the pressed
+   * well. A spread `aria-pressed` (the filter rows build their props as a bag) styles the same way.
+   */
+  pressed?: boolean
 }
 
 /**
@@ -67,6 +89,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export function Button({
   variant = 'default',
   busy,
+  pressed,
   disabled,
   type = 'button',
   className,
@@ -80,6 +103,7 @@ export function Button({
       type={type}
       disabled={disabled}
       aria-busy={isBusy || undefined}
+      aria-pressed={pressed ?? rest['aria-pressed']}
       data-slot="button"
       className={cn(
         buttonClasses(variant),
@@ -93,7 +117,8 @@ export function Button({
         className,
       )}
     >
-      {isBusy && <Spinner />}
+      {/* the ring reads as the label's own colour, so it stays visible on bubblegum, sky and ultraviolet */}
+      {isBusy && <Spinner className="border-current/30 border-t-current" />}
       {children}
     </button>
   )

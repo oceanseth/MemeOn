@@ -87,3 +87,5 @@ export const Disabled: Story = {
     )
   },
 }
+
+export const Dark: Story = { ...Checked, globals: { theme: 'dark' } }

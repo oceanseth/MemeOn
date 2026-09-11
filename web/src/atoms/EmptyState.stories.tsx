@@ -61,3 +61,5 @@ export const PageStateExample: Story = {
 export const MutedExample: Story = {
   render: () => <Muted>Just a quiet caption.</Muted>,
 }
+
+export const Dark: Story = { ...WithActions, globals: { theme: 'dark' } }

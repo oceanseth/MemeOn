@@ -30,3 +30,5 @@ export const WithH4: Story = {
     ),
   },
 }
+
+export const Dark: Story = { ...Default, globals: { theme: 'dark' } }

@@ -18,7 +18,7 @@ export function FieldsetLegend({ className, ...props }: Styled<FieldsetLegendPro
   return (
     <BaseFieldset.Legend
       className={cn(
-        'mb-2 p-0 text-xs leading-normal font-bold tracking-[0.6px] text-text-dim uppercase',
+        'mb-2 p-0 text-micro font-bold tracking-[0.6px] text-ink-muted uppercase',
         className,
       )}
       {...props}

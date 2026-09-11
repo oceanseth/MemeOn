@@ -185,3 +185,6 @@ export const InField: Story = {
     await expect(canvas.getByRole('combobox', { name: 'Tier' })).toHaveTextContent('Silver')
   },
 }
+
+/** The popup is a raised card over the page; the highlighted row is the pressed well. */
+export const Dark: Story = { ...Open, globals: { theme: 'dark' } }

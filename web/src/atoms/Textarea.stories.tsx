@@ -72,3 +72,5 @@ export const Invalid: Story = {
     )
   },
 }
+
+export const Dark: Story = { ...Default, globals: { theme: 'dark' } }
