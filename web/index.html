@@ -6,9 +6,11 @@
     <link rel="icon" href="/brand/memeon-logo-circle-48.png" sizes="48x48" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
-    <!-- pre-CSS hints only: index.css owns color-scheme and --color-bg -->
-    <meta name="theme-color" content="#0b0d14" />
-    <meta name="color-scheme" content="dark" />
+    <!-- pre-CSS hints only: index.css owns color-scheme and --color-canvas; these are the two
+         canvases as sRGB hex so the browser chrome matches the first paint in either arm -->
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f6fc" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e0e19" />
     <!-- Pre-hydration fallback, and the title every route keeps except /privacy and /terms, which
          set their own and restore this one. Keep both the <title> and this description. -->
     <meta name="description" content="MemeOn — collect, trade, and invest in memes as they go viral." />
@@ -28,10 +30,11 @@
   </head>
   <body>
     <noscript>
+      <!-- no stylesheet runs here, so the light arm's canvas, ink, ink-muted and link, as hex -->
       <div
         style="
-          background: #0b0d14;
-          color: #e8ecf4;
+          background: #f6f6fc;
+          color: #19182a;
           font-family:
             system-ui,
             -apple-system,
@@ -55,7 +58,7 @@
         </h1>
         <p
           style="
-            color: #97a0b5;
+            color: #535366;
             font-size: 16px;
             line-height: 1.5;
             margin: 0 0 20px;
@@ -64,7 +67,7 @@
           Turn it back on (or try another browser) and the binder, the market
           and your braincells are right where you left them.
         </p>
-        <a style="color: #7fd4ff" href="/">Back to memeon.ai</a>
+        <a style="color: #5c26e1" href="/">Back to memeon.ai</a>
       </div>
     </noscript>
     <div id="root"></div>

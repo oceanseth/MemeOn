@@ -1,25 +1,26 @@
 #!/usr/bin/env node
 /**
- * APCA contrast floor for the palette.
+ * APCA contrast floor for the palette, in both theme arms.
  *
  *   node scripts/check-contrast.mjs [indexCss]
  *
  * WCAG 2.x ratios are computed from a luminance formula that badly misreads dark UI: it scores
- * light-on-dark far higher than the eye does, which is how `--color-text-dim` at L 0.705 could
- * read "4.6:1, fine" while 12px copy on it was measurably hard to read. APCA (the WCAG 3 draft
+ * light-on-dark far higher than the eye does, which is how a dim text token could read
+ * "4.6:1, fine" while 12px copy on it was measurably hard to read. APCA (the WCAG 3 draft
  * contrast method) models the text polarity and the spatial frequency instead, and reports a
  * signed lightness contrast, Lc, from -108 to 108. |Lc| 60 is APCA's floor for body text at the
- * 14-18px / 400-weight the app actually sets; every pair below is body text or a badge label.
+ * 14-18px / 400-weight the app actually sets; every pair below is body text or a chip label.
  *
  * This reads the source `@theme` block rather than the built CSS on purpose: these are the
  * authored values, and a token that regresses should fail before it is ever bundled. Colours
- * are resolved out of the stylesheet — oklch, hex, rgb(), `var(--token)` and the one
- * `color-mix(in <space>, var(--token) N%, transparent)` shape the state vocabulary uses — so
- * editing a token here is the only way to move a number.
+ * are resolved out of the stylesheet — oklch, hex, rgb(), `var(--token)`, the
+ * `light-dark(<light>, <dark>)` pair every Soft Press token is written as (checked once per arm),
+ * and the one `color-mix(in <space>, <colour> N%, transparent)` shape the state vocabulary uses —
+ * so editing a token here is the only way to move a number.
  *
- * Fails (exit 1) if any checked pair falls below the floor. Prints the whole table either way,
- * because the margins are the point: a pair sitting at 61 is a pair one polish pass from
- * failing.
+ * Fails (exit 1) if any checked pair falls below the floor in either arm. Prints the whole table
+ * either way, because the margins are the point: a pair sitting at 61 is a pair one polish pass
+ * from failing.
  *
  * The APCA-W3 0.1.9 constants are inlined; the package is not a dependency of this app and this
  * guard is not worth one.
@@ -29,6 +30,9 @@ import { isAbsolute, join, relative, resolve } from "node:path"
 
 /** |Lc| a text pair has to clear. APCA's own bronze floor for 14-18px body copy. */
 const FLOOR = 60
+
+/** The two arms of every `light-dark()` token. */
+const ARMS = ["light", "dark"]
 
 // ── colour ────────────────────────────────────────────────────────────────────────────────────
 
@@ -102,6 +106,9 @@ function apcaLc(text, background) {
 
 // ── the stylesheet ────────────────────────────────────────────────────────────────────────────
 
+/** The stylesheet without its comments, so a token name quoted in prose cannot pass for a block. */
+const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, "")
+
 /** Body of the first `<opener> { … }` block, brace-counted so nested rules do not truncate it. */
 function block(css, opener) {
   const start = css.indexOf(opener)
@@ -114,33 +121,57 @@ function block(css, opener) {
   throw new Error(`${opener} is never closed`)
 }
 
-/** Every `--name: value;` a block declares directly, comments stripped. */
+/** Every `--name: value;` a block declares directly. */
 function customProperties(body) {
   const out = {}
-  for (const m of body.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/(--[\w-]+):\s*([^;]+);/g)) {
-    out[m[1]] = m[2].trim()
+  for (const m of body.matchAll(/(--[\w-]+):\s*([^;]+);/g)) {
+    out[m[1]] = m[2].replace(/\s+/g, " ").trim()
   }
   return out
+}
+
+/** The arguments of a function call, split on the commas at its own nesting level. */
+function args(value, fn) {
+  const inner = value.slice(fn.length + 1, -1)
+  const parts = []
+  let depth = 0
+  let current = ""
+  for (const ch of inner) {
+    if (ch === "(") depth += 1
+    else if (ch === ")") depth -= 1
+    if (ch === "," && depth === 0) {
+      parts.push(current)
+      current = ""
+    } else current += ch
+  }
+  parts.push(current)
+  return parts.map((part) => part.trim())
 }
 
 const MIX = /^color-mix\(\s*in\s+[\w-]+\s*,\s*(.+?)\s+([\d.]+)%\s*,\s*transparent\s*\)$/i
 
 /**
- * A token's value as a colour. `var()` chases through the same table; `color-mix(… , transparent)`
- * is premultiplied interpolation against `rgb(0 0 0 / 0)`, which is the colour itself at the mixed
- * alpha — the only mix shape `--state-*` uses.
+ * A token's value as a colour in one arm. `var()` chases through the same table; `light-dark()`
+ * takes the arm's branch; `color-mix(… , transparent)` is premultiplied interpolation against
+ * `rgb(0 0 0 / 0)`, which is the colour itself at the mixed alpha — the only mix shape
+ * `--state-*` uses.
  */
-function resolveColor(value, tokens, seen = new Set()) {
+function resolveColor(value, tokens, arm, seen = new Set()) {
   const v = value.trim()
   const varName = v.match(/^var\(\s*(--[\w-]+)\s*\)$/)
   if (varName) {
     if (seen.has(varName[1])) throw new Error(`${varName[1]} resolves to itself`)
     if (!(varName[1] in tokens)) throw new Error(`${varName[1]} is not declared`)
-    return resolveColor(tokens[varName[1]], tokens, new Set(seen).add(varName[1]))
+    return resolveColor(tokens[varName[1]], tokens, arm, new Set(seen).add(varName[1]))
+  }
+  if (/^light-dark\(/i.test(v) && v.endsWith(")")) {
+    const pair = args(v, "light-dark")
+    if (pair.length !== 2) throw new Error(`${v} does not carry exactly a light and a dark arm`)
+    return resolveColor(pair[arm === "light" ? 0 : 1], tokens, arm, seen)
   }
   const mix = v.match(MIX)
   if (mix) {
-    const base = resolveColor(mix[1], tokens, seen)
+    const base = resolveColor(mix[1], tokens, arm, seen)
     return { rgb: base.rgb, alpha: base.alpha * (parseFloat(mix[2]) / 100) }
   }
   return parseColor(v)
@@ -150,46 +181,52 @@ function resolveColor(value, tokens, seen = new Set()) {
 
 const CSS_PATH = resolve(process.argv[2] ?? join(import.meta.dirname, "..", "src", "index.css"))
 
-const css = readFileSync(CSS_PATH, "utf8")
+const css = stripComments(readFileSync(CSS_PATH, "utf8"))
 const tokens = { ...customProperties(block(css, "@theme static")), ...customProperties(block(css, ":root")) }
-const color = (value) => resolveColor(value, tokens)
-const ground = (name) => color(`var(${name})`).rgb
-/** A translucent state tint painted over the lightest surface it can land on: the worst case. */
-const tintOn = (tint, surface) => over(color(`var(${tint})`), ground(surface))
 
 /**
- * Every pair is real: dim copy is `--color-text-dim` on all three surfaces, danger copy is the
- * field error / questbar error / person-row destructive label on the same three, and the two
- * white-on-fill pairs are the alerts bell badge and the confirm dialog's danger button, which
- * both wear `bg-danger-fill text-text-inverse`.
+ * Every pair is real. Ink and muted ink are body copy on each of the five surfaces; the on-action
+ * pairs are the primary and secondary button labels; each status text sits on its status surface
+ * (the Notice, the field error) and, tinted, on the state vocabulary's washes; link is the anchor
+ * colour on the page and in a card; each tier's chip label sits on its chip (Prismatic's on the
+ * gradient's first stop, the flat fallback); the last legacy pair is the alerts badge and the
+ * confirm dialog's destructive button, which still wear `bg-danger-fill text-text-inverse`.
+ * A background is a token name, or `{ tint, over }`: a translucent state tint composited on the
+ * lightest surface it can land on, the worst case.
  */
+const SURFACES = ["--color-canvas", "--color-canvas-alt", "--color-surface", "--color-surface-raised", "--color-surface-pressed"]
+const TIERS = ["paper", "silver", "holo", "chrome", "gold", "prismatic", "shiny"]
 const PAIRS = [
-  ["--color-text", "--color-bg", ground("--color-text"), ground("--color-bg")],
-  ["--color-text-dim", "--color-bg", ground("--color-text-dim"), ground("--color-bg")],
-  ["--color-text-dim", "--color-bg-raised", ground("--color-text-dim"), ground("--color-bg-raised")],
-  ["--color-text-dim", "--color-bg-card", ground("--color-text-dim"), ground("--color-bg-card")],
-  ["--color-accent", "--color-bg", ground("--color-accent"), ground("--color-bg")],
-  ["--color-danger", "--color-bg", ground("--color-danger"), ground("--color-bg")],
-  ["--color-danger", "--color-bg-raised", ground("--color-danger"), ground("--color-bg-raised")],
-  ["--color-danger", "--color-bg-card", ground("--color-danger"), ground("--color-bg-card")],
-  [
-    "--color-danger",
-    "--state-error-bg on card",
-    ground("--color-danger"),
-    tintOn("--state-error-bg", "--color-bg-card"),
-  ],
-  ["--color-ok", "--state-success-bg on card", ground("--color-ok"), tintOn("--state-success-bg", "--color-bg-card")],
-  ["--color-text-inverse", "--color-danger-fill", ground("--color-text-inverse"), ground("--color-danger-fill")],
+  ...SURFACES.map((surface) => ["--color-ink", surface]),
+  ...SURFACES.map((surface) => ["--color-ink-muted", surface]),
+  ["--color-on-action", "--color-action"],
+  ["--color-on-action-secondary", "--color-action-secondary"],
+  ["--color-success-text", "--color-success-surface"],
+  ["--color-warning-text", "--color-warning-surface"],
+  ["--color-error-text", "--color-error-surface"],
+  ["--color-info-text", "--color-info-surface"],
+  ["--color-error-text", { tint: "--state-error-bg", over: "--color-surface" }],
+  ["--color-success-text", { tint: "--state-success-bg", over: "--color-surface" }],
+  ["--color-link", "--color-canvas"],
+  ["--color-link", "--color-surface"],
+  ...TIERS.map((tier) => [`--color-tier-${tier}-chip-text`, `--color-tier-${tier}-chip`]),
+  ["--color-text-inverse", "--color-danger-fill"],
 ]
 
 /** Repo-relative where that reads, absolute where it would be a stack of `..`. */
 const short = relative(process.cwd(), CSS_PATH)
 const display = short && !short.startsWith("..") && !isAbsolute(short) ? short : CSS_PATH
 
-const rows = PAIRS.map(([fg, bg, text, background]) => {
-  const lc = apcaLc(text, background)
-  return { fg, bg, lc, pass: Math.abs(lc) >= FLOOR }
-})
+const rows = PAIRS.flatMap(([fg, bg]) =>
+  ARMS.map((arm) => {
+    const color = (name) => resolveColor(`var(${name})`, tokens, arm)
+    const text = color(fg).rgb
+    const background = typeof bg === "string" ? color(bg).rgb : over(color(bg.tint), color(bg.over).rgb)
+    const label = typeof bg === "string" ? bg : `${bg.tint} over ${bg.over.replace("--color-", "")}`
+    const lc = apcaLc(text, background)
+    return { fg, bg: label, arm, lc, pass: Math.abs(lc) >= FLOOR }
+  }),
+)
 const failed = rows.filter((row) => !row.pass)
 
 const width = (pick) => Math.max(...rows.map((row) => pick(row).length))
@@ -198,18 +235,19 @@ const bgWidth = width((row) => row.bg)
 for (const row of rows) {
   const lc = row.lc.toFixed(1).padStart(6)
   console.log(
-    `  ${row.fg.padEnd(fgWidth)}  on  ${row.bg.padEnd(bgWidth)}  Lc ${lc}  ${row.pass ? "ok" : "BELOW " + FLOOR}`,
+    `  ${row.fg.padEnd(fgWidth)}  on  ${row.bg.padEnd(bgWidth)}  ${row.arm.padEnd(5)}  Lc ${lc}  ${row.pass ? "ok" : "BELOW " + FLOOR}`,
   )
 }
 
 if (failed.length) {
   console.error(
     `\ncheck-contrast: ${failed.length} of ${rows.length} pair(s) in ${display} read below APCA Lc ${FLOOR}:\n` +
-      failed.map((row) => `  ${row.fg} on ${row.bg} is Lc ${row.lc.toFixed(1)}`).join("\n") +
-      `\n\nRaise the lightness of the foreground token (chroma may have to come down to stay in sRGB)\n` +
-      `rather than darkening the surface, which every other pair also stands on.`,
+      failed.map((row) => `  ${row.fg} on ${row.bg} (${row.arm}) is Lc ${row.lc.toFixed(1)}`).join("\n") +
+      `\n\nMove the failing arm of the foreground token — its lightness away from the surface's (chroma\n` +
+      `may have to come down to stay in sRGB) — rather than the surface, which every other pair also\n` +
+      `stands on. A pair that fails in one arm only needs that arm of its light-dark() touched.`,
   )
   process.exit(1)
 }
 
-console.log(`check-contrast: ${rows.length} pair(s), all >= APCA Lc ${FLOOR} (${display})`)
+console.log(`check-contrast: ${rows.length} pair(s) across ${ARMS.join(" and ")}, all >= APCA Lc ${FLOOR} (${display})`)

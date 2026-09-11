@@ -3,14 +3,29 @@ import { extendTailwindMerge } from 'tailwind-merge'
 
 /* tailwind-merge cannot read the CSS `@theme`, so every namespace whose values are not already
    accepted by its stock validators must be registered here or conflicting classes both survive.
-   `--color-*` (any name), `--text-xl/2xl`, `--breakpoint-xs…4xl` and `--font-*` already validate;
-   `--radius-*`, `--shadow-*` and `--container-*` do not. Add a group here whenever `@theme` grows. */
+   `--color-*` (any name), `--breakpoint-xs…4xl` and `--font-*` already validate; `--radius-*`,
+   `--shadow-*`, `--container-*`, `--tracking-*` and any `--text-*` that is not a t-shirt size do
+   not — an unregistered `text-display` would be read as a text *colour* and lose to `text-ink`.
+   Add a group here whenever `@theme` grows. */
 const twMerge = extendTailwindMerge({
   extend: {
     theme: {
-      radius: ['card', 'control', 'pill'],
-      shadow: ['pop', 'modal'],
-      container: ['page'],
+      radius: ['card', 'control', 'field', 'nav', 'avatar', 'chip', 'shell', 'tabbar', 'pill'],
+      shadow: ['raised', 'pressed', 'pop', 'modal'],
+      container: ['app', 'page'],
+      text: [
+        'display',
+        'display-phone',
+        'title',
+        'card-title',
+        'card-title-phone',
+        'intro',
+        'body',
+        'label',
+        'small',
+        'micro',
+      ],
+      tracking: ['display', 'title', 'card-title'],
     },
   },
 })

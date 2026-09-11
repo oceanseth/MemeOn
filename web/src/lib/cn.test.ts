@@ -7,31 +7,57 @@ describe('cn', () => {
   })
 
   it('lets the later Tailwind utility win a conflict', () => {
-    expect(cn('p-2 text-text', 'p-4')).toBe('text-text p-4')
+    expect(cn('p-2 text-ink', 'p-4')).toBe('text-ink p-4')
   })
 
   /* the @theme namespaces tailwind-merge cannot infer from the CSS; without the extendTailwindMerge
      config in cn.ts each of these keeps both classes and source-scan order picks the winner */
-  it('merges the project container measure against a stock one', () => {
+  it('merges the project container measures against each other and a stock one', () => {
     expect(cn('max-w-page', 'max-w-sm')).toBe('max-w-sm')
     expect(cn('max-w-sm', 'max-w-page')).toBe('max-w-page')
+    expect(cn('max-w-app', 'max-w-page')).toBe('max-w-page')
+    expect(cn('max-w-page', 'max-w-app')).toBe('max-w-app')
   })
 
   it('merges the project radii against each other and against stock ones', () => {
     expect(cn('rounded-card', 'rounded-pill')).toBe('rounded-pill')
     expect(cn('rounded-control', 'rounded-lg')).toBe('rounded-lg')
     expect(cn('rounded-lg', 'rounded-control')).toBe('rounded-control')
+    expect(cn('rounded-field', 'rounded-chip')).toBe('rounded-chip')
+    expect(cn('rounded-nav', 'rounded-avatar')).toBe('rounded-avatar')
+    expect(cn('rounded-shell', 'rounded-tabbar')).toBe('rounded-tabbar')
+    expect(cn('rounded-tabbar', 'rounded-full')).toBe('rounded-full')
   })
 
   it('merges the project shadows and keeps a shadow colour beside them', () => {
     expect(cn('shadow-pop', 'shadow-modal')).toBe('shadow-modal')
     expect(cn('shadow-md', 'shadow-pop')).toBe('shadow-pop')
-    expect(cn('shadow-pop', 'shadow-accent')).toBe('shadow-pop shadow-accent')
+    expect(cn('shadow-pop', 'shadow-link')).toBe('shadow-pop shadow-link')
+    expect(cn('shadow-raised', 'shadow-pressed')).toBe('shadow-pressed')
+    expect(cn('shadow-pressed', 'shadow-raised')).toBe('shadow-raised')
+    expect(cn('shadow-raised', 'shadow-none')).toBe('shadow-none')
   })
 
-  it('merges the h1/h2 type ladder', () => {
+  /* the Soft Press ladder is named, not t-shirt sized, so `text-display` has to be registered as a
+     font size — otherwise tailwind-merge files it under text colour and `text-ink` deletes it */
+  it('merges the type ladder as font sizes, not colours', () => {
+    expect(cn('text-display', 'text-title')).toBe('text-title')
+    expect(cn('text-lg', 'text-card-title')).toBe('text-card-title')
+    expect(cn('text-micro', 'text-sm')).toBe('text-sm')
+    expect(cn('text-ink', 'text-body')).toBe('text-ink text-body')
+    expect(cn('text-label', 'text-ink-muted')).toBe('text-label text-ink-muted')
+    expect(cn('text-small', 'text-intro')).toBe('text-intro')
+  })
+
+  it('merges the display trackings against each other and a stock one', () => {
+    expect(cn('tracking-display', 'tracking-title')).toBe('tracking-title')
+    expect(cn('tracking-tight', 'tracking-card-title')).toBe('tracking-card-title')
+    expect(cn('tracking-display', 'tracking-normal')).toBe('tracking-normal')
+  })
+
+  it('merges the stock type sizes', () => {
     expect(cn('text-xl', 'text-2xl')).toBe('text-2xl')
-    expect(cn('text-text', 'text-2xl')).toBe('text-text text-2xl')
+    expect(cn('text-ink', 'text-2xl')).toBe('text-ink text-2xl')
   })
 
   it('merges inside the project breakpoint variants', () => {
@@ -42,6 +68,7 @@ describe('cn', () => {
 
   it('keeps utilities that only differ by variant', () => {
     expect(cn('rounded-card', 'max-lg:rounded-pill')).toBe('rounded-card max-lg:rounded-pill')
+    expect(cn('text-display', 'max-md:text-display-phone')).toBe('text-display max-md:text-display-phone')
   })
 
   /* Why `atoms/Button.tsx` spells its baseline line-height as an arbitrary property. `font-size`

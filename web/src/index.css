@@ -17,6 +17,14 @@
 @layer theme, base, components, utilities;
 @import 'tailwindcss';
 
+/* Soft Press type: Unbounded (display) and Onest (UI/body), self-hosted as variable woff2 through
+   fontsource. Each package's sheet is a set of unicode-range subset `@font-face` rules with
+   `font-display: swap`, so the first paint uses the system fallback and swaps once the ~30 KB
+   latin subset lands; no FOIT. The `@import`s have to sit ahead of every other rule — only the
+   layer statement above may precede them. */
+@import '@fontsource-variable/unbounded';
+@import '@fontsource-variable/onest';
+
 /* Auto source detection reads every file as markup and mines class names out of it. `cn`'s fixtures
    are class-name literals that no markup wears; each one Tailwind emitted would ship a utility
    nothing asks for. Path is relative to this file. */
@@ -28,57 +36,206 @@
    `.container{}` plus a `max-width` rule per breakpoint that nothing uses. */
 @source not inline('container');
 
+/* ── Soft Press tokens ───────────────────────────────────────────────────────────────────────────
+   Values are the Paper design tokens (.beads/evidence/mo-dw7.4/HANDOFF.md § 2), one semantic name
+   per role. Every semantic colour is a `light-dark(<light>, <dark>)` pair: the browser picks the
+   arm from the element's used `color-scheme`, which `:root` sets to `light dark` (follow the OS)
+   and `[data-theme]` pins (see `@layer base`). A component never names a light or dark literal;
+   it names the role, and the pair does the flipping. `scripts/check-contrast.mjs` reads both arms
+   of every text/surface pair back out of this block and fails under APCA Lc 60. */
 @theme static {
-  --color-bg: oklch(0.16 0.015 272.199);
-  --color-bg-raised: oklch(0.206 0.023 268.889);
-  --color-bg-card: oklch(0.228 0.028 268.958);
-  --color-bg-media: oklch(0.155 0.013 270.435);
-  --color-border: oklch(0.299 0.036 268.582);
-  /* control chrome floor: 3.72:1 on bg, 3.43:1 on bg-raised, 3.26:1 on bg-card. --color-border stays decorative. */
-  --color-border-strong: oklch(0.534 0.057 268.638);
-  --color-text: oklch(0.942 0.012 264.509);
-  /* L raised from 0.705 so 11-18px dim copy clears APCA Lc 60 on bg/bg-raised/bg-card (web/scripts/check-contrast.mjs) */
-  --color-text-dim: oklch(0.77 0.032 267.093);
-  --color-text-inverse: oklch(1 0 0);
-  --color-accent: oklch(0.832 0.102 231.822);
-  --color-accent-2: oklch(0.819 0.164 330.583);
-  --color-gold: oklch(0.892 0.135 89.311);
-  /* L raised from 0.735 (C trimmed to stay in sRGB) for the same Lc 60 floor as --color-text-dim */
-  --color-danger: oklch(0.8 0.115 21.864);
-  /* the dark red a danger *surface* is filled with: white on it reads at Lc 89 */
-  --color-danger-fill: oklch(0.477 0.153 18.308);
-  --color-danger-border: oklch(0.544 0.136 21.864);
-  --color-ok: oklch(0.906 0.158 155.414);
-  --color-brand-discord: oklch(0.577 0.209 273.85);
-  --color-scrim: oklch(0.128 0.013 263.618 / 0.8);
-  /* primary gradient stops, luminance-tuned so --color-text clears 4.5:1 on both ends (5.44:1 / 7.36:1) */
-  --color-primary-from: oklch(0.485 0.134 254.38);
-  --color-primary-to: oklch(0.434 0.183 294.832);
+  /* the two ramps the semantic tokens are drawn from; static, they do not flip */
+  --color-bubblegum-50: oklch(96% 0.022 345);
+  --color-bubblegum-100: oklch(91% 0.053 345);
+  --color-bubblegum-200: oklch(84% 0.1 345);
+  --color-bubblegum-300: oklch(76% 0.164 345);
+  --color-bubblegum-500: oklch(63% 0.241 345);
+  --color-bubblegum-700: oklch(48% 0.184 345);
+  --color-bubblegum-800: oklch(37% 0.142 345);
+  --color-bubblegum-900: oklch(28% 0.107 345);
+  --color-bubblegum-950: oklch(20% 0.077 345);
+  --color-ultraviolet-50: oklch(96% 0.018 285);
+  --color-ultraviolet-100: oklch(91% 0.041 285);
+  --color-ultraviolet-200: oklch(84% 0.074 285);
+  --color-ultraviolet-300: oklch(76% 0.115 285);
+  --color-ultraviolet-500: oklch(63% 0.187 285);
+  --color-ultraviolet-700: oklch(48% 0.252 285);
+  --color-ultraviolet-800: oklch(37% 0.195 285);
+  --color-ultraviolet-900: oklch(28% 0.147 285);
+  --color-ultraviolet-950: oklch(20% 0.105 285);
 
-  --radius-card: 14px;
-  --radius-control: 10px;
+  /* surfaces: the page, its alternate band, and the three ceramic materials */
+  --color-canvas: light-dark(oklch(97.5% 0.008 285), oklch(17% 0.022 285));
+  --color-canvas-alt: light-dark(oklch(95% 0.012 285), oklch(20% 0.025 285));
+  --color-surface: light-dark(oklch(99.5% 0.002 285), oklch(23% 0.027 285));
+  --color-surface-raised: light-dark(oklch(98.5% 0.006 285), oklch(27% 0.03 285));
+  --color-surface-pressed: light-dark(oklch(92.5% 0.016 285), oklch(13.5% 0.018 285));
+
+  /* text and hairlines */
+  --color-ink: light-dark(oklch(22% 0.035 285), oklch(95% 0.01 285));
+  --color-ink-muted: light-dark(oklch(45% 0.03 285), oklch(79% 0.03 285));
+  --color-line: light-dark(oklch(86% 0.02 285), oklch(40% 0.04 285));
+  /* dark arm is ultraviolet-200, not TOKENS.md's 300: 300 reads Lc -58 on the dark canvas */
+  --color-link: light-dark(var(--color-ultraviolet-700), var(--color-ultraviolet-200));
+
+  /* the focus ring: bubblegum in light, sky in dark */
+  --color-focus: light-dark(oklch(48% 0.184 345), oklch(72% 0.137 235));
+
+  /* actions. Primary is bubblegum in light and sky in dark — ONE per task/card; secondary is
+     ultraviolet in both. Both pastels carry ink, so the on-colours are the same in each arm. */
+  --color-action: light-dark(oklch(80% 0.131 345), oklch(80% 0.107 235));
+  --color-on-action: oklch(22% 0.035 285);
+  --color-action-secondary: oklch(80% 0.094 285);
+  --color-on-action-secondary: oklch(22% 0.035 285);
+
+  /* status pairs: a tinted surface and the text that sits on it */
+  --color-success-surface: light-dark(oklch(93% 0.07 150), oklch(29% 0.07 150));
+  --color-success-text: light-dark(oklch(36% 0.094 150), oklch(85% 0.12 150));
+  --color-warning-surface: light-dark(oklch(94% 0.061 85), oklch(30% 0.059 82));
+  --color-warning-text: light-dark(oklch(40% 0.082 70), oklch(87% 0.12 85));
+  --color-error-surface: light-dark(oklch(94% 0.029 20), oklch(29% 0.075 25));
+  --color-error-text: light-dark(oklch(43% 0.15 25), oklch(84% 0.084 25));
+  --color-info-surface: light-dark(oklch(93% 0.04 230), oklch(28% 0.05 235));
+  --color-info-text: light-dark(oklch(40% 0.087 240), oklch(85% 0.08 235));
+
+  /* the relief pair every material is built from, and the two overlays */
+  --color-shadow: light-dark(oklch(30% 0.05 285 / 20%), oklch(0% 0 0 / 56%));
+  --color-highlight: light-dark(oklch(100% 0 0 / 82%), oklch(60% 0.05 285 / 25%));
+  --color-scrim: light-dark(oklch(30% 0.05 285 / 45%), oklch(0% 0 0 / 65%));
+  --color-brand-discord: oklch(0.577 0.209 273.85);
+
+  /* Tier system (plan-buckets.md › tier-system): a chip fill, the chip's label and the 3px card
+     frame per tier. Bubblegum is reserved for Shiny and for actions. Prismatic's chip is really
+     the `--gradient-tier-prismatic-chip` in `@layer base`; this colour is its first stop, the
+     fallback a plain `bg-tier-prismatic-chip` paints. */
+  --color-tier-paper-chip: var(--color-surface-pressed);
+  --color-tier-paper-chip-text: var(--color-ink-muted);
+  --color-tier-paper-frame: var(--color-line);
+  --color-tier-silver-chip: var(--color-line);
+  --color-tier-silver-chip-text: var(--color-ink);
+  --color-tier-silver-frame: var(--color-ink-muted);
+  --color-tier-holo-chip: light-dark(var(--color-ultraviolet-200), var(--color-ultraviolet-800));
+  --color-tier-holo-chip-text: light-dark(var(--color-ultraviolet-900), var(--color-ultraviolet-100));
+  --color-tier-holo-frame: light-dark(var(--color-ultraviolet-300), var(--color-ultraviolet-500));
+  --color-tier-chrome-chip: var(--color-ink);
+  --color-tier-chrome-chip-text: var(--color-canvas);
+  --color-tier-chrome-frame: var(--color-ink);
+  --color-tier-gold-chip: var(--color-warning-surface);
+  --color-tier-gold-chip-text: var(--color-warning-text);
+  --color-tier-gold-frame: var(--color-warning-text);
+  --color-tier-prismatic-chip: light-dark(var(--color-bubblegum-200), var(--color-bubblegum-800));
+  --color-tier-prismatic-chip-text: var(--color-ink);
+  --color-tier-prismatic-frame: light-dark(var(--color-ultraviolet-700), var(--color-ultraviolet-300));
+  --color-tier-shiny-chip: var(--color-action);
+  --color-tier-shiny-chip-text: var(--color-on-action);
+  --color-tier-shiny-frame: var(--color-action);
+
+  /* ── Legacy aliases ──────────────────────────────────────────────────────────────────────────
+     The old dark-only palette's names, mapped onto the Soft Press roles so every component that
+     has not been migrated yet still renders in both themes. Nothing new may wear one of these;
+     the WP that owns a component replaces its usages and this table shrinks until it is gone.
+
+       --color-bg            → canvas             --color-accent        → link
+       --color-bg-raised     → surface-raised     --color-accent-2      → bubblegum-500
+       --color-bg-card       → surface            --color-gold          → warning-text
+       --color-bg-media      → surface-pressed    --color-danger        → error-text
+       --color-border        → line               --color-danger-fill   → error-text (see below)
+       --color-border-strong → ink-muted          --color-danger-border → error-text
+       --color-text          → ink                --color-ok            → success-text
+       --color-text-dim      → ink-muted          --color-primary-from  → action
+       --color-text-inverse  → canvas (see below) --color-primary-to    → action
+
+     `danger-fill` and `text-inverse` deviate from TOKENS.md (error-surface / on-action) on purpose:
+     the two legacy call sites (the alerts badge, the confirm dialog's destructive button) wear
+     them as a pair, and ink on the dark error *surface* is Lc 8. Mapping the fill to the strong
+     `error-text` and the label to `canvas` keeps that pair legible in both arms (checked below by
+     `check-contrast`) until WP2a rebuilds both on `error-surface` + `error-text`. */
+  --color-bg: var(--color-canvas); /* legacy alias — replace in the owning WP */
+  --color-bg-raised: var(--color-surface-raised); /* legacy alias — replace in the owning WP */
+  --color-bg-card: var(--color-surface); /* legacy alias — replace in the owning WP */
+  --color-bg-media: var(--color-surface-pressed); /* legacy alias — replace in the owning WP */
+  --color-border: var(--color-line); /* legacy alias — replace in the owning WP */
+  --color-border-strong: var(--color-ink-muted); /* legacy alias — replace in the owning WP */
+  --color-text: var(--color-ink); /* legacy alias — replace in the owning WP */
+  --color-text-dim: var(--color-ink-muted); /* legacy alias — replace in the owning WP */
+  --color-text-inverse: var(--color-canvas); /* legacy alias — replace in the owning WP */
+  --color-accent: var(--color-link); /* legacy alias — replace in the owning WP */
+  --color-accent-2: var(--color-bubblegum-500); /* legacy alias — replace in the owning WP */
+  --color-gold: var(--color-warning-text); /* legacy alias — replace in the owning WP */
+  --color-danger: var(--color-error-text); /* legacy alias — replace in the owning WP */
+  --color-danger-fill: var(--color-error-text); /* legacy alias — replace in the owning WP */
+  --color-danger-border: var(--color-error-text); /* legacy alias — replace in the owning WP */
+  --color-ok: var(--color-success-text); /* legacy alias — replace in the owning WP */
+  --color-primary-from: var(--color-action); /* legacy alias — replace in the owning WP */
+  --color-primary-to: var(--color-action); /* legacy alias — replace in the owning WP */
+
+  /* ── Materials (components.md › Materials). Raised = cards, pills, buttons, chips, the tab bar,
+     avatars. Pressed = the current nav row, the active tab, search wells. Both are built from the
+     relief pair, so they flip with the theme for free. `pop`/`modal` are the two lifted overlays. */
+  --shadow-raised:
+    var(--color-highlight) 0 1px 1px inset, var(--color-shadow) 0 -1px 1px inset,
+    var(--color-shadow) 0 3px 5px;
+  --shadow-pressed:
+    var(--color-shadow) 0 3px 6px inset, var(--color-highlight) 0 -1px 1px inset,
+    var(--color-highlight) 0 1px 1px;
+  --shadow-pop: 0 18px 50px var(--color-shadow);
+  --shadow-modal: 0 30px 80px var(--color-shadow);
+
+  /* ── Radii, one per part */
+  --radius-card: 25px;
+  --radius-control: 23px;
+  --radius-field: 18px;
+  --radius-nav: 24px;
+  --radius-avatar: 15px;
+  --radius-chip: 12px;
+  --radius-shell: 32px;
+  --radius-tabbar: 30px;
   --radius-pill: 999px;
 
-  /* type ladder: xs/sm/base/lg already equal Tailwind's defaults; xl and 2xl are the h2/h1 sizes */
-  --text-xl: 1.375rem;
-  --text-xl--line-height: 1.2;
-  --text-2xl: 2rem;
-  --text-2xl--line-height: 1.2;
-
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* ── Type. Display is Unbounded at weight 500 (800 blows up the measure); everything else is
+     Onest. The weight lives in `@layer base` as `--font-weight-display` because Tailwind would
+     read a `--font-weight-*` theme key as a `font-<name>` utility and collide with the family. */
+  --font-display: 'Unbounded Variable', 'Unbounded', system-ui, sans-serif;
+  --font-sans: 'Onest Variable', 'Onest', system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --tracking-display: -0.04em;
+  --tracking-title: -0.025em;
+  --tracking-card-title: -0.02em;
 
-  --shadow-pop: 0 18px 50px oklch(0 0 0 / 0.55);
-  --shadow-modal: 0 30px 80px oklch(0 0 0 / 0.6);
+  /* The ladder, size/line-height in px as the boards draw them. `display` and `card-title` have a
+     phone size (`max-md:text-display-phone`); the others hold at every width. */
+  --text-display: 44px;
+  --text-display--line-height: 55px;
+  --text-display-phone: 32px;
+  --text-display-phone--line-height: 40px;
+  --text-title: 23px;
+  --text-title--line-height: 29px;
+  --text-card-title: 23px;
+  --text-card-title--line-height: 27px;
+  --text-card-title-phone: 17px;
+  --text-card-title-phone--line-height: 21px;
+  --text-intro: 17px;
+  --text-intro--line-height: 21px;
+  --text-body: 16px;
+  --text-body--line-height: 24px;
+  --text-label: 15px;
+  --text-label--line-height: 19px;
+  --text-small: 14px;
+  --text-small--line-height: 18px;
+  --text-micro: 12px;
+  --text-micro--line-height: 16px;
 
-  --container-page: 1180px;
+  /* ── Layout. `app` is the design's frame; `page` is the old measure `atoms/PageContainer.tsx`
+     still wears until WP5 removes it. */
+  --container-app: 1440px;
+  --container-page: 1180px; /* legacy alias — replace in the owning WP */
 
   /* the widths this app branches on. Tailwind writes `bp:` as (width >= N) and `max-bp:` as
      (width < N), so a `max-width: N` breakpoint is exact at N + 1 and a `min-width: N` at N. */
   --breakpoint-*: initial;
   --breakpoint-xs: 481px; /* max-xs ≙ max-width: 480px (discord link, alerts popover) */
   --breakpoint-sm: 561px; /* max-sm ≙ max-width: 560px (2-up grids, leaderboard and person rows, login CTA) */
-  --breakpoint-md: 641px; /* max-md ≙ max-width: 640px (link status, profile filter bar, hero video) */
+  --breakpoint-md: 641px; /* max-md ≙ max-width: 640px (link status, profile filter bar, hero video; the phone cut) */
   --breakpoint-lg: 721px; /* max-lg ≙ max-width: 720px (bottom-sheet dialogs, market controls, quest scroller) */
   --breakpoint-xl: 761px; /* max-xl ≙ max-width: 760px and xl ≙ min-width: 761px (two-row topbar, page head) */
   --breakpoint-2xl: 900px; /* 2xl ≙ min-width: 900px (trade compose); max-2xl is one pixel under the ≤ 900px detail stack */
@@ -98,41 +255,63 @@
     /* the height every descendant of <main> docks under; organisms/AppShell.css re-authors it for
        the two-row topbar */
     --topbar-h: 65px;
-    --selection-bg: color-mix(in srgb, var(--color-accent) 30%, transparent);
-    /* focus vocabulary */
-    --focus-ring: var(--color-accent);
+    /* the 8px rhythm every measure on the boards is a multiple of */
+    --spacing-unit: 8px;
+    /* display weight, kept out of `@theme` so it cannot shadow the `font-display` family utility */
+    --font-weight-display: 500;
+    /* Prismatic's real chip: a bubblegum→ultraviolet sweep, deeper stops in the dark arm.
+       `light-dark()` only takes colours, so the flip sits on each stop rather than on the image;
+       `--color-tier-prismatic-chip` is the first stop for anything that needs a flat colour. */
+    --gradient-tier-prismatic-chip: linear-gradient(
+      135deg,
+      light-dark(var(--color-bubblegum-200), var(--color-bubblegum-800)),
+      light-dark(var(--color-ultraviolet-300), var(--color-ultraviolet-700))
+    );
+    --selection-bg: color-mix(in oklab, var(--color-action) 35%, transparent);
+    /* focus vocabulary (components.md: 3px focus outline, 2px offset) */
+    --focus-ring: var(--color-focus);
     --focus-offset: 2px;
-    /* state vocabulary, expressed once at the rendered values */
-    --state-hover-border: var(--color-accent);
-    --state-selected-bg: color-mix(in oklab, var(--color-accent) 22%, transparent);
-    --state-selected-border: var(--color-accent);
-    --state-disabled-opacity: 0.5;
-    --state-error-bg: color-mix(in oklab, var(--color-danger) 12%, transparent);
-    --state-success-bg: color-mix(in oklab, var(--color-ok) 12%, transparent);
-    --state-unread-bg: color-mix(in oklab, var(--color-accent) 14%, transparent);
-    color-scheme: dark;
+    /* state vocabulary, expressed once on the semantic roles so every state flips with the theme */
+    --state-hover-border: var(--color-action);
+    --state-selected-bg: color-mix(in oklab, var(--color-action) 22%, transparent);
+    --state-selected-border: var(--color-action);
+    --state-disabled-opacity: 0.42;
+    --state-error-bg: color-mix(in oklab, var(--color-error-text) 12%, transparent);
+    --state-success-bg: color-mix(in oklab, var(--color-success-text) 12%, transparent);
+    --state-unread-bg: color-mix(in oklab, var(--color-action) 14%, transparent);
+    /* Follow the OS by default; `stores/themeStore.ts` pins one arm through `data-theme` (below).
+       This is also what resolves every `light-dark()` token above, and it flips the browser's own
+       chrome — form controls, scrollbars — with the page. */
+    color-scheme: light dark;
     /* browser-owned surfaces carry the palette: checkboxes, caret, scrollbars (colour inherits) */
-    accent-color: var(--color-accent);
-    caret-color: var(--color-accent);
-    scrollbar-color: var(--color-border-strong) transparent;
+    accent-color: var(--color-action);
+    caret-color: var(--color-focus);
+    scrollbar-color: var(--color-line) transparent;
     scrollbar-width: thin;
+  }
+
+  :root[data-theme='light'] {
+    color-scheme: light;
+  }
+
+  :root[data-theme='dark'] {
+    color-scheme: dark;
   }
 
   ::selection {
     background: var(--selection-bg);
-    color: var(--color-text);
+    color: var(--color-ink);
   }
 
-  /* The page itself: the two ambient washes, the palette, and a column tall enough that a low-data
-     route (an empty trade list, a new account's friends page) still puts the footer on the fold
-     instead of stranding 400px of empty page. */
+  /* The page itself: one flat canvas, the palette, the body face, and a column tall enough that a
+     low-data route (an empty trade list, a new account's friends page) still puts the footer on
+     the fold instead of stranding 400px of empty page. */
   body {
-    background:
-      radial-gradient(1200px 600px at 80% -10%, oklch(0.26 0.059 273.393) 0%, transparent 60%),
-      radial-gradient(900px 500px at -10% 110%, oklch(0.232 0.065 303.446) 0%, transparent 55%),
-      var(--color-bg);
-    color: var(--color-text);
+    background: var(--color-canvas);
+    color: var(--color-ink);
     font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
     min-height: 100dvh;
   }
 
@@ -154,57 +333,77 @@
     scroll-margin-top: var(--topbar-h);
   }
 
-  /* Preflight resets headings to `font-size: inherit`, so the ladder is authored here: one size per
-     level, one rhythm, and no component has to restate it to get a heading that reads as one. */
+  /* Preflight resets headings to `font-size: inherit`, so the ladder is authored here: the display
+     face at its one weight, one size per level, and no component has to restate it to get a
+     heading that reads as one. h1 = display, h2 = title, h3 = card-title, h4 = label. */
   h1,
   h2,
   h3,
   h4 {
     margin: 0 0 8px;
-    line-height: 1.2;
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-display);
+    letter-spacing: var(--tracking-display);
   }
 
   h1 {
-    font-size: var(--text-2xl);
+    font-size: var(--text-display);
+    line-height: var(--text-display--line-height);
   }
 
   h2 {
-    font-size: var(--text-xl);
+    font-size: var(--text-title);
+    line-height: var(--text-title--line-height);
   }
 
   h3 {
-    font-size: var(--text-lg);
+    font-size: var(--text-card-title);
+    line-height: var(--text-card-title--line-height);
   }
 
   h4 {
-    font-size: var(--text-base);
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+  }
+
+  /* the phone sizes of the two levels the boards shrink (the `max-md` cut, < 641px) */
+  @media (width < 641px) {
+    h1 {
+      font-size: var(--text-display-phone);
+      line-height: var(--text-display-phone--line-height);
+    }
+
+    h3 {
+      font-size: var(--text-card-title-phone);
+      line-height: var(--text-card-title-phone--line-height);
+    }
   }
 
   p {
-    line-height: 1.55;
+    line-height: var(--text-body--line-height);
   }
 
   /* the one thing a user must type verbatim never breaks mid-token */
   code {
     font-family: var(--font-mono);
     font-size: 0.92em;
-    color: var(--color-text);
-    background: var(--color-bg-raised);
-    border: 1px solid var(--color-border);
+    color: var(--color-ink);
+    background: var(--color-surface-pressed);
+    border: 1px solid var(--color-line);
     border-radius: 6px;
     padding: 1px 5px;
     white-space: nowrap;
   }
 
   a {
-    color: var(--color-accent);
+    color: var(--color-link);
     text-decoration: none;
   }
 
   /* One authored focus ring for everything the browser can focus. `:where()` keeps it at zero
      specificity, so a component's own ring wins without `!important`. */
   :where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
-    outline: 2px solid var(--focus-ring);
+    outline: 3px solid var(--focus-ring);
     outline-offset: var(--focus-offset);
   }
 
@@ -216,13 +415,13 @@
 
   @media (prefers-contrast: more) {
     :root {
-      --color-border: var(--color-border-strong);
-      --state-unread-bg: color-mix(in oklab, var(--color-accent) 24%, transparent);
-      --state-selected-bg: color-mix(in oklab, var(--color-accent) 32%, transparent);
+      --color-line: var(--color-ink-muted);
+      --state-unread-bg: color-mix(in oklab, var(--color-action) 24%, transparent);
+      --state-selected-bg: color-mix(in oklab, var(--color-action) 32%, transparent);
     }
 
     :where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
-      outline-width: 3px;
+      outline-width: 4px;
     }
   }
 }

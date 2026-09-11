@@ -7,6 +7,7 @@ import '../src/index.css'
 import { useMountEffect } from '../src/hooks/useMountEffect'
 import { createStores } from '../src/stores/createStores'
 import { StoresProvider } from '../src/stores/StoresContext'
+import { THEME_STORAGE_KEY } from '../src/stores/themeStore'
 import { FIXED_NOW } from './fixtures'
 import { connectedHandlers } from './msw-handlers'
 import type { UnexpectedRequestLedger } from './request-accounting'
@@ -24,6 +25,10 @@ const connectedMswLoader = mswLoader(async () => {
   return worker
 })
 
+/** The `theme` toolbar global, narrowed: anything but `dark` is the light arm. */
+const storyTheme = (globals: Record<string, unknown>): 'light' | 'dark' =>
+  globals.theme === 'dark' ? 'dark' : 'light'
+
 function FreshStores({ children }: { children: ReactNode }) {
   const [stores] = useState(() => createStores())
   useMountEffect(() => {
@@ -35,10 +40,29 @@ function FreshStores({ children }: { children: ReactNode }) {
 
 const preview: Preview = {
   loaders: [connectedMswLoader],
-  beforeEach: () => {
+  globalTypes: {
+    theme: {
+      description: 'Soft Press theme arm',
+      toolbar: {
+        title: 'Theme',
+        icon: 'contrast',
+        items: [
+          { value: 'light', title: 'Light', icon: 'sun' },
+          { value: 'dark', title: 'Dark', icon: 'moon' },
+        ],
+        dynamicTitle: true,
+      },
+    },
+  },
+  initialGlobals: { theme: 'light' },
+  beforeEach: ({ globals }) => {
     MockDate.set(FIXED_NOW)
     localStorage.clear()
     sessionStorage.clear()
+    // The bag's ThemeStore paints <html> from storage when it is retained (after the decorator
+    // below has already set it), so the toolbar's arm is seeded as the persisted device choice and
+    // the two agree. A story that wants `auto` removes the key in its own beforeEach.
+    localStorage.setItem(THEME_STORAGE_KEY, storyTheme(globals))
     const originalClipboard = navigator.clipboard
     const originalShare = navigator.share
     const OriginalIntersectionObserver = window.IntersectionObserver
@@ -106,11 +130,16 @@ const preview: Preview = {
   },
   tags: ['autodocs'],
   decorators: [
-    (Story, context) => (
-      <FreshStores key={context.id}>
-        <Story />
-      </FreshStores>
-    ),
+    (Story, context) => {
+      // Pin the arm on <html> before the story paints; `index.css` reads `data-theme` into
+      // `color-scheme`, which is what resolves every `light-dark()` token.
+      document.documentElement.dataset.theme = storyTheme(context.globals)
+      return (
+        <FreshStores key={context.id}>
+          <Story />
+        </FreshStores>
+      )
+    },
   ],
 }
 
