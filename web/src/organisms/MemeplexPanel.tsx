@@ -6,24 +6,31 @@ import { Notice } from '../atoms/Notice'
 import { FilterBar } from '../atoms/PageHead'
 import { Panel } from '../atoms/Panel'
 import { Select, type SelectOption } from '../atoms/Select'
+import { cn } from '../lib/cn'
 import type { MemeplexPanelModel } from './memeplexPanelModel'
 
 const PICK_PLACEHOLDER: SelectOption = { value: '', label: 'Link from your binder…' }
+
+/* The strip's own copy scale: 14/18 on ink-muted, which is the smallest the ladder goes before
+   the micro line the cards themselves use. */
+const LINE = 'text-small text-ink-muted'
 
 /** This meme's ancestry, remixes, related cards, and controlled linking controls. */
 export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
   if (!model.show) return null
 
   return (
+    /* The raised section card every panel on the page wears (`atoms/Panel`): bg-surface,
+       radius-card, shadow-raised, with its display heading at 17/21. */
     <Panel className="mt-4">
       <h3>🕸️ Memeplex</h3>
       {model.ancestors.length > 0 && (
-        <p className="my-2 text-[13.5px] leading-[1.55] text-text-dim">
+        <p className={cn('my-2', LINE)}>
           Descended from{' '}
           {model.ancestors.map((ancestor, index) => (
             <span key={ancestor.id}>
               {index > 0 && ' → '}
-              <Link className="text-accent no-underline" {...ancestor.linkProps}>
+              <Link className="text-link no-underline hover:underline" {...ancestor.linkProps}>
                 "{ancestor.title}"
               </Link>
             </span>
@@ -36,14 +43,14 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
         /* tighter tracks than the market grid; the ≤560 rule still takes it 2-up */
         <div
           data-slot="memeplex-grid"
-          className="mt-2.5 grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3 max-sm:grid-cols-2"
+          className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3 max-sm:grid-cols-2"
         >
           {model.family.map((card) => (
             <MemeCard key={card.id} model={card} />
           ))}
         </div>
       ) : (
-        <p className="text-[13.5px] leading-[1.55] text-text-dim">
+        <p className={LINE}>
           No relatives yet — remix this meme or link related ones.
         </p>
       )}

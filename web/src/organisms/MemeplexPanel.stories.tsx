@@ -33,3 +33,6 @@ export const NarrowFamily: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
   decorators: [(Story) => <div style={{ maxWidth: 358 }}><Story /></div>],
 }
+
+/** The strip on the dark arm: raised card, tier frames, and links that still clear the floor. */
+export const Dark: Story = { globals: { theme: 'dark' } }

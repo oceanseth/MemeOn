@@ -5,26 +5,26 @@ import { cn } from '../lib/cn'
 import type { SortChipsModel } from '../lib/sortChipsModel'
 import type { SortKey } from '../lib/sorting'
 
-/** The button chrome at chip scale, with the selected fill winning over hover. */
+/* The filters are tabs, not buttons: a row of raised pills where the current sort is *pressed
+   into* the surface. 46px tall (40 on a phone), radius-control, Onest 15/18 — the control scale
+   `components.md` gives every pill. Selected outranks hover by material and weight, never by an
+   accent colour, so the row still carries no primary action. */
 const chipChrome = cn(
-  'inline-flex items-center justify-center whitespace-nowrap',
-  'rounded-pill border border-border-strong bg-bg-raised text-text',
-  'px-[11px] py-[5px] text-xs cursor-pointer',
-  'pointer-coarse:min-h-11',
-  '[transition:transform_var(--dur-fast)_ease,border-color_var(--dur-base)_ease,background_var(--dur-base)_ease]',
+  'inline-flex h-[46px] items-center justify-center whitespace-nowrap max-sm:h-10',
+  'rounded-control bg-surface-raised px-4 text-label/[18px] font-semibold text-ink shadow-raised',
+  'cursor-pointer',
+  '[transition:transform_var(--dur-fast)_ease,background_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
-  '[&:not(:disabled):hover]:border-(--state-hover-border)',
   '[@media(hover:hover)_and_(pointer:fine)]:[&:not(:disabled):hover]:-translate-y-px',
   'motion-reduce:[&:not(:disabled):hover]:translate-y-0!',
   'pointer-coarse:[&:not(:disabled):active]:translate-y-px',
-  'focus-visible:outline-2 focus-visible:outline-(--focus-ring) focus-visible:outline-offset-(--focus-offset)',
-  'contrast-more:focus-visible:outline-3',
+  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
   'forced-colors:focus-visible:outline-[Highlight]',
   'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',
-  // selected outranks focus by fill and weight, not border colour, and survives the hover rule
-  'data-[pressed]:border-(--state-selected-border) data-[pressed]:bg-(--state-selected-bg)',
-  'data-[pressed]:font-semibold data-[pressed]:text-text',
-  'data-[pressed]:shadow-[inset_0_0_0_1px_var(--state-selected-border)]',
+  // the pressed well is the whole selected state: same colour family, opposite relief
+  'data-[pressed]:bg-surface-pressed data-[pressed]:font-bold data-[pressed]:shadow-pressed',
+  'data-[pressed]:translate-y-0!',
+  'forced-colors:data-[pressed]:border forced-colors:data-[pressed]:border-[Highlight]',
 )
 
 /**
@@ -38,7 +38,7 @@ export function SortChips({ model }: { model: SortChipsModel }) {
     <div>
       <ToggleGroup
         {...model.groupProps}
-        className="flex flex-wrap gap-1.5"
+        className="flex flex-wrap gap-2"
         data-slot="sort-chips"
         disabled={model.disabled}
         value={[model.selected]}
@@ -58,7 +58,7 @@ export function SortChips({ model }: { model: SortChipsModel }) {
           >
             {chip.label}
             {chip.arrow && (
-              <span aria-hidden="true" className="ml-1 font-extrabold text-accent">
+              <span aria-hidden="true" className="ml-1 font-bold text-ink">
                 {chip.arrow}
               </span>
             )}
