@@ -103,6 +103,8 @@ export const Paper: Story = {
     // the art is named by the card and the link, never a third time by itself
     await expect(within(card).queryByRole('img')).toBeNull()
     await expect(card).toHaveTextContent('reshares')
+    // the chip says the tier in product language, and nothing else on the card repeats it
+    await expect(within(card).getByText('Paper')).toBeVisible()
   },
 }
 
@@ -121,6 +123,21 @@ export const Listed: Story = {
     // compact on screen, spelled out for a screen reader at a purchase decision
     await expect(canvas.getByText('10 sh @ 🧠3')).toBeVisible()
     await expect(canvas.getByText('10 shares at 3 braincells each')).toBeInTheDocument()
+  },
+}
+
+/**
+ * The same listing, named for the state it shows: a 25px action pill on the art. It is a state
+ * marker, not a control — a card still carries no primary button.
+ */
+export const ForSale: Story = {
+  ...Listed,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const pill = canvas.getByText('For sale')
+    await expect(pill).toBeVisible()
+    // a label, never a button: nothing here is clickable
+    await expect(canvas.queryByRole('button', { name: /for sale/i })).toBeNull()
   },
 }
 
@@ -182,6 +199,34 @@ export const Large: Story = {
   },
 }
 
+/**
+ * The detail hero as `MemeDetailScreen` renders it: contained art, the 13px tier chip, the listing
+ * pill on the frame. Same atom, one prop apart from a grid thumb.
+ */
+export const Hero: Story = {
+  args: { model: buildMemeCardModel(listedHolo), size: 'lg' },
+  parameters: { cardWidth: 420 },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const card = canvas.getByRole('article', { name: listedHolo.title })
+    await expect(card.dataset.size).toBe('lg')
+    await expect(within(card).getByText('Holo')).toBeVisible()
+    await expect(within(card).getByText('For sale')).toBeVisible()
+  },
+}
+
+/** The 390px card: 166 wide, square art, the phone title size. */
+export const Phone: Story = {
+  args: { model: buildMemeCardModel(holoMeme) },
+  parameters: {
+    cardWidth: 166,
+    viewport: {
+      options: { phone: { name: 'iPhone 14', styles: { width: '390px', height: '844px' } } },
+    },
+  },
+  globals: { viewport: { value: 'phone', isRotated: false } },
+}
+
 /** the whole rarity ladder in one frame — the cheapest guard against two rungs collapsing into one */
 export const AllTiers: Story = {
   args: { model: buildMemeCardModel(allTiers[0] as Meme) },
@@ -207,3 +252,6 @@ export const AllTiers: Story = {
     </>
   ),
 }
+
+/** The same ladder on the dark arm: seven frames and seven chips that still read as seven tiers. */
+export const Dark: Story = { ...AllTiers, globals: { theme: 'dark' } }

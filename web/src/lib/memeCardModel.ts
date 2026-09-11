@@ -34,6 +34,8 @@ export type MemeCardMediaModel =
 export interface MemeCardListingModel {
   shares: number
   pricePerShare: number
+  /** the pill on the art: the listing state in two words, never a control */
+  forSaleLabel: string
   /** compact, visible: `10 sh @ 🧠3` */
   sharesLabel: string
   /** the same offer with the abbreviation and the emoji spelled out */
@@ -47,6 +49,9 @@ export interface MemeCardModel {
   title: string
   tierKey: string
   tierColor: string
+  /** the tier's product name on its own — what the `TierChip` prints */
+  tierName: string
+  /** name and rarity together, for the labels a card is announced by */
   tierLabel: string
   detailLinkProps: { to: string; 'aria-label': string }
   media: MemeCardMediaModel
@@ -127,6 +132,7 @@ function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
       ? {
           shares: meme.listing.shares,
           pricePerShare: meme.listing.pricePerShare,
+          forSaleLabel: 'For sale',
           sharesLabel: `${meme.listing.shares} sh @ 🧠${meme.listing.pricePerShare}`,
           sharesA11yLabel: `${meme.listing.shares} shares at ${meme.listing.pricePerShare} braincells each`,
         }
@@ -138,6 +144,7 @@ function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
     title: meme.title,
     tierKey: meme.tier.key,
     tierColor: meme.tier.color,
+    tierName: meme.tier.name,
     tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`,
     detailLinkProps: { to: `/m/${meme.id}`, 'aria-label': `Open ${meme.title}` },
     media,

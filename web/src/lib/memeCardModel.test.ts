@@ -31,12 +31,14 @@ describe('buildMemeCardModel', () => {
 
     expect(model.detailLinkProps).toEqual({ to: '/m/meme-1', 'aria-label': 'Open foil cat' })
     expect(model.titleId).toBe('meme-card-title-meme-1')
+    expect(model.tierName).toBe('Holo')
     expect(model.tierLabel).toBe('Holo · Rare')
     expect(model.valueLabel).toBe('5,678')
     expect(model.valueA11yLabel).toBe('5,678 braincells card value')
     expect(model.listing).toEqual({
       shares: 10,
       pricePerShare: 3,
+      forSaleLabel: 'For sale',
       sharesLabel: '10 sh @ 🧠3',
       sharesA11yLabel: '10 shares at 3 braincells each',
     })

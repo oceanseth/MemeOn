@@ -1,10 +1,10 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { glowStyleFor } from '../../../shared/tiers'
 import { cn } from '../lib/cn'
 import type { MemeCardModel } from '../lib/memeCardModel'
-import { Badge } from './Badge'
-import { tierClasses } from './foil'
+import { tierClasses, tierFrameClasses } from './foil'
+import { TierChip } from './TierChip'
 import './foil.css'
 
 /**
@@ -18,20 +18,21 @@ export { tierClasses }
 /** `default` is the grid thumb; `lg` is the detail-page hero. See {@link MemeCardProps.size}. */
 export type MemeCardSize = 'default' | 'lg'
 
-/* The frame. `overflow-visible` and `isolate` are the glow ring's own base, restated here as
-   utilities because `foil.css` keeps that base at `:where()` zero specificity for its other
-   hosts; `relative` and the 3px `--glow-width` padding are the card's. The background is *not* a
-   utility — a `bg-*` class would out-cascade every `.tier-*` frame. */
+/* The card: a raised surface, 8px of padding around the art, radius 25 (`components.md` › MemeCard).
+   The tier does not colour this box — the frame inside it does — so the surface is a plain utility,
+   which also outranks the legacy `.tier-<key>` padding-frame background (`utilities` ranks after
+   `components`). */
 const CARD = cn(
-  'group relative isolate overflow-visible rounded-card p-(--glow-width)',
+  'group relative isolate rounded-card bg-surface p-2 shadow-raised',
+  /* the card answers its own width, not the window's: a 166px thumb wears the phone scale whether
+     it is in a 2-up phone grid, a memeplex strip or a 1440px marketplace */
+  '@container',
   'transition-transform duration-(--dur-base) ease-[ease] motion-reduce:transition-none',
   /* touch has no hover to lift on, so it answers a press instead — both sizes, as the sheet does */
   'pointer-coarse:active:scale-[0.99]',
-  /* focus lives on the outer card, outside the clip, keyed off --color-text so it survives every
-     tier; the dark halo separates it from a light foil frame */
-  'has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-text',
-  'has-[a:focus-visible]:outline-offset-[3px]',
-  'has-[a:focus-visible]:shadow-[0_0_0_5px_oklch(0_0_0_/_0.7)]',
+  /* focus lives on the outer card, outside the frame's clip, and wears the global focus ring */
+  'has-[a:focus-visible]:outline-3 has-[a:focus-visible]:outline-focus',
+  'has-[a:focus-visible]:outline-offset-2',
 )
 
 /* The hover lift is the grid thumb's alone: a detail hero is already the page's subject and has
@@ -42,77 +43,78 @@ const CARD_LIFT = cn(
   'motion-reduce:hover:translate-y-0! motion-reduce:hover:scale-100!',
 )
 
-const INNER = cn(
-  'relative flex h-full flex-col overflow-hidden [contain:paint]',
-  'rounded-[calc(var(--radius-card)_-_var(--glow-width))] bg-bg-card',
-  /* the hover lift is gone under reduced motion, so the hover state says so without moving */
-  'motion-reduce:group-hover:outline-1 motion-reduce:group-hover:outline-accent',
-  'motion-reduce:group-hover:outline-offset-[-1px]',
-)
+const INNER = 'relative flex h-full flex-col'
 
-const ART = 'block aspect-square w-full bg-bg-media'
+/* The image frame: radius 18, its own surface, and the 3px tier border `atoms/foil.css` paints on
+   `.foil-frame` (a real border, so `overflow-hidden` clips the art to its inner radius). `foil-media`
+   is the second half of the effect API — it bounds the sheen and the sparkle to the art. */
+const FRAME = 'foil-frame foil-media relative rounded-field bg-surface-pressed'
 
-/* pause / play for the card film: a scrim chip pinned to the art corner, state carried by
-   aria-pressed. The chrome the legacy `button` rule used to lend it is spelled out here. */
+const ART = 'block w-full bg-surface-pressed'
+
+/* pause / play for the card film: a raised 32px square pinned to the art's corner, state carried by
+   aria-pressed. */
 const TOGGLE = cn(
-  'absolute right-2 bottom-2 z-[3] inline-flex items-center justify-center',
-  'min-h-8 min-w-8 p-0 pointer-coarse:min-h-11 pointer-coarse:min-w-11',
-  'cursor-pointer whitespace-nowrap text-sm leading-none text-text',
-  'rounded-pill border border-border bg-[color-mix(in_srgb,var(--color-bg)_72%,transparent)]',
-  'backdrop-blur-[4px]',
-  '[transition:transform_var(--dur-fast)_ease,border-color_var(--dur-base)_ease,background_var(--dur-base)_ease]',
+  'absolute right-2 bottom-2 z-[2] inline-flex items-center justify-center',
+  'size-8 p-0 pointer-coarse:size-11',
+  'cursor-pointer whitespace-nowrap text-label leading-none text-ink',
+  'rounded-[12px] bg-surface-raised shadow-raised',
+  '[transition:transform_var(--dur-fast)_ease,background_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
-  'hover:border-(--state-hover-border)',
   '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px',
   'motion-reduce:hover:translate-y-0!',
-  'pointer-coarse:active:translate-y-px',
-  'focus-visible:outline-2 focus-visible:outline-(--focus-ring)',
-  'focus-visible:outline-offset-(--focus-offset)',
-  'contrast-more:focus-visible:outline-3 forced-colors:focus-visible:outline-[Highlight]',
+  'pointer-coarse:active:translate-y-px active:shadow-pressed',
+  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
+  'forced-colors:focus-visible:outline-[Highlight]',
 )
+
+/* The listing state, not a listing control: the one pill on the art says a card is for sale, and it
+   is the only thing on a card allowed to wear the action colour (a card carries no primary button,
+   so the one-bubblegum rule is untouched). */
+const FOR_SALE = cn(
+  'absolute top-2 right-2 z-[2] inline-flex h-[25px] items-center rounded-pill px-2.5',
+  'bg-action text-micro font-bold text-on-action shadow-raised',
+)
+
+/* The tier chip sits 16 in from the frame's bottom-left corner, as the board draws it. */
+const CHIP_POS = 'absolute bottom-4 left-4 z-[2]'
 
 const META = 'flex flex-col'
 
-const TITLE = 'overflow-hidden text-ellipsis font-bold text-text'
+const TITLE = 'font-display font-medium tracking-card-title text-ink'
 
-/* the rarity is product language: on a 169px 2-up card it wraps to a second line rather than
-   being clipped mid-word by the inner's overflow */
-const CHIP = cn(
-  'inline-flex max-w-full items-center gap-[5px] rounded-pill border border-current',
-  'bg-[oklch(0_0_0_/_0.45)] text-center font-extrabold uppercase',
-  'tracking-[0.8px] [overflow-wrap:anywhere] text-(color:--tier)',
-)
+/* the emoji stat line: 👁️ views · 🔁 reshares, 12/18 on ink-muted */
+const STATS = 'flex items-center text-micro/[18px] text-ink-muted tabular-nums'
 
-/* counts that tick or sit in columns align on fixed-width figures; under 561px the row wraps
-   rather than squeezing the two halves together. */
+/* The footer row: braincells on the left, a 64px right-aligned slot on the right that is allowed
+   two lines ("10 sh @ 🧠3", "12/100 shares"). On a card narrower than 220px it wraps instead. */
 const SUB = cn(
-  'flex items-center justify-between gap-2 text-text-dim tabular-nums',
-  'max-sm:flex-wrap max-sm:gap-y-0.5',
+  'flex items-start justify-between gap-2 text-micro/[15px] font-medium text-ink tabular-nums',
+  '@max-[220px]:flex-wrap @max-[220px]:gap-y-0.5',
 )
+
+const VALUE = 'text-small/[18px] font-bold text-ink'
+
+const RIGHT_SLOT = 'w-16 shrink-0 text-right'
 
 /* The two card scales, spelled out per element:
-     `lg` — art `object-fit: contain` · title 22px, wrapping · meta 14/16/16 with a 9px gap ·
-     sub 15px · chip 13px / 4px 12px · no hover lift.
-   `text-xs/[1.5]` on the default sub, not a bare `text-xs`: Tailwind's paired 1rem line-height
-   would shave 2px off every row. `text-[15px]` sets none of its own, so `lg` inherits the 1.5. */
-const SIZES: Record<MemeCardSize, Record<'card' | 'art' | 'meta' | 'title' | 'chip' | 'sub', string>> = {
+     `lg` — the detail hero: contained art (a wide two-panel joke letterboxes on the media plate
+     rather than having its caption cropped away), a wrapping title, a 13px chip, roomier meta and
+     no hover lift. Grid thumbs keep `cover` — those crops are deliberate — and clamp the title to
+     two lines so a 166px phone card keeps its stats on screen; under 220px of card the thumb takes
+     the phone scale (square art, 17/21 title), which is the board's iPhone card. */
+const SIZES: Record<MemeCardSize, Record<'card' | 'art' | 'meta' | 'title', string>> = {
   default: {
     card: CARD_LIFT,
-    art: 'object-cover',
-    meta: 'gap-1.5 px-3 pt-2.5 pb-3',
-    title: 'whitespace-nowrap text-[15px]',
-    chip: 'px-[9px] py-[3px] text-[11px]',
-    sub: 'text-xs/[1.5]',
+    art: 'aspect-[340/228] object-cover @max-[220px]:aspect-square',
+    meta: 'gap-1 px-1.5 pt-3.5 pb-1.5 @max-[220px]:pt-2.5',
+    title: 'line-clamp-2 text-card-title @max-[220px]:text-card-title-phone',
   },
   lg: {
     card: '',
-    /* the hero is the meme itself: a wide two-panel joke letterboxes on the media plate rather
-       than having its caption cropped away. Grid thumbs keep `cover` — those crops are deliberate. */
-    art: 'object-contain',
-    meta: 'gap-[9px] px-4 pt-3.5 pb-4',
-    title: 'whitespace-normal text-[22px]',
-    chip: 'px-3 py-1 text-[13px]',
-    sub: 'text-[15px]',
+    art: 'aspect-[340/228] object-contain',
+    meta: 'gap-1.5 px-2 pt-4 pb-2',
+    title: 'text-card-title',
   },
 }
 
@@ -120,15 +122,16 @@ const SIZES: Record<MemeCardSize, Record<'card' | 'art' | 'meta' | 'title' | 'ch
  * The meta row a `footer` has to line up with: `BinderScreen` and `ProfileScreen` add their own
  * stats line under the card's, and it has to be the same row this atom already paints.
  */
-export const memeCardSubClasses = cn(SUB, SIZES.default.sub)
+export const memeCardSubClasses = SUB
 
 export interface MemeCardProps {
   model: MemeCardModel
   /** extra meta rows under the stats — a buy button, a binder tag, a quest hint */
   footer?: ReactNode | undefined
   /**
-   * `default` (the grid thumb) or `lg`, the detail-page hero: contained art, a 22px wrapping
-   * title, roomier meta and no hover lift. `screens/MemeDetailScreen.tsx` is the only `lg` caller.
+   * `default` (the grid thumb) or `lg`, the detail-page hero: contained art, a wrapping title, a
+   * bigger tier chip, roomier meta and no hover lift. `screens/MemeDetailScreen.tsx` is the only
+   * `lg` caller.
    */
   size?: MemeCardSize | undefined
 }
@@ -140,15 +143,14 @@ export function MemeCard({ model, footer, size = 'default' }: MemeCardProps) {
       ref={model.cardRef}
       data-slot="meme-card"
       data-size={size}
-      className={cn(CARD, scale.card, tierClasses(model.tierKey))}
+      className={cn(CARD, scale.card, tierFrameClasses(model.tierKey))}
       aria-labelledby={model.titleId}
       data-glow-style={glowStyleFor(model.tierKey)}
       data-media-autoplay={model.mediaAutoplay}
     >
       <div data-slot="meme-card-inner" className={INNER}>
-        {/* .foil-media bounds the sheen and the sparkle to the art, so neither sweeps the meta text */}
-        <span data-slot="foil-media" className="foil-media">
-          <Link {...model.detailLinkProps} className="focus-visible:outline-none">
+        <span data-slot="foil-media" className={FRAME}>
+          <Link {...model.detailLinkProps} className="block focus-visible:outline-none">
             {model.media.kind === 'video' ? (
               <video
                 data-slot="meme-art"
@@ -159,6 +161,17 @@ export function MemeCard({ model, footer, size = 'default' }: MemeCardProps) {
               <img data-slot="meme-art" className={cn(ART, scale.art)} {...model.media.imageProps} />
             )}
           </Link>
+          <TierChip
+            tierKey={model.tierKey}
+            label={model.tierName}
+            size={size === 'lg' ? 'md' : 'sm'}
+            className={CHIP_POS}
+          />
+          {model.listing && (
+            <span data-slot="for-sale" className={FOR_SALE}>
+              {model.listing.forSaleLabel}
+            </span>
+          )}
           {model.media.kind === 'video' && (
             <button data-slot="media-toggle" className={TOGGLE} {...model.media.toggleProps}>
               <span aria-hidden="true">⏯</span>
@@ -169,35 +182,25 @@ export function MemeCard({ model, footer, size = 'default' }: MemeCardProps) {
           <span data-slot="meme-title" className={cn(TITLE, scale.title)} id={model.titleId}>
             {model.title}
           </span>
-          <span>
-            <span
-              data-slot="tier-chip"
-              className={cn(CHIP, scale.chip)}
-              style={{ '--tier': model.tierColor } as CSSProperties}
-            >
-              {model.tierLabel}
+          <span data-slot="meme-stats" className={STATS}>
+            <span aria-hidden="true">
+              {model.viewsLabel !== null && <>👁️ {model.viewsLabel} · </>}🔁{' '}
+              {model.resharesLabel}
             </span>
+            <span className="sr-only">{model.statsA11yLabel}</span>
           </span>
-          <span data-slot="meme-sub" className={cn(SUB, scale.sub)}>
-            <span>
-              <span aria-hidden="true">
-                {model.viewsLabel !== null && <>👁️ {model.viewsLabel} · </>}🔁{' '}
-                {model.resharesLabel}
-              </span>
-              <span className="sr-only">{model.statsA11yLabel}</span>
-            </span>
-            <span>
+          <span data-slot="meme-sub" className={SUB}>
+            <span className={VALUE}>
               <span aria-hidden="true">🧠 {model.valueLabel}</span>
               <span className="sr-only">{model.valueA11yLabel}</span>
             </span>
+            {model.listing && (
+              <span className={RIGHT_SLOT}>
+                <span aria-hidden="true">{model.listing.sharesLabel}</span>
+                <span className="sr-only">{model.listing.sharesA11yLabel}</span>
+              </span>
+            )}
           </span>
-          {model.listing && (
-            <span data-slot="meme-sub" className={cn(SUB, scale.sub)}>
-              <Badge>for sale</Badge>
-              <span aria-hidden="true">{model.listing.sharesLabel}</span>
-              <span className="sr-only">{model.listing.sharesA11yLabel}</span>
-            </span>
-          )}
           {footer}
         </div>
       </div>
