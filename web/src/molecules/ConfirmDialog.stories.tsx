@@ -137,3 +137,5 @@ export const Prompt: Story = {
     await expect(canvas.getByRole('textbox', { name: /Why is this meme yours/ })).toHaveAttribute('maxlength', '400')
   },
 }
+
+export const Dark: Story = { ...Danger, globals: { theme: 'dark' } }

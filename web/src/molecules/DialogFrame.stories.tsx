@@ -87,7 +87,7 @@ export const Scrolling: Story = {
     children: (
       <>
         {Array.from({ length: 30 }, (_, index) => (
-          <p key={index} className="mt-2 text-sm text-text-dim">
+          <p key={index} className="mt-2 text-small text-ink-muted">
             Line {index + 1} of a very long explanation.
           </p>
         ))}
@@ -103,3 +103,6 @@ export const Closed: Story = {
     await expect(within(canvasElement).queryByRole('dialog')).toBeNull()
   },
 }
+
+/** The danger frame on the dark arm: the 2px error ring sits inside the card, over the modal shadow. */
+export const Dark: Story = { ...DangerAlert, globals: { theme: 'dark' } }

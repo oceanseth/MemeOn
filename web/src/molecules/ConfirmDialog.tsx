@@ -2,23 +2,8 @@ import { Button } from '../atoms/Button'
 import { Field, FieldCounter, FieldFooter, FieldHint, FieldLabel } from '../atoms/Field'
 import { FilterBar } from '../atoms/PageHead'
 import { Textarea } from '../atoms/Textarea'
-import { cn } from '../lib/cn'
 import type { ConfirmDialogModel } from '../lib/confirmDialogModel'
 import { DialogFrame } from './DialogFrame'
-
-/** 0-1-1 in the legacy sheet, so the white label beat `button.danger`; here it just wins the merge. */
-const DANGER_BUTTON =
-  'bg-danger-fill border-transparent text-text-inverse font-bold ' +
-  '[&:not(:disabled):hover]:border-danger'
-
-/**
- * Legacy `button[aria-busy='true'] { opacity: 1 }`: in flight is not unavailable, and the label of a
- * request you cannot cancel has to stay readable. The Button atom reproduces that against its own
- * `:disabled` dimming but not against `aria-disabled`, which is exactly what a busy confirm wears —
- * and `aria-disabled:opacity-*` outranks a plain `opacity-100` on specificity. `!` settles it here
- * until the atom covers the aria-disabled case itself.
- */
-const BUSY_BUTTON = 'opacity-100!'
 
 /**
  * The app's confirmation modal: an `alertdialog` whose message is its description, so a screen
@@ -47,7 +32,7 @@ export function ConfirmDialog({ model }: { model: ConfirmDialogModel }) {
       {model.prompt && (
         <Field className="mt-3.5">
           <FieldLabel>{model.prompt.label}</FieldLabel>
-          <Textarea className="min-h-22 w-full font-normal" {...model.prompt.textareaProps} />
+          <Textarea className="w-full" {...model.prompt.textareaProps} />
           <FieldFooter>
             {model.prompt.hint && (
               <FieldHint id={model.prompt.hintId}>{model.prompt.hint}</FieldHint>
@@ -56,13 +41,12 @@ export function ConfirmDialog({ model }: { model: ConfirmDialogModel }) {
           </FieldFooter>
         </Field>
       )}
+      {/* right-aligned, walking away first: neutral Cancel leftmost, the committing button last —
+          destructive on the error pair, otherwise the one primary this task is allowed
+          (plan-buckets.md › primary-action). The Button atom keeps a busy label at full opacity. */}
       <FilterBar className="mt-[18px] justify-end">
         <Button {...model.cancelButtonProps}>{model.cancelLabel}</Button>
-        <Button
-          variant={model.danger ? 'default' : 'primary'}
-          className={cn(model.danger && DANGER_BUTTON, model.busy && BUSY_BUTTON)}
-          {...model.confirmButtonProps}
-        >
+        <Button variant={model.danger ? 'danger' : 'primary'} {...model.confirmButtonProps}>
           {model.confirmLabel}
         </Button>
       </FilterBar>

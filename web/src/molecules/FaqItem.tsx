@@ -13,9 +13,9 @@ export interface FaqItemProps {
 }
 
 const TRIGGER = cn(
-  'group flex w-full min-h-11 cursor-pointer items-center gap-2 rounded-xl px-[18px] py-3.5 text-left font-semibold',
-  'focus-visible:outline-2 focus-visible:outline-(--focus-ring) focus-visible:outline-offset-(--focus-offset)',
-  'contrast-more:focus-visible:outline-3 forced-colors:focus-visible:outline-[Highlight]',
+  'group flex w-full min-h-11 cursor-pointer items-center gap-3 rounded-card px-[18px] py-3.5 text-left',
+  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
+  'contrast-more:focus-visible:outline-4 forced-colors:focus-visible:outline-[Highlight]',
 )
 
 /**
@@ -30,21 +30,21 @@ export function FaqItem({ question, children, defaultOpen = false, className }: 
     <Collapsible.Root
       defaultOpen={defaultOpen}
       data-slot="faq-item"
-      className={cn('mb-2.5 rounded-xl border border-border bg-bg-raised', className)}
+      className={cn('mb-2.5 rounded-card border-0 bg-surface-raised shadow-raised', className)}
     >
       <Collapsible.Trigger className={TRIGGER} data-slot="faq-trigger">
-        <svg
+        {/* the design draws no caret: the marker is the ▾ text glyph, turned over when the row opens */}
+        <span
           aria-hidden="true"
-          viewBox="0 0 16 16"
-          className="size-3 shrink-0 fill-current transition-transform duration-(--dur-base) group-data-[panel-open]:rotate-90 motion-reduce:transition-none"
+          className="shrink-0 text-label text-ink-muted transition-transform duration-(--dur-base) group-data-[panel-open]:rotate-180 motion-reduce:transition-none"
         >
-          <path d="M5 2.5 11 8l-6 5.5z" />
-        </svg>
-        {/* the row's height is the question's own line box: `text-base` alone would pair 1.5rem
-            with it and stand every FAQ row 6px taller than the rest of the page's controls */}
-        <h3 className="m-0 text-base leading-[normal]">{question}</h3>
+          ▾
+        </span>
+        {/* Onest, not the display face a bare `<h3>` inherits: a question is a row label, and the
+            row's height is its own line box */}
+        <h3 className="m-0 font-sans text-intro font-semibold tracking-normal text-ink">{question}</h3>
       </Collapsible.Trigger>
-      <Collapsible.Panel data-slot="faq-panel" className="px-[18px] pb-3.5 text-text-dim leading-[1.55]">
+      <Collapsible.Panel data-slot="faq-panel" className="px-[18px] pb-4 text-body text-ink-muted">
         {children}
       </Collapsible.Panel>
     </Collapsible.Root>

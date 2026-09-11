@@ -53,3 +53,5 @@ export const TogglesOpenAndClosed: Story = {
     await waitFor(() => expect(canvas.queryByText(ANSWER)).not.toBeInTheDocument())
   },
 }
+
+export const Dark: Story = { ...OpenByDefault, globals: { theme: 'dark' } }

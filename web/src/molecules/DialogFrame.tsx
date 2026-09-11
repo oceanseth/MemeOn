@@ -18,9 +18,10 @@ const anchorContainer = (anchorId: string) => ({
 const POPUP = cn(
   'fixed inset-0 z-(--z-modal) m-auto h-fit box-border overflow-y-auto [scrollbar-width:thin]',
   'max-h-[min(86dvh,86vh)] max-w-[calc(100vw-24px)]',
-  'rounded-card border border-border bg-bg-card p-6 text-text',
-  'focus-visible:outline-2 focus-visible:outline-(--focus-ring) focus-visible:outline-offset-(--focus-offset)',
-  'contrast-more:focus-visible:outline-3 forced-colors:focus-visible:outline-[Highlight]',
+  // the modal card: radius 25, 24 of padding, the surface colour, no border — the shadow is the edge
+  'rounded-card border-0 bg-surface p-6 text-ink shadow-modal',
+  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
+  'contrast-more:focus-visible:outline-4 forced-colors:focus-visible:outline-[Highlight]',
   // ≤720px: a bottom sheet, so an on-screen keyboard pushes the dialog instead of burying it
   'max-lg:mb-0 max-lg:w-full max-lg:max-w-none max-lg:rounded-b-none',
   'max-lg:pb-[max(24px,env(safe-area-inset-bottom))]',
@@ -33,18 +34,20 @@ const SIZE = {
   md: 'w-[min(640px,calc(100vw-24px))]',
 }
 
-/** A hairline of danger around the frame, over the same modal shadow. */
-const DANGER =
-  'border-[oklch(0.349_0.077_7.441)] ' +
-  '[box-shadow:0_0_0_1px_color-mix(in_oklab,var(--color-danger)_25%,transparent),var(--shadow-modal)]'
+/**
+ * The danger frame: a 2px ring drawn inside the card, so the box never grows and the modal shadow
+ * underneath it is untouched (Tailwind composes `inset-ring` and `shadow` into the one property).
+ */
+const DANGER = 'inset-ring-2 inset-ring-error-text'
 
+/** The ✕ is a 40px neutral raised square — the design has no drawn x, and the glyph is the button. */
 const CLOSE = cn(
-  'absolute top-2.5 right-2.5 inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center',
-  'rounded-control border-0 bg-transparent p-0 text-text-dim',
-  '[transition:color_var(--dur-base)_ease,background_var(--dur-base)_ease] motion-reduce:transition-none',
-  'hover:bg-bg-raised hover:text-text',
-  'focus-visible:outline-2 focus-visible:outline-(--focus-ring) focus-visible:outline-offset-(--focus-offset)',
-  'contrast-more:focus-visible:outline-3 forced-colors:focus-visible:outline-[Highlight]',
+  'absolute top-6 right-6 inline-flex size-10 pointer-coarse:size-11 cursor-pointer items-center justify-center',
+  'rounded-[13px] border-0 bg-surface-raised p-0 text-label text-ink shadow-raised',
+  '[transition:transform_var(--dur-fast)_ease,box-shadow_var(--dur-base)_ease] motion-reduce:transition-none',
+  '[&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:shadow-pressed',
+  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
+  'contrast-more:focus-visible:outline-4 forced-colors:focus-visible:outline-[Highlight]',
   'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',
 )
 
@@ -138,7 +141,7 @@ export function DialogFrame({
     <Dialog.Title
       id={titleId ?? `${id}-title`}
       render={<h3 />}
-      className="m-0 mb-1.5 text-[22px] leading-[1.2] font-bold"
+      className="m-0 mb-1.5 text-title"
       data-slot="dialog-title"
     >
       {title}
@@ -161,11 +164,11 @@ export function DialogFrame({
             aria-modal="true"
             initialFocus={initialFocus}
             finalFocus={finalFocus}
-            className={cn(POPUP, SIZE[size], danger ? DANGER : 'shadow-modal', className)}
+            className={cn(POPUP, SIZE[size], danger && DANGER, className)}
             data-slot="dialog"
           >
             {close ? (
-              <div className="flex items-center justify-between gap-3 pr-11" data-slot="dialog-head">
+              <div className="flex items-center justify-between gap-3 pr-12" data-slot="dialog-head">
                 {heading}
                 <Dialog.Close
                   aria-label={close.label}
@@ -183,7 +186,7 @@ export function DialogFrame({
               <Dialog.Description
                 id={descriptionId ?? `${id}-description`}
                 render={descriptionAs === 'div' ? <div /> : <p />}
-                className={cn('m-0 text-sm leading-[1.55] text-text-dim', descriptionClassName)}
+                className={cn('m-0 text-body text-ink-muted', descriptionClassName)}
                 data-slot="dialog-description"
               >
                 {description}
