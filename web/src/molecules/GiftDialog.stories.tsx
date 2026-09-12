@@ -69,3 +69,6 @@ export const Error: Story = {
   args: { model: model({ pick: giftablePaper, shares: 3, error: 'not enough shares' }) },
 }
 export const Closed: Story = { args: { model: model({ open: false, memes: [] }) } }
+
+/** The dark arm of the picker: pressed row, tier seals and the one bubblegum→sky submit. */
+export const Dark: Story = { ...Picked, globals: { theme: 'dark' } }

@@ -12,7 +12,7 @@ const friendOutgoing = { ...friendAccepted, status: 'outgoing' as const }
 const searchHit = { sub: friendAccepted.sub, name: friendAccepted.name, picture: friendAccepted.picture }
 
 const friendLink = buildFriendLinkModel
-const statsLabel = `📚 ${friendAccepted.collectionSize} memes · 🧠 ${friendAccepted.portfolioValue.toLocaleString()} portfolio`
+const statsLabel = `📚 ${friendAccepted.collectionSize} memes · 🧠 ${friendAccepted.portfolioValue.toLocaleString()} held`
 
 const giftDialog = buildGiftDialogModel({
   open: false, recipient: null, memes: [], query: '', pick: null, shares: 1, busy: false, error: null,
@@ -27,6 +27,8 @@ const acceptedRow = (overrides: Partial<FriendsScreenModel['accepted'][number]> 
   isOnline: false,
   onlineLabel: 'Online now',
   statsLabel,
+  tradeLabel: 'Trade',
+  tradeLinkProps: { to: '/trade', 'aria-label': `Trade with ${friendAccepted.name}` },
   giftLabel: 'Gift',
   giftButtonProps: { onClick: fn(), 'aria-label': `Gift shares to ${friendAccepted.name}` },
   removeLabel: 'Remove',
@@ -42,6 +44,7 @@ const empty: FriendsScreenModel = {
   err: null,
   inviteLabel: '💌 Invite a friend',
   onlineFriends: [],
+  onlineCountLabel: '0 friends online',
   incoming: [],
   outgoing: [],
   accepted: [],
@@ -73,6 +76,16 @@ const empty: FriendsScreenModel = {
   inviteButtonProps: { onClick: fn() },
   giftDialog,
   removeDialog,
+}
+
+/** Storybook's viewport global; the vitest storybook project renders at the story's own width. */
+const phone = {
+  parameters: {
+    viewport: {
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+    },
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
 }
 
 const meta = {
@@ -108,6 +121,7 @@ export const Incoming: Story = {
     accepted: [acceptedRow()],
     incoming: [{
       ...friendLink(friendIncoming),
+      statsLabel,
       acceptButtonProps: { onClick: fn(), 'aria-label': `Accept ${friendIncoming.name}'s request` },
       declineButtonProps: { onClick: fn(), 'aria-label': `Decline ${friendIncoming.name}'s request` },
     }],
@@ -123,6 +137,7 @@ export const IncomingOnly: Story = {
     showCircleHint: true,
     incoming: [{
       ...friendLink(friendIncoming),
+      statsLabel,
       acceptButtonProps: { onClick: fn(), 'aria-label': `Accept ${friendIncoming.name}'s request` },
       declineButtonProps: { onClick: fn(), 'aria-label': `Decline ${friendIncoming.name}'s request` },
     }],
@@ -139,6 +154,7 @@ export const Outgoing: Story = {
     circleHintMessage: 'No one has accepted yet — your sent requests are still out there.',
     outgoing: [{
       ...friendLink(friendOutgoing),
+      statsLabel,
       pendingLabel: 'Pending',
       cancelButtonProps: { onClick: fn(), 'aria-label': `Cancel your request to ${friendOutgoing.name}` },
     }],
@@ -205,6 +221,7 @@ export const Online: Story = {
     showOnline: true,
     accepted: [acceptedRow({ isOnline: true })],
     onlineFriends: [friendLink(friendAccepted)],
+    onlineCountLabel: '1 friend online',
   },
 }
 
@@ -239,4 +256,42 @@ export const ConfirmRemove: Story = {
       onCancel: fn(),
     }),
   },
+}
+
+/** The whole page with every section filled: the state the dark and phone twins are cut from. */
+export const Full: Story = {
+  args: {
+    phase: 'ready',
+    showEmpty: false,
+    showCircle: true,
+    showOnline: true,
+    showIncoming: true,
+    showOutgoing: true,
+    accepted: [acceptedRow({ isOnline: true })],
+    onlineFriends: [friendLink(friendAccepted)],
+    onlineCountLabel: '1 friend online',
+    incoming: [{
+      ...friendLink(friendIncoming),
+      statsLabel,
+      acceptButtonProps: { onClick: fn(), 'aria-label': `Accept ${friendIncoming.name}'s request` },
+      declineButtonProps: { onClick: fn(), 'aria-label': `Decline ${friendIncoming.name}'s request` },
+    }],
+    outgoing: [{
+      ...friendLink(friendOutgoing),
+      statsLabel,
+      pendingLabel: 'Pending',
+      cancelButtonProps: { onClick: fn(), 'aria-label': `Cancel your request to ${friendOutgoing.name}` },
+    }],
+  },
+}
+
+export const Dark: Story = { ...Full, name: 'Ready dark', globals: { theme: 'dark' } }
+
+export const Phone390: Story = { ...Full, name: 'Ready phone 390', ...phone }
+
+export const DarkPhone390: Story = {
+  ...Full,
+  name: 'Ready dark phone 390',
+  ...phone,
+  globals: { ...phone.globals, theme: 'dark' },
 }

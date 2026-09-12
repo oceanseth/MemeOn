@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom'
+import type { ReactNode } from 'react'
+import { Link, type LinkProps } from 'react-router-dom'
 import { Avatar } from '../atoms/Avatar'
-import { Badge } from '../atoms/Badge'
-import { Button } from '../atoms/Button'
+import { Button, buttonClasses } from '../atoms/Button'
 import { EmptyActions, EmptyState } from '../atoms/EmptyState'
+import { Icon } from '../atoms/Icon'
 import { Input } from '../atoms/Input'
 import { Notice } from '../atoms/Notice'
 import { PageContainer } from '../atoms/PageContainer'
@@ -14,19 +15,121 @@ import type { FriendsScreenModel } from '../hooks/useFriendsScreen'
 import { ConfirmDialog } from '../molecules/ConfirmDialog'
 import { GiftDialog } from '../molecules/GiftDialog'
 
-const onlineDot = 'inline-block size-[9px] rounded-full bg-ok shadow-[0_0_8px_var(--color-ok)]'
+/* The board's search well: 570 wide, the 50px recessed field with the glass at its 18px gutter
+   (18 + 20 + 12 = 50 before the value). Friends · Desktop `92-0` › `ACW-0`. */
+const SEARCH_WELL = 'relative flex w-full min-w-0 flex-1 md:max-w-[570px]'
+const SEARCH_GLYPH = 'pointer-events-none absolute top-1/2 left-[18px] -translate-y-1/2 text-ink-muted'
 
-const identityLink = cn(
-  'group flex min-w-0 flex-1 items-center gap-3 rounded-control text-inherit no-underline',
+/* "Online now" is a recessed strip, not a card: the board sinks it into the page (`AD4-0`,
+   pressed material, radius 28, 20/16 padding) so the raised friend cards under it read as the
+   things you can act on. */
+const ONLINE_STRIP = cn(
+  'mb-5 flex flex-wrap items-center gap-5 rounded-[28px] bg-surface-pressed px-5 py-4 shadow-pressed',
+  'max-sm:gap-3.5 max-sm:rounded-[24px] max-sm:px-[18px]',
+)
+
+/* The 140px title slot the board fixes so every strip lines its avatars up on the same lane. */
+const ONLINE_TITLE = cn(
+  'w-[140px] shrink-0 font-display text-[17px]/[21px] font-medium tracking-title text-ink',
+  'max-sm:w-full',
+)
+
+/** The presence dot: 10px, the success ink, never the only carrier of the fact (an sr-only says it). */
+const DOT = 'inline-block size-2.5 shrink-0 rounded-full bg-success-text'
+
+/* A person: one raised surface card holding the 48px avatar, a flexible identity lane and the row's
+   own action cluster. The board fixes the desktop card at **76px** (`ADI-0`: height 76, radius 28,
+   gap 14, avatar `ADJ-0` 48) — 48 + 2×14, so the nominal 20 padding it reports is the horizontal
+   one; 20 top and bottom would draw the 88px row the frame is not. The phone card keeps the full
+   20 all round because the board says so out loud: `AJA-0` is 148 = 20 + 48 (identity `LYG-0`) + 14
+   + 46 (actions `AJI-0`) + 20. */
+const ROW = cn(
+  'flex items-center gap-3.5 rounded-[28px] bg-surface px-5 py-3.5 shadow-raised',
+  'max-sm:flex-col max-sm:items-stretch max-sm:gap-3.5 max-sm:rounded-[24px] max-sm:py-5',
+)
+
+const IDENTITY = cn(
+  'flex min-w-0 flex-1 items-center gap-3.5 rounded-[20px] text-inherit no-underline',
+  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
+)
+
+const NAME = cn(
+  'block truncate font-display text-[17px]/[21px] font-medium tracking-title text-ink',
+  '[overflow-wrap:anywhere]',
+)
+
+const META = 'mt-0.5 block truncate text-micro/[16px] font-medium text-ink-muted'
+
+/* The action cluster: raised companion first, the row's one bubblegum second, the quiet exit last.
+   On a phone the two pills share the 310px row and the text action keeps its own 44px target. */
+const ACTIONS = 'flex shrink-0 items-center gap-3 max-sm:w-full max-sm:gap-3'
+
+const ROW_PILL = 'max-sm:flex-1 max-sm:px-3'
+
+/**
+ * The quiet exit (Remove / Decline / Cancel). The board draws it as bare text in the focus colour
+ * — bubblegum in light, sky in dark — because the weight of the decision lives in the confirm
+ * dialog, not in a red button on a list row.
+ */
+const TEXT_ACTION = cn(
+  'shrink-0 cursor-pointer rounded-control border-0 bg-transparent px-2.5 py-3.5',
+  'text-small font-semibold text-focus',
+  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
+  'forced-colors:focus-visible:outline-[Highlight]',
+  'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',
   'pointer-coarse:min-h-11',
 )
 
-const personName = 'min-w-0 truncate font-semibold group-hover:text-accent'
-
-const personRow = cn(
-  'flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[12px] border border-border bg-bg-raised p-3',
-  '[&>*]:min-w-0',
+/** "Pending" is a state, not a control: the board's pressed pill with no press behind it. */
+const PENDING_PILL = cn(
+  'inline-flex h-[46px] shrink-0 items-center justify-center rounded-control px-[18px]',
+  'bg-surface-pressed text-label font-semibold text-ink-muted shadow-pressed',
 )
+
+const SECTION_HEADING = 'mt-8 mb-3 font-display text-title font-medium tracking-title text-ink'
+
+const SECTION = 'flex flex-col gap-3.5'
+
+/** One person, one card: the shared shell every section fills with its own actions. */
+function PersonRow({
+  name,
+  avatarSrc,
+  statsLabel,
+  profileLinkProps,
+  online,
+  onlineLabel,
+  children,
+}: {
+  name: string
+  avatarSrc: string | null
+  statsLabel?: string | undefined
+  profileLinkProps: Pick<LinkProps, 'to'>
+  online?: boolean
+  onlineLabel?: string
+  children: ReactNode
+}) {
+  return (
+    <div className={ROW} data-slot="person-row">
+      <div className="flex min-w-0 flex-1 items-center gap-3.5">
+        <Link {...profileLinkProps} className={IDENTITY}>
+          {/* 48 on both boards — the phone identity row `LYG-0` is 48 tall because `AJB-0` is */}
+          <Avatar name={name} src={avatarSrc} size="md" className="size-12" loading="lazy" />
+          <span className="min-w-0 flex-1">
+            <span className={NAME}>{name}</span>
+            {statsLabel ? <span className={META}>{statsLabel}</span> : null}
+          </span>
+        </Link>
+        {online ? (
+          <>
+            <span aria-hidden="true" className={DOT} />
+            <span className="sr-only">{onlineLabel}</span>
+          </>
+        ) : null}
+      </div>
+      <div className={ACTIONS}>{children}</div>
+    </div>
+  )
+}
 
 /** Friends list as a function of its model. Every engine state is one set of args. */
 export function FriendsScreen({
@@ -35,6 +138,7 @@ export function FriendsScreen({
   err,
   inviteLabel,
   onlineFriends,
+  onlineCountLabel,
   incoming,
   outgoing,
   accepted,
@@ -70,10 +174,18 @@ export function FriendsScreen({
 }: FriendsScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <PageHead title="Friends">
-        <FilterBar>
-          <Input type="search" placeholder="Find people by name…" {...searchInputProps} />
-          <Button variant="primary" {...inviteButtonProps}>
+      <PageHead level="h1" title="Friends">
+        <FilterBar className="w-full xl:justify-start!">
+          <span className={SEARCH_WELL}>
+            <Icon name="magnifying-glass" size={20} className={SEARCH_GLYPH} />
+            <Input
+              type="search"
+              placeholder="Find people by name…"
+              className="w-full pl-[50px]"
+              {...searchInputProps}
+            />
+          </span>
+          <Button variant="primary" className="max-sm:w-full" {...inviteButtonProps}>
             {inviteLabel}
           </Button>
         </FilterBar>
@@ -82,105 +194,60 @@ export function FriendsScreen({
       {showMsg && <Notice tone="ok">{msg}</Notice>}
       {showErr && <Notice tone="error">{err}</Notice>}
 
-      {showOnline ? (
-        <Panel className="mb-5 flex flex-wrap items-center gap-3 font-semibold">
-          <span aria-hidden="true" className={onlineDot} /> Online now
-          <div className="flex flex-wrap gap-3.5">
-            {onlineFriends.map((f) => (
-              <Link
-                key={f.sub}
-                {...f.onlineLinkProps}
-                className={cn(
-                  'group inline-flex items-center gap-1.5 text-sm text-text no-underline',
-                  'pointer-coarse:min-h-11 pointer-coarse:gap-2 pointer-coarse:rounded-pill',
-                  'pointer-coarse:bg-bg-raised pointer-coarse:py-1 pointer-coarse:pr-3 pointer-coarse:pl-1',
-                )}
-              >
-                <Avatar name={f.name} src={f.avatarSrc} size="sm" loading="lazy" />
-                <span className="underline decoration-1 underline-offset-[3px] decoration-[color-mix(in_srgb,var(--color-accent)_40%,transparent)] group-hover:decoration-accent">
-                  {f.name}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </Panel>
-      ) : null}
-
       {showSearchPanel && (
         <Panel className="mb-5">
-          <h3>Search results</h3>
+          <h2 className="font-display text-[17px]/[21px] font-medium tracking-title">Search results</h2>
           <div role="status">
-            {showSearching && <p className="m-0 text-text-dim">{searchingLabel}</p>}
-            {showNoHits && <p className="m-0 text-text-dim">{noHitsMessage}</p>}
+            {showSearching && <p className="m-0 text-label text-ink-muted">{searchingLabel}</p>}
+            {showNoHits && <p className="m-0 text-label text-ink-muted">{noHitsMessage}</p>}
           </div>
           {showHits && (
-            <div className="flex flex-col gap-2.5">
+            <div className={cn(SECTION, 'mt-3.5')}>
               {hits.map((u) => (
-                <div className={personRow} data-slot="person-row" key={u.sub}>
-                  <Link {...u.profileLinkProps} className={identityLink}>
-                    <Avatar name={u.name} src={u.avatarSrc} size="md" className="max-sm:size-8" loading="lazy" />
-                    <span className={personName}>{u.name}</span>
-                  </Link>
-                  <Button variant="primary" className="shrink-0" {...u.requestButtonProps}>
+                <PersonRow key={u.sub} {...u}>
+                  <Button variant="primary" className={ROW_PILL} {...u.requestButtonProps}>
                     Add friend
                   </Button>
-                </div>
+                </PersonRow>
               ))}
             </div>
           )}
         </Panel>
       )}
 
-      {showIncoming && (
-        <>
-          <h3 className="mt-6 mb-2 text-lg font-bold">Requests for you</h3>
-          <div className="mb-[22px] flex flex-col gap-2.5">
-            {incoming.map((f) => (
-              <div className={personRow} data-slot="person-row" key={f.sub}>
-                <Link {...f.profileLinkProps} className={identityLink}>
-                  <Avatar name={f.name} src={f.avatarSrc} size="md" className="max-sm:size-8" loading="lazy" />
-                  <span className={personName}>{f.name}</span>
-                </Link>
-                <Button variant="primary" className="shrink-0" {...f.acceptButtonProps}>
-                  Accept
-                </Button>
-                <Button variant="danger" className="shrink-0" {...f.declineButtonProps}>
-                  Decline
-                </Button>
-              </div>
+      {showOnline ? (
+        <div className={ONLINE_STRIP} data-slot="online-now">
+          <span className={ONLINE_TITLE}>Online now</span>
+          <div className="flex min-w-0 flex-wrap items-center gap-3">
+            {onlineFriends.map((f) => (
+              <Link
+                key={f.sub}
+                {...f.onlineLinkProps}
+                className={cn(
+                  'group inline-flex items-center gap-2 rounded-[20px] text-small text-ink no-underline',
+                  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
+                )}
+              >
+                <Avatar name={f.name} src={f.avatarSrc} size="md" loading="lazy" />
+                <span className="max-sm:sr-only">{f.name}</span>
+              </Link>
             ))}
           </div>
-        </>
-      )}
-
-      {showOutgoing && (
-        <>
-          <h3 className="mt-6 mb-2 text-lg font-bold">Requests you sent</h3>
-          <div className="mb-[22px] flex flex-col gap-2.5">
-            {outgoing.map((f) => (
-              <div className={personRow} data-slot="person-row" key={f.sub}>
-                <Link {...f.profileLinkProps} className={identityLink}>
-                  <Avatar name={f.name} src={f.avatarSrc} size="md" className="max-sm:size-8" loading="lazy" />
-                  <span className={personName}>{f.name}</span>
-                </Link>
-                <Badge className="shrink-0">{f.pendingLabel}</Badge>
-                <Button className="shrink-0" {...f.cancelButtonProps}>
-                  Cancel
-                </Button>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+          <span className="flex shrink-0 items-center gap-2 text-micro/[16px] font-semibold text-ink-muted max-sm:ml-auto">
+            <span aria-hidden="true" className={DOT} />
+            {onlineCountLabel}
+          </span>
+        </div>
+      ) : null}
 
       {showLoading ? (
-        <div role="status" className="flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-text-dim">
+        <div role="status" className="flex items-center justify-center gap-2.5 px-5 py-15 text-label text-ink-muted">
           <Spinner />
           {loadingLabel}
         </div>
       ) : showError ? (
-        <EmptyState error>
-          <h3 className="font-bold">{errorTitle}</h3>
+        <EmptyState tone="error">
+          <h2>{errorTitle}</h2>
           <p>{errorMessage}</p>
           <EmptyActions>
             <Button variant="primary" {...retryButtonProps}>
@@ -190,7 +257,7 @@ export function FriendsScreen({
         </EmptyState>
       ) : showEmpty ? (
         <EmptyState>
-          <h3 className="font-bold">{emptyTitle}</h3>
+          <h2>{emptyTitle}</h2>
           <p>{emptyMessage}</p>
           <EmptyActions>
             <Button variant="primary" {...emptyActionProps}>
@@ -198,43 +265,65 @@ export function FriendsScreen({
             </Button>
           </EmptyActions>
         </EmptyState>
-      ) : showCircleHint ? (
-        <p className="text-text-dim">{circleHintMessage}</p>
-      ) : showCircle ? (
+      ) : null}
+
+      {showCircle && (
         <>
-          <h3 className="mt-6 mb-2 text-lg font-bold">Your circle</h3>
-          <div className="flex flex-col gap-2.5">
+          <h2 className={SECTION_HEADING}>Your circle</h2>
+          <div className={SECTION}>
             {accepted.map((f) => (
-              <div className={personRow} data-slot="person-row" key={f.sub}>
-                <Link {...f.profileLinkProps} className={identityLink}>
-                  <Avatar name={f.name} src={f.avatarSrc} size="md" className="max-sm:size-8" loading="lazy" />
-                  <div className="min-w-0">
-                    <div className={cn(personName, 'truncate')}>
-                      {f.name}
-                      {f.isOnline && (
-                        <>
-                          <span aria-hidden="true" className={cn(onlineDot, 'ml-2')} />
-                          <span className="sr-only">{f.onlineLabel}</span>
-                        </>
-                      )}
-                    </div>
-                    <div className="truncate text-xs text-text-dim">{f.statsLabel}</div>
-                  </div>
+              <PersonRow key={f.sub} {...f} online={f.isOnline} onlineLabel={f.onlineLabel}>
+                <Link className={cn(buttonClasses(), ROW_PILL)} {...f.tradeLinkProps}>
+                  <span aria-hidden="true">🔁</span> {f.tradeLabel}
                 </Link>
-                <Button variant="primary" className="shrink-0" {...f.giftButtonProps}>
+                <Button variant="primary" className={ROW_PILL} {...f.giftButtonProps}>
                   <span aria-hidden="true">🎁</span> {f.giftLabel}
                 </Button>
-                <button
-                  className="shrink-0 rounded-control px-2.5 py-2 text-danger pointer-coarse:min-h-11"
-                  {...f.removeButtonProps}
-                >
+                <button className={TEXT_ACTION} {...f.removeButtonProps}>
                   {f.removeLabel}
                 </button>
-              </div>
+              </PersonRow>
             ))}
           </div>
         </>
-      ) : null}
+      )}
+
+      {showIncoming && (
+        <>
+          <h2 className={SECTION_HEADING}>Requests for you</h2>
+          <div className={SECTION}>
+            {incoming.map((f) => (
+              <PersonRow key={f.sub} {...f}>
+                <Button variant="primary" className={ROW_PILL} {...f.acceptButtonProps}>
+                  Accept
+                </Button>
+                <button className={TEXT_ACTION} {...f.declineButtonProps}>
+                  Decline
+                </button>
+              </PersonRow>
+            ))}
+          </div>
+        </>
+      )}
+
+      {showOutgoing && (
+        <>
+          <h2 className={SECTION_HEADING}>Sent requests</h2>
+          <div className={SECTION}>
+            {outgoing.map((f) => (
+              <PersonRow key={f.sub} {...f}>
+                <span className={cn(PENDING_PILL, 'max-sm:flex-1')}>{f.pendingLabel}</span>
+                <button className={TEXT_ACTION} {...f.cancelButtonProps}>
+                  Cancel
+                </button>
+              </PersonRow>
+            ))}
+          </div>
+        </>
+      )}
+
+      {showCircleHint ? <p className="mt-6 text-label text-ink-muted">{circleHintMessage}</p> : null}
+
       <GiftDialog model={giftDialog} />
       <ConfirmDialog model={removeDialog} />
     </PageContainer>

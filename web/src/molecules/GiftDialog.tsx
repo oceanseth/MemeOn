@@ -3,29 +3,23 @@ import { Button } from '../atoms/Button'
 import { Input } from '../atoms/Input'
 import { Notice } from '../atoms/Notice'
 import { FilterBar } from '../atoms/PageHead'
+import { TierChip } from '../atoms/TierChip'
 import { cn } from '../lib/cn'
 import type { GiftDialogModel } from '../lib/giftDialogModel'
 import { DialogFrame } from './DialogFrame'
 
-/** `.gift-row`: the button atom's chrome, laid out as a full-width row that wraps rather than clips. */
-const ROW = 'w-full flex-wrap justify-start gap-2.5 px-2.5 py-[7px] text-left'
-
-/** Gold has to survive the atom's hover border, which the legacy sheet won on declaration order. */
-const ROW_PICKED = cn(
-  'border-gold [&:not(:disabled):hover]:border-gold',
-  'bg-[color-mix(in_oklab,var(--color-gold)_8%,transparent)]',
-)
-
 /**
- * The rarity chip, rebuilt so the row carries its own paint. The gradient frame
- * around the art still borrows `tier-<key>` from the un-migrated card sheet: seven tier gradients
- * belong to that package, not to this one, and the class dies with it.
+ * A row is the Button atom laid out as a full-width list item: the pill's own raised material at
+ * rest, and the pressed well the atom already gives `aria-pressed` when it is the pick. No bespoke
+ * "selected" border survives — the relief is the state, as every other tab and toggle in the app.
  */
-const TIER_CHIP = cn(
-  'inline-flex max-w-full shrink-0 items-center gap-[5px] rounded-pill border border-current',
-  'bg-black/45 px-[9px] py-[3px] text-center text-[11px] font-extrabold tracking-[0.8px] uppercase',
-  '[overflow-wrap:anywhere]',
+const ROW = cn(
+  'h-auto min-h-[62px] w-full flex-wrap justify-start gap-2.5 px-3 py-2 text-left',
+  '[line-height:1.3]',
 )
+
+/** The thumbnail plate: the card system's recessed art well, one step down from the row. */
+const THUMB = 'block size-11 shrink-0 overflow-hidden rounded-[12px] bg-surface-pressed'
 
 /**
  * Gift shares from your binder to a friend. Its engine supplies all behavior, including the
@@ -57,31 +51,33 @@ export function GiftDialog({ model }: { model: GiftDialogModel }) {
         {...model.searchInputProps}
       />
       <div
-        className="flex max-h-75 flex-col gap-1.5 overflow-y-auto [scrollbar-width:thin]"
+        className="mt-3 flex max-h-75 flex-col gap-2 overflow-y-auto [scrollbar-width:thin]"
         data-slot="gift-list"
       >
         {/* my-4 is the UA paragraph margin preflight removed; the empty binder read as a gap, not a row */}
-        {model.showEmpty && <p className="my-4 leading-[1.55] text-text-dim">{model.emptyMessage}</p>}
+        {model.showEmpty && <p className="my-4 text-label leading-[1.55] text-ink-muted">{model.emptyMessage}</p>}
         {model.rows.map((row) => (
-          <Button key={row.id} className={cn(ROW, row.selected && ROW_PICKED)} {...row.buttonProps}>
-            {/* the tier gradient paints a 2px frame around the art: the one moment rarity is handed away */}
-            <span className={cn('block shrink-0 rounded-[10px] p-0.5 leading-[0]', `tier-${row.tierKey}`)}>
-              <img {...row.imageProps} className="size-10 shrink-0 rounded-lg object-cover" />
+          <Button key={row.id} className={ROW} {...row.buttonProps}>
+            <span className={THUMB}>
+              <img {...row.imageProps} className="size-full object-cover" />
             </span>
             <span className="flex-[1_1_120px] overflow-hidden font-semibold text-ellipsis">
               {row.title}
             </span>
-            <span className="shrink-0 text-xs text-text-dim">{row.sharesLabel}</span>
-            <span className={TIER_CHIP} style={{ color: row.tierColor }}>
-              {row.tierLabel}
-            </span>
-            {row.listed && <Badge className="shrink-0">{row.listedLabel}</Badge>}
+            <span className="shrink-0 text-micro text-ink-muted tabular-nums">{row.sharesLabel}</span>
+            {/* the one place rarity says its own name: the seal the cards already wear */}
+            <TierChip tierKey={row.tierKey} label={row.tierLabel} className="shrink-0" />
+            {row.listed && (
+              <Badge tone="info" className="shrink-0">
+                {row.listedLabel}
+              </Badge>
+            )}
           </Button>
         ))}
       </div>
-      <FilterBar className="mt-3">
+      <FilterBar className="mt-4">
         {model.showControls && (
-          <label className="inline-flex items-center gap-1.5 text-sm text-text-dim">
+          <label className="inline-flex items-center gap-2 text-label text-ink-muted">
             {model.sharesLabel}{' '}
             <Input type="number" className="w-21" {...model.sharesInputProps} />{' '}
             <span>{model.sharesMaxLabel}</span>

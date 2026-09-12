@@ -61,6 +61,8 @@ export interface FriendsScreenModel {
   inviteLabel: string
   inviteButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
   onlineFriends: readonly FriendLinkModel[]
+  /** the board's trailing caption on the "Online now" strip ("2 friends online") */
+  onlineCountLabel: string
   hits: readonly FriendHitModel[]
   incoming: readonly IncomingFriendModel[]
   outgoing: readonly OutgoingFriendModel[]
@@ -108,11 +110,13 @@ interface FriendHitModel extends FriendLinkModel {
 }
 
 interface IncomingFriendModel extends FriendLinkModel {
+  statsLabel: string
   acceptButtonProps: RowButtonProps
   declineButtonProps: RowButtonProps
 }
 
 interface OutgoingFriendModel extends FriendLinkModel {
+  statsLabel: string
   pendingLabel: string
   cancelButtonProps: RowButtonProps
 }
@@ -121,10 +125,18 @@ interface AcceptedFriendModel extends FriendLinkModel {
   isOnline: boolean
   onlineLabel: string
   statsLabel: string
+  /** the board's raised companion to Gift: the row's second, quieter task */
+  tradeLabel: string
+  tradeLinkProps: Pick<LinkProps, 'to' | 'aria-label'>
   giftLabel: string
   giftButtonProps: RowButtonProps
   removeLabel: string
   removeButtonProps: RowButtonProps
+}
+
+/** `📚 7 memes · 🧠 4,174 held` — the board's row meta (`92-0` › `Friend / CyberSeth / 6`). */
+function statsLine(friend: { collectionSize: number; portfolioValue: number }): string {
+  return `📚 ${friend.collectionSize} ${friend.collectionSize === 1 ? 'meme' : 'memes'} · 🧠 ${friend.portfolioValue.toLocaleString()} held`
 }
 
 /** Everything `FriendsScreen` renders. The hook is the engine; the screen is the terminal. */
@@ -379,6 +391,7 @@ export function useFriendsScreen(): FriendsScreenModel {
     inviteLabel: ctx.copied ? 'Invite link copied ✓' : '💌 Invite a friend',
     inviteButtonProps: { onClick: onCopyInvite },
     onlineFriends: onlineFriends.map(friendLink),
+    onlineCountLabel: `${onlineFriends.length} ${onlineFriends.length === 1 ? 'friend' : 'friends'} online`,
     hits: ctx.hits.map((hit) => ({
       ...friendLink(hit),
       requestButtonProps: {
@@ -391,6 +404,7 @@ export function useFriendsScreen(): FriendsScreenModel {
     })),
     incoming: incoming.map((friend) => ({
       ...friendLink(friend),
+      statsLabel: statsLine(friend),
       acceptButtonProps: {
         onClick: () => onRespond(friend.sub, true),
         'aria-label': `Accept ${friend.name}'s request`,
@@ -406,6 +420,7 @@ export function useFriendsScreen(): FriendsScreenModel {
     })),
     outgoing: outgoing.map((friend) => ({
       ...friendLink(friend),
+      statsLabel: statsLine(friend),
       pendingLabel: 'Pending',
       cancelButtonProps: {
         onClick: () => onRemove(friend.sub),
@@ -418,7 +433,9 @@ export function useFriendsScreen(): FriendsScreenModel {
       ...friendLink(friend),
       isOnline: ctx.onlineSubs.includes(friend.sub),
       onlineLabel: 'Online now',
-      statsLabel: `📚 ${friend.collectionSize} memes · 🧠 ${friend.portfolioValue.toLocaleString()} portfolio`,
+      statsLabel: statsLine(friend),
+      tradeLabel: 'Trade',
+      tradeLinkProps: { to: '/trade', 'aria-label': `Trade with ${friend.name}` },
       giftLabel: 'Gift',
       giftButtonProps: {
         onClick: () => onGiftOpen({ sub: friend.sub, name: friend.name }),
