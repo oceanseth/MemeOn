@@ -4,7 +4,7 @@ import { expect, fn, userEvent, within } from 'storybook/test'
 import { marketplacePage } from '../../.storybook/fixtures'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { buildSortChipsModel } from '../lib/sortChipsModel'
-import type { MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
+import { buildMarketFilterTabs, type MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
 import { MarketplaceScreen } from './MarketplaceScreen'
 
 const SORT_REASON = "Newest first — the market can't rank by views, reshares or value yet."
@@ -15,9 +15,8 @@ const empty: MarketplaceScreenModel = {
     value: '', placeholder: 'Search memes or tags',
     'aria-label': 'Search memes, tags and creators', onChange: fn(),
   },
-  typeSelectProps: { value: '', 'aria-label': 'Filter by media type', onValueChange: fn() },
+  filterTabs: buildMarketFilterTabs({ type: '', listed: false, onTypeChange: fn(), onListedChange: fn() }),
   tierSelectProps: { value: '', 'aria-label': 'Filter by tier', onValueChange: fn() },
-  listedInputProps: { checked: false, onCheckedChange: fn() },
   sortChips: buildSortChipsModel({
     sortKey: 'new', dir: 'desc', onChange: fn(), disabledReason: SORT_REASON,
   }),
@@ -38,10 +37,22 @@ const empty: MarketplaceScreenModel = {
   loadMoreError: null,
   endOfListLabel: null,
 }
+const onType = fn()
+const onListed = fn()
 const ready: Partial<MarketplaceScreenModel> = {
   phase: 'ready', cards: marketplacePage.map(buildMemeCardModel),
   showEmpty: false, showGrid: true, resultsLabel: `${marketplacePage.length} memes`,
 }
+/** 390×844: the phone column — search, the two disclosure pills, the primary Mint, a 2-up grid. */
+const phone = {
+  parameters: {
+    viewport: {
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+    },
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
+}
+
 const meta = { title: 'Screens/MarketplaceScreen', component: MarketplaceScreen, args: empty,
   decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
 } satisfies Meta<typeof MarketplaceScreen>
@@ -83,9 +94,8 @@ export const LoadMoreFailed: Story = {
 export const FiltersNarrowed: Story = {
   args: {
     ...ready,
-    typeSelectProps: { value: 'image', 'aria-label': 'Filter by media type', onValueChange: fn() },
+    filterTabs: buildMarketFilterTabs({ type: 'image', listed: true, onTypeChange: fn(), onListedChange: fn() }),
     tierSelectProps: { value: 'holo', 'aria-label': 'Filter by tier', onValueChange: fn() },
-    listedInputProps: { checked: true, onCheckedChange: fn() },
     filtersToggleLabel: 'Filters · 3',
     filtersToggleProps: { onClick: fn(), 'aria-expanded': true, 'aria-controls': 'market-filters' },
     filtersPanelProps: { id: 'market-filters', 'data-collapsed': 'false' },
@@ -95,7 +105,51 @@ export const FiltersNarrowed: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('status')).toHaveTextContent('Images · Holo · for sale')
+    // the board's row is pressed tabs: the state is `aria-pressed`, not a checked box
+    const media = within(canvas.getByRole('group', { name: 'Filter by media type' }))
+    await expect(media.getByRole('button', { name: 'Images' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(media.getByRole('button', { name: 'All memes' })).toHaveAttribute('aria-pressed', 'false')
+    await expect(canvas.getByRole('button', { name: 'For sale' })).toHaveAttribute('aria-pressed', 'true')
     await userEvent.click(canvas.getByRole('button', { name: 'Clear filters' }))
     await expect(args.clearFiltersProps?.onClick).toHaveBeenCalled()
   },
+}
+
+/** Every tab spends the model it was handed: single-select media, an independent For sale. */
+export const FilterTabsPressAndToggle: Story = {
+  args: {
+    ...ready,
+    filterTabs: buildMarketFilterTabs({
+      type: '', listed: false, onTypeChange: onType, onListedChange: onListed,
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const media = within(canvas.getByRole('group', { name: 'Filter by media type' }))
+    await expect(media.getByRole('button', { name: 'All memes' })).toHaveAttribute('aria-pressed', 'true')
+    await userEvent.click(media.getByRole('button', { name: 'Videos' }))
+    await expect(onType).toHaveBeenLastCalledWith('video')
+    await userEvent.click(canvas.getByRole('button', { name: 'For sale' }))
+    await expect(onListed).toHaveBeenLastCalledWith(true)
+    // a 46px pill on a coarse pointer is already past the 44px floor
+    await expect(media.getByRole('button', { name: 'Videos' }).getBoundingClientRect().height).toBe(46)
+  },
+}
+
+/** The dark arm of the whole page: plate, pressed tabs, neutral Mint, tier frames. */
+export const Dark: Story = {
+  args: { ...ready, endOfListLabel: "That's every meme matching these filters." },
+  globals: { theme: 'dark' },
+}
+
+/** 390: search, "All memes" pressed beside "Filters", the primary Mint pill, a 2-up grid. */
+export const Phone390: Story = {
+  args: { ...ready, showMore: true },
+  ...phone,
+}
+
+export const DarkPhone390: Story = {
+  args: Phone390.args,
+  ...phone,
+  globals: { ...phone.globals, theme: 'dark' },
 }

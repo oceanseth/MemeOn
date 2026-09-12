@@ -28,6 +28,60 @@ const SORT_DISABLED_REASON = "Newest first — the market can't rank by views, r
 const LOAD_ERROR = "Couldn't reach the market. Your filters are still set."
 const MORE_ERROR = "Couldn't pull the next page."
 
+/** One pressed tab in the board's filter row (`6UR-0` › `Filters / Pressed tabs` `6XC-0`). */
+export interface MarketFilterTabModel {
+  /** the filter value the tab stands for; `''` is the "All memes" / "everything" tab */
+  key: string
+  label: string
+  pressed: boolean
+  buttonProps: { onClick: () => void; 'aria-pressed': boolean }
+}
+
+/**
+ * The board draws media type and "For sale" as 46px pressed tabs, not as a Select and a Checkbox:
+ * three of them are one single-select row, "For sale" is an independent toggle beside it. Only the
+ * eight tiers stay a Select ("All tiers ▾"), because eight pills do not fit the 1108 column.
+ */
+export interface MarketFilterTabsModel {
+  media: readonly MarketFilterTabModel[]
+  mediaGroupProps: { role: 'group'; 'aria-label': string }
+  listed: MarketFilterTabModel
+}
+
+const MEDIA_TABS: readonly { key: string; label: string }[] = [
+  { key: '', label: 'All memes' },
+  { key: 'image', label: 'Images' },
+  { key: 'video', label: 'Videos' },
+]
+
+export interface BuildMarketFilterTabsInput {
+  type: string
+  listed: boolean
+  onTypeChange: (value: string) => void
+  onListedChange: (listed: boolean) => void
+}
+
+/** Exported so the screen's stories build the same row the hook does, state by state. */
+export function buildMarketFilterTabs({
+  type, listed, onTypeChange, onListedChange,
+}: BuildMarketFilterTabsInput): MarketFilterTabsModel {
+  return {
+    media: MEDIA_TABS.map((tab) => ({
+      key: tab.key,
+      label: tab.label,
+      pressed: tab.key === type,
+      buttonProps: { onClick: () => onTypeChange(tab.key), 'aria-pressed': tab.key === type },
+    })),
+    mediaGroupProps: { role: 'group', 'aria-label': 'Filter by media type' },
+    listed: {
+      key: 'listed',
+      label: 'For sale',
+      pressed: listed,
+      buttonProps: { onClick: () => onListedChange(!listed), 'aria-pressed': listed },
+    },
+  }
+}
+
 export interface MarketplaceScreenModel {
   phase: MarketplacePhase
   cards: readonly MemeCardModel[]
@@ -37,17 +91,12 @@ export interface MarketplaceScreenModel {
     'aria-label': string
     onChange: ChangeEventHandler<HTMLInputElement>
   }
-  typeSelectProps: {
-    value: string
-    'aria-label': string
-    onValueChange: (value: string | null) => void
-  }
+  filterTabs: MarketFilterTabsModel
   tierSelectProps: {
     value: string
     'aria-label': string
     onValueChange: (value: string | null) => void
   }
-  listedInputProps: { checked: boolean; onCheckedChange: (checked: boolean) => void }
   sortChips: SortChipsModel
   createLinkProps: { to: string }
   filtersToggleProps: {
@@ -217,8 +266,8 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
     syncUrl()
     scheduleFetch()
   }
-  const onTypeChange = (value: string | null) => {
-    send({ type: 'SET_TYPE', value: value ?? '' })
+  const onTypeChange = (value: string) => {
+    send({ type: 'SET_TYPE', value })
     syncUrl()
     scheduleFetch()
   }
@@ -269,17 +318,17 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
       'aria-label': 'Search memes, tags and creators',
       onChange: onQueryChange,
     },
-    typeSelectProps: {
-      value: context.type,
-      'aria-label': 'Filter by media type',
-      onValueChange: onTypeChange,
-    },
+    filterTabs: buildMarketFilterTabs({
+      type: context.type,
+      listed: context.listed,
+      onTypeChange,
+      onListedChange,
+    }),
     tierSelectProps: {
       value: context.tier,
       'aria-label': 'Filter by tier',
       onValueChange: onTierChange,
     },
-    listedInputProps: { checked: context.listed, onCheckedChange: onListedChange },
     sortChips: buildSortChipsModel({
       sortKey: context.sortKey,
       dir: context.sortDir,

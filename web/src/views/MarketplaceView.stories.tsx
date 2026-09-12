@@ -59,10 +59,17 @@ export const FiltersSortAndStyles: Story = {
     await userEvent.type(search, 'holo')
     await waitFor(() => expect(canvas.queryByRole('link', { name: /fresh paper/i })).not.toBeInTheDocument())
     await expect(canvas.getByRole('link', { name: /holo hit/i })).toBeInTheDocument()
-    await pickOption(canvas.getByRole('combobox', { name: /media type/i }), 'Images')
+    /* the board's filter row is pressed tabs (`6XC-0`), so media type and "For sale" are buttons
+       carrying `aria-pressed`; only the eight tiers are still a Select */
+    const media = within(canvas.getByRole('group', { name: 'Filter by media type' }))
+    await userEvent.click(media.getByRole('button', { name: 'Images' }))
     await pickOption(canvas.getByRole('combobox', { name: /tier/i }), 'Holo')
-    await userEvent.click(canvas.getByRole('checkbox', { name: /for sale/i }))
+    await userEvent.click(canvas.getByRole('button', { name: 'For sale' }))
     await waitFor(() => expect(loaded.scenario.requests.some((request: { path: string }) => request.path.includes('listed=true'))).toBe(true))
+    // single-select media, an independent For sale toggle — the row states itself, not a checkbox
+    await expect(media.getByRole('button', { name: 'Images' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(media.getByRole('button', { name: 'All memes' })).toHaveAttribute('aria-pressed', 'false')
+    await expect(canvas.getByRole('button', { name: 'For sale' })).toHaveAttribute('aria-pressed', 'true')
     // the filter set is linkable and survives a reload
     await expect(canvas.getByLabelText('Current search')).toHaveTextContent(
       'q=holo&type=image&tier=holo&listed=true',
