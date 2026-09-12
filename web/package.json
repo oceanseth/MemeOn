@@ -46,17 +46,17 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "@vitest/browser-playwright": "latest",
-    "@vitest/coverage-v8": "latest",
+    "@vitest/browser-playwright": "4.1.10",
+    "@vitest/coverage-v8": "4.1.10",
     "mockdate": "^3.0.5",
     "msw": "^2.15.0",
     "msw-storybook-addon": "^3.0.0",
-    "playwright": "latest",
+    "playwright": "1.63.0",
     "storybook": "^10.6.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~5.9.3",
     "vite": "^7.2.2",
-    "vitest": "latest"
+    "vitest": "4.1.10"
   },
   "optionalDependencies": {
     "@rollup/rollup-darwin-arm64": "^4.53.2"
