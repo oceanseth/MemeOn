@@ -8,13 +8,13 @@ import type { SettingsScreenModel } from '../hooks/useSettingsScreen'
 import { ThemeControl } from '../molecules/ThemeControl'
 
 /** Settings section card — Panel raised material. */
-const CARD = 'px-5 py-[18px] max-md:px-5 max-md:py-[18px]'
+const CARD = 'px-5 py-gutter max-md:px-5 max-md:py-gutter'
 
-const ROW = 'mt-[15px] flex flex-wrap items-center gap-3'
+const ROW = 'mt-3.75 flex flex-wrap items-center gap-3'
 const SUBJECT = 'text-label font-bold text-ink'
 const FACT = 'text-small text-ink-muted'
 /** Alerts toggles are chips, not pills. */
-const TOGGLE = 'h-11 rounded-[17px] px-3.5 text-small'
+const TOGGLE = 'h-11 rounded-segment px-3.5 text-small'
 
 /** Account, Appearance, Connections, Alerts as a function of the model. Pure props → markup. */
 export function SettingsScreen({

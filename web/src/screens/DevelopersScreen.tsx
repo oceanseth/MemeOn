@@ -10,11 +10,11 @@ import { Spinner } from '../atoms/Spinner'
 import type { DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { ConfirmDialog } from '../molecules/ConfirmDialog'
 
-const EXPLAINER = 'mt-0 mb-0 max-w-[65ch] text-body text-ink-muted'
-const FORM_CARD = 'mt-5 p-[18px] max-md:p-[18px]'
+const EXPLAINER = 'mt-0 mb-0 max-w-measure text-body text-ink-muted'
+const FORM_CARD = 'mt-5 p-gutter max-md:p-gutter'
 /** Fresh key state: inset action ring marks the one-time reveal. */
 const FRESH_CARD = 'mt-5 p-5 max-md:p-5 inset-ring-2 inset-ring-action'
-const INVENTORY_CARD = 'mt-5 p-[22px] max-md:p-[18px]'
+const INVENTORY_CARD = 'mt-5 p-5.5 max-md:p-gutter'
 const KEY_ROW = 'flex flex-wrap items-center justify-between gap-4 gap-y-2.5 py-3'
 
 /** Developers API-key page as a function of its model. Every engine state is one set of args. */
@@ -167,7 +167,7 @@ export function DevelopersScreen({
           <ul className="m-0 mt-2 list-none p-0 [&>li+li]:border-t [&>li+li]:border-line">
             {keys.map((k) => (
               <li key={k.prefix} className={KEY_ROW}>
-                <div className="flex min-w-0 flex-col gap-[3px]">
+                <div className="flex min-w-0 flex-col gap-0.75">
                   {/* `overflow-wrap:anywhere` keeps a 60-character label inside the row */}
                   <span className="text-body font-semibold text-ink [overflow-wrap:anywhere]">
                     {k.label}

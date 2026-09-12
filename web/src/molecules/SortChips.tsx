@@ -8,7 +8,7 @@ import type { SortKey } from '../lib/sorting'
 
 /* Tabs, not buttons: selected = pressed well; material change only, never accent colour. */
 const chipChrome = cn(
-  'inline-flex h-[46px] items-center justify-center whitespace-nowrap max-sm:h-10',
+  'inline-flex h-control items-center justify-center whitespace-nowrap max-sm:h-10',
   /* 40px drawn height; coarse pointer still needs 44 */
   'pointer-coarse:min-h-11',
   'rounded-control bg-surface-raised px-4 text-label/[18px] font-semibold text-ink shadow-raised',

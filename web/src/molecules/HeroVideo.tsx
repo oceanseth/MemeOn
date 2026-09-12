@@ -54,7 +54,7 @@ export function HeroVideo({ model, className }: { model: HeroVideoModel; classNa
           className={cn(
             PILL,
             'right-3 bottom-3 px-3.5 py-2 text-caption',
-            'max-md:top-2 max-md:right-2 max-md:bottom-auto max-md:px-[11px] max-md:py-[7px] max-md:text-micro',
+            'max-md:top-2 max-md:right-2 max-md:bottom-auto max-md:px-2.75 max-md:py-1.75 max-md:text-micro',
           )}
           {...model.soundButtonProps}
         >

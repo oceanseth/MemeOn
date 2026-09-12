@@ -13,11 +13,11 @@ import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
 
 /** Hero card centred on the avatar, grows with copy. */
 const HERO = cn(
-  'flex flex-col items-center gap-[7px] rounded-[28px] bg-surface px-5 pt-5 pb-7 text-center shadow-raised',
-  'max-sm:rounded-nav max-sm:px-[18px]',
+  'flex flex-col items-center gap-1.75 rounded-band bg-surface px-5 pt-5 pb-7 text-center shadow-raised',
+  'max-sm:rounded-nav max-sm:px-gutter',
 )
 
-const HERO_AVATAR = 'size-[90px] rounded-[33px] max-sm:size-[78px] max-sm:rounded-[28px]'
+const HERO_AVATAR = 'size-avatar-hero rounded-avatar-hero max-sm:size-avatar-hero-phone max-sm:rounded-band'
 
 /* The name is the page's display step (44/55, 32/40 on a phone); the verb line is one rung down. */
 const HERO_NAME = cn(
@@ -31,9 +31,9 @@ const HERO_VERB = cn(
 
 const HERO_STATS = 'm-0 mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-label font-semibold text-ink-muted'
 
-const HERO_BODY = 'm-0 mt-4 max-w-[560px] text-intro font-medium text-ink-muted [text-wrap:pretty]'
+const HERO_BODY = 'm-0 mt-4 max-w-card text-intro font-medium text-ink-muted [text-wrap:pretty]'
 
-const HERO_NOTE = 'm-0 mt-3 max-w-[65ch] text-label font-medium text-ink-muted [text-wrap:pretty]'
+const HERO_NOTE = 'm-0 mt-3 max-w-measure text-label font-medium text-ink-muted [text-wrap:pretty]'
 
 const SECTION_HEADING = 'mt-8 mb-3.5 font-display text-title font-medium tracking-title text-ink'
 

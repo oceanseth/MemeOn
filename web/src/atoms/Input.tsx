@@ -5,7 +5,7 @@ import type { Styled } from './Field'
 
 /** Shared recessed well for input, select, and textarea. `font-normal` resists Field's 600 weight. */
 export const controlChrome =
-  'h-[50px] rounded-field border-0 bg-surface-pressed shadow-pressed px-[18px] ' +
+  'h-field rounded-field border-0 bg-surface-pressed shadow-pressed px-control-x ' +
   'text-label font-normal text-ink pointer-coarse:text-[length:max(16px,1em)] ' +
   'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2 ' +
   'contrast-more:focus-visible:outline-4 forced-colors:focus-visible:outline-[color:Highlight] ' +

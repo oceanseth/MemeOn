@@ -14,7 +14,7 @@ export function Textarea({
       className={cn(
         controlChrome,
         placeholderChrome,
-        'h-auto min-h-[120px] py-[15px] resize-y',
+        'h-auto min-h-30 py-3.75 resize-y',
         className,
       )}
       data-slot="textarea"

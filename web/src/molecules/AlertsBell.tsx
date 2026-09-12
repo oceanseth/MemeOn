@@ -132,7 +132,7 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
                     <span className="group-hover:underline" data-slot="alert-message">
                       {row.message}
                     </span>
-                    <time className="mt-[3px] block text-micro font-normal text-ink-muted" {...row.timeProps}>
+                    <time className="mt-0.75 block text-micro font-normal text-ink-muted" {...row.timeProps}>
                       {row.timeLabel}
                     </time>
                   </>

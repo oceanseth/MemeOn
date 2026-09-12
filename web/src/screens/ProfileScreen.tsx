@@ -15,13 +15,13 @@ const SKELETON_CARDS = ['a', 'b', 'c', 'd']
 
 /* identity card: min height floor so wrapped content can grow past the avatar row */
 const IDENTITY_CARD = cn(
-  'mb-5 flex flex-wrap items-center gap-y-4 gap-x-3.5 rounded-[28px] bg-surface p-5 shadow-raised',
+  'mb-5 flex flex-wrap items-center gap-y-4 gap-x-3.5 rounded-band bg-surface p-5 shadow-raised',
   'max-sm:rounded-nav',
 )
 
 /** App avatar 86px; public 60px; one step down on phone. */
-const HERO_AVATAR = 'size-[86px] rounded-[32px] max-sm:size-[74px] max-sm:rounded-[28px]'
-const HERO_AVATAR_PUBLIC = 'size-[60px] rounded-[22px]'
+const HERO_AVATAR = 'size-avatar-hero rounded-avatar-hero max-sm:size-avatar-hero-phone max-sm:rounded-band'
+const HERO_AVATAR_PUBLIC = 'size-15 rounded-[22px]'
 
 const IDENTITY_LINE =
   'm-0 truncate font-display text-title font-medium tracking-title text-ink [overflow-wrap:anywhere]'
@@ -33,7 +33,7 @@ const FRIEND_CAPTION = 'm-0 mt-1.5 text-label font-semibold text-ink-muted'
 
 const ACTIONS = 'flex flex-wrap items-center gap-3 max-sm:w-full max-sm:[&>*]:flex-1'
 
-const TABS = 'mb-[18px] flex flex-wrap items-center gap-3.5 max-sm:[&>*]:flex-1'
+const TABS = 'mb-gutter flex flex-wrap items-center gap-3.5 max-sm:[&>*]:flex-1'
 
 /** Public binder hero: bare row, intro below the avatar row at page edge. */
 const BINDER_HERO = 'flex items-center gap-4 max-sm:items-start'
@@ -121,11 +121,11 @@ export function ProfileScreen({
     return (
       <PageContainer as="main" id="main" tabIndex={-1} role="status" aria-live="polite">
         <span className="sr-only">{loadingLabel}</span>
-        <div className={cn(IDENTITY_CARD, 'mt-5 sm:min-h-[138px]')} aria-hidden="true">
-          <Skeleton className="size-[86px] rounded-[32px]" />
+        <div className={cn(IDENTITY_CARD, 'mt-5 sm:min-h-34.5')} aria-hidden="true">
+          <Skeleton className="size-avatar-hero rounded-avatar-hero" />
           <div className="min-w-0 flex-1">
-            <SkeletonBlock className="mb-2.5 h-[30px] w-[220px] max-w-full" />
-            <SkeletonBlock className="w-[260px] max-w-full" />
+            <SkeletonBlock className="mb-2.5 h-7.5 w-55 max-w-full" />
+            <SkeletonBlock className="w-65 max-w-full" />
           </div>
         </div>
         <ul className={binderGridClasses} aria-hidden="true">
@@ -224,7 +224,7 @@ export function ProfileScreen({
           <PageHead level="h1" title={title} {...(intro ? { subtitle: intro } : {})} className="mb-3.5" />
 
           <header
-            className={cn(IDENTITY_CARD, !publicView && 'sm:min-h-[138px]')}
+            className={cn(IDENTITY_CARD, !publicView && 'sm:min-h-34.5')}
             data-slot="profile-identity"
           >
             <Avatar

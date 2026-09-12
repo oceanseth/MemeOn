@@ -18,10 +18,10 @@ const FACE = 'font-display font-medium text-ink'
 const SECTION_TITLE = cn(FACE, 'm-0 text-section-phone tracking-title md:text-section')
 const SECTION = 'mt-14 max-md:mt-10'
 
-const CARD = 'rounded-card border-0 bg-surface p-[18px] shadow-raised'
+const CARD = 'rounded-card border-0 bg-surface p-gutter shadow-raised'
 
 /** Hero pile card: percentage positions scale with the column, no phone transform. */
-const PILE_CARD = 'absolute origin-top-left rounded-card bg-surface p-[7px] shadow-raised'
+const PILE_CARD = 'absolute origin-top-left rounded-card bg-surface p-1.75 shadow-raised'
 
 const PILE_LAYOUT = [
   'left-0 top-[19%] w-[38.2%]',
@@ -77,7 +77,7 @@ export function LandingScreen({
             >
               Memes are the new trading cards
             </h1>
-            <p className="mt-5 mb-0 max-w-[65ch] text-pretty text-intro text-ink-muted">
+            <p className="mt-5 mb-0 max-w-measure text-pretty text-intro text-ink-muted">
               Mint the moment. Watch it spread. Trade the cards everyone sends each other anyway —
               every meme gets a share link whose foil frame levels up as it travels.
             </p>
@@ -136,7 +136,7 @@ export function LandingScreen({
                     </span>
                   </span>
                   <span
-                    className="mx-1 mt-1.5 mb-1.5 block pr-[52px] font-sans text-caption font-medium tracking-normal text-ink md:text-label"
+                    className="mx-1 mt-1.5 mb-1.5 block pr-13 font-sans text-caption font-medium tracking-normal text-ink md:text-label"
                   >
                     {card.caption}
                   </span>
@@ -144,7 +144,7 @@ export function LandingScreen({
                     tierKey={card.tierKey}
                     label={card.tierName}
                     /* pile seal one step smaller than grid thumb so it never crowds the title */
-                    className="absolute right-2.5 bottom-2.5 px-[7px] py-[3px] text-micro"
+                    className="absolute right-2.5 bottom-2.5 px-1.75 py-0.75 text-micro"
                   />
                 </li>
               )
@@ -193,7 +193,7 @@ export function LandingScreen({
               <span className="foil-frame foil-media relative block overflow-hidden rounded-field bg-surface-pressed">
                 <span
                   data-slot="tier-frame-slot"
-                  className="relative block aspect-[4/3] min-h-[104px] w-full"
+                  className="relative block aspect-[4/3] min-h-26 w-full"
                   {...frameSlotProps[t.key]}
                 >
                   {frameImageProps[t.key] ? (
@@ -211,7 +211,7 @@ export function LandingScreen({
               <span className="mt-2.5 text-small/[18px] font-bold text-link tabular-nums">
                 {t.resharesLabel}
               </span>
-              <span className="mt-[3px] text-micro/[15px] text-ink-muted">{t.rarityLabel}</span>
+              <span className="mt-0.75 text-micro/[15px] text-ink-muted">{t.rarityLabel}</span>
             </li>
           ))}
         </ol>
@@ -221,13 +221,13 @@ export function LandingScreen({
           before the FAQ answers the questions it raises. */}
       <section data-slot="landing-film" className={SECTION}>
         <h2 className={SECTION_TITLE}>MemeOn in 50 seconds</h2>
-        <HeroVideo model={heroVideo} className="mt-6 max-w-[880px]" />
+        <HeroVideo model={heroVideo} className="mt-6 max-w-hero-video" />
       </section>
 
       {/* FAQ */}
       <section data-slot="landing-faq" className={SECTION}>
         <h2 className={cn(FACE, 'm-0 mb-6 text-section-phone tracking-title md:text-section')}>FAQ</h2>
-        <div className="max-w-[65ch]">
+        <div className="max-w-measure">
           <FaqItem question="How does a card level up?" defaultOpen>
             <p>
               Each unique share link and card unfurl counts as a reshare. Cross a threshold and the
@@ -253,7 +253,7 @@ export function LandingScreen({
             <img
               src="/api/brand/braincell.png"
               alt="a braincell"
-              className="mt-1.5 mb-1.5 ml-3 h-[72px] w-[72px] float-right rounded-full object-cover align-middle"
+              className="mt-1.5 mb-1.5 ml-3 size-18 float-right rounded-full object-cover align-middle"
             />
             <p>
               Braincells are MemeOn's currency — you buy meme shares, fund trades, and flex on the
@@ -291,7 +291,7 @@ export function LandingScreen({
           data-slot="landing-closing"
           className={cn(
             'mt-10 flex items-center justify-between gap-4 rounded-card bg-action-secondary',
-            'px-[25px] py-[22px] shadow-raised',
+            'px-6.25 py-5.5 shadow-raised',
             'max-lg:flex-col max-lg:items-stretch max-lg:gap-4',
           )}
         >

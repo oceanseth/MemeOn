@@ -38,7 +38,7 @@ const focusOutcome = (node: HTMLHeadingElement | null): void => node?.focus()
 
 /** Form and preview columns; preview stacks below the form under 1000px. */
 const LAYOUT =
-  'grid grid-cols-[minmax(0,1fr)] items-start gap-5 3xl:grid-cols-[minmax(0,555fr)_minmax(0,522fr)] 3xl:gap-[31px]'
+  'grid grid-cols-[minmax(0,1fr)] items-start gap-5 3xl:grid-cols-[minmax(0,555fr)_minmax(0,522fr)] 3xl:gap-7.75'
 /** the preview column sticks to the top of the scroll once the two columns split */
 const RAIL = 'flex flex-col gap-4 3xl:sticky 3xl:top-[calc(var(--topbar-h)+16px)]'
 const FORM_GRID = 'flex flex-col gap-3.5'
@@ -68,7 +68,7 @@ const OUTCOME_HEADING = cn(
   'max-md:text-display-phone',
 )
 
-const CARD_SUB = 'm-0 mt-[5px] text-small font-normal text-ink-muted'
+const CARD_SUB = 'm-0 mt-1.25 text-small font-normal text-ink-muted'
 
 /**
  * The source row: 34px raised pills (44 on a phone, where they are the primary control row), radius
@@ -76,8 +76,8 @@ const CARD_SUB = 'm-0 mt-[5px] text-small font-normal text-ink-muted'
  * paints off `aria-pressed`, so this is geometry only — no second "selected" look.
  */
 const CHIP = cn(
-  'h-[34px] rounded-[17px] px-3 text-caption font-medium',
-  'max-md:h-11 max-md:rounded-[22px] max-md:text-label pointer-coarse:h-11 pointer-coarse:rounded-[22px]',
+  'h-control-sm rounded-segment px-3 text-caption font-medium',
+  'max-md:h-11 max-md:rounded-pill max-md:text-label pointer-coarse:h-11 pointer-coarse:rounded-pill',
 )
 const MODE_ROW = 'mb-5 flex flex-wrap items-center gap-2'
 

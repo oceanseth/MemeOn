@@ -19,7 +19,7 @@ const meta = {
   title: 'Molecules/HeroVideo',
   component: HeroVideo,
   args: { model: model({ autoplay: true }) },
-  decorators: [(Story) => <div className="mx-auto max-w-[880px] p-5"><Story /></div>],
+  decorators: [(Story) => <div className="mx-auto max-w-hero-video p-5"><Story /></div>],
 } satisfies Meta<typeof HeroVideo>
 
 export default meta

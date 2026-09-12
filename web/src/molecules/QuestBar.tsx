@@ -11,17 +11,17 @@ import { DialogFrame } from './DialogFrame'
 const BRAINCELL_SRC = '/api/brand/braincell.png'
 
 /** `inline-block` is load-bearing in the dialog heading: preflight would drop the coin onto its own line. */
-const BRAINCELL_IMG = 'inline-block h-[26px] w-[26px] rounded-full object-cover align-middle'
+const BRAINCELL_IMG = 'inline-block size-6.5 rounded-full object-cover align-middle'
 
 /** Pressed well: quest lane left, claim pill right; stacks below 900. */
 const RAIL = cn(
-  'mx-5 mt-3 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-nav bg-surface-pressed p-[18px] shadow-pressed',
+  'mx-5 mt-3 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-nav bg-surface-pressed p-gutter shadow-pressed',
   '2xl:mt-2 2xl:flex-nowrap 2xl:px-6 2xl:py-5',
 )
 
 /** Unbounded card-title; phone steps to card-title-phone. */
 const TITLE = cn(
-  'inline-flex items-center gap-[7px] whitespace-nowrap',
+  'inline-flex items-center gap-1.75 whitespace-nowrap',
   'font-display text-card-title font-medium tracking-card-title text-ink',
   'max-2xl:text-card-title-phone',
 )
@@ -54,7 +54,7 @@ const TEXT_BUTTON = cn(
 
 /** Neutral raised claim pill — not the chrome primary. Busy = progress cursor, no spinner. */
 const CLAIM_BUTTON = cn(
-  'inline-flex h-[46px] shrink-0 cursor-pointer items-center justify-center gap-[9px] whitespace-nowrap rounded-control px-[18px]',
+  'inline-flex h-control shrink-0 cursor-pointer items-center justify-center gap-control-gap whitespace-nowrap rounded-control px-control-x',
   'border-0 bg-surface-raised text-label font-semibold text-ink shadow-raised',
   '[transition:transform_var(--dur-fast)_ease] motion-reduce:transition-none',
   '[@media(hover:hover)_and_(pointer:fine)]:[&:not(:disabled):hover]:-translate-y-px',

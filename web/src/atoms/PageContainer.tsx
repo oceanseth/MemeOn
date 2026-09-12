@@ -17,7 +17,7 @@ export function PageContainer({ as, narrow = false, className, children, ...rest
       className={cn(
         'mx-auto w-full pt-0 pb-16',
         '[padding-inline:max(20px,env(safe-area-inset-left))_max(20px,env(safe-area-inset-right))]',
-        narrow && 'max-w-[760px]',
+        narrow && 'max-w-page-narrow',
         className,
       )}
     >

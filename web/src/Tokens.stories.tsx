@@ -142,7 +142,7 @@ export function TokenSheet() {
   return (
     <div className="mx-auto max-w-app bg-canvas p-6 text-ink" data-slot="token-sheet">
       <h1 className="text-display tracking-display">Soft Press tokens</h1>
-      <p className="max-w-[60ch] text-intro text-ink-muted">
+      <p className="max-w-measure-sm text-intro text-ink-muted">
         Every colour below is a <code>light-dark()</code> pair; the theme toolbar flips <code>data-theme</code> on{' '}
         <code>&lt;html&gt;</code> and the browser picks the arm. Same markup, both arms.
       </p>
@@ -166,11 +166,11 @@ export function TokenSheet() {
           <li key={tier.key} className="flex flex-col items-center gap-2">
             <div
               data-slot={`tier-frame-${tier.key}`}
-              className={cn('flex h-20 w-28 items-end rounded-field border-[3px] bg-surface-pressed p-2', tier.frame)}
+              className={cn('flex h-20 w-28 items-end rounded-field border-3 bg-surface-pressed p-2', tier.frame)}
             >
               <span
                 data-slot={`tier-chip-${tier.key}`}
-                className={cn('rounded-chip px-[9px] py-1 text-micro font-bold', tier.chip)}
+                className={cn('rounded-chip px-chip-x py-1 text-micro font-bold', tier.chip)}
               >
                 {tier.label}
               </span>
@@ -184,49 +184,49 @@ export function TokenSheet() {
       <div className="flex flex-wrap items-center gap-4 rounded-card bg-canvas-alt p-5">
         <span
           data-slot="material-raised"
-          className="inline-flex h-[46px] items-center rounded-control bg-surface-raised px-[18px] text-label font-semibold shadow-raised"
+          className="inline-flex h-control items-center rounded-control bg-surface-raised px-control-x text-label font-semibold shadow-raised"
         >
           Raised
         </span>
         <span
           data-slot="material-pressed"
-          className="inline-flex h-[46px] items-center rounded-control bg-surface-pressed px-[18px] text-label font-semibold shadow-pressed"
+          className="inline-flex h-control items-center rounded-control bg-surface-pressed px-control-x text-label font-semibold shadow-pressed"
         >
           Pressed
         </span>
         <span
           data-slot="material-primary"
-          className="inline-flex h-[46px] items-center rounded-control bg-action px-[18px] text-label font-semibold text-on-action shadow-raised"
+          className="inline-flex h-control items-center rounded-control bg-action px-control-x text-label font-semibold text-on-action shadow-raised"
         >
           Primary
         </span>
         <span
           data-slot="material-secondary"
-          className="inline-flex h-[46px] items-center rounded-control bg-action-secondary px-[18px] text-label font-semibold text-on-action-secondary shadow-raised"
+          className="inline-flex h-control items-center rounded-control bg-action-secondary px-control-x text-label font-semibold text-on-action-secondary shadow-raised"
         >
           Secondary
         </span>
         <span
           data-slot="material-destructive"
-          className="inline-flex h-[46px] items-center rounded-control bg-error-surface px-[18px] text-label font-semibold text-error-text shadow-raised"
+          className="inline-flex h-control items-center rounded-control bg-error-surface px-control-x text-label font-semibold text-error-text shadow-raised"
         >
           Destructive
         </span>
         <span
           data-slot="material-focus"
-          className="inline-flex h-[46px] items-center rounded-control bg-surface-raised px-[18px] text-label font-semibold shadow-raised outline-3 outline-offset-2 outline-focus"
+          className="inline-flex h-control items-center rounded-control bg-surface-raised px-control-x text-label font-semibold shadow-raised outline-3 outline-offset-2 outline-focus"
         >
           Focus
         </span>
         <span
           data-slot="material-disabled"
-          className="inline-flex h-[46px] items-center rounded-control bg-surface-raised px-[18px] text-label font-semibold opacity-(--state-disabled-opacity) shadow-raised"
+          className="inline-flex h-control items-center rounded-control bg-surface-raised px-control-x text-label font-semibold opacity-(--state-disabled-opacity) shadow-raised"
         >
           Disabled
         </span>
         <span
           data-slot="material-field"
-          className="inline-flex h-[50px] w-64 items-center rounded-field bg-surface-pressed px-[18px] text-body text-ink-muted shadow-pressed"
+          className="inline-flex h-field w-64 items-center rounded-field bg-surface-pressed px-control-x text-body text-ink-muted shadow-pressed"
         >
           Search well
         </span>
@@ -242,7 +242,7 @@ export function TokenSheet() {
       <ul className="flex flex-wrap gap-3">
         {RADII.map(([label, className]) => (
           <li key={className} className="flex flex-col items-center gap-1">
-            <div className={cn('h-16 w-24 border-[3px] border-line bg-surface', className)} />
+            <div className={cn('h-16 w-24 border-3 border-line bg-surface', className)} />
             <code className="text-micro">{label}</code>
           </li>
         ))}

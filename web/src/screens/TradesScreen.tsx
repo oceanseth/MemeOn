@@ -114,7 +114,7 @@ export function TradesScreen({
           </Panel>)}
       {showLoading && <div className={rowList} {...loadingProps}>
         <span className="sr-only">{loadingLabel}</span>
-        {SKELETON_ROWS.map((row) => <SkeletonRow key={row} className="min-h-[180px]" />)}
+        {SKELETON_ROWS.map((row) => <SkeletonRow key={row} className="min-h-45" />)}
       </div>}
       {showError && <EmptyState error {...errorNoticeProps}>
         <p><strong>{err}</strong></p>

@@ -13,7 +13,7 @@ import { AppShell, NAV_ROW, PRIMARY_PILL, TAB_ITEM, TAB_ITEM_PRIMARY, UTILITY_LI
 
 const sidebar = (
   <>
-    <nav className="mt-[38px] flex flex-col gap-[11px]" aria-label="Main">
+    <nav className="mt-9.5 flex flex-col gap-2.75" aria-label="Main">
       <Link to="/marketplace" className={NAV_ROW} aria-current="page">
         <Icon name="storefront" /> Marketplace
       </Link>
@@ -27,15 +27,15 @@ const sidebar = (
         <Icon name="arrows-left-right" /> Trade
       </Link>
       <Link to="/leaderboard" className={NAV_ROW}>
-        <span className="inline-flex size-[22px] items-center justify-center text-[19px] leading-none" aria-hidden="true">🏆</span> Top Brains
+        <span className="inline-flex size-icon items-center justify-center text-[19px] leading-none" aria-hidden="true">🏆</span> Top Brains
       </Link>
     </nav>
-    <Link to="/binder/new" className={`${PRIMARY_PILL} mx-1 mt-[43px]`}>
+    <Link to="/binder/new" className={`${PRIMARY_PILL} mx-1 mt-10.75`}>
       <span aria-hidden="true">＋</span> Mint a meme
     </Link>
     <div className="mt-auto flex flex-col pt-6">
       <ThemeControl model={{ value: 'light', onChange: fn(), variant: 'segmented' }} className="mx-1" />
-      <nav className="mx-3 mt-4 flex flex-col items-start gap-[5px]" aria-label="More">
+      <nav className="mx-3 mt-4 flex flex-col items-start gap-nav-gap" aria-label="More">
         <Link to="/discord" className={UTILITY_LINK}>Discord</Link>
         <Link to="/developers" className={UTILITY_LINK}>🔧  Developers</Link>
         <Link to="/settings" className={UTILITY_LINK} aria-current="page">Settings</Link>

@@ -7,7 +7,7 @@ import { DialogFrame } from './DialogFrame'
 const onOpenChange = fn()
 
 const actions = (
-  <FilterBar className="mt-[18px] justify-end">
+  <FilterBar className="mt-gutter justify-end">
     <Button>Cancel</Button>
     <Button variant="primary">Do it</Button>
   </FilterBar>

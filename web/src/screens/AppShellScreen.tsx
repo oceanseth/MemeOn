@@ -19,20 +19,20 @@ import {
 } from '../organisms/AppShell'
 
 /** The 22×22 icon lane every nav row shares, so labels line up whatever glyph sits in it. */
-const ICON_LANE = 'inline-flex size-[22px] shrink-0 items-center justify-center'
+const ICON_LANE = 'inline-flex size-icon shrink-0 items-center justify-center'
 
 /** The desktop header avatar is a link to the profile; the phone one opens the account menu. */
 const AVATAR_LINK = cn('inline-flex shrink-0 rounded-avatar no-underline', FOCUS)
 
 /** "🧠 2,480": a neutral raised pill at 900+; bare bold text in the phone cluster (the design's, and the only way it fits 350). */
 const COINS = cn(
-  'inline-flex h-[46px] shrink-0 items-center rounded-control bg-surface-raised px-[18px]',
+  'inline-flex h-control shrink-0 items-center rounded-control bg-surface-raised px-control-x',
   'text-label font-semibold whitespace-nowrap text-ink tabular-nums shadow-raised',
   'max-2xl:h-auto max-2xl:rounded-none max-2xl:bg-transparent max-2xl:px-0 max-2xl:font-bold max-2xl:shadow-none',
 )
 
 const GEAR_LINK = cn(
-  'inline-flex size-[22px] shrink-0 items-center justify-center rounded-[8px] text-ink no-underline',
+  'inline-flex size-icon shrink-0 items-center justify-center rounded-lg text-ink no-underline',
   'hover:text-ink-muted',
   'pointer-coarse:size-11',
   FOCUS,
@@ -68,7 +68,7 @@ export function AppShellScreen({
 }: AppShellScreenModel & { children: ReactNode }) {
   const sidebar = showNav ? (
     <>
-      <nav className="mt-[38px] flex flex-col gap-[11px]" aria-label="Main" data-slot="sidebar-nav">
+      <nav className="mt-9.5 flex flex-col gap-2.75" aria-label="Main" data-slot="sidebar-nav">
         {navItems.map((item) => (
           <Link key={item.to} to={item.to} className={NAV_ROW} aria-current={item.current ? 'page' : undefined}>
             <span className={ICON_LANE} aria-hidden="true" data-slot="nav-icon">
@@ -83,12 +83,12 @@ export function AppShellScreen({
           </Link>
         ))}
       </nav>
-      <Link {...mintLinkProps} className={cn(PRIMARY_PILL, 'mx-1 mt-[43px]')} data-slot="mint-link">
+      <Link {...mintLinkProps} className={cn(PRIMARY_PILL, 'mx-1 mt-10.75')} data-slot="mint-link">
         <span aria-hidden="true">＋</span> Mint a meme
       </Link>
       <div className="mt-auto flex flex-col pt-6" data-slot="sidebar-foot">
         <ThemeControl model={theme} className="mx-1" />
-        <nav className="mx-3 mt-4 flex flex-col items-start gap-[5px]" aria-label="More" data-slot="utility-links">
+        <nav className="mx-3 mt-4 flex flex-col items-start gap-nav-gap" aria-label="More" data-slot="utility-links">
           {utilityLinks.map((link) => (
             <Link key={link.to} to={link.to} className={UTILITY_LINK} aria-current={link.current ? 'page' : undefined}>
               {/* NBSP after emoji so it does not glue to the label */}
@@ -98,7 +98,7 @@ export function AppShellScreen({
           ))}
         </nav>
         {identity && (
-          <div className="mx-1 mt-3 flex min-h-[55px] items-center gap-3" data-slot="identity">
+          <div className="mx-1 mt-3 flex min-h-13.75 items-center gap-3" data-slot="identity">
             <Avatar name={identity.name} src={identity.src} size="md" className="rounded-avatar shadow-raised" />
             <span className="min-w-0 flex-1 truncate text-label font-semibold text-ink" data-slot="identity-name">
               {identity.name}

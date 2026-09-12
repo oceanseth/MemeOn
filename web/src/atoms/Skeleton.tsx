@@ -20,7 +20,7 @@ export function SkeletonCard({ className, 'aria-hidden': ariaHidden, ...rest }: 
     <div
       data-slot="skeleton-card"
       aria-hidden={ariaHidden ?? 'true'}
-      className={cn(BASE, 'aspect-square box-content pb-[70px]', className)}
+      className={cn(BASE, 'aspect-square box-content pb-17.5', className)}
       {...rest}
     />
   )
@@ -42,7 +42,7 @@ export function SkeletonBlock({ className, 'aria-hidden': ariaHidden, ...rest }:
     <div
       data-slot="skeleton-block"
       aria-hidden={ariaHidden ?? 'true'}
-      className={cn(BASE, 'h-3.5 rounded-[8px]', className)}
+      className={cn(BASE, 'h-3.5 rounded-lg', className)}
       {...rest}
     />
   )

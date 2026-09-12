@@ -9,7 +9,7 @@ export function Spinner({ className, ...rest }: HTMLAttributes<HTMLSpanElement>)
       aria-hidden="true"
       data-slot="spinner"
       className={cn(
-        'inline-block h-[18px] w-[18px] flex-none rounded-full border-2 border-line border-t-action',
+        'inline-block size-4.5 flex-none rounded-full border-2 border-line border-t-action',
         'animate-[atom-rot_0.8s_linear_infinite]',
         'motion-reduce:[animation-duration:2s]',
         'forced-colors:border-[CanvasText] forced-colors:border-t-[Highlight]',

@@ -40,20 +40,20 @@ const marketControls = cn(
 const marketToolbar = 'flex flex-wrap items-center gap-3'
 
 /* search icon at 18px gutter → 50px input padding (18 + 20 + 12) */
-const searchWell = 'relative flex w-full min-w-0 flex-1 lg:max-w-[540px]'
-const searchGlyph = 'pointer-events-none absolute top-1/2 left-[18px] -translate-y-1/2 text-ink-muted'
+const searchWell = 'relative flex w-full min-w-0 flex-1 lg:max-w-135'
+const searchGlyph = 'pointer-events-none absolute top-1/2 left-control-x -translate-y-1/2 text-ink-muted'
 
 /** Toolbar Mint: bubblegum on phone, neutral raised on desktop (sidebar owns primary). */
 const mintLink = cn(
   buttonClasses('primary'),
-  'w-full lg:w-[206px] lg:bg-surface-raised lg:text-ink',
+  'w-full lg:w-51.5 lg:bg-surface-raised lg:text-ink',
 )
 
 /** The pre-ox/ui grid: 4-up ~262 at the 1108 column (`minmax(230px, 1fr)`), 2-up 166 on the phone. */
 const cardGrid = cn(
   'm-0 grid list-none items-start gap-5 p-0',
   'grid-cols-[repeat(auto-fill,minmax(230px,1fr))]',
-  'max-sm:grid-cols-2 max-sm:gap-[18px]',
+  'max-sm:grid-cols-2 max-sm:gap-gutter',
 )
 
 /**
@@ -63,12 +63,12 @@ const cardGrid = cn(
  */
 const cardSlot = cn(
   '[content-visibility:auto] [contain-intrinsic-size:auto_360px]',
-  'pointer-events-none p-[30px] [margin:-30px] [&>*]:pointer-events-auto',
+  'pointer-events-none p-7.5 -m-7.5 [&>*]:pointer-events-auto',
   'max-sm:p-5 max-sm:[margin:-20px]',
 )
 
 /** Results / Count: the section heading left, the live count right, on one baseline. */
-const resultsRow = 'mt-1 mb-[18px] flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2'
+const resultsRow = 'mt-1 mb-gutter flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2'
 const sectionHeading = 'm-0 font-display text-title font-medium tracking-title text-ink'
 const summaryRow = 'flex flex-wrap items-center gap-2.5 text-small text-ink-muted'
 
@@ -80,7 +80,7 @@ const chipButton = 'h-9 px-3 text-micro pointer-coarse:min-h-11'
 
 /** Tier filter as a raised pill — same material as neighbours, not a recessed form Select. */
 const tierPill = cn(
-  'h-[46px] rounded-control bg-surface-raised px-[18px] font-semibold shadow-raised',
+  'h-control rounded-control bg-surface-raised px-control-x font-semibold shadow-raised',
   '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px',
   'motion-reduce:hover:translate-y-0!',
 )
@@ -100,7 +100,7 @@ export function MarketplaceScreen({
         <div data-slot="market-toolbar" className={marketToolbar}>
           <span className={searchWell}>
             <Icon name="magnifying-glass" size={20} className={searchGlyph} />
-            <Input type="search" className="w-full pl-[50px]" {...queryInputProps} />
+            <Input type="search" className="w-full pl-12.5" {...queryInputProps} />
           </span>
           {/* the phone's two disclosure pills: "you are here" on the left, the panel toggle right.
               While the panel is open this pill and the media row's own "All memes" tab are both on
