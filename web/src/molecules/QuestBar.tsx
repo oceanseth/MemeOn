@@ -75,7 +75,7 @@ const CLAIM_BUTTON = cn(
 )
 
 /** The card grid with the starter pack's tighter tracks; under 561px only the gap tightens. */
-const PACK_GRID = 'm-0 grid list-none grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-5 p-0 max-sm:gap-3'
+const PACK_GRID = 'm-0 grid list-none items-start grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-5 p-0 max-sm:gap-3'
 
 /**
  * Onboarding quest rail. Parent owns steps, pack dialog, and claim.

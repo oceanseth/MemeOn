@@ -16,9 +16,10 @@ export type MemeCardSize = 'default' | 'lg'
    which also outranks `.tier-<key>`'s own fallback background (`utilities` ranks after
    `components`). */
 const CARD = cn(
-  'group relative isolate rounded-card bg-surface p-2 shadow-raised',
+  'group relative isolate self-start rounded-card bg-surface p-2 shadow-raised',
   /* the card answers its own width, not the window's: a 166px thumb wears the phone scale whether
-     it is in a 2-up phone grid, a memeplex strip or a 1440px marketplace */
+     it is in a 2-up phone grid, a memeplex strip or a 1440px marketplace. `self-start` keeps a row
+     of square thumbs from stretching if one neighbour wraps extra meta. */
   '@container',
   'transition-transform duration-(--dur-base) ease-[ease] motion-reduce:transition-none',
   /* touch has no hover to lift on, so it answers a press instead — both sizes, as the sheet does */
@@ -46,7 +47,9 @@ const INNER = 'relative flex h-full flex-col'
    is the second half of the effect API — it bounds the sheen and the sparkle to the art. */
 const FRAME = 'foil-frame foil-media relative rounded-field bg-surface-pressed'
 
-const ART = 'block w-full bg-surface-pressed'
+/* Pre-ox/ui plate: a square (`aspect-ratio: 1` on production `.meme-art`) so a 4-up 230px grid
+   stays compact. `contain` is the one change from that era — cover was cropping captions off. */
+const ART = 'block aspect-square w-full bg-surface-pressed object-contain'
 
 /* pause / play for the card film: a raised 32px square pinned to the art's corner, state carried by
    aria-pressed. */
@@ -95,23 +98,20 @@ const VALUE = 'text-small/[18px] font-bold text-ink'
 const RIGHT_SLOT = 'min-w-16 shrink-0 text-right [&>span]:whitespace-nowrap'
 
 /* The two card scales, spelled out per element:
-     `lg` — the detail hero: contained art (a wide two-panel joke letterboxes on the media plate
-     rather than having its caption cropped away — the board fills the plate, but real memes have
-     arbitrary ratios, so `contain` is the product decision), a wrapping 27/34 title, a 13px chip,
-     roomier meta and no hover lift. Grid thumbs keep `cover` — those crops are deliberate — and
-     clamp the title to
-     two lines so a 166px phone card keeps its stats on screen; under 220px of card the thumb takes
-     the phone scale (square art, 17/21 title), which is the board's iPhone card. */
-const SIZES: Record<MemeCardSize, Record<'card' | 'art' | 'meta' | 'title', string>> = {
+     `lg` — the detail hero: a wrapping 27/34 title, a 13px chip, roomier meta and no hover lift.
+     Grid thumbs clamp the title to two lines so a 166px phone card keeps its stats on screen; under
+     220px of card the thumb takes the phone type scale, which is the board's iPhone card.
+
+     Art is a square contain plate at both sizes — the production card, not the Soft Press 340/228
+     cover crop and not a full-bleed native-ratio stack. */
+const SIZES: Record<MemeCardSize, Record<'card' | 'meta' | 'title', string>> = {
   default: {
     card: CARD_LIFT,
-    art: 'aspect-[340/228] object-cover @max-[220px]:aspect-square',
     meta: 'gap-1 px-1.5 pt-3.5 pb-1.5 @max-[220px]:pt-2.5',
     title: 'line-clamp-2 text-card-title @max-[220px]:text-card-title-phone',
   },
   lg: {
     card: '',
-    art: 'aspect-[340/228] object-contain',
     meta: 'gap-1.5 px-2 pt-4 pb-2',
     title: TITLE_HERO,
   },
@@ -135,9 +135,9 @@ export interface MemeCardProps {
    */
   footerRight?: ReactNode | undefined
   /**
-   * `default` (the grid thumb) or `lg`, the detail-page hero: contained art, a wrapping title, a
-   * bigger tier chip, roomier meta and no hover lift. `screens/MemeDetailScreen.tsx` is the only
-   * `lg` caller.
+   * `default` (the grid thumb) or `lg`, the detail-page hero: a wrapping title, a bigger tier chip,
+   * roomier meta and no hover lift. Art is the same square contain plate at both sizes.
+   * `screens/MemeDetailScreen.tsx` is the only `lg` caller.
    */
   size?: MemeCardSize | undefined
 }
@@ -158,13 +158,9 @@ export function MemeCard({ model, footer, footerRight, size = 'default' }: MemeC
         <span data-slot="foil-media" className={FRAME}>
           <Link {...model.detailLinkProps} className="block focus-visible:outline-none">
             {model.media.kind === 'video' ? (
-              <video
-                data-slot="meme-art"
-                className={cn(ART, scale.art)}
-                {...model.media.videoProps}
-              />
+              <video data-slot="meme-art" className={ART} {...model.media.videoProps} />
             ) : (
-              <img data-slot="meme-art" className={cn(ART, scale.art)} {...model.media.imageProps} />
+              <img data-slot="meme-art" className={ART} {...model.media.imageProps} />
             )}
           </Link>
           <TierChip

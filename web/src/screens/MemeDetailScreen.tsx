@@ -111,7 +111,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
         <Spinner />{loadingLabel}
       </div>
       <div aria-hidden="true" className={detailGrid}>
-        <Skeleton className="aspect-[410/560]" />
+        <Skeleton className="aspect-square" />
         <div className={rail}>
           <Skeleton className="h-[88px]" />
           <Skeleton className="h-[166px]" />

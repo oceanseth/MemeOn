@@ -61,11 +61,10 @@ const mintLink = cn(
   'w-full lg:w-[206px] lg:bg-surface-raised lg:text-ink',
 )
 
-/** The grid: 3-up 356 at the 1108 column, 2-up 166 on the phone, one fluid ladder in between. */
+/** The pre-ox/ui grid: 4-up ~262 at the 1108 column (`minmax(230px, 1fr)`), 2-up 166 on the phone. */
 const cardGrid = cn(
-  'm-0 grid list-none gap-5 p-0',
+  'm-0 grid list-none items-start gap-5 p-0',
   'grid-cols-[repeat(auto-fill,minmax(230px,1fr))]',
-  '4xl:grid-cols-[repeat(auto-fill,minmax(340px,1fr))]',
   'max-sm:grid-cols-2 max-sm:gap-[18px]',
 )
 
@@ -75,7 +74,7 @@ const cardGrid = cn(
  * grid track.
  */
 const cardSlot = cn(
-  '[content-visibility:auto] [contain-intrinsic-size:auto_382px]',
+  '[content-visibility:auto] [contain-intrinsic-size:auto_360px]',
   'pointer-events-none p-[30px] [margin:-30px] [&>*]:pointer-events-auto',
   'max-sm:p-5 max-sm:[margin:-20px]',
 )
