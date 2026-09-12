@@ -10,7 +10,7 @@ import {
   pendingVideoMatchesRemix,
   pendingVideoRecord,
   type CreateMemeScreenActions,
-} from './useCreateMemeScreen'
+} from '../lib/createMemeModel'
 
 const giphyResult: GiphyResult = {
   id: 'cat-1',

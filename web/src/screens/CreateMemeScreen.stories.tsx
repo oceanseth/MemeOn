@@ -13,7 +13,7 @@ import {
   MAX_VIDEO_BYTES,
   overCapMessage,
   type CreateMemeScreenActions,
-} from '../hooks/useCreateMemeScreen'
+} from '../lib/createMemeModel'
 import type { CreateMemeContext, CreateMemePhase } from '../stores/createMemeMachine'
 import { CreateMemeScreen } from './CreateMemeScreen'
 

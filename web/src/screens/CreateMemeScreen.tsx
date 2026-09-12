@@ -29,7 +29,7 @@ import type {
   CreateMemeCardModel,
   CreateMemeModeButtonModel,
   CreateMemeScreenModel,
-} from '../hooks/useCreateMemeScreen'
+} from '../lib/createMemeModel'
 import type { CreateMemeMode } from '../stores/createMemeMachine'
 import { cn } from '../lib/cn'
 
