@@ -18,7 +18,7 @@ const inviteModel = (data: typeof invitePal, self = false) => ({
   stats: buildInviteStats(data.inviter),
   acceptanceNote: self
     ? "Send this link to a friend — they'll join with Masky and you'll be friends instantly."
-    : `Joining creates your account with Masky single sign-on and instantly makes you and ${data.inviter.name} friends.`,
+    : `Sign in with your Masky avatar. You start with a free starter pack and ${data.inviter.name} as your first friend.`,
 })
 
 const cardsOf = (data: typeof invitePal) =>
@@ -34,6 +34,8 @@ const empty: InviteScreenModel = {
   showAcceptSpinner: false,
   showHighlights: false,
   loadingLabel: 'Loading invite…',
+  inviteBody: 'Mint memes, share the link, and trade your friends’ bangers before they go ✨Shiny✨.',
+  climbNote: 'Every share makes the card climb.',
   acceptErrorMessage: "Couldn't accept this invite — try again.",
   acceptSuccessMessage: 'You and pal are now friends 🤝',
   highlightsTitle: "pal's binder highlights",
@@ -48,7 +50,7 @@ const empty: InviteScreenModel = {
   inviter: null,
   cards: [],
   acceptButtonProps: { onClick: fn() },
-  acceptLabel: '🎭 Accept invite — join with Masky',
+  acceptLabel: '🎭 Join pal on MemeOn',
 }
 
 const ready = {
@@ -58,6 +60,16 @@ const ready = {
   showSpinner: false,
   showHighlights: true,
 } satisfies Partial<InviteScreenModel>
+
+/** Storybook's viewport global; the vitest storybook project renders at the story's own width. */
+const phone = {
+  parameters: {
+    viewport: {
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+    },
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
+}
 
 const meta = {
   title: 'Screens/InviteScreen',
@@ -163,4 +175,15 @@ export const SelfCopied: Story = {
       copyStatusMessage: 'Invite link copied to your clipboard.',
     },
   },
+}
+
+export const Dark: Story = { ...Ready, name: 'Ready dark', globals: { theme: 'dark' } }
+
+export const Phone390: Story = { ...Ready, name: 'Ready phone 390', ...phone }
+
+export const DarkPhone390: Story = {
+  ...Ready,
+  name: 'Ready dark phone 390',
+  ...phone,
+  globals: { ...phone.globals, theme: 'dark' },
 }

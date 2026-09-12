@@ -26,6 +26,10 @@ export interface InviteScreenModel {
   showAcceptSpinner: boolean
   showHighlights: boolean
   loadingLabel: string
+  /** the sentence under the hero: one line, product language, never "invest" */
+  inviteBody: string
+  /** the iPhone board's closing line under the highlights (`DEF-0` › `DG4-0`) */
+  climbNote: string
   acceptErrorMessage: string
   acceptSuccessMessage: string
   highlightsTitle: string
@@ -92,8 +96,18 @@ export function buildInviteStats(inviter: {
 }): readonly InviteStatModel[] {
   return [
     { id: 'binder', emoji: '📚', value: inviter.collectionSize.toLocaleString(), label: 'in binder' },
-    { id: 'braincells', emoji: '🧠', value: inviter.portfolioValue.toLocaleString(), label: 'braincells' },
-    { id: 'followers', emoji: '⭐', value: inviter.followers.toLocaleString(), label: 'followers' },
+    {
+      id: 'braincells',
+      emoji: '🧠',
+      value: inviter.portfolioValue.toLocaleString(),
+      label: inviter.portfolioValue === 1 ? 'braincell' : 'braincells',
+    },
+    {
+      id: 'followers',
+      emoji: '⭐',
+      value: inviter.followers.toLocaleString(),
+      label: inviter.followers === 1 ? 'follower' : 'followers',
+    },
   ]
 }
 
@@ -168,6 +182,9 @@ export function useInviteScreen(): InviteScreenModel {
     showAcceptSpinner: ctx.busy,
     showHighlights: !!ctx.data && ctx.data.topMemes.length > 0,
     loadingLabel: 'Loading invite…',
+    inviteBody:
+      'Mint memes, share the link, and trade your friends’ bangers before they go ✨Shiny✨.',
+    climbNote: 'Every share makes the card climb.',
     acceptErrorMessage: "Couldn't accept this invite — try again.",
     acceptSuccessMessage: `You and ${inviter?.name ?? 'your pal'} are now friends 🤝`,
     highlightsTitle: `${inviter?.name ?? ''}'s binder highlights`,
@@ -204,7 +221,7 @@ export function useInviteScreen(): InviteScreenModel {
           stats: buildInviteStats(inviter),
           acceptanceNote: isSelf
             ? "Send this link to a friend — they'll join with Masky and you'll be friends instantly."
-            : `Joining creates your account with Masky single sign-on and instantly makes you and ${inviter.name} friends.`,
+            : `Sign in with your Masky avatar. You start with a free starter pack and ${inviter.name} as your first friend.`,
         }
       : null,
     cards: (ctx.data?.topMemes ?? []).map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) })),
@@ -220,6 +237,6 @@ export function useInviteScreen(): InviteScreenModel {
         : '🎭 Opening Masky…'
       : user
         ? `🤝 Accept & befriend ${inviter?.name ?? ''}`
-        : '🎭 Accept invite — join with Masky',
+        : `🎭 Join ${inviter?.name ?? 'MemeOn'} on MemeOn`,
   }
 }
