@@ -68,14 +68,6 @@ const TOGGLE = cn(
   'forced-colors:focus-visible:outline-[Highlight]',
 )
 
-/* The listing state, not a listing control: the one pill on the art says a card is for sale, and it
-   is the only thing on a card allowed to wear the action colour (a card carries no primary button,
-   so the one-bubblegum rule is untouched). */
-const FOR_SALE = cn(
-  'absolute top-2 right-2 z-[2] inline-flex h-[25px] items-center rounded-pill px-2.5',
-  'bg-action text-micro font-bold text-on-action shadow-raised',
-)
-
 /* The tier chip sits 16 in from the frame's bottom-left corner, as the board draws it. */
 const CHIP_POS = 'absolute bottom-4 left-4 z-[2]'
 
@@ -83,11 +75,17 @@ const META = 'flex flex-col'
 
 const TITLE = 'font-display font-medium tracking-card-title text-ink'
 
+/* The hero's own title step. The detail board (296-0 › `Hero / Full meme card` G4J-0, text G4O-0)
+   draws it at 27/34 on `--tracking-title`, one rung above the grid thumb's 23/27 card-title — a
+   size the shared ladder has no token for, so it lives here rather than in `index.css` (WP1's). */
+const TITLE_HERO = 'text-[27px]/[34px] tracking-title'
+
 /* the emoji stat line: 👁️ views · 🔁 reshares, 12/18 on ink-muted */
 const STATS = 'flex items-center text-micro/[18px] text-ink-muted tabular-nums'
 
 /* The footer row: braincells on the left, a 64px right-aligned slot on the right that is allowed
-   two lines ("10 sh @ 🧠3", "12/100 shares"). On a card narrower than 220px it wraps instead. */
+   two lines ("12 shares" / "for sale", or a screen's own "12/100 shares"). On a card narrower than
+   220px it wraps instead. */
 const SUB = cn(
   'flex items-start justify-between gap-2 text-micro/[15px] font-medium text-ink tabular-nums',
   '@max-[220px]:flex-wrap @max-[220px]:gap-y-0.5',
@@ -95,12 +93,18 @@ const SUB = cn(
 
 const VALUE = 'text-small/[18px] font-bold text-ink'
 
-const RIGHT_SLOT = 'w-16 shrink-0 text-right'
+/* The board's 64px lane (`6Y7-0`, `78S-0`) as a floor rather than a cap: it draws "12 shares", and
+   every card in the market lines up on it, but the product's own maximum is "100 shares", which
+   breaks mid-phrase at exactly 64. A minimum keeps the lane and lets the one long case stay two
+   lines instead of three. */
+const RIGHT_SLOT = 'min-w-16 shrink-0 text-right [&>span]:whitespace-nowrap'
 
 /* The two card scales, spelled out per element:
      `lg` — the detail hero: contained art (a wide two-panel joke letterboxes on the media plate
-     rather than having its caption cropped away), a wrapping title, a 13px chip, roomier meta and
-     no hover lift. Grid thumbs keep `cover` — those crops are deliberate — and clamp the title to
+     rather than having its caption cropped away — the board fills the plate, but real memes have
+     arbitrary ratios, so `contain` is the product decision), a wrapping 27/34 title, a 13px chip,
+     roomier meta and no hover lift. Grid thumbs keep `cover` — those crops are deliberate — and
+     clamp the title to
      two lines so a 166px phone card keeps its stats on screen; under 220px of card the thumb takes
      the phone scale (square art, 17/21 title), which is the board's iPhone card. */
 const SIZES: Record<MemeCardSize, Record<'card' | 'art' | 'meta' | 'title', string>> = {
@@ -114,7 +118,7 @@ const SIZES: Record<MemeCardSize, Record<'card' | 'art' | 'meta' | 'title', stri
     card: '',
     art: 'aspect-[340/228] object-contain',
     meta: 'gap-1.5 px-2 pt-4 pb-2',
-    title: 'text-card-title',
+    title: TITLE_HERO,
   },
 }
 
@@ -167,11 +171,6 @@ export function MemeCard({ model, footer, size = 'default' }: MemeCardProps) {
             size={size === 'lg' ? 'md' : 'sm'}
             className={CHIP_POS}
           />
-          {model.listing && (
-            <span data-slot="for-sale" className={FOR_SALE}>
-              {model.listing.forSaleLabel}
-            </span>
-          )}
           {model.media.kind === 'video' && (
             <button data-slot="media-toggle" className={TOGGLE} {...model.media.toggleProps}>
               <span aria-hidden="true">⏯</span>
@@ -195,8 +194,14 @@ export function MemeCard({ model, footer, size = 'default' }: MemeCardProps) {
               <span className="sr-only">{model.valueA11yLabel}</span>
             </span>
             {model.listing && (
-              <span className={RIGHT_SLOT}>
-                <span aria-hidden="true">{model.listing.sharesLabel}</span>
+              /* the listing state lives here and nowhere else: the boards draw no pill on the art
+                 (6UR-0 cards 6XT-0/6Y9-0/6YP-0, 70L-0's seven, 767-0's six) — it is the slot's
+                 second line, so a card still wears no action colour at all */
+              <span data-slot="for-sale" className={RIGHT_SLOT}>
+                <span aria-hidden="true">
+                  <span className="block">{model.listing.sharesLabel}</span>
+                  <span className="block">{model.listing.forSaleLabel}</span>
+                </span>
                 <span className="sr-only">{model.listing.sharesA11yLabel}</span>
               </span>
             )}

@@ -38,9 +38,10 @@ describe('buildMemeCardModel', () => {
     expect(model.listing).toEqual({
       shares: 10,
       pricePerShare: 3,
-      forSaleLabel: 'For sale',
-      sharesLabel: '10 sh @ 🧠3',
-      sharesA11yLabel: '10 shares at 3 braincells each',
+      // the board copy: two lines in the card's 64px footer slot, no pill on the art
+      forSaleLabel: 'for sale',
+      sharesLabel: '10 shares',
+      sharesA11yLabel: '10 shares for sale at 3 braincells each',
     })
   })
 

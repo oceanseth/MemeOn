@@ -120,22 +120,29 @@ export const Listed: Story = {
   args: { model: buildMemeCardModel(listedHolo) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    // compact on screen, spelled out for a screen reader at a purchase decision
-    await expect(canvas.getByText('10 sh @ 🧠3')).toBeVisible()
-    await expect(canvas.getByText('10 shares at 3 braincells each')).toBeInTheDocument()
+    // two lines in the 64px slot on screen, one sentence (with the price) for a screen reader
+    await expect(canvas.getByText('10 shares')).toBeVisible()
+    await expect(canvas.getByText('for sale')).toBeVisible()
+    await expect(
+      canvas.getByText('10 shares for sale at 3 braincells each'),
+    ).toBeInTheDocument()
   },
 }
 
 /**
- * The same listing, named for the state it shows: a 25px action pill on the art. It is a state
- * marker, not a control — a card still carries no primary button.
+ * The same listing, named for the state it shows: the boards put it in the footer's right slot as
+ * a second line, not on a pill over the art. It is a state marker, not a control — and now not an
+ * accent either, so a card wears no action colour anywhere.
  */
 export const ForSale: Story = {
   ...Listed,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const pill = canvas.getByText('For sale')
-    await expect(pill).toBeVisible()
+    const slot = canvasElement.querySelector('[data-slot="for-sale"]')!
+    await expect(slot).toHaveTextContent('10 shares')
+    await expect(slot).toHaveTextContent('for sale')
+    // it lives in the footer row, never over the art
+    await expect(slot.closest('[data-slot="meme-sub"]')).not.toBeNull()
     // a label, never a button: nothing here is clickable
     await expect(canvas.queryByRole('button', { name: /for sale/i })).toBeNull()
   },
@@ -183,7 +190,7 @@ export const Focused: Story = {
 
 /**
  * The detail-page hero, the one `size="lg"` caller: contained art so a wide joke letterboxes
- * instead of losing its caption, a 22px wrapping title, roomier meta, no hover lift.
+ * instead of losing its caption, a 27/34 wrapping title, roomier meta, no hover lift.
  */
 export const Large: Story = {
   args: { model: buildMemeCardModel(longTitleMeme), size: 'lg' },
@@ -192,16 +199,17 @@ export const Large: Story = {
     const canvas = within(canvasElement)
     const card = canvas.getByRole('article', { name: longTitleMeme.title })
     await expect(card.dataset.size).toBe('lg')
+    const title = within(card).getByText(longTitleMeme.title)
     // the hero title wraps rather than ellipsizing: nothing about the meme is cropped away
-    await expect(within(card).getByText(longTitleMeme.title)).toHaveStyle({
-      whiteSpace: 'normal',
-    })
+    await expect(title).toHaveStyle({ whiteSpace: 'normal' })
+    // the hero title step off the detail board (296-0 / G4J-0 / G4O-0)
+    await expect(title).toHaveStyle({ fontSize: '27px', lineHeight: '34px' })
   },
 }
 
 /**
  * The detail hero as `MemeDetailScreen` renders it: contained art, the 13px tier chip, the listing
- * pill on the frame. Same atom, one prop apart from a grid thumb.
+ * state in the footer's right slot. Same atom, one prop apart from a grid thumb.
  */
 export const Hero: Story = {
   args: { model: buildMemeCardModel(listedHolo), size: 'lg' },
@@ -211,7 +219,7 @@ export const Hero: Story = {
     const card = canvas.getByRole('article', { name: listedHolo.title })
     await expect(card.dataset.size).toBe('lg')
     await expect(within(card).getByText('Holo')).toBeVisible()
-    await expect(within(card).getByText('For sale')).toBeVisible()
+    await expect(within(card).getByText('for sale')).toBeVisible()
   },
 }
 

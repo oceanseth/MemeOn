@@ -34,11 +34,14 @@ export type MemeCardMediaModel =
 export interface MemeCardListingModel {
   shares: number
   pricePerShare: number
-  /** the pill on the art: the listing state in two words, never a control */
+  /**
+   * Second line of the card's 64px footer slot — the state, never a control. The boards
+   * (6UR-0 `6Y7-0`, 767-0 `78S-0`) draw it lower-case under the share count, with no pill.
+   */
   forSaleLabel: string
-  /** compact, visible: `10 sh @ 🧠3` */
+  /** first line of the same slot: `12 shares` */
   sharesLabel: string
-  /** the same offer with the abbreviation and the emoji spelled out */
+  /** both lines plus the price, which the card itself no longer prints */
   sharesA11yLabel: string
 }
 
@@ -132,9 +135,9 @@ function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
       ? {
           shares: meme.listing.shares,
           pricePerShare: meme.listing.pricePerShare,
-          forSaleLabel: 'For sale',
-          sharesLabel: `${meme.listing.shares} sh @ 🧠${meme.listing.pricePerShare}`,
-          sharesA11yLabel: `${meme.listing.shares} shares at ${meme.listing.pricePerShare} braincells each`,
+          forSaleLabel: 'for sale',
+          sharesLabel: `${meme.listing.shares} shares`,
+          sharesA11yLabel: `${meme.listing.shares} shares for sale at ${meme.listing.pricePerShare} braincells each`,
         }
       : null
 
