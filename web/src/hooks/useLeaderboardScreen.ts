@@ -4,6 +4,7 @@ import { apiFetch } from '../lib/api'
 import type { LeaderRow } from '../lib/types'
 import { leaderboardMachine, type LeaderboardPhase } from '../stores/leaderboardMachine'
 import { useMountEffect } from './useMountEffect'
+import type { ButtonHTMLAttributes } from 'react'
 import type { LinkProps } from 'react-router-dom'
 
 export type { LeaderboardPhase }
@@ -11,8 +12,16 @@ export type { LeaderboardPhase }
 export interface LeaderboardScreenModel {
   phase: LeaderboardPhase
   subtitle: string
+  /** the podium block's own heading and line (`CMC-0` › `COO-0` / `COP-0`) */
+  podiumTitle: string
+  podiumSubtitle: string
   columnHeaders: { player: string; braincells: string }
   leaders: readonly LeaderboardRowModel[]
+  /** the signed-in player when they rank below the visible page: the board's pinned row */
+  youRow: LeaderboardRowModel | null
+  showMore: boolean
+  showMoreLabel: string
+  showMoreButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
   showLoading: boolean
   loadingMessage: string
   showEmpty: boolean
@@ -94,13 +103,23 @@ export function useLeaderboardScreen(): LeaderboardScreenModel {
     load()
   })
 
-  const leaders = ctx.leaders.map((leader, index) => buildLeaderboardRowModel(leader, index, meSub))
+  const ranked = ctx.leaders.map((leader, index) => buildLeaderboardRowModel(leader, index, meSub))
+  const leaders = ranked.slice(0, ctx.visibleLimit)
+  const hidden = ranked.length - leaders.length
+  // the pinned row is only worth a line when the reader cannot already see themselves
+  const youRow = ranked.slice(ctx.visibleLimit).find((row) => row.isMe) ?? null
 
   return {
     phase,
-    subtitle: 'The wrinkliest braincell holders on MemeOn',
-    columnHeaders: { player: 'Player', braincells: 'Braincells' },
+    subtitle: 'Collect, trade, climb.',
+    podiumTitle: '🏆 Podium',
+    podiumSubtitle: 'The wrinkliest braincell holders on MemeOn',
+    columnHeaders: { player: 'Ranked by braincell holdings', braincells: 'Braincells' },
     leaders,
+    youRow,
+    showMore: hidden > 0,
+    showMoreLabel: 'Show more brains',
+    showMoreButtonProps: { onClick: () => send({ type: 'SHOW_MORE' }) },
     showLoading: phase === 'loading',
     loadingMessage: 'Loading Top Brains…',
     showEmpty: phase === 'empty',
@@ -113,7 +132,7 @@ export function useLeaderboardScreen(): LeaderboardScreenModel {
       load()
     },
     showList: phase === 'ready',
-    listSummary: `${leaders.length} ${leaders.length === 1 ? 'brain' : 'brains'} on the board`,
+    listSummary: `${ranked.length} ${ranked.length === 1 ? 'brain' : 'brains'} on the board`,
     youLabel: 'you',
   }
 }

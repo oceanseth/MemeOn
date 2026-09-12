@@ -27,9 +27,15 @@ const rows = (source: LeaderRow[], meSub: string | null = null) =>
 
 const empty: LeaderboardScreenModel = {
   phase: 'empty',
-  subtitle: 'The wrinkliest braincell holders on MemeOn',
-  columnHeaders: { player: 'Player', braincells: 'Braincells' },
+  subtitle: 'Collect, trade, climb.',
+  podiumTitle: '🏆 Podium',
+  podiumSubtitle: 'The wrinkliest braincell holders on MemeOn',
+  columnHeaders: { player: 'Ranked by braincell holdings', braincells: 'Braincells' },
   leaders: [],
+  youRow: null,
+  showMore: false,
+  showMoreLabel: 'Show more brains',
+  showMoreButtonProps: { onClick: () => {} },
   showLoading: false,
   loadingMessage: 'Loading Top Brains…',
   showEmpty: true,
@@ -48,6 +54,16 @@ const ready: Partial<LeaderboardScreenModel> = {
   showEmpty: false,
   showList: true,
   listSummary: '2 brains on the board',
+}
+
+/** Storybook's viewport global; the vitest storybook project renders at the story's own width. */
+const phone = {
+  parameters: {
+    viewport: {
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+    },
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
 }
 
 const meta = {
@@ -132,4 +148,30 @@ export const SelfInTopTen: Story = {
     await expect(canvas.getByText('you')).toBeInTheDocument()
     await expect(canvas.getByRole('link', { name: /^You, rank 2/ })).toBeInTheDocument()
   },
+}
+
+/** The full board: a podium, ranked rows beneath it, a pinned "You" line and the next page. */
+export const Full: Story = {
+  args: {
+    ...ready,
+    leaders: rows(mixedAvatarRows),
+    listSummary: '4 brains on the board',
+    youRow: buildLeaderboardRowModel(
+      { sub: 'user-me', name: 'oxfern', picture: null, braincells: 2480, portfolioValue: 900, collectionSize: 6 },
+      8,
+      'user-me',
+    ),
+    showMore: true,
+  },
+}
+
+export const Dark: Story = { ...Full, name: 'Ready dark', globals: { theme: 'dark' } }
+
+export const Phone390: Story = { ...Full, name: 'Ready phone 390', ...phone }
+
+export const DarkPhone390: Story = {
+  ...Full,
+  name: 'Ready dark phone 390',
+  ...phone,
+  globals: { ...phone.globals, theme: 'dark' },
 }
