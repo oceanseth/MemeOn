@@ -4,9 +4,10 @@ import { cn } from './lib/cn'
 
 /**
  * The Soft Press token sheet: every semantic colour, the two ramps, the seven tier chips, the two
- * materials, the radii and the type ladder, painted with nothing but the utilities `index.css`
- * emits. It is the swarm's visual reference — if a token looks wrong here it is wrong everywhere —
- * and a probe: each swatch carries `data-slot="swatch-<token>"` for `getComputedStyle`.
+ * materials, the radii, the spacing roles, the container widths and the type ladder, painted with
+ * nothing but the utilities `index.css` emits. It is the swarm's visual reference — if a token looks
+ * wrong here it is wrong everywhere — and a probe: each swatch carries `data-slot="swatch-<token>"`
+ * (`spacing-<token>`, `container-<token>`) for `getComputedStyle`.
  */
 
 const SEMANTIC: ReadonlyArray<{ token: string; bg: string; text?: string }> = [
@@ -103,7 +104,38 @@ const RADII = [
   ['shell 32', 'rounded-shell'],
   ['tabbar 30', 'rounded-tabbar'],
   ['pill 999', 'rounded-pill'],
+  ['band 28', 'rounded-band'],
+  ['well 20', 'rounded-well'],
+  ['segment 17', 'rounded-segment'],
+  ['control-sm 13', 'rounded-control-sm'],
+  ['avatar-hero 32', 'rounded-avatar-hero'],
 ] as const
+
+/* `--spacing-*` roles, each drawn as a bar exactly that long; the `w-*` utility is the probe. */
+const SPACING: ReadonlyArray<{ token: string; px: number; role: string; className: string }> = [
+  { token: 'nav-gap', px: 5, role: 'icon ↔ label in a bottom-nav item', className: 'w-nav-gap' },
+  { token: 'control-gap', px: 9, role: 'icon ↔ label inside a control', className: 'w-control-gap' },
+  { token: 'chip-x', px: 9, role: 'tier chip and badge inline padding', className: 'w-chip-x' },
+  { token: 'control-x', px: 18, role: 'control and field inline padding', className: 'w-control-x' },
+  { token: 'gutter', px: 18, role: 'phone card inset, phone grid gap, toolbar ↔ grid', className: 'w-gutter' },
+  { token: 'icon', px: 22, role: 'the icon lane', className: 'w-icon' },
+  { token: 'control-sm', px: 34, role: 'small square control, header avatar, segment', className: 'w-control-sm' },
+  { token: 'control', px: 46, role: 'button, pill, disclosure height', className: 'w-control' },
+  { token: 'field', px: 50, role: 'Input, the search well', className: 'w-field' },
+  { token: 'nav-item', px: 62, role: 'a bottom-nav item', className: 'w-nav-item' },
+  { token: 'avatar-hero-phone', px: 74, role: 'hero avatar under max-sm', className: 'w-avatar-hero-phone' },
+  { token: 'avatar-hero', px: 86, role: 'profile / invite hero avatar', className: 'w-avatar-hero' },
+]
+
+/* `--container-*` widths, drawn to scale against the 1440px app frame; `ch` steps are drawn in ch. */
+const CONTAINERS: ReadonlyArray<{ token: string; spec: string; className: string }> = [
+  { token: 'measure-sm', spec: '60ch · a notice, a caption paragraph', className: 'max-w-measure-sm' },
+  { token: 'measure', spec: '65ch · body prose', className: 'max-w-measure' },
+  { token: 'card', spec: '560px · the auth and invite card', className: 'max-w-card' },
+  { token: 'page-narrow', spec: '760px · PageContainer narrow', className: 'max-w-page-narrow' },
+  { token: 'hero-video', spec: '880px · the landing film', className: 'max-w-hero-video' },
+  { token: 'app', spec: '1440px · the design frame', className: 'max-w-app' },
+]
 
 function Heading({ children }: { children: string }) {
   return <h2 className="mt-8 mb-3 text-title tracking-title">{children}</h2>
@@ -248,6 +280,36 @@ export function TokenSheet() {
         ))}
       </ul>
 
+      <Heading>Spacing roles</Heading>
+      <ul className="flex flex-col gap-2">
+        {SPACING.map(({ token, px, role, className }) => (
+          <li key={token} className="grid items-center gap-x-4 md:grid-cols-[280px_1fr]">
+            <code className="w-fit text-micro whitespace-normal">
+              {token} · {px}px · {role}
+            </code>
+            <div className="flex items-center gap-2">
+              <div data-slot={`spacing-${token}`} className={cn('h-3 rounded-pill bg-action', className)} />
+              <span className="text-micro text-ink-muted tabular-nums">{px}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <Heading>Widths</Heading>
+      <ul className="flex flex-col gap-2 overflow-hidden">
+        {CONTAINERS.map(({ token, spec, className }) => (
+          <li key={token} className="flex flex-col gap-1">
+            <code className="w-fit text-micro whitespace-normal">
+              {token} · {spec}
+            </code>
+            <div
+              data-slot={`container-${token}`}
+              className={cn('h-3 w-full rounded-pill bg-action-secondary', className)}
+            />
+          </li>
+        ))}
+      </ul>
+
       <Heading>Type ladder</Heading>
       <ul className="flex flex-col gap-3">
         {LADDER.map(({ step, spec, className }) => (
@@ -297,6 +359,14 @@ async function assertTokensPainted(arm: 'light' | 'dark') {
   await expect(getComputedStyle(action).backgroundColor).toContain(arm === 'light' ? '345' : '235')
   await expect(getComputedStyle(raised).boxShadow).toContain('inset')
   await expect(getComputedStyle(raised).borderRadius).toBe('23px')
+  await expect(getComputedStyle(raised).height).toBe('46px')
+  await expect(getComputedStyle(raised).paddingInline).toBe('18px')
+  const control = root.querySelector<HTMLElement>('[data-slot="spacing-control"]')!
+  const gutter = root.querySelector<HTMLElement>('[data-slot="spacing-gutter"]')!
+  const card = root.querySelector<HTMLElement>('[data-slot="container-card"]')!
+  await expect(getComputedStyle(control).width).toBe('46px')
+  await expect(getComputedStyle(gutter).width).toBe('18px')
+  await expect(getComputedStyle(card).maxWidth).toBe('560px')
   await expect(getComputedStyle(display).fontSize).toBe('44px')
   await expect(getComputedStyle(display).lineHeight).toBe('55px')
   await expect(getComputedStyle(display).fontFamily).toContain('Unbounded Variable')
