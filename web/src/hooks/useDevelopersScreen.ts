@@ -19,8 +19,6 @@ import {
 } from '../stores/developersMachine'
 import { useMountEffect } from './useMountEffect'
 
-export type { KeyRow }
-
 /** Documented ceiling (PRODUCT.md): the page shows it instead of letting the API reject a click. */
 const KEY_LIMIT = 5
 

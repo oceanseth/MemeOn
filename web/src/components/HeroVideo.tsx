@@ -1,5 +1,6 @@
 import { useRef, useState, useSyncExternalStore } from 'react'
 import { cn } from '../lib/cn'
+import { FOCUS_RING } from '../lib/focus'
 
 /**
  * Landing-page hero video.
@@ -75,7 +76,7 @@ const PILL = cn(
   '[transition:background_var(--dur-base)_ease,box-shadow_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
   'hover:bg-surface-raised',
-  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
+  FOCUS_RING,
 )
 
 export default function HeroVideo({ autoplay }: HeroVideoProps) {

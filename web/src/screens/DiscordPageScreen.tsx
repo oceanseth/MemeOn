@@ -11,7 +11,7 @@ import type { DiscordPageScreenModel } from '../hooks/useDiscordPageScreen'
  * A flow card (`EI8-0`/`EID-0`/`EII-0`): the surface card at radius 23 with 17/20 padding — the
  * eyebrow is the command, then the promise, then the plain line under it.
  */
-const FLOW_CARD = 'rounded-[23px] px-5 py-[17px] max-md:px-5 max-md:py-[17px]'
+const FLOW_CARD = 'rounded-control px-5 py-[17px] max-md:px-5 max-md:py-[17px]'
 
 /**
  * `/memeon` (`EI9-0`): 15/19 weight 800 — the command, not a heading. The board paints it in the
@@ -113,7 +113,7 @@ export function DiscordPageScreen({
         <p className={FLOW_BODY}>Never. It only improves your own ranked search.</p>
       </Panel>
 
-      <Panel className="mt-6 flex flex-wrap items-center gap-3 rounded-[23px] px-5 py-[15px] max-md:flex-col max-md:items-start max-md:px-5 max-md:py-[15px]">
+      <Panel className="mt-6 flex flex-wrap items-center gap-3 rounded-control px-5 py-[15px] max-md:flex-col max-md:items-start max-md:px-5 max-md:py-[15px]">
         <h2 className="m-0 font-display text-[19px]/[24px] font-medium tracking-title text-ink">
           MemeOn brain assets
         </h2>

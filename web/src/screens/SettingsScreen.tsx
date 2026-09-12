@@ -2,21 +2,17 @@ import { Link } from 'react-router-dom'
 import { Button, buttonClasses } from '../atoms/Button'
 import { PageContainer } from '../atoms/PageContainer'
 import { PageHead } from '../atoms/PageHead'
-import { Panel } from '../atoms/Panel'
+import { Panel, PanelHeading } from '../atoms/Panel'
 import { cn } from '../lib/cn'
 import type { SettingsScreenModel } from '../hooks/useSettingsScreen'
 import { ThemeControl } from '../molecules/ThemeControl'
 
 /**
  * The section card the Settings boards draw (`J52-0`, `J5E-0`, `MPJ-0`, `MPQ-0` and their iPhone
- * twins): `Panel`'s raised material at the board's 18/20 padding, with the section heading one
- * step up from `Panel`'s own 17/21 to the 18/22 every card on this family uses. `[&_h3]` outranks
- * `Panel`'s `:where(h3,h4)` without `!`.
+ * twins): `Panel`'s raised material at the board's 18/20 padding. Its head is a `PanelHeading` at
+ * the 18/22 `section` step every card on this family uses, not `Panel`'s own 17/21.
  */
-const CARD = cn(
-  'px-5 py-[18px] max-md:px-5 max-md:py-[18px]',
-  '[&_h3]:mb-0 [&_h3]:text-[18px]/[22px] [&_h3]:tracking-title',
-)
+const CARD = 'px-5 py-[18px] max-md:px-5 max-md:py-[18px]'
 
 /** The row under a section heading: 15 down on the boards, wrapping to a column on the phone. */
 const ROW = 'mt-[15px] flex flex-wrap items-center gap-3'
@@ -45,7 +41,7 @@ export function SettingsScreen({
       <div data-slot="settings-sections" className="flex flex-col gap-5">
         {account && (
           <Panel className={CARD}>
-            <h3>{account.heading}</h3>
+            <PanelHeading size="section" className="mb-0">{account.heading}</PanelHeading>
             <div data-slot="settings-account" className={cn(ROW, 'max-md:flex-col max-md:items-start max-md:gap-2.5')}>
               <span className={SUBJECT}>{account.nameLabel}</span>
               <span className={FACT}>{account.providerLabel}</span>
@@ -57,7 +53,7 @@ export function SettingsScreen({
         )}
 
         <Panel className={CARD}>
-          <h3>{appearance.heading}</h3>
+          <PanelHeading size="section" className="mb-0">{appearance.heading}</PanelHeading>
           <div data-slot="settings-appearance" className="mt-3.5">
             <ThemeControl model={appearance.theme} />
             <p className={cn(FACT, 'mt-2.5 mb-0')}>{appearance.caption}</p>
@@ -65,7 +61,7 @@ export function SettingsScreen({
         </Panel>
 
         <Panel className={CARD}>
-          <h3>{connections.heading}</h3>
+          <PanelHeading size="section" className="mb-0">{connections.heading}</PanelHeading>
           <ul data-slot="settings-connections" className="m-0 list-none p-0">
             {connections.rows.map((row) => (
               <li key={row.key} className={ROW} data-slot="connection-row" data-linked={row.linked}>
@@ -83,7 +79,7 @@ export function SettingsScreen({
         </Panel>
 
         <Panel className={CARD}>
-          <h3>{alerts.heading}</h3>
+          <PanelHeading size="section" className="mb-0">{alerts.heading}</PanelHeading>
           <div data-slot="settings-alerts" className="mt-4 flex flex-wrap items-center gap-2.5">
             {alerts.toggles.map((toggle) => (
               <Button

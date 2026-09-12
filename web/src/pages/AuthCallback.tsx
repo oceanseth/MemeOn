@@ -4,10 +4,12 @@ import { Button } from '../atoms/Button'
 import { Notice } from '../atoms/Notice'
 import { PageContainer } from '../atoms/PageContainer'
 import { cn } from '../lib/cn'
+import { FOCUS_RING } from '../lib/focus'
 import { beginMaskyLogin, completeMaskyLogin } from '../lib/auth'
 import { post } from '../lib/api'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../hooks/useAuth'
 import { INVITE_KEY } from '../hooks/useInviteScreen'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 /*
  * The auth status card (`Auth / Centered status`, boards `1NV-0` / `90A-0`): a 560px raised card
@@ -40,11 +42,11 @@ const SUBTITLE = 'mt-3 mb-0 max-w-[420px] text-label text-ink-muted'
 const TEXT_LINK = cn(
   'inline-flex h-[46px] cursor-pointer items-center border-0 bg-transparent p-0',
   'text-label font-semibold text-ink underline underline-offset-[3px]',
-  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
-  'forced-colors:focus-visible:outline-[Highlight]',
+  FOCUS_RING,
 )
 
 export default function AuthCallback() {
+  useDocumentTitle('Completing Masky login')
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const { refresh } = useAuth()
@@ -88,7 +90,7 @@ export default function AuthCallback() {
         {err ? (
           <>
             <h1 className={cn(TITLE, 'mt-0')}>Masky login didn’t finish</h1>
-            <Notice tone="error">{err}</Notice>
+            <Notice tone="error" compact>{err}</Notice>
           </>
         ) : (
           <>

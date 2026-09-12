@@ -4,6 +4,7 @@ import { buttonClasses } from '../atoms/Button'
 import { Icon } from '../atoms/Icon'
 import { PageContainer } from '../atoms/PageContainer'
 import { cn } from '../lib/cn'
+import { useDocumentTitle } from '../hooks/useDocumentTitle'
 
 /*
  * Masky OAuth only allows https redirect URIs, so the mobile app uses
@@ -33,6 +34,7 @@ const TITLE = cn(
 const SUBTITLE = 'mt-3 mb-0 max-w-[420px] text-label text-ink-muted'
 
 export default function MobileAuthForward() {
+  useDocumentTitle('Returning to the app')
   const [params] = useSearchParams()
 
   const deepLink = useMemo(() => {

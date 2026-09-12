@@ -30,6 +30,10 @@
     content: '';
     position: absolute;
     inset: 0;
+    /* The travelling sheen. A literal on purpose, and the same idiom `atoms/foil.css` documents for
+       its own sweep: this is light passing over the plate, not a surface colour, so it is white at
+       10% in both arms rather than a token that flips — a theme-flipped sheen would go dark in the
+       dark arm, where a highlight is exactly what it is not. */
     background: linear-gradient(115deg, transparent 30%, oklch(1 0 0 / 0.1) 50%, transparent 70%);
     background-size: 300% 300%;
     animation: landing-tier-shimmer 3.8s ease-in-out infinite;

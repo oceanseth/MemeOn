@@ -219,7 +219,7 @@ export function LandingScreen({
                   ) : null}
                 </span>
               </span>
-              <h3 className={cn(DISPLAY, 'mt-3 mb-0 text-[15px]/[19px] md:text-[19px]/[24px]')}>
+              <h3 className={cn(DISPLAY, 'mt-3 mb-0 text-label md:text-[19px]/[24px]')}>
                 {t.name}
               </h3>
               <span className="mt-2.5 text-small/[18px] font-bold text-link tabular-nums">

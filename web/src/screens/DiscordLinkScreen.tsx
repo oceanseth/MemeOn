@@ -17,7 +17,7 @@ const TITLE = cn(
 
 /** A state row (`MK2-0`/`MJY-0`/`MJU-0`): radius 23, 12/16 padding, stacking on the phone. */
 const ROW = cn(
-  'flex flex-wrap items-center justify-between gap-4 rounded-[23px] px-4 py-3',
+  'flex flex-wrap items-center justify-between gap-4 rounded-control px-4 py-3',
   'max-md:flex-col max-md:items-start max-md:gap-2.5 max-md:px-3.5',
 )
 
@@ -28,10 +28,10 @@ const ROW = cn(
 const ROW_LABEL = 'm-0 text-small font-semibold [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-inherit'
 
 /**
- * The row's own action is 40 tall, not the page's 46: it answers the row, not the page. The phone
- * keeps the 44px floor a finger needs.
+ * The row's own action is 40 tall, not the page's 46: it answers the row, not the page. A finger
+ * still gets 44 — at any width, because a touch screen is not always a narrow one.
  */
-const ROW_ACTION = 'h-10 shrink-0 max-md:h-11'
+const ROW_ACTION = 'h-10 shrink-0 max-md:h-11 pointer-coarse:min-h-11'
 
 /** Discord connect ritual as a function of its model. Every engine state is one set of args. */
 export function DiscordLinkScreen({

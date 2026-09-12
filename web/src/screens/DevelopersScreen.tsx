@@ -5,9 +5,8 @@ import { Input } from '../atoms/Input'
 import { Notice } from '../atoms/Notice'
 import { PageContainer } from '../atoms/PageContainer'
 import { PageHead } from '../atoms/PageHead'
-import { Panel } from '../atoms/Panel'
+import { Panel, PanelHeading } from '../atoms/Panel'
 import { Spinner } from '../atoms/Spinner'
-import { cn } from '../lib/cn'
 import type { DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { ConfirmDialog } from '../molecules/ConfirmDialog'
 
@@ -24,13 +23,10 @@ const FORM_CARD = 'mt-5 p-[18px] max-md:p-[18px]'
 const FRESH_CARD = 'mt-5 p-5 max-md:p-5 inset-ring-2 inset-ring-action'
 
 /**
- * API key inventory (`FB0-0`): 22 padding, its rows divided by the board's one hairline, and the
- * 18/22 section heading `MCT-0` draws — `[&_h3]` outranks `Panel`'s own `:where(h3,h4)` at 17/21.
+ * API key inventory (`FB0-0`): 22 padding, its rows divided by the board's one hairline. Its head is
+ * a `PanelHeading` at the 18/22 `section` step `MCT-0` draws, not `Panel`'s own 17/21.
  */
-const INVENTORY_CARD = cn(
-  'mt-5 p-[22px] max-md:p-[18px]',
-  '[&_h3]:mb-0 [&_h3]:text-[18px]/[22px] [&_h3]:tracking-title',
-)
+const INVENTORY_CARD = 'mt-5 p-[22px] max-md:p-[18px]'
 
 /** One key row (`MCV-0`): space-between, 12 block padding, a hairline above every row but the first. */
 const KEY_ROW = 'flex flex-wrap items-center justify-between gap-4 gap-y-2.5 py-3'
@@ -112,7 +108,8 @@ export function DevelopersScreen({
         /* the board's inline alert (`MG1-0`): the error pair at the field radius, one line tall */
         <Notice
           tone="error"
-          className="mt-4 block max-w-none rounded-field font-semibold"
+          compact
+          className="mt-4 block max-w-none font-semibold"
           {...errorNoticeProps}
         >
           {err}
@@ -142,7 +139,7 @@ export function DevelopersScreen({
 
       <Panel className={INVENTORY_CARD}>
         <div className="flex items-center justify-between gap-4">
-          <h3>{keysHeading}</h3>
+          <PanelHeading size="section" className="mb-0">{keysHeading}</PanelHeading>
           {quotaLabel && (
             <span className="shrink-0 text-[13px]/[16px] font-medium text-ink-muted [font-variant-numeric:tabular-nums]">
               {quotaLabel}
