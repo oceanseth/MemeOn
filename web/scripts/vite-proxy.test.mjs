@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { createServer, loadConfigFromFile, preview } from 'vite';
 
 const configFile = fileURLToPath(new URL('../vite.config.ts', import.meta.url));
+const webRoot = fileURLToPath(new URL('..', import.meta.url));
 const distIndex = fileURLToPath(new URL('../dist/index.html', import.meta.url));
 const spaPaths = [
   '/marketplace',
@@ -79,11 +80,21 @@ async function assertSpaAndProxies(origin, calls, expectedEntry) {
 }
 
 async function withDevServer(proxy, run) {
+  // The file watcher is off (`watch: null`): this test only routes requests, it never edits a
+  // file. With the watcher on, the dependency scan that `listen()` starts resolves workspace
+  // packages (`@memeon/shared`) and registers their package.json with chokidar asynchronously; on
+  // Linux that fs.watch can land after `close()` has already shut the watcher, and the leaked
+  // handle keeps the process alive forever (CI sat 30 minutes after "passed" had printed). The
+  // value has to be set on the loaded config object: `mergeConfig` drops `null` overrides, so an
+  // inline `server.watch: null` beside `configFile` never reaches the server.
+  const loaded = await loadConfigFromFile({ command: 'serve', mode: 'development' }, configFile);
   const server = await createServer({
-    configFile,
+    ...loaded.config,
+    configFile: false,
+    root: webRoot,
     mode: 'development',
     logLevel: 'silent',
-    server: { host: '127.0.0.1', port: 0, strictPort: true, proxy }
+    server: { ...loaded.config.server, host: '127.0.0.1', port: 0, strictPort: true, proxy, watch: null }
   });
   try {
     await server.listen();
