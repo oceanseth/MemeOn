@@ -2,9 +2,24 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "workspaces": {
     "web": {
-      "entry": ["src/main.tsx", "src/**/*.stories.tsx", "src/**/*.test.ts", "src/**/*.test.tsx", "scripts/*.mjs", ".storybook/**/*.{ts,tsx}"],
-      "project": ["src/**/*.{ts,tsx}", "scripts/**/*.mjs"],
-      "ignoreExportsUsedInFile": true
+      "entry": [
+        "src/main.tsx",
+        "src/**/*.stories.tsx",
+        "src/**/*.test.ts",
+        "src/**/*.test.tsx",
+        "scripts/*.mjs",
+        ".storybook/**/*.{ts,tsx}"
+      ],
+      "project": [
+        "src/**/*.{ts,tsx}",
+        "scripts/**/*.mjs"
+      ],
+      "ignoreExportsUsedInFile": true,
+      "ignoreDependencies": [
+        "@fontsource-variable/onest",
+        "@fontsource-variable/unbounded",
+        "tailwindcss"
+      ]
     }
   }
 }
