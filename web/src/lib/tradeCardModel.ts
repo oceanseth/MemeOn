@@ -68,9 +68,9 @@ export interface TradeCardModel {
   createdAtIso: string
   /** exact local timestamp, kept on hover and for assistive tech */
   createdTitle: string
-  /** the board's LEFT well (`JXY-0`): what leaves your binder — always "You give" */
+  /** What leaves your binder — always "You give". */
   give: TradeSideSummaryModel
-  /** the board's RIGHT well (`JY6-0`): what lands in it — always "You get" */
+  /** What you receive — always "You get". */
   get: TradeSideSummaryModel
   /** what leaves your binder the moment you accept; null when there is nothing to answer */
   finalityLine: string | null
@@ -123,10 +123,7 @@ export function tradeSideSentence(side: TradeSide, memeNames: TradeMemeInfoMap):
   return parts.length === 0 ? 'nothing' : parts.join(' + ')
 }
 
-/**
- * The finality note the Trade board prints under the wells (`LPR-0`). It names what leaves *your*
- * binder, so it is only written for a live proposal you can still answer.
- */
+/** Finality note under the wells for incoming proposals you can still answer. */
 function finalityLine(yours: TradeSide, memeNames: TradeMemeInfoMap): string | null {
   const parts = yours.memes.map((meme) => {
     const info = memeNames[meme.memeId]
@@ -208,11 +205,9 @@ export function buildTradeCardModel({
               },
             },
           ]
-        : /* the board's own action row (`JYC-0`) reads Decline → Accept, left to right: the quiet
-             answer sits first and the card's one bubblegum closes the row under the "You get" well */
+        : /* Decline first, Accept last — only Accept is primary. */
           [
             {
-              /* the quiet answer is neutral raised, not a second loud colour: only Accept is loud */
               kind: 'decline',
               label: running('decline') ? 'Declining…' : 'Decline',
               variant: 'default',
@@ -236,10 +231,7 @@ export function buildTradeCardModel({
             },
           ]
 
-  /* `trade.offer` is always what the proposer puts up; which side of the table you are on decides
-     whether that reads as giving or getting. The card's wells are keyed to the *reading*, never to
-     the record: the board (`JXT-0`, an incoming deal) draws "You give" left and "You get" right,
-     so the left well is always yours to lose and the right always yours to gain. */
+  /* Wells are keyed to your perspective: offer/ask swap by proposer, left=give right=get. */
   const yours = mine ? trade.offer : trade.ask
   const theirs = mine ? trade.ask : trade.offer
   return {

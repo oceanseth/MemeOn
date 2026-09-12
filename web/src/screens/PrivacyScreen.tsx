@@ -3,9 +3,7 @@ import { PageContainer } from '../atoms/PageContainer'
 import { PageHead } from '../atoms/PageHead'
 import { cn } from '../lib/cn'
 
-/* The legal template (`859-0` / `893-0`, and the same on every Terms board): a 720 measure, a
-   card-title Unbounded section heading, 16/24 body on `ink`, and a `--color-line` hairline under
-   each section's 22px of breathing room. */
+/** Legal page layout: 720 measure, section hairlines. */
 const SECTION = 'mt-6 border-b border-line pb-[22px] last:border-b-0'
 const H2 = cn(
   'm-0 font-display text-card-title font-medium tracking-card-title text-ink',
@@ -16,8 +14,7 @@ const A = 'text-link underline underline-offset-[3px] decoration-1 font-semibold
 /** The cross-link that closes the document: 16/24, 600, ultraviolet, underline offset 3. */
 const CROSS_LINK = cn(A, 'inline-block mt-[10px]')
 
-/* TOC chips: the control radius at a 44px minimum target. The current section wears the pressed
-   well; the rest are the board's outlined chips. */
+/* TOC chips: 44px target; current section is pressed, rest are outlined */
 const TOC_CHIP = cn(
   'inline-flex min-h-11 items-center rounded-control px-[14px] text-small/[20px] text-ink no-underline',
   '[transition:background-color_var(--dur-base)_ease] motion-reduce:transition-none',

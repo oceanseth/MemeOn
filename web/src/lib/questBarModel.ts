@@ -69,11 +69,7 @@ export interface QuestBarModel {
   showSteps: boolean
   completionLabel: string
   chips: QuestChipModel[]
-  /**
-   * The next actionable step's instructions, promoted out of a hover-only title. The rail lists
-   * every quest inline (`732-0` › `LH4-0`), so this is the one line it carries for assistive tech
-   * only — there is no hover left to hang it on.
-   */
+  /** Next step instructions for assistive tech — the rail has no hover title. */
   hint: string | null
   dismissLabel: string
   dismissProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-label'>
@@ -110,8 +106,7 @@ export function buildQuestBarModel({
     visible: steps.length > 0 || packOpen,
     showSteps: steps.length > 0,
     completionLabel: `${steps.filter((step) => step.done).length}/${steps.length}`,
-    /* every quest, always: both rails draw the five names in one lane (`732-0` › `LH4-0` at 1440,
-       `7D0-0` › `LIQ-0` wrapped to three rows at 390), so there is nothing left to disclose */
+    /* All five quests always visible — no disclosure step. */
     chips: steps.map((step): QuestChipModel => {
       if (step.key === 'pack' && !step.done) {
         return {

@@ -186,9 +186,7 @@ export function DialogFrame({
               <Dialog.Description
                 id={descriptionId ?? `${id}-description`}
                 render={descriptionAs === 'div' ? <div /> : <p />}
-                /* 15/19 on ink-muted: every description on the Feedback board is the label step,
-                   not body — `HVM-0` (Gift shares), `HVV-0` (Remove friend) and the five state
-                   specimens beside them all measure 15px/19px. */
+                // label scale, not body — matches every modal description in the app
                 className={cn('m-0 text-label text-ink-muted', descriptionClassName)}
                 data-slot="dialog-description"
               >

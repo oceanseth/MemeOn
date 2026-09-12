@@ -83,13 +83,9 @@ export interface MemeDetailModel {
   title: string
   private: boolean
   tierKey: string
-  /** the tier's product name on its own — Paper … Shiny */
+  /** Tier product name (Paper … Shiny). */
   tierName: string
-  /**
-   * The hero card's own callout, directly under the title on every board that draws this page
-   * (`296-0` G4P-0 signed in, `KRK-0` KS6-0 on the public card): "Prismatic · 5,800 reshares".
-   * One string for both, because the two boards differ only in the colour the screen paints it.
-   */
+  /** Hero callout under the title: "Prismatic · 5,800 reshares". */
   tierLine: string
   tierLabel: string
   tierHype: string
@@ -129,7 +125,7 @@ export interface MemeDetailModel {
   sources: readonly DetailSourceModel[]
   plex: MemeplexPanelModel
   capTableTitle: string
-  /** The board's second cap-table line: who is currently selling, and how much (`G68-0`/`KTS-0`). */
+  /** Cap-table note: who is selling and how much. */
   capTableNote: string | null
   capTable: readonly CapRow[]
   deleteDialog: ConfirmDialogModel
@@ -341,9 +337,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
   if (myShares === 100) actions.push({ label: meme.private ? '🌐 Make public' : '🙈 Make private', buttonProps: { onClick: () => void act(() => post(`/api/memes/${meme.id}/visibility`, { private: !meme.private }), meme.private ? 'Back on the marketplace 🌐' : 'Hidden from the marketplace 🙈 (still in your binder)') } })
   if (myShares === 100 && meme.private) actions.push({ label: '🗑️ Delete forever', variant: 'danger', buttonProps: { onClick: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: true }) } })
 
-  /* "12 of CyberSeth's shares are listed" — the sentence the board closes its cap table with
-     (`296-0` G68-0, `KRK-0` KTS-0). The seller is a holder like any other, so it speaks through the
-     same resolver the rows use. */
+  /* Seller is a holder — resolve the name like cap-table rows. */
   const capTableNote: string | null = meme.listing && meme.listing.shares > 0
     ? `${plural(meme.listing.shares, 'share')} of ${isSeller
         ? 'yours'
@@ -353,7 +347,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
 
   const signedOut: DetailSignedOutModel | null = user ? null : {
     title: 'Own a piece of this',
-    /* the board leads with the offer when there is one, then the invitation (public-share KSN-0) */
+    /* Lead with the listing offer when there is one. */
     body: meme.listing && meme.listing.shares > 0
       ? `${plural(meme.listing.shares, 'share')} listed at ${braincells(meme.listing.pricePerShare)} each. Log in with Masky to buy, remix, or mint your own.`
       : 'Log in with Masky to buy, remix, or mint your own.',

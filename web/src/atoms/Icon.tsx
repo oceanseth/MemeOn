@@ -1,11 +1,6 @@
 import { cn } from '../lib/cn'
 
-/**
- * The Central icon family, extracted from Paper ("MemeOn — Soft Press / Interface Atlas",
- * DS 04 · Icon families and navigation, plus every board it recurs on). Every name below is a
- * glyph that is actually drawn somewhere in the design — nothing here is invented. Sidebar/header
- * glyphs that stay emoji in the design (🔔 alerts, 🌗☀️🌙 theme, 🔧 developers) get no Icon.
- */
+/** Central icon family glyphs drawn in the product (emoji controls stay emoji). */
 export type IconName =
   | 'storefront'
   | 'book'
@@ -175,10 +170,6 @@ export interface IconProps {
   title?: string
 }
 
-/**
- * The Central icon glyph, the only drawn icon family the app uses (Phosphor is out). Every
- * emoji stays an emoji — this atom never substitutes for one.
- */
 export function Icon({ name, size = 22, className, title }: IconProps) {
   return (
     <svg

@@ -174,11 +174,7 @@ export const ShowingPrivate: Story = {
   },
 }
 
-/**
- * The whole page the My Binder board draws: identity, the toolbar's own control order and the page
- * control. The board's reward rail is the shell's `QuestBar` on every route (design-gap decision 8),
- * so the screen no longer paints a second, actionless copy of it.
- */
+/** Full binder page: identity, toolbar, grid. Reward rail is the shell QuestBar, not duplicated here. */
 export const Full: Story = {
   name: 'Ready (identity, toolbar, paging)',
   args: {
@@ -195,7 +191,7 @@ export const Full: Story = {
     await expect(canvas.getByRole('button', { name: 'Show 12 more' })).toBeInTheDocument()
     /* the grid is the page's only list: three cards, no second rail list above it */
     await expect(canvas.getAllByRole('listitem')).toHaveLength(3)
-    /* the board's toolbar lane (`739-0`) reads Show private → the sort → Mint, left to right */
+    /* toolbar order: Show private → sort → Mint */
     const lane = canvas.getByRole('group', { name: 'Sort and filter your binder' })
     await expect(lane.children).toHaveLength(3)
     await expect(lane.firstElementChild).toHaveTextContent('Show private (1)')

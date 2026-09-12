@@ -25,7 +25,7 @@ export interface InviteScreenModel {
   loadingLabel: string
   /** the sentence under the hero: one line, product language, never "invest" */
   inviteBody: string
-  /** the iPhone board's closing line under the highlights (`DEF-0` › `DG4-0`) */
+  /** Closing line under the highlight cards. */
   climbNote: string
   acceptErrorMessage: string
   acceptSuccessMessage: string

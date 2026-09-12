@@ -28,7 +28,7 @@ const SORT_DISABLED_REASON = "Newest first — the market can't rank by views, r
 const LOAD_ERROR = "Couldn't reach the market. Your filters are still set."
 const MORE_ERROR = "Couldn't pull the next page."
 
-/** One pressed tab in the board's filter row (`6UR-0` › `Filters / Pressed tabs` `6XC-0`). */
+/** One pressed tab in the filter row. */
 export interface MarketFilterTabModel {
   /** the filter value the tab stands for; `''` is the "All memes" / "everything" tab */
   key: string
@@ -37,11 +37,7 @@ export interface MarketFilterTabModel {
   buttonProps: { onClick: () => void; 'aria-pressed': boolean }
 }
 
-/**
- * The board draws media type and "For sale" as 46px pressed tabs, not as a Select and a Checkbox:
- * three of them are one single-select row, "For sale" is an independent toggle beside it. Only the
- * eight tiers stay a Select ("All tiers ▾"), because eight pills do not fit the 1108 column.
- */
+/** Media type + "For sale" as pressed tabs; eight tiers stay a Select. */
 export interface MarketFilterTabsModel {
   media: readonly MarketFilterTabModel[]
   mediaGroupProps: { role: 'group'; 'aria-label': string }

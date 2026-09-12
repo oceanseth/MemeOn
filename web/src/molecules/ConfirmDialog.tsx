@@ -41,9 +41,7 @@ export function ConfirmDialog({ model }: { model: ConfirmDialogModel }) {
           </FieldFooter>
         </Field>
       )}
-      {/* right-aligned, walking away first: neutral Cancel leftmost, the committing button last —
-          destructive on the error pair, otherwise the one primary this task is allowed
-          (plan-buckets.md › primary-action). The Button atom keeps a busy label at full opacity. */}
+      {/* Cancel left, commit right — danger variant when stakes are destructive */}
       <FilterBar className="mt-[18px] justify-end">
         <Button {...model.cancelButtonProps}>{model.cancelLabel}</Button>
         <Button variant={model.danger ? 'danger' : 'primary'} {...model.confirmButtonProps}>

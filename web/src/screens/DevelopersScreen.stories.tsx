@@ -216,7 +216,7 @@ export const AtQuota: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: 'Create key' })).toBeDisabled()
     await expect(canvas.getByText('Key limit reached — revoke one to make room.')).toBeInTheDocument()
-    // the quota is the board's caption beside the heading, not a badge inside it
+    // quota is a caption beside the heading, not a badge inside it
     await expect(canvas.getByRole('heading', { name: 'Your keys' })).toBeInTheDocument()
     await expect(canvas.getByText('5 of 5 keys')).toBeInTheDocument()
   },
@@ -247,7 +247,7 @@ export const Copied: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    // the label never changes: the outcome is the success caption beside the button (`FAY-0`)
+    // label stays "Copy key"; success is the caption beside the button
     await expect(canvas.getByRole('button', { name: 'Copy key' })).toBeEnabled()
     await expect(canvas.getByText('✓ Copied')).toBeInTheDocument()
   },

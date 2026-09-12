@@ -4,7 +4,7 @@ import { cn } from '../lib/cn'
 import { SideSummary } from './SideSummary'
 import type { TradeCardModel } from '../lib/tradeCardModel'
 
-/** The proposal card the Trade board draws (`JXT-0`): a raised surface card, 20px of padding. */
+/** Raised surface card, 20px padding. */
 const CARD = 'rounded-card border-0 bg-surface p-5 shadow-raised'
 
 /** Unbounded 17/22 — a card headline, not a section heading. */
@@ -12,22 +12,14 @@ const HEADLINE = 'font-display text-card-title-phone font-medium tracking-card-t
 
 const SUBLINE = 'mt-1 block text-caption text-ink-muted'
 
-/**
- * Give and get are one comparison: side by side, the swap glyph between them, stacked ≤900. The
- * order is the board's (`JXT-0`) and never flips with whose proposal it is — "You give" is the left
- * plate, "You get" the right, so the ⇄ always points away from your binder.
- */
+/** Give/get stay left/right regardless of proposer — "You give" is always the left plate. */
 const DEAL = cn(
-  /* `stretch`, not `center`: the two wells are one comparison and read as a pair of equal plates */
+  /* stretch, not center: equal-height wells read as one comparison */
   'my-3.5 grid grid-cols-[1fr_auto_1fr] items-stretch gap-3.5 [&>*]:min-w-0',
   'max-2xl:grid-cols-1 max-2xl:gap-2.5',
 )
 
-/**
- * The board paints the swap mark in the ring's accent. `--color-focus` is not a text colour (its
- * dark arm reads Lc -53 on a surface), so the glyph takes `--color-link` — the same accent inside
- * the contrast floor. `scripts/check-contrast.mjs` guards the substitution.
- */
+/** Swap glyph uses `--color-link`: `--color-focus` fails contrast on surface text. */
 const SWAP = cn(
   'self-center font-display text-title text-link',
   'max-2xl:rotate-90 max-2xl:justify-self-center',

@@ -105,7 +105,7 @@ export const FiltersNarrowed: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('status')).toHaveTextContent('Images · Holo · for sale')
-    // the board's row is pressed tabs: the state is `aria-pressed`, not a checked box
+    // filter row uses pressed tabs — aria-pressed, not a checked box
     const media = within(canvas.getByRole('group', { name: 'Filter by media type' }))
     await expect(media.getByRole('button', { name: 'Images' })).toHaveAttribute('aria-pressed', 'true')
     await expect(media.getByRole('button', { name: 'All memes' })).toHaveAttribute('aria-pressed', 'false')

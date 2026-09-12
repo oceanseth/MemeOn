@@ -18,14 +18,10 @@ import { useTheme } from './useTheme'
 const POLL_MS = 30_000
 const QUEST_KEYS: QuestKey[] = ['pack', 'mint', 'share', 'friend', 'trade']
 
-/** The header's context line on every signed-in board: the positioning line (PRODUCT.md). */
+/** Header tagline on signed-in routes. */
 const TAGLINE = 'the meme trading card market'
 
-/**
- * Which family of routes a pathname belongs to, for the chrome's current-route state. `mint` is
- * its own family because the phone tab bar has a Mint tab; the desktop sidebar folds it into
- * My Binder. Meme detail counts as Marketplace (plan-buckets › navigation-chrome).
- */
+/** Route family for chrome active-state; mint is separate for the phone tab bar. */
 export type RouteFamily =
   | 'marketplace'
   | 'binder'
@@ -95,7 +91,7 @@ const UTILITY_LINKS: { family: RouteFamily; to: string; label: string; emoji: st
   { family: 'settings', to: '/settings', label: 'Settings', emoji: null },
 ]
 
-/** plan-buckets › tab-bar: Market · Binder · Mint · Friends · Trade; 'Market' is the 62px abbreviation. */
+/** Phone tab bar; 'Market' is the 62px abbreviation of Marketplace. */
 const TAB_ITEMS: { family: RouteFamily; to: string; label: string; icon: IconName; primary: boolean }[] = [
   { family: 'marketplace', to: '/marketplace', label: 'Market', icon: 'storefront', primary: false },
   { family: 'binder', to: '/binder', label: 'Binder', icon: 'book', primary: false },

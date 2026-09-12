@@ -12,12 +12,11 @@ export type { LeaderboardPhase }
 export interface LeaderboardScreenModel {
   phase: LeaderboardPhase
   subtitle: string
-  /** the podium block's own heading and line (`CMC-0` › `COO-0` / `COP-0`) */
   podiumTitle: string
   podiumSubtitle: string
   columnHeaders: { player: string; braincells: string }
   leaders: readonly LeaderboardRowModel[]
-  /** the signed-in player when they rank below the visible page: the board's pinned row */
+  /** Signed-in player pinned below the visible page. */
   youRow: LeaderboardRowModel | null
   showMore: boolean
   showMoreLabel: string

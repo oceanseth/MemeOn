@@ -26,16 +26,11 @@ export interface ProfileScreenModel {
   loadingLabel: string
   /** the page title: the player's name, or "<name>'s binder" on a shared binder link */
   title: string
-  /** the public boards' introduction under the title; null inside the app */
+  /** Public-profile intro under the title; null inside the app. */
   intro: string | null
   /** the identity card's 24/30 line ("Binder of <name>"); null when the title already said it */
   identityLine: string | null
-  /**
-   * `/binder/:sub` seen by anyone but its owner. The Public Binder board (`HP9-0` › `HPP-0`) does
-   * not box that identity: the 60px avatar rides inline beside the 44/55 title and the
-   * introduction (`HPM-0`) sits under the whole row, so the screen composes a hero instead of the
-   * title-then-card stack every other profile state draws.
-   */
+  /** Public binder route: inline hero instead of title-then-card stack. */
   showBinderHero: boolean
   profile: ProfileViewModel | null
   showActions: boolean
@@ -68,12 +63,12 @@ export interface ProfileScreenModel {
   showJoin: boolean
   joinLabel: string
   joinLinkProps: Pick<LinkProps, 'to' | 'state'>
-  /** the public boards' closing line under the join CTA */
+  /** Closing line under the join CTA on public profiles. */
   reshareNote: string
   createdCount: number
   binderCount: number
   cards: readonly ProfileCardModel[]
-  /** "Showing 6 of 12" — the phone board's grid count, kept for every width */
+  /** Grid count label ("Showing 6 of 12"). */
   gridCountLabel: string
   showMore: boolean
   showMoreLabel: string
@@ -219,10 +214,7 @@ export function useProfileScreen({
     }
   }, [busy, friendStatus, load, profile, send])
 
-  /**
-   * The share action the public boards put beside the identity (`HP9-0` › `LL7-0`): the platform
-   * sheet when there is one, the clipboard otherwise. Read-only — it never mutates the account.
-   */
+  /** Share via platform sheet when available, else clipboard. */
   const onShare = useCallback(async () => {
     const url = window.location.href
     if (navigator.share) {
@@ -260,7 +252,7 @@ export function useProfileScreen({
             link: null,
           }
 
-  /** `/binder/:sub` for anyone but its owner: the Public Binder board, where the title is the binder. */
+  /** Public binder viewed by someone other than the owner. */
   const isPublicBinder = initialTab === 'binder' && !isSelf
   const createdCount = data?.created.length ?? 0
   const binderCount = data?.binder.length ?? 0
@@ -348,7 +340,7 @@ export function useProfileScreen({
     cards: visible.map((meme) => ({
       id: `${tab}-${meme.id}`,
       memeCard: buildMemeCardModel(meme),
-      // the board's ownership copy: "holds N/100" on someone else's shelf, "N/100 shares" on yours
+      // "holds N/100" on others' binders, "N/100 shares" on yours
       sharesLabel:
         meme.shares === undefined ? null : isSelf ? `${meme.shares}/100 shares` : `holds ${meme.shares}/100`,
     })),

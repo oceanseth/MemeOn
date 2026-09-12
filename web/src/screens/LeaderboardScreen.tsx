@@ -12,18 +12,10 @@ import type { LeaderboardRowModel, LeaderboardScreenModel } from '../hooks/useLe
 
 const skeletonRows = [0, 1, 2, 3, 4]
 
-/**
- * The count colour: bubblegum-700 in light, bubblegum-300 in dark (`plan-buckets.md` › top-brains,
- * "Count colours (focus → bubblegum-700/300)"). Both are shipped ramp tokens, so this is the ramp
- * flipping with the theme rather than a literal.
- */
+/** Braincell count colour: bubblegum ramp flips with theme. */
 const COUNT = 'font-sans font-bold text-[light-dark(var(--color-bubblegum-700),var(--color-bubblegum-300))] tabular-nums'
 
-/**
- * The podium panel the board draws (`CMC-0` › `COM-0`): one raised card, 1108×252 at 20 padding,
- * holding the head on the left (`CON-0`, max 300) and the three 218-wide cards 40 further in, 20
- * apart. It stacks under `md`.
- */
+/** Podium panel: head left, three cards right; stacks on phone. */
 const PODIUM_PANEL = cn(
   'mb-5 flex items-center gap-10 rounded-card bg-surface p-5 shadow-raised',
   'max-md:flex-col max-md:items-stretch max-md:gap-5',
@@ -37,8 +29,7 @@ const PODIUM_PANEL = cn(
 const PODIUM_LIST = cn('m-0 flex list-none gap-5 p-0', 'max-md:flex-col max-md:gap-3.5')
 const BOARD = 'm-0 flex list-none flex-col gap-5 p-0 max-md:gap-3.5'
 
-/* The podium card: a raised 218-wide column, medal over avatar over name over count (`COR-0`). #1
-   takes the board's 2px action border on `surface-raised`; #2 and #3 stay on the plain surface. */
+/* #1 gets action border on raised surface; #2 and #3 stay plain */
 const PODIUM = cn(
   'flex h-full flex-col items-center rounded-[28px] bg-surface px-5 pt-[18px] pb-5 text-center shadow-raised',
   'md:w-[218px]',
@@ -46,8 +37,6 @@ const PODIUM = cn(
 )
 const PODIUM_FIRST = 'bg-surface-raised border-2 border-action'
 
-/* The ranked row (`CPF-0`): 1108×62 — 13 + the 36 avatar + 13 — 12 gap, the rank numeral in the
-   display face, the count pinned right. */
 const RANK_ROW = cn(
   'flex items-center gap-3 rounded-[28px] bg-surface px-5 py-[13px] shadow-raised',
   'max-md:rounded-nav max-md:px-[18px] max-md:py-3.5',
@@ -66,7 +55,6 @@ const NAME = 'min-w-0 flex-1 truncate font-display text-card-title-phone font-me
 
 const RANK_NUMERAL = 'w-7 shrink-0 text-center font-display text-intro font-medium tracking-card-title text-ink-muted'
 
-/** A rank: the board's 62px row, also the shape the pinned "You" line takes under the list. */
 function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: string }) {
   return (
     <Link
@@ -143,8 +131,7 @@ export function LeaderboardScreen({
 
       {showList ? (
         <>
-          {/* the board's podium (`CMC-0` › `COM-0`): one raised panel holding the head and the
-              three 218-wide cards, with the rest of the ladder as its own list beside it */}
+          {/* podium: head + top three; ranks 4+ continue in the list below */}
           <div className={PODIUM_PANEL} data-slot="podium">
             <div className="max-w-[300px] flex-1" data-slot="podium-head">
               <h2 className="m-0 font-display text-section font-medium tracking-title text-ink max-md:text-section-phone">
@@ -196,8 +183,7 @@ export function LeaderboardScreen({
             </ol>
           </div>
 
-          {/* the board's second heading ("Ranked by braincell holdings") names the ladder rather
-              than splitting it: every row's accessible name already carries its own rank */}
+          {/* ranks 4+: each row's accessible name already carries its rank */}
           {leaders.length > 3 ? (
             <ol className={BOARD} data-slot="leaderboard" aria-label={columnHeaders.player}>
               {leaders.slice(3).map((l) => (

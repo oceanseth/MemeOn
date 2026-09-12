@@ -29,17 +29,7 @@ const anchorContainer = {
   },
 }
 
-/**
- * The bell is the bare emoji and nothing else. Every board draws it as a plain text node in the
- * header row — Feedback `HUU-0` (22×28) on `HSU-0`, Marketplace's `6WO-0` cluster on `6UR-0`, My
- * Binder `72L-0` (22×28) on `70L-0`, and the iPhone cluster `76J-0` (20×25) on `767-0` — while the
- * balance chip and the avatar beside it *are* raised boxes. So: no square, no fill, no shadow,
- * 20/25 below the shell breakpoint and 22/28 at 900+.
- *
- * The hit target still has to be 44: a centred transparent pseudo-element carries it without
- * taking any layout width, so the header cluster keeps the board's 12px rhythm and the focus ring
- * stays hugged to the glyph.
- */
+/** Bare emoji trigger — no raised chrome. Pseudo-element carries the 44px hit target. */
 const TRIGGER = cn(
   'relative inline-flex shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0',
   'text-[20px] leading-[25px] text-ink',

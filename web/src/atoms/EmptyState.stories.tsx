@@ -54,11 +54,7 @@ export const ErrorTone: Story = {
   },
 }
 
-/**
- * The five state cards the Feedback board draws (`HSU-0`): no results, retry, starter pack opened,
- * unread activity, not enough braincells. Same card, one tone apart — the tint and the heading
- * colour carry the state, and each one keeps at most a single primary.
- */
+/** Empty-state tone specimens. */
 export const Tones: Story = {
   render: () => (
     <div style={{ display: 'grid', gap: 16, maxWidth: 542 }}>

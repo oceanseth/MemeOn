@@ -6,13 +6,10 @@ import { FOCUS_RING } from '../lib/focus'
 import type { SortChipsModel } from '../lib/sortChipsModel'
 import type { SortKey } from '../lib/sorting'
 
-/* The filters are tabs, not buttons: a row of raised pills where the current sort is *pressed
-   into* the surface. 46px tall (40 on a phone), radius-control, Onest 15/18 — the control scale
-   `components.md` gives every pill. Selected outranks hover by material and weight, never by an
-   accent colour, so the row still carries no primary action. */
+/* Tabs, not buttons: selected = pressed well; material change only, never accent colour. */
 const chipChrome = cn(
   'inline-flex h-[46px] items-center justify-center whitespace-nowrap max-sm:h-10',
-  /* the phone draws them at 40; a finger still needs 44 */
+  /* 40px drawn height; coarse pointer still needs 44 */
   'pointer-coarse:min-h-11',
   'rounded-control bg-surface-raised px-4 text-label/[18px] font-semibold text-ink shadow-raised',
   'cursor-pointer',
@@ -23,10 +20,7 @@ const chipChrome = cn(
   'pointer-coarse:[&:not(:disabled):active]:translate-y-px',
   FOCUS_RING,
   'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',
-  /* The pressed well is the whole selected state: same colour family, same weight, opposite
-     relief. The board (Marketplace 6UR-0 › `Filters / Pressed tabs` 6XC-0) keeps every tab's
-     label at 600 — the selected one `6XF-0` and its neighbours `6XH-0` alike — so the material
-     is the only thing that changes. */
+  /* selected = pressed well; label weight stays 600 on every tab */
   'data-[pressed]:bg-surface-pressed data-[pressed]:shadow-pressed',
   'data-[pressed]:translate-y-0!',
   'forced-colors:data-[pressed]:border forced-colors:data-[pressed]:border-[Highlight]',

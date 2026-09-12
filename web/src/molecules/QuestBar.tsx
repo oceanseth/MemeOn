@@ -13,12 +13,7 @@ const BRAINCELL_SRC = '/api/brand/braincell.png'
 /** `inline-block` is load-bearing in the dialog heading: preflight would drop the coin onto its own line. */
 const BRAINCELL_IMG = 'inline-block h-[26px] w-[26px] rounded-full object-cover align-middle'
 
-/**
- * The reward rail as both boards draw it (`70L-0` › `732-0` 1108×92, iPhone `7B6-0` › `7D0-0`
- * 350×179): a pressed well, radius 24, 20/24 padding (18 on the phone), sitting in the content
- * column's 20px gutter so it lines up with the page. The quests are one lane on the left, the claim
- * on the right; below the shell breakpoint the two stack. The rows inside are the raised things.
- */
+/** Pressed well: quest lane left, claim pill right; stacks below 900. */
 const RAIL = cn(
   'mx-5 mt-3 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-nav bg-surface-pressed p-[18px] shadow-pressed',
   '2xl:mt-2 2xl:flex-nowrap 2xl:px-6 2xl:py-5',
@@ -31,7 +26,6 @@ const TITLE = cn(
   'max-2xl:text-card-title-phone',
 )
 
-/** The quest lane: 24 apart in one row at 1440 (`LH4-0`), 8 apart wrapped to three at 390 (`LIR-0`). */
 const CHIPS = 'flex flex-wrap items-center gap-x-6 gap-y-2 max-2xl:gap-x-2'
 
 /** Onest 15/19 500 ink-muted (14/18 on the phone); a linked chip darkens on hover. */
@@ -58,12 +52,7 @@ const TEXT_BUTTON = cn(
   FOCUS,
 )
 
-/**
- * The claim pill as both boards draw it (`736-0`, `7D3-0`): a neutral raised pill, 46 tall at every
- * width, radius 23, 18 inline padding, 9 gap. The sidebar's Mint pill is the chrome's one primary,
- * so this one is not. It keeps the legacy `button[aria-busy='true']` treatment — full opacity and a
- * progress cursor, no spinner: in flight is not unavailable, and the label already says "Opening…".
- */
+/** Neutral raised claim pill — not the chrome primary. Busy = progress cursor, no spinner. */
 const CLAIM_BUTTON = cn(
   'inline-flex h-[46px] shrink-0 cursor-pointer items-center justify-center gap-[9px] whitespace-nowrap rounded-control px-[18px]',
   'border-0 bg-surface-raised text-label font-semibold text-ink shadow-raised',
@@ -77,10 +66,7 @@ const CLAIM_BUTTON = cn(
 /** The card grid with the starter pack's tighter tracks; under 561px only the gap tightens. */
 const PACK_GRID = 'm-0 grid list-none items-start grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-5 p-0 max-sm:gap-3'
 
-/**
- * Onboarding quest rail. Parent owns steps, pack dialog, and claim.
- * Every quest is listed inline, as both boards draw it; the parent owns dismissed.
- */
+/** Onboarding quest rail — parent owns steps, pack dialog, claim, and dismiss. */
 export function QuestBar({ model }: { model: QuestBarModel }) {
   if (!model.visible) return null
 
@@ -98,8 +84,7 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
                 Earn your braincells ·{' '}
                 <span data-slot="questbar-count">{model.completionLabel}</span>
               </span>
-              {/* the quiet dismiss closes the quest lane, so it ends that lane's own line — which
-                  puts it beside the claim pill at 900+ and above it on the phone */}
+              {/* dismiss ends the title row beside the claim pill at 900+, above it on phone */}
               <button
                 type="button"
                 className={cn(TEXT_BUTTON, 'ml-auto')}
@@ -109,8 +94,7 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
                 {model.dismissLabel}
               </button>
             </div>
-            {/* the rail names every quest, so the next step's instructions have no hover left to
-                hang on and no line on the board: they stay for assistive tech only */}
+            {/* hint is sr-only: every quest is visible inline, nothing to hover for instructions */}
             {model.hint && (
               <small className="sr-only" data-slot="quest-hint">
                 {model.hint}
@@ -148,7 +132,6 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
               data-slot="quest-claim"
               className={cn(
                 CLAIM_BUTTON,
-                /* the phone board gives the claim the rail's full width (`7D3-0` 314) */
                 'max-2xl:w-full',
                 claim.busy
                   ? 'cursor-progress opacity-100'

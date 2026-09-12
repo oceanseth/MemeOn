@@ -30,7 +30,7 @@ export function useMobileAuthForwardScreen(): AuthStatusScreenModel {
     title: 'Returning to the MemeOn app…',
     subtitle: 'Open the MemeOn app, or keep going on the web.',
     error: null,
-    // the one primary on the page; the arrow is the board's Central glyph, not an emoji
+    // Page primary uses Central arrow icon, not emoji
     primaryAction: { label: 'Open MemeOn', href: deepLink, icon: 'arrow-right' },
     fallback: {
       prompt: 'Nothing happened?',

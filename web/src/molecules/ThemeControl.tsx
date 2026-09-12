@@ -25,7 +25,7 @@ const optionFor = (value: ThemePreference) => OPTIONS.find((o) => o.value === va
 const nextAfter = (value: ThemePreference) =>
   OPTIONS[(OPTIONS.findIndex((o) => o.value === value) + 1) % OPTIONS.length]!
 
-/** components.md › Theme changer: 184×40, padding 3, gap 2, radius 20, a pressed well. */
+/** Segmented well: 184×40, pressed surface. */
 const WELL = 'inline-flex h-10 w-[184px] shrink-0 items-center gap-0.5 rounded-[20px] bg-surface-pressed p-[3px] shadow-pressed'
 
 /**

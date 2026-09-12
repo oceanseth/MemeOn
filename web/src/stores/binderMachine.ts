@@ -4,12 +4,7 @@ import type { SortDir, SortKey } from '../lib/sorting'
 
 export type BinderPhase = 'loading' | 'ready' | 'empty' | 'error'
 
-/**
- * How many cards a binder grid shows before the "Show N more" control. The board draws six cards
- * and one centred raised control (`Public Binder · Desktop` › `Public profile / Show more`); a page
- * of twelve is the same idea at the desktop column's three-up rhythm (four rows) and still one tap
- * on the phone's two-up grid. Exported so `ProfileScreen`'s binder tab can mirror the same page.
- */
+/** Cards visible before "Show N more". Twelve fills desktop three-up (four rows) and phone two-up. Shared with ProfileScreen's binder tab. */
 export const BINDER_PAGE_SIZE = 12
 
 export interface BinderContext {

@@ -34,9 +34,7 @@ type Story = StoryObj<typeof meta>
 export const Incoming: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    /* the board's own incoming example (`JXT-0`) is the orientation contract: "You give" is the
-       left plate whatever the record says, "You get" the right, and the action row reads
-       Decline → Accept so the card's one bubblegum closes it */
+    /* orientation contract: "You give" left, "You get" right; Decline before Accept */
     const legends = [...canvasElement.querySelectorAll('[data-slot="trade-side"] h3')]
     await expect(legends.map((legend) => legend.textContent)).toEqual(['You give', 'You get'])
     await expect(canvas.getAllByRole('button').map((button) => button.textContent)).toEqual([

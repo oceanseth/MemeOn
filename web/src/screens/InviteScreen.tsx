@@ -11,8 +11,7 @@ import { cn } from '../lib/cn'
 import type { InviteScreenModel } from '../hooks/useInviteScreen'
 import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
 
-/* The hero is one raised card that grows with its copy (`DAL-0` › `DAY-0`: radius 28, 20/28
-   padding, a 7px column gap, everything centred on the avatar). */
+/** Hero card centred on the avatar, grows with copy. */
 const HERO = cn(
   'flex flex-col items-center gap-[7px] rounded-[28px] bg-surface px-5 pt-5 pb-7 text-center shadow-raised',
   'max-sm:rounded-nav max-sm:px-[18px]',

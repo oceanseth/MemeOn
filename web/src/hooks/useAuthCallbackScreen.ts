@@ -9,11 +9,7 @@ import { INVITE_KEY } from './useInviteScreen'
 /** Where a login that started from a Discord link (or another guarded route) resumes. */
 export const POST_LOGIN_KEY = 'memeon_post_login'
 
-/**
- * The auth status card (`Auth / Centered status`, boards `1NV-0` / `90A-0` / `93Q-0` / `953-0`):
- * one raised card, centred, a turning ring while a hand-off is in flight. Both auth routes —
- * the Masky OAuth callback and the mobile deep-link forward — render this one model.
- */
+/** Shared auth status card for OAuth callback and mobile forward. */
 export interface AuthStatusScreenModel {
   /** `working` draws the ring; `error` swaps it for the failure title and a `Notice`. */
   phase: 'working' | 'error'
@@ -71,8 +67,7 @@ export function useAuthCallbackScreen(): AuthStatusScreenModel {
       .catch((e) => setErr(e instanceof Error ? e.message : 'login failed'))
   }, [params, navigate, refresh])
 
-  /* The board's recovery row (`MHW-0`): a stalled or failed hand-off restarts the login instead of
-     leaving the visitor on a ring. The successful path never renders this. */
+  /* Failed hand-off offers retry instead of an endless spinner. */
   const retry = () => {
     setErr(null)
     void beginMaskyLogin().catch((e) => setErr(e instanceof Error ? e.message : 'login failed'))

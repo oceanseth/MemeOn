@@ -243,7 +243,7 @@ export const EmptyBinder: Story = {
   },
 }
 
-/** the public profile board: no in-app chrome, one bubblegum, and the return path rides in link state */
+/** Public profile: no in-app chrome, one bubblegum, return path in link state. */
 export const LoggedOutVisitor: Story = {
   args: {
     ...oneCreatedCard,

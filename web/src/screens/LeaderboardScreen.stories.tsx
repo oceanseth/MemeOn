@@ -6,7 +6,7 @@ import { buildLeaderboardRowModel, type LeaderboardScreenModel } from '../hooks/
 import type { LeaderRow } from '../lib/types'
 import { LeaderboardScreen } from './LeaderboardScreen'
 
-/** Production boards mix players who set a picture with players who never did. */
+/** Mix of avatars with and without profile pictures. */
 const mixedAvatarRows: LeaderRow[] = [
   { sub: 'user-pal', name: 'pal', picture: '/brand/memeon-logo-circle-64.png', braincells: 240, portfolioValue: 90, collectionSize: 8 },
   { sub: 'user-lou', name: 'lou', picture: null, braincells: 120, portfolioValue: 40, collectionSize: 3 },
@@ -150,7 +150,7 @@ export const SelfInTopTen: Story = {
   },
 }
 
-/** The full board: a podium, ranked rows beneath it, a pinned "You" line and the next page. */
+/** Full page: podium, ranked rows, pinned "You" line, and load-more. */
 export const Full: Story = {
   args: {
     ...ready,

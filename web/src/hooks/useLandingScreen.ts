@@ -43,24 +43,21 @@ export interface LandingFrameSlotProps {
 }
 
 export interface LandingTierModel extends Pick<Tier, 'key' | 'name' | 'glowStyle'> {
-  /** the ladder card's middle line: "0 reshares" … "25,000 reshares" (board `DT6-0` and siblings) */
+  /** Ladder card middle line: "0 reshares" … "25,000 reshares". */
   resharesLabel: string
-  /** the rarity caption under it: Common … Mythic Shiny (board `DT7-0` and siblings) */
+  /** Rarity caption under the reshare count. */
   rarityLabel: string
 }
 
-/** One tilted card of the hero's trading-card pile (board `KZF-0` / iPhone `L0D-0`). */
+/** One tilted card in the hero pile. */
 export interface LandingHeroCardModel extends Pick<Tier, 'glowStyle'> {
   tierKey: string
   tierName: string
-  /** the meme title the board letters on the tilted card */
+  /** Meme title lettered on the tilted card. */
   caption: string
 }
 
-/**
- * The ladder is fed the db `reshares` field: the tier thresholds are reshare counts, and the
- * board letters them as such ("10 reshares").
- */
+/** Tier thresholds are reshare counts from the db `reshares` field. */
 export function buildLandingTierModels(): LandingTierModel[] {
   return TIERS.map((tier) => ({
     key: tier.key,
@@ -71,9 +68,7 @@ export function buildLandingTierModels(): LandingTierModel[] {
   }))
 }
 
-/* The board's pile is three specimens, not the whole ladder: a Gold, a Silver and a Prismatic in
-   that paint order, so the two tilted cards overlap the flat one. Names come from `shared/tiers`
-   so a rename of a tier can never leave a stale label in the hero. */
+/* Hero pile is three tiers (Gold, Silver, Prismatic), not the full ladder. */
 const HERO_PILE: { tierKey: string; caption: string }[] = [
   { tierKey: 'gold', caption: 'one braincell left' },
   { tierKey: 'silver', caption: 'this one' },

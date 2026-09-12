@@ -1,17 +1,9 @@
 import { cn } from '../lib/cn'
 
-/** `sm` is the grid thumb's chip; `md` is the detail hero's. */
+/** `sm` grid thumb · `md` detail hero. */
 export type TierChipSize = 'sm' | 'md'
 
-/**
- * The rarity seal: the one place a tier says its own name. Colour is entirely token-driven
- * (`--color-tier-<key>-chip` / `-chip-text`, `plan-buckets.md` › tier-system), so every tier reads
- * as itself in both themes and bubblegum stays reserved for Shiny and for actions.
- *
- * Literal class names, not interpolated ones: Tailwind scans this file as text, so
- * `bg-tier-${key}-chip` would never be emitted. Prismatic wears its gradient over the flat chip
- * colour, which stays as the fallback an engine without the custom property paints.
- */
+/** Literal class names so Tailwind scans them; unknown tiers fall back to Paper. */
 const TIER_SKIN: Record<string, string> = {
   paper: 'bg-tier-paper-chip text-tier-paper-chip-text',
   silver: 'bg-tier-silver-chip text-tier-silver-chip-text',
@@ -25,7 +17,6 @@ const TIER_SKIN: Record<string, string> = {
   shiny: 'bg-tier-shiny-chip text-tier-shiny-chip-text',
 }
 
-/* A tier the ladder does not know about is a data problem, not a render problem: it wears Paper. */
 const skinFor = (tierKey: string): string => TIER_SKIN[tierKey] ?? (TIER_SKIN['paper'] as string)
 
 const CHIP = cn(
@@ -34,18 +25,14 @@ const CHIP = cn(
 )
 
 const SIZES: Record<TierChipSize, string> = {
-  /* 4/9 padding and 12/16 type, exactly as the board draws the chip on a 340px card */
   sm: 'px-[9px] py-1 text-micro',
   md: 'px-[11px] py-[5px] text-caption',
 }
 
 export interface TierChipProps {
-  /** `paper` … `shiny` — the key from `shared/tiers.ts` */
   tierKey: string
-  /** the tier's product name: Paper, Silver, Holo, Chrome, Gold, Prismatic, Shiny */
   label: string
   size?: TierChipSize | undefined
-  /** the host's box model — a card pins the chip into its image frame */
   className?: string | undefined
 }
 

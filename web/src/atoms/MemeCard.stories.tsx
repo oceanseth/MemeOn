@@ -130,11 +130,7 @@ export const Listed: Story = {
   },
 }
 
-/**
- * The same listing, named for the state it shows: the boards put it in the footer's right slot as
- * a second line, not on a pill over the art. It is a state marker, not a control — and now not an
- * accent either, so a card wears no action colour anywhere.
- */
+/** Listing state in the footer right slot, not a control. */
 export const ForSale: Story = {
   ...Listed,
   play: async ({ canvasElement }) => {
@@ -204,7 +200,6 @@ export const Large: Story = {
     // the hero title wraps rather than ellipsizing: nothing about the meme is cropped away
     await expect(card.querySelector('[data-slot="meme-art"]')).toHaveStyle({ objectFit: 'contain' })
     await expect(title).toHaveStyle({ whiteSpace: 'normal' })
-    // the hero title step off the detail board (296-0 / G4J-0 / G4O-0)
     await expect(title).toHaveStyle({ fontSize: '27px', lineHeight: '34px' })
   },
 }

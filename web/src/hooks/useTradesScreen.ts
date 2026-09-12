@@ -194,7 +194,7 @@ export function useTradesScreen(): TradesScreenModel {
   const showError = context.loadFailed
   return {
     phase,
-    /* the board strips the fullwidth plus: the composer's own submit is the action, this opens it */
+    /* Opens the compose form; submit lives on the form itself. */
     newTradeButtonLabel: showNew ? 'Close' : 'Propose a trade',
     newTradeButtonProps: { onClick: onToggleNew, 'aria-expanded': showNew, 'aria-controls': COMPOSE_FORM_ID },
     compose,

@@ -34,10 +34,7 @@ export type MemeCardMediaModel =
 export interface MemeCardListingModel {
   shares: number
   pricePerShare: number
-  /**
-   * Second line of the card's 64px footer slot — the state, never a control. The boards
-   * (6UR-0 `6Y7-0`, 767-0 `78S-0`) draw it lower-case under the share count, with no pill.
-   */
+  /** Footer second line — lowercase listing state, no pill. */
   forSaleLabel: string
   /** first line of the same slot: `12 shares` */
   sharesLabel: string

@@ -18,24 +18,18 @@ const FACE = 'font-display font-medium text-ink'
 const SECTION_TITLE = cn(FACE, 'm-0 text-section-phone tracking-title md:text-section')
 const SECTION = 'mt-14 max-md:mt-10'
 
-/* The board's closing CTA is the one ultraviolet plate on the page, with the single bubblegum
-   pill inside it — the ladder card and the how-it-works card are the quiet raised surfaces. */
 const CARD = 'rounded-card border-0 bg-surface p-[18px] shadow-raised'
 
-/* One tilted card of the hero pile. Positions are percentages of the pile's own box, so the whole
-   arrangement scales with the column instead of needing a phone transform (the board's iPhone pile
-   is the desktop one at ~0.85). `origin-top-left` matches the board's rotation origin. */
+/** Hero pile card: percentage positions scale with the column, no phone transform. */
 const PILE_CARD = 'absolute origin-top-left rounded-card bg-surface p-[7px] shadow-raised'
 
-/* left/top/width as fractions of the pile's own box (`KZF-0` measured at 405×281), rotation as the
-   board draws it. Percentages, so nothing needs a phone transform. */
 const PILE_LAYOUT = [
   'left-0 top-[19%] w-[38.2%]',
   'left-[26.3%] top-0 w-[41.8%] rotate-[-8deg]',
   'left-[55.9%] top-[23.3%] w-[35.4%] rotate-[10deg]',
 ] as const
 
-/** The board's three steps (`DSM-0`, `DSR-0`, `DSW-0`), emoji-free by design. */
+/** How-it-works steps — emoji-free by design. */
 const HOW_IT_WORKS = [
   { step: '01', title: 'Mint a moment', body: 'Turn an image, video, Giphy, or URL into a card.' },
   { step: '02', title: 'Drop the link', body: 'Every share unfurls with its live foil frame.' },
@@ -68,8 +62,7 @@ export function LandingScreen({
 
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      {/* Hero band (board `DRL-0`): the one raised plate the page opens on, bled into the
-          container's own 20px gutter only — never across the shell's sidebar gap. */}
+      {/* hero band bleeds into the page gutter, not the shell sidebar gap */}
       <section
         data-slot="landing-hero"
         className="-mx-5 border-b border-line bg-surface-raised px-5 pt-12 pb-14 max-md:pt-8 max-md:pb-10"
@@ -107,7 +100,7 @@ export function LandingScreen({
             )}
           </div>
 
-          {/* The trading-card pile (board `KZF-0`): three specimens of the ladder, tilted. */}
+          {/* three tilted tier specimens */}
           <ul
             data-slot="hero-pile"
             /* `w-full` inside a `max-w`, never a fixed width: an `auto` grid track sizes to its
@@ -150,8 +143,7 @@ export function LandingScreen({
                   <TierChip
                     tierKey={card.tierKey}
                     label={card.tierName}
-                    /* the pile's seal is one step under the grid thumb's: the board letters it
-                       at 11/14 in a 7/3 pill so it never crowds a 144px card's title */
+                    /* pile seal one step smaller than grid thumb so it never crowds the title */
                     className="absolute right-2.5 bottom-2.5 px-[7px] py-[3px] text-micro"
                   />
                 </li>
@@ -161,14 +153,13 @@ export function LandingScreen({
         </div>
       </section>
 
-      {/* How it works (board `DSJ-0` … `DSW-0`) */}
+      {/* how it works */}
       <section data-slot="landing-how" className={SECTION}>
         <h2 className={SECTION_TITLE}>A card gets better when it gets around.</h2>
         <ol className="mt-6 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-3">
           {HOW_IT_WORKS.map((step) => (
             <li key={step.step} className={CARD}>
-              {/* the board's step number sits in the accent; `link` is the guarded ultraviolet
-                  pair — `--color-focus` on a surface misses Lc 60 in the dark arm */}
+              {/* step number in link colour — focus token misses contrast on dark surfaces */}
               <span className="block text-small font-semibold text-link tabular-nums">
                 {step.step}
               </span>
@@ -179,7 +170,7 @@ export function LandingScreen({
         </ol>
       </section>
 
-      {/* The tier ladder (board `DT1-0` … `DTY-0`) */}
+      {/* tier ladder */}
       <section data-slot="landing-tiers" className={SECTION}>
         <h2 className={SECTION_TITLE} id="tiers">
           The Virality Tiers
@@ -233,7 +224,7 @@ export function LandingScreen({
         <HeroVideo model={heroVideo} className="mt-6 max-w-[880px]" />
       </section>
 
-      {/* FAQ (board `DU3-0`) */}
+      {/* FAQ */}
       <section data-slot="landing-faq" className={SECTION}>
         <h2 className={cn(FACE, 'm-0 mb-6 text-section-phone tracking-title md:text-section')}>FAQ</h2>
         <div className="max-w-[65ch]">
@@ -294,7 +285,7 @@ export function LandingScreen({
         </div>
       </section>
 
-      {/* Closing CTA (board `DUA-0`): the page's one ultraviolet plate, carrying one bubblegum. */}
+      {/* closing CTA — ultraviolet plate with one bubblegum pill */}
       {showMarketplaceCta || showLoginButton ? (
         <section
           data-slot="landing-closing"

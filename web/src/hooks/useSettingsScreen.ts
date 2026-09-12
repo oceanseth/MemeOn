@@ -6,20 +6,17 @@ import type { ThemeControlModel } from '../molecules/ThemeControl'
 import { useAuth } from './useAuth'
 import { useTheme } from './useTheme'
 
-/**
- * The Account card (board `J52-0`): the avatar's own name with the brain mark, the provider line,
- * and the raised "Log out" at the trailing edge — the only control on the card, so it is neutral.
- */
+/** Account card: name, provider, logout. */
 export interface SettingsAccountModel {
   heading: string
-  /** `🧠 oxfern` — the brain mark is the account's own glyph on the board, not a drawn icon. */
+  /** Brain mark is part of the name label, not a separate icon. */
   nameLabel: string
   providerLabel: string
   logoutLabel: string
   logoutButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-label'>
 }
 
-/** The Connections card (`MPJ-0`): one service row today, built so a second one is a list item. */
+/** One service row today; list-shaped for a second connection. */
 export interface SettingsConnectionModel {
   key: string
   /** `🎭 Discord` — emoji stays emoji. */
@@ -30,10 +27,7 @@ export interface SettingsConnectionModel {
   actionLinkProps: Pick<LinkProps, 'to'>
 }
 
-/**
- * One alert switch (`MPQ-0`). No endpoint stores these yet, so every toggle ships `disabled` with
- * the card's "Coming soon" caption: a control that looks live and saves nothing is a lie.
- */
+/** No alert API yet — toggles ship disabled so they do not look live. */
 export interface SettingsAlertToggleModel {
   key: string
   label: string

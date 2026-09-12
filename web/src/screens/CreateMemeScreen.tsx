@@ -36,11 +36,7 @@ import { cn } from '../lib/cn'
 /* the mint form the user was standing on is gone at success: park focus on the outcome, not <body> */
 const focusOutcome = (node: HTMLHeadingElement | null): void => node?.focus()
 
-/**
- * The board's two columns (`25K-0`): the form at 555 and the live preview at 522, 31 apart inside
- * the 1108 content column. Under 1000px the rail drops below the form, which is the phone board's
- * own order (form 336 → preview 872 on `2GO-0`).
- */
+/** Form and preview columns; preview stacks below the form under 1000px. */
 const LAYOUT =
   'grid grid-cols-[minmax(0,1fr)] items-start gap-5 3xl:grid-cols-[minmax(0,555fr)_minmax(0,522fr)] 3xl:gap-[31px]'
 /** the preview column sticks to the top of the scroll once the two columns split */
@@ -85,30 +81,20 @@ const CHIP = cn(
 )
 const MODE_ROW = 'mb-5 flex flex-wrap items-center gap-2'
 
-/** The cost caption beside a render action (`G1R-0`: 13/16 600 ink-muted). */
+/** Cost caption beside a render action. */
 const COST_NOTE = 'text-caption font-semibold text-ink-muted'
 const FORM_NOTE = 'mt-1 text-micro font-medium text-ink-muted'
 
-/**
- * The mint's state cards (`H5T-0`) on the tone-aware `EmptyState` the wave-2 fix round shipped for
- * exactly these cards. Two things are restated here on purpose:
- * - the card is left-aligned at the form's own rhythm, not the page-state's centred 60px column;
- * - the title keeps the board's 20/25 display step and the tone colour the board paints it in
- *   (`H7R-0` ink-muted, `H7Z-0`/`H8F-0` success-text, `H87-0` error-text) through `.class h3`
- *   (0,1,1) rules — these cards sit *inside* the form `Panel`, whose own `:where(h3,h4)` (0,1,0)
- *   would otherwise repaint every one of them at the panel-title step.
- */
+/** Mint state cards: left-aligned, tone-coloured titles override the form Panel's h3 step. */
 const STATE_CARD = cn(
   'rounded-field p-4 text-left',
   '[&_h3]:m-0 [&_h3]:font-display [&_h3]:text-card-title-phone [&_h3]:font-medium [&_h3]:tracking-card-title',
   '[&_p]:m-0 [&_p]:mt-2 [&_p]:text-small [&_p]:font-medium [&_p]:text-ink-muted',
 )
-/* busy is the board's neutral card with an ink-muted title; it takes the *raised* fill because a
-   surface card inside the surface-toned form panel would have no relief of its own */
+/* busy uses raised fill so it reads inside the surface-toned form panel */
 const STATE_CARD_BUSY = cn(STATE_CARD, 'bg-surface-raised shadow-raised', '[&_h3]:text-ink-muted')
-/* approval is the board's success-text title on the Feedback board's tinted success card */
 const STATE_CARD_APPROVAL = cn(STATE_CARD, '[&_h3]:text-success-text')
-/** The 6px progress groove (`LGD-0`): a pressed track with the action colour riding in it. */
+/** Progress groove: pressed track with the action colour. */
 const TRACK = 'mt-3 block h-1.5 overflow-hidden rounded-[3px] bg-surface-pressed'
 const TRACK_FILL = cn(
   'block h-full w-[35%] rounded-[3px] bg-action',
@@ -164,10 +150,7 @@ const PREVIEW_FRAME = 'foil-frame foil-media relative rounded-field bg-surface-p
 /* same plate the marketplace card uses: a square, the whole meme contained */
 const PREVIEW_ART = 'block aspect-square w-full bg-surface-pressed object-contain'
 const PREVIEW_META = 'flex flex-col px-1.5 pt-3.5 pb-1.5'
-/**
- * The preview card's own title: 26/32 on the desktop board (`G22-0`) and the 19/24 the iPhone board
- * steps it down to (`GDT-0`), both on −0.025em — a step above the grid card's 23/27 either way.
- */
+/** Preview title one step above the grid card size. */
 const PREVIEW_TITLE = cn(
   'overflow-hidden text-ellipsis whitespace-nowrap',
   'font-display text-title font-medium tracking-title text-ink',
@@ -429,10 +412,8 @@ export function CreateMemeScreen({
                   />
                 </Field>
                 {showEditedFrameApproval && (
-                  /* the wrapper keeps the named slot: `EmptyState` writes its own `data-slot`
-                     *after* the prop spread, so a consumer's name is dropped (WP3a's open request
-                     against the atom). `role="none"`: the panel already speaks through its own
-                     live region, and a second status here would announce the same turn twice */
+                  /* wrapper keeps data-slot: EmptyState overwrites consumer slot after spread.
+                     role="none" — panel live region already announces this turn */
                   <div data-slot="approval-card">
                     <EmptyState tone="ok" role="none" className={STATE_CARD_APPROVAL}>
                       <h3>✅ Edit applied — happy with this frame?</h3>
@@ -653,8 +634,7 @@ export function CreateMemeScreen({
             <PanelHeading size="card" className="mb-0">Live card preview</PanelHeading>
             <p className={CARD_SUB}>This is what lands in the marketplace.</p>
             <div className="mt-5 flex flex-col gap-3">
-              {/* the board's preview column always holds a card; before there is one, it holds the
-                  plate that card will land on, so the two columns keep their shared silhouette */}
+              {/* placeholder keeps the preview column's silhouette before a card exists */}
               {!showPreviewCard && !showPreviewSkeleton && (
                 <div data-slot="preview-placeholder" className={PREVIEW_PLACEHOLDER}>
                   Your card lands here.
@@ -669,7 +649,7 @@ export function CreateMemeScreen({
               )}
               {showMintHint && <Hint className="mt-0">To mint: {mintHint}</Hint>}
             </div>
-            {/* phone: the shares line sits above a full-width Mint pill (the iPhone mint board) */}
+            {/* phone: shares line above a full-width Mint pill */}
             <div className="mt-4 flex items-center justify-between gap-3 max-md:flex-col max-md:items-stretch max-md:gap-2">
               <span className="text-small font-bold text-ink max-md:text-caption max-md:font-medium max-md:text-ink-muted">
                 100 shares to you
