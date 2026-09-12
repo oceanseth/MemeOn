@@ -2,26 +2,20 @@ import { TierChip } from '../atoms/TierChip'
 import { cn } from '../lib/cn'
 import type { TradeSideSummaryModel } from '../lib/tradeCardModel'
 
-/**
- * One side of a deal: the recessed well the Trade board draws inside the proposal card (`JXX-0` —
- * surface-pressed, radius 20, 15px padding, the pressed relief). The card around it is the raised
- * thing; what is on offer sits *in* it.
- */
+/** Recessed well inside the raised proposal card. */
 const WELL = cn(
   'rounded-[20px] bg-surface-pressed p-[15px] shadow-pressed',
   'text-small [overflow-wrap:anywhere] [&_em]:[overflow-wrap:anywhere]',
 )
 
-/** The well's own legend (`JXY-0` / `JY6-0`): Onest 13/16 weight 700 ink-muted, 8px above the row. */
+/** Owner label: caption, bold, ink-muted. */
 const LEGEND = 'mt-0 mb-2 font-sans text-caption font-bold tracking-normal text-ink-muted'
 
-/** The board's meme row (`JXX-0`): thumb, then the line, 8px apart. */
 const LINE = 'flex items-center gap-2'
 
-/** The board's 30px thumb (`JXZ-0`): radius 9 inside a 2px line-toned ring. */
+/** 30px thumb, radius 9, 2px line ring. */
 const THUMB = 'size-[30px] shrink-0 rounded-[9px] border-2 border-line bg-surface-raised object-cover'
 
-/** Meme line 13/16 and the coin amount 14/18, both in the display face the board draws them in. */
 const MEME_LINE = 'min-w-0 font-sans text-caption font-medium text-ink'
 const COINS = 'font-sans text-small font-medium text-ink tabular-nums'
 

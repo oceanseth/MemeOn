@@ -3,11 +3,7 @@ import type { ComponentPropsWithoutRef } from 'react'
 import { cn } from '../lib/cn'
 import { controlChrome, placeholderChrome } from './Input'
 
-/**
- * Base UI ships no textarea part, so `Field.Control` is rendered as one and keeps the Field wiring.
- * The well's fixed 50px height becomes a 120px floor and the gutter gains a vertical half, so the
- * first line sits where a single-line control's value would (components.md › Inputs).
- */
+/** Base UI textarea via `Field.Control`; 120px min-height with vertical padding. */
 export function Textarea({
   className,
   ...props

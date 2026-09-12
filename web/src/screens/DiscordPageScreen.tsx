@@ -7,25 +7,13 @@ import { Spinner } from '../atoms/Spinner'
 import { cn } from '../lib/cn'
 import type { DiscordPageScreenModel } from '../hooks/useDiscordPageScreen'
 
-/**
- * A flow card (`EI8-0`/`EID-0`/`EII-0`): the surface card at radius 23 with 17/20 padding — the
- * eyebrow is the command, then the promise, then the plain line under it.
- */
 const FLOW_CARD = 'rounded-control px-5 py-[17px] max-md:px-5 max-md:py-[17px]'
 
-/**
- * `/memeon` (`EI9-0`): 15/19 weight 800 — the command, not a heading. The board paints it in the
- * focus colour, which measures APCA Lc -53.1 on the dark surface (below the swarm's floor of 60),
- * so it takes `--color-link`, the accent `check-contrast` already guards in both arms.
- */
+/** Command line uses link colour — focus token misses contrast on dark surfaces. */
 const FLOW_COMMAND = 'm-0 text-label font-bold text-link'
 
 const FLOW_TITLE = 'mt-2 mb-0 font-display text-card-title font-medium tracking-card-title text-ink'
-
-/** The line under it (`EIB-0`): 14/18 weight 500 on ink-muted. */
 const FLOW_BODY = 'mt-[5px] mb-0 text-small font-medium text-ink-muted'
-
-/** A FAQ question (`EIP-0`): 16/20 weight 700; its answer is `FLOW_BODY` at the same measure. */
 const FAQ_QUESTION = 'mt-5 mb-0 text-intro font-semibold tracking-normal text-ink first:mt-0'
 
 /** Discord install landing as a function of its model. Every engine state is one set of args. */

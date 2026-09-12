@@ -91,7 +91,7 @@ export function AppShellScreen({
         <nav className="mx-3 mt-4 flex flex-col items-start gap-[5px]" aria-label="More" data-slot="utility-links">
           {utilityLinks.map((link) => (
             <Link key={link.to} to={link.to} className={UTILITY_LINK} aria-current={link.current ? 'page' : undefined}>
-              {/* NBSP + space after the emoji so it does not glue to the word (plan-buckets › navigation-chrome) */}
+              {/* NBSP after emoji so it does not glue to the label */}
               {link.emoji ? `${link.emoji}  ` : ''}
               {link.label}
             </Link>

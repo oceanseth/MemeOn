@@ -61,7 +61,7 @@ export interface FriendsScreenModel {
   inviteLabel: string
   inviteButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
   onlineFriends: readonly FriendLinkModel[]
-  /** the board's trailing caption on the "Online now" strip ("2 friends online") */
+  /** Trailing caption on the online strip. */
   onlineCountLabel: string
   hits: readonly FriendHitModel[]
   incoming: readonly IncomingFriendModel[]
@@ -125,7 +125,7 @@ interface AcceptedFriendModel extends FriendLinkModel {
   isOnline: boolean
   onlineLabel: string
   statsLabel: string
-  /** the board's raised companion to Gift: the row's second, quieter task */
+  /** Quieter companion action beside Gift. */
   tradeLabel: string
   tradeLinkProps: Pick<LinkProps, 'to' | 'aria-label'>
   giftLabel: string
@@ -134,7 +134,6 @@ interface AcceptedFriendModel extends FriendLinkModel {
   removeButtonProps: RowButtonProps
 }
 
-/** `📚 7 memes · 🧠 4,174 held` — the board's row meta (`92-0` › `Friend / CyberSeth / 6`). */
 function statsLine(friend: { collectionSize: number; portfolioValue: number }): string {
   return `📚 ${friend.collectionSize} ${friend.collectionSize === 1 ? 'meme' : 'memes'} · 🧠 ${friend.portfolioValue.toLocaleString()} held`
 }

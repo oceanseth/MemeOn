@@ -61,7 +61,7 @@ export const PersonRow: Story = {
   },
 }
 
-/** The 34px squircle the phone header cluster and its account menu wear (board `767-0`/`76K-0`). */
+/** 34px phone header / account menu squircle. */
 export const Header: Story = {
   args: { size: 'header' },
   play: async ({ canvasElement }) => {

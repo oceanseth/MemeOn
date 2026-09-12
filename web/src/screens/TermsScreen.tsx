@@ -3,9 +3,7 @@ import { PageContainer } from '../atoms/PageContainer'
 import { PageHead } from '../atoms/PageHead'
 import { cn } from '../lib/cn'
 
-/* The legal template (`8KP-0` / `8OR-0`, identical to the Privacy boards): a 720 measure, a
-   card-title Unbounded section heading, 16/24 body on `ink`, and a `--color-line` hairline under
-   each section's 22px of breathing room. */
+/** Legal page layout: 720 measure, section hairlines. */
 const SECTION = 'mt-6 border-b border-line pb-[22px] last:border-b-0'
 const H2 = cn(
   'm-0 font-display text-card-title font-medium tracking-card-title text-ink',

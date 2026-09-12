@@ -129,7 +129,7 @@ export const DarkPhone390: Story = {
   globals: { ...phone.globals, theme: 'dark' },
 }
 
-/** the composer as the board draws it: two columns, one submit, one caption */
+/** composer on phone: two columns, one submit, one caption */
 export const ComposingPhone390: Story = {
   name: 'Composing phone 390',
   args: ComposingEmptyProposal.args,

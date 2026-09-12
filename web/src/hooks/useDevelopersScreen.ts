@@ -19,7 +19,7 @@ import {
 } from '../stores/developersMachine'
 import { useMountEffect } from './useMountEffect'
 
-/** Documented ceiling (PRODUCT.md): the page shows it instead of letting the API reject a click. */
+/** Key ceiling — shown in UI instead of letting the API reject a click. */
 const KEY_LIMIT = 5
 
 export interface DeveloperKeyRowModel {
@@ -67,15 +67,14 @@ export interface DevelopersScreenModel {
   emptyHint: string
   loadingLabel: string
   loadErrorMessage: string
-  /** `Your keys` — the inventory card's own 18/22 heading (`FB1-0`). */
   keysHeading: string
-  /** `2 of 5 keys` — the quota caption beside it (`MCU-0`), not a badge. */
+  /** Quota caption beside the heading, not a badge. */
   quotaLabel: string | null
   quotaNote: string | null
   createLabel: string
   freshKeyHeading: string
   copyLabel: string
-  /** `✓ Copied` — the board puts the outcome beside the button, not inside its label (`FAY-0`). */
+  /** Copy outcome beside the button, not inside its label. */
   copiedCaption: string
   copyDone: boolean
   labelInputProps: DeveloperLabelInputProps
@@ -130,7 +129,7 @@ export function useDevelopersScreen(): DevelopersScreenModel {
       send({ type: 'CREATED', key: out.key })
       load()
     } catch (e) {
-      // the board's generic line is the floor; a server reason is better when there is one
+      // Prefer server error over generic create failure
       send({ type: 'FAIL', err: e instanceof Error ? e.message : 'Couldn’t create that key. Try again.' })
     }
   }, [actor, load, send])

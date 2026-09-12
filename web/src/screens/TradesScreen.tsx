@@ -21,20 +21,16 @@ const NO_MEME = '— braincells only, no meme —'
 /** A silent region spends none of its column's rhythm until it has something to say. */
 const liveRegion = 'empty:sr-only [&:not(:empty)]:mb-4'
 
-/** One well stacked over the next inside a composer column (`LS5-0`: 10px between fields). */
 const columnFields = 'flex flex-col gap-2.5'
 
-/**
- * Give and want are one comparison: side by side at 900+ exactly as the board's two 516 columns
- * (`LRW-0`, 28 apart), stacked below it.
- */
+/** Give and want side by side at 2xl, stacked below. */
 const composeGrid = cn(
   'flex flex-col gap-5',
   '2xl:grid 2xl:grid-cols-[repeat(2,minmax(0,1fr))] 2xl:gap-x-7 2xl:gap-y-5',
   '2xl:[&>*:not([data-slot=fieldset])]:col-span-full',
 )
 
-/** The composer's section legends are the board's 19/24 800 Onest, not the micro caps. */
+/** Composer legends at intro size, not micro caps. */
 const composeLegend = 'mb-2.5 text-intro font-semibold tracking-normal text-ink normal-case'
 
 /** A stack of cards, evenly spaced. */

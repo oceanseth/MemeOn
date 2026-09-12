@@ -132,10 +132,7 @@ export const WithQuests: Story = {
   }),
 }
 
-/**
- * The inventory's second quest name. The rail no longer collapses — both boards (`732-0`, `7D0-0`)
- * list every quest inline — so this is the same shell as `WithQuests`, kept for that inventory row.
- */
+/** Same shell as WithQuests — kept for the second quest inventory row. */
 export const WithQuestsExpanded: Story = {
   args: buildAppShellScreenModel({
     phase: 'loggedIn', user: meLou,

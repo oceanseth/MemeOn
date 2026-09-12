@@ -10,25 +10,11 @@ import { Spinner } from '../atoms/Spinner'
 import type { DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { ConfirmDialog } from '../molecules/ConfirmDialog'
 
-/**
- * The security explainer (`FAL-0`): 16/20 weight 500 on `ink-muted`, above the form and at the
- * board's own 959px measure — prose on the page, not a card.
- */
 const EXPLAINER = 'mt-0 mb-0 max-w-[65ch] text-body text-ink-muted'
-
-/** Create key form (`FAN-0`): a raised card, 18 padding, gap 12; the phone drops the button. */
 const FORM_CARD = 'mt-5 p-[18px] max-md:p-[18px]'
-
-/** Fresh key one-time state (`FAT-0`): the card plus the 2px inset action ring that names it. */
+/** Fresh key state: inset action ring marks the one-time reveal. */
 const FRESH_CARD = 'mt-5 p-5 max-md:p-5 inset-ring-2 inset-ring-action'
-
-/**
- * API key inventory (`FB0-0`): 22 padding, its rows divided by the board's one hairline. Its head is
- * a `PanelHeading` at the shared intro step.
- */
 const INVENTORY_CARD = 'mt-5 p-[22px] max-md:p-[18px]'
-
-/** One key row (`MCV-0`): space-between, 12 block padding, a hairline above every row but the first. */
 const KEY_ROW = 'flex flex-wrap items-center justify-between gap-4 gap-y-2.5 py-3'
 
 /** Developers API-key page as a function of its model. Every engine state is one set of args. */
@@ -105,7 +91,6 @@ export function DevelopersScreen({
       </Panel>
 
       {showErr && (
-        /* the board's inline alert (`MG1-0`): the error pair at the field radius, one line tall */
         <Notice
           tone="error"
           compact

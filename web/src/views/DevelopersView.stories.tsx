@@ -46,7 +46,7 @@ export const CreateCopyAndRevoke: Story = {
     await userEvent.type(canvas.getByRole('textbox', { name: 'API key label' }), 'story client{Enter}')
     await expect(await canvas.findByText(loaded.scenario.freshKey)).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', copyButton))
-    // the outcome is the caption beside the button; the label itself never changes (`FAY-0`)
+    // the outcome is the caption beside the button; the label itself never changes
     await expect(await canvas.findByText('✓ Copied')).toBeInTheDocument()
     await waitFor(() => expect(loaded.scenario.copied).toEqual([loaded.scenario.freshKey]))
     await userEvent.click(canvas.getByRole('button', { name: 'Revoke API key my-trading-bot' }))

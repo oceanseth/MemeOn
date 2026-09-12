@@ -215,7 +215,7 @@ export const CapTableUnresolved: Story = {
   args: { detail: { ...detail(), holdingsLabel: '40/100', capTable: [{ userId: 'me', label: 'You', sharesLabel: '40/100' }, { userId: 'a', label: 'another collector', sharesLabel: '35/100' }, { userId: 'b', label: 'another collector', sharesLabel: '25/100' }] } },
 }
 
-/** The board's spread-sources card: where the link actually travelled. */
+/** Spread sources card: where the link actually travelled. */
 const sources = [
   { id: 'group chat', label: 'group chat', viewsLabel: '8,600' },
   { id: 'the void subreddit', label: 'the void subreddit', viewsLabel: '5,920', linkProps: { href: 'https://example.com/r/void', target: '_blank' as const, rel: 'noreferrer' as const } },
@@ -238,8 +238,7 @@ export const Owner: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: /Delete forever/ })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'List' })).toBeEnabled()
-    // the board's hero callout (G4P-0) belongs to every signed-in view, not just the public card,
-    // and it lives inside the one raised card with the tier meter under it
+    // tier line lives inside the hero card with the meter — signed-in and public views
     const hero = canvasElement.querySelector('[data-slot="detail-hero"]')!
     const card = hero.querySelector('[data-slot="meme-card"]')!
     const line = card.querySelector('[data-slot="detail-tier-line"]')
@@ -271,7 +270,7 @@ export const LoggedOut: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('heading', { level: 1, name: listedHolo.title })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Log in with Masky' })).toBeVisible()
-    // KRK-0 draws the tier line inside the hero card in the link colour — one element, one swap
+    // public view: tier line uses link colour inside the hero card
     const lines = canvasElement.querySelectorAll('[data-slot="detail-tier-line"]')
     await expect(lines).toHaveLength(1)
     await expect(lines[0]!.closest('[data-slot="meme-card"]')).not.toBeNull()

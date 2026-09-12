@@ -44,13 +44,9 @@ const SIDEBAR = cn(
  * restated here for a nested main.
  */
 const CONTENT = cn('flex min-w-0 flex-1 flex-col', '[&>main]:w-full [&>main]:grow')
-/**
- * 276 = 20 (frame gutter) + 216 (sidebar) + 20 here + `PageContainer`'s own 20 — the boards' content
- * column (`6WV-0`/`6WL-0`/`732-0` all start at 276 and run 1108 wide). The right is 36 + that same 20,
- * so the column ends at 1384 and a 3-up grid tracks 356 (`6XT-0`).
- */
+/** App content inset: 276 = frame gutter + sidebar + column padding. */
 const CONTENT_APP = '2xl:pr-9 2xl:pl-5'
-/** The public boards sit 72 in from the frame edge. */
+/** Public pages: 72px from the frame edge. */
 const CONTENT_PUBLIC = '2xl:px-[52px]'
 /** The fixed tab bar is 80 tall, 10 up: the column ends 100 above the safe area so nothing hides under it. */
 const CONTENT_ABOVE_TABS = 'max-2xl:pb-[calc(100px+env(safe-area-inset-bottom,0px))]'
@@ -68,7 +64,7 @@ const HEADER = cn(
   '2xl:gap-[18px]',
 )
 const HEADER_APP = '2xl:mt-[29px] 2xl:min-h-[54px] 2xl:px-5'
-/** 72 from the frame edge on the public boards = the column's 52 + the same 20 `PageContainer` pads. */
+/** Public header: 52px column inset + PageContainer padding. */
 const HEADER_PUBLIC = '2xl:px-5 2xl:py-8'
 
 /** The wordmark: Unbounded at the display weight, the circle mark beside it; sized per slot. */
@@ -85,8 +81,7 @@ const WORDMARK_SIZE = {
 function Wordmark({ size, className }: { size: keyof typeof WORDMARK_SIZE; className?: string | undefined }) {
   return (
     <Link to="/" className={cn(WORDMARK, WORDMARK_SIZE[size], className)} data-slot="logo">
-      {/* the circle mark rides beside the word where there is room; the 350px phone header is the
-          word (146) + the cluster (186) exactly, so there it is the word alone (as the board draws it) */}
+      {/* hide circle mark on phone — 350px header fits wordmark + cluster only */}
       <img
         src="/brand/memeon-logo-circle-64.png"
         alt=""
@@ -119,7 +114,7 @@ export const PRIMARY_PILL = cn(
   FOCUS,
 )
 
-/** Utility link: Onest 14/18 500; the current one is a 36px pressed pill (plan-buckets › navigation-chrome). */
+/** Utility link: current page = 36px pressed pill. */
 export const UTILITY_LINK = cn(
   '-ml-3 inline-flex h-9 items-center rounded-field px-3',
   'text-small font-medium text-ink no-underline',

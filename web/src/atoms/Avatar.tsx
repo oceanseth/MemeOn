@@ -3,28 +3,16 @@ import type { ComponentPropsWithoutRef } from 'react'
 import { avatarInitial } from '../lib/avatarModel'
 import { cn } from '../lib/cn'
 
-/**
- * `sm` is the 32px topbar squircle, `header` the 34px one the phone header cluster and its account
- * menu wear (Marketplace iPhone board `767-0` › `Header / MemeOn / 6` `76K-0`: 34×34, radius 13,
- * monogram 13/16 — the same footprint as the theme toggle `N5G-0` beside it), `md` the 40px
- * identity/people-row one (the app's most common, and the size the sidebar and desktop header
- * draw), `lg` the 56px profile and invite one.
- */
+/** `sm` 32px · `header` 34px (phone chrome) · `md` 40px · `lg` 56px. */
 export type AvatarSize = 'sm' | 'header' | 'md' | 'lg'
 
-/**
- * Not a circle: `--radius-avatar` is 15px, which is what makes the boards' squircle read. The 34px
- * disc is the one step where the board tightens that to 13, so it says so here instead of leaving
- * every caller to restate it in a `className`.
- */
 const rootChrome: Record<AvatarSize, string> = {
   sm: 'size-8',
-  header: 'size-[34px] rounded-[13px]',
+  header: 'size-[34px] rounded-[13px]', // tighter radius at the small disc
   md: 'size-10',
   lg: 'size-14',
 }
 
-/** One monogram size for the two small discs; `header` takes the board's 13/16, `lg` scales up. */
 const fallbackChrome: Record<AvatarSize, string> = {
   sm: 'text-label',
   header: 'text-caption',
@@ -32,7 +20,7 @@ const fallbackChrome: Record<AvatarSize, string> = {
   lg: 'text-card-title leading-none',
 }
 
-/** Everything not named here lands on the `<img>`, so a list model's `loading="lazy"` survives. */
+/** Unlisted img props (e.g. `loading="lazy"`) pass through to the image. */
 export type AvatarProps = Omit<ComponentPropsWithoutRef<'img'>, 'src' | 'className'> & {
   name: string
   src?: string | null | undefined
@@ -56,8 +44,7 @@ export function Avatar({ name, src, alt = '', size = 'sm', className, ...imgProp
           {...imgProps}
           src={src}
           alt={alt}
-          // last word: Google avatar URLs answer 403 to a request that carries a referrer
-          referrerPolicy="no-referrer"
+          referrerPolicy="no-referrer" // Google avatars 403 with a referrer
           className="size-full object-cover"
         />
       ) : null}

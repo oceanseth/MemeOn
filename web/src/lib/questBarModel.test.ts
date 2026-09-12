@@ -30,8 +30,7 @@ describe('buildQuestBarModel', () => {
   })
 
   it('lists every quest inline and keeps the next step\u2019s instructions on the rail', () => {
-    /* both boards draw the whole ladder (`732-0` \u203a `LH4-0` in one row, `7D0-0` \u203a `LIQ-0`
-       wrapped to three): there is no disclosure left, so the rail never carries fewer than five */
+    /* All five quests always visible — no disclosure step. */
     const packDone = buildQuestBarModel({ ...fresh, steps: questStepsPackDone })
     expect(packDone.chips).toHaveLength(5)
     expect(packDone.chips[1]).toMatchObject({ kind: 'step', key: 'mint', done: false })

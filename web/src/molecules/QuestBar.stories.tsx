@@ -29,14 +29,14 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** Default: the whole ladder in one lane, the claim pill beside it (`732-0`). */
+/** Whole ladder in one lane, claim pill beside it. */
 export const Fresh: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     onDismissSteps.mockClear()
     await expect(canvas.getByText(/Earn your braincells/)).toBeInTheDocument()
     await expect(canvas.getByText('0/5')).toBeInTheDocument()
-    /* the next step's instructions have no line on the board, so they stay for assistive tech */
+    /* hint is sr-only — visible quests leave nothing to hover for instructions */
     await expect(canvas.getByText(questStepsFresh[0]!.hint)).toBeInTheDocument()
     /* every quest is on the rail from the first render — nothing waits behind a disclosure */
     await expect(canvas.getByRole('link', { name: /Mint/ })).toHaveAttribute('href', '/binder/new')

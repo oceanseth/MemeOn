@@ -7,23 +7,13 @@ import { cn } from '../lib/cn'
 import type { SettingsScreenModel } from '../hooks/useSettingsScreen'
 import { ThemeControl } from '../molecules/ThemeControl'
 
-/**
- * The section card the Settings boards draw (`J52-0`, `J5E-0`, `MPJ-0`, `MPQ-0` and their iPhone
- * twins): `Panel`'s raised material at the board's 18/20 padding. Its head is a `PanelHeading` at
- * the shared intro step every card on this family uses.
- */
+/** Settings section card — Panel raised material. */
 const CARD = 'px-5 py-[18px] max-md:px-5 max-md:py-[18px]'
 
-/** The row under a section heading: 15 down on the boards, wrapping to a column on the phone. */
 const ROW = 'mt-[15px] flex flex-wrap items-center gap-3'
-
-/** 15/19 700 — the row's subject (`J55-0`, `MPO-0`). */
 const SUBJECT = 'text-label font-bold text-ink'
-
-/** 14/18 — the row's standing fact (`J56-0`, `MPN-0`). */
 const FACT = 'text-small text-ink-muted'
-
-/** The Alerts switches (`MPU-0`/`MPS-0`): 44 tall, radius 17, 14/18 600 — a chip, not a pill. */
+/** Alerts toggles are chips, not pills. */
 const TOGGLE = 'h-11 rounded-[17px] px-3.5 text-small'
 
 /** Account, Appearance, Connections, Alerts as a function of the model. Pure props → markup. */

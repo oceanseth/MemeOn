@@ -16,7 +16,6 @@ import type { DetailTierLadderModel, MemeDetailScreenModel } from '../hooks/useM
 import { ConfirmDialog } from '../molecules/ConfirmDialog'
 import { MemeplexPanel } from '../organisms/MemeplexPanel'
 
-/** The board's page introduction (Meme detail · Desktop, Page / Introduction). */
 const PAGE_INTRO = 'A tiny piece of the internet. See who’s holding it.'
 const SHARE_CAPTION = 'Every load counts a view; every new place it travels counts as a reshare.'
 
@@ -30,12 +29,9 @@ const detailGrid = cn(
   '4xl:grid-cols-[minmax(0,410px)_minmax(0,1fr)] 4xl:gap-[30px]',
 )
 
-/** The right column: raised cards, 18px apart, as the board stacks them. */
 const rail = 'flex min-w-0 flex-col gap-[18px]'
 
-/* Explicit placement so one DOM order reads correctly at both widths: stacked, the name and its
-   metadata come first (the board's phone order is title → hero → cards); split, the hero holds
-   both rows of the left column while the metadata sits at the top of the right one. */
+/* one DOM order for both layouts: stacked = title → hero → rail; split = hero left, meta top-right */
 const heroPlacement = '4xl:col-start-1 4xl:row-start-1 4xl:row-span-2'
 const metaPlacement = '4xl:col-start-2 4xl:row-start-1'
 const railPlacement = '4xl:col-start-2 4xl:row-start-2'
@@ -43,7 +39,6 @@ const railPlacement = '4xl:col-start-2 4xl:row-start-2'
 /** The caption under a panel heading: 13/16 on ink-muted. */
 const caption = 'mt-1.5 mb-0 text-caption text-ink-muted'
 
-/** A panel's control row: 46px pills with the board's 10px gutter, wrapping on a phone. */
 const panelRow = 'mt-4 flex flex-wrap items-center gap-2.5'
 
 /** The sources / cap-table row: a shallow well, not a bordered box. */
@@ -56,14 +51,9 @@ const rowList = 'mt-3 flex flex-col gap-2'
 
 const inlineLink = 'text-link no-underline hover:underline'
 
-/**
- * The board's hero callout under the title: 13/16 700 in the success text colour signed in
- * (`296-0` G4P-0), recoloured to the link hue on the public card (`KRK-0` KS6-0). Same element,
- * one colour swap — not two paragraphs in two places.
- */
+/** Tier line: success colour signed in, link colour on public card — one element, one swap. */
 const heroTierLine = 'm-0 text-caption font-bold'
 
-/** The 8px meter the board draws under the hero, filled with the two action hues. */
 const ladderTrack = 'mt-2 h-2 overflow-hidden rounded-[5px] bg-surface-pressed'
 const ladderFill = cn(
   'h-full rounded-[5px]',
@@ -73,9 +63,7 @@ const ladderFill = cn(
 /** Where this card sits on the rarity ladder, and the tier's own line of hype under it. */
 function TierLadder({ model, hype }: { model: DetailTierLadderModel; hype: string }) {
   return (
-    /* `MemeCard`'s meta column already gaps its children by 6, and the board leaves 18 between the
-       stats and the meter (`G4S-0` marginTop 18) — 12 more. The horizontal gutter is the card's
-       own, because this now paints inside it. */
+    /* +12px top margin: MemeCard footer already gaps 6px; design wants 18 before the meter */
     <div data-slot="tier-progression" className="mt-3">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
         <span className="text-caption font-bold text-success-text">{model.currentLabel}</span>
@@ -121,8 +109,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
     </PageContainer>
   )
 
-  /* The share-link arrival: no session, so the page is the public card — the board deletes the
-     page head there and the meme's own name becomes the H1 beside the hero. */
+  /* share-link arrival: no session — meme name is the H1, no PageHead */
   const isPublic = !!detail.signedOut
   const privateBadge = detail.private ? <Badge tone="info">🙈 private</Badge> : null
 
@@ -159,10 +146,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
         </div>
 
         <div data-slot="detail-hero" className={cn('self-start', heroPlacement)}>
-          {/* One raised surface, as both boards draw it (`296-0` G4J-0, `KRK-0` KS0-0): the same
-              MemeCard atom every grid thumb renders at size="lg", with the tier line and the tier
-              meter riding its `footer` slot so they paint inside the card's own padding instead of
-              floating under it. */}
+          {/* MemeCard lg with tier line + meter in footer so they sit inside the card padding */}
           <MemeCard
             model={detail.card}
             size="lg"
@@ -274,7 +258,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
             </Panel>
           )}
 
-          {/* the two narrow cards the board sets side by side under the market card */}
+          {/* spread sources and cap table side by side under the market card */}
           <div
             data-slot="detail-spread"
             className="flex flex-wrap items-start gap-[18px] [&>*]:min-w-[280px] [&>*]:flex-1 [&>[data-slot=panel]]:mt-0"

@@ -59,8 +59,7 @@ export const FiltersSortAndStyles: Story = {
     await userEvent.type(search, 'holo')
     await waitFor(() => expect(canvas.queryByRole('link', { name: /fresh paper/i })).not.toBeInTheDocument())
     await expect(canvas.getByRole('link', { name: /holo hit/i })).toBeInTheDocument()
-    /* the board's filter row is pressed tabs (`6XC-0`), so media type and "For sale" are buttons
-       carrying `aria-pressed`; only the eight tiers are still a Select */
+    /* Media type and For sale are pressed tabs; only tiers use a Select */
     const media = within(canvas.getByRole('group', { name: 'Filter by media type' }))
     await userEvent.click(media.getByRole('button', { name: 'Images' }))
     await pickOption(canvas.getByRole('combobox', { name: /tier/i }), 'Holo')

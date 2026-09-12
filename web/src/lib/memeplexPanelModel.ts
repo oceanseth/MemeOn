@@ -15,12 +15,7 @@ export interface MemeplexPanelModel {
   }
   linkable: readonly { id: string; title: string }[]
   pastedProps: { value: string; 'aria-label': string; onChange: ChangeEventHandler<HTMLInputElement> }
-  /**
-   * One "Link" for two inputs. A picked binder meme and a pasted URL are two ways of naming the
-   * same thing, and an owner who does both would otherwise see two bubblegum buttons in one card —
-   * the one-primary-per-card rule (`plan-buckets.md` › primary-action). The control submits
-   * whichever is set, the picker first: it is the one that cannot be mistyped.
-   */
+  /** One Link button for picker or pasted URL — picker wins when both are set. */
   linkButtonProps: { onClick: MouseEventHandler<HTMLButtonElement>; disabled: boolean }
   showLink: boolean
   notice: string | null

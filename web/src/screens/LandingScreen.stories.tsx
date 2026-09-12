@@ -133,7 +133,7 @@ export const Ready: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    // the ladder letters the board's two lines: the reshare threshold, then the rarity
+    // each tier card shows reshare threshold then rarity
     await expect(canvas.getByText('0 reshares')).toBeInTheDocument()
     await expect(canvas.getByText('1,000 reshares')).toBeInTheDocument()
     await expect(canvas.getByText('25,000 reshares')).toBeInTheDocument()
@@ -143,7 +143,7 @@ export const Ready: Story = {
     await expect(ladder.getAllByRole('listitem')).toHaveLength(TIERS.length)
     await expect(canvas.getByRole('heading', { level: 3, name: 'Shiny' })).toBeInTheDocument()
     await expect(canvas.getByRole('heading', { level: 3, name: 'How do tiers work?' })).toBeInTheDocument()
-    // the board's three steps, in order
+    // three how-it-works steps, in order
     const how = within(canvasElement.querySelector<HTMLElement>('[data-slot="landing-how"]')!)
     await expect(how.getAllByRole('listitem')).toHaveLength(3)
     await expect(how.getByRole('heading', { level: 3, name: 'Mint a moment' })).toBeInTheDocument()

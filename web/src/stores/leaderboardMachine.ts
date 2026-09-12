@@ -3,7 +3,7 @@ import type { LeaderRow } from '../lib/types'
 
 export type LeaderboardPhase = 'loading' | 'ready' | 'empty' | 'error'
 
-/** The board draws the podium plus five ranked rows before its "Show more brains" (`CMC-0`). */
+/** Ranks on screen before "Show more brains": podium plus five rows. */
 export const LEADERBOARD_PAGE_SIZE = 8
 
 export interface LeaderboardContext {

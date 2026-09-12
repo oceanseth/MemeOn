@@ -60,7 +60,7 @@ export const Ready: Story = {
     const canvas = within(canvasElement)
     const cta = canvas.getByRole('link', { name: '🧠 Add MemeOn to Discord' })
     await expect(cta).toHaveAttribute('href', discordInstallUrl)
-    // the board makes the new-tab warning visible copy rather than a screen-reader-only aside
+    // new-tab warning is visible copy, not screen-reader-only
     await expect(cta).toHaveAttribute('aria-describedby', 'discord-cta-note')
     await expect(canvas.getByText('opens Discord in a new tab')).toBeVisible()
     await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('MemeOn for Discord')

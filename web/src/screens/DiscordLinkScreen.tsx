@@ -6,25 +6,19 @@ import { Spinner } from '../atoms/Spinner'
 import { cn } from '../lib/cn'
 import type { DiscordLinkScreenModel } from '../hooks/useDiscordLinkScreen'
 
-/** The ritual's own measure: the boards centre the mark, the title and the promise (`EWQ-0` 1019). */
 const COLUMN = 'mx-auto max-w-[1020px] text-center'
 
-/** Title (`EWN-0` / `EZC-0`): the display face at 38/48, 26/32 on the phone. */
 const TITLE = cn(
   'm-0 font-display text-display font-medium tracking-display text-ink',
   'max-md:text-section-phone',
 )
 
-/** A state row (`MK2-0`/`MJY-0`/`MJU-0`): radius 23, 12/16 padding, stacking on the phone. */
 const ROW = cn(
   'flex flex-wrap items-center justify-between gap-4 rounded-control px-4 py-3',
   'max-md:flex-col max-md:items-start max-md:gap-2.5 max-md:px-3.5',
 )
 
-/**
- * The label inside a tone row (`MK1-0`/`MJX-0`): 14/18 weight 600 in the tone's own text colour —
- * including the command, which the board writes in the same colour rather than as a code chip.
- */
+/** Row label inherits tone colour — command is plain text, not a code chip. */
 const ROW_LABEL = 'm-0 text-small font-semibold [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-inherit'
 
 /**

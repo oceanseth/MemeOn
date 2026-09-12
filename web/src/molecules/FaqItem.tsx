@@ -33,7 +33,7 @@ export function FaqItem({ question, children, defaultOpen = false, className }: 
       className={cn('mb-2.5 rounded-card border-0 bg-surface-raised shadow-raised', className)}
     >
       <Collapsible.Trigger className={TRIGGER} data-slot="faq-trigger">
-        {/* the design draws no caret: the marker is the ▾ text glyph, turned over when the row opens */}
+        {/* no caret icon — ▾ glyph rotates when open */}
         <span
           aria-hidden="true"
           className="shrink-0 text-label text-ink-muted transition-transform duration-(--dur-base) group-data-[panel-open]:rotate-180 motion-reduce:transition-none"

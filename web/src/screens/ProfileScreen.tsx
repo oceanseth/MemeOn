@@ -13,18 +13,13 @@ import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
 
 const SKELETON_CARDS = ['a', 'b', 'c', 'd']
 
-/* The identity card: one raised surface under the page title, the hero avatar inline with the
-   binder line and the relationship controls pushed to its trailing edge (`69R-0` › `BPY-0`:
-   radius 28, padding 20, gap 14). The board draws that frame **138px** tall — 12 more than the
-   86px avatar plus its padding pays for — so the card carries the height as a floor above the
-   phone cut and lets a wrapped identity grow past it. */
+/* identity card: min height floor so wrapped content can grow past the avatar row */
 const IDENTITY_CARD = cn(
   'mb-5 flex flex-wrap items-center gap-y-4 gap-x-3.5 rounded-[28px] bg-surface p-5 shadow-raised',
   'max-sm:rounded-nav',
 )
 
-/* 86/32 inside the app (`BPZ-0`), 60/22 on the public boards (`K62-0`/`HPQ-0`), one step down on a
-   phone where the card only has 310px of row (`C12-0` draws 74). */
+/** App avatar 86px; public 60px; one step down on phone. */
 const HERO_AVATAR = 'size-[86px] rounded-[32px] max-sm:size-[74px] max-sm:rounded-[28px]'
 const HERO_AVATAR_PUBLIC = 'size-[60px] rounded-[22px]'
 
@@ -38,20 +33,12 @@ const FRIEND_CAPTION = 'm-0 mt-1.5 text-label font-semibold text-ink-muted'
 
 const ACTIONS = 'flex flex-wrap items-center gap-3 max-sm:w-full max-sm:[&>*]:flex-1'
 
-/** The two pressed tabs (`BQ9-0`): 46px pills, 14 apart, "you are here" carried by aria-pressed. */
 const TABS = 'mb-[18px] flex flex-wrap items-center gap-3.5 max-sm:[&>*]:flex-1'
 
-/* The Public Binder board does not box its identity. `HP9-0` › `HPP-0` (top 104, height 110) is one
-   16px-gap row: the 60px avatar inline beside the 44/55 H1 with the meta line under it — and the
-   introduction `HPM-0` (top 224) sits *below that whole row*, at the page's own left edge rather
-   than indented past the avatar. The iPhone board (`I2Z-0`, `alignItems: start`) tops the avatar
-   out against the title's first line instead of centring it against two wrapped ones. */
+/** Public binder hero: bare row, intro below the avatar row at page edge. */
 const BINDER_HERO = 'flex items-center gap-4 max-sm:items-start'
-
-/** 10px from the identity row to the intro, 40px on to the tabs (`HPM-0` 224 → `HPW-0` 284). */
 const BINDER_HERO_STACK = 'mt-5 mb-10 flex flex-col gap-2.5'
-
-/** `HPN-0`: the board's introduction is label at regular weight, not the intro PageHead subtitle. */
+/** Binder intro is label weight, not PageHead subtitle. */
 const BINDER_INTRO = 'm-0 text-label text-ink-muted'
 
 /** Profile as a function of its model. Tabs, relationship state and copy are controlled props. */
@@ -171,9 +158,7 @@ export function ProfileScreen({
     </p>
   ) : null
 
-  /* The relationship cluster travels with the identity: pinned to the trailing edge of the card on
-     the app and public-profile boards, on its own line under the intro on the Public Binder hero,
-     which is a bare row with no card to pin anything to. */
+  /* relationship actions: trailing edge on card views, own line on public binder hero */
   const identityActions = (
     <>
       {showActions && (
@@ -201,8 +186,7 @@ export function ProfileScreen({
         </div>
       )}
 
-      {/* the Public Binder board keeps its identity clean and pairs share with the join CTA at the
-          foot of the page (`HSQ-0`); the Public Profile board pins both to the identity (`K61-0`) */}
+      {/* public binder: share + join at page foot; public profile: both on identity card */}
       {showJoin && !showBinderHero && (
         <div className={ACTIONS}>
           <Button {...shareButtonProps}>{shareLabel}</Button>
@@ -286,7 +270,7 @@ export function ProfileScreen({
               <li key={card.id} className={binderCardSlotClasses}>
                 <MemeCard
                   model={card.memeCard}
-                  /* the binder's lane, on the binder's grid (`73V-0`): one footer row, shares right */
+                  /* one footer row: shares count on the right */
                   footerRight={
                     card.sharesLabel !== null ? (
                       <span className="font-semibold text-ink">{card.sharesLabel}</span>

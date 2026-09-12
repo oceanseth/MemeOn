@@ -15,7 +15,6 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = canvas.getByRole('button', { name: 'Do the thing' })
-    // the boards' pill: 46 tall, radius 23 (--radius-control)
     await expect(button.offsetHeight).toBe(46)
     await expect(getComputedStyle(button).borderRadius).toBe('23px')
   },

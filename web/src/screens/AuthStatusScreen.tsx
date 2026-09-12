@@ -6,11 +6,7 @@ import { PageContainer } from '../atoms/PageContainer'
 import { cn } from '../lib/cn'
 import type { AuthStatusScreenModel } from '../hooks/useAuthCallbackScreen'
 
-/*
- * The auth status card (`Auth / Centered status`, boards `1NV-0` / `90A-0` / `93Q-0` / `953-0`):
- * a 560px raised card at the card radius with 40/32 of padding and everything inside it centred;
- * the iPhone board narrows the padding to 26 and lets the card fill the 350px column.
- */
+/** Centred auth status card — tighter padding on phone. */
 const CARD = cn(
   'mx-auto flex w-full max-w-[560px] flex-col items-center justify-center text-center',
   'rounded-card border-0 bg-surface px-8 py-10 shadow-raised max-md:p-[26px]',
@@ -26,19 +22,17 @@ const RING = cn(
   'forced-colors:border-[CanvasText] forced-colors:border-t-[Highlight]',
 )
 
-/* Unbounded 32/40 on the title tracking, as both auth boards letter their heading. `text-balance`
-   is what the mobile board's 400px measure was for: "Returning to the MemeOn app…" breaks after
-   "to the", not after "MemeOn", while a title that fits the card stays on one line. */
+/* text-balance keeps long titles from breaking mid-phrase on narrow cards */
 const TITLE = 'mb-0 text-balance font-display text-display-phone font-medium tracking-display text-ink'
 
 const SUBTITLE = 'mt-3 mb-0 max-w-[420px] text-label text-ink-muted'
 
-/** The board's quiet way out, beside the one coloured control: a 46px underlined text link. */
+/** Quiet way out beside the primary control. */
 const TEXT_LINK = cn(
   'inline-flex h-[46px] items-center text-label font-semibold text-ink underline underline-offset-[3px]',
 )
 
-/** The same way out spelled inside a sentence (`953-0`): ultraviolet, underlined, no box. */
+/** Inline fallback link — ultraviolet, underlined, no box. */
 const INLINE_LINK = 'text-link underline underline-offset-[3px] decoration-1 font-medium'
 
 /** One centred card for every auth hand-off: the OAuth callback and the mobile deep-link forward. */
@@ -81,7 +75,7 @@ export function AuthStatusScreen({
             </div>
           </div>
         ) : (
-          /* no retry to sit beside: the prompt and the way out read as one sentence (`953-0`) */
+          /* no retry beside it: prompt and fallback read as one sentence */
           <p data-slot="auth-timeout" className="mt-4 mb-0 text-label text-ink-muted">
             {fallback.prompt && <>{fallback.prompt} </>}
             <Link data-slot="auth-web-fallback" to={fallback.home.to} className={INLINE_LINK}>

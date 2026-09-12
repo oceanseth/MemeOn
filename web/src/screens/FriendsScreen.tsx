@@ -16,20 +16,17 @@ import type { FriendsScreenModel } from '../hooks/useFriendsScreen'
 import { ConfirmDialog } from '../molecules/ConfirmDialog'
 import { GiftDialog } from '../molecules/GiftDialog'
 
-/* The board's search well: 570 wide, the 50px recessed field with the glass at its 18px gutter
-   (18 + 20 + 12 = 50 before the value). Friends · Desktop `92-0` › `ACW-0`. */
+/* search icon at 18px gutter → 50px input padding */
 const SEARCH_WELL = 'relative flex w-full min-w-0 flex-1 md:max-w-[570px]'
 const SEARCH_GLYPH = 'pointer-events-none absolute top-1/2 left-[18px] -translate-y-1/2 text-ink-muted'
 
-/* "Online now" is a recessed strip, not a card: the board sinks it into the page (`AD4-0`,
-   pressed material, radius 28, 20/16 padding) so the raised friend cards under it read as the
-   things you can act on. */
+/** Online strip is recessed so raised friend cards below read as actionable. */
 const ONLINE_STRIP = cn(
   'mb-5 flex flex-wrap items-center gap-5 rounded-[28px] bg-surface-pressed px-5 py-4 shadow-pressed',
   'max-sm:gap-3.5 max-sm:rounded-nav max-sm:px-[18px]',
 )
 
-/* The 140px title slot the board fixes so every strip lines its avatars up on the same lane. */
+/** Fixed title width so avatar lanes align across strips. */
 const ONLINE_TITLE = cn(
   'w-[140px] shrink-0 font-display text-card-title-phone font-medium tracking-card-title text-ink',
   'max-sm:w-full',
@@ -38,12 +35,7 @@ const ONLINE_TITLE = cn(
 /** The presence dot: 10px, the success ink, never the only carrier of the fact (an sr-only says it). */
 const DOT = 'inline-block size-2.5 shrink-0 rounded-full bg-success-text'
 
-/* A person: one raised surface card holding the 48px avatar, a flexible identity lane and the row's
-   own action cluster. The board fixes the desktop card at **76px** (`ADI-0`: height 76, radius 28,
-   gap 14, avatar `ADJ-0` 48) — 48 + 2×14, so the nominal 20 padding it reports is the horizontal
-   one; 20 top and bottom would draw the 88px row the frame is not. The phone card keeps the full
-   20 all round because the board says so out loud: `AJA-0` is 148 = 20 + 48 (identity `LYG-0`) + 14
-   + 46 (actions `AJI-0`) + 20. */
+/** Person row: compact on desktop, stacked actions on phone. */
 const ROW = cn(
   'flex items-center gap-3.5 rounded-[28px] bg-surface px-5 py-3.5 shadow-raised',
   'max-sm:flex-col max-sm:items-stretch max-sm:gap-3.5 max-sm:rounded-nav max-sm:py-5',
@@ -67,12 +59,7 @@ const ACTIONS = 'flex shrink-0 items-center gap-3 max-sm:w-full max-sm:gap-3'
 
 const ROW_PILL = 'max-sm:flex-1 max-sm:px-3'
 
-/**
- * The quiet exit (Remove / Decline / Cancel). The board draws it as bare text in the accent the
- * ring is drawn in, because the weight of the decision lives in the confirm dialog, not in a red
- * button on a list row. `--color-focus` is a ring colour, though — it reads Lc −53 on the dark
- * surface — so the text takes `--color-link`, which is the same idea inside the contrast floor.
- */
+/** Quiet exit as link-coloured text — confirm dialog carries the weight, not a red row button. */
 const TEXT_ACTION = cn(
   'shrink-0 cursor-pointer rounded-control border-0 bg-transparent px-2.5 py-3.5',
   'text-small font-semibold text-link',
@@ -81,7 +68,7 @@ const TEXT_ACTION = cn(
   'pointer-coarse:min-h-11',
 )
 
-/** "Pending" is a state, not a control: the board's pressed pill with no press behind it. */
+/** Pending is a pressed pill with no action behind it. */
 const PENDING_PILL = cn(
   'inline-flex h-[46px] shrink-0 items-center justify-center rounded-control px-[18px]',
   'bg-surface-pressed text-label font-semibold text-ink-muted shadow-pressed',
@@ -113,7 +100,6 @@ function PersonRow({
     <div className={ROW} data-slot="person-row">
       <div className="flex min-w-0 flex-1 items-center gap-3.5">
         <Link {...profileLinkProps} className={IDENTITY}>
-          {/* 48 on both boards — the phone identity row `LYG-0` is 48 tall because `AJB-0` is */}
           <Avatar name={name} src={avatarSrc} size="md" className="size-12" loading="lazy" />
           <span className="min-w-0 flex-1">
             <span className={NAME}>{name}</span>

@@ -1,15 +1,9 @@
 import type { HTMLAttributes } from 'react'
 import { cn } from '../lib/cn'
 
-/**
- * `neutral` is the quiet count/label pill, `action` the one the design gives "For sale" (the
- * bubblegum/sky pill on a card), and the four status tones reuse the same surface/text pairs a
- * `Notice` wears, one size down.
- */
 export type BadgeTone = 'neutral' | 'action' | 'success' | 'warning' | 'error' | 'info'
 
 const BASE = cn(
-  // pill: radius 12, padding 4/9, Onest 12/16 700 — components.md › tier chip geometry
   'inline-block whitespace-nowrap rounded-chip border-0 px-[9px] py-1 text-micro font-bold',
 )
 
@@ -23,12 +17,8 @@ const TONE_CLASSES: Record<BadgeTone, string> = {
 }
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  /** @default 'neutral' */
   tone?: BadgeTone
-  /**
-   * The relationship/status pill ("Friends", "You"): the same shape in the info pair, so a
-   * standing fact never reads as the card's action. A `tone` passed explicitly still wins.
-   */
+  /** Relationship/status pill; maps to info tone when true. */
   state?: boolean
 }
 
