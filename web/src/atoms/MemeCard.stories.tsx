@@ -102,6 +102,7 @@ export const Paper: Story = {
     )
     // the art is named by the card and the link, never a third time by itself
     await expect(within(card).queryByRole('img')).toBeNull()
+    await expect(card.querySelector('[data-slot="meme-art"]')).toHaveStyle({ objectFit: 'contain' })
     await expect(card).toHaveTextContent('reshares')
     // the chip says the tier in product language, and nothing else on the card repeats it
     await expect(within(card).getByText('Paper')).toBeVisible()
@@ -189,8 +190,8 @@ export const Focused: Story = {
 }
 
 /**
- * The detail-page hero, the one `size="lg"` caller: contained art so a wide joke letterboxes
- * instead of losing its caption, a 27/34 wrapping title, roomier meta, no hover lift.
+ * The detail-page hero, the one `size="lg"` caller: the same square contain plate as the grid,
+ * a 27/34 wrapping title, roomier meta, no hover lift.
  */
 export const Large: Story = {
   args: { model: buildMemeCardModel(longTitleMeme), size: 'lg' },
@@ -201,6 +202,7 @@ export const Large: Story = {
     await expect(card.dataset.size).toBe('lg')
     const title = within(card).getByText(longTitleMeme.title)
     // the hero title wraps rather than ellipsizing: nothing about the meme is cropped away
+    await expect(card.querySelector('[data-slot="meme-art"]')).toHaveStyle({ objectFit: 'contain' })
     await expect(title).toHaveStyle({ whiteSpace: 'normal' })
     // the hero title step off the detail board (296-0 / G4J-0 / G4O-0)
     await expect(title).toHaveStyle({ fontSize: '27px', lineHeight: '34px' })
@@ -208,8 +210,8 @@ export const Large: Story = {
 }
 
 /**
- * The detail hero as `MemeDetailScreen` renders it: contained art, the 13px tier chip, the listing
- * state in the footer's right slot. Same atom, one prop apart from a grid thumb.
+ * The detail hero as `MemeDetailScreen` renders it: square contained art, the 13px tier chip, the
+ * listing state in the footer's right slot. Same atom, one prop apart from a grid thumb.
  */
 export const Hero: Story = {
   args: { model: buildMemeCardModel(listedHolo), size: 'lg' },
@@ -245,6 +247,7 @@ export const AllTiers: Story = {
           width: 'min(1180px, calc(100vw - 32px))',
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))',
+          alignItems: 'start',
           gap: 20,
         }}
       >

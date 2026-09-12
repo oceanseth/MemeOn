@@ -17,14 +17,14 @@ const SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6'] as const
 
 /* ── The shared binder-grid pieces ─────────────────────────────────────────────────────────────
    `ProfileScreen`'s binder tab (the Public Binder boards `HP9-0` / `I2F-0`) is the same grid, so the
-   constants below are the contract WP3c mirrors: a 356-wide three-up track at the 1108 column, a
-   166-wide two-up under 561px, and the skip-render slot. Both screens put their shares count in the
-   card's own footer lane (`MemeCard`'s `footerRight`), which is where the board draws it. Exported
-   for that reason — nothing else imports them. */
+   constants below are the contract WP3c mirrors: the same 230px track as the market (4-up at the
+   1108 column), a 166-wide two-up under 561px, and the skip-render slot. Both screens put their
+   shares count in the card's own footer lane (`MemeCard`'s `footerRight`), which is where the board
+   draws it. Exported for that reason — nothing else imports them. */
 
-/** 3 × 356 + 2 × 20 = 1108 at the desktop column; 2 × 166 + 18 = 350 at the phone margin. */
+/** Same `minmax(230px, 1fr)` the production `.card-grid` used; 2 × 166 + 18 = 350 at the phone margin. */
 export const binderGridClasses = cn(
-  'm-0 grid list-none grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-5 p-0',
+  'm-0 grid list-none items-start grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5 p-0',
   'max-sm:grid-cols-2 max-sm:gap-[18px]',
 )
 
@@ -34,7 +34,7 @@ export const binderGridClasses = cn(
  * grid track.
  */
 export const binderCardSlotClasses = cn(
-  '[content-visibility:auto] [contain-intrinsic-size:auto_380px]',
+  '[content-visibility:auto] [contain-intrinsic-size:auto_360px]',
   'pointer-events-none p-[30px] [margin:-30px] [&>*]:pointer-events-auto',
   'max-sm:p-5 max-sm:[margin:-20px]',
 )

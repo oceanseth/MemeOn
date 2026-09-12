@@ -162,8 +162,8 @@ function ModeChip({
 const PREVIEW_CARD = 'group relative isolate rounded-card bg-surface p-2 shadow-raised @container'
 const PREVIEW_INNER = 'relative flex h-full flex-col'
 const PREVIEW_FRAME = 'foil-frame foil-media relative rounded-field bg-surface-pressed'
-/* the board's 468 × 250 plate (`G1Y-0`) — the crop the marketplace grid will show */
-const PREVIEW_ART = 'block aspect-[468/250] w-full bg-surface-pressed object-cover'
+/* same plate the marketplace card uses: a square, the whole meme contained */
+const PREVIEW_ART = 'block aspect-square w-full bg-surface-pressed object-contain'
 const PREVIEW_META = 'flex flex-col px-1.5 pt-3.5 pb-1.5'
 /**
  * The preview card's own title: 26/32 on the desktop board (`G22-0`) and the 19/24 the iPhone board
@@ -178,7 +178,7 @@ const PREVIEW_TITLE = cn(
 const PREVIEW_TIER_NOTE = 'mt-1.5 text-[13px]/[16px] font-bold text-ink-muted'
 /** The plate the card will land on, at the card's own frame geometry. */
 const PREVIEW_PLACEHOLDER = cn(
-  'flex aspect-[468/250] items-center justify-center rounded-card bg-surface-pressed shadow-pressed',
+  'flex aspect-square items-center justify-center rounded-card bg-surface-pressed shadow-pressed',
   'text-small font-medium text-ink-muted',
 )
 const PREVIEW_SUB = cn(

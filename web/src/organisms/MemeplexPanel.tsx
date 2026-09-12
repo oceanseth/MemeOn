@@ -44,7 +44,7 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
         /* tighter tracks than the market grid; the ≤560 rule still takes it 2-up */
         <div
           data-slot="memeplex-grid"
-          className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3 max-sm:grid-cols-2"
+          className="mt-3 grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] items-start gap-3 max-sm:grid-cols-2"
         >
           {model.family.map((card) => (
             <MemeCard key={card.id} model={card} />
