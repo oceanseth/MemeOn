@@ -39,6 +39,8 @@ export interface DetailSignedOutModel {
   errorProps: Pick<HTMLAttributes<HTMLParagraphElement>, 'role'>
 }
 export interface DetailTierLadderModel {
+  /** the meter's left label — the tier this card is wearing right now */
+  currentLabel: string
   nextLabel: string
   fillStyle: { width: string }
   meterProps: {
@@ -58,6 +60,7 @@ export interface DetailListingModel {
   showBuy: boolean
   showUnlist: boolean
   buyLabel: string
+  /** the card's caption: what the viewer can spend, and the invitation to pick an amount */
   balanceLabel: string | null
   disabledReason: string | null
   buyInputProps: { value: number; min: number; max: number; step: 1; onChange: ChangeEventHandler<HTMLInputElement> }
@@ -81,6 +84,14 @@ export interface MemeDetailModel {
   private: boolean
   tierKey: string
   tierColor: string
+  /** the tier's product name on its own — Paper … Shiny */
+  tierName: string
+  /**
+   * The hero card's own callout, directly under the title on every board that draws this page
+   * (`296-0` G4P-0 signed in, `KRK-0` KS6-0 on the public card): "Prismatic · 5,800 reshares".
+   * One string for both, because the two boards differ only in the colour the screen paints it.
+   */
+  tierLine: string
   tierLabel: string
   tierHype: string
   tierLadder: DetailTierLadderModel
@@ -119,6 +130,8 @@ export interface MemeDetailModel {
   sources: readonly DetailSourceModel[]
   plex: MemeplexPanelModel
   capTableTitle: string
+  /** The board's second cap-table line: who is currently selling, and how much (`G68-0`/`KTS-0`). */
+  capTableNote: string | null
   capTable: readonly CapRow[]
   deleteDialog: ConfirmDialogModel
   buyDialog: ConfirmDialogModel
@@ -146,6 +159,7 @@ export function buildTierLadderModel(tierKey: string, views: number): DetailTier
   const next = TIERS[index + 1]
   if (!next) {
     return {
+      currentLabel: `${tier.name} is spreading`,
       nextLabel: `Top of the ladder — ${tier.name} is as rare as it gets ✨`,
       fillStyle: { width: '100%' },
       meterProps: {
@@ -160,6 +174,7 @@ export function buildTierLadderModel(tierKey: string, views: number): DetailTier
   const remaining = Math.max(0, next.minReshares - views)
   const nextLabel = `${remaining.toLocaleString()} more views → ${next.name}`
   return {
+    currentLabel: `${tier.name} is spreading`,
     nextLabel,
     fillStyle: { width: `${progress}%` },
     meterProps: {
@@ -306,10 +321,10 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
 
   const listing: DetailListingModel | null = meme.listing && meme.listing.shares > 0 ? {
     cardLabel: `${meme.listing.shares} sh @ 🧠${meme.listing.pricePerShare}`,
-    saleLabel: `On sale: ${meme.listing.shares} shares @ 🧠${meme.listing.pricePerShare}/share`,
+    saleLabel: `${plural(meme.listing.shares, 'share')} up for grabs · 🧠${meme.listing.pricePerShare} each`,
     sharesLabel: `${meme.listing.shares} shares`, priceLabel: `🧠${meme.listing.pricePerShare}/share`, showBuy: !!user && !isSeller, showUnlist: !!isSeller,
     buyLabel: 'shares to buy',
-    balanceLabel: user ? `🧠${coins.toLocaleString()} available` : null,
+    balanceLabel: user ? `You’ve got 🧠${coins.toLocaleString()}. Pick how much of the joke you want.` : null,
     disabledReason: buyReason,
     buyInputProps: { value: buyShares, min: 1, max: meme.listing.shares, step: 1, onChange: buySharesChange },
     buyButtonLabel: phase === 'buying' ? 'Buying…' : buyShares < 1 ? 'Buy shares' : `Buy for 🧠${buyTotal}`,
@@ -328,9 +343,22 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
   if (myShares === 100) actions.push({ label: meme.private ? '🌐 Make public' : '🙈 Make private', buttonProps: { onClick: () => void act(() => post(`/api/memes/${meme.id}/visibility`, { private: !meme.private }), meme.private ? 'Back on the marketplace 🌐' : 'Hidden from the marketplace 🙈 (still in your binder)') } })
   if (myShares === 100 && meme.private) actions.push({ label: '🗑️ Delete forever', variant: 'danger', buttonProps: { onClick: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: true }) } })
 
+  /* "12 of CyberSeth's shares are listed" — the sentence the board closes its cap table with
+     (`296-0` G68-0, `KRK-0` KTS-0). The seller is a holder like any other, so it speaks through the
+     same resolver the rows use. */
+  const capTableNote: string | null = meme.listing && meme.listing.shares > 0
+    ? `${plural(meme.listing.shares, 'share')} of ${isSeller
+        ? 'yours'
+        : `${holderLabel(meme.listing.sellerId, user?.sub ?? null, context.holderNames, holderNameCache.current)}’s`
+      } ${meme.listing.shares === 1 ? 'is' : 'are'} listed`
+    : null
+
   const signedOut: DetailSignedOutModel | null = user ? null : {
     title: 'Own a piece of this',
-    body: 'Log in with Masky to buy shares, remix it, or mint your own.',
+    /* the board leads with the offer when there is one, then the invitation (public-share KSN-0) */
+    body: meme.listing && meme.listing.shares > 0
+      ? `${plural(meme.listing.shares, 'share')} listed at 🧠${meme.listing.pricePerShare} each. Log in with Masky to buy, remix, or mint your own.`
+      : 'Log in with Masky to buy, remix, or mint your own.',
     loginLabel: context.loggingIn ? 'Redirecting…' : '🎭 Log in with Masky',
     loginButtonProps: {
       onClick: () => { send({ type: 'LOGIN_START' }); void beginMaskyLogin().catch((error) => send({ type: 'LOGIN_FAIL', err: error instanceof Error ? error.message : 'login failed' })) },
@@ -357,7 +385,9 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
   return {
     phase, showNotFound, showLoading, notFound, loadingLabel,
     detail: {
-      id: meme.id, title: meme.title, private: !!meme.private, tierKey: meme.tier.key, tierColor: meme.tier.color, tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`, tierHype: meme.tier.hype,
+      id: meme.id, title: meme.title, private: !!meme.private, tierKey: meme.tier.key, tierColor: meme.tier.color, tierName: meme.tier.name,
+      tierLine: `${meme.tier.name} · ${reshareCount.toLocaleString()} ${pluralWord(reshareCount, 'reshare')}`,
+      tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`, tierHype: meme.tier.hype,
       tierLadder: buildTierLadderModel(meme.tier.key, views),
       card: heroCard,
       creatorLinkProps: { to: `/u/${encodeURIComponent(meme.creatorId)}` }, creatorName: meme.creatorName, ownerLinkProps: { to: `/u/${encodeURIComponent(meme.ownerId)}` }, ownerName: meme.ownerName,
@@ -387,7 +417,8 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
       },
       sources: (context.stats?.sources ?? []).map((source) => ({ id: source.source, label: source.source, viewsLabel: source.views.toLocaleString(), linkProps: source.url ? { href: source.url, target: '_blank', rel: 'noreferrer' } : undefined })),
       plex: buildMemeplexPanelModel({ meme, plex: context.plex, canEdit: !!user && (meme.creatorId === user.sub || myShares > 0), binder: context.plexBinder, pick: context.plexPick, pasted: context.plexPasted, notice: context.plexMsg, error: context.plexErr, onPickChange: (pick) => send({ type: 'SET_PLEX_PICK', pick }), onPastedChange: (pasted) => send({ type: 'SET_PLEX_PASTED', pasted }), onAdd: onPlexAdd }),
-      capTableTitle: 'Who holds this card',
+      capTableTitle: 'Who holds this card · 100 shares',
+      capTableNote,
       capTable: context.positions.map((position) => ({ userId: position.userId, sharesLabel: `${position.shares}/100`, label: holderLabel(position.userId, user?.sub ?? null, context.holderNames, holderNameCache.current) })),
       deleteDialog: buildConfirmDialogModel({ open: context.confirmingDelete, id: 'delete-meme', danger: true, busy: context.deleting || phase === 'deleting', title: 'Delete this meme forever?', message: createElement(Fragment, null, createElement('strong', null, `"${meme.title}"`), ' will be permanently removed — its card, share link, view history, and memeplex links all go with it. This cannot be undone.'), confirmLabel: 'Delete it forever', onCancel: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: false }), onConfirm: () => { const live = actor.getSnapshot().context.meme; if (!live) return; send({ type: 'DELETE' }); void apiFetch(`/api/memes/${live.id}`, { method: 'DELETE' }).then(() => { send({ type: 'DONE' }); navigate('/binder') }).catch((error) => send({ type: 'FAIL', err: error instanceof Error ? error.message : 'delete failed' })) } }),
       buyDialog: buildConfirmDialogModel({ open: context.confirmingBuy, id: 'buy-shares', busy: phase === 'buying', title: `Spend 🧠${buyTotal}?`, message: createElement(Fragment, null, `${buyShares} ${buyShares === 1 ? 'share' : 'shares'} of `, createElement('strong', null, `"${meme.title}"`), ` at 🧠${pricePerShare}/share. You hold 🧠${coins.toLocaleString()}, and purchases are final.`), confirmLabel: `Buy ${buyShares} ${buyShares === 1 ? 'share' : 'shares'}`, onCancel: () => send({ type: 'SET_CONFIRMING_BUY', confirming: false }), onConfirm: runBuy }),
