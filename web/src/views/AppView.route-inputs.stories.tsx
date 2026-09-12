@@ -141,8 +141,9 @@ export const RemixRouteUsesCurrentSource: Story = {
         },
       }),
     );
+    // the mint desk is a lazy chunk: on a cold shard its first load outruns the 1 s default
     await expect(
-      await canvas.findByRole("img", { name: "source B" }),
+      await canvas.findByRole("img", { name: "source B" }, { timeout: 8000 }),
     ).toBeInTheDocument();
 
     loaded.resolveA(
@@ -223,8 +224,9 @@ export const PendingVideoStaysWithItsRemixRoute: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+    // the mint desk is a lazy chunk: on a cold shard its first load outruns the 1 s default
     await expect(
-      await canvas.findByRole("img", { name: "source B" }),
+      await canvas.findByRole("img", { name: "source B" }, { timeout: 8000 }),
     ).toBeInTheDocument();
     await expect(
       canvas.queryByRole("img", { name: /^Preview of/ }),
