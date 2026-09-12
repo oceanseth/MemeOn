@@ -141,7 +141,9 @@ export function DialogFrame({
     <Dialog.Title
       id={titleId ?? `${id}-title`}
       render={<h3 />}
-      className="m-0 mb-1.5 text-title"
+      /* 23/29 display on `--tracking-title`, as every dialog heading on the Feedback board is
+         drawn (`HVL-0` Gift shares, `HVU-0` Remove friend) */
+      className="m-0 mb-1.5 text-title tracking-title"
       data-slot="dialog-title"
     >
       {title}
@@ -186,7 +188,10 @@ export function DialogFrame({
               <Dialog.Description
                 id={descriptionId ?? `${id}-description`}
                 render={descriptionAs === 'div' ? <div /> : <p />}
-                className={cn('m-0 text-body text-ink-muted', descriptionClassName)}
+                /* 15/19 on ink-muted: every description on the Feedback board is the label step,
+                   not body — `HVM-0` (Gift shares), `HVV-0` (Remove friend) and the five state
+                   specimens beside them all measure 15px/19px. */
+                className={cn('m-0 text-label text-ink-muted', descriptionClassName)}
                 data-slot="dialog-description"
               >
                 {description}

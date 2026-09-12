@@ -54,6 +54,74 @@ export const ErrorTone: Story = {
   },
 }
 
+/**
+ * The five state cards the Feedback board draws (`HSU-0`): no results, retry, starter pack opened,
+ * unread activity, not enough braincells. Same card, one tone apart — the tint and the heading
+ * colour carry the state, and each one keeps at most a single primary.
+ */
+export const Tones: Story = {
+  render: () => (
+    <div style={{ display: 'grid', gap: 16, maxWidth: 542 }}>
+      <EmptyState>
+        <h3>No memes match.</h3>
+        <p>Be the change — mint one!</p>
+        <EmptyActions>
+          <Button variant="primary">Mint a meme</Button>
+          <Button>Clear filters</Button>
+        </EmptyActions>
+      </EmptyState>
+      <EmptyState tone="error">
+        <h3>Couldn't reach the market.</h3>
+        <p>Your filters are still set.</p>
+        <EmptyActions>
+          <Button>Try again</Button>
+        </EmptyActions>
+      </EmptyState>
+      <EmptyState tone="ok">
+        <h3>🎁 Starter pack opened!</h3>
+        <p>Your first cards are waiting in My Binder.</p>
+        <EmptyActions>
+          <Button variant="primary">Open My Binder</Button>
+        </EmptyActions>
+      </EmptyState>
+      <EmptyState tone="info">
+        <h3>🔔 Your corner is moving</h3>
+        <p>Your card reached Holo · 2 minutes ago.</p>
+        <EmptyActions>
+          <Button>See what happened</Button>
+        </EmptyActions>
+      </EmptyState>
+      <EmptyState tone="warning">
+        <h3>Not enough braincells</h3>
+        <p>Earn more through quests, or choose fewer shares.</p>
+        <EmptyActions>
+          <Button>Earn braincells</Button>
+        </EmptyActions>
+      </EmptyState>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const cards = canvasElement.querySelectorAll('[data-slot="empty-state"]')
+    await expect(cards).toHaveLength(5)
+    await expect([...cards].map((card) => (card as HTMLElement).dataset.tone)).toEqual([
+      'neutral',
+      'error',
+      'ok',
+      'info',
+      'warning',
+    ])
+    // the error card keeps the live-region contract the tone implies
+    await expect(canvas.getByRole('alert')).toHaveAttribute('data-tone', 'error')
+    // one bubblegum per card, never two
+    for (const card of cards) {
+      await expect(card.querySelectorAll('.bg-action').length).toBeLessThanOrEqual(1)
+    }
+  },
+}
+
+export const TonesDark: Story = { ...Tones, globals: { theme: 'dark' } }
+
 export const PageStateExample: Story = {
   render: () => <PageState>Loading…</PageState>,
 }
