@@ -3,7 +3,7 @@ import { Fragment, createElement, useCallback, useRef, type ChangeEventHandler, 
 import { apiFetch, post } from '../lib/api'
 import { buildConfirmDialogModel, type ConfirmDialogModel } from '../lib/confirmDialogModel'
 import type { FriendEntry, Meme, Trade } from '../lib/types'
-import { buildTradeCardModel, tradeSideSentence, type TradeCardModel, type TradeAction, type TradeMemeInfo } from '../molecules/tradeCardModel'
+import { buildTradeCardModel, tradeSideSentence, type TradeCardModel, type TradeAction, type TradeMemeInfo } from '../lib/tradeCardModel'
 import { tradeProposalPayload, tradesMachine, type TradesPhase } from '../stores/tradesMachine'
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'

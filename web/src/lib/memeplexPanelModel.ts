@@ -1,6 +1,6 @@
 import type { ChangeEventHandler, HTMLAttributes, MouseEventHandler } from 'react'
-import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
-import type { Meme, Memeplex } from '../lib/types'
+import { buildMemeCardModel, type MemeCardModel } from './memeCardModel'
+import type { Meme, Memeplex } from './types'
 
 export interface MemeplexPanelModel {
   show: boolean

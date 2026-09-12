@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, within } from 'storybook/test'
 import { proposedTrade } from '../../.storybook/fixtures'
 import { TradeCard } from './TradeCard'
-import { buildTradeCardModel, type TradeMemeInfoMap } from './tradeCardModel'
+import { buildTradeCardModel, type TradeMemeInfoMap } from '../lib/tradeCardModel'
 
 const onRespond = fn()
 

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { MouseEvent } from 'react'
-import { applyCardVisibility, cardMediaRef, toggleCardMedia } from './cardMediaStore'
+import { applyCardVisibility, cardMediaRef, toggleCardMedia } from './cardMedia'
 
 /**
  * The viewport observer replaced `autoPlay` on the card, so on-screen playback is behaviour no

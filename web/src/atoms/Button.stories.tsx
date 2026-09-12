@@ -78,7 +78,7 @@ export const Busy: Story = {
 
 /**
  * Every real call site spreads a legacy `{ 'aria-busy': boolean }` prop bag onto `<Button>`
- * instead of passing `busy` (see hooks/*Screen.ts, molecules/tradeCardModel.ts). The atom must
+ * instead of passing `busy` (see hooks/*Screen.ts, lib/tradeCardModel.ts). The atom must
  * honour that spread form too — spinner, `aria-busy` attribute, and accessible name intact.
  */
 export const BusyViaAriaBusyProp: Story = {

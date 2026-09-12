@@ -2,9 +2,10 @@ import type { MouseEvent, RefCallback } from 'react'
 
 /**
  * The one genuinely imperative piece of a meme card: an IntersectionObserver, `video.play()`
- * and the paused foil ring. It lives here rather than in lib/memeCardModel.ts so that builder
- * stays a pure props factory — the model hands the card the *stable* handles exported below
- * and this module owns the observer and the per-card play intent.
+ * and the paused foil ring. It lives beside `memeCardModel.ts` rather than inside it so that
+ * builder stays a pure props factory — the model hands the card the *stable* handles exported
+ * below and this module owns the observer and the per-card play intent. Not a store: nothing here
+ * is observable, and no React tree reads it.
  *
  * Playback state is not mirrored into React: the media element is the source of truth for
  * "is this playing", exactly as `<dialog open>` is for the modals. The card's own button is

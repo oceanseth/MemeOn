@@ -7,7 +7,7 @@ import { FilterBar } from '../atoms/PageHead'
 import { Panel, PanelHeading } from '../atoms/Panel'
 import { Select, type SelectOption } from '../atoms/Select'
 import { cn } from '../lib/cn'
-import type { MemeplexPanelModel } from './memeplexPanelModel'
+import type { MemeplexPanelModel } from '../lib/memeplexPanelModel'
 
 const PICK_PLACEHOLDER: SelectOption = { value: '', label: 'Link from your binder…' }
 

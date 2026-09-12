@@ -87,7 +87,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 /**
  * Busy always wins over the `:disabled` dimming, matching the legacy `[aria-busy]` override.
  * Every real call site's prop bag is typed and spread as `{ 'aria-busy': boolean, ... }` rather
- * than `busy` (see hooks/*Screen.ts, molecules/tradeCardModel.ts), so a spread `aria-busy`
+ * than `busy` (see hooks/*Screen.ts, lib/tradeCardModel.ts), so a spread `aria-busy`
  * (boolean or the string `'true'`/`'false'`) is honoured as a fallback when `busy` isn't passed
  * explicitly — `busy` still wins when both are present.
  */

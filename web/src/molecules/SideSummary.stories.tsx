@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { SideSummary } from './SideSummary'
-import type { TradeSideSummaryModel } from './tradeCardModel'
+import type { TradeSideSummaryModel } from '../lib/tradeCardModel'
 
 const empty: TradeSideSummaryModel = { ownerLabel: 'You give', empty: true, memeLines: [], coinsLabel: null }
 const meta = { title: 'Molecules/SideSummary', component: SideSummary, args: { model: empty } } satisfies Meta<typeof SideSummary>

@@ -2,7 +2,7 @@ import { Badge } from '../atoms/Badge'
 import { Button } from '../atoms/Button'
 import { cn } from '../lib/cn'
 import { SideSummary } from './SideSummary'
-import type { TradeCardModel } from './tradeCardModel'
+import type { TradeCardModel } from '../lib/tradeCardModel'
 
 /** The proposal card the Trade board draws (`JXT-0`): a raised surface card, 20px of padding. */
 const CARD = 'rounded-card border-0 bg-surface p-5 shadow-raised'
