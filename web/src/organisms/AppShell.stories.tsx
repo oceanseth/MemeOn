@@ -92,7 +92,7 @@ type Story = StoryObj<typeof meta>
 /** The public frame: wordmark, the theme button, the page, the footer. */
 export const LoggedOut: Story = {
   args: {
-    headerEnd: <ThemeControl model={{ value: 'auto', onChange: fn(), variant: 'button' }} className="2xl:size-10 2xl:rounded-[15px] 2xl:text-[18px]" />,
+    headerEnd: <ThemeControl model={{ value: 'auto', onChange: fn(), variant: 'button' }} className="2xl:size-10 2xl:rounded-avatar 2xl:text-[18px]" />,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)

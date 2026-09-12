@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Avatar } from '../atoms/Avatar'
 import { Icon } from '../atoms/Icon'
 import { cn } from '../lib/cn'
+import { FOCUS_RING as FOCUS } from '../lib/focus'
 import type { AppShellScreenModel } from '../hooks/useAppShellScreen'
 import { AlertsBell } from '../molecules/AlertsBell'
 import { AvatarMenu } from '../molecules/AvatarMenu'
@@ -10,7 +11,6 @@ import { QuestBar } from '../molecules/QuestBar'
 import { ThemeControl } from '../molecules/ThemeControl'
 import {
   AppShell,
-  FOCUS,
   NAV_ROW,
   PRIMARY_PILL,
   TAB_ITEM,
@@ -39,7 +39,7 @@ const GEAR_LINK = cn(
 )
 
 const LOGOUT_LINK = cn(
-  '-ml-3 inline-flex h-9 cursor-pointer items-center rounded-[18px] border-0 bg-transparent px-3',
+  '-ml-3 inline-flex h-9 cursor-pointer items-center rounded-field border-0 bg-transparent px-3',
   'text-small font-medium text-ink-muted',
   '[transition:color_var(--dur-base)_ease] motion-reduce:transition-none',
   'hover:text-ink',
@@ -120,7 +120,7 @@ export function AppShellScreen({
       {/* the sidebar carries the segmented control at 900+; the header button is the phone's and the public pages' */}
       <ThemeControl
         model={{ ...theme, variant: 'button' }}
-        className={showNav ? '2xl:hidden' : '2xl:size-10 2xl:rounded-[15px] 2xl:text-[18px]'}
+        className={showNav ? '2xl:hidden' : '2xl:size-10 2xl:rounded-avatar 2xl:text-[18px]'}
       />
       {showToolbar && coins && (
         <span className={COINS} data-slot="coins">

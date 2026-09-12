@@ -1,6 +1,7 @@
 import { Toggle } from '@base-ui/react/toggle'
 import { ToggleGroup } from '@base-ui/react/toggle-group'
 import { cn } from '../lib/cn'
+import { FOCUS_RING as FOCUS } from '../lib/focus'
 import type { ThemePreference } from '../stores/themeStore'
 
 /**
@@ -24,18 +25,18 @@ const optionFor = (value: ThemePreference) => OPTIONS.find((o) => o.value === va
 const nextAfter = (value: ThemePreference) =>
   OPTIONS[(OPTIONS.findIndex((o) => o.value === value) + 1) % OPTIONS.length]!
 
-const FOCUS = cn(
-  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
-  'contrast-more:focus-visible:outline-4',
-  'forced-colors:focus-visible:outline-[Highlight]',
-)
-
 /** components.md › Theme changer: 184×40, padding 3, gap 2, radius 20, a pressed well. */
 const WELL = 'inline-flex h-10 w-[184px] shrink-0 items-center gap-0.5 rounded-[20px] bg-surface-pressed p-[3px] shadow-pressed'
 
-/** Three equal segments, 34 tall, radius 17; the current one is raised and bold. */
+/**
+ * Three equal segments, 34 tall, radius 17; the current one is raised and bold. On a coarse pointer
+ * each takes the header button's transparent halo — but only vertically (34 + 2×5 = 44), because a
+ * horizontal one would overlap its neighbour across the well's 2px gap and steal its taps. The
+ * segment is already ~58 wide, so the target clears 44 in both axes and the well stays 40.
+ */
 const SEGMENT = cn(
-  'inline-flex h-[34px] min-w-0 flex-1 cursor-pointer items-center justify-center rounded-[17px] border-0 bg-transparent px-1',
+  'relative inline-flex h-[34px] min-w-0 flex-1 cursor-pointer items-center justify-center rounded-[17px] border-0 bg-transparent px-1',
+  'pointer-coarse:before:absolute pointer-coarse:before:inset-x-0 pointer-coarse:before:-inset-y-[5px] pointer-coarse:before:content-[""]',
   'text-micro font-semibold whitespace-nowrap text-ink-muted',
   '[transition:background_var(--dur-base)_ease,color_var(--dur-base)_ease,box-shadow_var(--dur-base)_ease]',
   'motion-reduce:transition-none',

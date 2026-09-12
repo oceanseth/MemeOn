@@ -2,6 +2,7 @@ import { Menu } from '@base-ui/react/menu'
 import { Link } from 'react-router-dom'
 import { Avatar } from '../atoms/Avatar'
 import { cn } from '../lib/cn'
+import { FOCUS_RING as FOCUS } from '../lib/focus'
 
 export type AvatarMenuItemModel =
   | { key: string; label: string; to: string }
@@ -30,12 +31,6 @@ const anchorContainer = {
   },
 }
 
-const FOCUS = cn(
-  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
-  'contrast-more:focus-visible:outline-4',
-  'forced-colors:focus-visible:outline-[Highlight]',
-)
-
 /** The 34px header avatar (`atoms/Avatar` size `header`), with the coarse-pointer halo to 44. */
 const TRIGGER = cn(
   'relative inline-flex shrink-0 cursor-pointer rounded-[13px] border-0 bg-transparent p-0',
@@ -49,11 +44,18 @@ const POPUP = cn(
   FOCUS,
 )
 
+/**
+ * A row keeps the app's ring like every other control; the offset is negative so the 3px lands
+ * inside the popup's own padding instead of overpainting its edge. The highlighted background stays
+ * — it is what a pointer user sees — but it is not the accessible focus indicator on its own.
+ */
 const ITEM = cn(
-  'flex min-h-11 w-full cursor-pointer items-center rounded-[18px] border-0 bg-transparent px-3',
+  'flex min-h-11 w-full cursor-pointer items-center rounded-field border-0 bg-transparent px-3',
   'text-label font-medium text-ink no-underline select-none',
   'data-highlighted:bg-surface-raised',
-  'focus-visible:outline-none',
+  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:-outline-offset-2',
+  'contrast-more:focus-visible:outline-4',
+  'forced-colors:focus-visible:outline-[Highlight]',
 )
 
 /**

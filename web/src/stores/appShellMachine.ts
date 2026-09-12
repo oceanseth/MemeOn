@@ -14,7 +14,6 @@ export interface AppShellContext {
   alertsError: boolean
   /** Alerts that were unread when the popover opened: reading them must not erase the cue. */
   wasUnread: string[]
-  questExpanded: boolean
   questDismissed: boolean
 }
 
@@ -31,7 +30,6 @@ export type AppShellEvent =
   | { type: 'CLAIM_DONE'; memes: Meme[]; reward: number }
   | { type: 'CLAIM_FAIL' }
   | { type: 'DISMISS_PACK' }
-  | { type: 'TOGGLE_QUESTS' }
   | { type: 'DISMISS_QUESTS' }
 
 const EMPTY: AppShellContext = {
@@ -44,7 +42,6 @@ const EMPTY: AppShellContext = {
   alertsOpen: false,
   alertsError: false,
   wasUnread: [],
-  questExpanded: false,
   questDismissed: false,
 }
 
@@ -133,11 +130,8 @@ export const appShellMachine = setup({
           }),
         },
         DISMISS_PACK: { actions: assign({ packMemes: null }) },
-        TOGGLE_QUESTS: {
-          actions: assign({ questExpanded: ({ context }) => !context.questExpanded }),
-        },
         DISMISS_QUESTS: {
-          actions: assign({ questDismissed: true, questExpanded: false }),
+          actions: assign({ questDismissed: true }),
         },
       },
     },

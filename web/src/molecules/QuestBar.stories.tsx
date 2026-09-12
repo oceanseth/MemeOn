@@ -8,7 +8,6 @@ import { QuestBar } from './QuestBar'
 
 const onClaimPack = fn()
 const onDismissPack = fn()
-const onToggleSteps = fn()
 const onDismissSteps = fn()
 const fresh = {
   steps: questStepsFresh,
@@ -17,7 +16,6 @@ const fresh = {
   busy: false,
   onClaimPack,
   onDismissPack,
-  onToggleSteps,
   onDismissSteps,
 }
 
@@ -31,38 +29,34 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** Default: the next step only, its instructions visible, the rest behind a disclosure. */
+/** Default: the whole ladder in one lane, the claim pill beside it (`732-0`). */
 export const Fresh: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    onToggleSteps.mockClear()
     onDismissSteps.mockClear()
-    await expect(canvas.getByText('Earn your braincells ·')).toBeInTheDocument()
+    await expect(canvas.getByText(/Earn your braincells/)).toBeInTheDocument()
     await expect(canvas.getByText('0/5')).toBeInTheDocument()
+    /* the next step's instructions have no line on the board, so they stay for assistive tech */
     await expect(canvas.getByText(questStepsFresh[0]!.hint)).toBeInTheDocument()
-    await expect(canvas.queryByRole('link', { name: /Mint/ })).toBeNull()
+    /* every quest is on the rail from the first render — nothing waits behind a disclosure */
+    await expect(canvas.getByRole('link', { name: /Mint/ })).toHaveAttribute('href', '/binder/new')
+    await expect(canvas.getByRole('link', { name: /trade/i })).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', { name: /starter pack/i }))
     await expect(onClaimPack).toHaveBeenCalledTimes(1)
 
-    const more = canvas.getByRole('button', { name: '4 more — show all quests' })
-    await expect(more).toHaveTextContent('4 more')
-    await expect(more).toHaveAttribute('aria-expanded', 'false')
-    await userEvent.click(more)
-    await expect(onToggleSteps).toHaveBeenCalledTimes(1)
     await userEvent.click(canvas.getByRole('button', { name: 'Later — hide quests for now' }))
     await expect(onDismissSteps).toHaveBeenCalledTimes(1)
   },
 }
 
-/** The full ladder, one chip per step, each carrying its own state and reward. */
+/** The ladder once the pack is claimed: one chip per step, each with its own state and reward. */
 export const Expanded: Story = {
-  args: { model: buildQuestBarModel({ ...fresh, steps: questStepsPackDone, expanded: true }) },
+  args: { model: buildQuestBarModel({ ...fresh, steps: questStepsPackDone }) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('link', { name: /Mint/ })).toHaveAttribute('href', '/binder/new')
     await expect(canvas.getByText('Done.')).toBeInTheDocument()
-    await expect(canvas.getByRole('button', { name: 'Show less — hide the rest of your quests' }))
-      .toHaveTextContent('Show less')
+    await expect(canvas.queryByRole('button', { name: /show all quests/i })).toBeNull()
   },
 }
 
@@ -89,6 +83,7 @@ export const ClaimFailed: Story = {
   },
 }
 
+/** The inventory's name for the same state `Expanded` asserts against. */
 export const PackDone: Story = {
   args: { model: buildQuestBarModel({ ...fresh, steps: questStepsPackDone }) },
 }

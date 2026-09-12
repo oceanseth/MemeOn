@@ -69,14 +69,12 @@ export interface QuestBarModel {
   showSteps: boolean
   completionLabel: string
   chips: QuestChipModel[]
-  /** The next actionable step's instructions, promoted out of a hover-only title. */
+  /**
+   * The next actionable step's instructions, promoted out of a hover-only title. The rail lists
+   * every quest inline (`732-0` › `LH4-0`), so this is the one line it carries for assistive tech
+   * only — there is no hover left to hang it on.
+   */
   hint: string | null
-  expanded: boolean
-  toggleLabel: string | null
-  toggleProps: Pick<
-    ButtonHTMLAttributes<HTMLButtonElement>,
-    'onClick' | 'aria-expanded' | 'aria-label'
-  > | null
   dismissLabel: string
   dismissProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-label'>
   errorMessage: string | null
@@ -91,10 +89,8 @@ export function buildQuestBarModel({
   packReward,
   busy,
   claimError = null,
-  expanded = false,
   onClaimPack,
   onDismissPack,
-  onToggleSteps = () => {},
   onDismissSteps = () => {},
 }: {
   steps: QuestStep[]
@@ -102,23 +98,21 @@ export function buildQuestBarModel({
   packReward: number
   busy: boolean
   claimError?: string | null
-  expanded?: boolean
   onClaimPack: () => void
   onDismissPack: () => void
-  onToggleSteps?: () => void
   onDismissSteps?: () => void
 }): QuestBarModel {
   const nextIndex = steps.findIndex((step) => !step.done)
   const nextStep = nextIndex < 0 ? null : steps[nextIndex]!
-  const shown = expanded || !nextStep ? steps : [nextStep]
-  const hiddenCount = steps.length - shown.length
   const packOpen = packMemes !== null
 
   return {
     visible: steps.length > 0 || packOpen,
     showSteps: steps.length > 0,
     completionLabel: `${steps.filter((step) => step.done).length}/${steps.length}`,
-    chips: shown.map((step): QuestChipModel => {
+    /* every quest, always: both rails draw the five names in one lane (`732-0` › `LH4-0` at 1440,
+       `7D0-0` › `LIQ-0` wrapped to three rows at 390), so there is nothing left to disclose */
+    chips: steps.map((step): QuestChipModel => {
       if (step.key === 'pack' && !step.done) {
         return {
           kind: 'claim',
@@ -142,19 +136,6 @@ export function buildQuestBarModel({
     }),
     /* one line of guidance at a time: a failed claim outranks the next step's instructions */
     hint: claimError ? null : nextStep?.hint ?? null,
-    expanded,
-    toggleLabel: expanded ? 'Show less' : hiddenCount > 0 ? `${hiddenCount} more` : null,
-    toggleProps:
-      expanded || hiddenCount > 0
-        ? {
-            onClick: onToggleSteps,
-            'aria-expanded': expanded,
-            /* WCAG 2.5.3: the visible words lead the name, so speech input can still say them */
-            'aria-label': expanded
-              ? 'Show less — hide the rest of your quests'
-              : `${hiddenCount} more — show all quests`,
-          }
-        : null,
     dismissLabel: 'Later',
     dismissProps: { onClick: onDismissSteps, 'aria-label': 'Later — hide quests for now' },
     errorMessage: claimError,

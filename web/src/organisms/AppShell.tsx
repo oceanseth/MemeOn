@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { cn } from '../lib/cn'
+import { FOCUS_RING } from '../lib/focus'
 import './AppShell.css'
 
 /**
@@ -9,12 +10,8 @@ import './AppShell.css'
  * `--topbar-h` off the same width.
  */
 
-/** The one authored focus ring, repeated on every control this file paints itself. */
-export const FOCUS = cn(
-  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
-  'contrast-more:focus-visible:outline-4',
-  'forced-colors:focus-visible:outline-[Highlight]',
-)
+/** The shared ring (`lib/focus`), on every control this file paints itself. */
+const FOCUS = FOCUS_RING
 
 /** A bypass block costs nothing until it is focused: it waits 60px above the page. */
 const SKIP_LINK = cn(
@@ -47,8 +44,12 @@ const SIDEBAR = cn(
  * restated here for a nested main.
  */
 const CONTENT = cn('flex min-w-0 flex-1 flex-col', '[&>main]:w-full [&>main]:grow')
-/** 276 = 20 + 216 + 40 with `PageContainer`'s own 20; 56 on the right the same way. */
-const CONTENT_APP = '2xl:pr-9 2xl:pl-10'
+/**
+ * 276 = 20 (frame gutter) + 216 (sidebar) + 20 here + `PageContainer`'s own 20 — the boards' content
+ * column (`6WV-0`/`6WL-0`/`732-0` all start at 276 and run 1108 wide). The right is 36 + that same 20,
+ * so the column ends at 1384 and a 3-up grid tracks 356 (`6XT-0`).
+ */
+const CONTENT_APP = '2xl:pr-9 2xl:pl-5'
 /** The public boards sit 72 in from the frame edge. */
 const CONTENT_PUBLIC = '2xl:px-[52px]'
 /** The fixed tab bar is 80 tall, 10 up: the column ends 100 above the safe area so nothing hides under it. */
@@ -121,7 +122,7 @@ export const PRIMARY_PILL = cn(
 
 /** Utility link: Onest 14/18 500; the current one is a 36px pressed pill (plan-buckets › navigation-chrome). */
 export const UTILITY_LINK = cn(
-  '-ml-3 inline-flex h-9 items-center rounded-[18px] px-3',
+  '-ml-3 inline-flex h-9 items-center rounded-field px-3',
   'text-small font-medium text-ink no-underline',
   '[transition:background_var(--dur-base)_ease] motion-reduce:transition-none',
   'hover:bg-surface-raised',

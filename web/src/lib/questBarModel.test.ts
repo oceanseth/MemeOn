@@ -25,23 +25,17 @@ describe('buildQuestBarModel', () => {
       buttonProps: { disabled: true, 'aria-busy': true },
     })
     expect(done.completionLabel).toBe('1/5')
-    expect(buildQuestBarModel({ ...fresh, steps: questStepsPackDone, expanded: true }).chips[0])
+    expect(buildQuestBarModel({ ...fresh, steps: questStepsPackDone }).chips[0])
       .toMatchObject({ kind: 'step', done: true, linkProps: null })
   })
 
-  it('collapses to the next step and keeps the rest one disclosure away', () => {
-    const collapsed = buildQuestBarModel({ ...fresh, steps: questStepsPackDone })
-    expect(collapsed.chips).toHaveLength(1)
-    expect(collapsed.chips[0]).toMatchObject({ kind: 'step', key: 'mint', done: false })
-    expect(collapsed.hint).toBe(questStepsPackDone[1]!.hint)
-    expect(collapsed.toggleLabel).toBe('4 more')
-    expect(collapsed.toggleProps?.['aria-label']).toBe('4 more — show all quests')
-    expect(collapsed.toggleProps?.['aria-expanded']).toBe(false)
-
-    const expanded = buildQuestBarModel({ ...fresh, steps: questStepsPackDone, expanded: true })
-    expect(expanded.chips).toHaveLength(5)
-    expect(expanded.toggleLabel).toBe('Show less')
-    expect(expanded.toggleProps?.['aria-label']).toBe('Show less — hide the rest of your quests')
+  it('lists every quest inline and keeps the next step\u2019s instructions on the rail', () => {
+    /* both boards draw the whole ladder (`732-0` \u203a `LH4-0` in one row, `7D0-0` \u203a `LIQ-0`
+       wrapped to three): there is no disclosure left, so the rail never carries fewer than five */
+    const packDone = buildQuestBarModel({ ...fresh, steps: questStepsPackDone })
+    expect(packDone.chips).toHaveLength(5)
+    expect(packDone.chips[1]).toMatchObject({ kind: 'step', key: 'mint', done: false })
+    expect(packDone.hint).toBe(questStepsPackDone[1]!.hint)
 
     const finished = buildQuestBarModel({
       ...fresh,
@@ -49,11 +43,10 @@ describe('buildQuestBarModel', () => {
     })
     expect(finished.chips).toHaveLength(5)
     expect(finished.hint).toBeNull()
-    expect(finished.toggleProps).toBeNull()
   })
 
   it('names each step state and reward without relying on a glyph or a hover', () => {
-    const model = buildQuestBarModel({ ...fresh, steps: questStepsPackDone, expanded: true })
+    const model = buildQuestBarModel({ ...fresh, steps: questStepsPackDone })
     expect(model.chips[0]).toMatchObject({
       kind: 'step',
       statusLabel: 'Done.',
@@ -69,13 +62,12 @@ describe('buildQuestBarModel', () => {
   })
 
   it('offers task destinations only for unfinished steps', () => {
-    const model = buildQuestBarModel({ ...fresh, expanded: true })
+    const model = buildQuestBarModel(fresh)
     expect(model.chips.slice(1).map((chip) => chip.kind === 'step' ? chip.linkProps?.to : null))
       .toEqual(['/binder/new', '/binder', '/friends', '/marketplace'])
     const completed = buildQuestBarModel({
       ...fresh,
       steps: questStepsFresh.map((step) => ({ ...step, done: true })),
-      expanded: true,
     })
     expect(completed.chips.every((chip) => chip.kind === 'step' && chip.linkProps === null)).toBe(true)
     expect(completed.completionLabel).toBe('5/5')

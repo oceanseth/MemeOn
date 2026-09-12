@@ -150,7 +150,6 @@ export function buildAppShellScreenModel({
   onClaimPack,
   onDismissPack,
   onOpenAlerts,
-  onToggleQuests = () => {},
   onDismissQuests = () => {},
 }: {
   phase: AppShellPhase
@@ -164,7 +163,6 @@ export function buildAppShellScreenModel({
   onClaimPack: () => void
   onDismissPack: () => void
   onOpenAlerts: (open: boolean) => void
-  onToggleQuests?: () => void
   onDismissQuests?: () => void
 }): AppShellScreenModel {
   const steps = context.questDismissed ? [] : context.steps ?? []
@@ -232,10 +230,8 @@ export function buildAppShellScreenModel({
       packReward: context.packReward,
       busy: context.packBusy,
       claimError: context.claimError,
-      expanded: context.questExpanded,
       onClaimPack,
       onDismissPack,
-      onToggleSteps: onToggleQuests,
       onDismissSteps: onDismissQuests,
     }) : null,
     logoutButtonProps: { onClick: onLogout, 'aria-label': 'Log out' },
@@ -351,7 +347,6 @@ export function useAppShellScreen(): AppShellScreenModel {
     onClaimPack: () => void onClaimPack(),
     onDismissPack: () => send({ type: 'DISMISS_PACK' }),
     onOpenAlerts: (open) => void onOpenAlerts(open),
-    onToggleQuests: () => send({ type: 'TOGGLE_QUESTS' }),
     onDismissQuests: () => send({ type: 'DISMISS_QUESTS' }),
   })
 }

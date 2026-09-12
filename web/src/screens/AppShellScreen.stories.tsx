@@ -17,7 +17,6 @@ const context: AppShellContext = {
   alertsOpen: false,
   alertsError: false,
   wasUnread: [],
-  questExpanded: false,
   questDismissed: false,
 }
 
@@ -26,7 +25,6 @@ const actions = {
   onClaimPack: fn(),
   onDismissPack: fn(),
   onOpenAlerts: fn(),
-  onToggleQuests: fn(),
   onDismissQuests: fn(),
 }
 
@@ -134,10 +132,14 @@ export const WithQuests: Story = {
   }),
 }
 
+/**
+ * The inventory's second quest name. The rail no longer collapses — both boards (`732-0`, `7D0-0`)
+ * list every quest inline — so this is the same shell as `WithQuests`, kept for that inventory row.
+ */
 export const WithQuestsExpanded: Story = {
   args: buildAppShellScreenModel({
     phase: 'loggedIn', user: meLou,
-    context: { ...context, steps: questStepsFresh, questExpanded: true, alerts: [unreadSale] },
+    context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
     pathname: '/binder', theme: light,
     ...actions,
   }),
