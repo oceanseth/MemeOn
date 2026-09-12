@@ -33,7 +33,10 @@ const SECTION = 'The good stuff'
  */
 const marketControls = cn(
   'flex flex-col gap-3.5 pt-0 pb-3.5',
+  /* it docks under the phone header (`--topbar-h`); at the shell breakpoint that height is 0, so
+     the plate takes the sidebar's own 20px inset instead of the viewport edge */
   'lg:sticky lg:top-(--topbar-h) lg:z-(--z-sticky) lg:-mx-5 lg:px-5',
+  '2xl:top-5',
   'lg:bg-[color-mix(in_oklab,var(--color-canvas)_92%,transparent)] lg:backdrop-blur-[10px]',
 )
 
@@ -82,8 +85,11 @@ const resultsRow = 'mt-1 mb-[18px] flex flex-wrap items-baseline justify-between
 const sectionHeading = 'm-0 font-display text-title font-medium tracking-title text-ink'
 const summaryRow = 'flex flex-wrap items-center gap-2.5 text-small text-ink-muted'
 
-/** A small button keeps an explicit height: the pill is 46 tall now, and padding no longer shrinks it. */
-const chipButton = 'h-9 px-3 text-micro'
+/**
+ * A small button keeps an explicit height: the pill is 46 tall now, and padding no longer shrinks
+ * it. 36 is the drawn size; a coarse pointer still gets the 44 a finger needs.
+ */
+const chipButton = 'h-9 px-3 text-micro pointer-coarse:min-h-11'
 
 /**
  * The eight tiers are the one filter a row of pills cannot hold, so the board keeps a control with

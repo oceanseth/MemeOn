@@ -51,7 +51,6 @@ export interface MemeCardModel {
   titleId: string
   title: string
   tierKey: string
-  tierColor: string
   /** the tier's product name on its own — what the `TierChip` prints */
   tierName: string
   /** name and rarity together, for the labels a card is announced by */
@@ -146,7 +145,6 @@ function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
     titleId: `meme-card-title-${meme.id}`,
     title: meme.title,
     tierKey: meme.tier.key,
-    tierColor: meme.tier.color,
     tierName: meme.tier.name,
     tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`,
     detailLinkProps: { to: `/m/${meme.id}`, 'aria-label': `Open ${meme.title}` },

@@ -12,7 +12,7 @@ import { MemeDetailScreen } from './MemeDetailScreen'
 const noop = fn()
 const closedDialog = (id: string) => buildConfirmDialogModel({ open: false, id, title: 'Confirm', message: '', onCancel: noop, onConfirm: noop })
 const detail = (meme = paperMeme): MemeDetailModel => ({
-  id: meme.id, title: meme.title, private: !!meme.private, tierKey: meme.tier.key, tierColor: meme.tier.color, tierName: meme.tier.name,
+  id: meme.id, title: meme.title, private: !!meme.private, tierKey: meme.tier.key, tierName: meme.tier.name,
   tierLine: `${meme.tier.name} · ${(meme.reshareCount ?? 0).toLocaleString()} ${pluralWord(meme.reshareCount ?? 0, 'reshare')}`,
   tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`, tierHype: meme.tier.hype,
   tierLadder: buildTierLadderModel(meme.tier.key, meme.views ?? meme.reshares),
@@ -20,7 +20,7 @@ const detail = (meme = paperMeme): MemeDetailModel => ({
   list: { show: true, disabledReason: null, sharesInputProps: { value: 10, min: 1, max: 100, step: 1, onChange: noop }, priceInputProps: { value: 1, min: .01, step: .01, onChange: noop }, listButtonLabel: 'List', listButtonProps: { onClick: noop, disabled: false, 'aria-busy': false } }, sources: [], plex: buildMemeplexPanelModel({ meme, plex: memeplexFamily, canEdit: true, binder: [], pick: '', pasted: '', notice: null, error: null, onPickChange: noop, onPastedChange: noop, onAdd: noop }), capTableTitle: 'Who holds this card · 100 shares', capTableNote: null, capTable: [{ userId: 'me', label: 'You', sharesLabel: '100/100' }], deleteDialog: buildConfirmDialogModel({ open: false, id: 'delete-meme', title: 'Delete this meme forever?', message: 'This cannot be undone.', danger: true, onCancel: noop, onConfirm: noop }), buyDialog: closedDialog('buy-shares'), claimDialog: closedDialog('claim-meme'),
 })
 const listingModel = (overrides: Partial<DetailListingModel> = {}): DetailListingModel => ({
-  cardLabel: '10 sh @ 🧠4', saleLabel: '10 shares up for grabs · 🧠4 each', sharesLabel: '10 shares', priceLabel: '🧠4/share', showBuy: true, showUnlist: false,
+  saleLabel: '10 shares up for grabs · 🧠4 each', sharesLabel: '10 shares', priceLabel: '🧠4/share', showBuy: true, showUnlist: false,
   buyLabel: 'shares to buy', balanceLabel: 'You’ve got 🧠240. Pick how much of the joke you want.', disabledReason: null,
   buyInputProps: { value: 2, min: 1, max: 10, step: 1, onChange: noop },
   buyButtonLabel: 'Buy for 🧠8', buyButtonProps: { onClick: noop, disabled: false, 'aria-busy': false },
@@ -35,7 +35,7 @@ const listed = (overrides: Partial<DetailListingModel> = {}): MemeDetailModel =>
     capTable: [{ userId: 'seller', label: 'lou', sharesLabel: '100/100' }],
     capTableNote: '10 shares of lou’s are listed', listing,
     // the hero's "for sale" badge mirrors this mocked listing price, not listedHolo's own
-    card: { ...base.card, listing: { ...base.card.listing!, sharesLabel: listing.cardLabel } },
+    card: { ...base.card, listing: { ...base.card.listing!, sharesLabel: '10 sh @ 🧠4' } },
   }
 }
 const base: MemeDetailScreenModel = {
@@ -208,8 +208,8 @@ export const SingleReshare: Story = {
 
 /** A card one rung from the top: the ladder states the next threshold instead of implying it. */
 export const TierLadderMaxed: Story = {
-  args: { detail: { ...detail(), tierKey: 'shiny', tierColor: '#9fffe0', tierName: 'Shiny', tierLabel: 'Shiny · Mythic Shiny', tierLadder: buildTierLadderModel('shiny', 41_000), viewsLabel: '41,000', statsSrLabel: `${plural(41_000, 'view')}, ${plural(900, 'reshare')}`,
-    card: { ...detail().card, tierKey: 'shiny', tierColor: '#9fffe0', tierLabel: 'Shiny · Mythic Shiny', viewsLabel: '41,000' } } },
+  args: { detail: { ...detail(), tierKey: 'shiny', tierName: 'Shiny', tierLabel: 'Shiny · Mythic Shiny', tierLadder: buildTierLadderModel('shiny', 41_000), viewsLabel: '41,000', statsSrLabel: `${plural(41_000, 'view')}, ${plural(900, 'reshare')}`,
+    card: { ...detail().card, tierKey: 'shiny', tierLabel: 'Shiny · Mythic Shiny', viewsLabel: '41,000' } } },
 }
 export const CapTableUnresolved: Story = {
   args: { detail: { ...detail(), holdingsLabel: '40/100', capTable: [{ userId: 'me', label: 'You', sharesLabel: '40/100' }, { userId: 'a', label: 'another collector', sharesLabel: '35/100' }, { userId: 'b', label: 'another collector', sharesLabel: '25/100' }] } },

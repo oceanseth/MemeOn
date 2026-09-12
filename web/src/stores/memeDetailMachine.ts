@@ -25,7 +25,6 @@ export interface MemeDetailInput {
  * Zero stays reachable so an emptied field is not fought mid-keystroke; the screen disables the
  * action and names the reason instead.
  */
-export const MIN_PRICE = 0.01
 export const MAX_PRICE = 999_999
 
 export function clampShares(raw: number, max: number): number {

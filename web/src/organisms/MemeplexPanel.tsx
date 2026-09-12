@@ -4,7 +4,7 @@ import { Input } from '../atoms/Input'
 import { MemeCard } from '../atoms/MemeCard'
 import { Notice } from '../atoms/Notice'
 import { FilterBar } from '../atoms/PageHead'
-import { Panel } from '../atoms/Panel'
+import { Panel, PanelHeading } from '../atoms/Panel'
 import { Select, type SelectOption } from '../atoms/Select'
 import { cn } from '../lib/cn'
 import type { MemeplexPanelModel } from './memeplexPanelModel'
@@ -15,21 +15,16 @@ const PICK_PLACEHOLDER: SelectOption = { value: '', label: 'Link from your binde
    the micro line the cards themselves use. */
 const LINE = 'text-small text-ink-muted'
 
-/* The memeplex card's heading is one step above the shared `Panel` default: the detail board
-   (296-0 › `Memeplex / Family` G5X-0, text G5Y-0) draws it at 18/22 on `--tracking-title` where
-   `Panel` paints 17/21. Local to this panel — `atoms/Panel` keeps its own step for every other
-   section — and `.class h3` (0,1,1) outranks Panel's `:where(h3,h4)` (0,1,0) without `!`. */
-const HEADING = '[&_h3]:text-[18px]/[22px] [&_h3]:tracking-title'
-
 /** This meme's ancestry, remixes, related cards, and controlled linking controls. */
 export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
   if (!model.show) return null
 
   return (
     /* The raised section card every panel on the page wears (`atoms/Panel`): bg-surface,
-       radius-card, shadow-raised, with its display heading stepped to the board's 18/22. */
-    <Panel className={cn('mt-4', HEADING)}>
-      <h3>🕸️ Memeplex</h3>
+       radius-card, shadow-raised, with its head at the board's own 18/22 step (296-0 ›
+       `Memeplex / Family` G5X-0, text G5Y-0) rather than `Panel`'s shared 17/21. */
+    <Panel className="mt-4">
+      <PanelHeading size="section">🕸️ Memeplex</PanelHeading>
       {model.ancestors.length > 0 && (
         <p className={cn('my-2', LINE)}>
           Descended from{' '}
@@ -67,18 +62,14 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
             items={[PICK_PLACEHOLDER, ...model.linkable.map((candidate) => ({ value: candidate.id, label: candidate.title }))]}
             {...model.pickerProps}
           />
-          {model.showPickLink && (
-            <Button variant="primary" {...model.pickLinkButtonProps}>
-              Link
-            </Button>
-          )}
           <Input
             className="min-w-[180px]"
             placeholder="…or paste a meme link"
             {...model.pastedProps}
           />
-          {model.showPastedLink && (
-            <Button variant="primary" {...model.pastedLinkButtonProps}>
+          {/* one primary per card: the model already chose which of the two inputs this submits */}
+          {model.showLink && (
+            <Button variant="primary" {...model.linkButtonProps}>
               Link
             </Button>
           )}

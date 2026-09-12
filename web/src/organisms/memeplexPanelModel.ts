@@ -14,11 +14,15 @@ export interface MemeplexPanelModel {
     onValueChange: (value: string | null) => void
   }
   linkable: readonly { id: string; title: string }[]
-  pickLinkButtonProps: { onClick: MouseEventHandler<HTMLButtonElement>; disabled: boolean }
-  showPickLink: boolean
   pastedProps: { value: string; 'aria-label': string; onChange: ChangeEventHandler<HTMLInputElement> }
-  pastedLinkButtonProps: { onClick: MouseEventHandler<HTMLButtonElement>; disabled: boolean }
-  showPastedLink: boolean
+  /**
+   * One "Link" for two inputs. A picked binder meme and a pasted URL are two ways of naming the
+   * same thing, and an owner who does both would otherwise see two bubblegum buttons in one card —
+   * the one-primary-per-card rule (`plan-buckets.md` › primary-action). The control submits
+   * whichever is set, the picker first: it is the one that cannot be mistyped.
+   */
+  linkButtonProps: { onClick: MouseEventHandler<HTMLButtonElement>; disabled: boolean }
+  showLink: boolean
   notice: string | null
   error: string | null
   /** live-region containers are mounted before their text arrives */
@@ -72,6 +76,7 @@ export function buildMemeplexPanelModel({
   ])
   const linkable = binder.filter((candidate) => !linked.has(candidate.id))
   const pastedId = parseMemeRef(pasted)
+  const linkTarget = pick || pastedId
 
   return {
     show: !!plex && (family.length > 0 || plex.ancestors.length > 0 || canEdit),
@@ -89,11 +94,9 @@ export function buildMemeplexPanelModel({
       onValueChange: (value) => onPickChange(value ?? ''),
     },
     linkable: linkable.map((candidate) => ({ id: candidate.id, title: candidate.title })),
-    pickLinkButtonProps: { onClick: () => onAdd(pick), disabled: !pick },
-    showPickLink: !!pick,
     pastedProps: { value: pasted, 'aria-label': 'Paste a meme link', onChange: (event) => onPastedChange(event.target.value) },
-    pastedLinkButtonProps: { onClick: () => onAdd(pastedId), disabled: !pastedId },
-    showPastedLink: !!pasted.trim(),
+    linkButtonProps: { onClick: () => onAdd(linkTarget), disabled: !linkTarget },
+    showLink: !!linkTarget,
     notice,
     error,
     noticeProps: { role: 'status', 'aria-live': 'polite' },

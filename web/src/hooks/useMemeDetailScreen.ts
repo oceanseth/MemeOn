@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { TIERS } from '../../../shared/tiers'
 import { apiFetch, post } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
+import { braincells } from '../lib/braincells'
 import { buildConfirmDialogModel, type ConfirmDialogModel } from '../lib/confirmDialogModel'
 import { createDetailBinderGate } from '../lib/detailBinderGate'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
@@ -53,7 +54,6 @@ export interface DetailTierLadderModel {
   }
 }
 export interface DetailListingModel {
-  cardLabel: string
   saleLabel: string
   sharesLabel: string
   priceLabel: string
@@ -83,7 +83,6 @@ export interface MemeDetailModel {
   title: string
   private: boolean
   tierKey: string
-  tierColor: string
   /** the tier's product name on its own — Paper … Shiny */
   tierName: string
   /**
@@ -308,7 +307,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
   const buyShares = context.buyShares
   const buyTotal = Math.ceil(buyShares * pricePerShare)
   const shortBy = Math.max(0, buyTotal - coins)
-  const buyReason = buyShares < 1 ? 'Pick at least 1 share.' : shortBy > 0 ? `🧠${shortBy.toLocaleString()} short — sell some shares or open a pack first.` : null
+  const buyReason = buyShares < 1 ? 'Pick at least 1 share.' : shortBy > 0 ? `${braincells(shortBy)} short — sell some shares or open a pack first.` : null
   const runBuy = () => void act(() => post(`/api/memes/${meme.id}/buy`, { shares: clampShares(actor.getSnapshot().context.buyShares, meme.listing?.shares ?? 100) }), 'Shares acquired 💼', 'buy')
   const sellShares = context.sellShares
   const listReason = sellShares < 1
@@ -316,18 +315,17 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
     : sellShares > myShares
       ? `You only hold ${myShares} shares.`
       : context.price < 0.01
-        ? 'Set a price of at least 🧠0.01 per share.'
+        ? `Set a price of at least ${braincells('0.01')} per share.`
         : null
 
   const listing: DetailListingModel | null = meme.listing && meme.listing.shares > 0 ? {
-    cardLabel: `${meme.listing.shares} sh @ 🧠${meme.listing.pricePerShare}`,
-    saleLabel: `${plural(meme.listing.shares, 'share')} up for grabs · 🧠${meme.listing.pricePerShare} each`,
-    sharesLabel: `${meme.listing.shares} shares`, priceLabel: `🧠${meme.listing.pricePerShare}/share`, showBuy: !!user && !isSeller, showUnlist: !!isSeller,
+    saleLabel: `${plural(meme.listing.shares, 'share')} up for grabs · ${braincells(meme.listing.pricePerShare)} each`,
+    sharesLabel: `${meme.listing.shares} shares`, priceLabel: `${braincells(meme.listing.pricePerShare)}/share`, showBuy: !!user && !isSeller, showUnlist: !!isSeller,
     buyLabel: 'shares to buy',
-    balanceLabel: user ? `You’ve got 🧠${coins.toLocaleString()}. Pick how much of the joke you want.` : null,
+    balanceLabel: user ? `You’ve got ${braincells(coins)}. Pick how much of the joke you want.` : null,
     disabledReason: buyReason,
     buyInputProps: { value: buyShares, min: 1, max: meme.listing.shares, step: 1, onChange: buySharesChange },
-    buyButtonLabel: phase === 'buying' ? 'Buying…' : buyShares < 1 ? 'Buy shares' : `Buy for 🧠${buyTotal}`,
+    buyButtonLabel: phase === 'buying' ? 'Buying…' : buyShares < 1 ? 'Buy shares' : `Buy for ${braincells(buyTotal)}`,
     buyButtonProps: {
       onClick: () => { if (buyTotal > CONFIRM_SPEND_OVER) send({ type: 'SET_CONFIRMING_BUY', confirming: true }); else runBuy() },
       disabled: phase === 'buying' || !!buyReason,
@@ -357,7 +355,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
     title: 'Own a piece of this',
     /* the board leads with the offer when there is one, then the invitation (public-share KSN-0) */
     body: meme.listing && meme.listing.shares > 0
-      ? `${plural(meme.listing.shares, 'share')} listed at 🧠${meme.listing.pricePerShare} each. Log in with Masky to buy, remix, or mint your own.`
+      ? `${plural(meme.listing.shares, 'share')} listed at ${braincells(meme.listing.pricePerShare)} each. Log in with Masky to buy, remix, or mint your own.`
       : 'Log in with Masky to buy, remix, or mint your own.',
     loginLabel: context.loggingIn ? 'Redirecting…' : '🎭 Log in with Masky',
     loginButtonProps: {
@@ -385,7 +383,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
   return {
     phase, showNotFound, showLoading, notFound, loadingLabel,
     detail: {
-      id: meme.id, title: meme.title, private: !!meme.private, tierKey: meme.tier.key, tierColor: meme.tier.color, tierName: meme.tier.name,
+      id: meme.id, title: meme.title, private: !!meme.private, tierKey: meme.tier.key, tierName: meme.tier.name,
       tierLine: `${meme.tier.name} · ${reshareCount.toLocaleString()} ${pluralWord(reshareCount, 'reshare')}`,
       tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`, tierHype: meme.tier.hype,
       tierLadder: buildTierLadderModel(meme.tier.key, views),
@@ -421,7 +419,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
       capTableNote,
       capTable: context.positions.map((position) => ({ userId: position.userId, sharesLabel: `${position.shares}/100`, label: holderLabel(position.userId, user?.sub ?? null, context.holderNames, holderNameCache.current) })),
       deleteDialog: buildConfirmDialogModel({ open: context.confirmingDelete, id: 'delete-meme', danger: true, busy: context.deleting || phase === 'deleting', title: 'Delete this meme forever?', message: createElement(Fragment, null, createElement('strong', null, `"${meme.title}"`), ' will be permanently removed — its card, share link, view history, and memeplex links all go with it. This cannot be undone.'), confirmLabel: 'Delete it forever', onCancel: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: false }), onConfirm: () => { const live = actor.getSnapshot().context.meme; if (!live) return; send({ type: 'DELETE' }); void apiFetch(`/api/memes/${live.id}`, { method: 'DELETE' }).then(() => { send({ type: 'DONE' }); navigate('/binder') }).catch((error) => send({ type: 'FAIL', err: error instanceof Error ? error.message : 'delete failed' })) } }),
-      buyDialog: buildConfirmDialogModel({ open: context.confirmingBuy, id: 'buy-shares', busy: phase === 'buying', title: `Spend 🧠${buyTotal}?`, message: createElement(Fragment, null, `${buyShares} ${buyShares === 1 ? 'share' : 'shares'} of `, createElement('strong', null, `"${meme.title}"`), ` at 🧠${pricePerShare}/share. You hold 🧠${coins.toLocaleString()}, and purchases are final.`), confirmLabel: `Buy ${buyShares} ${buyShares === 1 ? 'share' : 'shares'}`, onCancel: () => send({ type: 'SET_CONFIRMING_BUY', confirming: false }), onConfirm: runBuy }),
+      buyDialog: buildConfirmDialogModel({ open: context.confirmingBuy, id: 'buy-shares', busy: phase === 'buying', title: `Spend ${braincells(buyTotal)}?`, message: createElement(Fragment, null, `${buyShares} ${buyShares === 1 ? 'share' : 'shares'} of `, createElement('strong', null, `"${meme.title}"`), ` at ${braincells(pricePerShare)}/share. You hold ${braincells(coins)}, and purchases are final.`), confirmLabel: `Buy ${buyShares} ${buyShares === 1 ? 'share' : 'shares'}`, onCancel: () => send({ type: 'SET_CONFIRMING_BUY', confirming: false }), onConfirm: runBuy }),
       claimDialog: buildConfirmDialogModel({
         open: context.confirmingClaim, id: 'claim-meme',
         title: 'Claim this meme?',
