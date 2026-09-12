@@ -5,7 +5,7 @@ import type { ChangeEvent } from 'react'
 import { friendAccepted, giftablePaper, meLou, paperMeme, proposedTrade, silverMeme } from '../../.storybook/fixtures'
 import type { TradeComposerModel, TradesScreenModel } from '../hooks/useTradesScreen'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
-import { buildTradeCardModel, type TradeMemeInfoMap } from '../molecules/tradeCardModel'
+import { buildTradeCardModel, type TradeMemeInfoMap } from '../lib/tradeCardModel'
 import { TradesScreen } from './TradesScreen'
 
 const noop = fn()

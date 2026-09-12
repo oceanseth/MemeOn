@@ -12,7 +12,7 @@ const twMerge = extendTailwindMerge({
     theme: {
       radius: ['card', 'control', 'field', 'nav', 'avatar', 'chip', 'shell', 'tabbar', 'pill'],
       shadow: ['raised', 'pressed', 'pop', 'modal'],
-      container: ['app', 'page'],
+      container: ['app'],
       text: [
         'hero',
         'hero-phone',

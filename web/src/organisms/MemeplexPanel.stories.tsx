@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { fn } from 'storybook/test'
 import { giftablePaper, giftableSilver, holoMeme, listedHolo, memeplexEmpty, memeplexFamily } from '../../.storybook/fixtures'
 import { MemeplexPanel } from './MemeplexPanel'
-import { buildMemeplexPanelModel } from './memeplexPanelModel'
+import { buildMemeplexPanelModel } from '../lib/memeplexPanelModel'
 
 const handlers = { onPickChange: fn(), onPastedChange: fn(), onAdd: fn() }
 const build = (overrides: Partial<Parameters<typeof buildMemeplexPanelModel>[0]> = {}) => buildMemeplexPanelModel({

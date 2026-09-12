@@ -29,6 +29,7 @@ const config: StorybookConfig = {
     resolve: {
       alias: [
         { find: './authNavigation', replacement: fileURLToPath(new URL('./mocks/authNavigation.ts', import.meta.url)) },
+        { find: '../lib/authNavigation', replacement: fileURLToPath(new URL('./mocks/authNavigation.ts', import.meta.url)) },
         { find: '../lib/firebase', replacement: fileURLToPath(new URL('./mocks/firebase.ts', import.meta.url)) },
         { find: '../lib/presence', replacement: fileURLToPath(new URL('./mocks/presence.ts', import.meta.url)) },
         { find: /\/src\/lib\/authNavigation(?:\.ts)?$/, replacement: fileURLToPath(new URL('./mocks/authNavigation.ts', import.meta.url)) },

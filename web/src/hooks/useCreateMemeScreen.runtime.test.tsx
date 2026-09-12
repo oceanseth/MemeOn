@@ -2,7 +2,7 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { CreateMemeRoute } from '../App'
+import { CreateMemeRoute } from '../views/AppView'
 
 function deferred<T>() {
   let resolve!: (value: T) => void

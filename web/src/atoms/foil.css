@@ -80,7 +80,7 @@
   }
 
   /* Every foil variable is declared on the card, and every one of them inherits: the frame, the
-     sheen and the sparkle are descendants. `--glow-play-state` is what `stores/cardMediaStore.ts`
+     sheen and the sparkle are descendants. `--glow-play-state` is what `lib/cardMedia.ts`
      sets inline on the card to freeze an off-screen ring, so it must be *declared* here and *read*
      further down. */
   :where(.foil-card) {

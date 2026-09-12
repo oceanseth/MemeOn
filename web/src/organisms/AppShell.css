@@ -16,7 +16,8 @@
    * (`lg:top-(--topbar-h)`), the create rail, the legal `<h2>` scroll margins and the alerts
    * popover's phone placement.
    *
-   * `:root` holds a legacy default (65px, `src/index.css`); the shell's own geometry lives beside
+   * `:root` holds a fallback (64px, `src/index.css`, for a story that mounts a screen without the
+   * shell); the shell's own geometry lives beside
    * the component that produces it and keys off the slot the shell writes. Two arms, split at the
    * shell's breakpoint (`2xl`, 900px):
    *

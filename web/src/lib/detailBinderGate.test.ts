@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { tierFor } from '../../../shared/tiers'
+import { tierFor } from '@memeon/shared/tiers'
 import { createDetailBinderGate } from './detailBinderGate'
 import type { Meme } from './types'
 

@@ -93,10 +93,6 @@ test("allows nested tier components, type-only imports, exact integration files,
     "components/Ignored.test.tsx": component,
     "components/Ignored.spec.tsx": component,
     "components/Ignored.stories.tsx": story,
-    "components/HeroVideo.tsx": "export function HeroVideo() { return <div /> }\n",
-    "pages/AuthCallback.tsx": "export function AuthCallback() { return <div /> }\n",
-    "pages/MobileAuthForward.tsx": "export function MobileAuthForward() { return <div /> }\n",
-    "context/AuthContext.tsx": "export const AuthContext = null\n",
     "main.tsx": "export function Root() { return <div /> }\n",
     "stores/StoresContext.tsx": "export function StoresProvider() { return <div /> }\n",
   })
@@ -153,20 +149,24 @@ test("does not let a commented default import hide a runtime hooks edge", () => 
   assert.match(result.output, /atoms\/nested\/RuntimeImport\.tsx: atoms imports from hooks/)
 })
 
-test("rejects new components adjacent to an exact exception", () => {
+test("rejects new components adjacent to an exact exception and retired folders", () => {
   const result = runChecker({
+    "main.tsx": component,
+    "stores/StoresContext.tsx": component,
     "components/HeroVideo.tsx": component,
-    "components/HeroVideoControls.tsx": component,
     "pages/AuthCallback.tsx": component,
-    "pages/AccountRecovery.tsx": component,
+    "context/AuthContext.tsx": component,
     "hooks/useUnlisted.tsx": component,
     "stores/UnlistedProvider.tsx": component,
     "lib/Unlisted.tsx": component,
   })
 
   assert.equal(result.status, 1, result.output)
-  assert.match(result.output, /components\/HeroVideoControls\.tsx: component outside a tier folder/)
-  assert.match(result.output, /pages\/AccountRecovery\.tsx: component outside a tier folder/)
+  assert.match(result.output, /components\/HeroVideo\.tsx: component outside a tier folder/)
+  assert.match(result.output, /pages\/AuthCallback\.tsx: component outside a tier folder/)
+  assert.match(result.output, /context\/AuthContext\.tsx: component outside a tier folder/)
+  assert.doesNotMatch(result.output, /main\.tsx: component outside a tier folder/)
+  assert.doesNotMatch(result.output, /StoresContext\.tsx: component outside a tier folder/)
   assert.match(result.output, /hooks\/useUnlisted\.tsx: component outside a tier folder/)
   assert.match(result.output, /stores\/UnlistedProvider\.tsx: component outside a tier folder/)
   assert.match(result.output, /lib\/Unlisted\.tsx: component outside a tier folder/)

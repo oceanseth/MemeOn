@@ -3,7 +3,7 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { CreateMemeRoute } from '../App'
+import { CreateMemeRoute } from '../views/AppView'
 import { PENDING_VIDEO_KEY } from './useCreateMemeScreen'
 
 function deferred<T>() {

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
-import { TIERS } from '../../../shared/tiers'
+import { TIERS } from '@memeon/shared/tiers'
 import { TierChip } from './TierChip'
 
 const meta = {

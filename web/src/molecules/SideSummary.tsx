@@ -1,6 +1,6 @@
 import { TierChip } from '../atoms/TierChip'
 import { cn } from '../lib/cn'
-import type { TradeSideSummaryModel } from './tradeCardModel'
+import type { TradeSideSummaryModel } from '../lib/tradeCardModel'
 
 /**
  * One side of a deal: the recessed well the Trade board draws inside the proposal card (`JXX-0` —

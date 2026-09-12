@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
 import { tierFrames } from '../../.storybook/fixtures'
-import { TIERS } from '../../../shared/tiers'
+import { TIERS } from '@memeon/shared/tiers'
 import { LandingView } from './LandingView'
 
 /** The one authored login-failure sentence; thrown strings never reach the page. */

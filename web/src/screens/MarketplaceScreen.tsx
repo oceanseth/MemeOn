@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { TIERS } from '../../../shared/tiers'
+import { TIERS } from '@memeon/shared/tiers'
 import { Button, buttonClasses } from '../atoms/Button'
 import { EmptyActions, EmptyState, PageState } from '../atoms/EmptyState'
 import { Icon } from '../atoms/Icon'

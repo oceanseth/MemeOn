@@ -11,6 +11,7 @@ import { TierChip } from '../atoms/TierChip'
 import { cn } from '../lib/cn'
 import type { LandingScreenModel } from '../hooks/useLandingScreen'
 import { FaqItem } from '../molecules/FaqItem'
+import { HeroVideo } from '../molecules/HeroVideo'
 import './LandingScreen.css'
 
 const FACE = 'font-display font-medium text-ink'
@@ -52,6 +53,7 @@ export function LandingScreen({
   closingLoginLabel,
   heroCards,
   tiers,
+  heroVideo,
   loginButtonProps,
   closingLoginButtonProps,
   frameImageProps,
@@ -222,6 +224,13 @@ export function LandingScreen({
             </li>
           ))}
         </ol>
+      </section>
+
+      {/* The promo film: the whole loop in 50 seconds, framed like the cards above it, right
+          before the FAQ answers the questions it raises. */}
+      <section data-slot="landing-film" className={SECTION}>
+        <h2 className={SECTION_TITLE}>MemeOn in 50 seconds</h2>
+        <HeroVideo model={heroVideo} className="mt-6 max-w-[880px]" />
       </section>
 
       {/* FAQ (board `DU3-0`) */}

@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes } from 'react'
-import { braincells } from '../lib/braincells'
-import type { Trade, TradeSide } from '../lib/types'
+import { braincells } from './braincells'
+import type { Trade, TradeSide } from './types'
 
 export type TradeAction = 'accept' | 'decline' | 'cancel'
 

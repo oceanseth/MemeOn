@@ -3,6 +3,8 @@ import { expect, waitFor, within } from 'storybook/test'
 import { Avatar } from './Avatar'
 
 const LOGO = '/brand/memeon-logo-circle-64.png'
+/* the first fetch of the logo on a cold test shard outruns testing-library's 1 s default */
+const IMAGE_LOAD = { timeout: 8000 }
 
 const meta = {
   title: 'Atoms/Avatar',
@@ -33,7 +35,7 @@ export const WithImage: Story = {
   args: { src: LOGO, alt: 'lou' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const image = await waitFor(() => canvas.getByRole('img', { name: 'lou' }))
+    const image = await waitFor(() => canvas.getByRole('img', { name: 'lou' }), IMAGE_LOAD)
     await expect(image).toHaveAttribute('referrerpolicy', 'no-referrer')
     await waitFor(() => expect(canvas.queryByText('L')).toBeNull())
   },
@@ -53,7 +55,7 @@ export const PersonRow: Story = {
   args: { size: 'md', src: LOGO, alt: 'lou', loading: 'lazy' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const image = await waitFor(() => canvas.getByRole('img', { name: 'lou' }))
+    const image = await waitFor(() => canvas.getByRole('img', { name: 'lou' }), IMAGE_LOAD)
     await expect(image).toHaveAttribute('loading', 'lazy')
     await expect(image.closest('[data-slot="avatar"]')).toHaveClass('size-10')
   },
@@ -73,7 +75,7 @@ export const Large: Story = {
   args: { size: 'lg', src: LOGO, alt: 'lou' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await waitFor(() => expect(canvas.getByRole('img', { name: 'lou' })).toBeVisible())
+    await waitFor(() => expect(canvas.getByRole('img', { name: 'lou' })).toBeVisible(), IMAGE_LOAD)
   },
 }
 

@@ -1,5 +1,5 @@
 import { assign, setup } from 'xstate'
-import type { TradeAction, TradeMemeInfo } from '../molecules/tradeCardModel'
+import type { TradeAction, TradeMemeInfo } from '../lib/tradeCardModel'
 import type { FriendEntry, Meme, Trade, TradeSide } from '../lib/types'
 
 export type TradesPhase = 'loading' | 'ready' | 'empty' | 'error' | 'composing' | 'acting'

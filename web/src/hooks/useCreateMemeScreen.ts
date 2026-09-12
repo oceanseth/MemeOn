@@ -11,7 +11,7 @@ import type {
 } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import type { LinkProps } from 'react-router-dom'
-import { glowStyleFor, tierFor } from '../../../shared/tiers'
+import { glowStyleFor, tierFor } from '@memeon/shared/tiers'
 import { tierFrameClasses } from '../atoms/foil'
 import { apiFetch, post } from '../lib/api'
 import { extractPoster } from '../lib/extractPoster'

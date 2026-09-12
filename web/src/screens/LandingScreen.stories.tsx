@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, within } from 'storybook/test'
-import { TIERS } from '../../../shared/tiers'
+import { TIERS } from '@memeon/shared/tiers'
 import { tierFrames } from '../../.storybook/fixtures'
 import {
   buildLandingHeroCards,
@@ -9,6 +9,7 @@ import {
   type LandingFrameSlotState,
   type LandingScreenModel,
 } from '../hooks/useLandingScreen'
+import { buildHeroVideoModel } from '../lib/heroVideoModel'
 import { LandingScreen } from './LandingScreen'
 
 const phone = {
@@ -23,7 +24,21 @@ const phone = {
 const handlers = {
   onLogin: fn(),
   onFrameError: fn(),
+  attachVideo: fn(),
+  onStart: fn(),
+  onToggleSound: fn(),
 }
+
+/* the film is a story of its own (Molecules/HeroVideo); here it is the withheld branch, so the
+   screen stories never stream 1.5 MB of mp4 to assert on a heading */
+const heroVideo = buildHeroVideoModel({
+  autoplay: false,
+  muted: true,
+  started: false,
+  attachVideo: handlers.attachVideo,
+  onStart: handlers.onStart,
+  onToggleSound: handlers.onToggleSound,
+})
 
 const slots = (state: LandingFrameSlotState): LandingScreenModel['frameSlotProps'] =>
   Object.fromEntries(
@@ -51,6 +66,7 @@ const empty: LandingScreenModel = {
   closingLoginLabel: '🎭 Grab your pack with Masky',
   heroCards: buildLandingHeroCards(),
   tiers: buildLandingTierModels(),
+  heroVideo,
   loginButtonProps: {
     onClick: handlers.onLogin,
     disabled: false,
@@ -135,6 +151,14 @@ export const Ready: Story = {
     const pile = canvasElement.querySelector<HTMLElement>('[data-slot="hero-pile"]')!
     await expect(pile.querySelectorAll('[data-slot="hero-card"]')).toHaveLength(3)
     await expect(within(pile).getByText('Prismatic')).toBeInTheDocument()
+    // the film sits after the ladder and right before the FAQ, in its own headed section
+    const film = canvasElement.querySelector<HTMLElement>('[data-slot="landing-film"]')!
+    await expect(within(film).getByRole('heading', { level: 2, name: 'MemeOn in 50 seconds' })).toBeInTheDocument()
+    await expect(film.querySelector('video')).toHaveAttribute('poster', '/promo/memeon-promo-poster.jpg')
+    await expect(within(film).getByRole('button', { name: 'Play the 50-second tour' })).toBeInTheDocument()
+    const faq = canvasElement.querySelector<HTMLElement>('[data-slot="landing-faq"]')!
+    await expect(film.nextElementSibling).toBe(faq)
+    await expect(film.previousElementSibling).toBe(canvasElement.querySelector('[data-slot="landing-tiers"]'))
     const login = canvas.getByRole('button', { name: 'Log in with Masky' })
     // the Button atom omits aria-busy entirely when idle rather than writing "false"
     await expect(login).not.toHaveAttribute('aria-busy')

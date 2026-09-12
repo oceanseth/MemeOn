@@ -5,7 +5,7 @@ import { listedHolo, memeplexFamily, paperMeme } from '../../.storybook/fixtures
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { plural, pluralWord } from '../lib/plural'
-import { buildMemeplexPanelModel } from '../organisms/memeplexPanelModel'
+import { buildMemeplexPanelModel } from '../lib/memeplexPanelModel'
 import { buildTierLadderModel, type DetailListingModel, type MemeDetailModel, type MemeDetailScreenModel } from '../hooks/useMemeDetailScreen'
 import { MemeDetailScreen } from './MemeDetailScreen'
 

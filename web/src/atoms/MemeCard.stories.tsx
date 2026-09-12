@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, within } from 'storybook/test'
-import { memeValue, TIERS, tierFor } from '../../../shared/tiers'
+import { memeValue, TIERS, tierFor } from '@memeon/shared/tiers'
 import { holoMeme, listedHolo, paperMeme, silverMeme } from '../../.storybook/fixtures'
 import type { Meme } from '../lib/types'
 import { buildMemeCardModel, buildReducedMotionMemeCardModel } from '../lib/memeCardModel'

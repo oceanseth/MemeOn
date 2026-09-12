@@ -2,11 +2,11 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import App from './App'
-import { setMaskyAccessToken, setSessionToken } from './lib/api'
-import type { Me } from './lib/types'
-import { createStores } from './stores/createStores'
-import { StoresProvider } from './stores/StoresContext'
+import { AppView } from './AppView'
+import { setMaskyAccessToken, setSessionToken } from '../lib/api'
+import type { Me } from '../lib/types'
+import { createStores } from '../stores/createStores'
+import { StoresProvider } from '../stores/StoresContext'
 
 vi.mock('./lib/firebase', () => ({
   firebaseSignIn: vi.fn(async () => {}),
@@ -72,7 +72,7 @@ it('keeps the legacy mint draft mounted while a post-pack refresh replaces an ol
   stores.retain()
   await stores.auth.refresh()
   await act(async () => {
-    root.render(<StoresProvider stores={stores}><MemoryRouter initialEntries={['/binder/new']}><App /></MemoryRouter></StoresProvider>)
+    root.render(<StoresProvider stores={stores}><MemoryRouter initialEntries={['/binder/new']}><AppView /></MemoryRouter></StoresProvider>)
     await nextTick()
     await nextTick()
   })

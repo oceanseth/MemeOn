@@ -12,11 +12,9 @@ describe('cn', () => {
 
   /* the @theme namespaces tailwind-merge cannot infer from the CSS; without the extendTailwindMerge
      config in cn.ts each of these keeps both classes and source-scan order picks the winner */
-  it('merges the project container measures against each other and a stock one', () => {
-    expect(cn('max-w-page', 'max-w-sm')).toBe('max-w-sm')
-    expect(cn('max-w-sm', 'max-w-page')).toBe('max-w-page')
-    expect(cn('max-w-app', 'max-w-page')).toBe('max-w-page')
-    expect(cn('max-w-page', 'max-w-app')).toBe('max-w-app')
+  it('merges the project container measure against a stock one', () => {
+    expect(cn('max-w-app', 'max-w-sm')).toBe('max-w-sm')
+    expect(cn('max-w-sm', 'max-w-app')).toBe('max-w-app')
   })
 
   it('merges the project radii against each other and against stock ones', () => {

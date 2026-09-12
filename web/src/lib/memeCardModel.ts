@@ -1,5 +1,5 @@
 import type { ImgHTMLAttributes, MouseEvent, RefCallback, VideoHTMLAttributes } from 'react'
-import { cardMediaRef, toggleCardMedia } from '../stores/cardMediaStore'
+import { cardMediaRef, toggleCardMedia } from './cardMedia'
 import type { Meme } from './types'
 
 export interface MemeCardMediaToggleProps {

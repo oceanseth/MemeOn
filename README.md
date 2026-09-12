@@ -30,10 +30,14 @@ Tier frame art is generated with the Masky image API (`api/scripts/generate-fram
 ## Project layout
 
 - `shared/` – tier definitions + valuation shared by web and api.
-- `web/` – React + Vite SPA: Landing/FAQ (tier showcase), Marketplace (filters +
-  search), My Binder (collection + mint via Masky image/video gen), Friends
-  (requests, portfolio stats, RTDB online presence), Trade (propose/respond/history),
-  meme detail with cap table, listing, buying, share link.
+- `web/` – React + Vite SPA ("Soft Press", light and dark): Landing/FAQ (tier
+  showcase), Marketplace (filters + search), My Binder (collection + mint via Masky
+  image/video gen, URL, upload, remix, GIPHY), Friends (requests, portfolio stats,
+  RTDB online presence), Trade (propose/respond/history), Top Brains leaderboard,
+  Settings (theme, connections), Developers (API keys), Discord link, invite landing,
+  public `/u/:sub` and `/binder/:sub`, meme detail with cap table, listing, buying,
+  share link. Structure and rules: [`web/src/Anatomy.mdx`](web/src/Anatomy.mdx)
+  (also the "Anatomy" page in Storybook). See [Web UI](#web-ui) below.
 - `api/` – Lambda (esbuild-bundled) + Express dev bridge. DynamoDB single-table,
   Masky OAuth + aigen proxy, session JWTs, og pipeline (jimp), alerts, and the
   mobile feed layer (likes/dislikes/follows, friend-prioritized `/api/feed`,
@@ -102,6 +106,24 @@ with `pnpm --filter <workspace> add <package>`. CI uses
 Vite serves http://localhost:5173 and proxies `/api` + `/m` to the local API
 (port 3001), which uses your AWS credentials against the **dev** table/bucket/params.
 Mint a test session: `AWS_REGION=us-west-2 pnpm --filter memeon-api exec tsx scripts/mint-test-session.ts you "Your Name"`.
+
+## Web UI
+
+`web/` is a headless, tiered React app. Read [`web/src/Anatomy.mdx`](web/src/Anatomy.mdx)
+before touching it; the short version:
+
+| | |
+| --- | --- |
+| Tiers | `atoms → molecules → organisms → screens → views` under `web/src/`. Everything below `views/` is pure props → markup with a `data-slot` on its root and a sibling `*.stories.tsx`. |
+| State | `hooks/useXScreen()` per screen (exports the screen's model type and builds its copy), XState machines in `stores/*Machine.ts`, MobX for the auth/theme stores and the actor snapshot projection. Prop-bag builders (`lib/*Model.ts`) sit between API records and components. |
+| Styling | Tailwind v4 with **no config file**: every token is `@theme static` in `web/src/index.css`, each colour a `light-dark()` pair, resolved by `color-scheme` (`stores/themeStore.ts` pins `data-theme` on `<html>`). Utilities on the component, merged with `cn()` (`lib/cn.ts`, which must learn any new `@theme` namespace). Co-located `.css` only for effects a utility cannot express (`atoms/foil.css`, …), each restating the layer order. |
+| Behaviour primitives | Base UI (`@base-ui/react`) for dialogs, menus, popovers, select, toggles; painted with utilities, state read from `data-*` attributes. |
+| Storybook | `pnpm run storybook` (port 6006, MSW-backed connected scenarios in `web/.storybook/`). Every component has a story; view stories drive real hooks against mocked `/api`. `Anatomy/Tokens` renders the whole token sheet. |
+| Gates | `pnpm run check` = `check-tiers` (tier/import/state rules), `check-contrast` (APCA on every text/surface pair, both arms), `check-layers` (cascade order in `dist`), proxy, unit, runtime (Playwright) and story tests. `pnpm run build` runs `check-tiers`, `tsc`, Vite and `check-layers`. Unused code: `pnpm exec knip`. |
+| Shared code | `shared/tiers.ts` is imported as `@memeon/shared/tiers` (a `workspace:*` package). |
+
+The "Making a change" table in `Anatomy.mdx` says which file a copy, style, state,
+route or token change lands in.
 
 ## Firebase
 
