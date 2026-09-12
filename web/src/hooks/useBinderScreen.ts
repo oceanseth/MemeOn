@@ -3,7 +3,8 @@ import { apiFetch } from '../lib/api'
 import type { Meme } from '../lib/types'
 import { plural } from '../lib/plural'
 import { sortMemes, type SortDir, type SortKey } from '../lib/sorting'
-import { binderMachine, type BinderPhase } from '../stores/binderMachine'
+import { binderMachine, BINDER_PAGE_SIZE, type BinderPhase } from '../stores/binderMachine'
+import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import { buildSortChipsModel, type SortChipsModel } from '../lib/sortChipsModel'
@@ -18,18 +19,34 @@ export type BinderEmptyAction =
   | { kind: 'create'; label: string; linkProps: Pick<LinkProps, 'to'> }
   | { kind: 'showPrivate'; label: string; onClick: () => void }
 
+/** The binder's own identity line: whose cards these are, and how much of them is held. */
+export interface BinderIdentityModel {
+  name: string
+  pictureUrl: string | null
+  /** "6 cards · 72 shares" — counted from the memes the grid is rendering */
+  statsLabel: string
+}
+
 export interface BinderScreenModel {
   phase: BinderPhase
+  /** the page's introduction, under the title */
+  intro: string
+  identity: BinderIdentityModel | null
   /** Persistent live region: mounted in every state, its text swapped, the way Marketplace does it. */
   statusProps: { role: 'status'; 'aria-live': 'polite' }
   /** Counted result line: what the grid is showing right now, and why. */
   statusMessage: string
+  collectionHeading: string
   showPrivateToggle: boolean
   privateCount: number
+  privateToggleLabel: string
   privateToggleProps: Pick<CheckboxRootProps, 'checked' | 'onCheckedChange'>
   sortChips: SortChipsModel
   createLinkProps: Pick<LinkProps, 'to'>
+  createLabel: string
   cards: readonly BinderCardModel[]
+  /** the centred "Show N more" control under the grid; null once every card is on screen */
+  showMore: { label: string; onClick: () => void } | null
   showLoading: boolean
   showEmpty: boolean
   emptyMessage: string
@@ -69,6 +86,7 @@ const isSortKey = (value: string | null): value is SortKey =>
 export function useBinderScreen(): BinderScreenModel {
   const [snapshot, send] = useProjectedActor(binderMachine)
   const [params, setParams] = useSearchParams()
+  const { user } = useAuth()
   const ctx = snapshot.context
   const phase = snapshot.value as BinderPhase
 
@@ -109,21 +127,24 @@ export function useBinderScreen(): BinderScreenModel {
     writeUrl({ sortKey: ctx.sortKey, sortDir: ctx.sortDir, showPrivate })
   }
 
-  const visible = sortMemes(
+  const matching = sortMemes(
     ctx.memes.filter((m) => ctx.showPrivate || !m.private),
     ctx.sortKey,
     ctx.sortDir,
   )
+  const visible = matching.slice(0, ctx.visibleLimit)
+  const hidden = matching.length - visible.length
   const privateCount = ctx.memes.filter((m) => m.private).length
   const showLoading = phase === 'loading'
   const showError = phase === 'error'
-  const showEmpty = !showLoading && !showError && visible.length === 0
-  const showGrid = !showLoading && !showError && visible.length > 0
+  const showEmpty = !showLoading && !showError && matching.length === 0
+  const showGrid = !showLoading && !showError && matching.length > 0
   const firstRun = ctx.memes.length === 0
 
   // Both the count and the 🧠 total come from the memes the grid is rendering, never from a
   // second source that can disagree with what is on screen.
   const visibleValue = visible.reduce((total, meme) => total + meme.value, 0)
+  const heldShares = visible.reduce((total, meme) => total + (meme.myShares ?? 0), 0)
 
   // one status line for the whole screen: the count is the live region, and the error box owns
   // the error copy — so a sort, a private-toggle or a state swap is never silent
@@ -132,7 +153,11 @@ export function useBinderScreen(): BinderScreenModel {
     : showError
       ? 'No cards loaded'
       : [
-          showEmpty ? 'No cards shown' : `${plural(visible.length, 'card')} shown`,
+          showEmpty
+            ? 'No cards shown'
+            : hidden > 0
+              ? `${visible.length} of ${plural(matching.length, 'card')} shown`
+              : `${plural(visible.length, 'card')} shown`,
           SORT_STATUS[ctx.sortKey][ctx.sortDir === 'desc' ? 0 : 1],
           showGrid ? `🧠 ${visibleValue.toLocaleString()}` : null,
           ctx.showPrivate && privateCount > 0 ? 'private included' : null,
@@ -146,10 +171,20 @@ export function useBinderScreen(): BinderScreenModel {
 
   return {
     phase,
+    intro: 'Your corner of the internet. In card form.',
+    identity: user
+      ? {
+          name: user.name,
+          pictureUrl: user.picture,
+          statsLabel: `${plural(visible.length, 'card')} · ${plural(heldShares, 'share')}`,
+        }
+      : null,
     statusProps: { role: 'status', 'aria-live': 'polite' },
     statusMessage,
+    collectionHeading: 'Your collection',
     showPrivateToggle: privateCount > 0,
     privateCount,
+    privateToggleLabel: `Show private (${privateCount})`,
     privateToggleProps: {
       checked: ctx.showPrivate,
       onCheckedChange: (checked) => setShowPrivate(checked),
@@ -163,6 +198,7 @@ export function useBinderScreen(): BinderScreenModel {
       },
     }),
     createLinkProps: { to: '/binder/new' },
+    createLabel: 'Mint a meme',
     cards: visible.map((meme) => {
       const memeCard = buildMemeCardModel(meme)
       const shares = meme.myShares ?? 0
@@ -185,6 +221,13 @@ export function useBinderScreen(): BinderScreenModel {
         showPrivate: !!meme.private,
       }
     }),
+    showMore:
+      showGrid && hidden > 0
+        ? {
+            label: `Show ${Math.min(hidden, BINDER_PAGE_SIZE)} more`,
+            onClick: () => send({ type: 'SHOW_MORE' }),
+          }
+        : null,
     showLoading,
     showEmpty,
     emptyMessage,

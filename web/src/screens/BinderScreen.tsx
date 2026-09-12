@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom'
+import { Avatar } from '../atoms/Avatar'
 import { Badge } from '../atoms/Badge'
 import { Button, buttonClasses } from '../atoms/Button'
 import { Checkbox } from '../atoms/Checkbox'
 import { EmptyActions, EmptyState } from '../atoms/EmptyState'
 import { MemeCard, memeCardSubClasses } from '../atoms/MemeCard'
 import { PageContainer } from '../atoms/PageContainer'
-import { FilterBar, PageHead } from '../atoms/PageHead'
+import { PageHead } from '../atoms/PageHead'
 import { SkeletonCard } from '../atoms/Skeleton'
 import type { BinderScreenModel } from '../hooks/useBinderScreen'
 import { cn } from '../lib/cn'
@@ -14,29 +15,92 @@ import { SortChips } from '../molecules/SortChips'
 /** Skeleton tiles hold the grid geometry while the binder loads, so nothing jumps on arrival. */
 const SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6'] as const
 
-const cardGrid = 'grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5 max-sm:grid-cols-2 max-sm:gap-3'
+/* ── The shared binder-grid pieces ─────────────────────────────────────────────────────────────
+   `ProfileScreen`'s binder tab (the Public Binder boards `HP9-0` / `I2F-0`) is the same grid with
+   different footer copy, so the four constants below are the contract WP3c mirrors: a 356-wide
+   three-up track at the 1108 column, a 166-wide two-up under 561px, the skip-render slot, and the
+   centred neutral "Show N more" control. Exported for that reason — nothing else imports them. */
+
+/** 3 × 356 + 2 × 20 = 1108 at the desktop column; 2 × 166 + 18 = 350 at the phone margin. */
+export const binderGridClasses = cn(
+  'm-0 grid list-none grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-5 p-0',
+  'max-sm:grid-cols-2 max-sm:gap-[18px]',
+)
 
 /**
  * Skip-rendering box around a card. `content-visibility` must not sit on the card itself — it would
  * clip the blurred glow bloom, which the padding / negative-margin pair contains without moving the
  * grid track.
  */
-const cardSlot = cn(
-  '[content-visibility:auto] [contain-intrinsic-size:auto_340px]',
+export const binderCardSlotClasses = cn(
+  '[content-visibility:auto] [contain-intrinsic-size:auto_380px]',
   'pointer-events-none p-[30px] [margin:-30px] [&>*]:pointer-events-auto',
   'max-sm:p-5 max-sm:[margin:-20px]',
 )
 
+/** The count row under a binder card: the atom's own footer rhythm, one line lower. */
+export const binderCardFooterClasses = cn(memeCardSubClasses, 'mt-0.5')
+
+/** The ownership groove: a recessed track with the braincell-gold fill the binder counts in. */
+const OWNERSHIP_TRACK = 'mt-1 block h-1 overflow-hidden rounded-sm bg-surface-pressed'
+
+/* ── The reward rail (`70L-0` › `732-0`) is deliberately NOT here ─────────────────────────────
+   The board draws the rail with a raised "🎁 Claim starter pack" pill in it, and a rail with no
+   actionable control is not that rail. The claim is a one-shot mutation owned by the shell:
+   `useAppShellScreen` posts `/api/onboarding/claim-pack` into its own route-local `appShellMachine`
+   actor and `molecules/QuestBar` opens the pack dialog off that actor's state. Neither the mutation
+   nor the dialog is exported, so a binder-side pill could only re-post the same one-shot call
+   against a second copy of the onboarding state — two sources of truth for one claim. Under the
+   standing default (design-gap decision 8: the shell renders the QuestBar on every route) the
+   binder route already shows the board's rail, actionable pill and all, painted by the shell. If
+   Lou flips that decision, the rail moves here *with* its claim — see the receipt's Requests. */
+
+/** Unbounded 27/34 — the section heading the collection sits under (`739-0`). */
+const SECTION_HEADING = cn(
+  'm-0 font-display text-[27px]/[34px] font-medium tracking-title text-ink',
+  'max-md:text-title',
+)
+
+/** The toolbar row: heading + live count on the left, the 46px control lane on the right. */
+const TOOLBAR = 'mt-7 mb-[18px] flex flex-wrap items-end justify-between gap-x-6 gap-y-3.5'
+
+/**
+ * "Show private (N)" as the board's 46px pill, still a real checkbox: the 22px well rides inside
+ * the pill so the control keeps `role="checkbox"` (and its checked state) for assistive tech while
+ * sitting in the toolbar's own lane. Checked presses the pill into the surface, like every other
+ * "you are here" in Soft Press.
+ */
+const PRIVATE_PILL = cn(
+  'ms-0 min-h-[46px] gap-2.5 rounded-control bg-surface-raised px-[18px] py-0 shadow-raised',
+  'text-label font-semibold text-ink',
+  'has-[[data-checked]]:bg-surface-pressed has-[[data-checked]]:shadow-pressed',
+)
+
+/**
+ * Mint is neutral raised beside the desktop toolbar (the sidebar's Mint pill is the chrome's one
+ * primary) and the phone's own full-width bubblegum action, where there is no sidebar —
+ * `plan-buckets.md` › primary-action, item 2.
+ */
+const MINT_LINK = cn(
+  buttonClasses(),
+  'max-2xl:w-full max-2xl:bg-action max-2xl:text-on-action',
+)
+
 /** Own binder as a function of its model. Every engine state is one set of args. */
 export function BinderScreen({
+  intro,
+  identity,
   statusProps,
   statusMessage,
+  collectionHeading,
   showPrivateToggle,
-  privateCount,
+  privateToggleLabel,
   privateToggleProps,
   sortChips,
   createLinkProps,
+  createLabel,
   cards,
+  showMore,
   showLoading,
   showEmpty,
   emptyMessage,
@@ -49,27 +113,57 @@ export function BinderScreen({
 }: BinderScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <PageHead title="My Binder">
-        <FilterBar>
+      <PageHead title="My Binder" subtitle={intro} />
+
+      {identity && (
+        <div data-slot="binder-identity" className="mb-6 flex items-center gap-4">
+          <Avatar name={identity.name} src={identity.pictureUrl} size="lg" />
+          <div className="min-w-0">
+            <p
+              data-slot="binder-identity-name"
+              className="m-0 font-display text-[24px]/[30px] font-medium tracking-title text-ink"
+            >
+              {identity.name}
+            </p>
+            <p className="m-0 mt-0.5 text-[13px]/[18px] text-ink-muted tabular-nums">
+              {identity.statsLabel}
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div data-slot="binder-toolbar" className={TOOLBAR}>
+        <div className="min-w-0">
+          <h3 className={SECTION_HEADING}>{collectionHeading}</h3>
           {/* mounted in every state, text swapped: a live region inserted with its content is missed */}
-          <span className="text-sm text-text-dim tabular-nums" {...statusProps}>
+          <span
+            className="mt-1 block text-small text-ink-muted tabular-nums"
+            {...statusProps}
+          >
             {statusMessage}
           </span>
-          <Link className={buttonClasses('primary')} {...createLinkProps}>
-            ＋ Create meme
+        </div>
+        <div
+          className="flex flex-wrap items-center gap-3 max-2xl:w-full"
+          role="group"
+          aria-label="Sort and filter your binder"
+        >
+          {/* the board's own order (`739-0`): the filter, then the sort, then Mint */}
+          {showPrivateToggle && (
+            <Checkbox label={privateToggleLabel} className={PRIVATE_PILL} {...privateToggleProps} />
+          )}
+          <SortChips model={sortChips} />
+          <Link className={MINT_LINK} {...createLinkProps}>
+            <span className="2xl:hidden" aria-hidden="true">
+              ＋
+            </span>
+            {createLabel}
           </Link>
-        </FilterBar>
-      </PageHead>
-
-      <div className="mb-[18px] flex flex-wrap items-center gap-2.5" role="group" aria-label="Sort and filter your binder">
-        <SortChips model={sortChips} />
-        {showPrivateToggle && (
-          <Checkbox label={`Show private (${privateCount})`} {...privateToggleProps} />
-        )}
+        </div>
       </div>
 
       {showLoading ? (
-        <ul className={cardGrid} aria-hidden="true">
+        <ul className={binderGridClasses} aria-hidden="true">
           {SKELETON_KEYS.map((key) => (
             <li key={key}>
               <SkeletonCard />
@@ -107,22 +201,26 @@ export function BinderScreen({
           )}
         </EmptyState>
       ) : showGrid ? (
-        <ul className={cardGrid}>
+        <ul className={binderGridClasses}>
           {cards.map((card) => (
-            <li key={card.id} className={cardSlot} aria-label={card.ariaLabel}>
+            <li key={card.id} className={binderCardSlotClasses} aria-label={card.ariaLabel}>
               <MemeCard
                 model={card.memeCard}
                 footer={
                   <>
-                    <span className={memeCardSubClasses}>
-                      <span className="text-sm font-semibold text-gold tabular-nums">{card.sharesLabel}</span>
-                      <span className="flex flex-wrap items-center justify-end gap-1.5">
+                    <span className={binderCardFooterClasses}>
+                      <span className="flex flex-wrap items-center gap-1.5 text-ink-muted">
                         {card.showCreator && <span>you minted this</span>}
                         {card.showPrivate && <Badge>🙈 private</Badge>}
                       </span>
+                      {/* "100/100 shares" is one line at every card width — the 64px slot the
+                          atom keeps for a listing price would break it in two */}
+                      <span className="shrink-0 text-right font-semibold whitespace-nowrap text-ink tabular-nums">
+                        {card.sharesLabel}
+                      </span>
                     </span>
-                    <span className="block h-1 overflow-hidden rounded-sm bg-bg-raised" aria-hidden="true">
-                      <i className="block h-full bg-gold" style={{ width: `${card.sharesPct}%` }} />
+                    <span className={OWNERSHIP_TRACK} aria-hidden="true">
+                      <i className="block h-full bg-warning-text" style={{ width: `${card.sharesPct}%` }} />
                     </span>
                   </>
                 }
@@ -131,6 +229,14 @@ export function BinderScreen({
           ))}
         </ul>
       ) : null}
+
+      {showMore && (
+        <div className="mt-7 flex justify-center">
+          <Button onClick={showMore.onClick} className="max-sm:w-full">
+            {showMore.label}
+          </Button>
+        </div>
+      )}
     </PageContainer>
   )
 }

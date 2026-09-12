@@ -7,6 +7,16 @@ import { buildMemeCardModel } from '../lib/memeCardModel'
 import { buildSortChipsModel } from '../lib/sortChipsModel'
 import { BinderScreen } from './BinderScreen'
 
+/** the 390 × 844 twin every screen in this swarm carries beside its desktop story */
+const phone = {
+  parameters: {
+    viewport: {
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+    },
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
+}
+
 const card = (
   meme: typeof paperMeme,
   shares: number,
@@ -34,14 +44,20 @@ const card = (
 
 const empty: BinderScreenModel = {
   phase: 'empty',
+  intro: 'Your corner of the internet. In card form.',
+  identity: null,
   statusProps: { role: 'status', 'aria-live': 'polite' },
   statusMessage: 'No cards shown · newest first',
+  collectionHeading: 'Your collection',
   showPrivateToggle: false,
   privateCount: 0,
+  privateToggleLabel: 'Show private (0)',
   privateToggleProps: { checked: false, onCheckedChange: fn() },
   sortChips: buildSortChipsModel({ sortKey: 'new', dir: 'desc', onChange: fn() }),
   createLinkProps: { to: '/binder/new' },
+  createLabel: 'Mint a meme',
   cards: [],
+  showMore: null,
   showLoading: false,
   showEmpty: true,
   emptyMessage: 'Your binder is empty. Mint your first meme and start the grind to ✨Shiny✨.',
@@ -131,6 +147,7 @@ export const AllPrivate: Story = {
     phase: 'ready',
     showPrivateToggle: true,
     privateCount: 2,
+    privateToggleLabel: 'Show private (2)',
     emptyMessage: 'All 2 of your memes are private. Turn on "Show private" to see them.',
     emptyAction: { kind: 'showPrivate', label: 'Show private (2)', onClick: fn() },
   },
@@ -151,7 +168,49 @@ export const ShowingPrivate: Story = {
     showGrid: true,
     showPrivateToggle: true,
     privateCount: 1,
+    privateToggleLabel: 'Show private (1)',
     privateToggleProps: { checked: true, onCheckedChange: fn() },
     cards: [card(paperMeme, 4, { showCreator: true, showPrivate: true })],
   },
+}
+
+/**
+ * The whole page the My Binder board draws: identity, the toolbar's own control order and the page
+ * control. The board's reward rail is the shell's `QuestBar` on every route (design-gap decision 8),
+ * so the screen no longer paints a second, actionless copy of it.
+ */
+export const Full: Story = {
+  name: 'Ready (identity, toolbar, paging)',
+  args: {
+    ...Ready.args,
+    identity: { name: 'oxfern', pictureUrl: null, statsLabel: '3 cards · 150 shares' },
+    showPrivateToggle: true,
+    privateCount: 1,
+    privateToggleLabel: 'Show private (1)',
+    statusMessage: '3 of 15 cards shown · newest first · 🧠 186',
+    showMore: { label: 'Show 12 more', onClick: fn() },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Show 12 more' })).toBeInTheDocument()
+    /* the grid is the page's only list: three cards, no second rail list above it */
+    await expect(canvas.getAllByRole('listitem')).toHaveLength(3)
+    /* the board's toolbar lane (`739-0`) reads Show private → the sort → Mint, left to right */
+    const lane = canvas.getByRole('group', { name: 'Sort and filter your binder' })
+    await expect(lane.children).toHaveLength(3)
+    await expect(lane.firstElementChild).toHaveTextContent('Show private (1)')
+    await expect(lane.children[1]?.querySelector('[data-slot="sort-chips"]')).not.toBeNull()
+    await expect(lane.lastElementChild).toHaveTextContent('Mint a meme')
+  },
+}
+
+export const Dark: Story = { ...Full, name: 'Ready dark', globals: { theme: 'dark' } }
+
+export const Phone390: Story = { ...Full, name: 'Ready phone 390', ...phone }
+
+export const DarkPhone390: Story = {
+  ...Full,
+  name: 'Ready dark phone 390',
+  ...phone,
+  globals: { ...phone.globals, theme: 'dark' },
 }
