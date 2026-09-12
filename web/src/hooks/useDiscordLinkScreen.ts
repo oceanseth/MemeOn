@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ApiError, post } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
+import { POST_LOGIN_KEY } from './useAuthCallbackScreen'
 import {
   discordLinkMachine,
   type DiscordLinkFailure,
@@ -110,7 +111,7 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
     if (!auth.user) {
       sessionStorage.setItem(DISCORD_LINK_KEY, token)
       sessionStorage.setItem(DISCORD_LINK_CONSENT_KEY, '1')
-      sessionStorage.setItem('memeon_post_login', '/discord/link')
+      sessionStorage.setItem(POST_LOGIN_KEY, '/discord/link')
       send({ type: 'LOGIN' })
       void beginMaskyLogin().catch(() => send({ type: 'FAIL', failure: 'login' }))
       return

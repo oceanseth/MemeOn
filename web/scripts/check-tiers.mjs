@@ -35,10 +35,6 @@ const STATE_LIBS = /^(mobx|mobx-react(-lite)?|zustand|jotai|valtio|recoil|redux|
 // These are integration points, not tier components. Keep this list exact so a
 // new .tsx file beside one of them still has to join a tier.
 const EXCEPTIONS = new Map([
-  ["components/HeroVideo.tsx", "imperative landing-page media control"],
-  ["pages/AuthCallback.tsx", "OAuth redirect callback"],
-  ["pages/MobileAuthForward.tsx", "mobile deep-link redirect"],
-  ["context/AuthContext.tsx", "compatibility re-export of useAuth"],
   ["main.tsx", "application bootstrap"],
   ["stores/StoresContext.tsx", "root store provider"],
 ])

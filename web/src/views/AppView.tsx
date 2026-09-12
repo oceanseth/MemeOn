@@ -4,13 +4,14 @@ import { Navigate, Route, Routes, useParams, useSearchParams } from 'react-route
 import { PageContainer } from '../atoms/PageContainer'
 import { Spinner } from '../atoms/Spinner'
 import { useAuth } from '../hooks/useAuth'
-import { AuthCallback, MobileAuthForward } from '../lib/legacyAuthPages'
 import { AppShellView } from './AppShellView'
+import { AuthCallbackView } from './AuthCallbackView'
 import { DiscordLinkView } from './DiscordLinkView'
 import { DiscordPageView } from './DiscordPageView'
 import { InviteView } from './InviteView'
 import { LandingView } from './LandingView'
 import { MemeDetailView } from './MemeDetailView'
+import { MobileAuthForwardView } from './MobileAuthForwardView'
 import { PrivacyView } from './PrivacyView'
 import { ProfileView } from './ProfileView'
 import { TermsView } from './TermsView'
@@ -103,8 +104,8 @@ export const AppView = observer(function AppView() {
     <AppShellView>
       <Routes>
         <Route path="/" element={<LandingView />} />
-        <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/auth/mobile" element={<MobileAuthForward />} />
+        <Route path="/auth/callback" element={<AuthCallbackView />} />
+        <Route path="/auth/mobile" element={<MobileAuthForwardView />} />
         <Route path="/invite/:sub" element={<InviteRoute />} />
         <Route path="/discord" element={<DiscordPageView />} />
         <Route path="/discord/link" element={<DiscordLinkView />} />
