@@ -9,9 +9,11 @@
    built CSS back and fails the build if any bundle ever ranks these differently. */
 @layer properties, theme, base, components, utilities;
 
-/* Tier-frame slot states: the three async outcomes of one frame image, kept visibly different
-   without moving the box. Selectors key off `data-slot`/`data-state`, so this file owns the whole
-   effect including its own reduced-motion pause. */
+/* Frame-slot states: the three async outcomes of one `/api/frames` image, kept visibly different
+   without moving the box. Both hosts of a frame — the tier ladder and the hero's trading-card pile
+   — wear them. Selectors key off `data-slot`/`data-state`, so this file owns the whole effect
+   including its own reduced-motion pause. The failed tint reads `currentColor`, which the screen
+   sets from the tier's own `--color-tier-<key>-frame` token. */
 @layer components {
   @keyframes landing-tier-shimmer {
     0% {
@@ -23,7 +25,8 @@
     }
   }
 
-  [data-slot='tier-frame-slot'][data-state='loading']::after {
+  [data-slot='tier-frame-slot'][data-state='loading']::after,
+  [data-slot='hero-card-slot'][data-state='loading']::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -32,13 +35,15 @@
     animation: landing-tier-shimmer 3.8s ease-in-out infinite;
   }
 
-  [data-slot='tier-frame-slot'][data-state='error'] {
-    background: color-mix(in oklab, currentColor 18%, var(--color-bg-media));
+  [data-slot='tier-frame-slot'][data-state='error'],
+  [data-slot='hero-card-slot'][data-state='error'] {
+    background: color-mix(in oklab, currentColor 18%, var(--color-surface-pressed));
     box-shadow: inset 0 0 0 1px color-mix(in oklab, currentColor 45%, transparent);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    [data-slot='tier-frame-slot'][data-state='loading']::after {
+    [data-slot='tier-frame-slot'][data-state='loading']::after,
+    [data-slot='hero-card-slot'][data-state='loading']::after {
       animation: none;
     }
   }

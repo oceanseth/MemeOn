@@ -4,11 +4,8 @@ import type {
   CSSProperties,
   HTMLAttributes,
   ImgHTMLAttributes,
-  ReactNode,
 } from 'react'
-import { createElement } from 'react'
 import { TIERS, type Tier } from '../../../shared/tiers'
-import HeroVideo from '../components/HeroVideo'
 import { apiFetch } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
 import {
@@ -35,32 +32,67 @@ export type LandingFrameSlotState = 'loading' | 'ready' | 'error'
 
 export interface LandingFrameSlotProps {
   'data-state': LandingFrameSlotState
-  /** the failed placeholder tints from the tier's own colour (index.css paints `currentColor`) */
+  /**
+   * The failed placeholder tints from the tier's own frame token (`LandingScreen.css` paints
+   * `currentColor`). A token, never `shared/tiers`' hex — that ramp is tuned for the API's dark
+   * OG frames and is unreadable on the light canvas.
+   */
   style: CSSProperties
 }
 
-export interface LandingTierModel extends Pick<Tier, 'key' | 'name' | 'color' | 'glowStyle' | 'hype'> {
-  requirementLabel: string
+export interface LandingTierModel extends Pick<Tier, 'key' | 'name' | 'glowStyle'> {
+  /** the ladder card's middle line: "0 reshares" … "25,000 reshares" (board `DT6-0` and siblings) */
+  resharesLabel: string
+  /** the rarity caption under it: Common … Mythic Shiny (board `DT7-0` and siblings) */
+  rarityLabel: string
+}
+
+/** One tilted card of the hero's trading-card pile (board `KZF-0` / iPhone `L0D-0`). */
+export interface LandingHeroCardModel extends Pick<Tier, 'glowStyle'> {
+  tierKey: string
+  tierName: string
+  /** the meme title the board letters on the tilted card */
+  caption: string
 }
 
 /**
- * The ladder is fed the db `reshares` field, which the API surfaces as `views`
- * (`reshareCount` is the separate distinct-source stat), so views is the unit here.
+ * The ladder is fed the db `reshares` field: the tier thresholds are reshare counts, and the
+ * board letters them as such ("10 reshares").
  */
 export function buildLandingTierModels(): LandingTierModel[] {
   return TIERS.map((tier) => ({
     key: tier.key,
     name: tier.name,
-    color: tier.color,
     glowStyle: tier.glowStyle,
-    hype: tier.hype,
-    requirementLabel: `${tier.rarity} · ${tier.minReshares.toLocaleString()}+ views`,
+    resharesLabel: `${tier.minReshares.toLocaleString()} reshares`,
+    rarityLabel: tier.rarity,
   }))
 }
 
+/* The board's pile is three specimens, not the whole ladder: a Gold, a Silver and a Prismatic in
+   that paint order, so the two tilted cards overlap the flat one. Names come from `shared/tiers`
+   so a rename of a tier can never leave a stale label in the hero. */
+const HERO_PILE: { tierKey: string; caption: string }[] = [
+  { tierKey: 'gold', caption: 'one braincell left' },
+  { tierKey: 'silver', caption: 'this one' },
+  { tierKey: 'prismatic', caption: 'nothing here' },
+]
+
+export function buildLandingHeroCards(): LandingHeroCardModel[] {
+  return HERO_PILE.map(({ tierKey, caption }) => {
+    const tier = TIERS.find((candidate) => candidate.key === tierKey)
+    return {
+      tierKey,
+      tierName: tier?.name ?? tierKey,
+      glowStyle: tier?.glowStyle ?? 'graphite-gradient-still',
+      caption,
+    }
+  })
+}
+
 /*
- * The bare foil frame from `/api/frames` is the ladder's image source. Composited demo
- * cards (the same house meme inside every foil) are a deferred asset: pointing at
+ * The bare foil frame from `/api/frames` is the art of both the ladder and the hero pile.
+ * Composited demo cards (the same house meme inside every foil) are a deferred asset: pointing at
  * `/brand/tier-demo/*.png` before they ship costs seven 404s and a two-stage paint.
  */
 
@@ -88,10 +120,11 @@ export interface LandingScreenModel {
   showLoginButton: boolean
   showErr: boolean
   loginLabel: string
-  /** the FAQ is the most persuasive section, so the CTA repeats under it in the same state */
+  /** the closing card's line; the page finishes convincing there, so the CTA repeats under it */
   closingLine: string
   closingLoginLabel: string
-  hero: ReactNode
+  /** the hero's trading-card pile */
+  heroCards: LandingHeroCardModel[]
   tiers: LandingTierModel[]
   loginButtonProps: LandingLoginButtonProps
   closingLoginButtonProps: LandingLoginButtonProps
@@ -149,7 +182,7 @@ export function useLandingScreen(): LandingScreenModel {
       tier.key,
       {
         'data-state': !framesReady ? 'loading' : frameImageProps[tier.key] ? 'ready' : 'error',
-        style: { color: tier.color },
+        style: { color: `var(--color-tier-${tier.key}-frame)` },
       } satisfies LandingFrameSlotProps,
     ]),
   )
@@ -161,9 +194,11 @@ export function useLandingScreen(): LandingScreenModel {
     showLoginButton: !user,
     showErr: !!ctx.err,
     loginLabel: ctx.busy ? 'Redirecting…' : '🎭 Log in with Masky',
-    closingLine: user ? 'Your binder is waiting.' : 'Ready? Your first pack is free.',
+    closingLine: user
+      ? 'Your binder is waiting.'
+      : 'Your next group-chat classic is a card already.',
     closingLoginLabel: ctx.busy ? 'Redirecting…' : '🎭 Grab your pack with Masky',
-    hero: createElement(HeroVideo),
+    heroCards: buildLandingHeroCards(),
     tiers: buildLandingTierModels(),
     loginButtonProps: {
       onClick: onLogin,

@@ -4,24 +4,21 @@ import { expect, fn, userEvent, within } from 'storybook/test'
 import { TIERS } from '../../../shared/tiers'
 import { tierFrames } from '../../.storybook/fixtures'
 import {
+  buildLandingHeroCards,
   buildLandingTierModels,
   type LandingFrameSlotState,
   type LandingScreenModel,
 } from '../hooks/useLandingScreen'
 import { LandingScreen } from './LandingScreen'
 
-/** Structurally identical to HeroVideo's DOM, so the stories measure the real page. */
-const hero = (
-  <div data-slot="hero-video" className="mx-auto mt-1 mb-[30px] max-w-[1080px] px-4">
-    <div data-slot="hero-video-frame" className="relative aspect-video overflow-hidden rounded-card border border-border bg-bg-card">
-      <img
-        className="block h-full w-full object-cover"
-        src="/promo/memeon-promo-poster.jpg"
-        alt="MemeOn in 50 seconds"
-      />
-    </div>
-  </div>
-)
+const phone = {
+  parameters: {
+    viewport: {
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+    },
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
+}
 
 const handlers = {
   onLogin: fn(),
@@ -30,7 +27,10 @@ const handlers = {
 
 const slots = (state: LandingFrameSlotState): LandingScreenModel['frameSlotProps'] =>
   Object.fromEntries(
-    TIERS.map((tier) => [tier.key, { 'data-state': state, style: { color: tier.color } }]),
+    TIERS.map((tier) => [
+      tier.key,
+      { 'data-state': state, style: { color: `var(--color-tier-${tier.key}-frame)` } },
+    ]),
   )
 
 const readyFrames: LandingScreenModel['frameImageProps'] = Object.fromEntries(
@@ -47,9 +47,9 @@ const empty: LandingScreenModel = {
   showLoginButton: true,
   showErr: false,
   loginLabel: '🎭 Log in with Masky',
-  closingLine: 'Ready? Your first pack is free.',
+  closingLine: 'Your next group-chat classic is a card already.',
   closingLoginLabel: '🎭 Grab your pack with Masky',
-  hero,
+  heroCards: buildLandingHeroCards(),
   tiers: buildLandingTierModels(),
   loginButtonProps: {
     onClick: handlers.onLogin,
@@ -102,6 +102,10 @@ export const Loading: Story = {
     await expect(shimmering).toHaveLength(TIERS.length)
     // the box is reserved before the images exist, so nothing below it moves later
     await expect((shimmering[0] as HTMLElement).offsetHeight).toBeGreaterThan(100)
+    // the hero pile shares the ladder's frame source and its three async outcomes
+    await expect(
+      canvasElement.querySelectorAll('[data-slot="hero-card-slot"][data-state="loading"]'),
+    ).toHaveLength(3)
   },
 }
 
@@ -113,13 +117,24 @@ export const Ready: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByText('Common · 0+ views')).toBeInTheDocument()
-    await expect(canvas.getByText('Legendary · 1,000+ views')).toBeInTheDocument()
-    await expect(canvas.getByText('Mythic Shiny · 25,000+ views')).toBeInTheDocument()
+    // the ladder letters the board's two lines: the reshare threshold, then the rarity
+    await expect(canvas.getByText('0 reshares')).toBeInTheDocument()
+    await expect(canvas.getByText('1,000 reshares')).toBeInTheDocument()
+    await expect(canvas.getByText('25,000 reshares')).toBeInTheDocument()
+    await expect(canvas.getByText('Mythic Shiny')).toBeInTheDocument()
     // the ladder is an ordered list of headed cards, not seven anonymous boxes
-    await expect(canvas.getAllByRole('listitem')).toHaveLength(TIERS.length)
+    const ladder = within(canvasElement.querySelector<HTMLElement>('[data-slot="landing-tiers"]')!)
+    await expect(ladder.getAllByRole('listitem')).toHaveLength(TIERS.length)
     await expect(canvas.getByRole('heading', { level: 3, name: 'Shiny' })).toBeInTheDocument()
     await expect(canvas.getByRole('heading', { level: 3, name: 'How do tiers work?' })).toBeInTheDocument()
+    // the board's three steps, in order
+    const how = within(canvasElement.querySelector<HTMLElement>('[data-slot="landing-how"]')!)
+    await expect(how.getAllByRole('listitem')).toHaveLength(3)
+    await expect(how.getByRole('heading', { level: 3, name: 'Mint a moment' })).toBeInTheDocument()
+    // the hero pile is three tilted specimens with their own tier seals
+    const pile = canvasElement.querySelector<HTMLElement>('[data-slot="hero-pile"]')!
+    await expect(pile.querySelectorAll('[data-slot="hero-card"]')).toHaveLength(3)
+    await expect(within(pile).getByText('Prismatic')).toBeInTheDocument()
     const login = canvas.getByRole('button', { name: 'Log in with Masky' })
     // the Button atom omits aria-busy entirely when idle rather than writing "false"
     await expect(login).not.toHaveAttribute('aria-busy')
@@ -127,13 +142,24 @@ export const Ready: Story = {
     await expect(canvas.getByText('No email. No real name. Just your Masky avatar.')).toBeInTheDocument()
     // the FAQ no longer ends the page: the CTA repeats under it
     const closing = canvas.getByRole('button', { name: 'Grab your pack with Masky' })
-    await expect(canvas.getByText('Ready? Your first pack is free.')).toBeInTheDocument()
+    await expect(canvas.getByText('Your next group-chat classic is a card already.')).toBeInTheDocument()
     const page = document.scrollingElement as HTMLElement
     await expect(page.scrollWidth).toBe(page.clientWidth)
     await userEvent.click(login)
     await userEvent.click(closing)
     await expect(handlers.onLogin).toHaveBeenCalledTimes(2)
   },
+}
+
+export const Dark: Story = { ...Ready, name: 'Ready dark', globals: { theme: 'dark' } }
+
+export const Phone390: Story = { ...Ready, name: 'Ready phone 390', ...phone }
+
+export const DarkPhone390: Story = {
+  ...Ready,
+  name: 'Ready dark phone 390',
+  ...phone,
+  globals: { ...phone.globals, theme: 'dark' },
 }
 
 /** Both frame sources failed: the slot keeps the card's height and tints from the tier colour. */
@@ -164,10 +190,16 @@ export const LoggedIn: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // both CTAs swap with the same state
-    await expect(canvas.getAllByRole('link', { name: '📈 Enter the marketplace' })).toHaveLength(2)
+    await expect(canvas.getAllByRole('link', { name: '🃏 Enter the marketplace' })).toHaveLength(2)
     await expect(canvas.queryByRole('button', { name: 'Log in with Masky' })).not.toBeInTheDocument()
     await expect(canvas.getByText('Your binder is waiting.')).toBeInTheDocument()
   },
+}
+
+export const LoggedInDark: Story = {
+  ...LoggedIn,
+  name: 'Logged in dark',
+  globals: { theme: 'dark' },
 }
 
 export const LoggingIn: Story = {
@@ -208,6 +240,12 @@ export const LoginError: Story = {
       "Masky didn't answer. Tap Log in with Masky to try again.",
     )
   },
+}
+
+export const LoginErrorDark: Story = {
+  ...LoginError,
+  name: 'Login error dark',
+  globals: { theme: 'dark' },
 }
 
 export const LoginErrorWhileFramesLoad: Story = {

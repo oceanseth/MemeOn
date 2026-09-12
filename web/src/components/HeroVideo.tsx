@@ -61,19 +61,21 @@ export interface HeroVideoProps {
   autoplay?: boolean
 }
 
+/* Soft Press materials: the relief is the edge, so the frame is a raised surface rather than a
+   hairline box, and the tint comes from the semantic tokens (no legacy `--color-accent` alias). */
 const FRAME = cn(
-  'relative aspect-video overflow-hidden rounded-card border border-border bg-bg-card',
-  'shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-accent)_6%,transparent),0_18px_60px_-28px_color-mix(in_oklab,var(--color-accent)_45%,transparent)]',
-  'max-md:rounded-none max-md:border-x-0',
+  'relative aspect-video overflow-hidden rounded-card border-0 bg-surface shadow-raised',
+  'max-md:rounded-none',
 )
 
 /* the shared pill chrome: font/line-height are reset so each pill can size its own text */
 const PILL = cn(
-  'absolute cursor-pointer rounded-pill border border-border font-[inherit] leading-none text-text',
-  'bg-[color-mix(in_oklab,var(--color-bg)_72%,transparent)] backdrop-blur-[6px]',
-  '[transition:background_var(--dur-base)_ease,border-color_var(--dur-base)_ease]',
+  'absolute cursor-pointer rounded-pill border-0 font-[inherit] leading-none text-ink shadow-raised',
+  'bg-[color-mix(in_oklab,var(--color-surface-raised)_82%,transparent)] backdrop-blur-[6px]',
+  '[transition:background_var(--dur-base)_ease,box-shadow_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
-  'hover:bg-[color-mix(in_oklab,var(--color-bg)_90%,transparent)] hover:border-accent',
+  'hover:bg-surface-raised',
+  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
 )
 
 export default function HeroVideo({ autoplay }: HeroVideoProps) {
