@@ -14,8 +14,6 @@ import type { ButtonHTMLAttributes } from 'react'
 
 export const INVITE_KEY = 'memeon_invite_from'
 
-export type { InviteData, InviteInviter } from '../stores/inviteMachine'
-
 export interface InviteScreenModel {
   phase: InvitePhase
   err: string | null
@@ -23,7 +21,6 @@ export interface InviteScreenModel {
   showSpinner: boolean
   showAcceptError: boolean
   showAcceptSuccess: boolean
-  showAcceptSpinner: boolean
   showHighlights: boolean
   loadingLabel: string
   /** the sentence under the hero: one line, product language, never "invest" */
@@ -179,7 +176,6 @@ export function useInviteScreen(): InviteScreenModel {
     showSpinner: !ctx.data && !ctx.err,
     showAcceptError: !!ctx.err && !!ctx.data,
     showAcceptSuccess: ctx.accepted && !!ctx.data,
-    showAcceptSpinner: ctx.busy,
     showHighlights: !!ctx.data && ctx.data.topMemes.length > 0,
     loadingLabel: 'Loading invite…',
     inviteBody:

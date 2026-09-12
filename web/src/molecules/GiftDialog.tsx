@@ -19,7 +19,7 @@ const ROW = cn(
 )
 
 /** The thumbnail plate: the card system's recessed art well, one step down from the row. */
-const THUMB = 'block size-11 shrink-0 overflow-hidden rounded-[12px] bg-surface-pressed'
+const THUMB = 'block size-11 shrink-0 overflow-hidden rounded-chip bg-surface-pressed'
 
 /**
  * Gift shares from your binder to a friend. Its engine supplies all behavior, including the

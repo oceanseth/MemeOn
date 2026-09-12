@@ -31,7 +31,6 @@ const empty: InviteScreenModel = {
   showSpinner: true,
   showAcceptError: false,
   showAcceptSuccess: false,
-  showAcceptSpinner: false,
   showHighlights: false,
   loadingLabel: 'Loading invite…',
   inviteBody: 'Mint memes, share the link, and trade your friends’ bangers before they go ✨Shiny✨.',
@@ -124,7 +123,6 @@ export const Accepting: Story = {
     ...ready,
     phase: 'accepting',
     acceptButtonProps: { onClick: fn(), 'aria-disabled': true, 'aria-busy': true },
-    showAcceptSpinner: true,
     acceptLabel: '🤝 Adding pal…',
   },
 }

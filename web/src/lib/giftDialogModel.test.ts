@@ -60,7 +60,6 @@ describe('gift dialog model', () => {
     expect(model.rows[0]).toMatchObject({
       tierKey: 'paper',
       tierLabel: 'Paper',
-      tierColor: giftablePaper.tier.color,
       listed: false,
       sharesLabel: 'you hold 12 of 100',
     })

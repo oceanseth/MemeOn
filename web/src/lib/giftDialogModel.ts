@@ -17,7 +17,6 @@ export interface GiftDialogRowModel {
   sharesLabel: string
   tierKey: string
   tierLabel: string
-  tierColor: string
   listed: boolean
   listedLabel: string
   imageProps: Pick<
@@ -133,7 +132,6 @@ export function buildGiftDialogModel({
       sharesLabel: `you hold ${meme.myShares ?? 0} of 100`,
       tierKey: meme.tier.key,
       tierLabel: meme.tier.name,
-      tierColor: meme.tier.color,
       listed: !!meme.listing && meme.listing.shares > 0,
       listedLabel: 'Listed',
       imageProps: {

@@ -15,7 +15,7 @@ import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
    padding, a 7px column gap, everything centred on the avatar). */
 const HERO = cn(
   'flex flex-col items-center gap-[7px] rounded-[28px] bg-surface px-5 pt-5 pb-7 text-center shadow-raised',
-  'max-sm:rounded-[24px] max-sm:px-[18px]',
+  'max-sm:rounded-nav max-sm:px-[18px]',
 )
 
 const HERO_AVATAR = 'size-[90px] rounded-[33px] max-sm:size-[78px] max-sm:rounded-[28px]'

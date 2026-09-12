@@ -21,7 +21,7 @@ import { buildConfirmDialogModel, type ConfirmDialogModel } from '../lib/confirm
 import type { ButtonHTMLAttributes, InputHTMLAttributes } from 'react'
 import type { LinkProps } from 'react-router-dom'
 
-export type { FriendsPhase, GiftTarget, UserHit }
+export type { FriendsPhase }
 
 /** Success banners clear themselves so they stop stacking up for the whole session. */
 const MSG_TTL_MS = 6000

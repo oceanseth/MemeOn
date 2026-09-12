@@ -11,6 +11,7 @@ import { FilterBar, PageHead } from '../atoms/PageHead'
 import { Panel } from '../atoms/Panel'
 import { Spinner } from '../atoms/Spinner'
 import { cn } from '../lib/cn'
+import { FOCUS_RING } from '../lib/focus'
 import type { FriendsScreenModel } from '../hooks/useFriendsScreen'
 import { ConfirmDialog } from '../molecules/ConfirmDialog'
 import { GiftDialog } from '../molecules/GiftDialog'
@@ -25,7 +26,7 @@ const SEARCH_GLYPH = 'pointer-events-none absolute top-1/2 left-[18px] -translat
    things you can act on. */
 const ONLINE_STRIP = cn(
   'mb-5 flex flex-wrap items-center gap-5 rounded-[28px] bg-surface-pressed px-5 py-4 shadow-pressed',
-  'max-sm:gap-3.5 max-sm:rounded-[24px] max-sm:px-[18px]',
+  'max-sm:gap-3.5 max-sm:rounded-nav max-sm:px-[18px]',
 )
 
 /* The 140px title slot the board fixes so every strip lines its avatars up on the same lane. */
@@ -45,12 +46,12 @@ const DOT = 'inline-block size-2.5 shrink-0 rounded-full bg-success-text'
    + 46 (actions `AJI-0`) + 20. */
 const ROW = cn(
   'flex items-center gap-3.5 rounded-[28px] bg-surface px-5 py-3.5 shadow-raised',
-  'max-sm:flex-col max-sm:items-stretch max-sm:gap-3.5 max-sm:rounded-[24px] max-sm:py-5',
+  'max-sm:flex-col max-sm:items-stretch max-sm:gap-3.5 max-sm:rounded-nav max-sm:py-5',
 )
 
 const IDENTITY = cn(
   'flex min-w-0 flex-1 items-center gap-3.5 rounded-[20px] text-inherit no-underline',
-  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
+  FOCUS_RING,
 )
 
 const NAME = cn(
@@ -67,15 +68,15 @@ const ACTIONS = 'flex shrink-0 items-center gap-3 max-sm:w-full max-sm:gap-3'
 const ROW_PILL = 'max-sm:flex-1 max-sm:px-3'
 
 /**
- * The quiet exit (Remove / Decline / Cancel). The board draws it as bare text in the focus colour
- * — bubblegum in light, sky in dark — because the weight of the decision lives in the confirm
- * dialog, not in a red button on a list row.
+ * The quiet exit (Remove / Decline / Cancel). The board draws it as bare text in the accent the
+ * ring is drawn in, because the weight of the decision lives in the confirm dialog, not in a red
+ * button on a list row. `--color-focus` is a ring colour, though — it reads Lc −53 on the dark
+ * surface — so the text takes `--color-link`, which is the same idea inside the contrast floor.
  */
 const TEXT_ACTION = cn(
   'shrink-0 cursor-pointer rounded-control border-0 bg-transparent px-2.5 py-3.5',
-  'text-small font-semibold text-focus',
-  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
-  'forced-colors:focus-visible:outline-[Highlight]',
+  'text-small font-semibold text-link',
+  FOCUS_RING,
   'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',
   'pointer-coarse:min-h-11',
 )
@@ -225,7 +226,7 @@ export function FriendsScreen({
                 {...f.onlineLinkProps}
                 className={cn(
                   'group inline-flex items-center gap-2 rounded-[20px] text-small text-ink no-underline',
-                  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
+                  FOCUS_RING,
                 )}
               >
                 <Avatar name={f.name} src={f.avatarSrc} size="md" loading="lazy" />
