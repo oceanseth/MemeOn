@@ -32,9 +32,9 @@ const AVATAR_SRC =
   )
 
 const statsFor = (profile: typeof palProfile) => [
+  { id: 'collection', glyph: '📚', text: `${profile.collectionSize} memes` },
+  { id: 'portfolio', glyph: '🧠', text: `${profile.portfolioValue.toLocaleString()} held` },
   { id: 'followers', glyph: '⭐', text: `${profile.followers} followers` },
-  { id: 'collection', glyph: '📚', text: `${profile.collectionSize} in collection` },
-  { id: 'portfolio', glyph: '🧠', text: `portfolio ${profile.portfolioValue.toLocaleString()}` },
 ]
 
 const handlers = {
@@ -43,6 +43,8 @@ const handlers = {
   followButtonProps: { 'aria-pressed': false, 'aria-busy': false, disabled: false, onClick: fn() },
   friendButtonProps: { 'aria-busy': false, disabled: false, onClick: fn() },
   retryButtonProps: { onClick: fn() },
+  shareButtonProps: { onClick: fn() },
+  showMoreButtonProps: { onClick: fn() },
 } satisfies Partial<ProfileScreenModel>
 
 const emptyCreated: ProfileScreenModel = {
@@ -54,13 +56,27 @@ const emptyCreated: ProfileScreenModel = {
   errorLinkProps: { to: '/marketplace' },
   showLoading: false,
   loadingLabel: 'Loading profile',
+  title: palProfile.name,
+  intro: null,
+  identityLine: `Binder of ${palProfile.name}`,
+  showBinderHero: false,
+  tradeLabel: 'Trade',
+  tradeLinkProps: { to: '/trade', 'aria-label': `Trade with ${palProfile.name}` },
+  shareLabel: '🔗 Share binder',
+  showSelfActions: false,
+  settingsLabel: 'Settings',
+  settingsLinkProps: { to: '/settings' },
+  reshareNote: 'Every reshare of these links levels the cards up.',
+  gridCountLabel: 'Showing 0 of 0',
+  showMore: false,
+  showMoreLabel: 'Show 12 more',
   profile: {
     name: palProfile.name,
     avatarSrc: null,
     stats: statsFor(palProfile),
   },
   showActions: true,
-  followButtonVariant: 'primary',
+  followButtonVariant: 'default',
   followGlyph: '☆',
   followText: 'Follow',
   showFriendButton: true,
@@ -72,7 +88,7 @@ const emptyCreated: ProfileScreenModel = {
   showActionErr: false,
   actionErr: '',
   showJoin: false,
-  joinLabel: "Join MemeOn to collect pal's cards",
+  joinLabel: 'Log in to start your own binder',
   joinLinkProps: { to: '/', state: { next: '/u/user-pal' } },
   createdCount: 0,
   binderCount: 0,
@@ -84,8 +100,6 @@ const emptyCreated: ProfileScreenModel = {
   emptyLinkLabel: '',
   emptyLinkProps: { to: '/marketplace' },
   showGrid: false,
-  createdTabVariant: 'primary',
-  binderTabVariant: 'default',
   gridProps: { id: 'profile-cards', 'aria-live': 'polite', 'aria-label': 'Created memes, 0 cards' },
   ...handlers,
 }
@@ -97,6 +111,16 @@ const oneCreatedCard = {
   gridProps: { id: 'profile-cards', 'aria-live': 'polite', 'aria-label': 'Created memes, 1 card' },
   cards: [{ id: `created-${paperMeme.id}`, memeCard: buildMemeCardModel(paperMeme), sharesLabel: null }],
 } satisfies Partial<ProfileScreenModel>
+
+/** Storybook's viewport global; the vitest storybook project renders at the story's own width. */
+const phone = {
+  parameters: {
+    viewport: {
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+    },
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
+}
 
 const meta = {
   title: 'Screens/ProfileScreen',
@@ -145,27 +169,29 @@ export const WithAvatar: Story = {
 
 export const BinderTab: Story = {
   args: {
-    createdTabVariant: 'default',
-    binderTabVariant: 'primary',
     createdTabButtonProps: { 'aria-pressed': false, 'aria-controls': 'profile-cards', onClick: fn() },
     binderTabButtonProps: { 'aria-pressed': true, 'aria-controls': 'profile-cards', onClick: fn() },
     showEmpty: false,
     showGrid: true,
     binderCount: 1,
     gridProps: { id: 'profile-cards', 'aria-live': 'polite', 'aria-label': 'Binder memes, 1 card' },
-    cards: [{ id: `binder-${giftablePaper.id}`, memeCard: buildMemeCardModel(giftablePaper), sharesLabel: '12/100 shares' }],
+    cards: [{ id: `binder-${giftablePaper.id}`, memeCard: buildMemeCardModel(giftablePaper), sharesLabel: 'holds 12/100' }],
   },
 }
 
 export const Self: Story = {
   args: {
     ...oneCreatedCard,
+    title: louProfile.name,
+    identityLine: `Binder of ${louProfile.name}`,
     profile: {
       name: louProfile.name,
       avatarSrc: null,
       stats: statsFor(louProfile),
     },
     showActions: false,
+    showSelfActions: true,
+    cards: [{ id: `created-${paperMeme.id}`, memeCard: buildMemeCardModel(paperMeme), sharesLabel: '100/100 shares' }],
   },
 }
 
@@ -178,8 +204,6 @@ export const SelfEmptyBinder: Story = {
       stats: statsFor(louProfile),
     },
     showActions: false,
-    createdTabVariant: 'default',
-    binderTabVariant: 'primary',
     createdTabButtonProps: { 'aria-pressed': false, 'aria-controls': 'profile-cards', onClick: fn() },
     binderTabButtonProps: { 'aria-pressed': true, 'aria-controls': 'profile-cards', onClick: fn() },
     emptyTitle: "You don't hold shares in any memes yet.",
@@ -211,8 +235,6 @@ export const SelfEmptyCreated: Story = {
 /** someone else's empty binder tab */
 export const EmptyBinder: Story = {
   args: {
-    createdTabVariant: 'default',
-    binderTabVariant: 'primary',
     createdTabButtonProps: { 'aria-pressed': false, 'aria-controls': 'profile-cards', onClick: fn() },
     binderTabButtonProps: { 'aria-pressed': true, 'aria-controls': 'profile-cards', onClick: fn() },
     emptyTitle: "pal doesn't hold shares in any memes yet.",
@@ -221,9 +243,48 @@ export const EmptyBinder: Story = {
   },
 }
 
-/** one link, no nested button, and the return path rides in link state */
+/** the public profile board: no in-app chrome, one bubblegum, and the return path rides in link state */
 export const LoggedOutVisitor: Story = {
-  args: { ...oneCreatedCard, showActions: false, showJoin: true },
+  args: {
+    ...oneCreatedCard,
+    showActions: false,
+    showJoin: true,
+    intro: 'A collection worth passing around · 1 meme · 0 in binder',
+    identityLine: null,
+    profile: {
+      name: palProfile.name,
+      avatarSrc: null,
+      stats: [{ id: 'braincells', glyph: '🧠', text: '90 braincells held' }],
+    },
+  },
+}
+
+/** `/binder/:sub` seen by anyone but its owner: the title is the binder, the grid is the shelf. */
+export const PublicBinder: Story = {
+  args: {
+    ...oneCreatedCard,
+    showActions: false,
+    showJoin: true,
+    title: `${palProfile.name}'s binder`,
+    intro: 'A collection worth passing around.',
+    identityLine: null,
+    showBinderHero: true,
+    joinLabel: `Log in to trade with ${palProfile.name}`,
+    createdTabButtonProps: { 'aria-pressed': false, 'aria-controls': 'profile-cards', onClick: fn() },
+    binderTabButtonProps: { 'aria-pressed': true, 'aria-controls': 'profile-cards', onClick: fn() },
+    binderCount: 1,
+    profile: {
+      name: palProfile.name,
+      avatarSrc: null,
+      stats: [
+        { id: 'minted', glyph: '', text: '1 meme' },
+        { id: 'binder', glyph: '', text: '1 in binder' },
+        { id: 'braincells', glyph: '🧠', text: '90 braincells' },
+      ],
+    },
+    cards: [{ id: `binder-${giftablePaper.id}`, memeCard: buildMemeCardModel(giftablePaper), sharesLabel: 'holds 12/100' }],
+    gridProps: { id: 'profile-cards', 'aria-live': 'polite', 'aria-label': 'Binder memes, 1 card' },
+  },
 }
 
 export const Following: Story = {
@@ -278,4 +339,43 @@ export const LongName: Story = {
       stats: statsFor(palProfile),
     },
   },
+}
+
+/** more cards than one page holds: the centred "Show N more" and its count caption. */
+export const Paged: Story = {
+  args: {
+    ...oneCreatedCard,
+    createdCount: 14,
+    showMore: true,
+    showMoreLabel: 'Show 2 more',
+    gridCountLabel: 'Showing 12 of 14',
+    cards: Array.from({ length: 12 }, (_value, index) => ({
+      id: `created-${paperMeme.id}-${index}`,
+      memeCard: buildMemeCardModel(paperMeme),
+      sharesLabel: null,
+    })),
+  },
+}
+
+export const Dark: Story = { ...Following, name: 'Ready dark', globals: { theme: 'dark' } }
+
+export const Phone390: Story = { ...Following, name: 'Ready phone 390', ...phone }
+
+export const DarkPhone390: Story = {
+  ...Following,
+  name: 'Ready dark phone 390',
+  ...phone,
+  globals: { ...phone.globals, theme: 'dark' },
+}
+
+export const PublicBinderDark: Story = {
+  ...PublicBinder,
+  name: 'Public binder dark',
+  globals: { theme: 'dark' },
+}
+
+export const PublicBinderPhone390: Story = {
+  ...PublicBinder,
+  name: 'Public binder phone 390',
+  ...phone,
 }

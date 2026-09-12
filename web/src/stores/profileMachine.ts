@@ -1,5 +1,6 @@
 import { assign, setup } from 'xstate'
 import type { Meme } from '../lib/types'
+import { BINDER_PAGE_SIZE } from './binderMachine'
 
 export type ProfileTab = 'created' | 'binder'
 export type ProfilePhase = 'loading' | 'ready' | 'error'
@@ -28,12 +29,15 @@ export interface ProfileContext {
   errKind: ProfileErrKind | null
   busy: boolean
   actionErr: string | null
+  /** how many cards of the selected tab are on screen; the binder's own page size, shared */
+  visibleLimit: number
 }
 
 export type ProfileEvent =
   | { type: 'DONE'; data: ProfileData }
   | { type: 'FAIL'; err: string; kind: ProfileErrKind }
   | { type: 'SET_TAB'; tab: ProfileTab }
+  | { type: 'SHOW_MORE' }
   | { type: 'BEGIN_ACTION' }
   | { type: 'SET_FOLLOWING'; following: boolean }
   | { type: 'SETTLE_ACTION' }
@@ -56,9 +60,15 @@ export const profileMachine = setup({
     errKind: null,
     busy: false,
     actionErr: null,
+    visibleLimit: BINDER_PAGE_SIZE,
   }),
   on: {
-    SET_TAB: { actions: assign({ tab: ({ event }) => event.tab }) },
+    /* a tab is a different collection, so it starts at page one; a relationship reload (DONE) is
+       the same collection and keeps whatever the reader has already paged in */
+    SET_TAB: { actions: assign({ tab: ({ event }) => event.tab, visibleLimit: BINDER_PAGE_SIZE }) },
+    SHOW_MORE: {
+      actions: assign({ visibleLimit: ({ context }) => context.visibleLimit + BINDER_PAGE_SIZE }),
+    },
     DONE: {
       target: '.ready',
       actions: assign({ data: ({ event }) => event.data, err: null, errKind: null }),

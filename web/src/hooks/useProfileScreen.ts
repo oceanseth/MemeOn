@@ -5,6 +5,7 @@ import type { Meme } from '../lib/types'
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
 import { useProjectedActor } from './useProjectedActor'
+import { BINDER_PAGE_SIZE } from '../stores/binderMachine'
 import { profileMachine, type ProfileData, type ProfileTab } from '../stores/profileMachine'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import type { ButtonVariant } from '../atoms/Button'
@@ -23,8 +24,28 @@ export interface ProfileScreenModel {
   errorLinkProps: Pick<LinkProps, 'to'>
   showLoading: boolean
   loadingLabel: string
+  /** the page title: the player's name, or "<name>'s binder" on a shared binder link */
+  title: string
+  /** the public boards' introduction under the title; null inside the app */
+  intro: string | null
+  /** the identity card's 24/30 line ("Binder of <name>"); null when the title already said it */
+  identityLine: string | null
+  /**
+   * `/binder/:sub` seen by anyone but its owner. The Public Binder board (`HP9-0` › `HPP-0`) does
+   * not box that identity: the 60px avatar rides inline beside the 44/55 title and the
+   * introduction (`HPM-0`) sits under the whole row, so the screen composes a hero instead of the
+   * title-then-card stack every other profile state draws.
+   */
+  showBinderHero: boolean
   profile: ProfileViewModel | null
   showActions: boolean
+  tradeLabel: string
+  tradeLinkProps: Pick<LinkProps, 'to' | 'aria-label'>
+  shareLabel: string
+  shareButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
+  showSelfActions: boolean
+  settingsLabel: string
+  settingsLinkProps: Pick<LinkProps, 'to'>
   followButtonVariant: ButtonVariant
   followGlyph: string
   followText: string
@@ -47,9 +68,16 @@ export interface ProfileScreenModel {
   showJoin: boolean
   joinLabel: string
   joinLinkProps: Pick<LinkProps, 'to' | 'state'>
+  /** the public boards' closing line under the join CTA */
+  reshareNote: string
   createdCount: number
   binderCount: number
   cards: readonly ProfileCardModel[]
+  /** "Showing 6 of 12" — the phone board's grid count, kept for every width */
+  gridCountLabel: string
+  showMore: boolean
+  showMoreLabel: string
+  showMoreButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
   showEmpty: boolean
   emptyTitle: string
   emptyBody: string
@@ -57,8 +85,6 @@ export interface ProfileScreenModel {
   emptyLinkLabel: string
   emptyLinkProps: Pick<LinkProps, 'to'>
   showGrid: boolean
-  createdTabVariant: ButtonVariant
-  binderTabVariant: ButtonVariant
   createdTabButtonProps: ProfileTabButtonProps
   binderTabButtonProps: ProfileTabButtonProps
   gridProps: ProfileGridProps
@@ -103,11 +129,9 @@ export function buildProfileTabProps(
   onTabChange: (tab: ProfileTab) => void,
 ): Pick<
   ProfileScreenModel,
-  'createdTabVariant' | 'binderTabVariant' | 'createdTabButtonProps' | 'binderTabButtonProps' | 'gridProps'
+  'createdTabButtonProps' | 'binderTabButtonProps' | 'gridProps'
 > {
   return {
-    createdTabVariant: tab === 'created' ? 'primary' : 'default',
-    binderTabVariant: tab === 'binder' ? 'primary' : 'default',
     createdTabButtonProps: {
       'aria-pressed': tab === 'created',
       'aria-controls': CARDS_ID,
@@ -138,7 +162,7 @@ export function useProfileScreen({
   const { pathname } = useLocation()
   const { user } = useAuth()
   const [snapshot, send] = useProjectedActor(profileMachine, { input: { initialTab } })
-  const { data, tab, err, errKind, busy, actionErr } = snapshot.context
+  const { data, tab, err, errKind, busy, actionErr, visibleLimit } = snapshot.context
 
   const load = useCallback(() => {
     if (!sub) return
@@ -195,6 +219,19 @@ export function useProfileScreen({
     }
   }, [busy, friendStatus, load, profile, send])
 
+  /**
+   * The share action the public boards put beside the identity (`HP9-0` › `LL7-0`): the platform
+   * sheet when there is one, the clipboard otherwise. Read-only — it never mutates the account.
+   */
+  const onShare = useCallback(async () => {
+    const url = window.location.href
+    if (navigator.share) {
+      await navigator.share({ title: profile ? `${profile.name} on MemeOn` : 'MemeOn', url }).catch(() => {})
+      return
+    }
+    await navigator.clipboard?.writeText(url).catch(() => {})
+  }, [profile])
+
   const isEmpty = !!data && memes.length === 0
   const ownName = profile?.name ?? 'this player'
   const emptyCopy = !isEmpty
@@ -223,6 +260,29 @@ export function useProfileScreen({
             link: null,
           }
 
+  /** `/binder/:sub` for anyone but its owner: the Public Binder board, where the title is the binder. */
+  const isPublicBinder = initialTab === 'binder' && !isSelf
+  const createdCount = data?.created.length ?? 0
+  const binderCount = data?.binder.length ?? 0
+  const portfolio = profile?.portfolioValue.toLocaleString() ?? '0'
+  const stats: ProfileStat[] = isPublicBinder
+    ? [
+        { id: 'minted', glyph: '', text: `${createdCount} minted` },
+        { id: 'binder', glyph: '', text: `${binderCount} in binder` },
+        { id: 'braincells', glyph: '🧠', text: `${portfolio} braincells` },
+      ]
+    : !user
+      ? [{ id: 'braincells', glyph: '🧠', text: `${portfolio} braincells held` }]
+      : [
+          { id: 'collection', glyph: '📚', text: plural(profile?.collectionSize ?? 0, 'meme') },
+          { id: 'portfolio', glyph: '🧠', text: `${portfolio} held` },
+          { id: 'followers', glyph: '⭐', text: plural(profile?.followers ?? 0, 'follower') },
+        ]
+  const visible = memes.slice(0, visibleLimit)
+  /* the friend button is the meaningful relationship move, so it takes the card's one bubblegum
+     whenever it is on screen; follow steps back to the raised pill beside it (primary-action bucket) */
+  const friendIsPrimary = friendStatus === null || friendStatus === 'incoming'
+
   return {
     showErr: !!err,
     errTitle: errKind === 'notfound' ? "No one's minted under this link." : "Couldn't load this profile.",
@@ -236,19 +296,24 @@ export function useProfileScreen({
     errorLinkProps: { to: '/marketplace' },
     showLoading: !err && !data,
     loadingLabel: 'Loading profile',
-    profile: profile
-      ? {
-          name: profile.name,
-          avatarSrc: profile.picture,
-          stats: [
-            { id: 'followers', glyph: '⭐', text: plural(profile.followers, 'follower') },
-            { id: 'collection', glyph: '📚', text: `${profile.collectionSize} in collection` },
-            { id: 'portfolio', glyph: '🧠', text: `portfolio ${profile.portfolioValue.toLocaleString()}` },
-          ],
-        }
-      : null,
+    title: isPublicBinder && profile ? `${profile.name}'s binder` : (profile?.name ?? ''),
+    intro: isPublicBinder
+      ? 'A collection worth passing around.'
+      : !user && profile
+        ? `A collection worth passing around · ${plural(createdCount, 'meme')} · ${binderCount} in binder`
+        : null,
+    identityLine: isPublicBinder || !user || !profile ? null : `Binder of ${profile.name}`,
+    showBinderHero: isPublicBinder,
+    profile: profile ? { name: profile.name, avatarSrc: profile.picture, stats } : null,
     showActions: !isSelf && !!user && !!profile,
-    followButtonVariant: followingByMe ? 'default' : 'primary',
+    tradeLabel: 'Trade',
+    tradeLinkProps: { to: '/trade', 'aria-label': `Trade with ${ownName}` },
+    shareLabel: '🔗 Share binder',
+    shareButtonProps: { onClick: onShare },
+    showSelfActions: isSelf && !!profile,
+    settingsLabel: 'Settings',
+    settingsLinkProps: { to: '/settings' },
+    followButtonVariant: friendIsPrimary || followingByMe ? 'default' : 'primary',
     followGlyph: followingByMe ? '★' : '☆',
     followText: busy ? (followingByMe ? 'Unfollowing…' : 'Following…') : followingByMe ? 'Following' : 'Follow',
     followButtonProps: {
@@ -273,15 +338,24 @@ export function useProfileScreen({
     showActionErr: !!actionErr,
     actionErr: actionErr ?? '',
     showJoin: !user && !!profile,
-    joinLabel: profile ? `Join MemeOn to collect ${profile.name}'s cards` : 'Join MemeOn to collect & trade',
+    joinLabel: isPublicBinder && profile
+      ? `Log in to trade with ${profile.name}`
+      : 'Log in to start your own binder',
     joinLinkProps: { to: '/', state: { next: pathname } },
-    createdCount: data?.created.length ?? 0,
-    binderCount: data?.binder.length ?? 0,
-    cards: memes.map((meme) => ({
+    reshareNote: 'Every reshare of these links levels the cards up.',
+    createdCount,
+    binderCount,
+    cards: visible.map((meme) => ({
       id: `${tab}-${meme.id}`,
       memeCard: buildMemeCardModel(meme),
-      sharesLabel: meme.shares === undefined ? null : `${meme.shares}/100 shares`,
+      // the board's ownership copy: "holds N/100" on someone else's shelf, "N/100 shares" on yours
+      sharesLabel:
+        meme.shares === undefined ? null : isSelf ? `${meme.shares}/100 shares` : `holds ${meme.shares}/100`,
     })),
+    gridCountLabel: `Showing ${visible.length} of ${memes.length}`,
+    showMore: memes.length > visible.length,
+    showMoreLabel: `Show ${Math.min(BINDER_PAGE_SIZE, memes.length - visible.length)} more`,
+    showMoreButtonProps: { onClick: () => send({ type: 'SHOW_MORE' }) },
     showEmpty: isEmpty,
     emptyTitle: emptyCopy.title,
     emptyBody: emptyCopy.body,
@@ -289,6 +363,6 @@ export function useProfileScreen({
     emptyLinkLabel: emptyCopy.link?.label ?? '',
     emptyLinkProps: { to: emptyCopy.link?.to ?? '/marketplace' },
     showGrid: !!data && memes.length > 0,
-    ...buildProfileTabProps(tab, memes.length, (tab) => send({ type: 'SET_TAB', tab })),
+    ...buildProfileTabProps(tab, visible.length, (tab) => send({ type: 'SET_TAB', tab })),
   }
 }

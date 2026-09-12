@@ -1,5 +1,6 @@
 import { createActor } from 'xstate'
 import { expect, it } from 'vitest'
+import { BINDER_PAGE_SIZE } from './binderMachine'
 import { profileMachine, type ProfileData } from './profileMachine'
 
 const data: ProfileData = {
@@ -7,7 +8,7 @@ const data: ProfileData = {
   followingByMe: false, friendStatus: null, created: [], binder: [],
 }
 
-const idle = { busy: false, actionErr: null }
+const idle = { busy: false, actionErr: null, visibleLimit: BINDER_PAGE_SIZE }
 
 it('owns initial tab, load results, and tab changes across relationship reloads', () => {
   const actor = createActor(profileMachine, { input: { initialTab: 'binder' } }).start()
@@ -19,6 +20,20 @@ it('owns initial tab, load results, and tab changes across relationship reloads'
   actor.send({ type: 'DONE', data: updated })
   expect(actor.getSnapshot().matches('ready')).toBe(true)
   expect(actor.getSnapshot().context).toEqual({ data: updated, tab: 'created', err: null, errKind: null, ...idle })
+  actor.stop()
+})
+
+it('pages the selected tab and starts the next tab back at page one', () => {
+  const actor = createActor(profileMachine, { input: {} }).start()
+  actor.send({ type: 'DONE', data })
+  expect(actor.getSnapshot().context.visibleLimit).toBe(BINDER_PAGE_SIZE)
+  actor.send({ type: 'SHOW_MORE' })
+  expect(actor.getSnapshot().context.visibleLimit).toBe(BINDER_PAGE_SIZE * 2)
+  // a relationship reload is the same collection: the reader keeps what they paged in
+  actor.send({ type: 'DONE', data })
+  expect(actor.getSnapshot().context.visibleLimit).toBe(BINDER_PAGE_SIZE * 2)
+  actor.send({ type: 'SET_TAB', tab: 'binder' })
+  expect(actor.getSnapshot().context.visibleLimit).toBe(BINDER_PAGE_SIZE)
   actor.stop()
 })
 
