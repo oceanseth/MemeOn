@@ -16,7 +16,7 @@ or moving a component. `npm run check-tiers` runs recursively and must pass;
 
 | Tier | Folder | What lives there | Owns state? |
 |---|---|---|---|
-| **Atoms** | `src/atoms/` | `Avatar` (`sm`/`header`/`md`/`lg`), `Badge`, `Button` (`pressed`/`aria-pressed` toggle state), `Checkbox`, `EmptyState` (additive `tone`), `Field`, `Fieldset`, `Icon`, `Input` (its `controlChrome` is shared by `Select` and `Textarea`), `MemeCard` (plus `tierClasses`, `tierFrameClasses`, `memeCardSubClasses`), `Notice`, `PageContainer`, `PageHead`, `Panel`, `Select`, `Skeleton`, `Spinner`, `Textarea`, `TierChip` | No |
+| **Atoms** | `src/atoms/` | `Avatar` (`sm`/`header`/`md`/`lg`), `Badge`, `Button` (`pressed`/`aria-pressed` toggle state), `Checkbox`, `EmptyState` (additive `tone`), `Field`, `Fieldset`, `Icon`, `Input` (its `controlChrome` is shared by `Select` and `Textarea`), `MemeCard` (plus `tierFrameClasses`, `memeCardSubClasses`; `footer` and `footerRight` slots), `Notice`, `PageContainer`, `PageHead`, `Panel` (+ `PanelHeading`: `intro` 17/21 · `section` 18/22 · `card` 22/28 · `composer` 24/30 — the sizes the boards give raised-card headings), `Select`, `Skeleton`, `Spinner`, `Textarea`, `TierChip` | No |
 | **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `TradeCard` (`give`/`get`, not `offer`/`ask`) | No |
 | **Organisms** | `src/organisms/` | `AppShell` (slots `sidebar` / `contextLine` / `headerEnd` / `quest` / `bottomNav`), `MemeplexPanel` | No |
 | **Screens** | `src/screens/` | One model object per route/chrome surface | No |
@@ -134,6 +134,15 @@ Layered onto the tiers and rules above, not a replacement for them:
 - `organisms/AppShell.css` keys `--topbar-h` off `:root:has([data-slot='header'])` rather than a
   fixed value: 64px below the shell breakpoint (`2xl`, 900px), 0px at or above it. Shell-wrapping
   stories render with `layout: 'fullscreen'`.
+- `lib/focus.ts` exports `FOCUS_RING`, the one focus contract every interactive atom, row and
+  menu item composes: 3px `--color-focus` outline at 2px offset, `contrast-more` 4px,
+  `forced-colors` `Highlight`. Hand-copied rings are gone; a component that needs a different offset
+  overrides after `FOCUS_RING`, never instead of it.
+- `hooks/useDocumentTitle.ts` sets `document.title` per route from the view (the hook layer, not the
+  screen); `lib/braincells.ts` formats braincell counts (thousands separators, the 🧠 spacing) so
+  every screen prints them the same way.
+- `QuestBar` lists every quest inline at both widths, as the boards draw the rail; the old
+  "N more ▾" disclosure is gone from the model, the hook and the stories.
 - The token sheet lives outside the tiers, at `src/Tokens.stories.tsx` (titled `Anatomy/Tokens`):
   every semantic colour, both static ramps, the seven tier chips, the two materials and the type
   ladder, painted from nothing but the utilities `index.css` emits, each swatch probed via
@@ -189,7 +198,6 @@ state and import boundaries but do not need stories.
 | `components/HeroVideo.tsx` | Imperative media element; currently unmounted — no Soft Press board draws it and `useLandingScreen` no longer injects it as `hero` (mo-263 WP4b; kept pending a delete-or-give-it-a-home call) |
 | `pages/AuthCallback.tsx` | OAuth redirect ritual |
 | `pages/MobileAuthForward.tsx` | Deep-link forward ritual |
-| `context/AuthContext.tsx` | Compatibility re-export of `useAuth` |
 | `main.tsx` | Application bootstrap |
 | `stores/StoresContext.tsx` | Root store provider |
 
