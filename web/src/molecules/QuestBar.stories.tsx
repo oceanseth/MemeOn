@@ -167,3 +167,5 @@ export const EmptyVault: Story = {
 export const Hidden: Story = {
   args: { model: buildQuestBarModel({ ...fresh, steps: [] }) },
 }
+
+export const Dark: Story = { ...Fresh, globals: { theme: 'dark' } }

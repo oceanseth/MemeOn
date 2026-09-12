@@ -1,20 +1,20 @@
 import { Popover } from '@base-ui/react/popover'
 import { Link } from 'react-router-dom'
-import { buttonClasses } from '../atoms/Button'
 import { cn } from '../lib/cn'
 import type { AlertsBellModel } from '../lib/alertsBellModel'
 
 const FOCUS = cn(
-  'focus-visible:outline-2 focus-visible:outline-(--focus-ring) focus-visible:outline-offset-(--focus-offset)',
-  'contrast-more:focus-visible:outline-3 forced-colors:focus-visible:outline-[Highlight]',
+  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
+  'contrast-more:focus-visible:outline-4',
+  'forced-colors:focus-visible:outline-[Highlight]',
 )
 
 /**
- * There is one bell on a page — it lives in the topbar — so one id is enough. The portal renders
- * into this anchor instead of `<body>` so the popover stays inside the shell it belongs to: a
- * consumer's `within(canvasElement)` still finds the rows, and `position: fixed` inside resolves
- * against the same containing block the legacy popover used (the topbar owns one, because
- * `backdrop-filter` makes it one).
+ * There is one bell on a page — it lives in the shell's header — so one id is enough. The portal
+ * renders into this anchor instead of `<body>` so the popover stays inside the shell it belongs
+ * to: a consumer's `within(canvasElement)` still finds the rows, and `position: fixed` inside
+ * resolves against the same containing block the phone header makes (`backdrop-filter` makes it
+ * one).
  */
 const ANCHOR_ID = 'alerts-pop-anchor'
 
@@ -29,19 +29,34 @@ const anchorContainer = {
   },
 }
 
-/** The emoji line box made the bell 44px beside a 36px Log out; 1.125 × 16px = 18px of content.
-    Arbitrary property, matching `buttonClasses()`: same tailwind-merge group, so this wins. */
-const TRIGGER = cn(buttonClasses(), '[line-height:1.125]')
+/**
+ * The bell is the bare emoji and nothing else. Every board draws it as a plain text node in the
+ * header row — Feedback `HUU-0` (22×28) on `HSU-0`, Marketplace's `6WO-0` cluster on `6UR-0`, My
+ * Binder `72L-0` (22×28) on `70L-0`, and the iPhone cluster `76J-0` (20×25) on `767-0` — while the
+ * balance chip and the avatar beside it *are* raised boxes. So: no square, no fill, no shadow,
+ * 20/25 below the shell breakpoint and 22/28 at 900+.
+ *
+ * The hit target still has to be 44: a centred transparent pseudo-element carries it without
+ * taking any layout width, so the header cluster keeps the board's 12px rhythm and the focus ring
+ * stays hugged to the glyph.
+ */
+const TRIGGER = cn(
+  'relative inline-flex shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0',
+  'text-[20px] leading-[25px] text-ink',
+  '2xl:text-[22px] 2xl:leading-[28px]',
+  'before:absolute before:top-1/2 before:left-1/2 before:size-11 before:-translate-x-1/2',
+  'before:-translate-y-1/2 before:content-[""]',
+  FOCUS,
+)
 
+/** Canvas on the error text colour: the pair `check-contrast` guards (WP1 deviation 2), 10px bold. */
 const BADGE = cn(
   'absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center px-1',
-  /* the fill token, not `--color-danger`: white on the light red read at APCA Lc 54 / WCAG 2.5:1,
-     and this badge is 10px bold — on `--color-danger-fill` the same white reads at Lc 89. */
-  'rounded-pill bg-danger-fill text-[10px] leading-none font-bold text-text-inverse tabular-nums',
+  'rounded-pill bg-error-text text-[10px] leading-none font-bold text-canvas tabular-nums',
 )
 
 /**
- * ≤480 the panel leaves the anchor and pins itself under the whole topbar, gutter to gutter: at
+ * ≤480 the panel leaves the anchor and pins itself under the whole header, gutter to gutter: at
  * 420px a real seven-alert queue was sliced mid-row with 300px of empty page beneath it. Base UI
  * writes the anchored geometry into the positioner's `style` attribute, and an author `!important`
  * declaration is the one thing that outranks it.
@@ -51,20 +66,21 @@ const POSITIONER = cn(
   'max-xs:w-auto! max-xs:transform-none!',
 )
 
+/** A raised card of rows. */
 const POPUP = cn(
   'w-[min(340px,calc(100vw-24px))] max-h-[min(420px,60dvh)] overflow-y-auto [scrollbar-width:thin]',
-  'rounded-card border border-border bg-bg-card p-2 shadow-pop',
+  'rounded-card bg-surface p-2 shadow-pop',
   'max-xs:w-auto max-xs:max-h-[calc(100dvh-var(--topbar-h)-24px)]',
   FOCUS,
 )
 
-const ROW = cn('block rounded-control p-2.5 text-sm leading-[1.4] text-text', 'pointer-coarse:min-h-11')
-
-/** Unread carries a shape cue (bar + weight); the tint is secondary. */
-const UNREAD = cn(
-  'relative font-semibold bg-(--state-unread-bg)',
-  '[box-shadow:inset_2px_0_0_var(--color-accent)]',
+const ROW = cn(
+  'block min-h-11 rounded-[18px] px-3 py-2.5 text-small leading-[18px] text-ink',
+  '[transition:background_var(--dur-base)_ease] motion-reduce:transition-none',
 )
+
+/** Unread is the info tint plus weight; the dot in the same family is the shape cue. */
+const UNREAD = 'bg-info-surface font-semibold'
 
 /**
  * Alerts popover, on Base UI's Popover. Base UI owns the disclosure wiring — `aria-expanded`,
@@ -84,16 +100,15 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
             </span>
           )}
         </Popover.Trigger>
-        {/* display:contents, so an idle popover costs the toolbar no box and no flex gap */}
+        {/* display:contents, so an idle popover costs the header no box and no flex gap */}
         <span id={ANCHOR_ID} className="contents" data-slot="alerts-anchor" />
         <Popover.Portal container={anchorContainer} className="contents">
           <Popover.Positioner
             side="bottom"
             align="end"
-            /* the legacy panel sat 42px below the top of a 36px bell */
-            sideOffset={6}
+            sideOffset={8}
             collisionPadding={12}
-            /* a panel that flipped above a topbar would leave the viewport, so it never flips */
+            /* a panel that flipped above a header would leave the viewport, so it never flips */
             collisionAvoidance={{ side: 'none', align: 'shift' }}
             className={POSITIONER}
           >
@@ -106,7 +121,7 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
               {...model.popupProps}
             >
               {model.empty && (
-                <div className={ROW} data-slot="alert-row">
+                <div className={cn(ROW, 'text-ink-muted')} data-slot="alert-row">
                   {model.emptyLabel}
                 </div>
               )}
@@ -117,17 +132,17 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
                     {row.statusLabel && (
                       <>
                         <span
-                          className="mr-2 inline-block size-1.5 rounded-full bg-accent align-middle"
+                          className="mr-2 inline-block size-1.5 rounded-full bg-info-text align-middle"
                           data-slot="alert-dot"
                           aria-hidden="true"
                         />
                         <span className="sr-only">{row.statusLabel} </span>
                       </>
                     )}
-                    <span className="text-accent group-hover:underline" data-slot="alert-message">
+                    <span className="group-hover:underline" data-slot="alert-message">
                       {row.message}
                     </span>
-                    <time className="mt-[3px] block text-[11px] text-text-dim" {...row.timeProps}>
+                    <time className="mt-[3px] block text-micro font-normal text-ink-muted" {...row.timeProps}>
                       {row.timeLabel}
                     </time>
                   </>
@@ -135,7 +150,7 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
                 return row.linkProps ? (
                   <Link
                     key={row.id}
-                    className={cn(ROW, row.unread && UNREAD, 'group', FOCUS)}
+                    className={cn(ROW, row.unread && UNREAD, 'group no-underline hover:bg-surface-raised', FOCUS)}
                     data-slot="alert-row"
                     data-unread={row.unread || undefined}
                     {...row.linkProps}
@@ -154,7 +169,7 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
                 )
               })}
               {model.overflowLabel && (
-                <div className={cn(ROW, 'text-text-dim')} data-slot="alert-row">
+                <div className={cn(ROW, 'text-ink-muted')} data-slot="alert-row">
                   {model.overflowLabel}
                 </div>
               )}

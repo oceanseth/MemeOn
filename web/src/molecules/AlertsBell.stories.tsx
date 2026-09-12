@@ -158,3 +158,5 @@ export const AllRead: Story = {
 export const Empty: Story = {
   args: { model: buildAlertsBellModel({ alerts: [], open: true, onOpenChange }) },
 }
+
+export const Dark: Story = { ...OpenUnread, globals: { theme: 'dark' } }
