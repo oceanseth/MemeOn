@@ -3,22 +3,29 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "web",
-    "api"
-  ],
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
-    "dev": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
-    "dev:web": "npm run dev --prefix web",
-    "dev:api": "npm run dev --prefix api",
-    "build": "npm run build:web && npm run bundle:api",
-    "build:web": "npm run build --prefix web",
-    "bundle:api": "npm run package --prefix api",
+    "dev": "turbo run dev --filter=web --filter=memeon-api",
+    "dev:web": "turbo run dev --filter=web",
+    "dev:api": "turbo run dev --filter=memeon-api",
+    "dev:mobile": "turbo run dev --filter=mobile",
+    "build": "turbo run build package --filter=web --filter=memeon-api",
+    "build:web": "turbo run build --filter=web",
+    "bundle:api": "turbo run package --filter=memeon-api",
+    "check": "turbo run check --filter=web",
+    "typecheck": "turbo run typecheck --filter=web --filter=memeon-api --filter=mobile",
+    "test": "turbo run test --filter=web",
+    "storybook": "turbo run storybook --filter=web",
+    "build-storybook": "turbo run build-storybook --filter=web",
+    "mobile:export": "pnpm --filter mobile export:ios",
     "format": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\""
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
     "knip": "^6.35.1",
-    "prettier": "^3.3.3"
+    "prettier": "^3.3.3",
+    "turbo": "2.10.12"
   }
 }
