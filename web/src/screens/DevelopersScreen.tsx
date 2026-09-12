@@ -1,4 +1,3 @@
-import { Badge } from '../atoms/Badge'
 import { Button, buttonClasses } from '../atoms/Button'
 import { EmptyActions, EmptyState } from '../atoms/EmptyState'
 import { Hint } from '../atoms/Field'
@@ -12,16 +11,29 @@ import { cn } from '../lib/cn'
 import type { DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { ConfirmDialog } from '../molecules/ConfirmDialog'
 
-/** UA paragraph rhythm, which preflight resets: the disclaimer copy reads as prose, not a stack. */
-const prose = 'leading-[1.55] [margin-block:1em]'
+/**
+ * The security explainer (`FAL-0`): 16/20 weight 500 on `ink-muted`, above the form and at the
+ * board's own 959px measure — prose on the page, not a card.
+ */
+const EXPLAINER = 'mt-0 mb-0 max-w-[960px] text-[16px]/[20px] font-medium text-ink-muted'
 
-/** One API-key row: the same shape Friends, Leaderboard and the cap table use. */
-const keyRow = cn(
-  'flex flex-wrap items-center gap-3 gap-y-2 rounded-[12px] border border-border bg-bg-raised p-3',
+/** Create key form (`FAN-0`): a raised card, 18 padding, gap 12; the phone drops the button. */
+const FORM_CARD = 'mt-5 p-[18px] max-md:p-[18px]'
+
+/** Fresh key one-time state (`FAT-0`): the card plus the 2px inset action ring that names it. */
+const FRESH_CARD = 'mt-5 p-5 max-md:p-5 inset-ring-2 inset-ring-action'
+
+/**
+ * API key inventory (`FB0-0`): 22 padding, its rows divided by the board's one hairline, and the
+ * 18/22 section heading `MCT-0` draws — `[&_h3]` outranks `Panel`'s own `:where(h3,h4)` at 17/21.
+ */
+const INVENTORY_CARD = cn(
+  'mt-5 p-[22px] max-md:p-[18px]',
+  '[&_h3]:mb-0 [&_h3]:text-[18px]/[22px] [&_h3]:tracking-title',
 )
 
-/** A stack of rows, evenly spaced. */
-const rowList = 'mt-2.5 flex flex-col gap-2.5'
+/** One key row (`MCV-0`): space-between, 12 block padding, a hairline above every row but the first. */
+const KEY_ROW = 'flex flex-wrap items-center justify-between gap-4 gap-y-2.5 py-3'
 
 /** Developers API-key page as a function of its model. Every engine state is one set of args. */
 export function DevelopersScreen({
@@ -40,10 +52,13 @@ export function DevelopersScreen({
   emptyHint,
   loadingLabel,
   loadErrorMessage,
+  keysHeading,
   quotaLabel,
   quotaNote,
   createLabel,
+  freshKeyHeading,
   copyLabel,
+  copiedCaption,
   copyDone,
   labelInputProps,
   createFormProps,
@@ -59,62 +74,81 @@ export function DevelopersScreen({
   confirmDialog,
 }: DevelopersScreenModel) {
   return (
-    <PageContainer as="main" narrow id="main" tabIndex={-1}>
-      <PageHead title="🔧 Developers" className="[&_:where(h1,h2)]:font-bold">
+    <PageContainer as="main" id="main" tabIndex={-1}>
+      <PageHead level="h1" title="🔧 Developers" className="mb-5">
         <a className={buttonClasses()} href="/skill.md" target="_blank" rel="noreferrer">
           📜 API skill.md
         </a>
       </PageHead>
-      <p className={cn(prose, 'text-text-dim')}>
-        API keys act as <strong>your account</strong>: they can mint memes, gift shares (including
-        to users your own site knows only by Masky avatar id), trade, and read everything you can.
-        Full endpoint reference lives in{' '}
+      <p className={EXPLAINER}>
+        API keys act as <strong className="font-bold text-ink">your account</strong>: they can mint
+        memes, gift shares (including to users your own site knows only by Masky avatar id), trade,
+        and read everything you can. Full endpoint reference lives in{' '}
         <a href="/skill.md" target="_blank" rel="noreferrer">
           skill.md
         </a>{' '}
         (also at <code>/.well-known/skill.md</code> for agents). Treat keys like passwords.
       </p>
 
-      <Panel className="mt-4">
-        <form className="flex flex-wrap items-center gap-2.5" {...createFormProps}>
+      <Panel className={FORM_CARD}>
+        <form
+          className="flex flex-wrap items-center gap-3 max-md:flex-col max-md:items-start"
+          {...createFormProps}
+        >
           <Input
             placeholder="Key label (e.g. my-trading-bot)"
-            className="min-w-60 flex-[1_1_240px]"
+            /* the phone stacks the form, where `flex-basis` would size the well's *height* */
+            className="min-w-60 flex-[1_1_240px] max-md:w-full max-md:min-w-0 max-md:flex-none"
             {...labelInputProps}
           />
-          <Button variant="primary" type="submit" {...createButtonProps}>
+          <Button variant="primary" type="submit" className="shrink-0" {...createButtonProps}>
             <span aria-hidden="true">＋</span> {createLabel}
           </Button>
         </form>
         {quotaNote && <Hint>{quotaNote}</Hint>}
-        {showErr && (
-          <Notice tone="error" {...errorNoticeProps}>
-            {err}
-          </Notice>
-        )}
-        <div {...freshKeyRegionProps}>
-          {showFreshKey && (
-            <Notice tone="ok">
-              <strong>Copy it now — shown once:</strong>
-              <div
-                className="my-2 font-mono text-sm [overflow-wrap:anywhere] select-all"
-                {...freshKeyProps}
-              >
-                {freshKey}
-              </div>
-              <Button {...copyButtonProps}>
-                {copyLabel}
-                {copyDone && <span aria-hidden="true"> ✓</span>}
-              </Button>
-            </Notice>
-          )}
-        </div>
       </Panel>
 
-      <Panel className="mt-4">
-        <h3>
-          Your keys{quotaLabel && <> <Badge>{quotaLabel}</Badge></>}
-        </h3>
+      {showErr && (
+        /* the board's inline alert (`MG1-0`): the error pair at the field radius, one line tall */
+        <Notice
+          tone="error"
+          className="mt-4 block max-w-none rounded-field font-semibold"
+          {...errorNoticeProps}
+        >
+          {err}
+        </Notice>
+      )}
+
+      {/* persistent wrapper, mounted before its text arrives, so the key itself is announced */}
+      <div {...freshKeyRegionProps}>
+        {showFreshKey && (
+          <Panel className={FRESH_CARD}>
+            <p className="m-0 text-intro font-extrabold text-ink">{freshKeyHeading}</p>
+            <div
+              className="mt-2.5 font-mono text-label font-bold text-ink [overflow-wrap:anywhere] select-all"
+              {...freshKeyProps}
+            >
+              {freshKey}
+            </div>
+            <div className="mt-3.5 flex flex-wrap items-center gap-3">
+              <Button {...copyButtonProps}>{copyLabel}</Button>
+              {copyDone && (
+                <span className="text-[13px]/[16px] font-bold text-success-text">{copiedCaption}</span>
+              )}
+            </div>
+          </Panel>
+        )}
+      </div>
+
+      <Panel className={INVENTORY_CARD}>
+        <div className="flex items-center justify-between gap-4">
+          <h3>{keysHeading}</h3>
+          {quotaLabel && (
+            <span className="shrink-0 text-[13px]/[16px] font-medium text-ink-muted [font-variant-numeric:tabular-nums]">
+              {quotaLabel}
+            </span>
+          )}
+        </div>
         <div {...statusRegionProps}>
           {showOk && <Notice tone="ok">{okMsg}</Notice>}
         </div>
@@ -122,7 +156,7 @@ export function DevelopersScreen({
           /* a labelled spinner row, never a bare spinner */
           <div
             data-slot="loading-state"
-            className="flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-text-dim"
+            className="flex items-center justify-center gap-2.5 px-5 py-15 text-label text-ink-muted"
             {...loadingProps}
           >
             <Spinner />
@@ -130,7 +164,7 @@ export function DevelopersScreen({
           </div>
         )}
         {showLoadError && (
-          <EmptyState error {...loadErrorProps}>
+          <EmptyState tone="error" className="mt-2" {...loadErrorProps}>
             <p>
               <strong>{loadErrorMessage}</strong>
             </p>
@@ -142,31 +176,26 @@ export function DevelopersScreen({
           </EmptyState>
         )}
         {showEmpty && (
-          <EmptyState>
+          <EmptyState className="mt-2">
             <p>{emptyCopy}</p>
             <p>{emptyHint}</p>
           </EmptyState>
         )}
         {showKeys && keys && (
-          <ul className={rowList}>
+          <ul className="m-0 mt-2 list-none p-0 [&>li+li]:border-t [&>li+li]:border-line">
             {keys.map((k) => (
-              <li key={k.prefix} className={keyRow}>
-                <div className="min-w-0 flex-1 leading-[normal]">
-                  {/* `.key-label`/`.key-meta` never set a line-height, so they rendered at the UA
-                      default off `body`. Preflight's `html { line-height: 1.5 }` would otherwise
-                      inflate each row ~7-15px; `leading-[normal]` is the CSS keyword (Tailwind's
-                      `leading-normal` is a fixed 1.5). It's set on this wrapper div too, not just
-                      the spans: the label span is `inline`, so its line box takes its *containing
-                      block's* line-height as a minimum ("strut"), not just its own. */}
-                  <span className="font-semibold whitespace-normal leading-[normal] [overflow-wrap:anywhere]">
+              <li key={k.prefix} className={KEY_ROW}>
+                <div className="flex min-w-0 flex-col gap-[3px]">
+                  {/* `overflow-wrap:anywhere` keeps a 60-character label inside the row */}
+                  <span className="text-[16px]/[20px] font-bold text-ink [overflow-wrap:anywhere]">
                     {k.label}
                   </span>
-                  <span className="mt-1 flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-xs leading-[normal] text-text-dim [font-variant-numeric:tabular-nums]">
-                    <code>{k.prefix}…</code>
-                    <time dateTime={k.createdAt}>{k.createdLabel}</time>
+                  <span className="text-[13px]/[16px] font-medium text-ink-muted [font-variant-numeric:tabular-nums]">
+                    {k.prefix}… · <time dateTime={k.createdAt}>{k.createdLabel}</time>
                   </span>
                 </div>
-                <Button variant="danger" className="shrink-0" {...k.revokeButtonProps}>
+                {/* the destructive act on a neutral pill: the page's one primary is "Create key" */}
+                <Button className="shrink-0 text-error-text" {...k.revokeButtonProps}>
                   Revoke
                 </Button>
               </li>

@@ -20,7 +20,7 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-const copyButton = { name: /^Cop(?:y|ied) API key$/ }
+const copyButton = { name: 'Copy key' }
 
 /** story-local clipboard refusal; the shared preview mock is restored by the returned cleanup */
 async function denyClipboard(context: StoryContext) {
@@ -46,7 +46,8 @@ export const CreateCopyAndRevoke: Story = {
     await userEvent.type(canvas.getByRole('textbox', { name: 'API key label' }), 'story client{Enter}')
     await expect(await canvas.findByText(loaded.scenario.freshKey)).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', copyButton))
-    await waitFor(() => expect(canvas.getByRole('button', copyButton)).toHaveTextContent('Copied'))
+    // the outcome is the caption beside the button; the label itself never changes (`FAY-0`)
+    await expect(await canvas.findByText('✓ Copied')).toBeInTheDocument()
     await waitFor(() => expect(loaded.scenario.copied).toEqual([loaded.scenario.freshKey]))
     await userEvent.click(canvas.getByRole('button', { name: 'Revoke API key my-trading-bot' }))
     const dialog = await canvas.findByRole('alertdialog')
@@ -64,7 +65,7 @@ export const CreateFailure: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DevelopersView /></ConnectedStory>,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(await canvas.findByRole('button', { name: 'Generate API key' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Create key' }))
     await expect(await canvas.findByRole('alert')).toHaveTextContent('key quota reached')
     // typing the next attempt clears the stale banner
     await userEvent.type(canvas.getByRole('textbox', { name: 'API key label' }), 'retry')
@@ -78,10 +79,10 @@ export const DoubleSubmitMintsOneKey: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DevelopersView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    const generate = await canvas.findByRole('button', { name: /Generat/ })
+    const generate = await canvas.findByRole('button', { name: /Creat/ })
     await userEvent.click(generate)
-    await waitFor(() => expect(canvas.getByRole('button', { name: 'Generating…' })).toBeDisabled())
-    await userEvent.click(canvas.getByRole('button', { name: 'Generating…' }))
+    await waitFor(() => expect(canvas.getByRole('button', { name: 'Creating…' })).toBeDisabled())
+    await userEvent.click(canvas.getByRole('button', { name: 'Creating…' }))
     loaded.scenario.release('create')
     await expect(await canvas.findByText(loaded.scenario.freshKey)).toBeInTheDocument()
     const posts = loaded.scenario.requests.filter((entry: { method: string; path: string }) => entry.method === 'POST' && entry.path === '/api/developers/keys')
@@ -115,7 +116,7 @@ export const CopyDenied: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DevelopersView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(await canvas.findByRole('button', { name: 'Generate API key' }))
+    await userEvent.click(await canvas.findByRole('button', { name: 'Create key' }))
     await expect(await canvas.findByText(loaded.scenario.freshKey)).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', copyButton))
     await expect(await canvas.findByRole('alert')).toHaveTextContent('copy it manually')

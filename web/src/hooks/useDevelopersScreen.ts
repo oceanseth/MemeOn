@@ -69,10 +69,16 @@ export interface DevelopersScreenModel {
   emptyHint: string
   loadingLabel: string
   loadErrorMessage: string
+  /** `Your keys` — the inventory card's own 18/22 heading (`FB1-0`). */
+  keysHeading: string
+  /** `2 of 5 keys` — the quota caption beside it (`MCU-0`), not a badge. */
   quotaLabel: string | null
   quotaNote: string | null
   createLabel: string
+  freshKeyHeading: string
   copyLabel: string
+  /** `✓ Copied` — the board puts the outcome beside the button, not inside its label (`FAY-0`). */
+  copiedCaption: string
   copyDone: boolean
   labelInputProps: DeveloperLabelInputProps
   createFormProps: Pick<FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>
@@ -126,7 +132,8 @@ export function useDevelopersScreen(): DevelopersScreenModel {
       send({ type: 'CREATED', key: out.key })
       load()
     } catch (e) {
-      send({ type: 'FAIL', err: e instanceof Error ? e.message : 'key creation failed' })
+      // the board's generic line is the floor; a server reason is better when there is one
+      send({ type: 'FAIL', err: e instanceof Error ? e.message : 'Couldn’t create that key. Try again.' })
     }
   }, [actor, load, send])
 
@@ -169,7 +176,7 @@ export function useDevelopersScreen(): DevelopersScreenModel {
     prefix: row.prefix,
     label: row.label,
     createdAt: row.createdAt,
-    createdLabel: `Created ${new Date(row.createdAt).toLocaleDateString(undefined, {
+    createdLabel: `created ${new Date(row.createdAt).toLocaleDateString(undefined, {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -188,7 +195,7 @@ export function useDevelopersScreen(): DevelopersScreenModel {
       Fragment,
       null,
       createElement('code', null, `${ctx.revoking?.prefix}…`),
-      ` (${ctx.revoking?.label}) will stop working immediately. Anything using it breaks.`,
+      ` (${ctx.revoking?.label}). This disconnects every app using it.`,
       // the page behind an open modal is inert, so the failure has to land inside the dialog
       ctx.revokeErr ? createElement(Notice, { tone: 'error' }, ctx.revokeErr) : null,
     ),
@@ -210,14 +217,17 @@ export function useDevelopersScreen(): DevelopersScreenModel {
     showLoadError: phase === 'error',
     showOk: !!ctx.okMsg,
     okMsg: ctx.okMsg,
-    emptyCopy: 'No keys yet — name one above and hit Generate API key.',
+    emptyCopy: 'No keys yet — name one above and hit Create key.',
     emptyHint: 'You’ll see the full key exactly once, so paste it straight into your bot.',
     loadingLabel: 'Loading your API keys…',
     loadErrorMessage: 'Couldn’t reach the key list — your keys are still active.',
-    quotaLabel: keys ? `${rows.length} of ${KEY_LIMIT}` : null,
+    keysHeading: 'Your keys',
+    quotaLabel: keys ? `${rows.length} of ${KEY_LIMIT} keys` : null,
     quotaNote: atQuota ? 'Key limit reached — revoke one to make room.' : null,
-    createLabel: ctx.creating ? 'Generating…' : 'Generate API key',
-    copyLabel: ctx.copied ? 'Copied API key' : 'Copy API key',
+    createLabel: ctx.creating ? 'Creating…' : 'Create key',
+    freshKeyHeading: 'Copy it now — shown once:',
+    copyLabel: 'Copy key',
+    copiedCaption: '✓ Copied',
     copyDone: ctx.copied,
     labelInputProps: {
       value: ctx.label,

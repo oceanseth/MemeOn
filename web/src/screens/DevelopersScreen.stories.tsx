@@ -29,7 +29,7 @@ const toRow = (key: (typeof fixtureKeys)[number]): DeveloperKeyRowModel => ({
   prefix: key.prefix,
   label: key.label,
   createdAt: key.createdAt,
-  createdLabel: `Created ${new Date(key.createdAt).toLocaleDateString(undefined, {
+  createdLabel: `created ${new Date(key.createdAt).toLocaleDateString(undefined, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -74,14 +74,17 @@ const empty: DevelopersScreenModel = {
   showLoadError: false,
   showOk: false,
   okMsg: null,
-  emptyCopy: 'No keys yet — name one above and hit Generate API key.',
+  emptyCopy: 'No keys yet — name one above and hit Create key.',
   emptyHint: 'You’ll see the full key exactly once, so paste it straight into your bot.',
   loadingLabel: 'Loading your API keys…',
   loadErrorMessage: 'Couldn’t reach the key list — your keys are still active.',
+  keysHeading: 'Your keys',
   quotaLabel: null,
   quotaNote: null,
-  createLabel: 'Generate API key',
-  copyLabel: 'Copy API key',
+  createLabel: 'Create key',
+  freshKeyHeading: 'Copy it now — shown once:',
+  copyLabel: 'Copy key',
+  copiedCaption: '✓ Copied',
   copyDone: false,
   labelInputProps: {
     value: '',
@@ -109,7 +112,7 @@ const empty: DevelopersScreenModel = {
 const ready = {
   phase: 'ready',
   keys: keyRows,
-  quotaLabel: '2 of 5',
+  quotaLabel: '2 of 5 keys',
   showSpinner: false,
   showKeys: true,
 } satisfies Partial<DevelopersScreenModel>
@@ -140,7 +143,7 @@ export const Empty: Story = {
   args: {
     phase: 'empty',
     keys: [],
-    quotaLabel: '0 of 5',
+    quotaLabel: '0 of 5 keys',
     showSpinner: false,
     showEmpty: true,
   },
@@ -153,9 +156,9 @@ export const Ready: Story = {
     // one control, one tab stop: the skill.md action is a link, never a link wrapping a button
     await expect(canvas.getByRole('link', { name: '📜 API skill.md' })).toBeInTheDocument()
     await expect(canvas.queryByRole('button', { name: '📜 API skill.md' })).toBeNull()
-    // page titles stay at h2 app-wide until the h1 decision is taken everywhere; sections are h3
-    await expect(canvas.getByRole('heading', { level: 2 })).toHaveTextContent('Developers')
-    await expect(canvas.getByRole('button', { name: 'Generate API key' })).toBeEnabled()
+    // the route's title is the page's one h1 (the wave-3 screens took the same step); sections are h3
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('Developers')
+    await expect(canvas.getByRole('button', { name: 'Create key' })).toBeEnabled()
   },
 }
 
@@ -189,11 +192,11 @@ export const LoadError: Story = {
 export const Creating: Story = {
   args: {
     ...ready,
-    createLabel: 'Generating…',
+    createLabel: 'Creating…',
     createButtonProps: { disabled: true, 'aria-busy': true },
   },
   play: async ({ canvasElement }) => {
-    const button = within(canvasElement).getByRole('button', { name: 'Generating…' })
+    const button = within(canvasElement).getByRole('button', { name: 'Creating…' })
     await expect(button).toBeDisabled()
     await expect(button).toHaveAttribute('aria-busy', 'true')
   },
@@ -203,7 +206,7 @@ export const AtQuota: Story = {
   args: {
     phase: 'ready',
     keys: fullKeyRows,
-    quotaLabel: '5 of 5',
+    quotaLabel: '5 of 5 keys',
     quotaNote: 'Key limit reached — revoke one to make room.',
     createButtonProps: { disabled: true, 'aria-busy': false },
     showSpinner: false,
@@ -211,9 +214,11 @@ export const AtQuota: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Generate API key' })).toBeDisabled()
+    await expect(canvas.getByRole('button', { name: 'Create key' })).toBeDisabled()
     await expect(canvas.getByText('Key limit reached — revoke one to make room.')).toBeInTheDocument()
-    await expect(canvas.getByRole('heading', { name: /Your keys 5 of 5/ })).toBeInTheDocument()
+    // the quota is the board's caption beside the heading, not a badge inside it
+    await expect(canvas.getByRole('heading', { name: 'Your keys' })).toBeInTheDocument()
+    await expect(canvas.getByText('5 of 5 keys')).toBeInTheDocument()
   },
 }
 
@@ -225,7 +230,7 @@ export const FreshKey: Story = {
     showFreshKey: true,
   },
   play: async ({ canvasElement, args }) => {
-    const button = within(canvasElement).getByRole('button', { name: 'Copy API key' })
+    const button = within(canvasElement).getByRole('button', { name: 'Copy key' })
     await expect(button).toBeEnabled()
     await userEvent.click(button)
     await expect(args.copyButtonProps.onClick).toHaveBeenCalledOnce()
@@ -238,12 +243,13 @@ export const Copied: Story = {
     freshKey: 'mk_3f9a2c8b1d7e4a05c6f9b2d3e4a5b6c7',
     copyButtonProps: { ...empty.copyButtonProps, disabled: false },
     showFreshKey: true,
-    copyLabel: 'Copied API key',
     copyDone: true,
   },
   play: async ({ canvasElement }) => {
-    const button = within(canvasElement).getByRole('button', { name: 'Copied API key' })
-    await expect(button).toHaveTextContent('Copied API key ✓')
+    const canvas = within(canvasElement)
+    // the label never changes: the outcome is the success caption beside the button (`FAY-0`)
+    await expect(canvas.getByRole('button', { name: 'Copy key' })).toBeEnabled()
+    await expect(canvas.getByText('✓ Copied')).toBeInTheDocument()
   },
 }
 
@@ -278,7 +284,7 @@ export const RevokeConfirmed: Story = {
     showOk: true,
     okMsg: 'Revoked my-trading-bot.',
     keys: [keyRows[1]!],
-    quotaLabel: '1 of 5',
+    quotaLabel: '1 of 5 keys',
   },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByText('Revoked my-trading-bot.')).toBeInTheDocument()
@@ -345,4 +351,23 @@ export const RevokeFailed: Story = {
     await expect(within(dialog).getByRole('alert')).toHaveTextContent('Couldn’t revoke my-trading-bot')
     await expect(within(dialog).getByRole('button', { name: 'Revoke it' })).toBeInTheDocument()
   },
+}
+
+export const Dark: Story = { ...Ready, name: 'Ready dark', globals: { theme: 'dark' } }
+
+/** Alias of `ReadyPhone` under the name every other family's phone twin carries. */
+export const Phone390: Story = { ...ReadyPhone, name: 'Ready phone 390' }
+
+export const DarkPhone390: Story = {
+  ...ReadyPhone,
+  name: 'Ready dark phone 390',
+  globals: { ...phone.globals, theme: 'dark' },
+}
+
+/** The one-time secret on the phone, dark: the key wraps, the copy row stays inside the card. */
+export const FreshKeyPhone390: Story = {
+  ...FreshKey,
+  name: 'Fresh key phone 390',
+  ...phone,
+  play: undefined,
 }
