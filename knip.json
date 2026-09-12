@@ -3,7 +3,6 @@
   "workspaces": {
     "web": {
       "entry": [
-        "src/main.tsx",
         "src/**/*.stories.tsx",
         "src/**/*.test.ts",
         "src/**/*.test.tsx",
@@ -11,15 +10,10 @@
         ".storybook/**/*.{ts,tsx}"
       ],
       "project": [
-        "src/**/*.{ts,tsx}",
+        "src/**/*.{ts,tsx,css,mdx}",
         "scripts/**/*.mjs"
       ],
-      "ignoreExportsUsedInFile": true,
-      "ignoreDependencies": [
-        "@fontsource-variable/onest",
-        "@fontsource-variable/unbounded",
-        "tailwindcss"
-      ]
+      "ignoreExportsUsedInFile": true
     }
   }
 }
