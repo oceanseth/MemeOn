@@ -20,6 +20,12 @@ permissions:
 jobs:
   web:
     runs-on: ubuntu-latest
+    # A green run takes about 9 minutes; a hang must fail, not sit for the 6-hour default.
+    timeout-minutes: 30
+    env:
+      # Stream task output as it happens. Turbo's grouped default holds a task's log until it
+      # finishes, which leaves a hung task with nothing to read.
+      TURBO_LOG_ORDER: stream
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
