@@ -7,6 +7,7 @@ on:
       - 'package-lock.json'
       - 'web/**'
       - '.github/workflows/web-check.yml'
+      - '.github/scripts/ensure-linux-rollup.sh'
 
 permissions:
   contents: read
@@ -23,37 +24,7 @@ jobs:
       - run: npm ci
       - name: Ensure Linux Rollup binary
         shell: bash
-        run: |
-          set -euo pipefail
-          rollup_tmp="$(mktemp -d "$RUNNER_TEMP/rollup-native.XXXXXX")"
-          trap 'rm -rf "$rollup_tmp"' EXIT
-          cd "$rollup_tmp"
-          npm pack --ignore-scripts --silent @rollup/rollup-linux-x64-gnu@4.53.2
-          rollup_dest="$GITHUB_WORKSPACE/web/node_modules/@rollup/rollup-linux-x64-gnu"
-          mkdir -p "$rollup_dest"
-          tar -xzf rollup-rollup-linux-x64-gnu-4.53.2.tgz --strip-components=1 -C "$rollup_dest"
-          cd "$GITHUB_WORKSPACE"
-          node <<'NODE'
-          const fs = require('node:fs')
-          const path = require('node:path')
-
-          const expected = '4.53.2'
-          const lock = JSON.parse(fs.readFileSync('package-lock.json', 'utf8'))
-          const locked = lock.packages?.['web/node_modules/rollup']?.version
-          const rollup = require(path.resolve('web/node_modules/rollup/package.json'))
-          const nativeRoot = path.resolve('web/node_modules/@rollup/rollup-linux-x64-gnu')
-          const native = require(path.join(nativeRoot, 'package.json'))
-          const binary = path.resolve(nativeRoot, native.main)
-
-          if (locked !== expected || rollup.version !== expected || native.version !== expected) {
-            throw new Error(`Rollup versions must all be ${expected}; got lock=${locked}, rollup=${rollup.version}, native=${native.version}`)
-          }
-          if (!binary.startsWith(`${nativeRoot}${path.sep}`) || path.extname(binary) !== '.node' || !fs.existsSync(binary)) {
-            throw new Error(`Rollup native package main must be an installed .node file: ${binary}`)
-          }
-          require(binary)
-          console.log(`Loaded Linux Rollup native package ${native.version}`)
-          NODE
+        run: bash .github/scripts/ensure-linux-rollup.sh
       - run: npx playwright install --with-deps chromium
       - run: npm run check --prefix web
       - run: npm run build-storybook --prefix web
