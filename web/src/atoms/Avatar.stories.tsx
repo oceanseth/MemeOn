@@ -59,6 +59,16 @@ export const PersonRow: Story = {
   },
 }
 
+/** The 34px squircle the phone header cluster and its account menu wear (board `767-0`/`76K-0`). */
+export const Header: Story = {
+  args: { size: 'header' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const root = canvas.getByText('L').closest('[data-slot="avatar"]')!
+    await expect(root).toHaveStyle({ width: '34px', height: '34px', borderRadius: '13px' })
+  },
+}
+
 export const Large: Story = {
   args: { size: 'lg', src: LOGO, alt: 'lou' },
   play: async ({ canvasElement }) => {
@@ -93,11 +103,12 @@ export const Row: Story = {
   },
 }
 
-/** The three sizes, squircle and monogram on the ultraviolet fill. */
+/** The four sizes, squircle and monogram on the ultraviolet fill. */
 export const Sizes: Story = {
   render: () => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
       <Avatar name="lou" size="sm" />
+      <Avatar name="oxfern" size="header" />
       <Avatar name="ada" size="md" />
       <Avatar name="CyberSeth" size="lg" />
     </div>
