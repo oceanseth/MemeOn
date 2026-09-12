@@ -56,11 +56,7 @@ const OWNERSHIP_TRACK = 'mt-1 block h-1 overflow-hidden rounded-sm bg-surface-pr
    binder route already shows the board's rail, actionable pill and all, painted by the shell. If
    Lou flips that decision, the rail moves here *with* its claim — see the receipt's Requests. */
 
-/** Unbounded 27/34 — the section heading the collection sits under (`739-0`). */
-const SECTION_HEADING = cn(
-  'm-0 font-display text-[27px]/[34px] font-medium tracking-title text-ink',
-  'max-md:text-title',
-)
+const SECTION_HEADING = 'm-0 font-display text-title font-medium tracking-title text-ink'
 
 /** The toolbar row: heading + live count on the left, the 46px control lane on the right. */
 const TOOLBAR = 'mt-7 mb-[18px] flex flex-wrap items-end justify-between gap-x-6 gap-y-3.5'
@@ -133,7 +129,7 @@ export function BinderScreen({
           <div className="min-w-0">
             <p
               data-slot="binder-identity-name"
-              className="m-0 font-display text-[24px]/[30px] font-medium tracking-title text-ink"
+              className="m-0 font-display text-title font-medium tracking-title text-ink"
             >
               {identity.name}
             </p>

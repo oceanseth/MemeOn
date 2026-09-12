@@ -24,11 +24,11 @@ const RAIL = cn(
   '2xl:mt-2 2xl:flex-nowrap 2xl:px-6 2xl:py-5',
 )
 
-/** Unbounded 20/25 tracking −0.025em (`733-0`); the phone board steps it to 18/22 (`7D1-0`). */
+/** Unbounded card-title; phone steps to card-title-phone. */
 const TITLE = cn(
   'inline-flex items-center gap-[7px] whitespace-nowrap',
-  'font-display text-[20px] leading-[25px] font-medium tracking-title text-ink',
-  'max-2xl:text-[18px] max-2xl:leading-[22px]',
+  'font-display text-card-title font-medium tracking-card-title text-ink',
+  'max-2xl:text-card-title-phone',
 )
 
 /** The quest lane: 24 apart in one row at 1440 (`LH4-0`), 8 apart wrapped to three at 390 (`LIR-0`). */
@@ -178,7 +178,7 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
         close={{ label: model.pack.closeLabel }}
         description={model.pack.description}
         // the legacy `<p class="muted">` kept the body size and its UA paragraph margins
-        descriptionClassName="my-4 text-base"
+        descriptionClassName="my-4 text-body"
       >
         {model.pack.showCards && (
           <div className={PACK_GRID} data-slot="pack-grid">

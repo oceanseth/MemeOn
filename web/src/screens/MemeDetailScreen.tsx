@@ -41,7 +41,7 @@ const metaPlacement = '4xl:col-start-2 4xl:row-start-1'
 const railPlacement = '4xl:col-start-2 4xl:row-start-2'
 
 /** The caption under a panel heading: 13/16 on ink-muted. */
-const caption = 'mt-1.5 mb-0 text-[13px]/[16px] text-ink-muted'
+const caption = 'mt-1.5 mb-0 text-caption text-ink-muted'
 
 /** A panel's control row: 46px pills with the board's 10px gutter, wrapping on a phone. */
 const panelRow = 'mt-4 flex flex-wrap items-center gap-2.5'
@@ -61,7 +61,7 @@ const inlineLink = 'text-link no-underline hover:underline'
  * (`296-0` G4P-0), recoloured to the link hue on the public card (`KRK-0` KS6-0). Same element,
  * one colour swap — not two paragraphs in two places.
  */
-const heroTierLine = 'm-0 text-[13px]/[16px] font-bold'
+const heroTierLine = 'm-0 text-caption font-bold'
 
 /** The 8px meter the board draws under the hero, filled with the two action hues. */
 const ladderTrack = 'mt-2 h-2 overflow-hidden rounded-[5px] bg-surface-pressed'
@@ -78,7 +78,7 @@ function TierLadder({ model, hype }: { model: DetailTierLadderModel; hype: strin
        own, because this now paints inside it. */
     <div data-slot="tier-progression" className="mt-3">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-        <span className="text-[13px]/[16px] font-bold text-success-text">{model.currentLabel}</span>
+        <span className="text-caption font-bold text-success-text">{model.currentLabel}</span>
         <span className="text-micro/[15px] font-medium text-ink-muted tabular-nums">{model.nextLabel}</span>
       </div>
       <div className={ladderTrack} {...model.meterProps}>
@@ -136,7 +136,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
       <div className={detailGrid}>
         <div data-slot="detail-metadata" className={cn('flex min-w-0 flex-col', metaPlacement)}>
           {isPublic && (
-            <h1 className="m-0 flex flex-wrap items-center gap-x-3 font-display text-display font-medium tracking-title text-ink max-md:text-display-phone [overflow-wrap:anywhere]">
+            <h1 className="m-0 flex flex-wrap items-center gap-x-3 font-display text-display font-medium tracking-display text-ink max-md:text-display-phone [overflow-wrap:anywhere]">
               {detail.title}{privateBadge}
             </h1>
           )}

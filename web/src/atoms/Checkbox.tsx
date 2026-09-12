@@ -16,7 +16,7 @@ export const checkboxLabelChrome =
  */
 export const checkboxBoxChrome =
   'inline-flex size-[22px] shrink-0 items-center justify-center rounded-[7px] border-0 ' +
-  'bg-surface-raised shadow-raised text-[13px] leading-none text-transparent ' +
+  'bg-surface-raised shadow-raised text-caption leading-none text-transparent ' +
   'data-[checked]:bg-action data-[checked]:text-on-action ' +
   'data-[indeterminate]:bg-action data-[indeterminate]:text-on-action ' +
   'data-[invalid]:inset-ring-2 data-[invalid]:inset-ring-error-text ' +

@@ -31,7 +31,7 @@ const ONLINE_STRIP = cn(
 
 /* The 140px title slot the board fixes so every strip lines its avatars up on the same lane. */
 const ONLINE_TITLE = cn(
-  'w-[140px] shrink-0 font-display text-[17px]/[21px] font-medium tracking-title text-ink',
+  'w-[140px] shrink-0 font-display text-card-title-phone font-medium tracking-card-title text-ink',
   'max-sm:w-full',
 )
 
@@ -55,7 +55,7 @@ const IDENTITY = cn(
 )
 
 const NAME = cn(
-  'block truncate font-display text-[17px]/[21px] font-medium tracking-title text-ink',
+  'block truncate font-display text-card-title-phone font-medium tracking-card-title text-ink',
   '[overflow-wrap:anywhere]',
 )
 
@@ -197,7 +197,7 @@ export function FriendsScreen({
 
       {showSearchPanel && (
         <Panel className="mb-5">
-          <h2 className="font-display text-[17px]/[21px] font-medium tracking-title">Search results</h2>
+          <h2 className="font-display text-card-title-phone font-medium tracking-card-title">Search results</h2>
           <div role="status">
             {showSearching && <p className="m-0 text-label text-ink-muted">{searchingLabel}</p>}
             {showNoHits && <p className="m-0 text-label text-ink-muted">{noHitsMessage}</p>}

@@ -162,27 +162,38 @@
   --tracking-display: -0.04em;
   --tracking-title: -0.025em;
   --tracking-card-title: -0.02em;
+  --tracking-ui: 0em;
 
-  /* The ladder, size/line-height in px as the boards draw them. `display` and `card-title` have a
-     phone size (`max-md:text-display-phone`); the others hold at every width. */
+  /* Role ladder. Display-face steps (Unbounded 500) sit above the Onest UI steps. `hero`,
+     `display`, `section` and `card-title` shrink under `max-md` (`< 641px`). */
+  --text-hero: 48px;
+  --text-hero--line-height: 52px;
+  --text-hero-phone: 36px;
+  --text-hero-phone--line-height: 42px;
   --text-display: 44px;
   --text-display--line-height: 55px;
   --text-display-phone: 32px;
   --text-display-phone--line-height: 40px;
-  --text-title: 23px;
-  --text-title--line-height: 29px;
+  --text-section: 32px;
+  --text-section--line-height: 40px;
+  --text-section-phone: 26px;
+  --text-section-phone--line-height: 32px;
+  --text-title: 27px;
+  --text-title--line-height: 34px;
   --text-card-title: 23px;
   --text-card-title--line-height: 27px;
   --text-card-title-phone: 17px;
   --text-card-title-phone--line-height: 21px;
   --text-intro: 17px;
-  --text-intro--line-height: 21px;
+  --text-intro--line-height: 22px;
   --text-body: 16px;
   --text-body--line-height: 24px;
   --text-label: 15px;
   --text-label--line-height: 19px;
   --text-small: 14px;
   --text-small--line-height: 18px;
+  --text-caption: 13px;
+  --text-caption--line-height: 16px;
   --text-micro: 12px;
   --text-micro--line-height: 16px;
 
@@ -250,6 +261,23 @@
     color-scheme: dark;
   }
 
+  /* Light type on a dark canvas: open leading a step and ease Unbounded's negative tracking. */
+  :root[data-theme='dark'] {
+    --text-body--line-height: 26px;
+    --text-intro--line-height: 24px;
+    --tracking-display: -0.03em;
+    --tracking-ui: 0.01em;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --text-body--line-height: 26px;
+      --text-intro--line-height: 24px;
+      --tracking-display: -0.03em;
+      --tracking-ui: 0.01em;
+    }
+  }
+
   ::selection {
     background: var(--selection-bg);
     color: var(--color-ink);
@@ -264,6 +292,7 @@
     font-family: var(--font-sans);
     font-size: var(--text-body);
     line-height: var(--text-body--line-height);
+    letter-spacing: var(--tracking-ui);
     min-height: 100dvh;
   }
 
@@ -278,9 +307,9 @@
     scroll-margin-top: var(--topbar-h);
   }
 
-  /* Preflight resets headings to `font-size: inherit`, so the ladder is authored here: the display
-     face at its one weight, one size per level, and no component has to restate it to get a
-     heading that reads as one. h1 = display, h2 = title, h3 = card-title, h4 = label. */
+  /* Preflight resets headings to `font-size: inherit`, so the ladder is authored here: Unbounded
+     at its one weight, one size and tracking per level. h1 = display, h2 = title, h3 = card-title,
+     h4 = card-title-phone. Tracking tightens as the size grows; 15px Unbounded never sees −0.04em. */
   h1,
   h2,
   h3,
@@ -288,30 +317,33 @@
     margin: 0 0 8px;
     font-family: var(--font-display);
     font-weight: var(--font-weight-display);
-    letter-spacing: var(--tracking-display);
   }
 
   h1 {
     font-size: var(--text-display);
     line-height: var(--text-display--line-height);
+    letter-spacing: var(--tracking-display);
   }
 
   h2 {
     font-size: var(--text-title);
     line-height: var(--text-title--line-height);
+    letter-spacing: var(--tracking-title);
   }
 
   h3 {
     font-size: var(--text-card-title);
     line-height: var(--text-card-title--line-height);
+    letter-spacing: var(--tracking-card-title);
   }
 
   h4 {
-    font-size: var(--text-label);
-    line-height: var(--text-label--line-height);
+    font-size: var(--text-card-title-phone);
+    line-height: var(--text-card-title-phone--line-height);
+    letter-spacing: var(--tracking-card-title);
   }
 
-  /* the phone sizes of the two levels the boards shrink (the `max-md` cut, < 641px) */
+  /* the phone sizes of the two levels that shrink (the `max-md` cut, < 641px) */
   @media (width < 641px) {
     h1 {
       font-size: var(--text-display-phone);

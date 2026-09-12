@@ -13,7 +13,7 @@ const WELL = cn(
 )
 
 /** The well's own legend (`JXY-0` / `JY6-0`): Onest 13/16 weight 700 ink-muted, 8px above the row. */
-const LEGEND = 'mt-0 mb-2 text-[13px]/[16px] font-bold text-ink-muted'
+const LEGEND = 'mt-0 mb-2 font-sans text-caption font-bold tracking-normal text-ink-muted'
 
 /** The board's meme row (`JXX-0`): thumb, then the line, 8px apart. */
 const LINE = 'flex items-center gap-2'
@@ -22,8 +22,8 @@ const LINE = 'flex items-center gap-2'
 const THUMB = 'size-[30px] shrink-0 rounded-[9px] border-2 border-line bg-surface-raised object-cover'
 
 /** Meme line 13/16 and the coin amount 14/18, both in the display face the board draws them in. */
-const MEME_LINE = 'min-w-0 font-display text-[13px]/[16px] font-medium text-ink'
-const COINS = 'font-display text-[14px]/[18px] font-medium text-ink tabular-nums'
+const MEME_LINE = 'min-w-0 font-sans text-caption font-medium text-ink'
+const COINS = 'font-sans text-small font-medium text-ink tabular-nums'
 
 export function SideSummary({ model }: { model: TradeSideSummaryModel }) {
   return (

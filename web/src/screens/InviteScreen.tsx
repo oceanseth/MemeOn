@@ -22,19 +22,19 @@ const HERO_AVATAR = 'size-[90px] rounded-[33px] max-sm:size-[78px] max-sm:rounde
 
 /* The name is the page's display step (44/55, 32/40 on a phone); the verb line is one rung down. */
 const HERO_NAME = cn(
-  'block font-display text-display font-medium tracking-title text-ink',
+  'block font-display text-display font-medium tracking-display text-ink',
   'max-md:text-display-phone [overflow-wrap:anywhere]',
 )
 const HERO_VERB = cn(
-  'block font-display text-[28px]/[35px] font-medium tracking-title text-ink',
-  'max-sm:text-[22px]/[28px]',
+  'block font-display text-section-phone font-medium tracking-title text-ink',
+  'md:text-section',
 )
 
 const HERO_STATS = 'm-0 mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-label font-semibold text-ink-muted'
 
 const HERO_BODY = 'm-0 mt-4 max-w-[560px] text-intro font-medium text-ink-muted [text-wrap:pretty]'
 
-const HERO_NOTE = 'm-0 mt-3 max-w-[520px] text-[15px]/[20px] font-medium text-ink-muted [text-wrap:pretty]'
+const HERO_NOTE = 'm-0 mt-3 max-w-[65ch] text-label font-medium text-ink-muted [text-wrap:pretty]'
 
 const SECTION_HEADING = 'mt-8 mb-3.5 font-display text-title font-medium tracking-title text-ink'
 

@@ -13,12 +13,8 @@ import type { LandingScreenModel } from '../hooks/useLandingScreen'
 import { FaqItem } from '../molecules/FaqItem'
 import './LandingScreen.css'
 
-/* The board's marketing steps sit above the shared type ladder (44/55 → 23/29), so the landing
-   letters them itself: 34/42 for the story heading, 32/40 for the ladder, 29/36 for the FAQ. Every
-   one is Unbounded at the display weight on the title tracking, which is what the ladder gives. */
-const DISPLAY = 'font-display font-medium tracking-title text-ink'
-const SECTION_TITLE = cn(DISPLAY, 'm-0 text-[28px]/[35px] md:text-[34px]/[42px]')
-const LADDER_TITLE = cn(DISPLAY, 'm-0 text-[27px]/[34px] md:text-[32px]/[40px]')
+const FACE = 'font-display font-medium text-ink'
+const SECTION_TITLE = cn(FACE, 'm-0 text-section-phone tracking-title md:text-section')
 const SECTION = 'mt-14 max-md:mt-10'
 
 /* The board's closing CTA is the one ultraviolet plate on the page, with the single bubblegum
@@ -80,13 +76,13 @@ export function LandingScreen({
           <div className="min-w-0">
             <h1
               className={cn(
-                DISPLAY,
-                'm-0 text-[42px]/[1.05] text-balance md:text-[48px]/[0.95]',
+                'm-0 font-display text-hero-phone font-medium tracking-display text-ink text-pretty',
+                'md:text-hero',
               )}
             >
               Memes are the new trading cards
             </h1>
-            <p className="mt-5 mb-0 max-w-[570px] text-pretty text-body text-ink-muted md:text-[18px]/[22px]">
+            <p className="mt-5 mb-0 max-w-[65ch] text-pretty text-intro text-ink-muted">
               Mint the moment. Watch it spread. Trade the cards everyone sends each other anyway —
               every meme gets a share link whose foil frame levels up as it travels.
             </p>
@@ -145,10 +141,7 @@ export function LandingScreen({
                     </span>
                   </span>
                   <span
-                    className={cn(
-                      DISPLAY,
-                      'mx-1 mt-1.5 mb-1.5 block pr-[52px] text-[13px]/[110%] md:text-[15px]/[110%]',
-                    )}
+                    className="mx-1 mt-1.5 mb-1.5 block pr-[52px] font-sans text-caption font-medium tracking-normal text-ink md:text-label"
                   >
                     {card.caption}
                   </span>
@@ -157,7 +150,7 @@ export function LandingScreen({
                     label={card.tierName}
                     /* the pile's seal is one step under the grid thumb's: the board letters it
                        at 11/14 in a 7/3 pill so it never crowds a 144px card's title */
-                    className="absolute right-2.5 bottom-2.5 px-[7px] py-[3px] text-[11px]/[14px]"
+                    className="absolute right-2.5 bottom-2.5 px-[7px] py-[3px] text-micro"
                   />
                 </li>
               )
@@ -174,11 +167,11 @@ export function LandingScreen({
             <li key={step.step} className={CARD}>
               {/* the board's step number sits in the accent; `link` is the guarded ultraviolet
                   pair — `--color-focus` on a surface misses Lc 60 in the dark arm */}
-              <span className="block text-small font-extrabold text-link tabular-nums">
+              <span className="block text-small font-semibold text-link tabular-nums">
                 {step.step}
               </span>
-              <h3 className={cn(DISPLAY, 'mt-3 mb-0 text-[21px]/[26px]')}>{step.title}</h3>
-              <p className="mt-2 mb-0 text-small/[20px] text-ink-muted">{step.body}</p>
+              <h3 className={cn(FACE, 'mt-3 mb-0 text-card-title tracking-card-title')}>{step.title}</h3>
+              <p className="mt-2 mb-0 text-small text-ink-muted">{step.body}</p>
             </li>
           ))}
         </ol>
@@ -186,7 +179,7 @@ export function LandingScreen({
 
       {/* The tier ladder (board `DT1-0` … `DTY-0`) */}
       <section data-slot="landing-tiers" className={SECTION}>
-        <h2 className={LADDER_TITLE} id="tiers">
+        <h2 className={SECTION_TITLE} id="tiers">
           The Virality Tiers
         </h2>
         {/* an ordered climb, so the ladder is an <ol>: the sequence is the section's argument */}
@@ -219,7 +212,7 @@ export function LandingScreen({
                   ) : null}
                 </span>
               </span>
-              <h3 className={cn(DISPLAY, 'mt-3 mb-0 text-label md:text-[19px]/[24px]')}>
+              <h3 className={cn(FACE, 'mt-3 mb-0 text-card-title-phone tracking-card-title')}>
                 {t.name}
               </h3>
               <span className="mt-2.5 text-small/[18px] font-bold text-link tabular-nums">
@@ -233,8 +226,8 @@ export function LandingScreen({
 
       {/* FAQ (board `DU3-0`) */}
       <section data-slot="landing-faq" className={SECTION}>
-        <h2 className={cn(DISPLAY, 'm-0 mb-6 text-[29px]/[36px]')}>FAQ</h2>
-        <div className="max-w-[780px]">
+        <h2 className={cn(FACE, 'm-0 mb-6 text-section-phone tracking-title md:text-section')}>FAQ</h2>
+        <div className="max-w-[65ch]">
           <FaqItem question="How does a card level up?" defaultOpen>
             <p>
               Each unique share link and card unfurl counts as a reshare. Cross a threshold and the
@@ -304,8 +297,8 @@ export function LandingScreen({
         >
           <p
             className={cn(
-              'm-0 font-display font-medium tracking-title text-on-action-secondary',
-              'text-[21px]/[26px] md:text-[25px]/[31px]',
+              'm-0 font-display font-medium text-on-action-secondary',
+              'text-card-title tracking-card-title md:text-title md:tracking-title',
             )}
           >
             {closingLine}

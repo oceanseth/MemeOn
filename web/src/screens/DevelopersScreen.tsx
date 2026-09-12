@@ -14,7 +14,7 @@ import { ConfirmDialog } from '../molecules/ConfirmDialog'
  * The security explainer (`FAL-0`): 16/20 weight 500 on `ink-muted`, above the form and at the
  * board's own 959px measure — prose on the page, not a card.
  */
-const EXPLAINER = 'mt-0 mb-0 max-w-[960px] text-[16px]/[20px] font-medium text-ink-muted'
+const EXPLAINER = 'mt-0 mb-0 max-w-[65ch] text-body text-ink-muted'
 
 /** Create key form (`FAN-0`): a raised card, 18 padding, gap 12; the phone drops the button. */
 const FORM_CARD = 'mt-5 p-[18px] max-md:p-[18px]'
@@ -24,7 +24,7 @@ const FRESH_CARD = 'mt-5 p-5 max-md:p-5 inset-ring-2 inset-ring-action'
 
 /**
  * API key inventory (`FB0-0`): 22 padding, its rows divided by the board's one hairline. Its head is
- * a `PanelHeading` at the 18/22 `section` step `MCT-0` draws, not `Panel`'s own 17/21.
+ * a `PanelHeading` at the shared intro step.
  */
 const INVENTORY_CARD = 'mt-5 p-[22px] max-md:p-[18px]'
 
@@ -120,7 +120,7 @@ export function DevelopersScreen({
       <div {...freshKeyRegionProps}>
         {showFreshKey && (
           <Panel className={FRESH_CARD}>
-            <p className="m-0 text-intro font-extrabold text-ink">{freshKeyHeading}</p>
+            <p className="m-0 text-intro font-semibold text-ink">{freshKeyHeading}</p>
             <div
               className="mt-2.5 font-mono text-label font-bold text-ink [overflow-wrap:anywhere] select-all"
               {...freshKeyProps}
@@ -130,7 +130,7 @@ export function DevelopersScreen({
             <div className="mt-3.5 flex flex-wrap items-center gap-3">
               <Button {...copyButtonProps}>{copyLabel}</Button>
               {copyDone && (
-                <span className="text-[13px]/[16px] font-bold text-success-text">{copiedCaption}</span>
+                <span className="text-caption font-bold text-success-text">{copiedCaption}</span>
               )}
             </div>
           </Panel>
@@ -141,7 +141,7 @@ export function DevelopersScreen({
         <div className="flex items-center justify-between gap-4">
           <PanelHeading size="section" className="mb-0">{keysHeading}</PanelHeading>
           {quotaLabel && (
-            <span className="shrink-0 text-[13px]/[16px] font-medium text-ink-muted [font-variant-numeric:tabular-nums]">
+            <span className="shrink-0 text-caption font-medium text-ink-muted [font-variant-numeric:tabular-nums]">
               {quotaLabel}
             </span>
           )}
@@ -184,10 +184,10 @@ export function DevelopersScreen({
               <li key={k.prefix} className={KEY_ROW}>
                 <div className="flex min-w-0 flex-col gap-[3px]">
                   {/* `overflow-wrap:anywhere` keeps a 60-character label inside the row */}
-                  <span className="text-[16px]/[20px] font-bold text-ink [overflow-wrap:anywhere]">
+                  <span className="text-body font-semibold text-ink [overflow-wrap:anywhere]">
                     {k.label}
                   </span>
-                  <span className="text-[13px]/[16px] font-medium text-ink-muted [font-variant-numeric:tabular-nums]">
+                  <span className="text-caption font-medium text-ink-muted [font-variant-numeric:tabular-nums]">
                     {k.prefix}… · <time dateTime={k.createdAt}>{k.createdLabel}</time>
                   </span>
                 </div>

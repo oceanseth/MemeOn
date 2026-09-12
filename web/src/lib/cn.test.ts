@@ -47,12 +47,19 @@ describe('cn', () => {
     expect(cn('text-ink', 'text-body')).toBe('text-ink text-body')
     expect(cn('text-label', 'text-ink-muted')).toBe('text-label text-ink-muted')
     expect(cn('text-small', 'text-intro')).toBe('text-intro')
+    expect(cn('text-hero-phone', 'text-ink', 'md:text-hero')).toBe('text-hero-phone text-ink md:text-hero')
+    expect(cn('text-section-phone', 'text-ink', 'md:text-section')).toBe(
+      'text-section-phone text-ink md:text-section',
+    )
+    expect(cn('text-caption', 'text-ink-muted')).toBe('text-caption text-ink-muted')
   })
 
   it('merges the display trackings against each other and a stock one', () => {
     expect(cn('tracking-display', 'tracking-title')).toBe('tracking-title')
     expect(cn('tracking-tight', 'tracking-card-title')).toBe('tracking-card-title')
     expect(cn('tracking-display', 'tracking-normal')).toBe('tracking-normal')
+    expect(cn('tracking-ui', 'tracking-display')).toBe('tracking-display')
+    expect(cn('tracking-card-title', 'md:tracking-title')).toBe('tracking-card-title md:tracking-title')
   })
 
   it('merges the stock type sizes', () => {

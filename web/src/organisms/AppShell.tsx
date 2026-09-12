@@ -78,9 +78,8 @@ const WORDMARK = cn(
   FOCUS,
 )
 const WORDMARK_SIZE = {
-  sidebar: 'text-[26px] leading-[34px]',
-  /* 27/34 fits a 390 phone exactly (146 + the 186 cluster in 350); 375-wide devices get 24 */
-  header: 'text-[27px] leading-[34px] max-[380px]:text-[24px] 2xl:text-[31px] 2xl:leading-[39px]',
+  sidebar: 'text-title',
+  header: 'text-title max-[380px]:text-card-title max-[380px]:tracking-card-title 2xl:text-section',
 } as const
 
 function Wordmark({ size, className }: { size: keyof typeof WORDMARK_SIZE; className?: string | undefined }) {
@@ -156,7 +155,7 @@ const TAB_BAR = cn(
 const FOOTER = cn(
   'mt-12 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-line',
   'px-5 pt-[22px] pb-[max(34px,env(safe-area-inset-bottom))]',
-  'text-[13px] leading-4 text-ink-muted',
+  'text-caption text-ink-muted',
   'max-2xl:flex-col max-2xl:items-center',
 )
 const FOOTER_APP = '2xl:px-5'
@@ -230,7 +229,7 @@ export function AppShell({ sidebar, contextLine, headerEnd, quest, bottomNav, ch
           {quest}
           {children}
           <footer className={cn(FOOTER, app ? FOOTER_APP : FOOTER_PUBLIC)} data-slot="site-footer">
-            <span className="font-display text-[20px] leading-[25px] font-medium tracking-title text-ink">MemeOn</span>
+            <span className="font-display text-card-title font-medium tracking-card-title text-ink">MemeOn</span>
             <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 2xl:ml-auto" aria-label="Footer">
               <NavLink to="/privacy" className={() => FOOTER_LINK}>
                 Privacy

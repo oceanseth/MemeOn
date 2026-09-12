@@ -11,8 +11,8 @@ const COLUMN = 'mx-auto max-w-[1020px] text-center'
 
 /** Title (`EWN-0` / `EZC-0`): the display face at 38/48, 26/32 on the phone. */
 const TITLE = cn(
-  'm-0 font-display text-[38px]/[48px] font-medium tracking-title text-ink',
-  'max-md:text-[26px]/[32px]',
+  'm-0 font-display text-display font-medium tracking-display text-ink',
+  'max-md:text-section-phone',
 )
 
 /** A state row (`MK2-0`/`MJY-0`/`MJU-0`): radius 23, 12/16 padding, stacking on the phone. */
@@ -57,7 +57,7 @@ export function DiscordLinkScreen({
         <h1 className={cn(TITLE, 'mt-2.5')}>{heading ?? errTitle}</h1>
         {showConfirm && (
           <>
-            <p className="mx-auto mt-4 mb-0 max-w-[80ch] text-[16px]/[23px] font-medium text-ink-muted">
+            <p className="mx-auto mt-4 mb-0 max-w-[65ch] text-body text-ink-muted">
               Your Discord name is never shown to other MemeOn users — <code>/memeon</code> just
               ranks your own binder 💼 and your friends' memes 🤝 first.
             </p>
@@ -82,7 +82,7 @@ export function DiscordLinkScreen({
       >
         {(showBusy || showDone) && (
           <Panel className="p-[22px] max-md:p-[18px]">
-            <p className="m-0 mb-3 text-label font-extrabold text-ink-muted">What happens next</p>
+            <p className="m-0 mb-3 text-label font-semibold text-ink-muted">What happens next</p>
             {showBusy && (
               <div className={cn(ROW, 'bg-canvas-alt max-md:flex-row max-md:items-center')}>
                 <span className="flex items-center gap-3">
@@ -109,7 +109,7 @@ export function DiscordLinkScreen({
       {showError && (
         <div className={cn(COLUMN, 'mt-8 text-left')}>
           <Panel className="p-[22px] max-md:p-[18px]">
-            <p className="m-0 mb-3 text-label font-extrabold text-ink-muted">What happens next</p>
+            <p className="m-0 mb-3 text-label font-semibold text-ink-muted">What happens next</p>
             <div className={cn(ROW, 'bg-error-surface')} role="alert">
               <p className={cn(ROW_LABEL, 'text-error-text')}>{errBody}</p>
               <span className="flex shrink-0 flex-wrap items-center gap-2.5">

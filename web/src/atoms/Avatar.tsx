@@ -27,9 +27,9 @@ const rootChrome: Record<AvatarSize, string> = {
 /** One monogram size for the two small discs; `header` takes the board's 13/16, `lg` scales up. */
 const fallbackChrome: Record<AvatarSize, string> = {
   sm: 'text-label',
-  header: 'text-[13px]/[16px]',
+  header: 'text-caption',
   md: 'text-label',
-  lg: 'text-[22px] leading-none',
+  lg: 'text-card-title leading-none',
 }
 
 /** Everything not named here lands on the `<img>`, so a list model's `loading="lazy"` survives. */

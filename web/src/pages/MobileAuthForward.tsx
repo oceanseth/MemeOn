@@ -28,7 +28,7 @@ const RING = cn(
 
 /* the board holds the heading to a 400px measure so it breaks after "to the", not after "MemeOn" */
 const TITLE = cn(
-  'mt-[18px] mb-0 max-w-[400px] font-display text-[32px]/[40px] font-medium tracking-title text-ink',
+  'mt-[18px] mb-0 max-w-[400px] font-display text-display-phone font-medium tracking-display text-ink',
 )
 
 const SUBTITLE = 'mt-3 mb-0 max-w-[420px] text-label text-ink-muted'

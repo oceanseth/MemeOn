@@ -52,7 +52,7 @@ const TRIGGER = cn(
 /** Canvas on the error text colour: the pair `check-contrast` guards (WP1 deviation 2), 10px bold. */
 const BADGE = cn(
   'absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center px-1',
-  'rounded-pill bg-error-text text-[10px] leading-none font-bold text-canvas tabular-nums',
+  'rounded-pill bg-error-text text-micro leading-none font-bold text-canvas tabular-nums',
 )
 
 /**

@@ -35,12 +35,12 @@ const composeGrid = cn(
 )
 
 /** The composer's section legends are the board's 19/24 800 Onest, not the micro caps. */
-const composeLegend = 'mb-2.5 text-[19px]/[24px] font-extrabold tracking-normal text-ink normal-case'
+const composeLegend = 'mb-2.5 text-intro font-semibold tracking-normal text-ink normal-case'
 
 /** A stack of cards, evenly spaced. */
 const rowList = 'flex flex-col gap-3.5'
 
-/** Unbounded 23/29 — the section heading each list outside the composer sits under. */
+/** Unbounded title — the section heading each list outside the composer sits under. */
 const listHeading = 'm-0 font-display text-title font-medium tracking-title text-ink'
 
 const headingRow = 'mb-3.5 flex flex-wrap items-baseline gap-x-3 gap-y-1'

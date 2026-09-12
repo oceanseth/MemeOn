@@ -134,7 +134,7 @@ export default function HeroVideo({ autoplay }: HeroVideoProps) {
             onClick={start}
             className={cn(
               PILL,
-              'top-1/2 left-1/2 min-h-11 -translate-x-1/2 -translate-y-1/2 px-5 py-3 text-[15px] font-semibold',
+              'top-1/2 left-1/2 min-h-11 -translate-x-1/2 -translate-y-1/2 px-5 py-3 text-label font-semibold',
             )}
           >
             <span aria-hidden="true">▶</span> Play the 50-second tour
@@ -148,8 +148,8 @@ export default function HeroVideo({ autoplay }: HeroVideoProps) {
             aria-label={muted ? 'Unmute the video' : 'Mute the video'}
             className={cn(
               PILL,
-              'right-3 bottom-3 px-3.5 py-2 text-[13px]',
-              'max-md:top-2 max-md:right-2 max-md:bottom-auto max-md:px-[11px] max-md:py-[7px] max-md:text-xs',
+              'right-3 bottom-3 px-3.5 py-2 text-caption',
+              'max-md:top-2 max-md:right-2 max-md:bottom-auto max-md:px-[11px] max-md:py-[7px] max-md:text-micro',
             )}
           >
             {muted ? '🔇 Sound on' : '🔊 Sound off'}
