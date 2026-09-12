@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
+import { expect, within } from 'storybook/test'
 import { discordInstallUrl } from '../../.storybook/fixtures'
 import type { DiscordPageScreenModel } from '../hooks/useDiscordPageScreen'
 import { DiscordPageScreen } from './DiscordPageScreen'
@@ -18,6 +19,16 @@ const empty: DiscordPageScreenModel = {
     target: '_blank',
     rel: 'noreferrer',
   },
+}
+
+/** Storybook's viewport global; the vitest storybook project renders at the story's own width. */
+const phone = {
+  parameters: {
+    viewport: {
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+    },
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
 }
 
 const meta = {
@@ -45,6 +56,15 @@ export const Ready: Story = {
       rel: 'noreferrer',
     },
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const cta = canvas.getByRole('link', { name: '🧠 Add MemeOn to Discord' })
+    await expect(cta).toHaveAttribute('href', discordInstallUrl)
+    // the board makes the new-tab warning visible copy rather than a screen-reader-only aside
+    await expect(cta).toHaveAttribute('aria-describedby', 'discord-cta-note')
+    await expect(canvas.getByText('opens Discord in a new tab')).toBeVisible()
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('MemeOn for Discord')
+  },
 }
 
 export const NotConfigured: Story = {
@@ -62,4 +82,21 @@ export const Errored: Story = {
     showLoading: false,
     showError: true,
   },
+}
+
+export const Dark: Story = { ...Ready, name: 'Ready dark', globals: { theme: 'dark' } }
+
+export const Phone390: Story = { ...Ready, name: 'Ready phone 390', ...phone }
+
+export const DarkPhone390: Story = {
+  ...Ready,
+  name: 'Ready dark phone 390',
+  ...phone,
+  globals: { ...phone.globals, theme: 'dark' },
+}
+
+export const NotConfiguredDark: Story = {
+  ...NotConfigured,
+  name: 'Not configured dark',
+  globals: { theme: 'dark' },
 }
