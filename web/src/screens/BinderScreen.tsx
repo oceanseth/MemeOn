@@ -16,10 +16,11 @@ import { SortChips } from '../molecules/SortChips'
 const SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6'] as const
 
 /* ── The shared binder-grid pieces ─────────────────────────────────────────────────────────────
-   `ProfileScreen`'s binder tab (the Public Binder boards `HP9-0` / `I2F-0`) is the same grid with
-   different footer copy, so the four constants below are the contract WP3c mirrors: a 356-wide
-   three-up track at the 1108 column, a 166-wide two-up under 561px, the skip-render slot, and the
-   centred neutral "Show N more" control. Exported for that reason — nothing else imports them. */
+   `ProfileScreen`'s binder tab (the Public Binder boards `HP9-0` / `I2F-0`) is the same grid, so the
+   constants below are the contract WP3c mirrors: a 356-wide three-up track at the 1108 column, a
+   166-wide two-up under 561px, and the skip-render slot. Both screens put their shares count in the
+   card's own footer lane (`MemeCard`'s `footerRight`), which is where the board draws it. Exported
+   for that reason — nothing else imports them. */
 
 /** 3 × 356 + 2 × 20 = 1108 at the desktop column; 2 × 166 + 18 = 350 at the phone margin. */
 export const binderGridClasses = cn(
@@ -38,8 +39,8 @@ export const binderCardSlotClasses = cn(
   'max-sm:p-5 max-sm:[margin:-20px]',
 )
 
-/** The count row under a binder card: the atom's own footer rhythm, one line lower. */
-export const binderCardFooterClasses = cn(memeCardSubClasses, 'mt-0.5')
+/** The creator/private row under a binder card: the atom's own footer rhythm, one line lower. */
+const binderCardFooterClasses = cn(memeCardSubClasses, 'mt-0.5')
 
 /** The ownership groove: a recessed track with the braincell-gold fill the binder counts in. */
 const OWNERSHIP_TRACK = 'mt-1 block h-1 overflow-hidden rounded-sm bg-surface-pressed'
@@ -115,9 +116,20 @@ export function BinderScreen({
     <PageContainer as="main" id="main" tabIndex={-1}>
       <PageHead title="My Binder" subtitle={intro} />
 
+      {/* `70L-0` › `72V-0` (iPhone `7B6-0` › `7CT-0`) draws this as a raised card, not a bare row:
+          1108×98 (350×98 on the phone), 20 padding, radius 26 — the app's `--radius-card` 25 under
+          design-gap decision 9 — 16 gap, the 54/20 ultraviolet disc, then the name over its meta. */}
       {identity && (
-        <div data-slot="binder-identity" className="mb-6 flex items-center gap-4">
-          <Avatar name={identity.name} src={identity.pictureUrl} size="lg" />
+        <div
+          data-slot="binder-identity"
+          className="mb-6 flex min-h-[98px] items-center gap-4 rounded-card bg-surface p-5 shadow-raised"
+        >
+          <Avatar
+            name={identity.name}
+            src={identity.pictureUrl}
+            size="lg"
+            className="size-[54px] rounded-[20px]"
+          />
           <div className="min-w-0">
             <p
               data-slot="binder-identity-name"
@@ -125,7 +137,7 @@ export function BinderScreen({
             >
               {identity.name}
             </p>
-            <p className="m-0 mt-0.5 text-[13px]/[18px] text-ink-muted tabular-nums">
+            <p className="m-0 mt-[7px] text-small font-medium text-ink-muted tabular-nums">
               {identity.statsLabel}
             </p>
           </div>
@@ -206,19 +218,19 @@ export function BinderScreen({
             <li key={card.id} className={binderCardSlotClasses} aria-label={card.ariaLabel}>
               <MemeCard
                 model={card.memeCard}
+                /* the board's own footer lane (`73V-0`): `🧠 n` left, `12/100 shares` right, one
+                   row — not the market's listing pair with an ownership row stacked under it */
+                footerRight={<span className="font-semibold text-ink">{card.sharesLabel}</span>}
                 footer={
                   <>
-                    <span className={binderCardFooterClasses}>
-                      <span className="flex flex-wrap items-center gap-1.5 text-ink-muted">
-                        {card.showCreator && <span>you minted this</span>}
-                        {card.showPrivate && <Badge>🙈 private</Badge>}
+                    {(card.showCreator || card.showPrivate) && (
+                      <span className={binderCardFooterClasses}>
+                        <span className="flex flex-wrap items-center gap-1.5 text-ink-muted">
+                          {card.showCreator && <span>you minted this</span>}
+                          {card.showPrivate && <Badge>🙈 private</Badge>}
+                        </span>
                       </span>
-                      {/* "100/100 shares" is one line at every card width — the 64px slot the
-                          atom keeps for a listing price would break it in two */}
-                      <span className="shrink-0 text-right font-semibold whitespace-nowrap text-ink tabular-nums">
-                        {card.sharesLabel}
-                      </span>
-                    </span>
+                    )}
                     <span className={OWNERSHIP_TRACK} aria-hidden="true">
                       <i className="block h-full bg-warning-text" style={{ width: `${card.sharesPct}%` }} />
                     </span>

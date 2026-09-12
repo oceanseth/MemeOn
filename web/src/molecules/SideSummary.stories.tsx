@@ -7,6 +7,6 @@ const meta = { title: 'Molecules/SideSummary', component: SideSummary, args: { m
 export default meta
 type Story = StoryObj<typeof meta>
 export const Empty: Story = {}
-/** the record has not landed: a placeholder title with pending set, never the raw id */
-export const PendingMeme: Story = { args: { model: { ownerLabel: 'You get', empty: false, memeLines: [{ id: 'meme-2', sharesLabel: '3 shares of', title: '…', pending: true, titleAttr: 'meme-2', thumbUrl: null, tierKey: null, tierName: null, tierLabel: null, tierColor: null, resharesLabel: null, detailHref: '/m/meme-2' }], coinsLabel: null } } }
-export const SharesAndCoins: Story = { args: { model: { ownerLabel: 'You get', empty: false, memeLines: [{ id: 'meme-1', sharesLabel: '10 shares of', title: 'Receipt dog', pending: false, titleAttr: 'meme-1', thumbUrl: '/brand/paper.png', tierKey: 'paper', tierName: 'Paper', tierLabel: 'Paper · common', tierColor: '#9aa4bf', resharesLabel: '0', detailHref: '/m/meme-1' }], coinsLabel: '🧠 120' } } }
+/** the record has not landed: a placeholder title, never the raw id */
+export const PendingMeme: Story = { args: { model: { ownerLabel: 'You get', empty: false, memeLines: [{ id: 'meme-2', sharesLabel: '3 shares of', title: '…', thumbUrl: null, tierKey: null, tierName: null, tierLabel: null, resharesLabel: null, detailHref: '/m/meme-2' }], coinsLabel: null } } }
+export const SharesAndCoins: Story = { args: { model: { ownerLabel: 'You get', empty: false, memeLines: [{ id: 'meme-1', sharesLabel: '10 shares of', title: 'Receipt dog', thumbUrl: '/brand/paper.png', tierKey: 'paper', tierName: 'Paper', tierLabel: 'Paper · common', resharesLabel: '0', detailHref: '/m/meme-1' }], coinsLabel: '🧠 120' } } }

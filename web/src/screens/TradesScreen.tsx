@@ -7,7 +7,7 @@ import { Input } from '../atoms/Input'
 import { Notice } from '../atoms/Notice'
 import { PageContainer } from '../atoms/PageContainer'
 import { PageHead } from '../atoms/PageHead'
-import { Panel } from '../atoms/Panel'
+import { Panel, PanelHeading } from '../atoms/Panel'
 import { Select, type SelectOption } from '../atoms/Select'
 import { SkeletonRow } from '../atoms/Skeleton'
 import { cn } from '../lib/cn'
@@ -40,7 +40,7 @@ const composeLegend = 'mb-2.5 text-[19px]/[24px] font-extrabold tracking-normal 
 /** A stack of cards, evenly spaced. */
 const rowList = 'flex flex-col gap-3.5'
 
-/** Unbounded 23/29 — the section heading each list sits under. */
+/** Unbounded 23/29 — the section heading each list outside the composer sits under. */
 const listHeading = 'm-0 font-display text-title font-medium tracking-title text-ink'
 
 const headingRow = 'mb-3.5 flex flex-wrap items-baseline gap-x-3 gap-y-1'
@@ -89,7 +89,7 @@ export function TradesScreen({
             <EmptyActions><Link className={buttonClasses('primary')} to="/friends">Find your people</Link></EmptyActions>
           </EmptyState>
         : <Panel>
-            <h3 className={listHeading}>New trade</h3>
+            <PanelHeading size="composer" className="mb-0">New trade</PanelHeading>
             <p className="m-0 mt-1.5 text-small font-medium text-ink-muted">Build a fair-ish deal with your people.</p>
             <form className={cn(composeGrid, 'mt-5')} {...compose.formProps}>
               <Field><FieldLabel>Trade with</FieldLabel><Select items={[{ value: '', label: 'Pick a friend…' }, ...compose.friends.map((friend) => ({ value: friend.sub, label: friend.name }))]} {...compose.friendSelectProps} /></Field>

@@ -24,9 +24,13 @@ const DEAL = cn(
   'max-2xl:grid-cols-1 max-2xl:gap-2.5',
 )
 
-/** The board paints the swap mark in the focus colour — the one place it is used as an accent. */
+/**
+ * The board paints the swap mark in the ring's accent. `--color-focus` is not a text colour (its
+ * dark arm reads Lc -53 on a surface), so the glyph takes `--color-link` — the same accent inside
+ * the contrast floor. `scripts/check-contrast.mjs` guards the substitution.
+ */
 const SWAP = cn(
-  'self-center font-display text-[27px]/[34px] text-focus',
+  'self-center font-display text-[27px]/[34px] text-link',
   'max-2xl:rotate-90 max-2xl:justify-self-center',
 )
 

@@ -21,8 +21,8 @@ const composerActions = {
 // story-local: a fixed clock so the relative timestamps render the same on every run
 const NOW = new Date(proposedTrade.createdAt).getTime() + 3 * 60 * 60 * 1000
 const memeNames: TradeMemeInfoMap = {
-  [paperMeme.id]: { title: paperMeme.title, imageUrl: paperMeme.imageUrl, tierKey: 'paper', tierName: 'Paper', tierLabel: 'Paper · common', tierColor: '#9aa4bf', reshares: 0 },
-  [silverMeme.id]: { title: silverMeme.title, imageUrl: silverMeme.imageUrl, tierKey: 'silver', tierName: 'Silver', tierLabel: 'Silver · uncommon', tierColor: '#c9d2e4', reshares: 12 },
+  [paperMeme.id]: { title: paperMeme.title, imageUrl: paperMeme.imageUrl, tierKey: 'paper', tierName: 'Paper', tierLabel: 'Paper · common', reshares: 0 },
+  [silverMeme.id]: { title: silverMeme.title, imageUrl: silverMeme.imageUrl, tierKey: 'silver', tierName: 'Silver', tierLabel: 'Silver · uncommon', reshares: 12 },
 }
 const closedDialog = buildConfirmDialogModel({ open: false, title: '', message: '', onConfirm: noop, onCancel: noop })
 const empty: TradesScreenModel = {

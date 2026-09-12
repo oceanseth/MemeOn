@@ -9,7 +9,7 @@ import { PageHead } from '../atoms/PageHead'
 import { Skeleton, SkeletonBlock, SkeletonCard } from '../atoms/Skeleton'
 import { cn } from '../lib/cn'
 import type { ProfileScreenModel } from '../hooks/useProfileScreen'
-import { binderCardFooterClasses, binderCardSlotClasses, binderGridClasses } from './BinderScreen'
+import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
 
 const SKELETON_CARDS = ['a', 'b', 'c', 'd']
 
@@ -20,7 +20,7 @@ const SKELETON_CARDS = ['a', 'b', 'c', 'd']
    phone cut and lets a wrapped identity grow past it. */
 const IDENTITY_CARD = cn(
   'mb-5 flex flex-wrap items-center gap-y-4 gap-x-3.5 rounded-[28px] bg-surface p-5 shadow-raised',
-  'max-sm:rounded-[24px]',
+  'max-sm:rounded-nav',
 )
 
 /* 86/32 inside the app (`BPZ-0`), 60/22 on the public boards (`K62-0`/`HPQ-0`), one step down on a
@@ -286,14 +286,10 @@ export function ProfileScreen({
               <li key={card.id} className={binderCardSlotClasses}>
                 <MemeCard
                   model={card.memeCard}
-                  footer={
+                  /* the binder's lane, on the binder's grid (`73V-0`): one footer row, shares right */
+                  footerRight={
                     card.sharesLabel !== null ? (
-                      <span className={binderCardFooterClasses}>
-                        <span />
-                        <span className="shrink-0 text-right font-semibold whitespace-nowrap text-ink tabular-nums">
-                          {card.sharesLabel}
-                        </span>
-                      </span>
+                      <span className="font-semibold text-ink">{card.sharesLabel}</span>
                     ) : undefined
                   }
                 />

@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes } from 'react'
+import { braincells } from '../lib/braincells'
 import type { Trade, TradeSide } from '../lib/types'
 
 export type TradeAction = 'accept' | 'decline' | 'cancel'
@@ -11,7 +12,6 @@ export interface TradeMemeInfo {
   /** the tier's product name on its own — what a `TierChip` prints */
   tierName: string
   tierLabel: string
-  tierColor: string
   reshares: number
 }
 
@@ -22,15 +22,11 @@ export interface TradeMemeLineModel {
   sharesLabel: string
   /** a neutral placeholder until the record lands — a raw id never reaches the DOM as prose */
   title: string
-  pending: boolean
-  /** the raw id, for debugging only; never rendered as copy */
-  titleAttr: string
   thumbUrl: string | null
   tierKey: string | null
   /** the chip's label; null until the meme's record lands */
   tierName: string | null
   tierLabel: string | null
-  tierColor: string | null
   resharesLabel: string | null
   detailHref: string
 }
@@ -100,7 +96,7 @@ const MINUTE = 60_000
 const HOUR = 60 * MINUTE
 const DAY = 24 * HOUR
 
-/** stands in for a title still in flight; the row swaps it for a shimmer once SideSummary reads `pending` */
+/** stands in for a title still in flight, until the meme's record lands */
 const PENDING_TITLE = '…'
 
 const sharesPhrase = (shares: number): string => `${shares} share${shares === 1 ? '' : 's'} of`
@@ -123,7 +119,7 @@ export function tradeSideSentence(side: TradeSide, memeNames: TradeMemeInfoMap):
   const parts = side.memes.map(
     (meme) => `${sharesPhrase(meme.shares)} "${memeNames[meme.memeId]?.title ?? 'that meme'}"`,
   )
-  if (side.coins > 0) parts.push(`🧠 ${side.coins.toLocaleString()}`)
+  if (side.coins > 0) parts.push(braincells(side.coins))
   return parts.length === 0 ? 'nothing' : parts.join(' + ')
 }
 
@@ -137,7 +133,7 @@ function finalityLine(yours: TradeSide, memeNames: TradeMemeInfoMap): string | n
     const tier = info?.tierName ? `${info.tierName} ` : ''
     return `${meme.shares} ${tier}share${meme.shares === 1 ? '' : 's'}`
   })
-  if (yours.coins > 0) parts.push(`🧠${yours.coins.toLocaleString()}`)
+  if (yours.coins > 0) parts.push(braincells(yours.coins))
   if (parts.length === 0) {
     return 'Trades are final — nothing leaves your binder, but the cards you get are yours the moment you accept.'
   }
@@ -159,18 +155,15 @@ function buildSideSummary(
         id: meme.memeId,
         sharesLabel: sharesPhrase(meme.shares),
         title: info?.title ?? PENDING_TITLE,
-        pending: info === null,
-        titleAttr: meme.memeId,
         thumbUrl: info?.imageUrl ?? null,
         tierKey: info?.tierKey ?? null,
         tierName: info?.tierName ?? null,
         tierLabel: info?.tierLabel ?? null,
-        tierColor: info?.tierColor ?? null,
         resharesLabel: info ? info.reshares.toLocaleString() : null,
         detailHref: `/m/${meme.memeId}`,
       }
     }),
-    coinsLabel: side.coins > 0 ? `🧠 ${side.coins.toLocaleString()}` : null,
+    coinsLabel: side.coins > 0 ? braincells(side.coins) : null,
   }
 }
 

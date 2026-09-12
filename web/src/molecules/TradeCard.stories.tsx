@@ -10,8 +10,8 @@ const onRespond = fn()
 const NOW = new Date(proposedTrade.createdAt).getTime() + 3 * 60 * 60 * 1000
 
 const resolvedNames: TradeMemeInfoMap = {
-  'meme-paper': { title: 'fresh paper', imageUrl: '/brand/paper.png', tierKey: 'paper', tierName: 'Paper', tierLabel: 'Paper · common', tierColor: '#9aa4bf', reshares: 0 },
-  'meme-silver': { title: 'group-chat silver', imageUrl: '/brand/silver.png', tierKey: 'silver', tierName: 'Silver', tierLabel: 'Silver · uncommon', tierColor: '#c9d2e4', reshares: 12 },
+  'meme-paper': { title: 'fresh paper', imageUrl: '/brand/paper.png', tierKey: 'paper', tierName: 'Paper', tierLabel: 'Paper · common', reshares: 0 },
+  'meme-silver': { title: 'group-chat silver', imageUrl: '/brand/silver.png', tierKey: 'silver', tierName: 'Silver', tierLabel: 'Silver · uncommon', reshares: 12 },
 }
 
 const meta = {
@@ -92,7 +92,7 @@ export const FoilSide: Story = {
       meSub: 'not-the-sender',
       memeNames: {
         ...resolvedNames,
-        'meme-holo': { title: 'holo hit', imageUrl: '/brand/holo.png', tierKey: 'holo', tierName: 'Holo', tierLabel: 'Holo · rare', tierColor: '#7fd4ff', reshares: 60 },
+        'meme-holo': { title: 'holo hit', imageUrl: '/brand/holo.png', tierKey: 'holo', tierName: 'Holo', tierLabel: 'Holo · rare', reshares: 60 },
       },
       onRespond,
       now: NOW,

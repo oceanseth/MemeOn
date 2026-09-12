@@ -3,7 +3,6 @@ import type { Meme } from '../lib/types'
 import { BINDER_PAGE_SIZE } from './binderMachine'
 
 export type ProfileTab = 'created' | 'binder'
-export type ProfilePhase = 'loading' | 'ready' | 'error'
 /** 404 means the link is dead; anything else (500, timeout, offline) is a transport failure. */
 export type ProfileErrKind = 'notfound' | 'transport'
 

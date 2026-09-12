@@ -19,7 +19,7 @@ import '../atoms/foil.css'
 import { Notice } from '../atoms/Notice'
 import { PageContainer } from '../atoms/PageContainer'
 import { FilterBar, PageHead } from '../atoms/PageHead'
-import { Panel } from '../atoms/Panel'
+import { Panel, PanelHeading } from '../atoms/Panel'
 import { Select, type SelectOption } from '../atoms/Select'
 import { SkeletonCard } from '../atoms/Skeleton'
 import { Spinner } from '../atoms/Spinner'
@@ -72,8 +72,6 @@ const OUTCOME_HEADING = cn(
   'max-md:text-display-phone',
 )
 
-/** A card's own heading: Unbounded 22/28 (`G1D-0` / `G1V-0`). */
-const CARD_HEADING = 'm-0 font-display text-[22px]/[28px] font-medium tracking-title text-ink'
 const CARD_SUB = 'm-0 mt-[5px] text-small font-normal text-ink-muted'
 
 /**
@@ -374,7 +372,7 @@ export function CreateMemeScreen({
 
       <div className={LAYOUT}>
         <Panel>
-          <h3 className={CARD_HEADING}>{FORM_HEADING[mode]}</h3>
+          <PanelHeading size="card" className="mb-0">{FORM_HEADING[mode]}</PanelHeading>
           <p className={CARD_SUB}>Turn a small thought into a card people can own.</p>
           <div data-slot="form-grid" className={cn(FORM_GRID, 'mt-5')} {...formProps}>
             <Field>
@@ -654,7 +652,7 @@ export function CreateMemeScreen({
 
         <div className={RAIL}>
           <Panel className="flex flex-col">
-            <h3 className={CARD_HEADING}>Live card preview</h3>
+            <PanelHeading size="card" className="mb-0">Live card preview</PanelHeading>
             <p className={CARD_SUB}>This is what lands in the marketplace.</p>
             <div className="mt-5 flex flex-col gap-3">
               {/* the board's preview column always holds a card; before there is one, it holds the

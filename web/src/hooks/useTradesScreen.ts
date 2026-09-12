@@ -52,7 +52,7 @@ const RESPOND_ERROR = "Couldn't send your answer — this trade may already have
 const PROPOSE_ERROR = "Couldn't send that proposal. Check the numbers and try again."
 const FRIENDS_ERROR = "Couldn't load your friends list. Close this and open it again."
 /** an id that never resolves settles here, so a line stops shimmering and never shows a raw key */
-const RETIRED_MEME: TradeMemeInfo = { title: 'a retired meme', imageUrl: '', tierKey: '', tierName: '', tierLabel: '', tierColor: '', reshares: 0 }
+const RETIRED_MEME: TradeMemeInfo = { title: 'a retired meme', imageUrl: '', tierKey: '', tierName: '', tierLabel: '', reshares: 0 }
 
 function collectMemeIds(trades: Trade[]): string[] { const ids = new Set<string>(); for (const trade of trades) { for (const meme of trade.offer.memes) ids.add(meme.memeId); for (const meme of trade.ask.memes) ids.add(meme.memeId) }; return [...ids] }
 /**
@@ -71,7 +71,6 @@ const memeInfo = (meme: Meme): TradeMemeInfo => ({
   tierKey: meme.tier.key,
   tierName: meme.tier.name,
   tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`,
-  tierColor: meme.tier.color,
   reshares: meme.reshareCount ?? meme.reshares,
 })
 const errorText = (error: unknown, fallback: string): string => (error instanceof Error && error.message ? error.message : fallback)
