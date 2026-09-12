@@ -26,6 +26,8 @@ export interface TradesScreenModel {
   newTradeButtonProps: { onClick: () => void; 'aria-expanded': boolean; 'aria-controls': string }
   compose: TradeComposerModel | null
   open: readonly TradeCardModel[]
+  /** the count beside the "Open proposals" heading; null while there is nothing pending */
+  openCountLabel: string | null
   history: readonly TradeCardModel[]
   msg: string | null
   /** Persistent live region, mounted empty: the text swaps, the element never remounts. */
@@ -50,7 +52,7 @@ const RESPOND_ERROR = "Couldn't send your answer — this trade may already have
 const PROPOSE_ERROR = "Couldn't send that proposal. Check the numbers and try again."
 const FRIENDS_ERROR = "Couldn't load your friends list. Close this and open it again."
 /** an id that never resolves settles here, so a line stops shimmering and never shows a raw key */
-const RETIRED_MEME: TradeMemeInfo = { title: 'a retired meme', imageUrl: '', tierKey: '', tierLabel: '', tierColor: '', reshares: 0 }
+const RETIRED_MEME: TradeMemeInfo = { title: 'a retired meme', imageUrl: '', tierKey: '', tierName: '', tierLabel: '', tierColor: '', reshares: 0 }
 
 function collectMemeIds(trades: Trade[]): string[] { const ids = new Set<string>(); for (const trade of trades) { for (const meme of trade.offer.memes) ids.add(meme.memeId); for (const meme of trade.ask.memes) ids.add(meme.memeId) }; return [...ids] }
 /**
@@ -67,6 +69,7 @@ const memeInfo = (meme: Meme): TradeMemeInfo => ({
   title: meme.title,
   imageUrl: meme.imageUrl,
   tierKey: meme.tier.key,
+  tierName: meme.tier.name,
   tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`,
   tierColor: meme.tier.color,
   reshares: meme.reshareCount ?? meme.reshares,
@@ -192,10 +195,13 @@ export function useTradesScreen(): TradesScreenModel {
   const showError = context.loadFailed
   return {
     phase,
-    newTradeButtonLabel: showNew ? 'Close' : '＋ Propose a trade',
+    /* the board strips the fullwidth plus: the composer's own submit is the action, this opens it */
+    newTradeButtonLabel: showNew ? 'Close' : 'Propose a trade',
     newTradeButtonProps: { onClick: onToggleNew, 'aria-expanded': showNew, 'aria-controls': COMPOSE_FORM_ID },
     compose,
     open,
+    /* "waiting" is already the state, not a countable noun — the number is the only plural */
+    openCountLabel: open.length > 0 ? `${open.length} waiting` : null,
     history,
     msg: context.msg,
     noticeProps: { role: 'status', 'aria-live': 'polite' },

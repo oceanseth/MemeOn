@@ -8,6 +8,8 @@ export interface TradeMemeInfo {
   title: string
   imageUrl: string
   tierKey: string
+  /** the tier's product name on its own — what a `TierChip` prints */
+  tierName: string
   tierLabel: string
   tierColor: string
   reshares: number
@@ -25,6 +27,8 @@ export interface TradeMemeLineModel {
   titleAttr: string
   thumbUrl: string | null
   tierKey: string | null
+  /** the chip's label; null until the meme's record lands */
+  tierName: string | null
   tierLabel: string | null
   tierColor: string | null
   resharesLabel: string | null
@@ -32,6 +36,7 @@ export interface TradeMemeLineModel {
 }
 
 export interface TradeSideSummaryModel {
+  /** whose side this is, read from where you are standing: "You give" / "You get" */
   ownerLabel: string
   empty: boolean
   memeLines: readonly TradeMemeLineModel[]
@@ -41,8 +46,11 @@ export interface TradeSideSummaryModel {
 export interface TradeActionModel {
   kind: TradeAction
   label: string
-  /** which button the row wears: the constructive answer is the loudest control */
-  variant: 'primary' | 'danger'
+  /**
+   * Which button the row wears: the constructive answer is the card's one bubblegum, declining is
+   * the neutral raised pill beside it, and withdrawing your own live offer is destructive.
+   */
+  variant: 'primary' | 'default' | 'danger'
   buttonProps: Pick<
     ButtonHTMLAttributes<HTMLButtonElement>,
     'onClick' | 'disabled' | 'aria-busy' | 'aria-label'
@@ -51,16 +59,25 @@ export interface TradeActionModel {
 
 export interface TradeCardModel {
   id: string
+  /** the deal in one line, from where you are standing: "CyberSeth offered you a deal" */
   partiesLabel: string
   statusLabel: string
+  /** the badge only earns its place once the subline stops saying who is waiting */
+  showStatusBadge: boolean
+  /** "Waiting on you" / "Waiting on them" / the resolved word — the subline's first half */
+  waitingLabel: string
   /** relative age — the scannable value */
   createdLabel: string
   /** machine-readable original, for <time dateTime> */
   createdAtIso: string
   /** exact local timestamp, kept on hover and for assistive tech */
   createdTitle: string
-  offer: TradeSideSummaryModel
-  ask: TradeSideSummaryModel
+  /** the board's LEFT well (`JXY-0`): what leaves your binder — always "You give" */
+  give: TradeSideSummaryModel
+  /** the board's RIGHT well (`JY6-0`): what lands in it — always "You get" */
+  get: TradeSideSummaryModel
+  /** what leaves your binder the moment you accept; null when there is nothing to answer */
+  finalityLine: string | null
   actions: readonly TradeActionModel[]
 }
 
@@ -69,6 +86,14 @@ const STATUS_BADGE: Record<Trade['status'], string> = {
   accepted: '✅ accepted',
   declined: '❌ declined',
   cancelled: '🚫 cancelled',
+}
+
+/** The subline's first half once a trade is settled. */
+const STATUS_LINE: Record<Trade['status'], string> = {
+  proposed: 'Waiting',
+  accepted: 'Deal complete',
+  declined: 'Declined',
+  cancelled: 'Withdrawn',
 }
 
 const MINUTE = 60_000
@@ -102,13 +127,31 @@ export function tradeSideSentence(side: TradeSide, memeNames: TradeMemeInfoMap):
   return parts.length === 0 ? 'nothing' : parts.join(' + ')
 }
 
+/**
+ * The finality note the Trade board prints under the wells (`LPR-0`). It names what leaves *your*
+ * binder, so it is only written for a live proposal you can still answer.
+ */
+function finalityLine(yours: TradeSide, memeNames: TradeMemeInfoMap): string | null {
+  const parts = yours.memes.map((meme) => {
+    const info = memeNames[meme.memeId]
+    const tier = info?.tierName ? `${info.tierName} ` : ''
+    return `${meme.shares} ${tier}share${meme.shares === 1 ? '' : 's'}`
+  })
+  if (yours.coins > 0) parts.push(`🧠${yours.coins.toLocaleString()}`)
+  if (parts.length === 0) {
+    return 'Trades are final — nothing leaves your binder, but the cards you get are yours the moment you accept.'
+  }
+  const list = parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}`
+  return `Trades are final — ${list} leave your binder the moment you accept.`
+}
+
 function buildSideSummary(
   side: TradeSide,
   owner: string,
   memeNames: TradeMemeInfoMap,
 ): TradeSideSummaryModel {
   return {
-    ownerLabel: `${owner} gives`,
+    ownerLabel: owner,
     empty: side.memes.length === 0 && side.coins === 0,
     memeLines: side.memes.map((meme) => {
       const info = memeNames[meme.memeId] ?? null
@@ -120,6 +163,7 @@ function buildSideSummary(
         titleAttr: meme.memeId,
         thumbUrl: info?.imageUrl ?? null,
         tierKey: info?.tierKey ?? null,
+        tierName: info?.tierName ?? null,
         tierLabel: info?.tierLabel ?? null,
         tierColor: info?.tierColor ?? null,
         resharesLabel: info ? info.reshares.toLocaleString() : null,
@@ -153,8 +197,9 @@ export function buildTradeCardModel({
   const mine = trade.fromId === meSub
   const locked = busyTradeId !== null
   const running = (kind: TradeAction): boolean => busyTradeId === trade.id && busyAction === kind
+  const open = trade.status === 'proposed'
   const actions: TradeActionModel[] =
-    trade.status !== 'proposed' || !onRespond
+    !open || !onRespond
       ? []
       : mine
         ? [
@@ -170,7 +215,21 @@ export function buildTradeCardModel({
               },
             },
           ]
-        : [
+        : /* the board's own action row (`JYC-0`) reads Decline → Accept, left to right: the quiet
+             answer sits first and the card's one bubblegum closes the row under the "You get" well */
+          [
+            {
+              /* the quiet answer is neutral raised, not a second loud colour: only Accept is loud */
+              kind: 'decline',
+              label: running('decline') ? 'Declining…' : 'Decline',
+              variant: 'default',
+              buttonProps: {
+                onClick: () => onRespond(trade, 'decline'),
+                disabled: locked,
+                'aria-busy': running('decline'),
+                'aria-label': `Decline ${trade.fromName}'s trade`,
+              },
+            },
             {
               kind: 'accept',
               label: running('accept') ? 'Accepting…' : 'Accept',
@@ -182,28 +241,30 @@ export function buildTradeCardModel({
                 'aria-label': `Accept ${trade.fromName}'s trade`,
               },
             },
-            {
-              kind: 'decline',
-              label: running('decline') ? 'Declining…' : 'Decline',
-              variant: 'danger',
-              buttonProps: {
-                onClick: () => onRespond(trade, 'decline'),
-                disabled: locked,
-                'aria-busy': running('decline'),
-                'aria-label': `Decline ${trade.fromName}'s trade`,
-              },
-            },
           ]
 
+  /* `trade.offer` is always what the proposer puts up; which side of the table you are on decides
+     whether that reads as giving or getting. The card's wells are keyed to the *reading*, never to
+     the record: the board (`JXT-0`, an incoming deal) draws "You give" left and "You get" right,
+     so the left well is always yours to lose and the right always yours to gain. */
+  const yours = mine ? trade.offer : trade.ask
+  const theirs = mine ? trade.ask : trade.offer
   return {
     id: trade.id,
-    partiesLabel: `${trade.fromName} ⇄ ${trade.toName}`,
+    partiesLabel: open
+      ? mine
+        ? `You offered ${trade.toName} a deal`
+        : `${trade.fromName} offered you a deal`
+      : `Your deal with ${mine ? trade.toName : trade.fromName}`,
     statusLabel: STATUS_BADGE[trade.status],
+    showStatusBadge: !open,
+    waitingLabel: open ? (mine ? 'Waiting on them' : 'Waiting on you') : STATUS_LINE[trade.status],
     createdLabel: relativeAge(trade.createdAt, now),
     createdAtIso: trade.createdAt,
     createdTitle: new Date(trade.createdAt).toLocaleString(),
-    offer: buildSideSummary(trade.offer, trade.fromName, memeNames),
-    ask: buildSideSummary(trade.ask, trade.toName, memeNames),
+    give: buildSideSummary(yours, 'You give', memeNames),
+    get: buildSideSummary(theirs, 'You get', memeNames),
+    finalityLine: actions.length > 0 && !mine ? finalityLine(yours, memeNames) : null,
     actions,
   }
 }
