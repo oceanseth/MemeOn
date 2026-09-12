@@ -23,6 +23,7 @@ const DevelopersView = lazy(() => import('./DevelopersView').then((m) => ({ defa
 const FriendsView = lazy(() => import('./FriendsView').then((m) => ({ default: m.FriendsView })))
 const LeaderboardView = lazy(() => import('./LeaderboardView').then((m) => ({ default: m.LeaderboardView })))
 const MarketplaceView = lazy(() => import('./MarketplaceView').then((m) => ({ default: m.MarketplaceView })))
+const SettingsView = lazy(() => import('./SettingsView').then((m) => ({ default: m.SettingsView })))
 const TradesView = lazy(() => import('./TradesView').then((m) => ({ default: m.TradesView })))
 
 function LegacyMemeRedirect() {
@@ -164,6 +165,15 @@ export const AppView = observer(function AppView() {
           element={
             <RequireAuth>
               <LeaderboardView />
+            </RequireAuth>
+          }
+        />
+        {/* the sidebar's Settings link, the identity gear and the phone account menu all land here */}
+        <Route
+          path="/settings"
+          element={
+            <RequireAuth>
+              <SettingsView />
             </RequireAuth>
           }
         />

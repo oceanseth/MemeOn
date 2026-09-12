@@ -50,7 +50,7 @@ const authSetup: Story = {
   parameters: { initialEntries: ['/developers'] },
   beforeEach: async ({ loaded, parameters }) => {
     // the guarded routes are code-split: warm their chunks so a play function sees the route, not the spinner
-    await Promise.all([import('./CreateMemeView'), import('./DevelopersView')])
+    await Promise.all([import('./CreateMemeView'), import('./DevelopersView'), import('./SettingsView')])
     const originalFetch = window.fetch
     const previousSession = sessionToken()
     const previousMasky = maskyAccessToken()
@@ -133,6 +133,21 @@ export const LogoutButtonClearsNavigation: Story = {
     })
     await expect(sessionToken()).toBeNull()
     await expect(maskyAccessToken()).toBeNull()
+  },
+}
+
+/** /settings is a guarded route like the rest: the chunk lands after the shell, behind RequireAuth. */
+export const SettingsRoute: Story = {
+  ...authSetup,
+  parameters: { initialEntries: ['/settings'] },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByRole('heading', { name: 'Settings', level: 1 })).toBeInTheDocument()
+    await expect(canvasElement.querySelector('main#main[tabindex="-1"]')).not.toBeNull()
+    // the sidebar's utility link and the identity gear both land on the route that now exists
+    const ways = canvas.getAllByRole('link', { name: 'Settings' })
+    await expect(ways.length).toBeGreaterThan(0)
+    for (const way of ways) await expect(way).toHaveAttribute('href', '/settings')
   },
 }
 
