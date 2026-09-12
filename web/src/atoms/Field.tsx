@@ -1,0 +1,101 @@
+import { Field as BaseField } from '@base-ui/react/field'
+import type {
+  FieldDescriptionProps,
+  FieldErrorProps,
+  FieldLabelProps,
+  FieldRootProps,
+} from '@base-ui/react/field'
+import type { ComponentPropsWithoutRef } from 'react'
+import { cn } from '../lib/cn'
+
+/** Base UI also accepts a state callback for `className`; narrowing to a string lets `cn()` merge it. */
+export type Styled<P> = Omit<P, 'className'> & { className?: string | undefined }
+
+/**
+ * The labelled-control column: label typography, and 6px between the label, the control and the
+ * caption under it (the boards' field rhythm). The control restates its own weight — see
+ * `controlChrome` — so a 600 column never bolds a typed value.
+ */
+export function Field({ className, ...props }: Styled<FieldRootProps>) {
+  return (
+    <BaseField.Root
+      className={cn(
+        'flex flex-col gap-1.5 text-small font-semibold text-ink',
+        className,
+      )}
+      {...props}
+      data-slot="field"
+    />
+  )
+}
+
+/** Onest 14/18 600 ink — the label is the only 600 in the column. */
+export const labelChrome = 'text-small font-semibold text-ink'
+
+/** The caption under a control, at the regular weight — a hint is not a second label. */
+export const hintChrome = 'mt-1 block text-[13px]/[18px] font-normal text-ink-muted'
+
+export const errorChrome = 'mt-1 block text-[13px]/[18px] font-normal text-error-text'
+
+export function FieldLabel({ className, ...props }: Styled<FieldLabelProps>) {
+  return (
+    <BaseField.Label className={cn(labelChrome, className)} {...props} data-slot="field-label" />
+  )
+}
+
+export function FieldHint({ className, ...props }: Styled<FieldDescriptionProps>) {
+  return (
+    <BaseField.Description className={cn(hintChrome, className)} {...props} data-slot="field-hint" />
+  )
+}
+
+export function FieldError({ className, ...props }: Styled<FieldErrorProps>) {
+  return (
+    <BaseField.Error className={cn(errorChrome, className)} {...props} data-slot="field-error" />
+  )
+}
+
+/**
+ * The standalone shape: most caption text in the app has no label and no control around it, and
+ * Base UI's `Field.Description` throws outside a `<Field>`. These carry the same look with no
+ * context, and take an `id` so a call site can wire `aria-describedby` by hand. `as="span"` is for
+ * the sites that sit inside a bare `<label>`, where a `<p>` would be invalid.
+ */
+export type TextProps = ComponentPropsWithoutRef<'p'> & { as?: 'p' | 'span' | undefined }
+
+export function Hint({ as: Tag = 'p', className, ...props }: TextProps) {
+  return <Tag className={cn(hintChrome, className)} {...props} data-slot="hint" />
+}
+
+export function ErrorText({ as: Tag = 'p', className, ...props }: TextProps) {
+  return <Tag className={cn(errorChrome, className)} {...props} data-slot="error-text" />
+}
+
+/**
+ * A caption and its counter share one line. The pre-migration counter floated right so the help
+ * text wrapped around it; in a flex column a float is inert, so the pair gets an explicit row
+ * instead. `[&>*]:mt-0` drops the children's own top margin — the row owns the offset once.
+ */
+export function FieldFooter({ className, ...props }: ComponentPropsWithoutRef<'div'>) {
+  return (
+    <div
+      className={cn('mt-1 flex items-baseline justify-between gap-2 [&>*]:mt-0', className)}
+      {...props}
+      data-slot="field-footer"
+    />
+  )
+}
+
+/** Belongs in a `FieldFooter`; `ml-auto` keeps it right-aligned even when it is the only child. */
+export function FieldCounter({ className, ...props }: ComponentPropsWithoutRef<'span'>) {
+  return (
+    <span
+      className={cn(
+        'ml-auto shrink-0 text-[13px]/[18px] font-normal text-ink-muted tabular-nums',
+        className,
+      )}
+      {...props}
+      data-slot="field-counter"
+    />
+  )
+}

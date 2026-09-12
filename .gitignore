@@ -24,6 +24,7 @@ terraform.tfvars
 # Environment
 .env
 .env.*
+localstorage.json
 
 
 # Expo

@@ -1,0 +1,38 @@
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import { MemoryRouter } from 'react-router-dom'
+import { fn } from 'storybook/test'
+import { giftablePaper, giftableSilver, holoMeme, listedHolo, memeplexEmpty, memeplexFamily } from '../../.storybook/fixtures'
+import { MemeplexPanel } from './MemeplexPanel'
+import { buildMemeplexPanelModel } from './memeplexPanelModel'
+
+const handlers = { onPickChange: fn(), onPastedChange: fn(), onAdd: fn() }
+const build = (overrides: Partial<Parameters<typeof buildMemeplexPanelModel>[0]> = {}) => buildMemeplexPanelModel({
+  meme: holoMeme, plex: memeplexFamily, canEdit: false, binder: [], pick: '', pasted: '', notice: null, error: null, ...handlers, ...overrides,
+})
+
+const meta = {
+  title: 'Organisms/MemeplexPanel', component: MemeplexPanel,
+  decorators: [(Story) => <MemoryRouter><div style={{ maxWidth: 720 }}><Story /></div></MemoryRouter>],
+  args: { model: build() },
+} satisfies Meta<typeof MemeplexPanel>
+
+export default meta
+type Story = StoryObj<typeof meta>
+
+export const Family: Story = {}
+export const EmptyReadOnly: Story = { args: { model: build({ plex: memeplexEmpty }) } }
+export const EmptyEditor: Story = { args: { model: build({ plex: memeplexEmpty, canEdit: true, binder: [giftablePaper, giftableSilver, listedHolo] }) } }
+export const EditorPicked: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper, listedHolo], pick: listedHolo.id }) } }
+export const PastedLink: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper], pasted: 'https://memeon.ai/m/meme-listed' }) } }
+export const Notice: Story = { args: { model: build({ notice: 'Added to the memeplex 🕸️' }) } }
+/** A failed link never wears success green. */
+export const ErrorNotice: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper], error: 'Already in the memeplex.' }) } }
+export const Loading: Story = { args: { model: build({ plex: null }) } }
+/** Two columns at 390px: the relatives grid no longer eats the page before the cap table. */
+export const NarrowFamily: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  decorators: [(Story) => <div style={{ maxWidth: 358 }}><Story /></div>],
+}
+
+/** The strip on the dark arm: raised card, tier frames, and links that still clear the floor. */
+export const Dark: Story = { globals: { theme: 'dark' } }

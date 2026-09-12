@@ -1,0 +1,204 @@
+import { Meta } from "@storybook/addon-docs/blocks"
+
+<Meta title="Anatomy" />
+
+# UI anatomy
+
+Five tiers. Everything below **Views** is a pure function of its props.
+
+`src/` is organized as atoms → molecules → organisms → screens → views.
+Everything below `views/` is a pure function of props: no state hooks, no
+stores, no fetch. State lives in `hooks/` (one `useXScreen()` per screen,
+exporting `XScreenModel`) and `stores/`. Every component has a sibling
+`*.stories.tsx` titled `"<Tier>/<Name>"`. Read this file before adding
+or moving a component. `npm run check-tiers` runs recursively and must pass;
+`npm run build` runs it before type-checking and Vite.
+
+| Tier | Folder | What lives there | Owns state? |
+|---|---|---|---|
+| **Atoms** | `src/atoms/` | `Avatar` (`sm`/`header`/`md`/`lg`), `Badge`, `Button` (`pressed`/`aria-pressed` toggle state), `Checkbox`, `EmptyState` (additive `tone`), `Field`, `Fieldset`, `Icon`, `Input` (its `controlChrome` is shared by `Select` and `Textarea`), `MemeCard` (plus `tierFrameClasses`, `memeCardSubClasses`; `footer` and `footerRight` slots), `Notice`, `PageContainer`, `PageHead`, `Panel` (+ `PanelHeading`: `intro` 17/21 · `section` 18/22 · `card` 22/28 · `composer` 24/30 — the sizes the boards give raised-card headings), `Select`, `Skeleton`, `Spinner`, `Textarea`, `TierChip` | No |
+| **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `TradeCard` (`give`/`get`, not `offer`/`ask`) | No |
+| **Organisms** | `src/organisms/` | `AppShell` (slots `sidebar` / `contextLine` / `headerEnd` / `quest` / `bottomNav`), `MemeplexPanel` | No |
+| **Screens** | `src/screens/` | One model object per route/chrome surface | No |
+| **Views** | `src/views/` | Engine wired to screen; `observer` wrap; `AppView` is the route switch | Via hooks |
+
+| Screen | Engine | Model type | Machine phases |
+|---|---|---|---|
+| `AppShellScreen` | `useAppShellScreen()` | `AppShellScreenModel` | `loggedOut` \| `loggedIn` |
+| `LandingScreen` | `useLandingScreen()` | `LandingScreenModel` | `loading` \| `ready` \| `loggingIn` \| `loginError` |
+| `CreateMemeScreen` | `useCreateMemeScreen()` | `CreateMemeScreenModel` | `chooseMode` \| modes \| `submitting` \| `success` \| `error` |
+| `MarketplaceScreen` | `useMarketplaceScreen()` | `MarketplaceScreenModel` | `loading` \| `ready` \| `empty` \| `error` |
+| `MemeDetailScreen` | `useMemeDetailScreen()` | `MemeDetailScreenModel` | `loading` \| `ready` \| `empty` \| `error` \| `listing` \| `buying` \| `deleting` |
+| `TradesScreen` | `useTradesScreen()` | `TradesScreenModel` | `loading` \| `ready` \| `empty` \| `error` \| `composing` \| `acting` |
+| `FriendsScreen` | `useFriendsScreen()` | `FriendsScreenModel` | `loading` \| `ready` \| `empty` \| `error` |
+| `BinderScreen` | `useBinderScreen()` | `BinderScreenModel` | `loading` \| `ready` \| `empty` \| `error` |
+| `ProfileScreen` | `useProfileScreen()` | `ProfileScreenModel` | `loading` \| `ready` \| `error`; tab in actor context |
+| `LeaderboardScreen` | `useLeaderboardScreen()` | `LeaderboardScreenModel` | `loading` \| `ready` \| `empty` \| `error` |
+| `InviteScreen` | `useInviteScreen()` | `InviteScreenModel` | `loading` \| `ready` \| `accepting` \| `error` |
+| `DiscordPageScreen` | `useDiscordPageScreen()` | `DiscordPageScreenModel` | `loading` \| `ready` |
+| `DiscordLinkScreen` | `useDiscordLinkScreen()` | `DiscordLinkScreenModel` | `working` \| `done` \| `error` |
+| `DevelopersScreen` | `useDevelopersScreen()` | `DevelopersScreenModel` | `loading` \| `ready` \| `empty` \| `error` |
+| `SettingsScreen` | `useSettingsScreen()` | `SettingsScreenModel` | — (no machine: reads `useAuth()` and `useTheme()` only) |
+| `PrivacyScreen` | none (static copy) | — | — |
+| `TermsScreen` | none (static copy) | — | — |
+
+The table lists declared machine phases, including transient phases and states
+represented only by prop fixtures. In the reachable flows, initial list failures
+for Friends, Binder, and Leaderboard retain their existing empty presentation;
+Marketplace errors also present as empty. Detail, trades, and developer errors
+include mutation failures. A successful creation navigates away from its screen.
+
+## Composition tree
+
+```
+main.tsx ── StoresProvider + AuthRuntime + BrowserRouter
+└─ App.ts (re-export) ── AppView
+   ├─ RequireAuth · BinderOwnRedirect · BinderRoute · ProfileRoute · MemeDetailRoute · LegacyMemeRedirect
+   └─ AppShellView ── useAppShellScreen → AppShellScreen
+      ├─ AppShell
+      │   ├─ QuestBar
+      │   └─ AlertsBell
+      └─ Routes
+         ├─ LandingView ── useLandingScreen → LandingScreen
+         ├─ CreateMemeView ── useCreateMemeScreen → CreateMemeScreen
+         ├─ MarketplaceView ── useMarketplaceScreen → MarketplaceScreen ── SortChips · MemeCard*
+         ├─ MemeDetailView ── useMemeDetailScreen → MemeDetailScreen ── ConfirmDialog · MemeplexPanel ── MemeCard*
+         ├─ TradesView ── useTradesScreen → TradesScreen
+         ├─ FriendsView ── useFriendsScreen → FriendsScreen ── GiftDialog
+         ├─ BinderView ── useBinderScreen → BinderScreen ── SortChips · MemeCard*
+         ├─ ProfileView ── useProfileScreen → ProfileScreen ── MemeCard*
+         ├─ LeaderboardView ── useLeaderboardScreen → LeaderboardScreen
+         ├─ InviteView ── useInviteScreen → InviteScreen ── MemeCard*
+         ├─ DiscordPageView · DiscordLinkView · DevelopersView ── ConfirmDialog
+         ├─ SettingsView ── useSettingsScreen → SettingsScreen ── ThemeControl
+         ├─ PrivacyView · TermsView
+         └─ AuthCallback · MobileAuthForward (legacy pages)
+```
+
+## Where state lives
+
+| Engine | Holds | Read by |
+|---|---|---|
+| `stores/authMachine` + `AuthStore` | session: `idle → loading → ready \| unauthenticated \| error`; refresh retains the current user on transient failure | `useAuth`, `useAuthRuntime`, screen hooks |
+| `stores/createStores` + `StoresContext` | inert app store bag; committed or imperative owners retain/dispose it | views via hooks |
+| `stores/themeStore` + `hooks/useTheme` | preference `auto`/`light`/`dark`, resolved arm, per-avatar persistence; paints `data-theme` on `<html>` | observer views, `ThemeControl` (sidebar segmented + header button), `SettingsScreen` |
+| `stores/*Machine.ts` (one per flow) | XState source of truth for that screen | matching `useXScreen()` |
+| `stores/ActorSnapshotProjection` + `hooks/useProjectedActor` | route-local snapshot reference; action-safe MobX updates; XState actor mount lifetime | all 14 stateful screen hooks within `observer` views |
+| `hooks/useXScreen.ts` | view-model: projected snapshot + callbacks + derived flags | matching `XView` → `XScreen` |
+| `hooks/useAuth.ts` | `user`, `loading`, `error`, `refresh`, `logout` | `RequireAuth`, chrome, screens |
+| `lib/presence.ts` | Firebase online flag | `useAuthRuntime`, Friends watch |
+
+`useProjectedActor` uses `useActorRef` to start and stop an actor with its mounted
+view. Its side-effect-free projection constructor retains the snapshot by reference
+(`observableRef` in MobX 7); `useMountEffect` subscribes, catches up to the current
+snapshot, and unsubscribes on cleanup. The view's `observer` reads that projection;
+there is no second React snapshot subscription. The component that calls the hook
+must be observed, including a keyed child such as `MemeDetailRouteScreen`; observing
+only its parent does not track reads in the child. Machines and initial inputs stay
+stable for a mount. Entity changes use route keys; route drafts never enter the
+global store bag. Actor startup/disposal and projection subscription are separate
+lifetimes, including StrictMode's setup/cleanup replay.
+
+The app auth bag has its own ownership lifetime. `createStores()` and the
+`AuthStore` constructor neither start nor subscribe. `main.tsx` builds the one
+app bag at module level and applies the persisted theme before the first
+render; `Root` and Storybook's `FreshStores` retain the bag on committed
+mount; imperative scenarios and story setup retain before use. The first `retain()` connects the MobX projection,
+catches up inside an action, then starts the actor. A child `useAuthRuntime`
+can queue its initial refresh before the parent's retain; the actor processes
+that event on startup. Retaining an idle story bag alone does not fetch auth.
+Repeated retains cancel deferred disposal without adding owners or subscriptions.
+Only a winning disposal microtask disconnects and stops, so StrictMode can reuse
+the committed bag while discarded or suspended renders acquire no resources.
+A fully disposed bag is finished; imperative scenarios log out before disposal
+to settle any pending refresh.
+
+## Soft Press additions (mo-263)
+
+Layered onto the tiers and rules above, not a replacement for them:
+
+- `AppShellScreenModel` (the shell's own engine, `hooks/useAppShellScreen.ts`) grew `theme` (a
+  `ThemeControlModel`), `avatar` / `identity` / `avatarMenu` (a Base UI `Menu` model behind the
+  phone header's account menu: Profile · 🏆 Top Brains · Settings · 🔧 Developers · Log out),
+  `alertsBell`, and `questBar`; `navItems` and `bottomNav` each carry an `Icon` name beside the
+  legacy emoji slot.
+- `TradeCardModel` (`molecules/tradeCardModel.ts`) exposes `give` / `get`, not `offer` / `ask` — the
+  wells are keyed to the reading ("You give" is always what leaves your binder), never to who
+  proposed the trade; `actions` orders `decline` before `accept`.
+- `BinderScreenModel` no longer carries `questRail` — the reward rail is the shell's own `QuestBar`,
+  rendered on every route (design-gap decision 8: one rail, owned by the shell). `screens/BinderScreen.tsx`
+  exports the grid pieces `ProfileScreen`'s binder tab reuses: `binderGridClasses`,
+  `binderCardSlotClasses`, `binderCardFooterClasses`; `stores/binderMachine.ts` exports
+  `BINDER_PAGE_SIZE` (12, the `SHOW_MORE` step); `stores/leaderboardMachine.ts` exports
+  `LEADERBOARD_PAGE_SIZE` (8) the same way.
+- `organisms/AppShell.css` keys `--topbar-h` off `:root:has([data-slot='header'])` rather than a
+  fixed value: 64px below the shell breakpoint (`2xl`, 900px), 0px at or above it. Shell-wrapping
+  stories render with `layout: 'fullscreen'`.
+- `lib/focus.ts` exports `FOCUS_RING`, the one focus contract every interactive atom, row and
+  menu item composes: 3px `--color-focus` outline at 2px offset, `contrast-more` 4px,
+  `forced-colors` `Highlight`. Hand-copied rings are gone; a component that needs a different offset
+  overrides after `FOCUS_RING`, never instead of it.
+- `hooks/useDocumentTitle.ts` sets `document.title` per route from the view (the hook layer, not the
+  screen); `lib/braincells.ts` formats braincell counts (thousands separators, the 🧠 spacing) so
+  every screen prints them the same way.
+- `QuestBar` lists every quest inline at both widths, as the boards draw the rail; the old
+  "N more ▾" disclosure is gone from the model, the hook and the stories.
+- The token sheet lives outside the tiers, at `src/Tokens.stories.tsx` (titled `Anatomy/Tokens`):
+  every semantic colour, both static ramps, the seven tier chips, the two materials and the type
+  ladder, painted from nothing but the utilities `index.css` emits, each swatch probed via
+  `data-slot="swatch-<token>"`.
+
+### New data-slots, by family
+
+Probe these instead of a class name or copy string:
+
+| Family | `data-slot` values |
+|---|---|
+| Marketplace | `market-controls`, `market-toolbar`, `market-filters`, `market-filters-toggle`, `market-disclosures`, `market-summary`, `market-grid`, `load-more` |
+| Meme detail | `detail-hero`, `detail-metadata`, `detail-rail`, `detail-spread`, `detail-tier-line`, `tier-progression` |
+| Friends | `online-now`, `person-row` |
+| Profile / Public Binder | `profile-identity`, `friend-state`, `binder-identity`, `binder-identity-name`, `binder-toolbar` |
+| Leaderboard | `podium-head`, `leaderboard`, `your-rank`, `person-row` |
+| Invite | `invite-hero` |
+| Settings | `settings-sections`, `settings-account`, `settings-appearance`, `settings-connections`, `connection-row` (`data-linked`), `settings-alerts` |
+| Landing | `landing-hero`, `hero-pile`, `hero-card`, `hero-card-slot`, `hero-card-art`, `landing-how`, `landing-tiers`, `tier-card`, `tier-frame-slot`, `tier-frame-img`, `landing-faq`, `landing-closing` |
+| Legal (Privacy, Terms) | `legal-toc`, `legal-section` |
+| Auth (`pages/AuthCallback.tsx`, `pages/MobileAuthForward.tsx`) | `auth-status`, `auth-ring`, `auth-timeout`, `auth-web-fallback` |
+| Shell | `nav-icon`, `mint-link`, `sidebar-nav`, `sidebar-foot`, `utility-links`, `identity`, `identity-name`, `identity-settings`, `logout`, `tab-item`, `avatar-menu-slot`, `coins` |
+
+## Rules
+
+- Below Views, no hooks and no state library.
+- The model type is exported by the hook, not the screen.
+- A new state starts as a Screen story.
+- Every component has a sibling `*.stories.tsx` titled `"<Tier>/<Name>"`.
+- Views opt out of autodocs (`!autodocs`) and wrap with `MemoryRouter`.
+- Do not put `observer` or `useState` below `views/`.
+- Presentation is Tailwind utilities on the component, in `@layer utilities`. Only effects no
+  utility can express (the card foil, the skeleton sweep, the spinner) get a co-located `.css`
+  file, and it restates the layer order. See [DESIGN.md](../../DESIGN.md).
+
+## Talking about it
+
+Name the tier and the piece: *"the `MemeCard` atom"*, *"the `GiftDialog` molecule"*,
+*"the `CreateMemeScreen` › `Error` story"*, *"`useMarketplaceScreen` should hide the grid on empty"*.
+
+## Checker exceptions
+
+The checker recursively classifies every `src/**/*.tsx` and `src/**/*.jsx`
+file other than stories and tests. Components in a tier need a sibling story;
+components elsewhere fail unless their exact source-relative path is listed
+below. This is an allowlist, not a folder exemption: a new `.tsx` file beside
+one of these paths must join a tier. JSX-free `.ts` domain modules outside
+the tiers remain outside the checker; tier-local `.ts` helpers are checked for
+state and import boundaries but do not need stories.
+
+| Path | Why it stays |
+|---|---|
+| `components/HeroVideo.tsx` | Imperative media element; currently unmounted — no Soft Press board draws it and `useLandingScreen` no longer injects it as `hero` (mo-263 WP4b; kept pending a delete-or-give-it-a-home call) |
+| `pages/AuthCallback.tsx` | OAuth redirect ritual |
+| `pages/MobileAuthForward.tsx` | Deep-link forward ritual |
+| `main.tsx` | Application bootstrap |
+| `stores/StoresContext.tsx` | Root store provider |
+
+`App.ts` is a JSX-free re-export of `AppView` (`main.tsx` imports `./App`). Routing adapters live in `views/AppView.tsx`. The two auth redirect pages are imported via `lib/legacyAuthPages.ts` so `views/` does not import `pages/` directly.

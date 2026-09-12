@@ -5,23 +5,65 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && mkdir -p dist/.well-known && cp dist/skill.md dist/.well-known/skill.md",
-    "preview": "vite preview"
+    "build": "npm run check-tiers && tsc && vite build && node scripts/check-layers.mjs dist && mkdir -p dist/.well-known && cp dist/skill.md dist/.well-known/skill.md",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "check-tiers": "node scripts/check-tiers.mjs src",
+    "check-contrast": "node scripts/check-contrast.mjs",
+    "test:check-tiers": "node --test scripts/check-tiers.test.mjs",
+    "test:check-layers": "node --test scripts/check-layers.test.mjs",
+    "test:check-contrast": "node --test scripts/check-contrast.test.mjs",
+    "test:proxy": "npm run build && node scripts/vite-proxy.test.mjs",
+    "test:unit": "vitest run --project=unit",
+    "test:runtime": "vitest run --project=runtime",
+    "test:stories": "vitest run --project=storybook",
+    "test": "vitest run --project=unit --project=runtime",
+    "check": "npm run check-tiers && npm run check-contrast && npm run test:check-layers && npm run test:check-contrast && npm run test:proxy && npm run test:unit && npm run test:runtime && npm run test:stories"
   },
   "dependencies": {
+    "@base-ui/react": "^1.8.0",
+    "@fontsource-variable/onest": "^5.3.1",
+    "@fontsource-variable/unbounded": "^5.3.0",
+    "@xstate/react": "^6.1.0",
+    "clsx": "^2.1.1",
     "firebase": "^12.15.0",
+    "mobx": "^7.0.3",
+    "mobx-react-lite": "^5.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0"
+    "react-router-dom": "^6.28.0",
+    "tailwind-merge": "^3.6.0",
+    "xstate": "^5.32.6"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^5.3.1",
+    "@storybook/addon-a11y": "^10.6.0",
+    "@storybook/addon-docs": "^10.6.0",
+    "@storybook/addon-vitest": "^10.6.0",
+    "@storybook/react-vite": "^10.6.0",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/browser-playwright": "latest",
+    "@vitest/coverage-v8": "latest",
+    "mockdate": "^3.0.5",
+    "msw": "^2.15.0",
+    "msw-storybook-addon": "^3.0.0",
+    "playwright": "latest",
+    "storybook": "^10.6.0",
+    "tailwindcss": "^4.3.3",
     "typescript": "~5.9.3",
-    "vite": "^7.2.2"
+    "vite": "^7.2.2",
+    "vitest": "latest"
   },
   "optionalDependencies": {
     "@rollup/rollup-darwin-arm64": "^4.53.2"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

@@ -1,1106 +1,370 @@
-@import url('./tier-glow-borders.css');
+/* The cascade contract, declared once, here, and restated by every co-located component sheet
+   (`atoms/*.css`, `organisms/AppShell.css`, `screens/LandingScreen.css`) because a layer's rank is
+   fixed the first time its name is seen in a bundle:
 
-:root {
-  --bg: #0b0d14;
-  --bg-raised: #131722;
-  --bg-card: #171c2a;
-  --border: #262d40;
-  --text: #e8ecf4;
-  --text-dim: #97a0b5;
-  --accent: #7fd4ff;
-  --accent-2: #ff9af5;
-  --gold: #ffd76a;
-  --danger: #ff7a7a;
-  --ok: #7dffb2;
-  --radius: 14px;
-  color-scheme: dark;
+     properties  Tailwind's own `@property` fallback block. It has to rank BELOW `utilities`, or its
+                 `initial`s would beat the utilities that set them. Tailwind emits it; nothing else
+                 writes it, which is why this file's statement does not name it and the co-located
+                 sheets — which can reach a bundle ahead of this file — do.
+     theme, base Tailwind's tokens and preflight, plus the element-level typography and chrome this
+                 app authors on top of preflight (below, in `@layer base`).
+     components  Effects no utility can express: the foil ring, the skeleton sweep, the spinner.
+     utilities   Tailwind. Every migrated surface paints here, so it beats `base` without `!`.
+
+   `main.tsx` imports this file first so the app bundle opens with the statement above;
+   `scripts/check-layers.mjs` reads the built CSS back and fails the build if any stylesheet ever
+   ranks them differently. */
+@layer theme, base, components, utilities;
+@import 'tailwindcss';
+
+/* Soft Press type: Unbounded (display) and Onest (UI/body), self-hosted as variable woff2 through
+   fontsource. Each package's sheet is a set of unicode-range subset `@font-face` rules with
+   `font-display: swap`, so the first paint uses the system fallback and swaps once the ~30 KB
+   latin subset lands; no FOIT. The `@import`s have to sit ahead of every other rule — only the
+   layer statement above may precede them. */
+@import '@fontsource-variable/unbounded';
+@import '@fontsource-variable/onest';
+
+/* Auto source detection reads every file as markup and mines class names out of it. `cn`'s fixtures
+   are class-name literals that no markup wears; each one Tailwind emitted would ship a utility
+   nothing asks for. Path is relative to this file. */
+@source not './lib/cn.test.ts';
+
+/* The `--container-*` theme namespace and `data-slot="page-container"` are enough for the source
+   scanner to manufacture a `container` utility candidate on its own, even though nothing in
+   `web/src` wears the class `container`. Without this exclusion the built stylesheet ships
+   `.container{}` plus a `max-width` rule per breakpoint that nothing uses. */
+@source not inline('container');
+
+/* ── Soft Press tokens ───────────────────────────────────────────────────────────────────────────
+   Values are the Paper design tokens (.beads/evidence/mo-dw7.4/HANDOFF.md § 2), one semantic name
+   per role. Every semantic colour is a `light-dark(<light>, <dark>)` pair: the browser picks the
+   arm from the element's used `color-scheme`, which `:root` sets to `light dark` (follow the OS)
+   and `[data-theme]` pins (see `@layer base`). A component never names a light or dark literal;
+   it names the role, and the pair does the flipping. `scripts/check-contrast.mjs` reads both arms
+   of every text/surface pair back out of this block and fails under APCA Lc 60. */
+@theme static {
+  /* the two ramps the semantic tokens are drawn from; static, they do not flip */
+  --color-bubblegum-50: oklch(96% 0.022 345);
+  --color-bubblegum-100: oklch(91% 0.053 345);
+  --color-bubblegum-200: oklch(84% 0.1 345);
+  --color-bubblegum-300: oklch(76% 0.164 345);
+  --color-bubblegum-500: oklch(63% 0.241 345);
+  --color-bubblegum-700: oklch(48% 0.184 345);
+  --color-bubblegum-800: oklch(37% 0.142 345);
+  --color-bubblegum-900: oklch(28% 0.107 345);
+  --color-bubblegum-950: oklch(20% 0.077 345);
+  --color-ultraviolet-50: oklch(96% 0.018 285);
+  --color-ultraviolet-100: oklch(91% 0.041 285);
+  --color-ultraviolet-200: oklch(84% 0.074 285);
+  --color-ultraviolet-300: oklch(76% 0.115 285);
+  --color-ultraviolet-500: oklch(63% 0.187 285);
+  --color-ultraviolet-700: oklch(48% 0.252 285);
+  --color-ultraviolet-800: oklch(37% 0.195 285);
+  --color-ultraviolet-900: oklch(28% 0.147 285);
+  --color-ultraviolet-950: oklch(20% 0.105 285);
+
+  /* surfaces: the page, its alternate band, and the three ceramic materials */
+  --color-canvas: light-dark(oklch(97.5% 0.008 285), oklch(17% 0.022 285));
+  --color-canvas-alt: light-dark(oklch(95% 0.012 285), oklch(20% 0.025 285));
+  --color-surface: light-dark(oklch(99.5% 0.002 285), oklch(23% 0.027 285));
+  --color-surface-raised: light-dark(oklch(98.5% 0.006 285), oklch(27% 0.03 285));
+  --color-surface-pressed: light-dark(oklch(92.5% 0.016 285), oklch(13.5% 0.018 285));
+
+  /* text and hairlines */
+  --color-ink: light-dark(oklch(22% 0.035 285), oklch(95% 0.01 285));
+  --color-ink-muted: light-dark(oklch(45% 0.03 285), oklch(79% 0.03 285));
+  --color-line: light-dark(oklch(86% 0.02 285), oklch(40% 0.04 285));
+  /* dark arm is ultraviolet-200, not TOKENS.md's 300: 300 reads Lc -58 on the dark canvas */
+  --color-link: light-dark(var(--color-ultraviolet-700), var(--color-ultraviolet-200));
+
+  /* the focus ring: bubblegum in light, sky in dark */
+  --color-focus: light-dark(oklch(48% 0.184 345), oklch(72% 0.137 235));
+
+  /* actions. Primary is bubblegum in light and sky in dark — ONE per task/card; secondary is
+     ultraviolet in both. Both pastels carry ink, so the on-colours are the same in each arm. */
+  --color-action: light-dark(oklch(80% 0.131 345), oklch(80% 0.107 235));
+  --color-on-action: oklch(22% 0.035 285);
+  --color-action-secondary: oklch(80% 0.094 285);
+  --color-on-action-secondary: oklch(22% 0.035 285);
+
+  /* status pairs: a tinted surface and the text that sits on it */
+  --color-success-surface: light-dark(oklch(93% 0.07 150), oklch(29% 0.07 150));
+  --color-success-text: light-dark(oklch(36% 0.094 150), oklch(85% 0.12 150));
+  --color-warning-surface: light-dark(oklch(94% 0.061 85), oklch(30% 0.059 82));
+  --color-warning-text: light-dark(oklch(40% 0.082 70), oklch(87% 0.12 85));
+  --color-error-surface: light-dark(oklch(94% 0.029 20), oklch(29% 0.075 25));
+  --color-error-text: light-dark(oklch(43% 0.15 25), oklch(84% 0.084 25));
+  --color-info-surface: light-dark(oklch(93% 0.04 230), oklch(28% 0.05 235));
+  --color-info-text: light-dark(oklch(40% 0.087 240), oklch(85% 0.08 235));
+
+  /* the relief pair every material is built from, and the two overlays */
+  --color-shadow: light-dark(oklch(30% 0.05 285 / 20%), oklch(0% 0 0 / 56%));
+  --color-highlight: light-dark(oklch(100% 0 0 / 82%), oklch(60% 0.05 285 / 25%));
+  --color-scrim: light-dark(oklch(30% 0.05 285 / 45%), oklch(0% 0 0 / 65%));
+  --color-brand-discord: oklch(0.577 0.209 273.85);
+
+  /* Tier system (plan-buckets.md › tier-system): a chip fill, the chip's label and the 3px card
+     frame per tier. Bubblegum is reserved for Shiny and for actions. Prismatic's chip is really
+     the `--gradient-tier-prismatic-chip` in `@layer base`; this colour is its first stop, the
+     fallback a plain `bg-tier-prismatic-chip` paints. */
+  --color-tier-paper-chip: var(--color-surface-pressed);
+  --color-tier-paper-chip-text: var(--color-ink-muted);
+  --color-tier-paper-frame: var(--color-line);
+  --color-tier-silver-chip: var(--color-line);
+  --color-tier-silver-chip-text: var(--color-ink);
+  --color-tier-silver-frame: var(--color-ink-muted);
+  --color-tier-holo-chip: light-dark(var(--color-ultraviolet-200), var(--color-ultraviolet-800));
+  --color-tier-holo-chip-text: light-dark(var(--color-ultraviolet-900), var(--color-ultraviolet-100));
+  --color-tier-holo-frame: light-dark(var(--color-ultraviolet-300), var(--color-ultraviolet-500));
+  --color-tier-chrome-chip: var(--color-ink);
+  --color-tier-chrome-chip-text: var(--color-canvas);
+  --color-tier-chrome-frame: var(--color-ink);
+  --color-tier-gold-chip: var(--color-warning-surface);
+  --color-tier-gold-chip-text: var(--color-warning-text);
+  --color-tier-gold-frame: var(--color-warning-text);
+  --color-tier-prismatic-chip: light-dark(var(--color-bubblegum-200), var(--color-bubblegum-800));
+  --color-tier-prismatic-chip-text: var(--color-ink);
+  --color-tier-prismatic-frame: light-dark(var(--color-ultraviolet-700), var(--color-ultraviolet-300));
+  --color-tier-shiny-chip: var(--color-action);
+  --color-tier-shiny-chip-text: var(--color-on-action);
+  --color-tier-shiny-frame: var(--color-action);
+
+  /* ── Materials (components.md › Materials). Raised = cards, pills, buttons, chips, the tab bar,
+     avatars. Pressed = the current nav row, the active tab, search wells. Both are built from the
+     relief pair, so they flip with the theme for free. `pop`/`modal` are the two lifted overlays. */
+  --shadow-raised:
+    var(--color-highlight) 0 1px 1px inset, var(--color-shadow) 0 -1px 1px inset,
+    var(--color-shadow) 0 3px 5px;
+  --shadow-pressed:
+    var(--color-shadow) 0 3px 6px inset, var(--color-highlight) 0 -1px 1px inset,
+    var(--color-highlight) 0 1px 1px;
+  --shadow-pop: 0 18px 50px var(--color-shadow);
+  --shadow-modal: 0 30px 80px var(--color-shadow);
+
+  /* ── Radii, one per part */
+  --radius-card: 25px;
+  --radius-control: 23px;
+  --radius-field: 18px;
+  --radius-nav: 24px;
+  --radius-avatar: 15px;
+  --radius-chip: 12px;
+  --radius-shell: 32px;
+  --radius-tabbar: 30px;
+  --radius-pill: 999px;
+
+  /* ── Type. Display is Unbounded at weight 500 (800 blows up the measure); everything else is
+     Onest. The weight lives in `@layer base` as `--font-weight-display` because Tailwind would
+     read a `--font-weight-*` theme key as a `font-<name>` utility and collide with the family. */
+  --font-display: 'Unbounded Variable', 'Unbounded', system-ui, sans-serif;
+  --font-sans: 'Onest Variable', 'Onest', system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --tracking-display: -0.04em;
+  --tracking-title: -0.025em;
+  --tracking-card-title: -0.02em;
+
+  /* The ladder, size/line-height in px as the boards draw them. `display` and `card-title` have a
+     phone size (`max-md:text-display-phone`); the others hold at every width. */
+  --text-display: 44px;
+  --text-display--line-height: 55px;
+  --text-display-phone: 32px;
+  --text-display-phone--line-height: 40px;
+  --text-title: 23px;
+  --text-title--line-height: 29px;
+  --text-card-title: 23px;
+  --text-card-title--line-height: 27px;
+  --text-card-title-phone: 17px;
+  --text-card-title-phone--line-height: 21px;
+  --text-intro: 17px;
+  --text-intro--line-height: 21px;
+  --text-body: 16px;
+  --text-body--line-height: 24px;
+  --text-label: 15px;
+  --text-label--line-height: 19px;
+  --text-small: 14px;
+  --text-small--line-height: 18px;
+  --text-micro: 12px;
+  --text-micro--line-height: 16px;
+
+  /* ── Layout. `app` is the design's frame. */
+  --container-app: 1440px;
+
+  /* the widths this app branches on. Tailwind writes `bp:` as (width >= N) and `max-bp:` as
+     (width < N), so a `max-width: N` breakpoint is exact at N + 1 and a `min-width: N` at N. */
+  --breakpoint-*: initial;
+  --breakpoint-xs: 481px; /* max-xs ≙ max-width: 480px (discord link, alerts popover) */
+  --breakpoint-sm: 561px; /* max-sm ≙ max-width: 560px (2-up grids, leaderboard and person rows, login CTA) */
+  --breakpoint-md: 641px; /* max-md ≙ max-width: 640px (link status, profile filter bar, hero video; the phone cut) */
+  --breakpoint-lg: 721px; /* max-lg ≙ max-width: 720px (bottom-sheet dialogs, market controls, quest scroller) */
+  --breakpoint-xl: 761px; /* max-xl ≙ max-width: 760px and xl ≙ min-width: 761px (two-row topbar, page head) */
+  --breakpoint-2xl: 900px; /* 2xl ≙ min-width: 900px (trade compose); max-2xl is one pixel under the ≤ 900px detail stack */
+  --breakpoint-3xl: 1000px; /* 3xl ≙ min-width: 1000px (create layout rail) */
+  --breakpoint-4xl: 1100px; /* 4xl ≙ min-width: 1100px (four-column tier grid) */
 }
 
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background:
-    radial-gradient(1200px 600px at 80% -10%, #1b2140 0%, transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, #241436 0%, transparent 55%),
-    var(--bg);
-  color: var(--text);
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
-  min-height: 100vh;
-}
-
-a {
-  color: var(--accent);
-  text-decoration: none;
-}
-
-button {
-  font: inherit;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: var(--bg-raised);
-  color: var(--text);
-  padding: 8px 14px;
-  transition:
-    transform 0.08s ease,
-    border-color 0.15s ease,
-    background 0.15s ease;
-}
-
-button:hover:not(:disabled) {
-  border-color: var(--accent);
-  transform: translateY(-1px);
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-button.primary {
-  background: linear-gradient(135deg, #2c7fd8, #7a3fd8);
-  border-color: transparent;
-  font-weight: 600;
-}
-
-button.danger {
-  border-color: #5b2733;
-  color: var(--danger);
-}
-
-input,
-select,
-textarea {
-  font: inherit;
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  padding: 8px 12px;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.container {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 0 20px 64px;
-}
-
-/* ---------- header ---------- */
-
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  backdrop-filter: blur(12px);
-  background: rgba(11, 13, 20, 0.8);
-  border-bottom: 1px solid var(--border);
-}
-
-.topbar-inner {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 10px 20px;
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
-
-.logo {
-  font-weight: 800;
-  font-size: 20px;
-  letter-spacing: 0.5px;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--gold));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.logo-img {
-  width: 30px;
-  height: 30px;
-}
-
-.nav-links {
-  display: flex;
-  gap: 4px;
-  flex: 1;
-  overflow-x: auto;
-}
-
-.nav-links a {
-  color: var(--text-dim);
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.nav-links a.active,
-.nav-links a:hover {
-  color: var(--text);
-  background: var(--bg-raised);
-}
-
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.discord-link {
-  color: var(--text-dim);
-  display: inline-flex;
-  align-items: center;
-  transition: color 0.15s ease;
-}
-
-.discord-link:hover {
-  color: #5865f2;
-}
-
-.coins {
-  font-weight: 700;
-  color: var(--gold);
-  white-space: nowrap;
-}
-
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 1px solid var(--border);
-}
-
-/* ---------- alerts bell ---------- */
-
-.bell {
-  position: relative;
-}
-
-.bell-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  background: var(--danger);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  border-radius: 999px;
-  padding: 1px 5px;
-}
-
-.alerts-pop {
-  position: absolute;
-  right: 0;
-  top: 42px;
-  width: 340px;
-  max-height: 420px;
-  overflow-y: auto;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
-  padding: 8px;
-}
-
-.alert-row {
-  padding: 10px;
-  border-radius: 10px;
-  font-size: 13.5px;
-  line-height: 1.4;
-}
-
-.alert-row.unread {
-  background: rgba(127, 212, 255, 0.08);
-}
-
-.alert-row time {
-  display: block;
-  color: var(--text-dim);
-  font-size: 11px;
-  margin-top: 3px;
-}
-
-/* ---------- meme cards + foil tiers ---------- */
-
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 20px;
-}
-
-.meme-card {
-  --glow-width: 3px;
-  position: relative;
-  border-radius: var(--radius);
-  padding: 3px; /* the frame */
-  background: var(--border);
-  transition: transform 0.15s ease;
-}
-
-.meme-card:hover {
-  transform: translateY(-4px) scale(1.01);
-}
-
-.meme-card-inner {
-  background: var(--bg-card);
-  border-radius: calc(var(--radius) - 3px);
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.meme-art {
-  aspect-ratio: 1;
-  width: 100%;
-  object-fit: cover;
-  display: block;
-  background: #0a0c12;
-}
-
-.meme-meta {
-  padding: 10px 12px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.meme-title {
-  font-weight: 700;
-  font-size: 15px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--text);
-}
-
-.meme-sub {
-  font-size: 12.5px;
-  color: var(--text-dim);
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.tier-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.45);
-  border: 1px solid currentColor;
-}
-
-/* Tier frames: the card's padding-background IS the frame. Foil mechanics per tier. */
-
-.tier-paper {
-  background: linear-gradient(160deg, #3a4152, #262c3a);
-}
-
-.tier-silver {
-  background: linear-gradient(160deg, #9aa7b8, #5c6778, #aeb9c9);
-}
-
-.tier-holo {
-  background: linear-gradient(120deg, #46d3ff, #7a5cff, #ff5ce1, #46d3ff);
-}
-
-.tier-chrome {
-  background: linear-gradient(105deg, #cfd8ff 0%, #6f7ba8 20%, #f4f7ff 40%, #8a96c8 60%, #dde4ff 80%, #707ca9 100%);
-}
-
-.tier-gold {
-  background: linear-gradient(120deg, #b8860b, #ffd76a, #fff3c4, #ffd76a, #8f6508);
-  box-shadow: 0 0 24px rgba(255, 215, 106, 0.25);
-}
-
-.tier-prismatic {
-  background: conic-gradient(
-    from 0deg,
-    #ff5c5c,
-    #ffb85c,
-    #f7ff5c,
-    #6bff8a,
-    #5cd4ff,
-    #8a6bff,
-    #ff5cf0,
-    #ff5c5c
-  );
-  box-shadow: 0 0 28px rgba(255, 154, 245, 0.35);
-}
-
-.tier-shiny {
-  background: linear-gradient(120deg, #0ff0c3, #9fffe0, #5cd4ff, #f0c3ff, #ffd76a, #0ff0c3);
-  box-shadow:
-    0 0 34px rgba(159, 255, 224, 0.45),
-    0 0 80px rgba(240, 195, 255, 0.25);
-}
-
-/* large variant for the meme detail page: same card, bigger everything */
-.meme-card-lg .meme-title {
-  font-size: 22px;
-  white-space: normal;
-}
-
-.meme-card-lg .meme-meta {
-  padding: 14px 16px 16px;
-  gap: 9px;
-}
-
-.meme-card-lg .meme-sub {
-  font-size: 15px;
-}
-
-.meme-card-lg .tier-chip {
-  font-size: 13px;
-  padding: 4px 12px;
-}
-
-.meme-card-lg:hover {
-  transform: none;
-}
-
-/* sheen sweep over holo+ tiers */
-.meme-card.sheen .meme-card-inner::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(
-    115deg,
-    transparent 30%,
-    rgba(255, 255, 255, 0.14) 45%,
-    rgba(255, 255, 255, 0.32) 50%,
-    rgba(255, 255, 255, 0.14) 55%,
-    transparent 70%
-  );
-  background-size: 300% 300%;
-  animation: sheen-sweep 3.8s ease-in-out infinite;
-  mix-blend-mode: screen;
-}
-
-/* sparkles for the shiny tier */
-.meme-card.sparkle .meme-card-inner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 2;
-  background-image:
-    radial-gradient(2px 2px at 20% 30%, #fff 40%, transparent 60%),
-    radial-gradient(1.6px 1.6px at 70% 20%, #fff 40%, transparent 60%),
-    radial-gradient(2.4px 2.4px at 85% 65%, #fff 40%, transparent 60%),
-    radial-gradient(1.8px 1.8px at 40% 80%, #fff 40%, transparent 60%),
-    radial-gradient(1.4px 1.4px at 10% 60%, #fff 40%, transparent 60%);
-  animation: twinkle 2.2s ease-in-out infinite alternate;
-  mix-blend-mode: screen;
-}
-
-@keyframes sheen-sweep {
-  0% {
-    background-position: 200% 0;
+@layer base {
+  :root {
+    /* No Tailwind namespace owns these, so they stay hand-written custom properties and are read
+       back as `z-(--z-header)`, `duration-(--dur-base)`, `top-(--topbar-h)` and friends. */
+    --z-sticky: 15;
+    --z-header: 20;
+    --z-modal: 60;
+    --dur-fast: 0.08s;
+    --dur-base: 0.15s;
+    /* the phone header's height. `organisms/AppShell.css` authors the real value (64 below the
+       shell breakpoint, 0 at and above it); this root default only ever paints in an isolated
+       Storybook story that mounts a screen without the shell. */
+    --topbar-h: 64px;
+    /* display weight, kept out of `@theme` so it cannot shadow the `font-display` family utility */
+    --font-weight-display: 500;
+    /* Prismatic's real chip: a bubblegum→ultraviolet sweep, deeper stops in the dark arm.
+       `light-dark()` only takes colours, so the flip sits on each stop rather than on the image;
+       `--color-tier-prismatic-chip` is the first stop for anything that needs a flat colour. */
+    --gradient-tier-prismatic-chip: linear-gradient(
+      135deg,
+      light-dark(var(--color-bubblegum-200), var(--color-bubblegum-800)),
+      light-dark(var(--color-ultraviolet-300), var(--color-ultraviolet-700))
+    );
+    --selection-bg: color-mix(in oklab, var(--color-action) 35%, transparent);
+    /* focus vocabulary (components.md: 3px focus outline, 2px offset) */
+    --focus-ring: var(--color-focus);
+    --focus-offset: 2px;
+    /* state vocabulary, expressed once on the semantic role so it flips with the theme */
+    --state-disabled-opacity: 0.42;
+    /* Follow the OS by default; `stores/themeStore.ts` pins one arm through `data-theme` (below).
+       This is also what resolves every `light-dark()` token above, and it flips the browser's own
+       chrome — form controls, scrollbars — with the page. */
+    color-scheme: light dark;
+    /* browser-owned surfaces carry the palette: checkboxes, caret, scrollbars (colour inherits) */
+    accent-color: var(--color-action);
+    caret-color: var(--color-focus);
+    scrollbar-color: var(--color-line) transparent;
+    scrollbar-width: thin;
   }
-  60%,
-  100% {
-    background-position: -100% 0;
+
+  :root[data-theme='light'] {
+    color-scheme: light;
   }
-}
 
-@keyframes twinkle {
-  from {
-    opacity: 0.25;
+  :root[data-theme='dark'] {
+    color-scheme: dark;
   }
-  to {
-    opacity: 1;
+
+  ::selection {
+    background: var(--selection-bg);
+    color: var(--color-ink);
   }
-}
 
-/* ---------- onboarding quests ---------- */
-
-.questbar {
-  background: linear-gradient(90deg, rgba(44, 127, 216, 0.14), rgba(122, 63, 216, 0.14));
-  border-bottom: 1px solid var(--border);
-}
-
-.questbar-inner {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 8px 20px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.questbar-title {
-  font-weight: 800;
-  font-size: 13.5px;
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.braincell-img {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  object-fit: cover;
-  vertical-align: middle;
-}
-
-.quest-chip {
-  font-size: 12px;
-  color: var(--text-dim);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 3px 10px;
-  white-space: nowrap;
-}
-
-.quest-chip-link {
-  text-decoration: none;
-}
-
-.quest-chip-link:hover .quest-chip {
-  border-color: var(--accent);
-  color: var(--text);
-}
-
-.quest-chip.done {
-  color: var(--ok);
-  border-color: rgba(125, 255, 178, 0.35);
-}
-
-.quest-chip em {
-  font-style: normal;
-  color: var(--gold);
-}
-
-.quest-chip-btn {
-  font-size: 12.5px;
-  padding: 4px 12px;
-}
-
-.pack-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(5, 7, 12, 0.8);
-  backdrop-filter: blur(6px);
-  z-index: 60;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.pack-modal {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 24px;
-  max-width: 640px;
-  width: 100%;
-  max-height: 86vh;
-  overflow-y: auto;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
-}
-
-.pack-modal h3 {
-  margin: 0 0 6px;
-  font-size: 22px;
-}
-
-.gift-list {
-  max-height: 300px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.gift-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 7px 10px;
-  text-align: left;
-}
-
-.gift-row img {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.gift-row-title {
-  flex: 1;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.gift-row-shares {
-  color: var(--text-dim);
-  font-size: 12.5px;
-}
-
-.gift-row.picked {
-  border-color: var(--gold);
-  background: rgba(255, 215, 106, 0.08);
-}
-
-.site-footer {
-  border-top: 1px solid var(--border);
-  margin-top: 48px;
-  padding: 22px 20px 34px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--text-dim);
-}
-
-.site-footer a {
-  color: var(--text-dim);
-  margin: 0 10px;
-}
-
-.site-footer a:hover {
-  color: var(--text);
-}
-
-.confirm-modal {
-  max-width: 440px;
-}
-
-.confirm-modal.confirm-danger {
-  border-color: #5b2733;
-  box-shadow:
-    0 0 0 1px rgba(255, 122, 122, 0.25),
-    0 30px 80px rgba(0, 0, 0, 0.6);
-}
-
-.confirm-message {
-  color: var(--text-dim);
-  font-size: 14.5px;
-  line-height: 1.55;
-}
-
-.confirm-danger-btn {
-  background: #a12b3a;
-  border-color: transparent;
-  color: #fff;
-  font-weight: 700;
-}
-
-.confirm-danger-btn:hover:not(:disabled) {
-  border-color: var(--danger);
-}
-
-/* ---------- leaderboard ---------- */
-
-.leader-row {
-  text-decoration: none;
-  color: var(--text);
-  transition: border-color 0.15s ease;
-}
-
-.leader-row:hover {
-  border-color: var(--accent);
-}
-
-.leader-rank {
-  font-size: 20px;
-  width: 40px;
-  text-align: center;
-  font-weight: 800;
-}
-
-.leader-cells {
-  font-weight: 800;
-  color: var(--gold);
-  font-size: 16px;
-}
-
-/* ---------- landing / faq ---------- */
-
-.hero {
-  text-align: center;
-  padding: 72px 16px 40px;
-}
-
-.hero h1 {
-  font-size: clamp(34px, 6vw, 60px);
-  margin: 0 0 14px;
-  line-height: 1.05;
-}
-
-.hero h1 .grad {
-  background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--gold));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.hero p {
-  color: var(--text-dim);
-  font-size: 18px;
-  max-width: 640px;
-  margin: 0 auto 28px;
-}
-
-.login-btn {
-  font-size: 17px;
-  padding: 13px 26px;
-  border-radius: 12px;
-}
-
-.section-title {
-  font-size: 26px;
-  margin: 56px 0 6px;
-}
-
-.section-sub {
-  color: var(--text-dim);
-  margin: 0 0 24px;
-}
-
-.tier-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 18px;
-}
-
-.tier-card {
-  --glow-width: 3px;
-  padding: 3px;
-  border-radius: var(--radius);
-}
-
-.tier-card-inner {
-  background: var(--bg-card);
-  border-radius: calc(var(--radius) - 3px);
-  padding: 14px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  position: relative;
-  overflow: hidden;
-}
-
-.tier-frame-img {
-  width: 100%;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
-  border-radius: 8px;
-  background: #0a0c12;
-}
-
-.tier-name {
-  font-weight: 800;
-  font-size: 17px;
-}
-
-.tier-req {
-  font-size: 12px;
-  color: var(--text-dim);
-  font-weight: 600;
-  letter-spacing: 0.4px;
-}
-
-.tier-hype {
-  font-size: 13px;
-  color: var(--text-dim);
-  line-height: 1.45;
-}
-
-.faq {
-  max-width: 780px;
-  margin: 0 auto;
-}
-
-.faq details {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 14px 18px;
-  margin-bottom: 10px;
-  background: var(--bg-raised);
-}
-
-.faq summary {
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.faq p {
-  color: var(--text-dim);
-  line-height: 1.55;
-}
-
-/* ---------- page furniture ---------- */
-
-/* marketplace controls stay reachable while scrolling the grid */
-.market-controls {
-  position: sticky;
-  top: 53px; /* just under the topbar */
-  z-index: 15;
-  background: rgba(11, 13, 20, 0.92);
-  backdrop-filter: blur(10px);
-  margin: 0 -20px;
-  padding: 0 20px 10px;
-  border-bottom: 1px solid var(--border);
-}
-
-.market-controls .page-head {
-  margin: 14px 0 10px;
-}
-
-.page-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin: 28px 0 20px;
-  flex-wrap: wrap;
-}
-
-.page-head h2 {
-  margin: 0;
-  font-size: 24px;
-}
-
-.filter-bar {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.filter-bar input[type='search'] {
-  min-width: 220px;
-}
-
-.empty {
-  text-align: center;
-  color: var(--text-dim);
-  padding: 60px 20px;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius);
-}
-
-.panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px;
-}
-
-.row-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.person-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--bg-raised);
-}
-
-.person-row .avatar {
-  width: 40px;
-  height: 40px;
-}
-
-.person-name {
-  font-weight: 600;
-}
-
-.person-stats {
-  font-size: 12.5px;
-  color: var(--text-dim);
-}
-
-.spacer {
-  flex: 1;
-}
-
-.online-dot {
-  display: inline-block;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--ok);
-  box-shadow: 0 0 8px var(--ok);
-  margin-left: 8px;
-}
-
-.online-strip {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  font-weight: 600;
-}
-
-.online-strip .online-dot {
-  margin-left: 0;
-}
-
-.online-avatars {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
-.online-friend {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13.5px;
-  color: var(--text-dim);
-  text-decoration: none;
-}
-
-.online-friend:hover span {
-  color: var(--text);
-}
-
-/* clickable identity block inside person rows */
-.person-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  color: inherit;
-  border-radius: 10px;
-}
-
-.person-link:hover .person-name {
-  color: var(--accent);
-}
-
-.form-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-width: 560px;
-}
-
-.form-grid label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 13.5px;
-  color: var(--text-dim);
-  font-weight: 600;
-}
-
-.notice {
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-size: 14px;
-}
-
-.notice.error {
-  background: rgba(255, 122, 122, 0.12);
-  color: var(--danger);
-}
-
-.notice.ok {
-  background: rgba(125, 255, 178, 0.1);
-  color: var(--ok);
-}
-
-.badge {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
-
-.trade-card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--bg-raised);
-  padding: 16px;
-}
-
-.trade-sides {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 14px;
-  align-items: center;
-  margin: 12px 0;
-}
-
-.trade-side {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
-  font-size: 13.5px;
-}
-
-.trade-side h4 {
-  margin: 0 0 8px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.7px;
-  color: var(--text-dim);
-}
-
-.detail-layout {
-  display: grid;
-  grid-template-columns: minmax(280px, 420px) 1fr;
-  gap: 28px;
-  margin-top: 28px;
-}
-
-@media (max-width: 760px) {
-  .detail-layout {
-    grid-template-columns: 1fr;
+  /* The page itself: one flat canvas, the palette, the body face, and a column tall enough that a
+     low-data route (an empty trade list, a new account's friends page) still puts the footer on
+     the fold instead of stranding 400px of empty page. */
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    min-height: 100dvh;
   }
-}
 
-.legal {
-  max-width: 760px;
-  padding-top: 36px;
-}
+  #root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
 
-.legal h1 {
-  margin-bottom: 4px;
-}
+  /* every route's <main> is the bypass link's target; it scrolls clear of the sticky topbar */
+  main {
+    scroll-margin-top: var(--topbar-h);
+  }
 
-.legal-date {
-  color: var(--text-dim);
-  font-size: 13px;
-  margin-bottom: 26px;
-}
+  /* Preflight resets headings to `font-size: inherit`, so the ladder is authored here: the display
+     face at its one weight, one size per level, and no component has to restate it to get a
+     heading that reads as one. h1 = display, h2 = title, h3 = card-title, h4 = label. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    margin: 0 0 8px;
+    font-family: var(--font-display);
+    font-weight: var(--font-weight-display);
+    letter-spacing: var(--tracking-display);
+  }
 
-.legal h2 {
-  font-size: 18px;
-  margin: 26px 0 8px;
-}
+  h1 {
+    font-size: var(--text-display);
+    line-height: var(--text-display--line-height);
+  }
 
-.legal p,
-.legal li {
-  color: var(--text-dim);
-  line-height: 1.6;
-  font-size: 14.5px;
-}
+  h2 {
+    font-size: var(--text-title);
+    line-height: var(--text-title--line-height);
+  }
 
-.legal strong {
-  color: var(--text);
-}
+  h3 {
+    font-size: var(--text-card-title);
+    line-height: var(--text-card-title--line-height);
+  }
 
-.sort-chips {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
+  h4 {
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+  }
 
-.sort-chip {
-  font-size: 12.5px;
-  padding: 5px 11px;
-  border-radius: 999px;
-}
+  /* the phone sizes of the two levels the boards shrink (the `max-md` cut, < 641px) */
+  @media (width < 641px) {
+    h1 {
+      font-size: var(--text-display-phone);
+      line-height: var(--text-display-phone--line-height);
+    }
 
-.sort-chip.active {
-  border-color: var(--accent);
-  color: var(--text);
-  background: rgba(127, 212, 255, 0.1);
-}
+    h3 {
+      font-size: var(--text-card-title-phone);
+      line-height: var(--text-card-title-phone--line-height);
+    }
+  }
 
-.sort-arrow {
-  margin-left: 4px;
-  color: var(--accent);
-  font-weight: 800;
-}
+  p {
+    line-height: var(--text-body--line-height);
+  }
 
-.giphy-mark {
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.6px;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  white-space: nowrap;
-}
+  /* the one thing a user must type verbatim never breaks mid-token */
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    color: var(--color-ink);
+    background: var(--color-surface-pressed);
+    border: 1px solid var(--color-line);
+    border-radius: 6px;
+    padding: 1px 5px;
+    white-space: nowrap;
+  }
 
-.giphy-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 10px;
-}
+  a {
+    color: var(--color-link);
+    text-decoration: none;
+  }
 
-.giphy-cell {
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  border-radius: 10px;
-  border: 2px solid var(--border);
-  cursor: pointer;
-  background: #0a0c12;
-}
+  /* One authored focus ring for everything the browser can focus. `:where()` keeps it at zero
+     specificity, so a component's own ring wins without `!important`. */
+  :where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
 
-.giphy-cell:hover {
-  border-color: var(--accent);
-}
+  @media (forced-colors: active) {
+    :where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
+      outline-color: Highlight;
+    }
+  }
 
-.giphy-cell.picked {
-  border-color: var(--gold);
-  box-shadow: 0 0 12px rgba(255, 215, 106, 0.4);
-}
+  @media (prefers-contrast: more) {
+    :root {
+      --color-line: var(--color-ink-muted);
+    }
 
-.spin {
-  display: inline-block;
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: rot 0.8s linear infinite;
-}
-
-@keyframes rot {
-  to {
-    transform: rotate(360deg);
+    :where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {
+      outline-width: 4px;
+    }
   }
 }

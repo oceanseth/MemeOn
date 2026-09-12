@@ -1,0 +1,42 @@
+/* The cascade contract `src/index.css` declares, restated because a layer's rank is fixed the first
+   time its name is seen and this file can still reach a stylesheet ahead of `index.css` (an async
+   CSS chunk of its own, a story, a second entry). `main.tsx` imports `index.css` first so the app
+   bundle already opens with this order; the restatement is what keeps every other bundle honest,
+   and re-declaring an order that already exists is a no-op. `properties` leads the list because
+   that is where Tailwind emits its own `@layer properties` block — the `@supports` fallback that
+   seeds every `--tw-*` for engines without `@property` — and it has to stay *below* `utilities`, or
+   those `initial`s would beat the utilities that set them. `scripts/check-layers.mjs` reads the
+   built CSS back and fails the build if any bundle ever ranks these differently. */
+@layer properties, theme, base, components, utilities;
+
+@layer components {
+  /*
+   * The sticky-chrome contract. `--topbar-h` is the height every descendant of `<main>` docks
+   * under: `main { scroll-margin-top }` (`src/index.css`), the marketplace's sticky control band
+   * (`lg:top-(--topbar-h)`), the create rail, the legal `<h2>` scroll margins and the alerts
+   * popover's phone placement.
+   *
+   * `:root` holds a legacy default (65px, `src/index.css`); the shell's own geometry lives beside
+   * the component that produces it and keys off the slot the shell writes. Two arms, split at the
+   * shell's breakpoint (`2xl`, 900px):
+   *
+   *   < 900   the phone header is sticky: 5 + 54 (the 34px cluster in a 54px row, the 27/34
+   *           wordmark) + 5 = 64.
+   *   >= 900  the sidebar is the persistent chrome and the header is a static row: nothing to
+   *           dock under, so 0.
+   *
+   * It has to be a rule rather than an inline style: the custom property must be readable from
+   * `:root` down, and `<main>` is a screen's element the shell only wraps.
+   */
+  @media (width < 900px) {
+    :root:has([data-slot='header']) {
+      --topbar-h: 64px;
+    }
+  }
+
+  @media (width >= 900px) {
+    :root:has([data-slot='header']) {
+      --topbar-h: 0px;
+    }
+  }
+}

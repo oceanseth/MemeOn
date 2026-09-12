@@ -1,0 +1,54 @@
+/* The cascade contract `src/index.css` declares, restated because a layer's rank is fixed the first
+   time its name is seen and this file can still reach a stylesheet ahead of `index.css` (an async
+   CSS chunk of its own, a story, a second entry). `main.tsx` imports `index.css` first so the app
+   bundle already opens with this order; the restatement is what keeps every other bundle honest,
+   and re-declaring an order that already exists is a no-op. `properties` leads the list because
+   that is where Tailwind emits its own `@layer properties` block — the `@supports` fallback that
+   seeds every `--tw-*` for engines without `@property` — and it has to stay *below* `utilities`, or
+   those `initial`s would beat the utilities that set them. `scripts/check-layers.mjs` reads the
+   built CSS back and fails the build if any bundle ever ranks these differently. */
+@layer properties, theme, base, components, utilities;
+
+/* Frame-slot states: the three async outcomes of one `/api/frames` image, kept visibly different
+   without moving the box. Both hosts of a frame — the tier ladder and the hero's trading-card pile
+   — wear them. Selectors key off `data-slot`/`data-state`, so this file owns the whole effect
+   including its own reduced-motion pause. The failed tint reads `currentColor`, which the screen
+   sets from the tier's own `--color-tier-<key>-frame` token. */
+@layer components {
+  @keyframes landing-tier-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    60%,
+    100% {
+      background-position: -100% 0;
+    }
+  }
+
+  [data-slot='tier-frame-slot'][data-state='loading']::after,
+  [data-slot='hero-card-slot'][data-state='loading']::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /* The travelling sheen. A literal on purpose, and the same idiom `atoms/foil.css` documents for
+       its own sweep: this is light passing over the plate, not a surface colour, so it is white at
+       10% in both arms rather than a token that flips — a theme-flipped sheen would go dark in the
+       dark arm, where a highlight is exactly what it is not. */
+    background: linear-gradient(115deg, transparent 30%, oklch(1 0 0 / 0.1) 50%, transparent 70%);
+    background-size: 300% 300%;
+    animation: landing-tier-shimmer 3.8s ease-in-out infinite;
+  }
+
+  [data-slot='tier-frame-slot'][data-state='error'],
+  [data-slot='hero-card-slot'][data-state='error'] {
+    background: color-mix(in oklab, currentColor 18%, var(--color-surface-pressed));
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, currentColor 45%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-slot='tier-frame-slot'][data-state='loading']::after,
+    [data-slot='hero-card-slot'][data-state='loading']::after {
+      animation: none;
+    }
+  }
+}

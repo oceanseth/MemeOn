@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
+    "knip": "^6.35.1",
     "prettier": "^3.3.3"
   }
 }
-
