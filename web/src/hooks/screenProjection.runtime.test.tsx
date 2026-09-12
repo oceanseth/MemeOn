@@ -180,7 +180,7 @@ it('actual MemeDetailView in the app route observes deferred loading and later d
     await detail.promise
   })
   expect(host.querySelector('main [data-slot="spinner"]')).toBeNull()
-  expect(host.querySelector('h2')?.textContent).toContain(paperMeme.title)
+  expect(host.querySelector('h1')?.textContent).toContain(paperMeme.title)
   expect(host.textContent).toContain('you hold 100/100')
   await act(() => button('Delete forever').click())
   // the confirmations are Base UI popups: mounted means open, so presence is the whole state
@@ -311,8 +311,8 @@ it('ProfileView retains the selected tab and mounted cards while follow and frie
   await act(async () => { holdReload = false; reload.resolve(jsonResponse(latest)); await reload.promise })
   expect(button('Following').getAttribute('aria-pressed')).toBe('true')
   await act(async () => { button('Add friend').click() })
-  // a settled request is state, not a control: the button gives way to a chip
-  expect(host.querySelector('[data-slot="badge"]')?.textContent).toContain('Request sent')
+  // a settled request is state, not a control: the button gives way to the friend-state caption
+  expect(host.querySelector('[data-slot="friend-state"]')?.textContent).toContain('Request sent')
   expect(Array.from(host.querySelectorAll('button')).some((b) => b.textContent?.includes('friend'))).toBe(false)
   expect(button('Binder')).toBe(binderTab)
   expect(button('Binder').getAttribute('aria-pressed')).toBe('true')
@@ -333,7 +333,7 @@ it('ProfileView reloads after accepting an incoming friend and preserves reload 
   })
   await act(() => root.render(tree(<ProfileView />)))
   await act(async () => { button('Accept request').click() })
-  expect(host.querySelector('[data-slot="badge"]')?.textContent).toContain('Friends')
+  expect(host.querySelector('[data-slot="friend-state"]')?.textContent).toContain('Friends')
   expect(JSON.parse(String(requests.find((r) => r.path === '/api/friends/respond')?.init?.body))).toEqual({ userId: 'user-pal', accept: true })
   await act(async () => { button('Follow').click() })
   expect(host.textContent).toContain("Couldn't load this profile.")
