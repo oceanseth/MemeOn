@@ -130,45 +130,6 @@
   --color-tier-shiny-chip-text: var(--color-on-action);
   --color-tier-shiny-frame: var(--color-action);
 
-  /* ── Legacy aliases ──────────────────────────────────────────────────────────────────────────
-     The old dark-only palette's names, mapped onto the Soft Press roles so every component that
-     has not been migrated yet still renders in both themes. Nothing new may wear one of these;
-     the WP that owns a component replaces its usages and this table shrinks until it is gone.
-
-       --color-bg            → canvas             --color-accent        → link
-       --color-bg-raised     → surface-raised     --color-accent-2      → bubblegum-500
-       --color-bg-card       → surface            --color-gold          → warning-text
-       --color-bg-media      → surface-pressed    --color-danger        → error-text
-       --color-border        → line               --color-danger-fill   → error-text (see below)
-       --color-border-strong → ink-muted          --color-danger-border → error-text
-       --color-text          → ink                --color-ok            → success-text
-       --color-text-dim      → ink-muted          --color-primary-from  → action
-       --color-text-inverse  → canvas (see below) --color-primary-to    → action
-
-     `danger-fill` and `text-inverse` deviate from TOKENS.md (error-surface / on-action) on purpose:
-     the two legacy call sites (the alerts badge, the confirm dialog's destructive button) wear
-     them as a pair, and ink on the dark error *surface* is Lc 8. Mapping the fill to the strong
-     `error-text` and the label to `canvas` keeps that pair legible in both arms (checked below by
-     `check-contrast`) until WP2a rebuilds both on `error-surface` + `error-text`. */
-  --color-bg: var(--color-canvas); /* legacy alias — replace in the owning WP */
-  --color-bg-raised: var(--color-surface-raised); /* legacy alias — replace in the owning WP */
-  --color-bg-card: var(--color-surface); /* legacy alias — replace in the owning WP */
-  --color-bg-media: var(--color-surface-pressed); /* legacy alias — replace in the owning WP */
-  --color-border: var(--color-line); /* legacy alias — replace in the owning WP */
-  --color-border-strong: var(--color-ink-muted); /* legacy alias — replace in the owning WP */
-  --color-text: var(--color-ink); /* legacy alias — replace in the owning WP */
-  --color-text-dim: var(--color-ink-muted); /* legacy alias — replace in the owning WP */
-  --color-text-inverse: var(--color-canvas); /* legacy alias — replace in the owning WP */
-  --color-accent: var(--color-link); /* legacy alias — replace in the owning WP */
-  --color-accent-2: var(--color-bubblegum-500); /* legacy alias — replace in the owning WP */
-  --color-gold: var(--color-warning-text); /* legacy alias — replace in the owning WP */
-  --color-danger: var(--color-error-text); /* legacy alias — replace in the owning WP */
-  --color-danger-fill: var(--color-error-text); /* legacy alias — replace in the owning WP */
-  --color-danger-border: var(--color-error-text); /* legacy alias — replace in the owning WP */
-  --color-ok: var(--color-success-text); /* legacy alias — replace in the owning WP */
-  --color-primary-from: var(--color-action); /* legacy alias — replace in the owning WP */
-  --color-primary-to: var(--color-action); /* legacy alias — replace in the owning WP */
-
   /* ── Materials (components.md › Materials). Raised = cards, pills, buttons, chips, the tab bar,
      avatars. Pressed = the current nav row, the active tab, search wells. Both are built from the
      relief pair, so they flip with the theme for free. `pop`/`modal` are the two lifted overlays. */
@@ -225,10 +186,8 @@
   --text-micro: 12px;
   --text-micro--line-height: 16px;
 
-  /* ── Layout. `app` is the design's frame; `page` is the old measure `atoms/PageContainer.tsx`
-     still wears until WP5 removes it. */
+  /* ── Layout. `app` is the design's frame. */
   --container-app: 1440px;
-  --container-page: 1180px; /* legacy alias — replace in the owning WP */
 
   /* the widths this app branches on. Tailwind writes `bp:` as (width >= N) and `max-bp:` as
      (width < N), so a `max-width: N` breakpoint is exact at N + 1 and a `min-width: N` at N. */
@@ -252,11 +211,10 @@
     --z-modal: 60;
     --dur-fast: 0.08s;
     --dur-base: 0.15s;
-    /* the height every descendant of <main> docks under; organisms/AppShell.css re-authors it for
-       the two-row topbar */
-    --topbar-h: 65px;
-    /* the 8px rhythm every measure on the boards is a multiple of */
-    --spacing-unit: 8px;
+    /* the phone header's height. `organisms/AppShell.css` authors the real value (64 below the
+       shell breakpoint, 0 at and above it); this root default only ever paints in an isolated
+       Storybook story that mounts a screen without the shell. */
+    --topbar-h: 64px;
     /* display weight, kept out of `@theme` so it cannot shadow the `font-display` family utility */
     --font-weight-display: 500;
     /* Prismatic's real chip: a bubblegum→ultraviolet sweep, deeper stops in the dark arm.
@@ -271,14 +229,8 @@
     /* focus vocabulary (components.md: 3px focus outline, 2px offset) */
     --focus-ring: var(--color-focus);
     --focus-offset: 2px;
-    /* state vocabulary, expressed once on the semantic roles so every state flips with the theme */
-    --state-hover-border: var(--color-action);
-    --state-selected-bg: color-mix(in oklab, var(--color-action) 22%, transparent);
-    --state-selected-border: var(--color-action);
+    /* state vocabulary, expressed once on the semantic role so it flips with the theme */
     --state-disabled-opacity: 0.42;
-    --state-error-bg: color-mix(in oklab, var(--color-error-text) 12%, transparent);
-    --state-success-bg: color-mix(in oklab, var(--color-success-text) 12%, transparent);
-    --state-unread-bg: color-mix(in oklab, var(--color-action) 14%, transparent);
     /* Follow the OS by default; `stores/themeStore.ts` pins one arm through `data-theme` (below).
        This is also what resolves every `light-dark()` token above, and it flips the browser's own
        chrome — form controls, scrollbars — with the page. */
@@ -319,13 +271,6 @@
     display: flex;
     flex-direction: column;
     min-height: 100dvh;
-  }
-
-  /* width:100% because `atoms/PageContainer.tsx` centres itself with auto margins, and a flex item
-     with an auto cross-axis margin shrink-wraps instead of stretching */
-  #root > main {
-    flex: 1 0 auto;
-    width: 100%;
   }
 
   /* every route's <main> is the bypass link's target; it scrolls clear of the sticky topbar */
@@ -416,8 +361,6 @@
   @media (prefers-contrast: more) {
     :root {
       --color-line: var(--color-ink-muted);
-      --state-unread-bg: color-mix(in oklab, var(--color-action) 24%, transparent);
-      --state-selected-bg: color-mix(in oklab, var(--color-action) 32%, transparent);
     }
 
     :where(a, button, summary, input, select, textarea, [tabindex]):focus-visible {

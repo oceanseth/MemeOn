@@ -25,7 +25,7 @@
  * The APCA-W3 0.1.9 constants are inlined; the package is not a dependency of this app and this
  * guard is not worth one.
  */
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync, readdirSync } from "node:fs"
 import { isAbsolute, join, relative, resolve } from "node:path"
 
 /** |Lc| a text pair has to clear. APCA's own bronze floor for 14-18px body copy. */
@@ -185,14 +185,18 @@ const css = stripComments(readFileSync(CSS_PATH, "utf8"))
 const tokens = { ...customProperties(block(css, "@theme static")), ...customProperties(block(css, ":root")) }
 
 /**
- * Every pair is real. Ink and muted ink are body copy on each of the five surfaces; the on-action
- * pairs are the primary and secondary button labels; each status text sits on its status surface
- * (the Notice, the field error) and, tinted, on the state vocabulary's washes; link is the anchor
- * colour on the page and in a card; each tier's chip label sits on its chip (Prismatic's on the
- * gradient's first stop, the flat fallback); the last legacy pair is the alerts badge and the
- * confirm dialog's destructive button, which still wear `bg-danger-fill text-text-inverse`.
- * A background is a token name, or `{ tint, over }`: a translucent state tint composited on the
- * lightest surface it can land on, the worst case.
+ * Every pair is real, and a pair leaves this list the moment no markup paints it: an audited pair
+ * that nothing renders pins a token the palette would otherwise be free to drop. Ink and muted ink
+ * are body copy on each of the five surfaces; the on-action pairs are the primary and secondary
+ * button labels; each status text sits on its status surface (the Notice, the field error); link is
+ * the anchor colour on the page and in a card; each tier's chip label sits on its chip (Prismatic's
+ * on the gradient's first stop, the flat fallback). A background is a token name, or
+ * `{ tint, over }`: a translucent state tint composited on the lightest surface it can land on.
+ *
+ * Dropped in wave 5 because nothing painted them any more: `--color-text-inverse` on
+ * `--color-danger-fill` (the alerts badge is `bg-error-text text-canvas`, the confirm dialog is
+ * `<Button variant="danger">`) and the `--state-error-bg` / `--state-success-bg` washes (no call
+ * site in `src/`). The wave-5 cleanup pass removed all four properties from `index.css`.
  */
 const SURFACES = ["--color-canvas", "--color-canvas-alt", "--color-surface", "--color-surface-raised", "--color-surface-pressed"]
 const TIERS = ["paper", "silver", "holo", "chrome", "gold", "prismatic", "shiny"]
@@ -205,12 +209,23 @@ const PAIRS = [
   ["--color-warning-text", "--color-warning-surface"],
   ["--color-error-text", "--color-error-surface"],
   ["--color-info-text", "--color-info-surface"],
-  ["--color-error-text", { tint: "--state-error-bg", over: "--color-surface" }],
-  ["--color-success-text", { tint: "--state-success-bg", over: "--color-surface" }],
   ["--color-link", "--color-canvas"],
   ["--color-link", "--color-surface"],
   ...TIERS.map((tier) => [`--color-tier-${tier}-chip-text`, `--color-tier-${tier}-chip`]),
-  ["--color-text-inverse", "--color-danger-fill"],
+]
+
+/**
+ * Tokens that are not text colours, and the guard that keeps them from becoming one.
+ *
+ * `--color-focus` is the ring: it is chosen to sit *against* a surface at 3px, not to be read on
+ * one, and its dark arm measures Lc -53 on `--color-surface` — under the floor above. Twice now a
+ * screen has picked it up as an accent for bare text (Friends' quiet exits, Trade's swap glyph)
+ * because the board draws that accent in the same hue; both now use `--color-link`, which is the
+ * same idea inside the floor. Auditing the pair would only fail the gate, so the guard is a scan:
+ * no source file may paint text in it.
+ */
+const NOT_TEXT = [
+  { token: "--color-focus", instead: "--color-link", patterns: [/\btext-focus\b/, /(^|[;{\s])color:\s*var\(--color-focus\)/] },
 ]
 
 /** Repo-relative where that reads, absolute where it would be a stack of `..`. */
@@ -229,6 +244,24 @@ const rows = PAIRS.flatMap(([fg, bg]) =>
 )
 const failed = rows.filter((row) => !row.pass)
 
+/** Every source file the app paints from, so a `text-<token>` utility cannot hide in one. */
+const SRC = resolve(join(import.meta.dirname, "..", "src"))
+const sources = existsSync(SRC)
+  ? readdirSync(SRC, { recursive: true, withFileTypes: true })
+      .filter((entry) => entry.isFile() && /\.(tsx?|css)$/.test(entry.name) && !/\.(test|stories)\./.test(entry.name))
+      .map((entry) => join(entry.parentPath ?? entry.path, entry.name))
+  : []
+const painted = NOT_TEXT.flatMap(({ token, instead, patterns }) =>
+  sources.flatMap((file) => {
+    const text = readFileSync(file, "utf8")
+    return text.split("\n").flatMap((line, index) =>
+      patterns.some((pattern) => pattern.test(line)) && !line.trimStart().startsWith("*")
+        ? [{ token, instead, where: `${relative(process.cwd(), file)}:${index + 1}` }]
+        : [],
+    )
+  }),
+)
+
 const width = (pick) => Math.max(...rows.map((row) => pick(row).length))
 const fgWidth = width((row) => row.fg)
 const bgWidth = width((row) => row.bg)
@@ -237,6 +270,14 @@ for (const row of rows) {
   console.log(
     `  ${row.fg.padEnd(fgWidth)}  on  ${row.bg.padEnd(bgWidth)}  ${row.arm.padEnd(5)}  Lc ${lc}  ${row.pass ? "ok" : "BELOW " + FLOOR}`,
   )
+}
+
+if (painted.length) {
+  console.error(
+    `\ncheck-contrast: ${painted.length} place(s) paint text in a token that is not a text colour:\n` +
+      painted.map((hit) => `  ${hit.where} uses ${hit.token} — use ${hit.instead}`).join("\n"),
+  )
+  process.exit(1)
 }
 
 if (failed.length) {
@@ -251,3 +292,4 @@ if (failed.length) {
 }
 
 console.log(`check-contrast: ${rows.length} pair(s) across ${ARMS.join(" and ")}, all >= APCA Lc ${FLOOR} (${display})`)
+console.log(`check-contrast: ${sources.length} source file(s) scanned, none paint text in ${NOT_TEXT.map((entry) => entry.token).join(", ")}`)

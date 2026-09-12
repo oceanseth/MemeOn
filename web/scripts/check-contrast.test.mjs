@@ -15,8 +15,8 @@ const run = (path) => {
 
 /**
  * A stylesheet shaped like `src/index.css`: an `@theme static` block of Soft Press `light-dark()`
- * tokens (the shipped values, so the fixture passes on its own) and a base-layer `:root` carrying
- * the two state tints. A comment quoting `:root` sits ahead of the real block on purpose.
+ * tokens (the shipped values, so the fixture passes on its own) and a base-layer `:root`. A
+ * comment quoting `:root` sits ahead of the real block on purpose.
  */
 const stylesheet = (overrides = {}) => {
   const tokens = {
@@ -63,19 +63,13 @@ const stylesheet = (overrides = {}) => {
     "--color-tier-prismatic-chip-text": "var(--color-ink)",
     "--color-tier-shiny-chip": "var(--color-action)",
     "--color-tier-shiny-chip-text": "var(--color-on-action)",
-    "--color-text-inverse": "var(--color-canvas)",
-    "--color-danger-fill": "var(--color-error-text)",
     ...overrides,
   }
   const declare = (entries) => entries.map(([k, v]) => `  ${k}: ${v};`).join("\n")
   return (
     `/* prose that mentions :root { } before the real block */\n` +
     `@theme static {\n${declare(Object.entries(tokens))}\n}\n\n@layer base {\n  :root {\n` +
-    declare([
-      ["--state-error-bg", "color-mix(in oklab, var(--color-error-text) 12%, transparent)"],
-      ["--state-success-bg", "color-mix(in oklab, var(--color-success-text) 12%, transparent)"],
-    ]) +
-    "\n    color-scheme: light dark;\n  }\n\n  :root[data-theme='dark'] {\n    color-scheme: dark;\n  }\n}\n"
+    "    color-scheme: light dark;\n  }\n\n  :root[data-theme='dark'] {\n    color-scheme: dark;\n  }\n}\n"
   )
 }
 
@@ -136,31 +130,6 @@ test("follows var() into a light-dark() and lands on a different arm value each 
     assert.ok(light && dark, result.output)
     assert.ok(parseFloat(light[1]) > 0, "light link is dark text on a light canvas")
     assert.ok(parseFloat(dark[1]) < 0, "dark link is light text on a dark canvas")
-  })
-})
-
-test("rejects the alias table TOKENS.md first proposed for the legacy badge pair", () => {
-  // ink on the dark error *surface* is barely a shade apart: the reason `--color-danger-fill`
-  // maps to `error-text` and `--color-text-inverse` to `canvas` instead
-  const proposed = {
-    "--color-danger-fill": "var(--color-error-surface)",
-    "--color-text-inverse": "var(--color-on-action)",
-  }
-
-  withStylesheet(stylesheet(proposed), (result) => {
-    assert.equal(result.status, 1, result.output)
-    assert.match(result.output, /1 of \d+ pair\(s\)/)
-    assert.match(result.output, /--color-text-inverse on --color-danger-fill \(dark\) is Lc -?\d+\.\d/)
-  })
-})
-
-test("composites a color-mix state tint rather than reading it as opaque", () => {
-  // 12% error text over the surface is nearly the surface, so the text on it barely differs from
-  // the text on the surface itself; read as opaque it would be the colour on itself, Lc 0
-  withStylesheet(stylesheet(), (result) => {
-    assert.equal(result.status, 0, result.output)
-    assert.match(result.output, /--color-error-text\s+on\s+--state-error-bg over surface\s+light\s+Lc\s+\d\d\.\d\s+ok/)
-    assert.match(result.output, /--color-error-text\s+on\s+--state-error-bg over surface\s+dark\s+Lc\s+-\d\d\.\d\s+ok/)
   })
 })
 
