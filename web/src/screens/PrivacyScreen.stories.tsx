@@ -3,6 +3,15 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, within } from 'storybook/test'
 import { PrivacyScreen } from './PrivacyScreen'
 
+const phone = {
+  parameters: {
+    viewport: {
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+    },
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
+}
+
 const meta = {
   title: 'Screens/PrivacyScreen',
   component: PrivacyScreen,
@@ -37,4 +46,15 @@ export const Default: Story = {
       '/terms',
     )
   },
+}
+
+export const Dark: Story = { ...Default, name: 'Default dark', globals: { theme: 'dark' } }
+
+export const Phone390: Story = { ...Default, name: 'Default phone 390', ...phone }
+
+export const DarkPhone390: Story = {
+  ...Default,
+  name: 'Default dark phone 390',
+  ...phone,
+  globals: { ...phone.globals, theme: 'dark' },
 }
