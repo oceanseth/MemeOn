@@ -19,6 +19,8 @@ function CurrentRoute() {
 const meta = {
   title: 'Views/AppShellView',
   component: AppShellView,
+  /* the chrome owns the viewport edge: no Storybook gutter, or the 390 header loses 32 of its 350 */
+  parameters: { layout: 'fullscreen' },
   tags: ['!autodocs'],
   args: {
     children: (

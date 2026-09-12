@@ -13,22 +13,30 @@
   /*
    * The sticky-chrome contract. `--topbar-h` is the height every descendant of `<main>` docks
    * under: `main { scroll-margin-top }` (`src/index.css`), the marketplace's sticky control band
-   * (`lg:top-(--topbar-h)`), the create rail and the legal `<h2>` scroll margins.
+   * (`lg:top-(--topbar-h)`), the create rail, the legal `<h2>` scroll margins and the alerts
+   * popover's phone placement.
    *
-   * `:root` holds the one-row default (65px, `src/index.css`); the two-row topbar at ≤760 is this
-   * shell's own geometry, so the override lives beside the component that produces it and keys off
-   * the slot the shell writes.
+   * `:root` holds a legacy default (65px, `src/index.css`); the shell's own geometry lives beside
+   * the component that produces it and keys off the slot the shell writes. Two arms, split at the
+   * shell's breakpoint (`2xl`, 900px):
+   *
+   *   < 900   the phone header is sticky: 5 + 54 (the 34px cluster in a 54px row, the 27/34
+   *           wordmark) + 5 = 64.
+   *   >= 900  the sidebar is the persistent chrome and the header is a static row: nothing to
+   *           dock under, so 0.
    *
    * It has to be a rule rather than an inline style: the custom property must be readable from
-   * `:root` down, and `AppShell` renders a fragment — there is no element wrapping both the
-   * header and `<main>` (`#root > main { flex: 1 0 auto }` depends on `main` staying a direct
-   * child of `#root`).
-   *
-   * 10 + 44 (row 1) + 10 gap + 6 + 44 + 2 (nav row) + 10 + 1 border = 127.
+   * `:root` down, and `<main>` is a screen's element the shell only wraps.
    */
-  @media (max-width: 760px) {
-    :root:has([data-slot='nav-links']) {
-      --topbar-h: 127px;
+  @media (width < 900px) {
+    :root:has([data-slot='header']) {
+      --topbar-h: 64px;
+    }
+  }
+
+  @media (width >= 900px) {
+    :root:has([data-slot='header']) {
+      --topbar-h: 0px;
     }
   }
 }

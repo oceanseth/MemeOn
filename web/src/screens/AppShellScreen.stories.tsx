@@ -30,15 +30,21 @@ const actions = {
   onDismissQuests: fn(),
 }
 
-const loggedOut = buildAppShellScreenModel({ phase: 'loggedOut', user: null, context, ...actions })
+const onThemeChange = fn()
+const light = { value: 'light', onChange: onThemeChange } as const
+const dark = { value: 'dark', onChange: onThemeChange } as const
+
+const loggedOut = buildAppShellScreenModel({ phase: 'loggedOut', user: null, context, theme: light, ...actions })
 const loggedIn = buildAppShellScreenModel({
   phase: 'loggedIn',
   user: meLou,
   context: { ...context, alerts: [unreadSale] },
+  pathname: '/marketplace',
+  theme: light,
   ...actions,
 })
 
-/** 390×844: the nav has to reach a second row instead of collapsing to zero width. */
+/** 390×844: the phone chrome — sticky blur header with the theme button and the account menu, the fixed tab bar. */
 const phone = {
   parameters: {
     viewport: {
@@ -51,6 +57,8 @@ const phone = {
 const meta = {
   title: 'Screens/AppShellScreen',
   component: AppShellScreen,
+  /* the chrome owns the viewport edge: no Storybook gutter, or the 390 header loses 32 of its 350 */
+  parameters: { layout: 'fullscreen' },
   args: {
     ...loggedOut,
     children: <PageContainer as="main" id="main" tabIndex={-1}><p>page body</p></PageContainer>,
@@ -61,14 +69,46 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const LoggedOut: Story = {}
-export const LoggedIn: Story = { args: loggedIn }
+export const LoggedOut: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    onThemeChange.mockClear()
+    await expect(canvas.getByRole('link', { name: 'MemeOn' })).toBeVisible()
+    await expect(canvas.queryByRole('navigation', { name: 'Main' })).toBeNull()
+    // the public header carries the one theme control; it names where it is and where it goes
+    await userEvent.click(canvas.getByRole('button', { name: 'Theme: Light. Switch to Dark' }))
+    await expect(onThemeChange).toHaveBeenCalledWith('dark')
+  },
+}
+
+export const LoggedIn: Story = {
+  args: loggedIn,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    onThemeChange.mockClear()
+    const nav = canvas.getByRole('navigation', { name: 'Main' })
+    await expect(within(nav).getByRole('link', { name: 'Marketplace' })).toHaveAttribute('aria-current', 'page')
+    await expect(within(nav).getByRole('link', { name: 'My Binder' })).not.toHaveAttribute('aria-current')
+    await expect(canvas.getByRole('link', { name: 'Mint a meme' })).toHaveAttribute('href', '/binder/new')
+    await expect(canvas.getByText('the meme trading card market')).toBeVisible()
+    // the sidebar's segmented control marks the current arm and reports a change
+    const theme = canvas.getByRole('group', { name: 'Theme' })
+    await expect(within(theme).getByRole('button', { name: /Light/ })).toHaveAttribute('aria-pressed', 'true')
+    await userEvent.click(within(theme).getByRole('button', { name: /Dark/ }))
+    await expect(onThemeChange).toHaveBeenCalledWith('dark')
+    // the utility link and the identity gear both name Settings and both lead there
+    const more = canvas.getByRole('navigation', { name: 'More' })
+    await expect(within(more).getByRole('link', { name: 'Settings' })).toHaveAttribute('href', '/settings')
+    await expect(canvas.getAllByRole('link', { name: 'Settings' })).toHaveLength(2)
+  },
+}
 
 export const WithAvatar: Story = {
   args: buildAppShellScreenModel({
     phase: 'loggedIn',
     user: { ...meLou, sub: 'mask/avatar + one', picture: '/brand/memeon-logo-circle-64.png' },
     context,
+    theme: light,
     ...actions,
   }),
   play: async ({ canvasElement, args }) => {
@@ -89,6 +129,7 @@ export const WithQuests: Story = {
   args: buildAppShellScreenModel({
     phase: 'loggedIn', user: meLou,
     context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
+    pathname: '/binder', theme: light,
     ...actions,
   }),
 }
@@ -97,6 +138,7 @@ export const WithQuestsExpanded: Story = {
   args: buildAppShellScreenModel({
     phase: 'loggedIn', user: meLou,
     context: { ...context, steps: questStepsFresh, questExpanded: true, alerts: [unreadSale] },
+    pathname: '/binder', theme: light,
     ...actions,
   }),
 }
@@ -106,6 +148,7 @@ export const QuestsDismissed: Story = {
   args: buildAppShellScreenModel({
     phase: 'loggedIn', user: meLou,
     context: { ...context, steps: questStepsFresh, questDismissed: true, alerts: [unreadSale] },
+    theme: light,
     ...actions,
   }),
   play: async ({ canvasElement }) => {
@@ -118,6 +161,7 @@ export const AlertsOpen: Story = {
   args: buildAppShellScreenModel({
     phase: 'loggedIn', user: meLou,
     context: { ...context, alerts: [unreadSale], alertsOpen: true },
+    pathname: '/marketplace', theme: light,
     ...actions,
   }),
 }
@@ -128,11 +172,12 @@ export const PackOpened: Story = {
     context: {
       ...context, steps: questStepsPackDone, packMemes: [paperMeme], packReward: 20, alerts: [unreadSale],
     },
+    pathname: '/binder', theme: light,
     ...actions,
   }),
 }
 
-/** Ten chrome controls precede the page: the first Tab must offer a way past them. */
+/** A dozen chrome controls precede the page: the first Tab must offer a way past them. */
 export const SkipLinkFocused: Story = {
   args: loggedIn,
   play: async ({ canvasElement }) => {
@@ -145,11 +190,50 @@ export const SkipLinkFocused: Story = {
   },
 }
 
-export const Mobile390: Story = {
+export const Phone390: Story = {
   args: buildAppShellScreenModel({
     phase: 'loggedIn', user: meLou,
     context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
+    pathname: '/marketplace', theme: light,
     ...actions,
   }),
   ...phone,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // the sidebar is display:none on the phone: the tab bar is the one main navigation
+    const tabs = canvas.getByRole('navigation', { name: 'Main' })
+    await expect(within(tabs).getByRole('link', { name: 'Market' })).toHaveAttribute('aria-current', 'page')
+    await expect(within(tabs).getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
+    await expect(canvas.queryByRole('link', { name: 'Your profile' })).toBeNull()
+    await expect(canvas.getByRole('button', { name: 'Theme: Light. Switch to Dark' })).toBeVisible()
+    // the avatar opens the account menu that carries the routes the tab bar cannot
+    await userEvent.click(canvas.getByRole('button', { name: 'Account menu' }))
+    const menu = await canvas.findByRole('menu')
+    await expect(within(menu).getByRole('menuitem', { name: '🏆 Top Brains' })).toHaveAttribute('href', '/leaderboard')
+    await expect(within(menu).getByRole('menuitem', { name: 'Log out' })).toBeInTheDocument()
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull())
+  },
+}
+
+/** Kept under its historical name; `Phone390` is the same chrome with its assertions. */
+export const Mobile390: Story = {
+  args: Phone390.args,
+  ...phone,
+}
+
+export const Dark: Story = {
+  args: buildAppShellScreenModel({
+    phase: 'loggedIn', user: meLou,
+    context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
+    pathname: '/marketplace', theme: dark,
+    ...actions,
+  }),
+  globals: { theme: 'dark' },
+}
+
+export const DarkPhone390: Story = {
+  args: Dark.args,
+  ...phone,
+  globals: { ...phone.globals, theme: 'dark' },
 }

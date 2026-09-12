@@ -1,25 +1,107 @@
 import { useProjectedActor } from './useProjectedActor'
 import { autorun } from 'mobx'
 import { useCallback, type AnchorHTMLAttributes, type ButtonHTMLAttributes } from 'react'
-import { useNavigate, type LinkProps } from 'react-router-dom'
+import { useLocation, useNavigate, type LinkProps } from 'react-router-dom'
+import type { IconName } from '../atoms/Icon'
 import { buildAlertsBellModel, type AlertsBellModel } from '../lib/alertsBellModel'
 import { apiFetch, post } from '../lib/api'
 import { buildQuestBarModel, type QuestBarModel } from '../lib/questBarModel'
 import type { Alert, Meme, Me, QuestKey, QuestStep } from '../lib/types'
+import type { AvatarMenuModel } from '../molecules/AvatarMenu'
+import type { ThemeControlModel } from '../molecules/ThemeControl'
 import { appShellMachine, type AppShellContext, type AppShellPhase } from '../stores/appShellMachine'
 import { useStores } from '../stores/StoresContext'
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
+import { useTheme } from './useTheme'
 
 const POLL_MS = 30_000
 const QUEST_KEYS: QuestKey[] = ['pack', 'mint', 'share', 'friend', 'trade']
 
-const NAV_ITEMS: { to: string; label: string; emoji: string | null }[] = [
-  { to: '/marketplace', label: 'Marketplace', emoji: null },
-  { to: '/binder', label: 'My Binder', emoji: null },
-  { to: '/friends', label: 'Friends', emoji: null },
-  { to: '/trade', label: 'Trade', emoji: null },
-  { to: '/leaderboard', label: 'Top Brains', emoji: '🏆' },
+/** The header's context line on every signed-in board: the positioning line (PRODUCT.md). */
+const TAGLINE = 'the meme trading card market'
+
+/**
+ * Which family of routes a pathname belongs to, for the chrome's current-route state. `mint` is
+ * its own family because the phone tab bar has a Mint tab; the desktop sidebar folds it into
+ * My Binder. Meme detail counts as Marketplace (plan-buckets › navigation-chrome).
+ */
+export type RouteFamily =
+  | 'marketplace'
+  | 'binder'
+  | 'mint'
+  | 'friends'
+  | 'trade'
+  | 'leaderboard'
+  | 'settings'
+  | 'developers'
+  | 'discord'
+
+export function routeFamily(pathname: string, sub: string | null): RouteFamily | null {
+  if (pathname === '/marketplace' || pathname.startsWith('/m/') || pathname.startsWith('/meme/')) return 'marketplace'
+  if (pathname === '/binder/new') return 'mint'
+  if (pathname === '/binder' || (sub !== null && pathname === `/binder/${encodeURIComponent(sub)}`)) return 'binder'
+  if (pathname === '/friends') return 'friends'
+  if (pathname === '/trade') return 'trade'
+  if (pathname === '/leaderboard') return 'leaderboard'
+  if (pathname === '/settings' || pathname.startsWith('/settings/')) return 'settings'
+  if (pathname === '/developers') return 'developers'
+  if (pathname === '/discord' || pathname.startsWith('/discord/')) return 'discord'
+  return null
+}
+
+export interface ShellNavItem {
+  to: string
+  label: string
+  /** An emoji that is the row's glyph. It stays an emoji: it takes the icon lane, never a drawn twin. */
+  emoji: string | null
+  icon: IconName
+  current: boolean
+}
+
+export interface ShellUtilityLink {
+  to: string
+  label: string
+  emoji: string | null
+  current: boolean
+}
+
+export interface ShellTabItem {
+  to: string
+  label: string
+  icon: IconName
+  current: boolean
+  /** The centre Mint tab: the bar's single primary. */
+  primary: boolean
+}
+
+export interface ShellIdentity {
+  name: string
+  src: string | null
+  settingsLinkProps: Pick<LinkProps, 'to'> & Pick<AnchorHTMLAttributes<HTMLAnchorElement>, 'aria-label'>
+}
+
+const NAV_ITEMS: { families: RouteFamily[]; to: string; label: string; emoji: string | null; icon: IconName }[] = [
+  { families: ['marketplace'], to: '/marketplace', label: 'Marketplace', emoji: null, icon: 'storefront' },
+  { families: ['binder', 'mint'], to: '/binder', label: 'My Binder', emoji: null, icon: 'book' },
+  { families: ['friends'], to: '/friends', label: 'Friends', emoji: null, icon: 'users' },
+  { families: ['trade'], to: '/trade', label: 'Trade', emoji: null, icon: 'arrows-left-right' },
+  { families: ['leaderboard'], to: '/leaderboard', label: 'Top Brains', emoji: '🏆', icon: 'trophy' },
+]
+
+const UTILITY_LINKS: { family: RouteFamily; to: string; label: string; emoji: string | null }[] = [
+  { family: 'discord', to: '/discord', label: 'Discord', emoji: null },
+  { family: 'developers', to: '/developers', label: 'Developers', emoji: '🔧' },
+  { family: 'settings', to: '/settings', label: 'Settings', emoji: null },
+]
+
+/** plan-buckets › tab-bar: Market · Binder · Mint · Friends · Trade; 'Market' is the 62px abbreviation. */
+const TAB_ITEMS: { family: RouteFamily; to: string; label: string; icon: IconName; primary: boolean }[] = [
+  { family: 'marketplace', to: '/marketplace', label: 'Market', icon: 'storefront', primary: false },
+  { family: 'binder', to: '/binder', label: 'Binder', icon: 'book', primary: false },
+  { family: 'mint', to: '/binder/new', label: 'Mint', icon: 'circle-plus', primary: true },
+  { family: 'friends', to: '/friends', label: 'Friends', icon: 'users', primary: false },
+  { family: 'trade', to: '/trade', label: 'Trade', icon: 'arrows-left-right', primary: false },
 ]
 
 function allDone(user: Me | null): boolean {
@@ -30,16 +112,28 @@ export interface AppShellScreenModel {
   phase: AppShellPhase
   showNav: boolean
   showToolbar: boolean
-  navItems: { to: string; label: string; emoji: string | null }[]
-  /** The gold figure and the name it announces: a span takes no name from a title. */
+  navItems: ShellNavItem[]
+  /** The sidebar's Mint pill: the chrome's one primary. */
+  mintLinkProps: Pick<LinkProps, 'to'>
+  utilityLinks: ShellUtilityLink[]
+  /** Built off `useTheme()`; the screen re-variants it for the header button. */
+  theme: ThemeControlModel
+  /** Desktop header, left. Empty renders nothing. */
+  contextLine: string
+  /** The balance figure and the name it announces: a span takes no name from a title. */
   coins: { text: string; label: string } | null
   avatar: {
     linkProps: Pick<LinkProps, 'to'> & Pick<AnchorHTMLAttributes<HTMLAnchorElement>, 'aria-label'>
     /* third-party avatar hosts 404: the slot keeps its shape and stays *your* monogram,
-       never the MemeOn mark, which is a different identity in the same 32px circle */
+       never the MemeOn mark, which is a different identity in the same disc */
     name: string
-    src: string
+    src: string | null
   } | null
+  /** The sidebar's identity row: avatar, name, the gear to Settings. */
+  identity: ShellIdentity | null
+  bottomNav: ShellTabItem[]
+  /** The phone header's account menu (Profile, Top Brains, Settings, Developers, Log out). */
+  avatarMenu: AvatarMenuModel | null
   alertsBell: AlertsBellModel
   questBar: QuestBarModel | null
   logoutButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-label'>
@@ -49,6 +143,9 @@ export function buildAppShellScreenModel({
   phase,
   user,
   context,
+  pathname = '/',
+  theme = { value: 'auto', onChange: () => {} },
+  contextLine = TAGLINE,
   onLogout,
   onClaimPack,
   onDismissPack,
@@ -59,6 +156,10 @@ export function buildAppShellScreenModel({
   phase: AppShellPhase
   user: Me | null
   context: AppShellContext
+  /** The current route, for the chrome's `aria-current` marks. */
+  pathname?: string
+  theme?: Pick<ThemeControlModel, 'value' | 'onChange'>
+  contextLine?: string
   onLogout: () => void
   onClaimPack: () => void
   onDismissPack: () => void
@@ -68,23 +169,56 @@ export function buildAppShellScreenModel({
 }): AppShellScreenModel {
   const steps = context.questDismissed ? [] : context.steps ?? []
   const showQuest = (!!user && !allDone(user) && steps.length > 0) || !!context.packMemes
+  const family = routeFamily(pathname, user?.sub ?? null)
+  const profileTo = user ? `/u/${encodeURIComponent(user.sub)}` : '/'
 
   return {
     phase,
     showNav: !!user,
     showToolbar: !!user,
-    navItems: NAV_ITEMS,
+    navItems: NAV_ITEMS.map(({ families, ...item }) => ({
+      ...item,
+      current: family !== null && families.includes(family),
+    })),
+    mintLinkProps: { to: '/binder/new' },
+    utilityLinks: UTILITY_LINKS.map(({ family: own, ...link }) => ({ ...link, current: family === own })),
+    theme: { value: theme.value, onChange: theme.onChange, variant: 'segmented' },
+    contextLine,
     coins: user
       ? {
           text: `🧠 ${user.coins.toLocaleString()}`,
           label: `${user.coins.toLocaleString()} braincells`,
         }
       : null,
-    avatar: user?.picture ? {
-      linkProps: { to: `/u/${encodeURIComponent(user.sub)}`, 'aria-label': 'Your profile' },
-      name: user.name,
-      src: user.picture,
-    } : null,
+    avatar: user
+      ? {
+          linkProps: { to: profileTo, 'aria-label': 'Your profile' },
+          name: user.name,
+          src: user.picture,
+        }
+      : null,
+    identity: user
+      ? {
+          name: user.name,
+          src: user.picture,
+          settingsLinkProps: { to: '/settings', 'aria-label': 'Settings' },
+        }
+      : null,
+    bottomNav: TAB_ITEMS.map(({ family: own, ...item }) => ({ ...item, current: family === own })),
+    avatarMenu: user
+      ? {
+          name: user.name,
+          src: user.picture,
+          triggerProps: { 'aria-label': 'Account menu' },
+          items: [
+            { key: 'profile', label: 'Profile', to: profileTo },
+            { key: 'leaderboard', label: '🏆 Top Brains', to: '/leaderboard' },
+            { key: 'settings', label: 'Settings', to: '/settings' },
+            { key: 'developers', label: '🔧 Developers', to: '/developers' },
+            { key: 'logout', label: 'Log out', onSelect: onLogout },
+          ],
+        }
+      : null,
     alertsBell: buildAlertsBellModel({
       alerts: context.alerts,
       open: context.alertsOpen,
@@ -112,7 +246,9 @@ export function buildAppShellScreenModel({
 export function useAppShellScreen(): AppShellScreenModel {
   const { user, logout, refresh } = useAuth()
   const { auth } = useStores()
+  const { preference, setPreference } = useTheme()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const [snapshot, send, actor] = useProjectedActor(appShellMachine)
   const ctx = snapshot.context
   const phase = snapshot.value as AppShellPhase
@@ -209,6 +345,8 @@ export function useAppShellScreen(): AppShellScreenModel {
     phase,
     user,
     context: ctx,
+    pathname,
+    theme: { value: preference, onChange: setPreference },
     onLogout,
     onClaimPack: () => void onClaimPack(),
     onDismissPack: () => send({ type: 'DISMISS_PACK' }),
