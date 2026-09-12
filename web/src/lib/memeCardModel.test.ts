@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { tierFor } from '../../../shared/tiers'
+import { tierFor } from '@memeon/shared/tiers'
 import { buildMemeCardModel, buildReducedMotionMemeCardModel } from './memeCardModel'
 import type { Meme } from './types'
 

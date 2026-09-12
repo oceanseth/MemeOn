@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { glowStyleFor } from '../../../shared/tiers'
+import { glowStyleFor } from '@memeon/shared/tiers'
 import { cn } from '../lib/cn'
 import { FOCUS_RING } from '../lib/focus'
 import type { MemeCardModel } from '../lib/memeCardModel'

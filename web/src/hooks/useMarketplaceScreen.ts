@@ -1,7 +1,7 @@
 import { useProjectedActor } from './useProjectedActor'
 import { useCallback, useMemo, useRef, type ChangeEventHandler, type RefCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { TIERS } from '../../../shared/tiers'
+import { TIERS } from '@memeon/shared/tiers'
 import { apiFetch } from '../lib/api'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import { buildSortChipsModel, type SortChipsModel } from '../lib/sortChipsModel'

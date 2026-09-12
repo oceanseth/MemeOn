@@ -1,4 +1,4 @@
-import type { Tier } from '../../../shared/tiers'
+import type { Tier } from '@memeon/shared/tiers'
 
 export interface Listing {
   sellerId: string

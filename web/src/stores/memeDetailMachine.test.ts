@@ -1,6 +1,6 @@
 import { createActor } from 'xstate'
 import { describe, expect, it } from 'vitest'
-import { tierFor } from '../../../shared/tiers'
+import { tierFor } from '@memeon/shared/tiers'
 import type { Meme, Position } from '../lib/types'
 import { clampPrice, clampShares, memeDetailMachine } from './memeDetailMachine'
 

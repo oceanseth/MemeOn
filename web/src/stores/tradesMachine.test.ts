@@ -1,6 +1,6 @@
 import { createActor } from "xstate";
 import { expect, test } from "vitest";
-import { tierFor } from "../../../shared/tiers";
+import { tierFor } from '@memeon/shared/tiers';
 import type { FriendEntry, Meme } from "../lib/types";
 import { tradeProposalPayload, tradesMachine } from "./tradesMachine";
 

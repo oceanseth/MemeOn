@@ -5,7 +5,7 @@ import type {
   HTMLAttributes,
   ImgHTMLAttributes,
 } from 'react'
-import { TIERS, type Tier } from '../../../shared/tiers'
+import { TIERS, type Tier } from '@memeon/shared/tiers'
 import { apiFetch } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
 import {
