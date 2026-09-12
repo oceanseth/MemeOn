@@ -10,7 +10,7 @@ import { ThemeControl } from '../molecules/ThemeControl'
 /**
  * The section card the Settings boards draw (`J52-0`, `J5E-0`, `MPJ-0`, `MPQ-0` and their iPhone
  * twins): `Panel`'s raised material at the board's 18/20 padding. Its head is a `PanelHeading` at
- * the 18/22 `section` step every card on this family uses, not `Panel`'s own 17/21.
+ * the shared intro step every card on this family uses.
  */
 const CARD = 'px-5 py-[18px] max-md:px-5 max-md:py-[18px]'
 

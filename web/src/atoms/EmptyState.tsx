@@ -37,8 +37,8 @@ export interface EmptyStateProps extends HTMLAttributes<HTMLDivElement> {
  * does (`error` → `alert`, otherwise `status`) so every consumer inherits the contract instead of
  * having to remember `role="status"`/`role="alert"` themselves. An explicit `role` still wins.
  *
- * The recipe is the board's state card: `radius-card`, the tone's surface, a 23/29 display title
- * on `--tracking-title` in the tone's text colour, 15/19 body on `ink-muted`, and a 46px action
+ * The recipe is the board's state card: `radius-card`, the tone's surface, a card-title heading
+ * on `--tracking-card-title` in the tone's text colour, 15/19 body on `ink-muted`, and a 46px action
  * row (`EmptyActions`) carrying at most one primary — a state card is one task.
  */
 export function EmptyState({
@@ -57,10 +57,10 @@ export function EmptyState({
       data-tone={resolved}
       role={role ?? (error || resolved === 'error' ? 'alert' : 'status')}
       className={cn(
-        // a raised card, centred column: title 23/29 display, body 15/19 muted
+        // a raised card, centred column: card-title, body 15/19 muted
         'rounded-card border-0 shadow-raised px-5 py-15 text-center text-label text-ink-muted',
-        '[&_:where(h2,h3)]:mt-0 [&_:where(h2,h3)]:mb-3 [&_:where(h2,h3)]:text-title',
-        '[&_:where(h2,h3)]:tracking-title',
+        '[&_:where(h2,h3)]:mt-0 [&_:where(h2,h3)]:mb-3 [&_:where(h2,h3)]:text-card-title',
+        '[&_:where(h2,h3)]:tracking-card-title',
         '[&_p]:m-0 [&_p]:mb-1.5 [&_p]:text-label',
         TONE_CLASSES[resolved],
         className,

@@ -33,9 +33,9 @@ export function Field({ className, ...props }: Styled<FieldRootProps>) {
 export const labelChrome = 'text-small font-semibold text-ink'
 
 /** The caption under a control, at the regular weight — a hint is not a second label. */
-export const hintChrome = 'mt-1 block text-[13px]/[18px] font-normal text-ink-muted'
+export const hintChrome = 'mt-1 block text-caption font-normal text-ink-muted'
 
-export const errorChrome = 'mt-1 block text-[13px]/[18px] font-normal text-error-text'
+export const errorChrome = 'mt-1 block text-caption font-normal text-error-text'
 
 export function FieldLabel({ className, ...props }: Styled<FieldLabelProps>) {
   return (
@@ -91,7 +91,7 @@ export function FieldCounter({ className, ...props }: ComponentPropsWithoutRef<'
   return (
     <span
       className={cn(
-        'ml-auto shrink-0 text-[13px]/[18px] font-normal text-ink-muted tabular-nums',
+        'ml-auto shrink-0 text-caption font-normal text-ink-muted tabular-nums',
         className,
       )}
       {...props}

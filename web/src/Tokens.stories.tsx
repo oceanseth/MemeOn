@@ -76,15 +76,20 @@ const TIERS: ReadonlyArray<{ key: string; label: string; chip: string; frame: st
 ]
 
 const LADDER: ReadonlyArray<{ step: string; spec: string; className: string }> = [
+  { step: 'hero', spec: 'Unbounded 500 · 48/52 · -0.04em', className: 'font-display font-medium text-hero tracking-display' },
+  { step: 'hero-phone', spec: 'Unbounded 500 · 36/42', className: 'font-display font-medium text-hero-phone tracking-display' },
   { step: 'display', spec: 'Unbounded 500 · 44/55 · -0.04em', className: 'font-display font-medium text-display tracking-display' },
   { step: 'display-phone', spec: 'Unbounded 500 · 32/40', className: 'font-display font-medium text-display-phone tracking-display' },
-  { step: 'title', spec: 'Unbounded 500 · 23/29 · -0.025em', className: 'font-display font-medium text-title tracking-title' },
+  { step: 'section', spec: 'Unbounded 500 · 32/40 · -0.025em', className: 'font-display font-medium text-section tracking-title' },
+  { step: 'section-phone', spec: 'Unbounded 500 · 26/32', className: 'font-display font-medium text-section-phone tracking-title' },
+  { step: 'title', spec: 'Unbounded 500 · 27/34 · -0.025em', className: 'font-display font-medium text-title tracking-title' },
   { step: 'card-title', spec: 'Unbounded 500 · 23/27 · -0.02em', className: 'font-display font-medium text-card-title tracking-card-title' },
   { step: 'card-title-phone', spec: 'Unbounded 500 · 17/21', className: 'font-display font-medium text-card-title-phone tracking-card-title' },
-  { step: 'intro', spec: 'Onest 400 · 17/21', className: 'font-sans text-intro' },
+  { step: 'intro', spec: 'Onest 400 · 17/22', className: 'font-sans text-intro' },
   { step: 'body', spec: 'Onest 400 · 16/24', className: 'font-sans text-body' },
   { step: 'label', spec: 'Onest 600 · 15/19', className: 'font-sans font-semibold text-label' },
   { step: 'small', spec: 'Onest 400 · 14/18', className: 'font-sans text-small' },
+  { step: 'caption', spec: 'Onest 400 · 13/16', className: 'font-sans text-caption' },
   { step: 'micro', spec: 'Onest 700 · 12/16', className: 'font-sans font-bold text-micro' },
 ]
 
@@ -260,7 +265,7 @@ export function TokenSheet() {
         <h1>h1 is display</h1>
         <h2>h2 is title</h2>
         <h3>h3 is card-title</h3>
-        <h4>h4 is label</h4>
+        <h4>h4 is card-title-phone</h4>
         <p>
           Body copy is Onest 16/24 on ink. A <a href="#top">link</a> wears <code>--color-link</code>; inline{' '}
           <code>code</code> sits on the pressed surface. 🧠 2,480 · 👁️ 12 · 🔁 3

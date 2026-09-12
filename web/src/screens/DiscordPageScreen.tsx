@@ -18,16 +18,15 @@ const FLOW_CARD = 'rounded-control px-5 py-[17px] max-md:px-5 max-md:py-[17px]'
  * focus colour, which measures APCA Lc -53.1 on the dark surface (below the swarm's floor of 60),
  * so it takes `--color-link`, the accent `check-contrast` already guards in both arms.
  */
-const FLOW_COMMAND = 'm-0 text-label font-extrabold text-link'
+const FLOW_COMMAND = 'm-0 text-label font-bold text-link'
 
-/** `Search live cards` (`EIA-0`): the display face at 21/26, the card's own title. */
-const FLOW_TITLE = 'mt-2 mb-0 font-display text-[21px]/[26px] font-medium tracking-title text-ink'
+const FLOW_TITLE = 'mt-2 mb-0 font-display text-card-title font-medium tracking-card-title text-ink'
 
 /** The line under it (`EIB-0`): 14/18 weight 500 on ink-muted. */
 const FLOW_BODY = 'mt-[5px] mb-0 text-small font-medium text-ink-muted'
 
 /** A FAQ question (`EIP-0`): 16/20 weight 700; its answer is `FLOW_BODY` at the same measure. */
-const FAQ_QUESTION = 'mt-5 mb-0 text-[16px]/[20px] font-bold text-ink first:mt-0'
+const FAQ_QUESTION = 'mt-5 mb-0 text-intro font-semibold tracking-normal text-ink first:mt-0'
 
 /** Discord install landing as a function of its model. Every engine state is one set of args. */
 export function DiscordPageScreen({
@@ -59,7 +58,7 @@ export function DiscordPageScreen({
             <a {...installLinkProps} className={buttonClasses('primary')} aria-describedby="discord-cta-note">
               🧠 Add MemeOn to Discord
             </a>
-            <span id="discord-cta-note" className="ms-3 text-[13px]/[16px] font-medium text-ink-muted max-md:ms-0">
+            <span id="discord-cta-note" className="ms-3 text-caption font-medium text-ink-muted max-md:ms-0">
               opens Discord in a new tab
             </span>
           </>
@@ -101,7 +100,7 @@ export function DiscordPageScreen({
         aria-labelledby="discord-faq"
         className={cn('mt-6 bg-surface-raised p-6 max-md:p-6', '[&_h2]:m-0')}
       >
-        <h2 id="discord-faq" className="font-display text-[29px]/[36px] font-medium tracking-title text-ink">
+        <h2 id="discord-faq" className="font-display text-section-phone font-medium tracking-title text-ink md:text-section">
           Tiny FAQ
         </h2>
         <p className={cn(FAQ_QUESTION, 'mt-5')}>Does this need a server admin?</p>
@@ -114,7 +113,7 @@ export function DiscordPageScreen({
       </Panel>
 
       <Panel className="mt-6 flex flex-wrap items-center gap-3 rounded-control px-5 py-[15px] max-md:flex-col max-md:items-start max-md:px-5 max-md:py-[15px]">
-        <h2 className="m-0 font-display text-[19px]/[24px] font-medium tracking-title text-ink">
+        <h2 className="m-0 font-display text-card-title-phone font-medium tracking-card-title text-ink">
           MemeOn brain assets
         </h2>
         <span className="flex flex-wrap items-center gap-2">

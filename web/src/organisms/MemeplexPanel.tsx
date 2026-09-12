@@ -21,8 +21,7 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
 
   return (
     /* The raised section card every panel on the page wears (`atoms/Panel`): bg-surface,
-       radius-card, shadow-raised, with its head at the board's own 18/22 step (296-0 ›
-       `Memeplex / Family` G5X-0, text G5Y-0) rather than `Panel`'s shared 17/21. */
+       radius-card, shadow-raised, with its head at the shared intro step. */
     <Panel className="mt-4">
       <PanelHeading size="section">🕸️ Memeplex</PanelHeading>
       {model.ancestors.length > 0 && (

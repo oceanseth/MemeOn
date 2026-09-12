@@ -65,7 +65,7 @@ export function buttonClasses(variant: ButtonVariant = 'default'): string {
        would push a wrapping `login` label apart.
        Spelled as an arbitrary *property* rather than `leading-[normal]` on purpose: tailwind-merge
        puts `font-size` and `leading` in one conflict group, so a caller's own `text-*` — the
-       Marketplace "Clear filters" chip is `text-xs` — silently deletes a `leading-*` that sorts
+       Marketplace "Clear filters" chip is `text-micro` — silently deletes a `leading-*` that sorts
        before it. The arbitrary-property group has no such conflict, so this survives any `text-*`
        and is still overridable by another `[line-height:…]` — which is how `login` pins its own,
        and how `AlertsBell` buys its taller emoji row. Covered by `lib/cn.test.ts`. */

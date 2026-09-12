@@ -32,18 +32,18 @@ export const WithH4: Story = {
 }
 
 /**
- * The four board steps. A bare heading takes `Panel`'s own 17/21; `PanelHeading` opts out of that
- * rule, so a card whose board draws 18/22, 22/28 or 24/30 gets it without an `!` or a `[&_h3]` hack.
+ * Role sizes. A bare heading takes `Panel`'s intro; `PanelHeading` opts out of that descendant
+ * rule so mint cards can take card-title and the trade composer can take title.
  */
 export const HeadingSizes: Story = {
   args: {
     children: (
       <>
-        <PanelHeading>Panel default — 17/21</PanelHeading>
-        <PanelHeading size="section">Section card — 18/22</PanelHeading>
-        <PanelHeading size="card">Mint card — 22/28</PanelHeading>
-        <PanelHeading size="composer">Trade composer — 24/30</PanelHeading>
-        <h3>Bare h3 — still 17/21</h3>
+        <PanelHeading>Panel default — intro</PanelHeading>
+        <PanelHeading size="section">Section card — intro</PanelHeading>
+        <PanelHeading size="card">Mint card — card-title</PanelHeading>
+        <PanelHeading size="composer">Trade composer — title</PanelHeading>
+        <h3>Bare h3 — still intro</h3>
       </>
     ),
   },

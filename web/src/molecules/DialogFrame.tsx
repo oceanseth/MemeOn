@@ -141,8 +141,6 @@ export function DialogFrame({
     <Dialog.Title
       id={titleId ?? `${id}-title`}
       render={<h3 />}
-      /* 23/29 display on `--tracking-title`, as every dialog heading on the Feedback board is
-         drawn (`HVL-0` Gift shares, `HVU-0` Remove friend) */
       className="m-0 mb-1.5 text-title tracking-title"
       data-slot="dialog-title"
     >

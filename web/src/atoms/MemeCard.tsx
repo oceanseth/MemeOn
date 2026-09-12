@@ -73,10 +73,8 @@ const META = 'flex flex-col'
 
 const TITLE = 'font-display font-medium tracking-card-title text-ink'
 
-/* The hero's own title step. The detail board (296-0 › `Hero / Full meme card` G4J-0, text G4O-0)
-   draws it at 27/34 on `--tracking-title`, one rung above the grid thumb's 23/27 card-title — a
-   size the shared ladder has no token for, so it lives here rather than in `index.css` (WP1's). */
-const TITLE_HERO = 'text-[27px]/[34px] tracking-title'
+/* Detail hero title: the `title` rung (27/34), one step above the grid thumb's card-title. */
+const TITLE_HERO = 'text-title tracking-title'
 
 /* the emoji stat line: 👁️ views · 🔁 reshares, 12/18 on ink-muted */
 const STATS = 'flex items-center text-micro/[18px] text-ink-muted tabular-nums'

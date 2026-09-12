@@ -16,7 +16,7 @@ or moving a component. `npm run check-tiers` runs recursively and must pass;
 
 | Tier | Folder | What lives there | Owns state? |
 |---|---|---|---|
-| **Atoms** | `src/atoms/` | `Avatar` (`sm`/`header`/`md`/`lg`), `Badge`, `Button` (`pressed`/`aria-pressed` toggle state), `Checkbox`, `EmptyState` (additive `tone`), `Field`, `Fieldset`, `Icon`, `Input` (its `controlChrome` is shared by `Select` and `Textarea`), `MemeCard` (plus `tierFrameClasses`, `memeCardSubClasses`; `footer` and `footerRight` slots), `Notice`, `PageContainer`, `PageHead`, `Panel` (+ `PanelHeading`: `intro` 17/21 · `section` 18/22 · `card` 22/28 · `composer` 24/30 — the sizes the boards give raised-card headings), `Select`, `Skeleton`, `Spinner`, `Textarea`, `TierChip` | No |
+| **Atoms** | `src/atoms/` | `Avatar` (`sm`/`header`/`md`/`lg`), `Badge`, `Button` (`pressed`/`aria-pressed` toggle state), `Checkbox`, `EmptyState` (additive `tone`), `Field`, `Fieldset`, `Icon`, `Input` (its `controlChrome` is shared by `Select` and `Textarea`), `MemeCard` (plus `tierFrameClasses`, `memeCardSubClasses`; `footer` and `footerRight` slots), `Notice`, `PageContainer`, `PageHead`, `Panel` (+ `PanelHeading`: `intro`/`section` share intro · `card` card-title · `composer` title), `Select`, `Skeleton`, `Spinner`, `Textarea`, `TierChip` | No |
 | **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `TradeCard` (`give`/`get`, not `offer`/`ask`) | No |
 | **Organisms** | `src/organisms/` | `AppShell` (slots `sidebar` / `contextLine` / `headerEnd` / `quest` / `bottomNav`), `MemeplexPanel` | No |
 | **Screens** | `src/screens/` | One model object per route/chrome surface | No |

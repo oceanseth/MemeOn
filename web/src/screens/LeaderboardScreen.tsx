@@ -17,7 +17,7 @@ const skeletonRows = [0, 1, 2, 3, 4]
  * "Count colours (focus → bubblegum-700/300)"). Both are shipped ramp tokens, so this is the ramp
  * flipping with the theme rather than a literal.
  */
-const COUNT = 'font-sans font-extrabold text-[light-dark(var(--color-bubblegum-700),var(--color-bubblegum-300))] tabular-nums'
+const COUNT = 'font-sans font-bold text-[light-dark(var(--color-bubblegum-700),var(--color-bubblegum-300))] tabular-nums'
 
 /**
  * The podium panel the board draws (`CMC-0` › `COM-0`): one raised card, 1108×252 at 20 padding,
@@ -62,9 +62,9 @@ const ROW_LINK = cn(
   'motion-reduce:hover:translate-y-0!',
 )
 
-const NAME = 'min-w-0 flex-1 truncate font-display text-[16px]/[20px] font-medium tracking-title text-ink'
+const NAME = 'min-w-0 flex-1 truncate font-display text-card-title-phone font-medium tracking-card-title text-ink'
 
-const RANK_NUMERAL = 'w-7 shrink-0 text-center font-display text-[18px]/[22px] font-medium tracking-title text-ink-muted'
+const RANK_NUMERAL = 'w-7 shrink-0 text-center font-display text-intro font-medium tracking-card-title text-ink-muted'
 
 /** A rank: the board's 62px row, also the shape the pinned "You" line takes under the list. */
 function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: string }) {
@@ -147,7 +147,7 @@ export function LeaderboardScreen({
               three 218-wide cards, with the rest of the ladder as its own list beside it */}
           <div className={PODIUM_PANEL} data-slot="podium">
             <div className="max-w-[300px] flex-1" data-slot="podium-head">
-              <h2 className="m-0 font-display text-[34px]/[42px] font-medium tracking-title text-ink max-md:text-[26px]/[32px]">
+              <h2 className="m-0 font-display text-section font-medium tracking-title text-ink max-md:text-section-phone">
                 {podiumTitle}
               </h2>
               <p className="m-0 mt-1.5 text-body text-ink-muted">{podiumSubtitle}</p>
@@ -186,7 +186,7 @@ export function LeaderboardScreen({
                           {youLabel}
                         </Badge>
                       ) : null}
-                      <span className={cn(COUNT, 'text-[19px]/[24px] md:mt-2 max-md:text-label')}>
+                      <span className={cn(COUNT, 'text-intro font-bold md:mt-2 max-md:text-label')}>
                         {l.braincellsLabel}
                       </span>
                     </span>

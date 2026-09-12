@@ -68,7 +68,7 @@ const CAPTION_OFFSET = '-mt-0.5'
 
 /** The page's own title face, restated where the outcome heading is written by hand. */
 const OUTCOME_HEADING = cn(
-  'm-0 font-display text-display font-medium tracking-title text-ink',
+  'm-0 font-display text-display font-medium tracking-display text-ink',
   'max-md:text-display-phone',
 )
 
@@ -80,15 +80,14 @@ const CARD_SUB = 'm-0 mt-[5px] text-small font-normal text-ink-muted'
  * paints off `aria-pressed`, so this is geometry only — no second "selected" look.
  */
 const CHIP = cn(
-  'h-[34px] rounded-[17px] px-3 text-[13px] font-medium',
+  'h-[34px] rounded-[17px] px-3 text-caption font-medium',
   'max-md:h-11 max-md:rounded-[22px] max-md:text-label pointer-coarse:h-11 pointer-coarse:rounded-[22px]',
 )
 const MODE_ROW = 'mb-5 flex flex-wrap items-center gap-2'
 
 /** The cost caption beside a render action (`G1R-0`: 13/16 600 ink-muted). */
-const COST_NOTE = 'text-[13px]/[16px] font-semibold text-ink-muted'
-/** The form card's closing line (`G1S-0` / `LK3-0`: 12/15 500 ink-muted). */
-const FORM_NOTE = 'mt-1 text-[12px]/[15px] font-medium text-ink-muted'
+const COST_NOTE = 'text-caption font-semibold text-ink-muted'
+const FORM_NOTE = 'mt-1 text-micro font-medium text-ink-muted'
 
 /**
  * The mint's state cards (`H5T-0`) on the tone-aware `EmptyState` the wave-2 fix round shipped for
@@ -101,7 +100,7 @@ const FORM_NOTE = 'mt-1 text-[12px]/[15px] font-medium text-ink-muted'
  */
 const STATE_CARD = cn(
   'rounded-field p-4 text-left',
-  '[&_h3]:m-0 [&_h3]:font-display [&_h3]:text-[20px]/[25px] [&_h3]:font-medium [&_h3]:tracking-title',
+  '[&_h3]:m-0 [&_h3]:font-display [&_h3]:text-card-title-phone [&_h3]:font-medium [&_h3]:tracking-card-title',
   '[&_p]:m-0 [&_p]:mt-2 [&_p]:text-small [&_p]:font-medium [&_p]:text-ink-muted',
 )
 /* busy is the board's neutral card with an ink-muted title; it takes the *raised* fill because a
@@ -122,7 +121,7 @@ const GIPHY_CELL = cn(
 )
 /* the picked cell keeps its ring on hover: the state is a ring, never a border colour */
 const GIPHY_CELL_PICKED = 'inset-ring-2 inset-ring-action'
-const GIPHY_MARK = 'text-[11px] font-extrabold tracking-[0.6px] whitespace-nowrap text-ink-muted uppercase'
+const GIPHY_MARK = 'text-micro font-bold tracking-[0.6px] whitespace-nowrap text-ink-muted uppercase'
 const LOADING_STATE = 'flex items-center justify-center gap-2.5 px-5 py-15 text-small text-ink-muted'
 /** Preflight strips the file-selector button bare; this gives it the app's own neutral pill. */
 const FILE_INPUT = cn(
@@ -171,11 +170,10 @@ const PREVIEW_META = 'flex flex-col px-1.5 pt-3.5 pb-1.5'
  */
 const PREVIEW_TITLE = cn(
   'overflow-hidden text-ellipsis whitespace-nowrap',
-  'font-display text-[26px]/[32px] font-medium tracking-title text-ink',
-  'max-md:text-[19px]/[24px]',
+  'font-display text-title font-medium tracking-title text-ink',
+  'max-md:text-card-title-phone',
 )
-/** "Paper · freshly minted" (`G23-0`: 13/16 700 ink-muted). */
-const PREVIEW_TIER_NOTE = 'mt-1.5 text-[13px]/[16px] font-bold text-ink-muted'
+const PREVIEW_TIER_NOTE = 'mt-1.5 text-caption font-bold text-ink-muted'
 /** The plate the card will land on, at the card's own frame geometry. */
 const PREVIEW_PLACEHOLDER = cn(
   'flex aspect-square items-center justify-center rounded-card bg-surface-pressed shadow-pressed',
@@ -673,7 +671,7 @@ export function CreateMemeScreen({
             </div>
             {/* phone: the shares line sits above a full-width Mint pill (the iPhone mint board) */}
             <div className="mt-4 flex items-center justify-between gap-3 max-md:flex-col max-md:items-stretch max-md:gap-2">
-              <span className="text-small font-bold text-ink max-md:text-[13px] max-md:font-medium max-md:text-ink-muted">
+              <span className="text-small font-bold text-ink max-md:text-caption max-md:font-medium max-md:text-ink-muted">
                 100 shares to you
               </span>
               <Button variant="primary" className="max-md:w-full" {...mintButtonProps}>

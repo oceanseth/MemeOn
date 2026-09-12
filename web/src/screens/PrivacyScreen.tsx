@@ -4,16 +4,14 @@ import { PageHead } from '../atoms/PageHead'
 import { cn } from '../lib/cn'
 
 /* The legal template (`859-0` / `893-0`, and the same on every Terms board): a 720 measure, a
-   22/28 Unbounded section heading, 16/24 body on `ink`, 10px between paragraphs, and a
-   `--color-line` hairline under each section's 22px of breathing room. */
+   card-title Unbounded section heading, 16/24 body on `ink`, and a `--color-line` hairline under
+   each section's 22px of breathing room. */
 const SECTION = 'mt-6 border-b border-line pb-[22px] last:border-b-0'
 const H2 = cn(
-  'm-0 font-display font-medium tracking-title text-ink',
-  'text-[20px]/[25px] md:text-[22px]/[28px]',
+  'm-0 font-display text-card-title font-medium tracking-card-title text-ink',
   '[scroll-margin-top:calc(var(--topbar-h)+16px)]',
 )
-/* `mt-[10px]` is the board's paragraph rhythm; `<li>` call sites cancel it back to 0. */
-const P = 'mt-[10px] mb-0 text-body text-ink'
+const P = 'mt-4 mb-0 max-w-[65ch] text-body text-ink'
 const A = 'text-link underline underline-offset-[3px] decoration-1 font-semibold'
 /** The cross-link that closes the document: 16/24, 600, ultraviolet, underline offset 3. */
 const CROSS_LINK = cn(A, 'inline-block mt-[10px]')

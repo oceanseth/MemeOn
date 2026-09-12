@@ -8,10 +8,9 @@ import type { TradeCardModel } from './tradeCardModel'
 const CARD = 'rounded-card border-0 bg-surface p-5 shadow-raised'
 
 /** Unbounded 17/22 — a card headline, not a section heading. */
-const HEADLINE = 'font-display text-[17px]/[22px] font-medium tracking-card-title text-ink'
+const HEADLINE = 'font-display text-card-title-phone font-medium tracking-card-title text-ink'
 
-/** "Waiting on you · just now" (`JXW-0`: 13/16 ink-muted). */
-const SUBLINE = 'mt-1 block text-[13px]/[16px] text-ink-muted'
+const SUBLINE = 'mt-1 block text-caption text-ink-muted'
 
 /**
  * Give and get are one comparison: side by side, the swap glyph between them, stacked ≤900. The
@@ -30,7 +29,7 @@ const DEAL = cn(
  * the contrast floor. `scripts/check-contrast.mjs` guards the substitution.
  */
 const SWAP = cn(
-  'self-center font-display text-[27px]/[34px] text-link',
+  'self-center font-display text-title text-link',
   'max-2xl:rotate-90 max-2xl:justify-self-center',
 )
 

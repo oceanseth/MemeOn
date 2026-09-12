@@ -34,7 +34,7 @@ const RING = cn(
 )
 
 /** Unbounded 32/40 on the title tracking, as both auth boards letter their heading. */
-const TITLE = 'mt-[18px] mb-0 font-display text-[32px]/[40px] font-medium tracking-title text-ink'
+const TITLE = 'mt-[18px] mb-0 font-display text-display-phone font-medium tracking-display text-ink'
 
 const SUBTITLE = 'mt-3 mb-0 max-w-[420px] text-label text-ink-muted'
 

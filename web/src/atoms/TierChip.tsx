@@ -36,7 +36,7 @@ const CHIP = cn(
 const SIZES: Record<TierChipSize, string> = {
   /* 4/9 padding and 12/16 type, exactly as the board draws the chip on a 340px card */
   sm: 'px-[9px] py-1 text-micro',
-  md: 'px-[11px] py-[5px] text-[13px]/[17px]',
+  md: 'px-[11px] py-[5px] text-caption',
 }
 
 export interface TierChipProps {

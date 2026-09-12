@@ -3,15 +3,15 @@ import { cn } from '../lib/cn'
 
 export interface PageHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
   title: ReactNode
-  /** The page's introduction: Onest 17/21 ink-muted under the title. */
+  /** The page's introduction: Onest intro, ink-muted, under the title. */
   subtitle?: ReactNode
   /** Heading-level agnostic: a screen can promote its title to <h1> with no size change. */
   level?: 'h1' | 'h2'
 }
 
-/** Page title: Unbounded 44/55 (32/40 under the phone cut), tracking −0.025em, whatever the level. */
+/** Page title: Unbounded display (phone display under the cut), tracking −0.04em. */
 const HEADING = cn(
-  'm-0 font-display text-display font-medium tracking-title text-ink',
+  'm-0 font-display text-display font-medium tracking-display text-ink',
   'max-md:text-display-phone',
 )
 
