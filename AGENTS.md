@@ -12,12 +12,12 @@ When you hit one of these situations, use the resolution — do not re-discover 
 | Finished product work sitting on local `dev`? | **Always** branch from `origin/dev`, commit, push, open a PR to **`dev`**. Do not leave implementation uncommitted on `dev`. Beads files / `vendor/beads` / `.envrc` stay uncommitted. | lou 2026-09-12 |
 | What deploys where? | Push **`dev`** → GitHub Actions → **dev.memeon.ai**. Push **`production`** → **memeon.ai**. | README + Strong 2026-07-28 |
 | Who merges? | **Anyone may merge green PRs to `dev`.** After merge, smoke-test **dev.memeon.ai** before the next bead. Promote **`dev` → `production`** only via PR that **Strong alone** can approve. | Strong 2026-08-01 |
-| Bead run order | **Serial** for PRs to `dev`. **Exception:** epic `mo-9dg` / branch `ox/ui` may fan worktrees in parallel after atoms land; merge back to `ox/ui` before any `dev` PR. | Strong 2026-08-01; lou 2026-09-08 ox/ui |
-| Local web UI / agent-browser | Always **`npm run dev:web`** (Vite on :5173). View and interact with **agent-browser** (`/Users/lou/.local/bin/agent-browser`). Auth: `agent-browser --state ./localstorage.json open http://localhost:5173`. Do not use `npm run dev` as the web command. API is proxied to :3001; if a flow needs `/api`, start `dev:api` separately. | lou 2026-09-08 |
-| Codex agents / context boundaries | [`.codex/config.toml`](.codex/config.toml): subagent V2, 10 concurrent subagents, hooks on, inherited services/apps off. Use the 18 domain roles in [docs/CODEX_AGENTS.md](docs/CODEX_AGENTS.md), fresh bounded contexts and shell + `agent-browser`; restart Codex to reload. | Lou 2026-09-08; [docs/CODEX_CONFIG.md](docs/CODEX_CONFIG.md) |
-| Beads local handoff | Use [`scripts/bd`](scripts/bd) and [the local workflow](docs/BEADS_LOCAL_WORKFLOW.md). New implementation uses authored readiness and verified closure; thread/session actors are stable and existing claims remain untouched. | mo-6bv 2026-09-09 |
-| Change React UI | `web/src/Anatomy.mdx`, then the tier folder (`atoms/` → `molecules/` → `organisms/` → `screens/` → `views/`) | The component's `*.stories.tsx`; `cd web && node scripts/check-tiers.mjs src` | Below `views/` components are pure props → markup; state lives in `hooks/` and `stores/`; one view-model hook per screen exporting its model type; every component has a story |
-| Resume ox/ui overhaul | Merged on **`ox/ui` @ `246a11f`**. Read [web/src/Anatomy.mdx](web/src/Anatomy.mdx). Do not restart. PR to `dev` only when Lou asks. `mo-9su` / `mo-97t` stay open. | lou 2026-09-08 |
+| Bead run order | **Serial** for PRs to `dev`. (The `ox/ui` parallel-worktree exception ended when the stack merged to `dev` on 2026-09-12.) | Strong 2026-08-01; lou 2026-09-12 |
+| Local web UI / agent-browser | Always **`pnpm run dev:web`** (Vite on :5173). View and interact with **agent-browser** (`/Users/lou/.local/bin/agent-browser`). Auth: `agent-browser --state ./localstorage.json open http://localhost:5173`. Do not use `pnpm run dev` as the web command. API is proxied to :3001; if a flow needs `/api`, start `pnpm run dev:api` separately. | lou 2026-09-08; pnpm 2026-09-12 |
+| Codex agents / context boundaries | *(local-only)* [`.codex/config.toml`](.codex/config.toml): subagent V2, 10 concurrent subagents, hooks on, inherited services/apps off. Use the 18 domain roles in [docs/CODEX_AGENTS.md](docs/CODEX_AGENTS.md), fresh bounded contexts and shell + `agent-browser`; restart Codex to reload. | Lou 2026-09-08; [docs/CODEX_CONFIG.md](docs/CODEX_CONFIG.md) |
+| Beads local handoff | *(local-only)* Use [`scripts/bd`](scripts/bd) and [the local workflow](docs/BEADS_LOCAL_WORKFLOW.md). New implementation uses authored readiness and verified closure; thread/session actors are stable and existing claims remain untouched. | mo-6bv 2026-09-09 |
+| Change React UI | Read [web/src/Anatomy.mdx](web/src/Anatomy.mdx) first — its **Making a change** table says which file a copy / style / state / route / token change lands in. Tiers `atoms/ → molecules/ → organisms/ → screens/ → views/` are pure props → markup; copy and state live in `hooks/` + `stores/`; prop-bag builders in `lib/*Model.ts`; tokens in `web/src/index.css` (`@theme static`, register new namespaces in `lib/cn.ts`). Every component has a story. Gate: `pnpm run check` (or `pnpm --filter web run check-tiers` for the structure alone). | lou 2026-09-12 |
+| ox/ui overhaul / Soft Press redesign | **Shipped to `dev` 2026-09-12** (stacked PRs #17→#45, then pnpm/Turborepo #46). `ox/ui` is retired; do not restart or branch from it. The Paper design file is the visual authority for design-to-app work; the shipped tokens are `web/src/index.css`. | lou 2026-09-12 |
 | Local deploy / AWS CLI from laptop? | **Do not deploy from local.** Project AWS is not authenticated for local agents. Deploys use **GitHub secrets** only. | Strong 2026-07-28 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
 | Local API testing env? | Local / `local-server` should hit **dev or local** resources, never production. | Strong 2026-07-28 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
 | `api/src/env.ts` defaults look like production | Documented footgun only. **mo-100.13 deferred/closed** (Strong 2026-08-01): CI injects env; local never deploys. Do not open a PR for this unless policy changes. | Strong 2026-08-01 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
@@ -35,6 +35,8 @@ When you hit one of these situations, use the resolution — do not re-discover 
 
 ## Pointers
 
+Rows marked *(local-only)* — and every path under `docs/`, `scripts/`, `.beads/`, `.codex/`, `.grok/` — exist on Lou's checkout only (git-excluded). A fresh clone has `README.md`, this file, `web/src/Anatomy.mdx` and the code; those three are kept self-sufficient.
+
 | Path | What |
 | --- | --- |
 | [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) | Env matrix, CI deploy path, no local deploy |
@@ -42,9 +44,9 @@ When you hit one of these situations, use the resolution — do not re-discover 
 | [README.md](README.md) | Product layout, auth, environments table |
 | `.grok/workflows/memeon-bead-pr.rhai` | Approved bead→PR pipeline (planner ≠ implementer ≠ verifier) |
 | `bd show mo-100` | Epic + children for the fix track |
-| `bd show mo-9dg` | ox/ui headless molecularize + XState/MobX + Storybook |
-| [web/src/Anatomy.mdx](web/src/Anatomy.mdx) | React UI map: tiers, engines, listed legacy |
-| [docs/OX_UI_HANDOFF.md](docs/OX_UI_HANDOFF.md) | ox/ui history; overhaul merged @ `246a11f` |
+| `bd show mo-9dg` | *(local-only)* ox/ui headless molecularize + XState/MobX + Storybook |
+| [web/src/Anatomy.mdx](web/src/Anatomy.mdx) | React UI map: tiers, engines, where state and copy live, how to make a change |
+| [docs/OX_UI_HANDOFF.md](docs/OX_UI_HANDOFF.md) | *(local-only)* ox/ui history up to the dev merge |
 
 ## How to append
 
