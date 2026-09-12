@@ -21,8 +21,11 @@ const chipChrome = cn(
   'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
   'forced-colors:focus-visible:outline-[Highlight]',
   'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',
-  // the pressed well is the whole selected state: same colour family, opposite relief
-  'data-[pressed]:bg-surface-pressed data-[pressed]:font-bold data-[pressed]:shadow-pressed',
+  /* The pressed well is the whole selected state: same colour family, same weight, opposite
+     relief. The board (Marketplace 6UR-0 › `Filters / Pressed tabs` 6XC-0) keeps every tab's
+     label at 600 — the selected one `6XF-0` and its neighbours `6XH-0` alike — so the material
+     is the only thing that changes. */
+  'data-[pressed]:bg-surface-pressed data-[pressed]:shadow-pressed',
   'data-[pressed]:translate-y-0!',
   'forced-colors:data-[pressed]:border forced-colors:data-[pressed]:border-[Highlight]',
 )
