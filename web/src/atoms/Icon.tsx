@@ -35,33 +35,6 @@ export const ICON_NAMES: readonly IconName[] = [
   'moon',
 ]
 
-type NavSlot =
-  | 'marketplace'
-  | 'binder'
-  | 'friends'
-  | 'trade'
-  | 'leaderboard'
-  | 'settings'
-  | 'developers'
-  | 'discord'
-  | 'mint'
-
-/**
- * Sidebar (6UR-0) / bottom-nav (767-0) slot → Central icon. `developers` and `discord` are
- * omitted on purpose: both slots are text/emoji-only in the design (🔧 Developers, plain
- * "Discord" link) and Discord's own brand mark is a filled logo, not a Central stroke glyph — see
- * the receipt's evidence table.
- */
-export const NAV_ICONS: Partial<Record<NavSlot, IconName>> = {
-  marketplace: 'storefront',
-  binder: 'book',
-  friends: 'users',
-  trade: 'arrows-left-right',
-  leaderboard: 'trophy',
-  settings: 'gear',
-  mint: 'circle-plus',
-}
-
 interface PathDef {
   d: string
   linecap?: 'round'

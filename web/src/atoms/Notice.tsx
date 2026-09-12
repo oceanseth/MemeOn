@@ -22,17 +22,23 @@ const TONE_CLASSES: Record<NoticeTone, string> = {
 export interface NoticeProps extends HTMLAttributes<HTMLDivElement> {
   tone: NoticeTone
   role?: AriaRole
+  /**
+   * A one-line message. `radius-card` is drawn for a card of prose; on a 51px box holding a single
+   * sentence the same 25 reads as a pill, so a one-liner takes the field radius instead — the same
+   * step its neighbouring inputs wear.
+   */
+  compact?: boolean
 }
 
 /** Mount before the copy arrives: `error` defaults to role="alert", the rest to role="status". */
-export function Notice({ tone, role, className, children, ...rest }: NoticeProps) {
+export function Notice({ tone, role, compact = false, className, children, ...rest }: NoticeProps) {
   return (
     <div
-      {...rest}
       data-slot="notice"
+      {...rest}
       data-tone={tone}
       role={role ?? (tone === 'error' ? 'alert' : 'status')}
-      className={cn(BASE, TONE_CLASSES[tone], className)}
+      className={cn(BASE, TONE_CLASSES[tone], compact && 'rounded-field', className)}
     >
       {children}
     </div>

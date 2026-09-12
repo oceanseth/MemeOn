@@ -48,6 +48,11 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
        button allowed to wrap, so its height grows from the label instead of being pinned. */
     'w-full min-w-64 max-w-full md:w-auto',
     'h-auto min-h-[46px] px-[26px] py-[13px] whitespace-normal',
+    /* …which means the line box has to be pinned instead, or an emoji in the label (🎭 on both
+       landing CTAs) grows it past the board's 46 (`DRU-0`, `DUC-0`): 13 + 20 + 13. Spelled as the
+       same arbitrary property as the base below so tailwind-merge replaces it rather than emitting
+       two line-heights and letting stylesheet order decide. */
+    '[line-height:20px]',
   ),
 }
 
@@ -55,7 +60,6 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
 export function buttonClasses(variant: ButtonVariant = 'default'): string {
   return cn(
     BASE,
-    VARIANT_CLASSES[variant],
     /* The CSS keyword `normal`, not Tailwind's `leading-normal` (a fixed 1.5): a button's label
        sits on its own line box inside the 46px pill, and preflight's `html { line-height: 1.5 }`
        would push a wrapping `login` label apart.
@@ -63,9 +67,10 @@ export function buttonClasses(variant: ButtonVariant = 'default'): string {
        puts `font-size` and `leading` in one conflict group, so a caller's own `text-*` — the
        Marketplace "Clear filters" chip is `text-xs` — silently deletes a `leading-*` that sorts
        before it. The arbitrary-property group has no such conflict, so this survives any `text-*`
-       and is still overridable by another `[line-height:…]` (see `AlertsBell`'s taller emoji row).
-       Covered by `lib/cn.test.ts`. */
+       and is still overridable by another `[line-height:…]` — which is how `login` pins its own,
+       and how `AlertsBell` buys its taller emoji row. Covered by `lib/cn.test.ts`. */
     '[line-height:normal]',
+    VARIANT_CLASSES[variant],
   )
 }
 

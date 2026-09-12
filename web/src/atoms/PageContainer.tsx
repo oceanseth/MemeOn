@@ -11,7 +11,8 @@ export interface PageContainerProps extends HTMLAttributes<HTMLElement> {
 /**
  * The route's box. It has no measure of its own: the shell's content column is the measure
  * (1108 at 1440, fluid below), and this box fills it. Its 20px gutter is the phone margin the
- * boards draw and, at 900+, the last 20 of the column's 276 (`organisms/AppShell.tsx`).
+ * boards draw and, at 900+, the last 20 of the column's 276 = 20 + 216 + 20 + this
+ * (`organisms/AppShell.tsx` › `CONTENT_APP`).
  */
 export function PageContainer({ as, narrow = false, className, children, ...rest }: PageContainerProps) {
   const Tag: ElementType = as ?? 'div'

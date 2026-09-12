@@ -2,25 +2,18 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { glowStyleFor } from '../../../shared/tiers'
 import { cn } from '../lib/cn'
+import { FOCUS_RING } from '../lib/focus'
 import type { MemeCardModel } from '../lib/memeCardModel'
-import { tierClasses, tierFrameClasses } from './foil'
+import { tierFrameClasses } from './foil'
 import { TierChip } from './TierChip'
 import './foil.css'
-
-/**
- * Re-exported from the dependency-free `atoms/foil` module for compatibility: this atom used to
- * own `tierClasses` outright, and every existing caller still imports it as `MemeCard`'s export.
- * `atoms/foil.ts` is the module a code-split route should reach for instead, since it carries no
- * React import.
- */
-export { tierClasses }
 
 /** `default` is the grid thumb; `lg` is the detail-page hero. See {@link MemeCardProps.size}. */
 export type MemeCardSize = 'default' | 'lg'
 
 /* The card: a raised surface, 8px of padding around the art, radius 25 (`components.md` › MemeCard).
    The tier does not colour this box — the frame inside it does — so the surface is a plain utility,
-   which also outranks the legacy `.tier-<key>` padding-frame background (`utilities` ranks after
+   which also outranks `.tier-<key>`'s own fallback background (`utilities` ranks after
    `components`). */
 const CARD = cn(
   'group relative isolate rounded-card bg-surface p-2 shadow-raised',
@@ -30,9 +23,12 @@ const CARD = cn(
   'transition-transform duration-(--dur-base) ease-[ease] motion-reduce:transition-none',
   /* touch has no hover to lift on, so it answers a press instead — both sizes, as the sheet does */
   'pointer-coarse:active:scale-[0.99]',
-  /* focus lives on the outer card, outside the frame's clip, and wears the global focus ring */
+  /* focus lives on the outer card, outside the frame's clip, and wears the global focus ring —
+     the whole contract, `lib/focus` rewritten onto the `has-[a:focus-visible]` variant */
   'has-[a:focus-visible]:outline-3 has-[a:focus-visible]:outline-focus',
   'has-[a:focus-visible]:outline-offset-2',
+  'contrast-more:has-[a:focus-visible]:outline-4',
+  'forced-colors:has-[a:focus-visible]:outline-[Highlight]',
 )
 
 /* The hover lift is the grid thumb's alone: a detail hero is already the page's subject and has
@@ -58,14 +54,13 @@ const TOGGLE = cn(
   'absolute right-2 bottom-2 z-[2] inline-flex items-center justify-center',
   'size-8 p-0 pointer-coarse:size-11',
   'cursor-pointer whitespace-nowrap text-label leading-none text-ink',
-  'rounded-[12px] bg-surface-raised shadow-raised',
+  'rounded-chip bg-surface-raised shadow-raised',
   '[transition:transform_var(--dur-fast)_ease,background_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
   '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px',
   'motion-reduce:hover:translate-y-0!',
   'pointer-coarse:active:translate-y-px active:shadow-pressed',
-  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
-  'forced-colors:focus-visible:outline-[Highlight]',
+  FOCUS_RING,
 )
 
 /* The tier chip sits 16 in from the frame's bottom-left corner, as the board draws it. */
@@ -133,6 +128,13 @@ export interface MemeCardProps {
   /** extra meta rows under the stats — a buy button, a binder tag, a quest hint */
   footer?: ReactNode | undefined
   /**
+   * The right lane of the card's own footer row (`70L-0` › `73V-0`: `🧠 2,480` left, `12/100 shares`
+   * right). Supplying it takes the lane over from the market's listing pair, which is what a binder
+   * card wants: the board draws one footer row, not the listing lane with a second row stacked
+   * under it.
+   */
+  footerRight?: ReactNode | undefined
+  /**
    * `default` (the grid thumb) or `lg`, the detail-page hero: contained art, a wrapping title, a
    * bigger tier chip, roomier meta and no hover lift. `screens/MemeDetailScreen.tsx` is the only
    * `lg` caller.
@@ -140,7 +142,7 @@ export interface MemeCardProps {
   size?: MemeCardSize | undefined
 }
 
-export function MemeCard({ model, footer, size = 'default' }: MemeCardProps) {
+export function MemeCard({ model, footer, footerRight, size = 'default' }: MemeCardProps) {
   const scale = SIZES[size]
   return (
     <article
@@ -193,7 +195,11 @@ export function MemeCard({ model, footer, size = 'default' }: MemeCardProps) {
               <span aria-hidden="true">🧠 {model.valueLabel}</span>
               <span className="sr-only">{model.valueA11yLabel}</span>
             </span>
-            {model.listing && (
+            {footerRight ? (
+              <span data-slot="meme-card-footer-right" className={RIGHT_SLOT}>
+                {footerRight}
+              </span>
+            ) : model.listing ? (
               /* the listing state lives here and nowhere else: the boards draw no pill on the art
                  (6UR-0 cards 6XT-0/6Y9-0/6YP-0, 70L-0's seven, 767-0's six) — it is the slot's
                  second line, so a card still wears no action colour at all */
@@ -204,7 +210,7 @@ export function MemeCard({ model, footer, size = 'default' }: MemeCardProps) {
                 </span>
                 <span className="sr-only">{model.listing.sharesA11yLabel}</span>
               </span>
-            )}
+            ) : null}
           </span>
           {footer}
         </div>

@@ -26,32 +26,27 @@
                                                   to, so neither sweep crosses the meta text.
                                                   `MemeCard` puts both names on one element: the
                                                   frame *is* the media box.
-     `glow-border`                                legacy: the older padding frame, where the tier
-                                                  colour is the card's own background behind a
-                                                  `p-(--glow-width)` inset and the ring is drawn as
-                                                  a masked pseudo-element around the whole card.
 
    Colour comes from the tier tokens (`--color-tier-<key>-frame`, `index.css`), so every frame and
    every bloom flips with the theme. The still frame is that colour flat; holo, chrome, gold,
    prismatic and shiny add the turning conic ring and a bloom on top of it, bounded to the image
    frame. Paper and silver are still by design — the rarity ladder starts quiet.
 
-   `atoms/foil.ts` exports `tierFrameClasses(tierKey)` (Soft Press) and `tierClasses(tierKey)`
-   (the same plus `glow-border`); it has no React import (unlike `atoms/MemeCard.tsx`, which
-   re-exports `tierClasses` for compatibility), so a code-split route can pull in the classes
-   without dragging the atom's module graph onto its critical path. The legacy hosts are
-   `screens/LandingScreen.tsx` (the tier ladder, which also writes `.tier-card` / `.tier-card-inner`
-   for the `--glow-width` and the media rounding below) and `screens/CreateMemeScreen.tsx` (the live
-   mint preview, which wears the `MemeCard` atom's `[data-slot='meme-card']`); both still ask for
-   `tierClasses`. `molecules/GiftDialog.tsx` wears a bare `tier-<key>` as a thumbnail frame.
+   `atoms/foil.ts` exports `tierFrameClasses(tierKey)`; it has no React import, so a code-split
+   route can pull in the classes without dragging the atom's module graph onto its critical path.
+   `atoms/MemeCard.tsx`, `screens/LandingScreen.tsx` (the tier ladder) and
+   `hooks/useCreateMemeScreen.ts` (the live mint preview) all write `tierFrameClasses`, and
+   `molecules/GiftDialog.tsx` shows its tier with a `<TierChip>`. The legacy padding frame —
+   `.glow-border`, `--glow-width`, `.tier-card-inner` — was the dead-code pass's first removal from
+   this file; nothing in the app has drawn it since the Soft Press frame moved onto the art.
    Anything else that wants a foil frame writes the names above; nothing else here is addressable
    from outside.
 
    Cascade: `:where()` keeps the shared base at zero specificity, so a host's own utilities decide
-   position and overflow without `!important`. `.tier-<key>` sets a *background* for the legacy
-   padding frame; a card that paints its own surface says so with a `bg-*` utility, which wins
-   because `utilities` ranks after `components`. Keyframes carry a `card-` prefix so a keyframe name
-   this file does not own can never shadow them from another sheet in the same bundle. */
+   position and overflow without `!important`. `.tier-<key>` sets a fallback *background*; a card
+   that paints its own surface says so with a `bg-*` utility, which wins because `utilities` ranks
+   after `components`. Keyframes carry a `card-` prefix so a keyframe name this file does not own
+   can never shadow them from another sheet in the same bundle. */
 @layer components {
   @property --glow-angle {
     syntax: '<angle>';
@@ -89,7 +84,6 @@
      sets inline on the card to freeze an off-screen ring, so it must be *declared* here and *read*
      further down. */
   :where(.foil-card) {
-    --glow-width: 2px;
     --frame-width: 3px;
     --tier-frame: var(--color-line);
     --frame-fill: var(--color-surface-pressed);
@@ -103,12 +97,6 @@
     position: relative;
     isolation: isolate;
     overflow: visible;
-  }
-
-  /* a card frame is 3px, not the 2px default. Must follow the block above: same (zero) specificity,
-     so source order decides. */
-  :where(.tier-card, [data-slot='meme-card']) {
-    --glow-width: 3px;
   }
 
   /* ── The frame ────────────────────────────────────────────────────────────────────────────────
@@ -141,47 +129,11 @@
     animation-play-state: var(--glow-play-state);
   }
 
-  /* ── The legacy padding frame ─────────────────────────────────────────────────────────────────
-     `.glow-border` hosts have no `.foil-frame`: their tier colour is the card's background behind a
-     `p-(--glow-width)` inset, and the ring is a masked pseudo-element around the whole card. */
-  :where(.glow-border)::before,
-  :where(.glow-border)::after {
-    position: absolute;
-    inset: 0;
-    box-sizing: border-box;
-    border-radius: inherit;
-    padding: var(--glow-width);
-    background: conic-gradient(
-      from calc(var(--glow-angle) + var(--glow-phase)),
-      var(--glow-stops)
-    );
-    content: '';
-    pointer-events: none;
-    -webkit-mask:
-      linear-gradient(oklch(0 0 0) 0 0) content-box,
-      linear-gradient(oklch(0 0 0) 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    animation: card-glow-turn var(--glow-duration) linear infinite;
-    animation-direction: var(--glow-direction);
-    animation-play-state: var(--glow-play-state);
-  }
-
-  :where(.glow-border)::before {
-    z-index: 0;
-  }
-
-  :where(.glow-border)::after {
-    z-index: -1;
-    filter: blur(var(--glow-blur));
-    opacity: var(--glow-opacity);
-  }
-
   /* ── Tier frames ──────────────────────────────────────────────────────────────────────────────
      One source of colour: the tier tokens. `--tier-frame` is the still ring and the border; the
      bloom is the same colour, mixed down so a light canvas stays clean (the dark arm reads the same
-     percentages against a darker surface, which is why they are conservative). `background` is the
-     legacy padding frame's paint — a card that owns its surface overrides it with `bg-*`. */
+     percentages against a darker surface, which is why they are conservative). `background` is a
+     fallback paint — a card that owns its surface overrides it with `bg-*`. */
   .tier-paper {
     --tier-frame: var(--color-tier-paper-frame);
     background: var(--tier-frame);
@@ -235,11 +187,6 @@
     --glow-play-state: paused;
     --glow-blur: 10px;
     --glow-opacity: 0.1;
-  }
-
-  /* Paper's blurred layer is paused at a tenth of an opacity: pure paint cost, no visible bloom. */
-  :where(.glow-border[data-glow-style='graphite-gradient-still'])::after {
-    display: none;
   }
 
   :where(.foil-card[data-glow-style='silver-highlight-still']) {
@@ -396,10 +343,6 @@
     overflow: hidden;
   }
 
-  .tier-card-inner .foil-media {
-    border-radius: 8px;
-  }
-
   /* sheen sweep over holo+ tiers */
   .sheen .foil-media::after {
     content: '';
@@ -445,9 +388,7 @@
     .tier-chrome .foil-frame,
     .tier-gold .foil-frame,
     .tier-prismatic .foil-frame,
-    .tier-shiny .foil-frame,
-    :where(.glow-border)::before,
-    :where(.glow-border)::after {
+    .tier-shiny .foil-frame {
       animation-play-state: paused;
     }
 
@@ -463,11 +404,6 @@
   }
 
   @media (forced-colors: active) {
-    :where(.glow-border)::before,
-    :where(.glow-border)::after {
-      display: none;
-    }
-
     .sheen .foil-media::after,
     .sparkle .foil-media::before {
       display: none;

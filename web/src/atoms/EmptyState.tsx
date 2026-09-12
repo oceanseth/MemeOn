@@ -52,8 +52,8 @@ export function EmptyState({
   const resolved: EmptyStateTone = tone ?? (error ? 'error' : 'neutral')
   return (
     <div
-      {...rest}
       data-slot="empty-state"
+      {...rest}
       data-tone={resolved}
       role={role ?? (error || resolved === 'error' ? 'alert' : 'status')}
       className={cn(

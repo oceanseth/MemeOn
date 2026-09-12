@@ -13,9 +13,6 @@ export const SelectList = BaseSelect.List
 export const SelectItem = BaseSelect.Item
 export const SelectItemText = BaseSelect.ItemText
 export const SelectItemIndicator = BaseSelect.ItemIndicator
-export const SelectGroup = BaseSelect.Group
-export const SelectGroupLabel = BaseSelect.GroupLabel
-export const SelectSeparator = BaseSelect.Separator
 
 export type SelectOption = {
   value: string

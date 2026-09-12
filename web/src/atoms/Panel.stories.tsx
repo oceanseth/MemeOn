@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { Panel } from './Panel'
+import { Panel, PanelHeading } from './Panel'
 
 const meta = {
   title: 'Atoms/Panel',
@@ -26,6 +26,24 @@ export const WithH4: Story = {
       <>
         <h4>Compact heading</h4>
         <p>Same treatment as h3.</p>
+      </>
+    ),
+  },
+}
+
+/**
+ * The four board steps. A bare heading takes `Panel`'s own 17/21; `PanelHeading` opts out of that
+ * rule, so a card whose board draws 18/22, 22/28 or 24/30 gets it without an `!` or a `[&_h3]` hack.
+ */
+export const HeadingSizes: Story = {
+  args: {
+    children: (
+      <>
+        <PanelHeading>Panel default — 17/21</PanelHeading>
+        <PanelHeading size="section">Section card — 18/22</PanelHeading>
+        <PanelHeading size="card">Mint card — 22/28</PanelHeading>
+        <PanelHeading size="composer">Trade composer — 24/30</PanelHeading>
+        <h3>Bare h3 — still 17/21</h3>
       </>
     ),
   },
