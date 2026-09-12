@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, buttonClasses } from '../atoms/Button'
 import { EmptyState } from '../atoms/EmptyState'
@@ -11,10 +11,10 @@ import {
   Hint,
 } from '../atoms/Field'
 import { Input } from '../atoms/Input'
-/* the foil sheet, not the card atom: this screen paints a card frame out of its own markup,
-   and the mint route is code-split — pulling the atom's module in would put `MemeCard.tsx`,
-   `Badge` and their imports on the critical path of a `lazy()` route that renders none of them.
-   `atoms/foil.css` is the dependency-free half of that seam. */
+/* the foil sheet and the chip, not the card atom: this screen paints a card frame out of its own
+   markup, and the mint route is code-split — pulling `MemeCard.tsx` in would put its `react-router`
+   and model imports on the critical path of a `lazy()` route that renders none of them.
+   `atoms/foil.css` and `atoms/TierChip` are the dependency-free halves of that seam. */
 import '../atoms/foil.css'
 import { Notice } from '../atoms/Notice'
 import { PageContainer } from '../atoms/PageContainer'
@@ -24,23 +24,27 @@ import { Select, type SelectOption } from '../atoms/Select'
 import { SkeletonCard } from '../atoms/Skeleton'
 import { Spinner } from '../atoms/Spinner'
 import { Textarea } from '../atoms/Textarea'
+import { TierChip } from '../atoms/TierChip'
 import type {
   CreateMemeCardModel,
   CreateMemeModeButtonModel,
   CreateMemeScreenModel,
 } from '../hooks/useCreateMemeScreen'
+import type { CreateMemeMode } from '../stores/createMemeMachine'
 import { cn } from '../lib/cn'
 
 /* the mint form the user was standing on is gone at success: park focus on the outcome, not <body> */
 const focusOutcome = (node: HTMLHeadingElement | null): void => node?.focus()
 
-/* the form column beside the live preview rail; the rail only leaves the flow at 1000px */
+/**
+ * The board's two columns (`25K-0`): the form at 555 and the live preview at 522, 31 apart inside
+ * the 1108 content column. Under 1000px the rail drops below the form, which is the phone board's
+ * own order (form 336 → preview 872 on `2GO-0`).
+ */
 const LAYOUT =
-  'grid grid-cols-[minmax(0,1fr)] items-start gap-5 3xl:grid-cols-[minmax(0,560px)_minmax(0,1fr)]'
-const RAIL =
-  'flex max-w-[420px] flex-col gap-4 3xl:sticky 3xl:top-[calc(var(--topbar-h)+16px)]'
-/* the panel's min-content must not size the grid track, so the measure lives on the panel */
-const FORM_PANEL = 'max-w-[560px]'
+  'grid grid-cols-[minmax(0,1fr)] items-start gap-5 3xl:grid-cols-[minmax(0,555fr)_minmax(0,522fr)] 3xl:gap-[31px]'
+/** the preview column sticks to the top of the scroll once the two columns split */
+const RAIL = 'flex flex-col gap-4 3xl:sticky 3xl:top-[calc(var(--topbar-h)+16px)]'
 const FORM_GRID = 'flex flex-col gap-3.5'
 /* option copy is words, so it lives here with the rest of them; the model only carries the value */
 const REMIX_OUTPUT_OPTIONS: SelectOption[] = [
@@ -55,39 +59,88 @@ const VIDEO_REMIX_STYLE_OPTIONS: SelectOption[] = [
 const GIPHY_BROWSE_OPTION: SelectOption = { value: '', label: 'Browse categories…' }
 /* mounted in every state: out of flow until it has something to say, spaced once it does */
 const LIVE_REGION = 'empty:sr-only [&:not(:empty)]:mb-4'
-/* preflight drops the UA heading weight the page title was rendered at */
-const PAGE_TITLE = 'mt-7 mb-5 flex flex-wrap items-center justify-between gap-4'
-const HEADING = 'm-0 text-[24px] font-bold'
-/* A caption row sits 4px under its control on this form, where `Field`'s own rhythm is the 6px it
-   puts between a label and its control. `-mt-0.5` spends the difference, so the pair reads as one
-   unit; `[&>*]:mt-0` inside `FieldFooter` keeps its children from adding a second offset. */
+/**
+ * A caption row sits 4px under its control on this form, where `Field`'s own rhythm is the 6px it
+ * puts between a label and its control. `-mt-0.5` spends the difference, so the pair reads as one
+ * unit; `[&>*]:mt-0` inside `FieldFooter` keeps its children from adding a second offset.
+ */
 const CAPTION_OFFSET = '-mt-0.5'
 
-/* the sort-chip scale on top of the button chrome. The chip labels lead with an emoji and the
-   taller emoji line box is what sizes them, which is exactly what `buttonClasses()`'s
-   `[line-height:normal]` preserves through this `text-xs`. */
-const CHIP = 'rounded-pill px-[11px] py-[5px] text-xs'
-/* selected outranks focus by fill and weight, not border colour */
-const CHIP_SELECTED = cn(
-  'border-(--state-selected-border) bg-(--state-selected-bg) font-semibold text-text',
-  'shadow-[inset_0_0_0_1px_var(--state-selected-border)]',
+/** The page's own title face, restated where the outcome heading is written by hand. */
+const OUTCOME_HEADING = cn(
+  'm-0 font-display text-display font-medium tracking-title text-ink',
+  'max-md:text-display-phone',
 )
-const GIPHY_CELL =
-  'block aspect-square w-full overflow-hidden rounded-control border-border bg-bg-media p-0'
-/* the picked cell keeps its gold on hover, so it wears the button chrome's own hover variant */
-const GIPHY_CELL_PICKED = cn(
-  'border-gold shadow-[0_0_12px_color-mix(in_oklab,var(--color-gold)_40%,transparent)]',
-  '[&:not(:disabled):hover]:border-gold',
+
+/** A card's own heading: Unbounded 22/28 (`G1D-0` / `G1V-0`). */
+const CARD_HEADING = 'm-0 font-display text-[22px]/[28px] font-medium tracking-title text-ink'
+const CARD_SUB = 'm-0 mt-[5px] text-small font-normal text-ink-muted'
+
+/**
+ * The source row: 34px raised pills (44 on a phone, where they are the primary control row), radius
+ * 17, 13px labels leading with their emoji. Selected is the pressed well the `Button` atom already
+ * paints off `aria-pressed`, so this is geometry only — no second "selected" look.
+ */
+const CHIP = cn(
+  'h-[34px] rounded-[17px] px-3 text-[13px] font-medium',
+  'max-md:h-11 max-md:rounded-[22px] max-md:text-label pointer-coarse:h-11 pointer-coarse:rounded-[22px]',
 )
-const GIPHY_MARK =
-  'text-[11px] font-extrabold tracking-[0.6px] whitespace-nowrap text-text-dim uppercase'
-const LOADING_STATE = 'flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-text-dim'
-/* preflight strips the file-selector-button down to unstyled inline text (border/padding/radius: 0);
-   this rebuilds the UA's own dark-scheme ButtonFace/ButtonText chrome the baseline screenshot shows —
-   an achromatic grey button, not the app's navy control fill, since it stands in for OS chrome. */
-const FILE_INPUT =
-  'file:mr-1.5 file:cursor-pointer file:rounded-xs file:border-0 file:bg-neutral-500 ' +
-  'file:px-2.5 file:py-0.5 file:font-medium file:text-white hover:file:bg-neutral-400'
+const MODE_ROW = 'mb-5 flex flex-wrap items-center gap-2'
+
+/** The cost caption beside a render action (`G1R-0`: 13/16 600 ink-muted). */
+const COST_NOTE = 'text-[13px]/[16px] font-semibold text-ink-muted'
+/** The form card's closing line (`G1S-0` / `LK3-0`: 12/15 500 ink-muted). */
+const FORM_NOTE = 'mt-1 text-[12px]/[15px] font-medium text-ink-muted'
+
+/**
+ * The mint's state cards (`H5T-0`) on the tone-aware `EmptyState` the wave-2 fix round shipped for
+ * exactly these cards. Two things are restated here on purpose:
+ * - the card is left-aligned at the form's own rhythm, not the page-state's centred 60px column;
+ * - the title keeps the board's 20/25 display step and the tone colour the board paints it in
+ *   (`H7R-0` ink-muted, `H7Z-0`/`H8F-0` success-text, `H87-0` error-text) through `.class h3`
+ *   (0,1,1) rules — these cards sit *inside* the form `Panel`, whose own `:where(h3,h4)` (0,1,0)
+ *   would otherwise repaint every one of them at the panel-title step.
+ */
+const STATE_CARD = cn(
+  'rounded-field p-4 text-left',
+  '[&_h3]:m-0 [&_h3]:font-display [&_h3]:text-[20px]/[25px] [&_h3]:font-medium [&_h3]:tracking-title',
+  '[&_p]:m-0 [&_p]:mt-2 [&_p]:text-small [&_p]:font-medium [&_p]:text-ink-muted',
+)
+/* busy is the board's neutral card with an ink-muted title; it takes the *raised* fill because a
+   surface card inside the surface-toned form panel would have no relief of its own */
+const STATE_CARD_BUSY = cn(STATE_CARD, 'bg-surface-raised shadow-raised', '[&_h3]:text-ink-muted')
+/* approval is the board's success-text title on the Feedback board's tinted success card */
+const STATE_CARD_APPROVAL = cn(STATE_CARD, '[&_h3]:text-success-text')
+/** The 6px progress groove (`LGD-0`): a pressed track with the action colour riding in it. */
+const TRACK = 'mt-3 block h-1.5 overflow-hidden rounded-[3px] bg-surface-pressed'
+const TRACK_FILL = cn(
+  'block h-full w-[35%] rounded-[3px] bg-action',
+  'animate-pulse motion-reduce:animate-none',
+)
+
+const GIPHY_CELL = cn(
+  'block h-auto aspect-square w-full overflow-hidden rounded-field bg-surface-pressed p-0',
+  'shadow-pressed',
+)
+/* the picked cell keeps its ring on hover: the state is a ring, never a border colour */
+const GIPHY_CELL_PICKED = 'inset-ring-2 inset-ring-action'
+const GIPHY_MARK = 'text-[11px] font-extrabold tracking-[0.6px] whitespace-nowrap text-ink-muted uppercase'
+const LOADING_STATE = 'flex items-center justify-center gap-2.5 px-5 py-15 text-small text-ink-muted'
+/** Preflight strips the file-selector button bare; this gives it the app's own neutral pill. */
+const FILE_INPUT = cn(
+  'file:mr-2.5 file:cursor-pointer file:rounded-control file:border-0 file:bg-surface-raised',
+  'file:px-3 file:py-1.5 file:text-small file:font-semibold file:text-ink file:shadow-raised',
+)
+
+/** The form card's own headline per source — the copy deck's "Make a fresh image" and its siblings. */
+const FORM_HEADING: Record<CreateMemeMode, string> = {
+  generate: 'Make a fresh image',
+  video: 'Make a fresh video',
+  remix: 'Remix a card that already works',
+  upload: 'Bring your own art',
+  giphy: 'Borrow something from GIPHY',
+  url: 'Pull it in off the web',
+}
 
 /** One source chip. The engine names the state; the chrome for that state lives here. */
 function ModeChip({
@@ -98,40 +151,41 @@ function ModeChip({
   children: ReactNode
 }) {
   return (
-    <Button
-      {...model.buttonProps}
-      className={cn(CHIP, model.selected && CHIP_SELECTED)}
-    >
+    <Button {...model.buttonProps} className={CHIP}>
       {children}
     </Button>
   )
 }
 
-/* The mint preview's box model: the marketplace card at its default scale, spelled out here
-   because the meme has no id, no link and no `MemeCardModel` until it is minted, so there is no
-   `MemeCard` to render. `atoms/MemeCard.tsx` is the source of truth for these values; the foil
-   itself comes from the sheet imported above via the `glow-border tier-*` classes the engine puts
-   on `cardProps`. */
-const PREVIEW_CARD = cn(
-  'group relative isolate overflow-visible rounded-card p-(--glow-width)',
-  'transition-transform duration-(--dur-base) ease-[ease] motion-reduce:transition-none',
-  'pointer-coarse:active:scale-[0.99]',
+/* The mint preview's box model, spelled out here because the meme has no id, no link and no
+   `MemeCardModel` until it is minted: the card is `atoms/MemeCard`'s recipe (raised surface, 8px of
+   padding, radius 25) and the frame carries the 3px tier border `atoms/foil.css` paints on
+   `.foil-frame` off the variables `cardProps.className` sets. */
+const PREVIEW_CARD = 'group relative isolate rounded-card bg-surface p-2 shadow-raised @container'
+const PREVIEW_INNER = 'relative flex h-full flex-col'
+const PREVIEW_FRAME = 'foil-frame foil-media relative rounded-field bg-surface-pressed'
+/* the board's 468 × 250 plate (`G1Y-0`) — the crop the marketplace grid will show */
+const PREVIEW_ART = 'block aspect-[468/250] w-full bg-surface-pressed object-cover'
+const PREVIEW_META = 'flex flex-col px-1.5 pt-3.5 pb-1.5'
+/**
+ * The preview card's own title: 26/32 on the desktop board (`G22-0`) and the 19/24 the iPhone board
+ * steps it down to (`GDT-0`), both on −0.025em — a step above the grid card's 23/27 either way.
+ */
+const PREVIEW_TITLE = cn(
+  'overflow-hidden text-ellipsis whitespace-nowrap',
+  'font-display text-[26px]/[32px] font-medium tracking-title text-ink',
+  'max-md:text-[19px]/[24px]',
 )
-const PREVIEW_INNER = cn(
-  'relative flex h-full flex-col overflow-hidden [contain:paint]',
-  'rounded-[calc(var(--radius-card)_-_var(--glow-width))] bg-bg-card',
-)
-const PREVIEW_ART = 'block aspect-square w-full bg-bg-media object-cover'
-const PREVIEW_META = 'flex flex-col gap-1.5 px-3 pt-2.5 pb-3'
-const PREVIEW_TITLE = 'overflow-hidden text-ellipsis whitespace-nowrap text-[15px] font-bold text-text'
-const PREVIEW_CHIP = cn(
-  'inline-flex max-w-full items-center gap-[5px] rounded-pill border border-current',
-  'bg-[oklch(0_0_0_/_0.45)] px-[9px] py-[3px] text-center text-[11px] font-extrabold uppercase',
-  'tracking-[0.8px] [overflow-wrap:anywhere] text-(color:--tier)',
+/** "Paper · freshly minted" (`G23-0`: 13/16 700 ink-muted). */
+const PREVIEW_TIER_NOTE = 'mt-1.5 text-[13px]/[16px] font-bold text-ink-muted'
+/** The plate the card will land on, at the card's own frame geometry. */
+const PREVIEW_PLACEHOLDER = cn(
+  'flex aspect-[468/250] items-center justify-center rounded-card bg-surface-pressed shadow-pressed',
+  'text-small font-medium text-ink-muted',
 )
 const PREVIEW_SUB = cn(
-  'flex items-center justify-between gap-2 text-xs/[1.5] text-text-dim tabular-nums',
-  'max-sm:flex-wrap max-sm:gap-y-0.5',
+  'mt-3 flex items-center justify-between gap-2 text-small font-semibold text-ink-muted tabular-nums',
+  '@max-[220px]:flex-wrap @max-[220px]:gap-y-0.5',
 )
 
 /** The meme as it will ship, assembled while you type. */
@@ -143,7 +197,7 @@ function PreviewCard({ card }: { card: CreateMemeCardModel }) {
       className={cn(PREVIEW_CARD, card.cardProps.className)}
     >
       <div data-slot="meme-card-inner" className={PREVIEW_INNER}>
-        <span data-slot="foil-media" className="foil-media">
+        <span data-slot="foil-media" className={PREVIEW_FRAME}>
           {card.media.kind === 'video' ? (
             <video
               data-slot="meme-art"
@@ -153,19 +207,14 @@ function PreviewCard({ card }: { card: CreateMemeCardModel }) {
           ) : (
             <img data-slot="meme-art" className={PREVIEW_ART} {...card.media.imageProps} />
           )}
+          <TierChip tierKey="paper" label={card.tierName} className="absolute bottom-4 left-4 z-[2]" />
         </span>
         <div data-slot="meme-meta" className={PREVIEW_META}>
           <span data-slot="meme-title" className={PREVIEW_TITLE}>
             {card.title}
           </span>
-          <span>
-            <span
-              data-slot="tier-chip"
-              className={PREVIEW_CHIP}
-              style={{ '--tier': card.tierColor } as CSSProperties}
-            >
-              {card.tierLabel}
-            </span>
+          <span data-slot="tier-note" className={PREVIEW_TIER_NOTE}>
+            {card.tierLabel}
           </span>
           <span data-slot="meme-sub" className={PREVIEW_SUB}>
             <span>{card.statsLabel}</span>
@@ -179,6 +228,7 @@ function PreviewCard({ card }: { card: CreateMemeCardModel }) {
 
 /** Mint form as a function of its model. Every engine state is one set of args. */
 export function CreateMemeScreen({
+  mode,
   showRemixModeButton,
   modeGroupProps,
   busy,
@@ -274,8 +324,8 @@ export function CreateMemeScreen({
     return (
       <PageContainer as="main" id="main" tabIndex={-1}>
         {/* the outcome heading is the focus target, so it is written here rather than via PageHead */}
-        <div data-slot="page-head" className={PAGE_TITLE}>
-          <h2 tabIndex={-1} ref={focusOutcome} className={HEADING}>
+        <div data-slot="page-head" className="mx-0 mt-5 mb-6">
+          <h2 tabIndex={-1} ref={focusOutcome} className={OUTCOME_HEADING}>
             {successHeading}
           </h2>
         </div>
@@ -284,19 +334,19 @@ export function CreateMemeScreen({
           <div className={RAIL}>
             <PreviewCard card={successCard} />
           </div>
-          <div className="flex flex-col gap-4">
-            <p className="mt-4 mb-0 text-text-dim">{successBody}</p>
+          <Panel className="flex flex-col gap-3.5">
+            <p className={CARD_SUB}>{successBody}</p>
             <Field>
               <FieldLabel>Share link</FieldLabel>
               <Input {...shareUrlInputProps} />
             </Field>
             <FilterBar>
-              <Button {...copyShareLinkButtonProps}>{copyShareLinkLabel}</Button>
               <Link className={buttonClasses('primary')} {...openMintedLinkProps}>
                 Open the card
               </Link>
+              <Button {...copyShareLinkButtonProps}>{copyShareLinkLabel}</Button>
             </FilterBar>
-          </div>
+          </Panel>
         </div>
       </PageContainer>
     )
@@ -304,22 +354,29 @@ export function CreateMemeScreen({
 
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <PageHead title="Mint a meme" className="[&>h2]:font-bold" />
+      <PageHead
+        title="Mint a meme"
+        subtitle="Make it strange. The internet will decide what happens next."
+      />
       <div className="sr-only" role="status">{mintStatus}</div>
-      <div className={LAYOUT}>
-        <Panel className={FORM_PANEL}>
-          <div data-slot="form-grid" className={FORM_GRID} {...formProps}>
-            <FilterBar {...modeGroupProps}>
-              {showRemixModeButton && (
-                <ModeChip model={getModeButtonProps('remix')}>🧬 Remix</ModeChip>
-              )}
-              <ModeChip model={getModeButtonProps('generate')}>🎨 Generate image</ModeChip>
-              <ModeChip model={getModeButtonProps('video')}>🎬 Generate video</ModeChip>
-              <ModeChip model={getModeButtonProps('upload')}>📤 Upload</ModeChip>
-              <ModeChip model={getModeButtonProps('giphy')}>🎞️ From Giphy</ModeChip>
-              <ModeChip model={getModeButtonProps('url')}>🔗 From URL</ModeChip>
-            </FilterBar>
 
+      {/* the source row sits above both columns, the full width of the content column */}
+      <div data-slot="mint-modes" className={MODE_ROW} {...modeGroupProps}>
+        {showRemixModeButton && (
+          <ModeChip model={getModeButtonProps('remix')}>🧬 Remix</ModeChip>
+        )}
+        <ModeChip model={getModeButtonProps('generate')}>🎨 Generate image</ModeChip>
+        <ModeChip model={getModeButtonProps('video')}>🎬 Generate video</ModeChip>
+        <ModeChip model={getModeButtonProps('upload')}>📤 Upload</ModeChip>
+        <ModeChip model={getModeButtonProps('giphy')}>🎞️ From Giphy</ModeChip>
+        <ModeChip model={getModeButtonProps('url')}>🔗 From URL</ModeChip>
+      </div>
+
+      <div className={LAYOUT}>
+        <Panel>
+          <h3 className={CARD_HEADING}>{FORM_HEADING[mode]}</h3>
+          <p className={CARD_SUB}>Turn a small thought into a card people can own.</p>
+          <div data-slot="form-grid" className={cn(FORM_GRID, 'mt-5')} {...formProps}>
             <Field>
               <FieldLabel>Title</FieldLabel>
               <Input {...titleInputProps} placeholder={titlePlaceholder} />
@@ -344,7 +401,7 @@ export function CreateMemeScreen({
                   <FilterBar>
                     <img
                       {...remixSource.imageProps}
-                      className="size-21 rounded-control object-cover"
+                      className="size-21 rounded-field object-cover"
                     />
                     <Hint as="span">
                       Remixing <Link {...remixSource.linkProps}>"{remixSource.title}"</Link> by{' '}
@@ -376,34 +433,41 @@ export function CreateMemeScreen({
                   />
                 </Field>
                 {showEditedFrameApproval && (
-                  <Panel className="border-gold">
-                    <strong>✅ Edit applied — happy with this frame?</strong>
-                    <Hint className="mb-4">
-                      Check the card preview. Animate it, or tweak the prompt and re-run the edit
-                      before spending render credits.
-                    </Hint>
-                    <Field>
-                      <FieldLabel>Motion (optional — how the animated clip should move)</FieldLabel>
-                      <Textarea
-                        {...motionPromptTextareaProps}
-                        rows={3}
-                        placeholder="he sprays himself in the face with the hose, same scene, short loop"
-                      />
-                    </Field>
-                    <FilterBar className="mt-2.5">
-                      <Button variant="primary" {...animateEditedButtonProps}>
-                        🎬 Looks good — animate it
-                      </Button>
-                      <Button {...rerunEditButtonProps}>↻ Re-run the edit</Button>
-                    </FilterBar>
-                  </Panel>
+                  /* the wrapper keeps the named slot: `EmptyState` writes its own `data-slot`
+                     *after* the prop spread, so a consumer's name is dropped (WP3a's open request
+                     against the atom). `role="none"`: the panel already speaks through its own
+                     live region, and a second status here would announce the same turn twice */
+                  <div data-slot="approval-card">
+                    <EmptyState tone="ok" role="none" className={STATE_CARD_APPROVAL}>
+                      <h3>✅ Edit applied — happy with this frame?</h3>
+                      <p>
+                        Keep it, then animate it or run another edit — check the card preview before
+                        you spend render credits.
+                      </p>
+                      <Field className="mt-3.5">
+                        <FieldLabel>Motion (optional — how the animated clip should move)</FieldLabel>
+                        <Textarea
+                          {...motionPromptTextareaProps}
+                          rows={3}
+                          placeholder="he sprays himself in the face with the hose, same scene, short loop"
+                        />
+                      </Field>
+                      <FilterBar className="mt-3.5">
+                        <Button variant="primary" {...animateEditedButtonProps}>
+                          🎬 Looks good — animate it
+                        </Button>
+                        <Button {...rerunEditButtonProps}>↻ Re-run the edit</Button>
+                      </FilterBar>
+                    </EmptyState>
+                  </div>
                 )}
                 {showRemixButton && (
-                  <div>
+                  <FilterBar className="mt-1">
                     <Button variant="primary" {...remixButtonProps}>
                       {remixButtonLabel}
                     </Button>
-                  </div>
+                    <span className={COST_NOTE}>Uses your Masky credits</span>
+                  </FilterBar>
                 )}
               </>
             ) : showGiphyPanel ? (
@@ -445,17 +509,17 @@ export function CreateMemeScreen({
                 )}
 
                 {/* one live region for the panel: the chrome swaps, the element never remounts.
-                    `sr-only` alone keeps the box, so the dashed frame is dropped explicitly */}
+                    `sr-only` alone keeps the box, so the card frame is dropped explicitly */}
                 <EmptyState
                   {...giphyStatusProps}
-                  className={cn(giphyStatusHidden && 'sr-only border-0 p-0')}
+                  className={cn('py-8', giphyStatusHidden && 'sr-only bg-transparent p-0 shadow-none')}
                 >
                   {giphyStatusText}
                 </EmptyState>
 
                 {showGiphyPick && giphyPick && (
                   <>
-                    <Hint className="mb-4">
+                    <Hint className="mb-2">
                       Selected: <strong>{giphyPick.title}</strong>
                       {giphyPick.authorLabel} — mint it as-is (with GIPHY
                       attribution) or remix it below.
@@ -471,11 +535,12 @@ export function CreateMemeScreen({
                       />
                     </Field>
                     {showGiphyRemixButton && (
-                      <div>
+                      <FilterBar className="mt-1">
                         <Button variant="primary" {...applyGiphyEditButtonProps}>
                           ✨ Remix with Masky
                         </Button>
-                      </div>
+                        <span className={COST_NOTE}>Uses your Masky credits</span>
+                      </FilterBar>
                     )}
                   </>
                 )}
@@ -503,11 +568,12 @@ export function CreateMemeScreen({
                   />
                 </Field>
                 {showUrlApplyEdit && (
-                  <div>
+                  <FilterBar className="mt-1">
                     <Button variant="primary" {...applyUrlEditButtonProps}>
                       ✨ Apply AI edit
                     </Button>
-                  </div>
+                    <span className={COST_NOTE}>Uses your Masky credits</span>
+                  </FilterBar>
                 )}
               </>
             ) : showUploadPanel ? (
@@ -540,11 +606,12 @@ export function CreateMemeScreen({
                     {generatePromptHelpText}
                   </FieldHint>
                 </Field>
-                <div>
+                <FilterBar className="mt-1">
                   <Button variant="primary" {...generateButtonProps}>
                     {generateButtonLabel}
                   </Button>
-                </div>
+                  <span className={COST_NOTE}>Uses your Masky credits</span>
+                </FilterBar>
               </>
             ) : null}
 
@@ -552,18 +619,21 @@ export function CreateMemeScreen({
                 inserted together with its content is commonly missed */}
             <div data-slot="live-region" className={LIVE_REGION} {...busyNoticeProps}>
               {showBusy && (
-                /* the wrapper is the live region; a second status role here would announce twice.
-                   inline-flex, so the notice still shrink-wraps its copy the way the block did */
-                <Notice tone="busy" role="none" className="inline-flex items-center gap-2">
-                  <Spinner />
-                  {/* the counter is grouped with the busy copy, not a third flex item, so it lands
-                      flush against the text the way the legacy floated `.field-counter` did — the
-                      row's own gap-2 (spinner-to-text) stays untouched */}
-                  <span>
-                    {busy}
-                    {busyElapsedLabel && <FieldCounter>{busyElapsedLabel}</FieldCounter>}
-                  </span>
-                </Notice>
+                /* the outer div is the live region; a second status role here would announce
+                   twice. The inner div keeps the named slot the atom's own `data-slot` would
+                   otherwise overwrite (see the approval card). */
+                <div data-slot="busy-card">
+                  <EmptyState tone="neutral" role="none" className={STATE_CARD_BUSY}>
+                    <h3>
+                      {busy}
+                      {busyElapsedLabel && <FieldCounter>{busyElapsedLabel}</FieldCounter>}
+                    </h3>
+                    <span className={TRACK} aria-hidden="true">
+                      <i className={TRACK_FILL} />
+                    </span>
+                    <p>The card stays here while the frame cooks.</p>
+                  </EmptyState>
+                </div>
               )}
             </div>
             <div data-slot="live-region" className={LIVE_REGION} {...errorNoticeProps}>
@@ -575,29 +645,44 @@ export function CreateMemeScreen({
                 </Notice>
               )}
             </div>
+
+            <p className={FORM_NOTE}>
+              Title is 20 characters max. You mint 100 shares to yourself.
+            </p>
           </div>
         </Panel>
 
         <div className={RAIL}>
-          {showPreviewSkeleton && <SkeletonCard />}
-          {showPreviewCard && (
-            <>
-              <PreviewCard card={previewCard} />
-              {previewCard.originLabel && <Hint className="mt-0">{previewCard.originLabel}</Hint>}
-            </>
-          )}
-          {/* a caption's own 4px offset only ever showed on the rail's first child; under the card
-              the rail's own rhythm owns the gap */}
-          {showMintHint && (
-            <Hint className={cn((showPreviewCard || showPreviewSkeleton) && 'mt-0')}>
-              To mint: {mintHint}
-            </Hint>
-          )}
-          <div>
-            <Button variant="primary" {...mintButtonProps}>
-              🧠 Mint (100 shares to you)
-            </Button>
-          </div>
+          <Panel className="flex flex-col">
+            <h3 className={CARD_HEADING}>Live card preview</h3>
+            <p className={CARD_SUB}>This is what lands in the marketplace.</p>
+            <div className="mt-5 flex flex-col gap-3">
+              {/* the board's preview column always holds a card; before there is one, it holds the
+                  plate that card will land on, so the two columns keep their shared silhouette */}
+              {!showPreviewCard && !showPreviewSkeleton && (
+                <div data-slot="preview-placeholder" className={PREVIEW_PLACEHOLDER}>
+                  Your card lands here.
+                </div>
+              )}
+              {showPreviewSkeleton && <SkeletonCard />}
+              {showPreviewCard && (
+                <>
+                  <PreviewCard card={previewCard} />
+                  {previewCard.originLabel && <Hint className="mt-0">{previewCard.originLabel}</Hint>}
+                </>
+              )}
+              {showMintHint && <Hint className="mt-0">To mint: {mintHint}</Hint>}
+            </div>
+            {/* phone: the shares line sits above a full-width Mint pill (the iPhone mint board) */}
+            <div className="mt-4 flex items-center justify-between gap-3 max-md:flex-col max-md:items-stretch max-md:gap-2">
+              <span className="text-small font-bold text-ink max-md:text-[13px] max-md:font-medium max-md:text-ink-muted">
+                100 shares to you
+              </span>
+              <Button variant="primary" className="max-md:w-full" {...mintButtonProps}>
+                ✨ Mint
+              </Button>
+            </div>
+          </Panel>
         </div>
       </div>
     </PageContainer>

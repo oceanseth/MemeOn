@@ -12,7 +12,7 @@ import type {
 import { useSearchParams } from 'react-router-dom'
 import type { LinkProps } from 'react-router-dom'
 import { glowStyleFor, tierFor } from '../../../shared/tiers'
-import { tierClasses } from '../atoms/foil'
+import { tierFrameClasses } from '../atoms/foil'
 import { apiFetch, post } from '../lib/api'
 import { extractPoster } from '../lib/extractPoster'
 import type { GiphyResult, Meme } from '../lib/types'
@@ -83,6 +83,9 @@ export interface CreateMemeCardModel {
   media: CreateMemeMediaModel
   title: string
   titleIsPlaceholder: boolean
+  /** the tier's product name on its own — what the `TierChip` prints */
+  tierName: string
+  /** the tier and what it means for a card this new: "Paper · freshly minted" */
   tierLabel: string
   tierColor: string
   statsLabel: string
@@ -285,7 +288,9 @@ function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
   const label = title ? `"${title}"` : 'your meme'
   return {
     cardProps: {
-      className: tierClasses(FRESH_TIER.key),
+      /* the frame, not the legacy padding ring: the preview wears the same 3px tier border the
+         grid card does, so "this is what lands in the marketplace" is literally true */
+      className: tierFrameClasses(FRESH_TIER.key),
       'data-glow-style': glowStyleFor(FRESH_TIER.key),
     } as HTMLAttributes<HTMLDivElement>,
     media: ctx.videoUrl
@@ -308,7 +313,9 @@ function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
         },
     title: title || 'Untitled',
     titleIsPlaceholder: !title,
-    tierLabel: `${FRESH_TIER.name} · ${FRESH_TIER.rarity}`,
+    tierName: FRESH_TIER.name,
+    /* the mint copy deck (plan-buckets.md › mint): every card starts here, and says so */
+    tierLabel: `${FRESH_TIER.name} · freshly minted`,
     tierColor: FRESH_TIER.color,
     statsLabel: '👁️ 0 · 🔁 0',
     valueLabel: '🧠 0',

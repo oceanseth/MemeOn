@@ -77,6 +77,16 @@ function model(
   return buildCreateMemeScreenModel(phase, { ...baseContext, ...context }, actions)
 }
 
+/** the 390 × 844 twin every screen in this swarm carries beside its desktop story */
+const phone = {
+  parameters: {
+    viewport: {
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+    },
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
+}
+
 const meta = {
   title: 'Screens/CreateMemeScreen',
   component: CreateMemeScreen,
@@ -360,3 +370,38 @@ export const SuccessCopied: Story = {
     await expect(within(canvasElement).getByRole('status')).toHaveTextContent('Share link copied')
   },
 }
+
+/** the mint studio with artwork in hand: the two columns, the tier frame and the ✨ Mint pill */
+export const Ready: Story = {
+  name: 'Ready to mint',
+  args: model({
+    title: 'group chat energy',
+    tags: 'work, internet',
+    prompt: 'a possum in a tiny office, taking a very serious call, flash',
+    imageUrl: paperMeme.imageUrl,
+  }),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: /Mint/ })).toBeEnabled()
+    await expect(canvas.getByText('Paper · freshly minted')).toBeVisible()
+  },
+}
+
+export const Dark: Story = { ...Ready, name: 'Ready dark', globals: { theme: 'dark' } }
+
+export const Phone390: Story = { ...Ready, name: 'Ready phone 390', ...phone }
+
+export const DarkPhone390: Story = {
+  ...Ready,
+  name: 'Ready dark phone 390',
+  ...phone,
+  globals: { ...phone.globals, theme: 'dark' },
+}
+
+export const SubmittingDark: Story = {
+  name: 'Rendering dark (state card)',
+  args: Submitting.args,
+  globals: { theme: 'dark' },
+}
+
+export const SuccessPhone390: Story = { ...Success, name: 'Success phone 390', ...phone }
