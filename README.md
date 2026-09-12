@@ -38,7 +38,7 @@ Tier frame art is generated with the Masky image API (`api/scripts/generate-fram
   Masky OAuth + aigen proxy, session JWTs, og pipeline (jimp), alerts, and the
   mobile feed layer (likes/dislikes/follows, friend-prioritized `/api/feed`,
   creator profiles, hourly value-history sampling).
-- `mobile/` – Expo React Native app (not an npm workspace; own node_modules):
+- `mobile/` – Expo React Native app in the pnpm workspace:
   infinite swipe feed, invest view, creator profiles. See `mobile/README.md`
   for App Store / Play publishing via EAS.
 - `infra/terraform/` – production stack (memeon.ai). **Note:** no state is kept in
@@ -82,13 +82,26 @@ Deploys: push to `production` → memeon.ai; push to `dev` → dev.memeon.ai
 ## Local development
 
 ```
-npm install
-npm run dev
+corepack enable
+corepack pnpm install
+pnpm run dev
 ```
+
+The root workspace includes `web`, `api`, `mobile`, and `shared`. Use
+`pnpm --filter mobile start` for Expo, `pnpm run build` for the web build and
+Lambda package, and `pnpm run mobile:export` when an Expo iOS bundle export is needed.
+Use Node 22.13 or newer; `.nvmrc` pins the development version.
+
+Turborepo runs workspace tasks, caching `build` and `build-storybook` outputs
+and typecheck results. Use `pnpm run dev:web`, `pnpm run dev:api`, or
+`pnpm run dev:mobile` for one app; `pnpm run check`, `pnpm run typecheck`, and
+`pnpm run build-storybook` for their respective checks. Add an app dependency
+with `pnpm --filter <workspace> add <package>`. CI uses
+`pnpm install --frozen-lockfile` from the repository root.
 
 Vite serves http://localhost:5173 and proxies `/api` + `/m` to the local API
 (port 3001), which uses your AWS credentials against the **dev** table/bucket/params.
-Mint a test session: `cd api && AWS_REGION=us-west-2 npx tsx scripts/mint-test-session.ts you "Your Name"`.
+Mint a test session: `AWS_REGION=us-west-2 pnpm --filter memeon-api exec tsx scripts/mint-test-session.ts you "Your Name"`.
 
 ## Firebase
 

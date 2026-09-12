@@ -1,0 +1,23 @@
+packages:
+  - api
+  - mobile
+  - shared
+  - web
+
+autoInstallPeers: false
+
+allowBuilds:
+  '@firebase/util': true
+  esbuild: true
+  msw: true
+  protobufjs: true
+
+resolvePeersFromWorkspaceRoot: false
+
+packageExtensions:
+  react-router@*:
+    peerDependencies:
+      '@types/react': ^18.0.0
+  react-router-dom@*:
+    peerDependencies:
+      '@types/react': ^18.0.0

@@ -4,7 +4,12 @@ on:
   pull_request:
     paths:
       - 'package.json'
-      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'turbo.json'
+      - 'api/**'
+      - 'mobile/**'
+      - 'shared/**'
       - 'web/**'
       - '.github/workflows/web-check.yml'
       - '.github/scripts/ensure-linux-rollup.sh'
@@ -17,14 +22,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
-      - run: npm ci
+          node-version: 22.23.2
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - name: Ensure Linux Rollup binary
         shell: bash
         run: bash .github/scripts/ensure-linux-rollup.sh
-      - run: npx playwright install --with-deps chromium
-      - run: npm run check --prefix web
-      - run: npm run build-storybook --prefix web
+      - run: pnpm --filter web exec playwright install --with-deps chromium
+      - run: pnpm run check
+      - run: pnpm run build
+      - run: pnpm run typecheck
+      - run: pnpm run mobile:export
+      - run: pnpm run build-storybook

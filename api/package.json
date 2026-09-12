@@ -8,13 +8,15 @@
   },
   "scripts": {
     "dev": "tsx watch src/local-server.ts",
-    "build": "tsc --project tsconfig.json --noEmit",
+    "build": "pnpm run typecheck",
+    "typecheck": "tsc --project tsconfig.json --noEmit",
     "bundle": "esbuild src/handler.ts --bundle --platform=node --target=node20 --outfile=dist/handler.mjs --format=esm --external:@aws-sdk/client-dynamodb --external:@aws-sdk/lib-dynamodb --external:@aws-sdk/client-s3 --external:@aws-sdk/client-ssm --external:@aws-sdk/s3-request-presigner --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\"",
-    "fonts": "rm -rf fonts && mkdir -p fonts && cp ../node_modules/@jimp/plugin-print/dist/fonts/open-sans/open-sans-64-white/* ../node_modules/@jimp/plugin-print/dist/fonts/open-sans/open-sans-64-black/* ../node_modules/@jimp/plugin-print/dist/fonts/open-sans/open-sans-32-white/* ../node_modules/@jimp/plugin-print/dist/fonts/open-sans/open-sans-32-black/* fonts/",
-    "package": "npm run bundle && npm run fonts && bestzip lambda.zip dist/handler.mjs fonts",
+    "fonts": "node scripts/copy-fonts.mjs",
+    "package": "pnpm run bundle && pnpm run fonts && bestzip lambda.zip dist/handler.mjs fonts",
     "clean": "rimraf dist lambda.zip"
   },
   "dependencies": {
+    "@memeon/shared": "workspace:*",
     "@aws-sdk/client-bedrock-runtime": "^3.1095.0",
     "@aws-sdk/client-dynamodb": "^3.700.0",
     "@aws-sdk/client-s3": "^3.700.0",
@@ -26,6 +28,7 @@
     "jose": "^5.9.6"
   },
   "devDependencies": {
+    "@jimp/plugin-print": "^1.6.0",
     "@types/aws-lambda": "^8.10.147",
     "@types/express": "^4.17.21",
     "@types/node": "^20.17.12",
