@@ -4,7 +4,7 @@ import './index.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import App from './App'
+import { AppView } from './views/AppView'
 import { useAuthRuntime } from './hooks/useAuthRuntime'
 import { useMountEffect } from './hooks/useMountEffect'
 import { createStores } from './stores/createStores'
@@ -30,7 +30,7 @@ function Root() {
     <StoresProvider stores={stores}>
       <AuthRuntime />
       <BrowserRouter>
-        <App />
+        <AppView />
       </BrowserRouter>
     </StoresProvider>
   )
