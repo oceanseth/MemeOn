@@ -41,3 +41,5 @@ export const WithFilterBar: Story = {
     ),
   },
 }
+
+export const Dark: Story = { ...WithSubtitle, globals: { theme: 'dark' } }

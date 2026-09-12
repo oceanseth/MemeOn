@@ -24,3 +24,5 @@ export const AsMain: Story = {
     await expect(main).toHaveAttribute('tabindex', '-1')
   },
 }
+
+export const Dark: Story = { ...AsMain, globals: { theme: 'dark' } }
