@@ -17,7 +17,7 @@ or moving a component. `pnpm run check-tiers` runs recursively and must pass;
 | Tier | Folder | What lives there | Owns state? |
 |---|---|---|---|
 | **Atoms** | `src/atoms/` | `Avatar` (`sm`/`header`/`md`/`lg`), `Badge`, `Button` (`pressed`/`aria-pressed` toggle state), `Checkbox`, `EmptyState` (additive `tone`), `Field`, `Fieldset`, `Icon`, `Input` (its `controlChrome` is shared by `Select` and `Textarea`), `MemeCard` (plus `tierFrameClasses` from `foil.ts`, `memeCardSubClasses`; `footer` and `footerRight` slots), `Notice`, `PageContainer`, `PageHead`, `Panel` (+ `PanelHeading`: `intro`/`section` share intro · `card` card-title · `composer` title), `Select`, `Skeleton`, `Spinner`, `Textarea`, `TierChip` | No |
-| **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `TradeCard` (`give`/`get`, not `offer`/`ask`) | No |
+| **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `HeroVideo`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `TradeCard` (`give`/`get`, not `offer`/`ask`) | No |
 | **Organisms** | `src/organisms/` | `AppShell` (slots `sidebar` / `contextLine` / `headerEnd` / `quest` / `bottomNav`), `MemeplexPanel` | No |
 | **Screens** | `src/screens/` | One model object per route/chrome surface | No |
 | **Views** | `src/views/` | Engine wired to screen; `observer` wrap; `AppView` is the route switch | Via hooks |
@@ -68,7 +68,7 @@ main.tsx ── StoresProvider + AuthRuntime + BrowserRouter
       │   ├─ QuestBar
       │   └─ AlertsBell
       └─ Routes
-         ├─ LandingView ── useLandingScreen → LandingScreen
+         ├─ LandingView ── useLandingScreen (+ useHeroVideo) → LandingScreen ── HeroVideo · FaqItem
          ├─ AuthCallbackView ── useAuthCallbackScreen → AuthStatusScreen
          ├─ MobileAuthForwardView ── useMobileAuthForwardScreen → AuthStatusScreen
          ├─ CreateMemeView ── useCreateMemeScreen → CreateMemeScreen
@@ -101,6 +101,7 @@ signed-in player can reach is a `lazy()` chunk behind `RequireAuth`.
 | `hooks/useAuth.ts` | `user`, `loading`, `error`, `refresh`, `logout` | `RequireAuth`, chrome, screens |
 | `lib/*Model.ts` | pure builders from API records to component prop bags (`buildMemeCardModel`, `buildTradeCardModel`, `buildQuestBarModel`, …); the dialog models carry their `DialogOpenerRef` via `lib/dialogOpener` | screen hooks, stories (fixtures), the components as types only |
 | `lib/cardMedia.ts` | the meme card's one imperative seam: a shared IntersectionObserver, `video.play()`, the paused foil ring; exports the stable `cardMediaRef` / `toggleCardMedia` handles the card model hands to `MemeCard` | `lib/memeCardModel` |
+| `hooks/useHeroVideo` + `lib/heroVideoModel` | the landing film: whether autoplay is spent (reduced motion, Data Saver, 2g/3g — a live `useSyncExternalStore` probe), started-by-hand, muted; the element is kept for `play()` behind a ref callback so the model stays a plain props bag | `useLandingScreen` → `LandingScreen` → `HeroVideo` |
 | `lib/presence.ts` | Firebase online flag | `useAuthRuntime`, Friends watch |
 
 `useProjectedActor` uses `useActorRef` to start and stop an actor with its mounted

@@ -8,11 +8,13 @@ import type {
 import { TIERS, type Tier } from '@memeon/shared/tiers'
 import { apiFetch } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
+import type { HeroVideoModel } from '../lib/heroVideoModel'
 import {
   landingMachine,
   type LandingPhase,
 } from '../stores/landingMachine'
 import { useAuth } from './useAuth'
+import { useHeroVideo } from './useHeroVideo'
 import { useMountEffect } from './useMountEffect'
 
 export type LandingLoginButtonProps = Pick<
@@ -126,6 +128,8 @@ export interface LandingScreenModel {
   /** the hero's trading-card pile */
   heroCards: LandingHeroCardModel[]
   tiers: LandingTierModel[]
+  /** the promo film, between the ladder and the FAQ */
+  heroVideo: HeroVideoModel
   loginButtonProps: LandingLoginButtonProps
   closingLoginButtonProps: LandingLoginButtonProps
   frameImageProps: Record<string, LandingFrameImageProps | undefined>
@@ -136,6 +140,7 @@ export interface LandingScreenModel {
 /** Everything `LandingScreen` renders. The hook is the engine; the screen is the terminal. */
 export function useLandingScreen(): LandingScreenModel {
   const { user } = useAuth()
+  const heroVideo = useHeroVideo()
   const [snapshot, send] = useProjectedActor(interactiveLandingMachine)
   const ctx = snapshot.context
   const phase: LandingPhase = snapshot.matches({ login: 'loggingIn' })
@@ -200,6 +205,7 @@ export function useLandingScreen(): LandingScreenModel {
     closingLoginLabel: ctx.busy ? 'Redirecting…' : '🎭 Grab your pack with Masky',
     heroCards: buildLandingHeroCards(),
     tiers: buildLandingTierModels(),
+    heroVideo,
     loginButtonProps: {
       onClick: onLogin,
       disabled: ctx.busy,
