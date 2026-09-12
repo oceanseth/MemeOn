@@ -18,6 +18,16 @@ const empty: DiscordLinkScreenModel = {
   onRetry: () => {},
 }
 
+/** Storybook's viewport global; the vitest storybook project renders at the story's own width. */
+const phone = {
+  parameters: {
+    viewport: {
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+    },
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
+}
+
 const meta = {
   title: 'Screens/DiscordLinkScreen',
   component: DiscordLinkScreen,
@@ -80,3 +90,21 @@ export const ErrorNoToken: Story = {
     canRetry: false,
   },
 }
+
+export const Dark: Story = { ...Confirm, name: 'Confirm dark', globals: { theme: 'dark' } }
+
+export const Phone390: Story = { ...Confirm, name: 'Confirm phone 390', ...phone }
+
+export const WorkingDark: Story = { ...Working, name: 'Working dark', globals: { theme: 'dark' } }
+
+export const DoneDark: Story = { ...Done, name: 'Done dark', globals: { theme: 'dark' } }
+
+export const DonePhone390: Story = { ...Done, name: 'Done phone 390', ...phone }
+
+export const ErrorDark: Story = {
+  ...ErrorRetryable,
+  name: 'Error dark',
+  globals: { theme: 'dark' },
+}
+
+export const ErrorPhone390: Story = { ...ErrorRetryable, name: 'Error phone 390', ...phone }
