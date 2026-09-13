@@ -38,4 +38,61 @@ export const tradesCopy = {
     acceptLabel: sharedCopy.accept,
     withdrawLabel: 'Withdraw',
   },
+  /** Strings each trade card row spells for status, actions and finality. */
+  card: {
+    badge: {
+      proposed: '⏳ proposed',
+      accepted: '✅ accepted',
+      declined: '❌ declined',
+      cancelled: '🚫 cancelled',
+    },
+    statusLine: {
+      proposed: 'Waiting',
+      accepted: 'Deal complete',
+      declined: 'Declined',
+      cancelled: 'Withdrawn',
+    },
+    waiting: {
+      onThem: 'Waiting on them',
+      onYou: 'Waiting on you',
+    },
+    time: {
+      justNow: 'just now',
+      minutesAgo: (minutes: number) => `${minutes}m ago`,
+      hoursAgo: (hours: number) => `${hours}h ago`,
+      yesterday: 'yesterday',
+      daysAgo: (days: number) => `${days}d ago`,
+    },
+    sharesOf: (shares: number) => `${shares} share${shares === 1 ? '' : 's'} of`,
+    pendingMemeTitle: 'that meme',
+    finality: {
+      nothingLeaves:
+        'Trades are final — nothing leaves your binder, but the cards you get are yours the moment you accept.',
+      leaves: (list: string) => `Trades are final — ${list} leave your binder the moment you accept.`,
+      and: (left: string, right: string) => `${left} and ${right}`,
+    },
+    sides: {
+      give: 'You give',
+      get: 'You get',
+    },
+    parties: {
+      youOffered: (toName: string) => `You offered ${toName} a deal`,
+      offeredYou: (fromName: string) => `${fromName} offered you a deal`,
+      yourDeal: (name: string) => `Your deal with ${name}`,
+    },
+    actions: {
+      withdraw: 'Withdraw',
+      withdrawing: 'Withdrawing…',
+      withdrawA11y: (toName: string) => `Withdraw your proposal to ${toName}`,
+      decline: sharedCopy.decline,
+      declining: 'Declining…',
+      declineA11y: (fromName: string) => `Decline ${fromName}'s trade`,
+      accept: sharedCopy.accept,
+      accepting: 'Accepting…',
+      acceptA11y: (fromName: string) => `Accept ${fromName}'s trade`,
+    },
+    sideSentence: {
+      nothing: 'nothing',
+    },
+  },
 } as const
