@@ -72,7 +72,7 @@ interface VideoPollRun {
 
 class CreationLifetimeCancelledError extends Error {
   constructor() {
-    super('creation lifetime ended')
+    super(copy.errors.lifetimeEnded)
     this.name = 'CreationLifetimeCancelledError'
   }
 }
@@ -404,7 +404,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         send({ type: 'BUSY', busy: copy.busy.editFrame })
         const edited = await post<{ imageUrl: string }>('/api/aigen/image-edit', {
           /* prompt text for the generation API, never shown: not copy */
-          prompt: `${live.prompt}, keep everything else identical`,
+          prompt: `${live.prompt}${copy.prompts.keepIdentical}`,
           imageUrls: [live.remixSource.imageUrl],
         })
         assertActive(owner)
@@ -427,7 +427,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       try {
         const thumb = await post<{ imageUrl: string }>('/api/aigen/image', {
           /* prompt text for the generation API, never shown: not copy */
-          prompt: `${live.prompt} — single dramatic still frame, meme thumbnail`,
+          prompt: `${live.prompt}${copy.prompts.videoThumbnailSuffix}`,
           aspectRatio: '1:1',
         })
         assertActive(owner)
@@ -471,8 +471,10 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       const started = await post<{ generationId: string }>('/api/aigen/video', {
         /* prompt text for the generation API, never shown: not copy */
         prompt: isVideoSource
-          ? `same video and motion as the source, with the change from the reference image applied${live.motionPrompt.trim() ? ` — ${live.motionPrompt.trim()}` : ''}`
-          : live.motionPrompt.trim() || 'subtle natural motion true to the scene, same style, short loop',
+          ? live.motionPrompt.trim()
+            ? copy.prompts.motionWithEdit(live.motionPrompt.trim())
+            : copy.prompts.motionFromReference
+          : live.motionPrompt.trim() || copy.prompts.motionDefault,
         image: live.editedFrame,
         ...(isVideoSource ? { srcVideo: live.remixSource!.videoUrl } : {}),
       })

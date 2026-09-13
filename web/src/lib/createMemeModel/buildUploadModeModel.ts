@@ -1,3 +1,4 @@
+import { createMemeCopy as copy } from '../../copy/createMeme'
 import type { CreateMemeContext } from '../../stores/createMemeMachine'
 import {
   firstFile,
@@ -25,8 +26,8 @@ export function buildUploadModeModel(
 ): UploadModeSlice {
   return {
     showUploadPanel: ctx.mode === 'upload',
-    uploadImageHelpText: `PNG, JPG, GIF or WebP, max ${megabyteLabel(MAX_IMAGE_BYTES)}MB. Optional for videos — we grab the first frame.`,
-    uploadVideoHelpText: `MP4, MOV or WebM, max ${megabyteLabel(MAX_VIDEO_BYTES)}MB. Adding one makes it a video meme.`,
+    uploadImageHelpText: copy.upload.imageHelp(megabyteLabel(MAX_IMAGE_BYTES)),
+    uploadVideoHelpText: copy.upload.videoHelp(megabyteLabel(MAX_VIDEO_BYTES)),
     imageFileInputProps: {
       type: 'file',
       accept: 'image/png,image/jpeg,image/gif,image/webp',
@@ -36,7 +37,7 @@ export function buildUploadModeModel(
         if (file) void actions.uploadImage(file)
       },
     },
-    uploadImageLabel: 'Image',
+    uploadImageLabel: copy.upload.imageLabel,
     videoFileInputProps: {
       type: 'file',
       accept: 'video/mp4,video/quicktime,video/webm',
@@ -46,6 +47,6 @@ export function buildUploadModeModel(
         if (file) void actions.uploadVideo(file)
       },
     },
-    uploadVideoLabel: 'Video',
+    uploadVideoLabel: copy.upload.videoLabel,
   }
 }

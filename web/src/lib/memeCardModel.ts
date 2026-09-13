@@ -1,4 +1,5 @@
 import type { ImgHTMLAttributes, MouseEvent, RefCallback, VideoHTMLAttributes } from 'react'
+import { memeCardCopy as copy } from '../copy/memeCard'
 import { cardMediaRef, toggleCardMedia } from './cardMedia'
 import type { Meme } from './types'
 
@@ -107,7 +108,7 @@ function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
           toggleProps: {
             type: 'button',
             'aria-pressed': false,
-            'aria-label': `Play ${meme.title}`,
+            'aria-label': copy.play(meme.title),
             onClick: toggleCardMedia,
           },
         }
@@ -131,9 +132,9 @@ function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
       ? {
           shares: meme.listing.shares,
           pricePerShare: meme.listing.pricePerShare,
-          forSaleLabel: 'for sale',
-          sharesLabel: `${meme.listing.shares} shares`,
-          sharesA11yLabel: `${meme.listing.shares} shares for sale at ${meme.listing.pricePerShare} braincells each`,
+          forSaleLabel: copy.forSale,
+          sharesLabel: copy.shares(meme.listing.shares),
+          sharesA11yLabel: copy.sharesForSaleAt(meme.listing.shares, meme.listing.pricePerShare),
         }
       : null
 
@@ -144,15 +145,13 @@ function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
     tierKey: meme.tier.key,
     tierName: meme.tier.name,
     tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`,
-    detailLinkProps: { to: `/m/${meme.id}`, 'aria-label': `Open ${meme.title}` },
+    detailLinkProps: { to: `/m/${meme.id}`, 'aria-label': copy.open(meme.title) },
     media,
     viewsLabel,
     resharesLabel,
     valueLabel,
-    statsA11yLabel: viewsLabel
-      ? `${viewsLabel} views, ${resharesLabel} reshares`
-      : `${resharesLabel} reshares`,
-    valueA11yLabel: `${valueLabel} braincells card value`,
+    statsA11yLabel: copy.stats(viewsLabel, resharesLabel),
+    valueA11yLabel: copy.valueA11y(valueLabel),
     listing,
     reducedMotion,
     mediaAutoplay: media.kind === 'video' && !reducedMotion ? 'on' : 'off',

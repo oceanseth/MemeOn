@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, RefCallback, VideoHTMLAttributes } from 'react'
+import { heroVideoCopy as copy } from '../copy/heroVideo'
 
 /**
  * The landing-page promo film, as props.
@@ -22,8 +23,7 @@ import type { ButtonHTMLAttributes, RefCallback, VideoHTMLAttributes } from 'rea
 
 export const HERO_VIDEO_SRC = '/promo/memeon-promo.mp4'
 export const HERO_VIDEO_POSTER = '/promo/memeon-promo-poster.jpg'
-const HERO_VIDEO_LABEL =
-  'MemeOn in 50 seconds: mint a meme, watch it climb the virality tiers, trade it.'
+const HERO_VIDEO_LABEL = copy.ariaLabel
 
 interface NetworkInformation {
   saveData?: boolean
@@ -118,8 +118,8 @@ export function buildHeroVideoModel({
   return {
     showPlayPill: !autoplay && !started,
     showSoundPill: running,
-    playLabel: 'Play the 50-second tour',
-    soundLabel: muted ? '🔇 Sound on' : '🔊 Sound off',
+    playLabel: copy.play,
+    soundLabel: muted ? copy.soundOn : copy.soundOff,
     videoProps: {
       ref: attachVideo,
       src: HERO_VIDEO_SRC,
@@ -134,7 +134,7 @@ export function buildHeroVideoModel({
     soundButtonProps: {
       onClick: onToggleSound,
       'aria-pressed': !muted,
-      'aria-label': muted ? 'Unmute the video' : 'Mute the video',
+      'aria-label': muted ? copy.unmute : copy.mute,
     },
   }
 }

@@ -1,3 +1,4 @@
+import { createMemeCopy as copy } from '../../copy/createMeme'
 import type { CreateMemeContext } from '../../stores/createMemeMachine'
 import { HELP_IDS } from './shared'
 import type { CreateMemeScreenActions, CreateMemeScreenModel } from './types'
@@ -23,10 +24,9 @@ export function buildUrlModeModel(
   return {
     showUrlPanel: ctx.mode === 'url',
     urlPlaceholder: 'https://…/meme.png',
-    urlHelpText:
-      'Paste a direct image link, or a giphy/imgur/reddit page — we grab the main image.',
+    urlHelpText: copy.url.help,
     showUrlApplyEdit: !!ctx.prompt.trim() && !!ctx.imageUrl && !ctx.edited,
-    fetchUrlButtonLabel: 'Fetch image',
+    fetchUrlButtonLabel: copy.url.fetch,
     urlInputProps: {
       type: 'url',
       value: ctx.urlDraft,

@@ -1,3 +1,4 @@
+import { createMemeCopy as copy } from '../../copy/createMeme'
 import type { CreateMemeContext } from '../../stores/createMemeMachine'
 import { HELP_IDS } from './shared'
 import type { CreateMemeScreenActions, CreateMemeScreenModel } from './types'
@@ -19,10 +20,9 @@ export function buildGenerateModeModel(
 ): GenerateModeSlice {
   return {
     showGeneratePanel: ctx.mode === 'generate' || ctx.mode === 'video',
-    generatePromptPlaceholder: 'a capybara in a business suit ignoring a burning office, cinematic',
-    generatePromptHelpText:
-      'Describe the whole scene — subject, style, chaos level. Runs on your Masky credits.',
-    generateButtonLabel: ctx.mode === 'video' ? 'Render the video' : 'Render the image',
+    generatePromptPlaceholder: copy.generate.promptPlaceholder,
+    generatePromptHelpText: copy.generate.promptHelp,
+    generateButtonLabel: ctx.mode === 'video' ? copy.generate.renderVideo : copy.generate.renderImage,
     generatePromptTextareaProps: {
       value: ctx.prompt,
       'aria-describedby': HELP_IDS.prompt,

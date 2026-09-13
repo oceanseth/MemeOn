@@ -5,6 +5,7 @@ import type {
   ImgHTMLAttributes,
   InputHTMLAttributes,
 } from 'react'
+import { giftDialogCopy as copy } from '../copy/giftDialog'
 import { trackDialogOpener, type DialogOpenerRef } from './dialogOpener'
 import type { Meme } from './types'
 
@@ -129,11 +130,11 @@ export function buildGiftDialogModel({
       id: meme.id,
       title: meme.title,
       selected: pick?.id === meme.id,
-      sharesLabel: `you hold ${meme.myShares ?? 0} of 100`,
+      sharesLabel: copy.sharesHeld(meme.myShares ?? 0),
       tierKey: meme.tier.key,
       tierLabel: meme.tier.name,
       listed: !!meme.listing && meme.listing.shares > 0,
-      listedLabel: 'Listed',
+      listedLabel: copy.listed,
       imageProps: {
         src: meme.imageUrl,
         alt: '',
@@ -167,9 +168,9 @@ export function buildGiftDialogModel({
     opener: trackDialogOpener('gift-dialog', isOpen),
     id: 'gift-dialog',
     recipientName: recipient?.name ?? null,
-    title: `🎁 Gift to ${recipient?.name ?? ''}`,
+    title: copy.title(recipient?.name ?? ''),
     titleId: 'gift-dialog-title',
-    hint: 'Pick a meme you hold shares in — the transfer is free and instant.',
+    hint: copy.hint,
     hintId: 'gift-dialog-hint',
     busy,
     // Escape, the scrim and the ✕ are Base UI's to detect; dismiss() is a no-op while busy, so
@@ -177,34 +178,36 @@ export function buildGiftDialogModel({
     onOpenChange: (nextOpen) => {
       if (!nextOpen) dismiss()
     },
-    closeLabel: 'Close gift dialog',
-    cancelLabel: 'Cancel',
+    closeLabel: copy.close,
+    cancelLabel: copy.cancel,
     cancelButtonProps: { onClick: dismiss, disabled: busy },
     searchInputProps: {
       value: query,
       onChange: onSearchChange,
-      'aria-label': 'Search your binder',
+      'aria-label': copy.search,
       disabled: busy,
     },
     rows,
     showEmpty: rows.length === 0,
-    emptyMessage: normalizedQuery
-      ? `Nothing in your binder matches "${query.trim()}".`
-      : 'Nothing to gift here — you need shares in a meme first.',
+    emptyMessage: normalizedQuery ? copy.emptySearch(query.trim()) : copy.emptyBinder,
     showControls: !!pick,
     maxShares,
-    sharesLabel: 'shares',
-    sharesMaxLabel: `of ${maxShares}`,
+    sharesLabel: copy.sharesField,
+    sharesMaxLabel: copy.sharesMax(maxShares),
     sharesInputProps: {
       value: sharesInput ?? normalizedShares,
       min: 1,
       max: maxShares,
       onChange: onShareChange,
       onBlur: onShareBlur,
-      'aria-label': `Shares to gift, up to ${maxShares}`,
+      'aria-label': copy.sharesA11y(maxShares),
       disabled: busy,
     },
-    submitLabel: busy ? 'Gifting…' : pick ? `Gift ${normalizedShares} of "${pick.title}"` : 'Choose a meme to gift',
+    submitLabel: busy
+      ? copy.submit.busy
+      : pick
+        ? copy.submit.gift(normalizedShares, pick.title)
+        : copy.submit.choose,
     submitButtonProps: { onClick: onSubmit, disabled: !canSubmit, 'aria-busy': busy },
     error,
   }

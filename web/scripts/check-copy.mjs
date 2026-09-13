@@ -62,12 +62,24 @@ const isDeveloperMessage = (node) => {
   return false
 }
 
+const KEYBOARD_KEYS = new Set(['Enter', 'Escape', 'Tab'])
+
+const isKeyboardKeyCheck = (node) => {
+  const parent = node.parent
+  if (!parent || !ts.isBinaryExpression(parent)) return false
+  const usesEventKey = (side) =>
+    ts.isPropertyAccessExpression(side) && side.name.text === 'key'
+  if (!usesEventKey(parent.left) && !usesEventKey(parent.right)) return false
+  return KEYBOARD_KEYS.has(node.text)
+}
+
 const isNotCopyPosition = (node) => {
   const parent = node.parent
   if (!parent) return false
   if (ts.isImportDeclaration(parent) || ts.isExportDeclaration(parent) || ts.isLiteralTypeNode(parent)) return true
   if (ts.isPropertyAssignment(parent) && parent.name === node) return true
   if (ts.isCallExpression(parent) && parent.expression.kind === ts.SyntaxKind.ImportKeyword) return true
+  if (isKeyboardKeyCheck(node)) return true
   return isDeveloperMessage(node)
 }
 
@@ -132,6 +144,11 @@ if (shrank.length > 0) {
   }
   console.error(`check-copy: ${shrank.length} file(s) dropped below the baseline\n${shrank.join("\n")}\n  lock it in: pnpm --filter web run check-copy -- --update`)
   process.exit(1)
+}
+
+if (total === 0 && Object.keys(baseline).length === 0) {
+  console.log('check-copy: hard zero — no copy-like literals outside copy/')
+  process.exit(0)
 }
 
 console.log(`check-copy: ${total} copy-like literal(s) outside copy/, at baseline`)

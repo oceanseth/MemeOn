@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, HTMLAttributes } from 'react'
 import type { LinkProps } from 'react-router-dom'
+import { questBarCopy as copy } from '../copy/questBar'
 import { trackDialogOpener, type DialogOpenerRef } from './dialogOpener'
 import { buildMemeCardModel, type MemeCardModel } from './memeCardModel'
 import type { Meme, QuestKey, QuestStep } from './types'
@@ -112,7 +113,7 @@ export function buildQuestBarModel({
         return {
           kind: 'claim',
           key: step.key,
-          label: busy ? 'Opening…' : `${step.title} (+${step.reward} 🧠)`,
+          label: busy ? copy.claim.busy : copy.claim.label(step.title, step.reward),
           busy,
           buttonProps: { onClick: onClaimPack, disabled: busy, 'aria-busy': busy },
         }
@@ -123,16 +124,16 @@ export function buildQuestBarModel({
         key: step.key,
         done: step.done,
         title: step.title,
-        statusLabel: step.done ? 'Done.' : 'Not done yet.',
+        statusLabel: step.done ? copy.status.done : copy.status.pending,
         rewardLabel: `+${step.reward}🧠`,
-        rewardAriaLabel: `rewards ${step.reward} braincells`,
+        rewardAriaLabel: copy.rewardAria(step.reward),
         linkProps: to ? { to } : null,
       }
     }),
     /* one line of guidance at a time: a failed claim outranks the next step's instructions */
     hint: claimError ? null : nextStep?.hint ?? null,
-    dismissLabel: 'Later',
-    dismissProps: { onClick: onDismissSteps, 'aria-label': 'Later — hide quests for now' },
+    dismissLabel: copy.dismiss,
+    dismissProps: { onClick: onDismissSteps, 'aria-label': copy.dismissA11y },
     errorMessage: claimError,
     errorProps: { role: 'alert' },
     pack: {
@@ -145,11 +146,11 @@ export function buildQuestBarModel({
       titleId: PACK_TITLE_ID,
       description:
         packMemes && packMemes.length > 0
-          ? `You now hold 10 shares in each of these — plus ${packReward} 🧠 braincells.`
-          : `The vault was empty, so you got ${packReward} 🧠 braincells instead. Spend them wisely.`,
+          ? copy.pack.withMemes(packReward)
+          : copy.pack.emptyVault(packReward),
       cards: (packMemes ?? []).map(buildMemeCardModel),
       showCards: (packMemes?.length ?? 0) > 0,
-      closeLabel: 'Close',
+      closeLabel: copy.pack.close,
       binderLinkProps: { to: '/binder', onClick: onDismissPack },
       exploreButtonProps: { onClick: onDismissPack },
     },

@@ -1,4 +1,5 @@
 import type { ChangeEventHandler, HTMLAttributes, MouseEventHandler } from 'react'
+import { memeplexPanelCopy as copy } from '../copy/memeplexPanel'
 import { buildMemeCardModel, type MemeCardModel } from './memeCardModel'
 import type { Meme, Memeplex } from './types'
 
@@ -85,11 +86,11 @@ export function buildMemeplexPanelModel({
     canEdit,
     pickerProps: {
       value: pick,
-      'aria-label': 'Link a meme from your binder',
+      'aria-label': copy.picker,
       onValueChange: (value) => onPickChange(value ?? ''),
     },
     linkable: linkable.map((candidate) => ({ id: candidate.id, title: candidate.title })),
-    pastedProps: { value: pasted, 'aria-label': 'Paste a meme link', onChange: (event) => onPastedChange(event.target.value) },
+    pastedProps: { value: pasted, 'aria-label': copy.pasted, onChange: (event) => onPastedChange(event.target.value) },
     linkButtonProps: { onClick: () => onAdd(linkTarget), disabled: !linkTarget },
     showLink: !!linkTarget,
     notice,
