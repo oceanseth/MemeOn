@@ -7,7 +7,8 @@
  * Fails (exit 1) on:
  *   - a value import or re-export from a higher tier, or hooks/ or stores/, below views/
  *   - a value import from copy/ in any tier (strings reach components through the model)
- *   - a value import in copy/ that leaves copy/ (copy is plain data; it depends on nothing)
+ *   - a value import in copy/ that leaves copy/, other than lib/plural and lib/braincells
+ *     (copy is plain data; the two formatting helpers are the one allowance)
  *   - a React state hook in a component or helper below views/
  *   - a state-library import below views/
  *   - a component in a tier folder without a sibling story
@@ -26,6 +27,9 @@ const TIERS = ["atoms", "molecules", "organisms", "screens", "views"]
 const ENGINES = ["hooks", "stores"]
 // User-facing strings. Read by hooks/, lib/ builders, stories and tests; never by a tier.
 const COPY = "copy"
+// The formatting primitives copy/ may call, so a noun stays beside its sentence
+// (`${plural(n, 'card')} shown`). Pure functions with no React and no strings of their own.
+const COPY_HELPERS = new Set(["lib/plural", "lib/braincells"])
 const ALLOWED = {
   atoms: ["atoms"],
   molecules: ["atoms", "molecules"],
@@ -150,11 +154,14 @@ const reportModule = (file, tier, spec) => {
   }
 }
 
-/** copy/ modules may import other copy/ modules and types; nothing else. */
+/** copy/ modules may import other copy/ modules, the listed formatting helpers, and types; nothing else. */
 const inspectCopySource = (file) => {
   const sourceFile = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true, scriptKindFor(file))
   const check = (spec) => {
-    if (folderOf(file, spec) !== COPY) report(file, `copy/ imports "${spec}": copy is plain data and imports only copy/`)
+    if (folderOf(file, spec) === COPY) return
+    const target = spec.startsWith(".") ? relative(src, resolve(dirname(file), spec)).split(sep).join("/").replace(/\.(ts|js)$/, "") : spec
+    if (COPY_HELPERS.has(target)) return
+    report(file, `copy/ imports "${spec}": copy is plain data and imports only copy/ (plus ${[...COPY_HELPERS].join(", ")})`)
   }
   for (const statement of sourceFile.statements) {
     if (ts.isImportDeclaration(statement) && !isTypeOnlyImport(statement.importClause)) {

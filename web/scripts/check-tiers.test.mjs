@@ -153,12 +153,15 @@ test("keeps copy/ plain data: tiers never import it, and it imports only copy/",
   const result = runChecker({
     "copy/shared.ts": "export const sharedCopy = { close: 'Close' } as const\n",
     "copy/settings.ts": "import { sharedCopy } from './shared'\nimport type { Tier } from '../lib/types'\nexport const settingsCopy = { close: sharedCopy.close, tier: (tier: Tier) => tier } as const\n",
-    "copy/leaky.ts": "import { plural } from '../lib/plural'\nexport const leakyCopy = { count: (n: number) => plural(n) } as const\n",
-    "copy/reexport.ts": "export { plural } from '../lib/plural'\n",
-    "copy/lazy.ts": "export const load = () => import('../lib/plural')\n",
+    "copy/binder.ts": "import { plural } from '../lib/plural'\nimport { braincells } from '../lib/braincells'\nexport const binderCopy = { shown: (n: number) => `${plural(n, 'card')} shown`, worth: (n: number) => braincells(n) } as const\n",
+    "copy/leaky.ts": "import { cn } from '../lib/cn'\nexport const leakyCopy = { className: cn('x') } as const\n",
+    "copy/reexport.ts": "export { cn } from '../lib/cn'\n",
+    "copy/lazy.ts": "export const load = () => import('../lib/cn')\n",
     "copy/Component.tsx": component,
     "lib/types.ts": "export type Tier = 'fresh' | 'shiny'\n",
-    "lib/plural.ts": "export const plural = (n: number) => `${n}`\n",
+    "lib/plural.ts": "export const plural = (n: number, word: string) => `${n} ${word}`\n",
+    "lib/braincells.ts": "export const braincells = (n: number) => `🧠 ${n}`\n",
+    "lib/cn.ts": "export const cn = (...c: string[]) => c.join(' ')\n",
     "hooks/useSettingsScreen.ts": "import { settingsCopy } from '../copy/settings'\nexport const build = () => ({ close: settingsCopy.close })\n",
     "screens/SettingsScreen.tsx": "import { settingsCopy } from '../copy/settings'\nexport function SettingsScreen() { return <button>{settingsCopy.close}</button> }\n",
     "screens/SettingsScreen.stories.tsx": "import { settingsCopy } from '../copy/settings'\nexport default { args: { label: settingsCopy.close } }\n",
@@ -169,14 +172,15 @@ test("keeps copy/ plain data: tiers never import it, and it imports only copy/",
   })
 
   assert.equal(result.status, 1, result.output)
-  assert.match(result.output, /copy\/leaky\.ts: copy\/ imports "\.\.\/lib\/plural"/)
-  assert.match(result.output, /copy\/reexport\.ts: copy\/ imports "\.\.\/lib\/plural"/)
-  assert.match(result.output, /copy\/lazy\.ts: copy\/ imports "\.\.\/lib\/plural"/)
+  assert.match(result.output, /copy\/leaky\.ts: copy\/ imports "\.\.\/lib\/cn"/)
+  assert.match(result.output, /copy\/reexport\.ts: copy\/ imports "\.\.\/lib\/cn"/)
+  assert.match(result.output, /copy\/lazy\.ts: copy\/ imports "\.\.\/lib\/cn"/)
   assert.match(result.output, /copy\/Component\.tsx: component outside a tier folder/)
   assert.match(result.output, /screens\/SettingsScreen\.tsx: screens imports from copy\//)
   assert.match(result.output, /views\/SettingsView\.tsx: views imports from copy\//)
   assert.doesNotMatch(result.output, /copy\/settings\.ts/)
   assert.doesNotMatch(result.output, /copy\/shared\.ts/)
+  assert.doesNotMatch(result.output, /copy\/binder\.ts/)
   assert.doesNotMatch(result.output, /hooks\/useSettingsScreen\.ts/)
   assert.doesNotMatch(result.output, /SettingsScreen\.stories\.tsx/)
   assert.doesNotMatch(result.output, /atoms\/TypedLabel\.tsx/)

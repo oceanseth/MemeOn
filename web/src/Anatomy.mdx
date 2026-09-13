@@ -26,7 +26,7 @@ Beside the tiers, four folders are the engine side:
 
 | Folder | What lives there |
 |---|---|
-| `src/copy/` | **Every user-facing string**, one plain-data module per surface (`settings.ts`, …) plus `shared.ts` for labels that recur. Keys name the role (`intro`, `account.logOut`), never the content; dynamic strings are small pure functions (`account.name(user.name)`). `copy/` imports nothing. Hooks and `lib/*Model.ts` builders read it; tests and stories assert **through the same constant**, so a copy change touches one file. Tier components never import it — strings reach them as props. |
+| `src/copy/` | **Every user-facing string**, one plain-data module per surface (`settings.ts`, …) plus `shared.ts` for labels that recur. Keys name the role (`intro`, `account.logOut`), never the content; dynamic strings are small pure functions (`account.name(user.name)`, `` shown: (n) => `${plural(n, 'card')} shown` ``). `copy/` imports nothing but `copy/` and the two formatting helpers `lib/plural` and `lib/braincells`, so a noun stays beside its sentence. Hooks and `lib/*Model.ts` builders read it; tests and stories assert **through the same constant**, so a copy change touches one file. Tier components never import it — strings reach them as props. |
 | `src/hooks/` | One `useXScreen()` per screen (exports `XScreenModel`), plus `useAuth`, `useTheme`, `useProjectedActor`, `useDocumentTitle`, `useMountEffect` |
 | `src/stores/` | XState machines (`*Machine.ts`), the MobX `AuthStore` / `ThemeStore`, `createStores` + `StoresContext` |
 | `src/lib/` | Everything with no React tree: the API client, auth, presence, formatting (`braincells`, `plural`), `cn()`, `FOCUS_RING`, the imperative `cardMedia`, and the **model builders** (`*Model.ts`) that turn API records into the prop bags molecules and atoms render (`memeCardModel`, `tradeCardModel`, `questBarModel`, …). Hooks call the builders; components only import their types. |
@@ -222,7 +222,8 @@ Probe these instead of a class name or copy string:
 - Model builders live in `lib/*Model.ts`, not in a tier folder: hooks call them, stories use them
   as fixtures, and a component imports only the model's *type*.
 - Strings live in `copy/`, spelled once. Builders read them; tests and stories assert through the
-  constant. No tier imports `copy/`, and `copy/` imports nothing but `copy/`.
+  constant. No tier imports `copy/`, and `copy/` imports nothing but `copy/`, `lib/plural` and
+  `lib/braincells`.
 - Presentation is Tailwind utilities on the component, in `@layer utilities`. Only effects no
   utility can express get a co-located `.css` file — today the card foil (`atoms/foil.css`), the
   skeleton sweep, the spinner, the landing frame-slot shimmer (`screens/LandingScreen.css`) and the
