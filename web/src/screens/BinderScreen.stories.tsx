@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, within } from 'storybook/test'
 import { giftablePaper, holoMeme, paperMeme, silverMeme } from '../../.storybook/fixtures'
+import { binderCopy as copy } from '../copy/binder'
 import type { BinderScreenModel } from '../hooks/useBinderScreen'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { buildSortChipsModel } from '../lib/sortChipsModel'
@@ -23,48 +24,52 @@ const card = (
   extra: { showCreator?: boolean; showPrivate?: boolean } = {},
 ): BinderScreenModel['cards'][number] => {
   const memeCard = buildMemeCardModel(meme)
+  const sharesLabel = copy.card.shares(shares)
   return {
     id: meme.id,
     memeCard,
     ariaLabel: [
       meme.title,
       memeCard.tierLabel,
-      `${shares}/100 shares`,
-      extra.showCreator ? 'you minted this' : null,
-      extra.showPrivate ? 'private' : null,
+      sharesLabel,
+      extra.showCreator ? copy.card.minted : null,
+      extra.showPrivate ? copy.card.private : null,
     ]
       .filter(Boolean)
-      .join(' · '),
-    sharesLabel: `${shares}/100 shares`,
+      .join(copy.separator),
+    sharesLabel,
     sharesPct: shares,
     showCreator: !!extra.showCreator,
     showPrivate: !!extra.showPrivate,
   }
 }
 
+/** The status line the hook composes: parts joined the same way, so the story reads as the app does. */
+const status = (...parts: string[]) => parts.join(copy.separator)
+
 const empty: BinderScreenModel = {
   phase: 'empty',
-  intro: 'Your corner of the internet. In card form.',
+  intro: copy.intro,
   identity: null,
   statusProps: { role: 'status', 'aria-live': 'polite' },
-  statusMessage: 'No cards shown · newest first',
-  collectionHeading: 'Your collection',
+  statusMessage: status(copy.status.empty, copy.status.sort.new[0]),
+  collectionHeading: copy.collection.heading,
   showPrivateToggle: false,
   privateCount: 0,
-  privateToggleLabel: 'Show private (0)',
+  privateToggleLabel: copy.collection.showPrivate(0),
   privateToggleProps: { checked: false, onCheckedChange: fn() },
   sortChips: buildSortChipsModel({ sortKey: 'new', dir: 'desc', onChange: fn() }),
   createLinkProps: { to: '/binder/new' },
-  createLabel: 'Mint a meme',
+  createLabel: copy.collection.mint,
   cards: [],
   showMore: null,
   showLoading: false,
   showEmpty: true,
-  emptyMessage: 'Your binder is empty. Mint your first meme and start the grind to ✨Shiny✨.',
-  emptyAction: { kind: 'create', label: '＋ Mint your first meme', linkProps: { to: '/binder/new' } },
+  emptyMessage: copy.emptyState.firstRun,
+  emptyAction: { kind: 'create', label: copy.emptyState.mintFirst, linkProps: { to: '/binder/new' } },
   showError: false,
-  errorTitle: "Couldn't load your binder.",
-  errorMessage: 'Your cards are safe — nothing was lost. Give it another go.',
+  errorTitle: copy.errorState.title,
+  errorMessage: copy.errorState.message,
   retryProps: { onClick: fn() },
   showGrid: false,
 }
@@ -82,14 +87,14 @@ type Story = StoryObj<typeof meta>
 export const Loading: Story = {
   args: {
     phase: 'loading',
-    statusMessage: 'Loading your binder…',
+    statusMessage: copy.status.loading,
     showEmpty: false,
     emptyAction: null,
     showLoading: true,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('status')).toHaveTextContent('Loading your binder…')
+    await expect(canvas.getByRole('status')).toHaveTextContent(copy.status.loading)
     await expect(canvasElement.querySelectorAll('[data-slot="skeleton-card"]')).toHaveLength(6)
   },
 }

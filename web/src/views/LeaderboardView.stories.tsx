@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
 import { leaderboardRows } from '../../.storybook/fixtures'
+import { leaderboardCopy as copy } from '../copy/leaderboard'
 import { LeaderboardView } from './LeaderboardView'
 
 const meta = {
@@ -27,8 +28,8 @@ export const RowsAndLinks: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('link', { name: /pal/ })).toHaveAttribute('href', '/u/user-pal')
-    await expect(canvas.getByText('🥇')).toBeInTheDocument()
-    await expect(canvas.getByText('🧠 240')).toBeInTheDocument()
+    await expect(canvas.getByText(copy.row.medals[0])).toBeInTheDocument()
+    await expect(canvas.getByText(copy.row.braincells(240))).toBeInTheDocument()
     await expect(loaded.scenario.unexpected).toEqual([])
   },
 }
@@ -38,9 +39,9 @@ export const InitialFailureShowsError: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><LeaderboardView /></ConnectedStory>,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(await canvas.findByRole('alert')).toHaveTextContent("Couldn't load Top Brains.")
-    await expect(canvas.getByRole('button', { name: 'Try again' })).toBeInTheDocument()
-    await expect(canvas.queryByText(/throne is empty/i)).toBeNull()
+    await expect(await canvas.findByRole('alert')).toHaveTextContent(copy.loadError)
+    await expect(canvas.getByRole('button', { name: copy.retry })).toBeInTheDocument()
+    await expect(canvas.queryByText(copy.empty)).toBeNull()
   },
 }
 
@@ -53,7 +54,7 @@ export const RetryAfterFailure: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><LeaderboardView /></ConnectedStory>,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(await canvas.findByRole('button', { name: 'Try again' }))
+    await userEvent.click(await canvas.findByRole('button', { name: copy.retry }))
     await expect(await canvas.findByRole('link', { name: /pal/ })).toBeInTheDocument()
   },
 }

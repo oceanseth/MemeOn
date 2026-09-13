@@ -2,38 +2,37 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { marketplacePage } from '../../.storybook/fixtures'
+import { marketplaceCopy as copy } from '../copy/marketplace'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { buildSortChipsModel } from '../lib/sortChipsModel'
 import { buildMarketFilterTabs, type MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
 import { MarketplaceScreen } from './MarketplaceScreen'
 
-const SORT_REASON = "Newest first — the market can't rank by views, reshares or value yet."
-
 const empty: MarketplaceScreenModel = {
   phase: 'empty', cards: [],
   queryInputProps: {
-    value: '', placeholder: 'Search memes or tags',
-    'aria-label': 'Search memes, tags and creators', onChange: fn(),
+    value: '', placeholder: copy.search.placeholder,
+    'aria-label': copy.search.label, onChange: fn(),
   },
   filterTabs: buildMarketFilterTabs({ type: '', listed: false, onTypeChange: fn(), onListedChange: fn() }),
-  tierSelectProps: { value: '', 'aria-label': 'Filter by tier', onValueChange: fn() },
+  tierSelectProps: { value: '', 'aria-label': copy.filters.tierLabel, onValueChange: fn() },
   sortChips: buildSortChipsModel({
-    sortKey: 'new', dir: 'desc', onChange: fn(), disabledReason: SORT_REASON,
+    sortKey: 'new', dir: 'desc', onChange: fn(), disabledReason: copy.sortDisabledReason,
   }),
   createLinkProps: { to: '/binder/new' },
   filtersToggleProps: { onClick: fn(), 'aria-expanded': false, 'aria-controls': 'market-filters' },
-  filtersToggleLabel: 'Filters',
+  filtersToggleLabel: copy.filters.toggle,
   filtersPanelProps: { id: 'market-filters', 'data-collapsed': 'true' },
   statusProps: { role: 'status', 'aria-live': 'polite' },
-  resultsLabel: 'Nothing matches',
+  resultsLabel: copy.results.empty,
   clearFiltersProps: null,
   showLoading: false, showEmpty: true, showError: false, showGrid: false, showMore: false,
   skeletonCount: 8,
-  errorMessage: "Couldn't reach the market. Your filters are still set.",
+  errorMessage: copy.loadError,
   retryButtonProps: { onClick: fn(), disabled: false },
-  retryLabel: 'Try again',
+  retryLabel: copy.retry,
   loadMoreProps: { onClick: fn(), disabled: false, 'aria-busy': false },
-  loadMoreLabel: 'Load more',
+  loadMoreLabel: copy.loadMore,
   loadMoreError: null,
   endOfListLabel: null,
 }
@@ -41,7 +40,7 @@ const onType = fn()
 const onListed = fn()
 const ready: Partial<MarketplaceScreenModel> = {
   phase: 'ready', cards: marketplacePage.map(buildMemeCardModel),
-  showEmpty: false, showGrid: true, resultsLabel: `${marketplacePage.length} memes`,
+  showEmpty: false, showGrid: true, resultsLabel: copy.results.count(marketplacePage.length),
 }
 /** 390×844: the phone column — search, the two disclosure pills, the primary Mint, a 2-up grid. */
 const phone = {
@@ -61,33 +60,33 @@ type Story = StoryObj<typeof meta>
 export const Loading: Story = {
   args: {
     phase: 'loading', showLoading: true, showEmpty: false, showGrid: false,
-    resultsLabel: 'Searching the market…',
+    resultsLabel: copy.results.searching,
   },
 }
 export const Empty: Story = {}
 export const Error: Story = {
   args: {
-    phase: 'error', showEmpty: false, showError: true, resultsLabel: 'No memes loaded',
+    phase: 'error', showEmpty: false, showError: true, resultsLabel: copy.results.errored,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('alert')).toHaveTextContent(/Couldn't reach the market/)
-    await expect(canvas.getByRole('button', { name: 'Try again' })).toBeInTheDocument()
+    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.loadError)
+    await expect(canvas.getByRole('button', { name: copy.retry })).toBeInTheDocument()
   },
 }
 export const Ready: Story = {
-  args: { ...ready, endOfListLabel: "That's every meme matching these filters." },
+  args: { ...ready, endOfListLabel: copy.endOfList },
 }
 export const ReadyWithMore: Story = { args: { ...ready, showMore: true } }
 export const LoadMoreFailed: Story = {
   args: {
-    ...ready, showMore: true, loadMoreLabel: 'Try again',
-    loadMoreError: "Couldn't pull the next page.",
+    ...ready, showMore: true, loadMoreLabel: copy.loadMoreRetry,
+    loadMoreError: copy.loadMoreError,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('alert')).toHaveTextContent(/next page/)
-    await expect(canvas.getByRole('button', { name: 'Try again' })).toBeEnabled()
+    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.loadMoreError)
+    await expect(canvas.getByRole('button', { name: copy.loadMoreRetry })).toBeEnabled()
   },
 }
 /** Phone disclosure: the sticky row keeps search and the mint CTA, filters open on demand. */
@@ -95,21 +94,21 @@ export const FiltersNarrowed: Story = {
   args: {
     ...ready,
     filterTabs: buildMarketFilterTabs({ type: 'image', listed: true, onTypeChange: fn(), onListedChange: fn() }),
-    tierSelectProps: { value: 'holo', 'aria-label': 'Filter by tier', onValueChange: fn() },
-    filtersToggleLabel: 'Filters · 3',
+    tierSelectProps: { value: 'holo', 'aria-label': copy.filters.tierLabel, onValueChange: fn() },
+    filtersToggleLabel: copy.filters.toggleWithCount(3),
     filtersToggleProps: { onClick: fn(), 'aria-expanded': true, 'aria-controls': 'market-filters' },
     filtersPanelProps: { id: 'market-filters', 'data-collapsed': 'false' },
-    resultsLabel: '2 memes · Images · Holo · for sale',
+    resultsLabel: copy.results.line([copy.results.count(2), copy.filters.media.images, 'Holo', copy.results.activeListed]),
     clearFiltersProps: { onClick: fn() },
   },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('status')).toHaveTextContent('Images · Holo · for sale')
+    await expect(canvas.getByRole('status')).toHaveTextContent(copy.results.line([copy.filters.media.images, 'Holo', copy.results.activeListed]))
     // filter row uses pressed tabs — aria-pressed, not a checked box
-    const media = within(canvas.getByRole('group', { name: 'Filter by media type' }))
-    await expect(media.getByRole('button', { name: 'Images' })).toHaveAttribute('aria-pressed', 'true')
-    await expect(media.getByRole('button', { name: 'All memes' })).toHaveAttribute('aria-pressed', 'false')
-    await expect(canvas.getByRole('button', { name: 'For sale' })).toHaveAttribute('aria-pressed', 'true')
+    const media = within(canvas.getByRole('group', { name: copy.filters.media.groupLabel }))
+    await expect(media.getByRole('button', { name: copy.filters.media.images })).toHaveAttribute('aria-pressed', 'true')
+    await expect(media.getByRole('button', { name: copy.filters.media.all })).toHaveAttribute('aria-pressed', 'false')
+    await expect(canvas.getByRole('button', { name: copy.filters.listed })).toHaveAttribute('aria-pressed', 'true')
     await userEvent.click(canvas.getByRole('button', { name: 'Clear filters' }))
     await expect(args.clearFiltersProps?.onClick).toHaveBeenCalled()
   },
@@ -125,20 +124,20 @@ export const FilterTabsPressAndToggle: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const media = within(canvas.getByRole('group', { name: 'Filter by media type' }))
-    await expect(media.getByRole('button', { name: 'All memes' })).toHaveAttribute('aria-pressed', 'true')
-    await userEvent.click(media.getByRole('button', { name: 'Videos' }))
+    const media = within(canvas.getByRole('group', { name: copy.filters.media.groupLabel }))
+    await expect(media.getByRole('button', { name: copy.filters.media.all })).toHaveAttribute('aria-pressed', 'true')
+    await userEvent.click(media.getByRole('button', { name: copy.filters.media.videos }))
     await expect(onType).toHaveBeenLastCalledWith('video')
-    await userEvent.click(canvas.getByRole('button', { name: 'For sale' }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.filters.listed }))
     await expect(onListed).toHaveBeenLastCalledWith(true)
     // a 46px pill on a coarse pointer is already past the 44px floor
-    await expect(media.getByRole('button', { name: 'Videos' }).getBoundingClientRect().height).toBe(46)
+    await expect(media.getByRole('button', { name: copy.filters.media.videos }).getBoundingClientRect().height).toBe(46)
   },
 }
 
 /** The dark arm of the whole page: plate, pressed tabs, neutral Mint, tier frames. */
 export const Dark: Story = {
-  args: { ...ready, endOfListLabel: "That's every meme matching these filters." },
+  args: { ...ready, endOfListLabel: copy.endOfList },
   globals: { theme: 'dark' },
 }
 
