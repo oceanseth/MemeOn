@@ -30,7 +30,7 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
           {model.ancestors.map((ancestor, index) => (
             <span key={ancestor.id}>
               {index > 0 && ' → '}
-              <Link className="text-link no-underline hover:underline" {...ancestor.linkProps}>
+              <Link className="text-link underline underline-offset-[3px] decoration-1" {...ancestor.linkProps}>
                 "{ancestor.title}"
               </Link>
             </span>

@@ -119,8 +119,8 @@ export function ProfileScreen({
     )
   if (showLoading || !profile)
     return (
-      <PageContainer as="main" id="main" tabIndex={-1} role="status" aria-live="polite">
-        <span className="sr-only">{loadingLabel}</span>
+      <PageContainer as="main" id="main" tabIndex={-1}>
+        <div role="status" aria-live="polite" className="sr-only">{loadingLabel}</div>
         <div className={cn(IDENTITY_CARD, 'mt-5 sm:min-h-34.5')} aria-hidden="true">
           <Skeleton className="size-avatar-hero rounded-avatar-hero" />
           <div className="min-w-0 flex-1">

@@ -80,7 +80,7 @@ export function TradesScreen({
     <div className={liveRegion} {...errorNoticeProps}>{showErrorNotice && <Notice tone="error" role="none">{err}</Notice>}</div>
     <div className="[&>*+*]:mt-8">
       {compose && (compose.noFriends
-        ? <EmptyState role="none">
+        ? <EmptyState role="none" id={compose.formProps.id}>
             <p>Trading needs a friend first.</p>
             <EmptyActions><Link className={buttonClasses('primary')} to="/friends">Find your people</Link></EmptyActions>
           </EmptyState>

@@ -49,7 +49,7 @@ const personRow = cn(
 
 const rowList = 'mt-3 flex flex-col gap-2'
 
-const inlineLink = 'text-link no-underline hover:underline'
+const inlineLink = 'text-link underline underline-offset-[3px] decoration-1'
 
 /** Tier line: success colour signed in, link colour on public card — one element, one swap. */
 const heroTierLine = 'm-0 text-caption font-bold'
@@ -165,7 +165,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
         <div data-slot="detail-rail" className={cn(rail, railPlacement)}>
           {detail.signedOut && (
             <Panel>
-              <h3>{detail.signedOut.title}</h3>
+              <h2>{detail.signedOut.title}</h2>
               <p className={caption}>{detail.signedOut.body}</p>
               <div className={panelRow}>
                 {/* the single bubblegum on a public card */}
@@ -183,7 +183,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           )}
 
           <Panel>
-            <h3>Share to go viral</h3>
+            <h2>Share to go viral</h2>
             <p className={caption}>{SHARE_CAPTION}</p>
             <div className={panelRow}>
               <Input className="min-w-50 flex-1 max-sm:w-full max-sm:flex-none" {...detail.shareInputProps} />
@@ -198,7 +198,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
 
           {detail.listing ? (
             <Panel>
-              <h3>{detail.listing.saleLabel}</h3>
+              <h2>{detail.listing.saleLabel}</h2>
               {detail.listing.showBuy && detail.listing.balanceLabel && (
                 <p className={caption}>{detail.listing.balanceLabel}</p>
               )}
@@ -220,7 +220,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
             </Panel>
           ) : detail.list.show ? (
             <Panel>
-              <h3>List shares for sale</h3>
+              <h2>List shares for sale</h2>
               <p className={caption}>Name your price — anyone in the market can pick up a slice of the joke.</p>
               <div className={cn(panelRow, 'items-end')}>
                 <Field>
@@ -241,7 +241,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
 
           {detail.actions.length > 0 && (
             <Panel>
-              <h3>Card controls</h3>
+              <h2>Card controls</h2>
               <p className={caption}>What you hold decides what you can do with this card.</p>
               <div className={panelRow}>
                 {detail.actions.map((action) => (
@@ -265,7 +265,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           >
             {detail.sources.length > 0 && (
               <Panel>
-                <h3>📡 Where it’s spreading</h3>
+                <h2>📡 Where it’s spreading</h2>
                 <div className={rowList}>
                   {detail.sources.map((source) => (
                     <div key={source.id} className={personRow}>
@@ -284,7 +284,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           </div>
 
           <Panel>
-            <h3>{detail.capTableTitle}</h3>
+            <h2>{detail.capTableTitle}</h2>
             <div className={rowList}>
               {detail.capTable.map((holder) => (
                 <div key={holder.userId} className={cn(personRow, 'tabular-nums')}>

@@ -250,12 +250,14 @@ export function TokenSheet() {
         >
           Focus
         </span>
-        <span
+        <button
+          type="button"
+          disabled
           data-slot="material-disabled"
-          className="inline-flex h-control items-center rounded-control bg-surface-raised px-control-x text-label font-semibold opacity-(--state-disabled-opacity) shadow-raised"
+          className="inline-flex h-control items-center rounded-control border-0 bg-surface-raised px-control-x text-label font-semibold opacity-(--state-disabled-opacity) shadow-raised"
         >
           Disabled
-        </span>
+        </button>
         <span
           data-slot="material-field"
           className="inline-flex h-field w-64 items-center rounded-field bg-surface-pressed px-control-x text-body text-ink-muted shadow-pressed"
@@ -329,7 +331,11 @@ export function TokenSheet() {
         <h3>h3 is card-title</h3>
         <h4>h4 is card-title-phone</h4>
         <p>
-          Body copy is Onest 16/24 on ink. A <a href="#top">link</a> wears <code>--color-link</code>; inline{' '}
+          Body copy is Onest 16/24 on ink. A{' '}
+          <a className="text-link underline underline-offset-[3px] decoration-1" href="#top">
+            link
+          </a>{' '}
+          wears <code>--color-link</code>; inline{' '}
           <code>code</code> sits on the pressed surface. 🧠 2,480 · 👁️ 12 · 🔁 3
         </p>
       </div>

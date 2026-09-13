@@ -125,7 +125,12 @@ const preview: Preview = {
       },
     },
     a11y: {
-      test: 'todo',
+      test: 'error',
+      // Base UI popups mount focus sentinels (`data-base-ui-focus-guard`, aria-hidden + tabindex=0)
+      // for trap behaviour; axe flags them but they are intentional.
+      config: {
+        rules: [{ id: 'aria-hidden-focus', enabled: false }],
+      },
     },
   },
   tags: ['autodocs'],

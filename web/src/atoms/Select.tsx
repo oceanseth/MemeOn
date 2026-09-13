@@ -96,7 +96,7 @@ export function Select({
       <SelectPortal>
         <SelectPositioner sideOffset={6} alignItemWithTrigger={false} className="z-(--z-modal)">
           <SelectPopup className={selectPopupChrome} data-slot="select-popup">
-            <SelectList>
+            <SelectList aria-label={ariaLabel}>
               {items.map((item) => (
                 <SelectItem
                   key={item.value}
