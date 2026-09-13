@@ -9,7 +9,7 @@ export const checkboxLabelChrome =
   'has-[[data-disabled]]:cursor-not-allowed has-[[data-disabled]]:opacity-(--state-disabled-opacity)'
 
 export const checkboxBoxChrome =
-  'inline-flex size-[22px] shrink-0 items-center justify-center rounded-[7px] border-0 ' +
+  'inline-flex size-icon shrink-0 items-center justify-center rounded-[7px] border-0 ' +
   'bg-surface-raised shadow-raised text-caption leading-none text-transparent ' +
   'data-[checked]:bg-action data-[checked]:text-on-action ' +
   'data-[indeterminate]:bg-action data-[indeterminate]:text-on-action ' +

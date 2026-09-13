@@ -20,7 +20,7 @@ const SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6'] as const
 /** Same `minmax(230px, 1fr)` the production `.card-grid` used; 2 × 166 + 18 = 350 at the phone margin. */
 export const binderGridClasses = cn(
   'm-0 grid list-none items-start grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5 p-0',
-  'max-sm:grid-cols-2 max-sm:gap-[18px]',
+  'max-sm:grid-cols-2 max-sm:gap-gutter',
 )
 
 /**
@@ -30,7 +30,7 @@ export const binderGridClasses = cn(
  */
 export const binderCardSlotClasses = cn(
   '[content-visibility:auto] [contain-intrinsic-size:auto_360px]',
-  'pointer-events-none p-[30px] [margin:-30px] [&>*]:pointer-events-auto',
+  'pointer-events-none p-7.5 -m-7.5 [&>*]:pointer-events-auto',
   'max-sm:p-5 max-sm:[margin:-20px]',
 )
 
@@ -45,11 +45,11 @@ const OWNERSHIP_TRACK = 'mt-1 block h-1 overflow-hidden rounded-sm bg-surface-pr
 const SECTION_HEADING = 'm-0 font-display text-title font-medium tracking-title text-ink'
 
 /** The toolbar row: heading + live count on the left, the 46px control lane on the right. */
-const TOOLBAR = 'mt-7 mb-[18px] flex flex-wrap items-end justify-between gap-x-6 gap-y-3.5'
+const TOOLBAR = 'mt-7 mb-gutter flex flex-wrap items-end justify-between gap-x-6 gap-y-3.5'
 
 /** Private toggle as a real checkbox inside a pill — checked state presses the pill. */
 const PRIVATE_PILL = cn(
-  'ms-0 min-h-[46px] gap-2.5 rounded-control bg-surface-raised px-[18px] py-0 shadow-raised',
+  'ms-0 min-h-control gap-2.5 rounded-control bg-surface-raised px-control-x py-0 shadow-raised',
   'text-label font-semibold text-ink',
   'has-[[data-checked]]:bg-surface-pressed has-[[data-checked]]:shadow-pressed',
 )
@@ -93,13 +93,13 @@ export function BinderScreen({
       {identity && (
         <div
           data-slot="binder-identity"
-          className="mb-6 flex min-h-[98px] items-center gap-4 rounded-card bg-surface p-5 shadow-raised"
+          className="mb-6 flex min-h-24.5 items-center gap-4 rounded-card bg-surface p-5 shadow-raised"
         >
           <Avatar
             name={identity.name}
             src={identity.pictureUrl}
             size="lg"
-            className="size-[54px] rounded-[20px]"
+            className="size-13.5 rounded-well"
           />
           <div className="min-w-0">
             <p
@@ -108,7 +108,7 @@ export function BinderScreen({
             >
               {identity.name}
             </p>
-            <p className="m-0 mt-[7px] text-small font-medium text-ink-muted tabular-nums">
+            <p className="m-0 mt-1.75 text-small font-medium text-ink-muted tabular-nums">
               {identity.statsLabel}
             </p>
           </div>

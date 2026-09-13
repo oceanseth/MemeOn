@@ -15,7 +15,7 @@ const FOCUS = FOCUS_RING
 
 /** A bypass block costs nothing until it is focused: it waits 60px above the page. */
 const SKIP_LINK = cn(
-  'absolute top-[-60px] left-3 z-[calc(var(--z-header)+10)]',
+  'absolute -top-15 left-3 z-[calc(var(--z-header)+10)]',
   'rounded-control bg-surface-raised px-4 py-2.5 text-ink no-underline shadow-raised',
   '[transition:top_var(--dur-base)_ease] motion-reduce:transition-none',
   'focus:top-3',
@@ -26,7 +26,7 @@ const SKIP_LINK = cn(
 const FRAME = 'relative mx-auto flex w-full max-w-app grow'
 
 /** 20 gutter + 216 shell; the column stretches the frame's height so the shell can stick inside it. */
-const SIDEBAR_COLUMN = 'hidden w-[236px] shrink-0 py-5 pl-5 2xl:block'
+const SIDEBAR_COLUMN = 'hidden w-59 shrink-0 py-5 pl-5 2xl:block'
 
 /**
  * The ceramic shell: sticky 20 from the top, viewport-tall, scrolling inside when short. It wears
@@ -34,7 +34,7 @@ const SIDEBAR_COLUMN = 'hidden w-[236px] shrink-0 py-5 pl-5 2xl:block'
  * never paint over the navigation.
  */
 const SIDEBAR = cn(
-  'sticky top-5 z-(--z-header) flex h-[calc(100dvh-40px)] w-[216px] flex-col overflow-y-auto [scrollbar-width:thin]',
+  'sticky top-5 z-(--z-header) flex h-[calc(100dvh-40px)] w-54 flex-col overflow-y-auto [scrollbar-width:thin]',
   'rounded-shell bg-surface shadow-raised',
 )
 
@@ -47,7 +47,7 @@ const CONTENT = cn('flex min-w-0 flex-1 flex-col', '[&>main]:w-full [&>main]:gro
 /** App content inset: 276 = frame gutter + sidebar + column padding. */
 const CONTENT_APP = '2xl:pr-9 2xl:pl-5'
 /** Public pages: 72px from the frame edge. */
-const CONTENT_PUBLIC = '2xl:px-[52px]'
+const CONTENT_PUBLIC = '2xl:px-13'
 /** The fixed tab bar is 80 tall, 10 up: the column ends 100 above the safe area so nothing hides under it. */
 const CONTENT_ABOVE_TABS = 'max-2xl:pb-[calc(100px+env(safe-area-inset-bottom,0px))]'
 
@@ -58,12 +58,12 @@ const CONTENT_ABOVE_TABS = 'max-2xl:pb-[calc(100px+env(safe-area-inset-bottom,0p
  */
 const HEADER = cn(
   'flex items-center gap-2.5',
-  'max-2xl:sticky max-2xl:top-0 max-2xl:z-(--z-header) max-2xl:min-h-16 max-2xl:py-[5px]',
+  'max-2xl:sticky max-2xl:top-0 max-2xl:z-(--z-header) max-2xl:min-h-16 max-2xl:py-1.25',
   'max-2xl:[padding-inline:max(20px,env(safe-area-inset-left))_max(20px,env(safe-area-inset-right))]',
   'max-2xl:bg-[color-mix(in_oklab,var(--color-canvas)_85%,transparent)] max-2xl:backdrop-blur-[12px]',
-  '2xl:gap-[18px]',
+  '2xl:gap-gutter',
 )
-const HEADER_APP = '2xl:mt-[29px] 2xl:min-h-[54px] 2xl:px-5'
+const HEADER_APP = '2xl:mt-7.25 2xl:min-h-13.5 2xl:px-5'
 /** Public header: 52px column inset + PageContainer padding. */
 const HEADER_PUBLIC = '2xl:px-5 2xl:py-8'
 
@@ -85,7 +85,7 @@ function Wordmark({ size, className }: { size: keyof typeof WORDMARK_SIZE; class
       <img
         src="/brand/memeon-logo-circle-64.png"
         alt=""
-        className={cn('size-[30px]', size === 'header' && 'max-2xl:hidden')}
+        className={cn('size-7.5', size === 'header' && 'max-2xl:hidden')}
         width={30}
         height={30}
       />
@@ -106,7 +106,7 @@ export const NAV_ROW = cn(
 
 /** The chrome's one primary: bubblegum in light, sky in dark, raised, 46 tall. */
 export const PRIMARY_PILL = cn(
-  'inline-flex h-[46px] items-center justify-center gap-[9px] whitespace-nowrap rounded-control px-[18px]',
+  'inline-flex h-control items-center justify-center gap-control-gap whitespace-nowrap rounded-control px-control-x',
   'bg-action text-label font-semibold text-on-action no-underline shadow-raised',
   '[transition:transform_var(--dur-fast)_ease] motion-reduce:transition-none',
   '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px motion-reduce:hover:translate-y-0!',
@@ -127,7 +127,7 @@ export const UTILITY_LINK = cn(
 
 /** Tab bar item: 62×44, radius 22, icon 22 over a 12px label; current = pressed + 700. */
 export const TAB_ITEM = cn(
-  'flex h-11 w-[62px] shrink-0 flex-col items-center justify-center gap-[5px] rounded-[22px]',
+  'flex h-11 w-nav-item shrink-0 flex-col items-center justify-center gap-nav-gap rounded-pill',
   'text-micro leading-[15px] font-semibold text-ink no-underline',
   'aria-[current=page]:bg-surface-pressed aria-[current=page]:font-bold aria-[current=page]:shadow-pressed',
   FOCUS,
@@ -142,14 +142,14 @@ export const TAB_ITEM_PRIMARY = cn(
 /** 370×80 at 10 from the bottom, fluid to the phone's width, radius 30, raised. */
 const TAB_BAR = cn(
   'fixed bottom-[calc(10px+env(safe-area-inset-bottom,0px))] left-1/2 z-(--z-header) -translate-x-1/2',
-  'flex h-20 w-[calc(100%-20px)] max-w-[370px] items-center justify-around pb-3',
+  'flex h-20 w-[calc(100%-20px)] max-w-92.5 items-center justify-around pb-3',
   'rounded-tabbar bg-surface shadow-raised',
   '2xl:hidden',
 )
 
 const FOOTER = cn(
   'mt-12 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-line',
-  'px-5 pt-[22px] pb-[max(34px,env(safe-area-inset-bottom))]',
+  'px-5 pt-5.5 pb-[max(34px,env(safe-area-inset-bottom))]',
   'text-caption text-ink-muted',
   'max-2xl:flex-col max-2xl:items-center',
 )
@@ -217,7 +217,7 @@ export function AppShell({ sidebar, contextLine, headerEnd, quest, bottomNav, ch
                 {contextLine}
               </p>
             ) : null}
-            <div className="ml-auto flex shrink-0 items-center gap-2.5 2xl:gap-[18px]" data-slot="header-end">
+            <div className="ml-auto flex shrink-0 items-center gap-2.5 2xl:gap-gutter" data-slot="header-end">
               {headerEnd}
             </div>
           </header>

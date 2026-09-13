@@ -143,6 +143,7 @@ touch four.
 | Add a route | a `use*Screen` hook + `*Screen` + `*View` (+ stories), then a `<Route>` in `views/AppView.tsx` (`lazy()` if it is behind `RequireAuth`) | `useDocumentTitle` in the view |
 | Change what the API returns | `lib/types.ts`, the machine that fetches it, the builder that reads it | `.storybook/fixtures.ts` and `msw-handlers.ts` / `connected-scenario.ts` |
 | Change a token (colour, radius, type step, breakpoint) | `index.css` `@theme static` — one place; every arm is a `light-dark()` pair | `pnpm run check-contrast`; `Anatomy/Tokens` in Storybook shows the result |
+| Set a length (height, padding, gap, width) | a role token when the boards repeat it by role — `h-control`, `px-control-x`, `gap-control-gap`, `size-icon`, `p-gutter`, `h-field`, `size-control-sm`, `w-nav-item`, `max-w-measure`, `max-w-card`, `rounded-band` / `-well` / `-segment` / `-control-sm` (`index.css` `--spacing-*`, `--radius-*`, `--container-*`); otherwise a grid step (`mt-2.5`, `p-5.5`, `py-3.25`). No `h-[46px]`; `[…]` is for `calc()`, `env()`, `%` and `ch` only | a new role name goes in `index.css` **and** `lib/cn.ts` (`theme.spacing` / `radius` / `container`) with a `cn.test.ts` case |
 
 `pnpm run check` is the whole gate (tiers, contrast, layers, proxy, unit, runtime,
 stories). `pnpm run storybook` (port 6006, MSW-backed) is where a state is verified.

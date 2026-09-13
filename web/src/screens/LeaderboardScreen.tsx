@@ -31,15 +31,15 @@ const BOARD = 'm-0 flex list-none flex-col gap-5 p-0 max-md:gap-3.5'
 
 /* #1 gets action border on raised surface; #2 and #3 stay plain */
 const PODIUM = cn(
-  'flex h-full flex-col items-center rounded-[28px] bg-surface px-5 pt-[18px] pb-5 text-center shadow-raised',
-  'md:w-[218px]',
+  'flex h-full flex-col items-center rounded-band bg-surface px-5 pt-gutter pb-5 text-center shadow-raised',
+  'md:w-54.5',
   'max-md:flex-row max-md:items-center max-md:gap-3 max-md:rounded-nav max-md:px-5 max-md:py-3.5 max-md:text-left',
 )
 const PODIUM_FIRST = 'bg-surface-raised border-2 border-action'
 
 const RANK_ROW = cn(
-  'flex items-center gap-3 rounded-[28px] bg-surface px-5 py-[13px] shadow-raised',
-  'max-md:rounded-nav max-md:px-[18px] max-md:py-3.5',
+  'flex items-center gap-3 rounded-band bg-surface px-5 py-3.25 shadow-raised',
+  'max-md:rounded-nav max-md:px-gutter max-md:py-3.5',
 )
 const RANK_ROW_ME = 'bg-surface-raised border-2 border-action-secondary'
 
@@ -64,7 +64,7 @@ function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: 
       className={cn(ROW_LINK, RANK_ROW, leader.isMe && RANK_ROW_ME)}
     >
       <span className={RANK_NUMERAL}>{leader.rankNumeral}</span>
-      <Avatar name={leader.name} src={leader.avatarSrc} size="md" className="size-9 rounded-[13px]" loading="lazy" />
+      <Avatar name={leader.name} src={leader.avatarSrc} size="md" className="size-9 rounded-control-sm" loading="lazy" />
       <span className={NAME}>{leader.name}</span>
       {leader.isMe ? (
         <Badge tone="info" className="shrink-0">
@@ -133,7 +133,7 @@ export function LeaderboardScreen({
         <>
           {/* podium: head + top three; ranks 4+ continue in the list below */}
           <div className={PODIUM_PANEL} data-slot="podium">
-            <div className="max-w-[300px] flex-1" data-slot="podium-head">
+            <div className="max-w-75 flex-1" data-slot="podium-head">
               <h2 className="m-0 font-display text-section font-medium tracking-title text-ink max-md:text-section-phone">
                 {podiumTitle}
               </h2>
@@ -157,7 +157,7 @@ export function LeaderboardScreen({
                         name={l.name}
                         src={l.avatarSrc}
                         size="md"
-                        className="size-[50px] rounded-field md:mt-2.5 max-md:size-9 max-md:rounded-[13px]"
+                        className="size-12.5 rounded-field md:mt-2.5 max-md:size-9 max-md:rounded-control-sm"
                         loading="lazy"
                       />
                       <span
@@ -202,7 +202,7 @@ export function LeaderboardScreen({
 
           {showMore ? (
             <div className="mt-6 flex justify-center">
-              <Button variant="secondary" className="w-[220px] max-sm:w-full" {...showMoreButtonProps}>
+              <Button variant="secondary" className="w-55 max-sm:w-full" {...showMoreButtonProps}>
                 {showMoreLabel}
               </Button>
             </div>

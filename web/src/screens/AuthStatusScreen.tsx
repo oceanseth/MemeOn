@@ -8,8 +8,8 @@ import type { AuthStatusScreenModel } from '../hooks/useAuthCallbackScreen'
 
 /** Centred auth status card — tighter padding on phone. */
 const CARD = cn(
-  'mx-auto flex w-full max-w-[560px] flex-col items-center justify-center text-center',
-  'rounded-card border-0 bg-surface px-8 py-10 shadow-raised max-md:p-[26px]',
+  'mx-auto flex w-full max-w-card flex-col items-center justify-center text-center',
+  'rounded-card border-0 bg-surface px-8 py-10 shadow-raised max-md:p-6.5',
 )
 
 /**
@@ -17,7 +17,7 @@ const CARD = cn(
  * same ring, static — the arc still reads as "one thing is still happening".
  */
 const RING = cn(
-  'size-[38px] shrink-0 rounded-full border-[3px] border-line border-t-action',
+  'size-9.5 shrink-0 rounded-full border-3 border-line border-t-action',
   'motion-safe:animate-spin',
   'forced-colors:border-[CanvasText] forced-colors:border-t-[Highlight]',
 )
@@ -25,11 +25,11 @@ const RING = cn(
 /* text-balance keeps long titles from breaking mid-phrase on narrow cards */
 const TITLE = 'mb-0 text-balance font-display text-display-phone font-medium tracking-display text-ink'
 
-const SUBTITLE = 'mt-3 mb-0 max-w-[420px] text-label text-ink-muted'
+const SUBTITLE = 'mt-3 mb-0 max-w-105 text-label text-ink-muted'
 
 /** Quiet way out beside the primary control. */
 const TEXT_LINK = cn(
-  'inline-flex h-[46px] items-center text-label font-semibold text-ink underline underline-offset-[3px]',
+  'inline-flex h-control items-center text-label font-semibold text-ink underline underline-offset-[3px]',
 )
 
 /** Inline fallback link — ultraviolet, underlined, no box. */
@@ -48,7 +48,7 @@ export function AuthStatusScreen({
     <PageContainer as="main" id="main" tabIndex={-1} className="pt-12 max-md:pt-8">
       <div data-slot="auth-status" data-phase={phase} className={CARD}>
         {phase === 'working' && <span aria-hidden="true" data-slot="auth-ring" className={RING} />}
-        <h1 className={cn(TITLE, phase === 'working' && 'mt-[18px]')}>{title}</h1>
+        <h1 className={cn(TITLE, phase === 'working' && 'mt-gutter')}>{title}</h1>
         {subtitle && <p className={SUBTITLE}>{subtitle}</p>}
         {error && (
           <Notice tone="error" compact>

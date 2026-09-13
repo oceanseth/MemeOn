@@ -26,7 +26,7 @@ const nextAfter = (value: ThemePreference) =>
   OPTIONS[(OPTIONS.findIndex((o) => o.value === value) + 1) % OPTIONS.length]!
 
 /** Segmented well: 184×40, pressed surface. */
-const WELL = 'inline-flex h-10 w-[184px] shrink-0 items-center gap-0.5 rounded-[20px] bg-surface-pressed p-[3px] shadow-pressed'
+const WELL = 'inline-flex h-10 w-46 shrink-0 items-center gap-0.5 rounded-well bg-surface-pressed p-0.75 shadow-pressed'
 
 /**
  * Three equal segments, 34 tall, radius 17; the current one is raised and bold. On a coarse pointer
@@ -35,8 +35,8 @@ const WELL = 'inline-flex h-10 w-[184px] shrink-0 items-center gap-0.5 rounded-[
  * segment is already ~58 wide, so the target clears 44 in both axes and the well stays 40.
  */
 const SEGMENT = cn(
-  'relative inline-flex h-[34px] min-w-0 flex-1 cursor-pointer items-center justify-center rounded-[17px] border-0 bg-transparent px-1',
-  'pointer-coarse:before:absolute pointer-coarse:before:inset-x-0 pointer-coarse:before:-inset-y-[5px] pointer-coarse:before:content-[""]',
+  'relative inline-flex h-control-sm min-w-0 flex-1 cursor-pointer items-center justify-center rounded-segment border-0 bg-transparent px-1',
+  'pointer-coarse:before:absolute pointer-coarse:before:inset-x-0 pointer-coarse:before:-inset-y-1.25 pointer-coarse:before:content-[""]',
   'text-micro font-semibold whitespace-nowrap text-ink-muted',
   '[transition:background_var(--dur-base)_ease,color_var(--dur-base)_ease,box-shadow_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
@@ -51,9 +51,9 @@ const SEGMENT = cn(
  * hit target to 44 without changing the drawn size.
  */
 const BUTTON = cn(
-  'relative inline-flex size-[34px] shrink-0 cursor-pointer items-center justify-center rounded-[13px] border-0 p-0',
+  'relative inline-flex size-control-sm shrink-0 cursor-pointer items-center justify-center rounded-control-sm border-0 p-0',
   'bg-surface-raised text-[16px] leading-none text-ink shadow-raised',
-  'pointer-coarse:before:absolute pointer-coarse:before:-inset-[5px] pointer-coarse:before:content-[""]',
+  'pointer-coarse:before:absolute pointer-coarse:before:-inset-1.25 pointer-coarse:before:content-[""]',
   FOCUS,
 )
 

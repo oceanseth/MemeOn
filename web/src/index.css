@@ -152,6 +152,29 @@
   --radius-shell: 32px;
   --radius-tabbar: 30px;
   --radius-pill: 999px;
+  /* the parts the 46px control does not cover */
+  --radius-band: 28px; /* full-width rows and hero bands (leaderboard/friends rows, podium, invite card) */
+  --radius-well: 20px; /* pressed wells and what sits in them (theme well, side summary, friend link) */
+  --radius-segment: 17px; /* a segment inside a well, a chip-shaped toggle */
+  --radius-control-sm: 13px; /* the 34–40px square: header avatar, theme button, dialog ✕ */
+  --radius-avatar-hero: 32px; /* the 86px hero avatar; its phone size takes `band` */
+
+  /* ── Spacing, by role. Tailwind's numeric steps (`p-4` = 16px, `p-4.5` = 18px) are the 4px grid
+     and stay the default for one-off rhythm; these are the lengths the boards repeat by role, so a
+     control can change height without moving a card inset. `h-control`, `px-control-x`, `p-gutter`
+     and the rest read straight off this block. `lib/cn.ts` registers each name for tailwind-merge. */
+  --spacing-control: 46px; /* button, pill, disclosure height (components.md › Buttons) */
+  --spacing-control-x: 18px; /* control and field inline padding; the search glyph's inset */
+  --spacing-control-gap: 9px; /* icon ↔ label inside a control */
+  --spacing-control-sm: 34px; /* the small square control, the header avatar, a well's segment */
+  --spacing-field: 50px; /* Input, the search well */
+  --spacing-icon: 22px; /* the 22×22 icon lane in nav rows and checkboxes */
+  --spacing-gutter: 18px; /* phone card/panel inset, phone grid gap, toolbar ↔ grid stack */
+  --spacing-chip-x: 9px; /* tier chip and badge inline padding */
+  --spacing-nav-item: 62px; /* a bottom-nav item's width */
+  --spacing-nav-gap: 5px; /* icon ↔ label in a bottom-nav item; the sidebar utility-link stack */
+  --spacing-avatar-hero: 86px; /* profile / invite hero avatar */
+  --spacing-avatar-hero-phone: 74px;
 
   /* ── Type. Display is Unbounded at weight 500 (800 blows up the measure); everything else is
      Onest. The weight lives in `@layer base` as `--font-weight-display` because Tailwind would
@@ -197,8 +220,13 @@
   --text-micro: 12px;
   --text-micro--line-height: 16px;
 
-  /* ── Layout. `app` is the design's frame. */
+  /* ── Layout. `app` is the design's frame; the others are the widths routes and prose stop at. */
   --container-app: 1440px;
+  --container-page-narrow: 760px; /* PageContainer `narrow`: Developers, legal */
+  --container-card: 560px; /* the one centred card of the auth and invite routes */
+  --container-hero-video: 880px;
+  --container-measure: 65ch; /* body prose */
+  --container-measure-sm: 60ch; /* a notice, a caption paragraph */
 
   /* the widths this app branches on. Tailwind writes `bp:` as (width >= N) and `max-bp:` as
      (width < N), so a `max-width: N` breakpoint is exact at N + 1 and a `min-width: N` at N. */

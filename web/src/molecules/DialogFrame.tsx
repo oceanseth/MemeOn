@@ -43,7 +43,7 @@ const DANGER = 'inset-ring-2 inset-ring-error-text'
 /** The ✕ is a 40px neutral raised square — the design has no drawn x, and the glyph is the button. */
 const CLOSE = cn(
   'absolute top-6 right-6 inline-flex size-10 pointer-coarse:size-11 cursor-pointer items-center justify-center',
-  'rounded-[13px] border-0 bg-surface-raised p-0 text-label text-ink shadow-raised',
+  'rounded-control-sm border-0 bg-surface-raised p-0 text-label text-ink shadow-raised',
   '[transition:transform_var(--dur-fast)_ease,box-shadow_var(--dur-base)_ease] motion-reduce:transition-none',
   '[&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:shadow-pressed',
   'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',

@@ -4,7 +4,7 @@ import { cn } from '../lib/cn'
 export type BadgeTone = 'neutral' | 'action' | 'success' | 'warning' | 'error' | 'info'
 
 const BASE = cn(
-  'inline-block whitespace-nowrap rounded-chip border-0 px-[9px] py-1 text-micro font-bold',
+  'inline-block whitespace-nowrap rounded-chip border-0 px-chip-x py-1 text-micro font-bold',
 )
 
 const TONE_CLASSES: Record<BadgeTone, string> = {

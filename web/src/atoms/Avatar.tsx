@@ -8,7 +8,7 @@ export type AvatarSize = 'sm' | 'header' | 'md' | 'lg'
 
 const rootChrome: Record<AvatarSize, string> = {
   sm: 'size-8',
-  header: 'size-[34px] rounded-[13px]', // tighter radius at the small disc
+  header: 'size-control-sm rounded-control-sm', // tighter radius at the small disc
   md: 'size-10',
   lg: 'size-14',
 }

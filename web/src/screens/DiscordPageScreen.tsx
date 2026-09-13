@@ -7,13 +7,13 @@ import { Spinner } from '../atoms/Spinner'
 import { cn } from '../lib/cn'
 import type { DiscordPageScreenModel } from '../hooks/useDiscordPageScreen'
 
-const FLOW_CARD = 'rounded-control px-5 py-[17px] max-md:px-5 max-md:py-[17px]'
+const FLOW_CARD = 'rounded-control px-5 py-4.25 max-md:px-5 max-md:py-4.25'
 
 /** Command line uses link colour — focus token misses contrast on dark surfaces. */
 const FLOW_COMMAND = 'm-0 text-label font-bold text-link'
 
 const FLOW_TITLE = 'mt-2 mb-0 font-display text-card-title font-medium tracking-card-title text-ink'
-const FLOW_BODY = 'mt-[5px] mb-0 text-small font-medium text-ink-muted'
+const FLOW_BODY = 'mt-1.25 mb-0 text-small font-medium text-ink-muted'
 const FAQ_QUESTION = 'mt-5 mb-0 text-intro font-semibold tracking-normal text-ink first:mt-0'
 
 /** Discord install landing as a function of its model. Every engine state is one set of args. */
@@ -34,7 +34,7 @@ export function DiscordPageScreen({
         className="mt-9 mb-6 max-md:mt-5"
       />
       {/* one reserved box for every phase, so the CTA never pops the page down when config lands */}
-      <div className="flex min-h-[54px] flex-wrap items-center gap-2 max-md:flex-col max-md:items-start">
+      <div className="flex min-h-13.5 flex-wrap items-center gap-2 max-md:flex-col max-md:items-start">
         {showLoading && (
           <span className={buttonClasses('primary')} aria-disabled="true">
             <Spinner />
@@ -63,7 +63,7 @@ export function DiscordPageScreen({
         )}
       </div>
 
-      <section aria-labelledby="discord-how" className="mt-8 flex flex-col gap-[19px]">
+      <section aria-labelledby="discord-how" className="mt-8 flex flex-col gap-4.75">
         <h2 id="discord-how" className="sr-only">
           How it works
         </h2>
@@ -96,11 +96,11 @@ export function DiscordPageScreen({
           No. {installSteps} Choose <strong>Add to My Apps</strong> for every server and DM, or add
           it to a server you manage.
         </p>
-        <p className={cn(FAQ_QUESTION, 'mt-[18px]')}>Is my Discord identity public?</p>
+        <p className={cn(FAQ_QUESTION, 'mt-gutter')}>Is my Discord identity public?</p>
         <p className={FLOW_BODY}>Never. It only improves your own ranked search.</p>
       </Panel>
 
-      <Panel className="mt-6 flex flex-wrap items-center gap-3 rounded-control px-5 py-[15px] max-md:flex-col max-md:items-start max-md:px-5 max-md:py-[15px]">
+      <Panel className="mt-6 flex flex-wrap items-center gap-3 rounded-control px-5 py-3.75 max-md:flex-col max-md:items-start max-md:px-5 max-md:py-3.75">
         <h2 className="m-0 font-display text-card-title-phone font-medium tracking-card-title text-ink">
           MemeOn brain assets
         </h2>

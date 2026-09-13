@@ -25,7 +25,7 @@ const meta = {
   decorators: [
     (Story) => (
       <MemoryRouter>
-        <div className="flex min-h-[320px] items-start justify-end p-6">
+        <div className="flex min-h-80 items-start justify-end p-6">
           <Story />
         </div>
       </MemoryRouter>

@@ -33,14 +33,14 @@ const anchorContainer = {
 
 /** The 34px header avatar (`atoms/Avatar` size `header`), with the coarse-pointer halo to 44. */
 const TRIGGER = cn(
-  'relative inline-flex shrink-0 cursor-pointer rounded-[13px] border-0 bg-transparent p-0',
-  'pointer-coarse:before:absolute pointer-coarse:before:-inset-[5px] pointer-coarse:before:content-[""]',
+  'relative inline-flex shrink-0 cursor-pointer rounded-control-sm border-0 bg-transparent p-0',
+  'pointer-coarse:before:absolute pointer-coarse:before:-inset-1.25 pointer-coarse:before:content-[""]',
   FOCUS,
 )
 
 /** A raised card of 44px rows. */
 const POPUP = cn(
-  'min-w-[208px] rounded-card bg-surface p-2 shadow-pop outline-none',
+  'min-w-52 rounded-card bg-surface p-2 shadow-pop outline-none',
   FOCUS,
 )
 

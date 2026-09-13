@@ -14,7 +14,7 @@ import { DialogFrame } from './DialogFrame'
  * "selected" border survives — the relief is the state, as every other tab and toggle in the app.
  */
 const ROW = cn(
-  'h-auto min-h-[62px] w-full flex-wrap justify-start gap-2.5 px-3 py-2 text-left',
+  'h-auto min-h-15.5 w-full flex-wrap justify-start gap-2.5 px-3 py-2 text-left',
   '[line-height:1.3]',
 )
 

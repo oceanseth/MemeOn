@@ -17,18 +17,18 @@ import { ConfirmDialog } from '../molecules/ConfirmDialog'
 import { GiftDialog } from '../molecules/GiftDialog'
 
 /* search icon at 18px gutter → 50px input padding */
-const SEARCH_WELL = 'relative flex w-full min-w-0 flex-1 md:max-w-[570px]'
-const SEARCH_GLYPH = 'pointer-events-none absolute top-1/2 left-[18px] -translate-y-1/2 text-ink-muted'
+const SEARCH_WELL = 'relative flex w-full min-w-0 flex-1 md:max-w-142.5'
+const SEARCH_GLYPH = 'pointer-events-none absolute top-1/2 left-control-x -translate-y-1/2 text-ink-muted'
 
 /** Online strip is recessed so raised friend cards below read as actionable. */
 const ONLINE_STRIP = cn(
-  'mb-5 flex flex-wrap items-center gap-5 rounded-[28px] bg-surface-pressed px-5 py-4 shadow-pressed',
-  'max-sm:gap-3.5 max-sm:rounded-nav max-sm:px-[18px]',
+  'mb-5 flex flex-wrap items-center gap-5 rounded-band bg-surface-pressed px-5 py-4 shadow-pressed',
+  'max-sm:gap-3.5 max-sm:rounded-nav max-sm:px-gutter',
 )
 
 /** Fixed title width so avatar lanes align across strips. */
 const ONLINE_TITLE = cn(
-  'w-[140px] shrink-0 font-display text-card-title-phone font-medium tracking-card-title text-ink',
+  'w-35 shrink-0 font-display text-card-title-phone font-medium tracking-card-title text-ink',
   'max-sm:w-full',
 )
 
@@ -37,12 +37,12 @@ const DOT = 'inline-block size-2.5 shrink-0 rounded-full bg-success-text'
 
 /** Person row: compact on desktop, stacked actions on phone. */
 const ROW = cn(
-  'flex items-center gap-3.5 rounded-[28px] bg-surface px-5 py-3.5 shadow-raised',
+  'flex items-center gap-3.5 rounded-band bg-surface px-5 py-3.5 shadow-raised',
   'max-sm:flex-col max-sm:items-stretch max-sm:gap-3.5 max-sm:rounded-nav max-sm:py-5',
 )
 
 const IDENTITY = cn(
-  'flex min-w-0 flex-1 items-center gap-3.5 rounded-[20px] text-inherit no-underline',
+  'flex min-w-0 flex-1 items-center gap-3.5 rounded-well text-inherit no-underline',
   FOCUS_RING,
 )
 
@@ -70,7 +70,7 @@ const TEXT_ACTION = cn(
 
 /** Pending is a pressed pill with no action behind it. */
 const PENDING_PILL = cn(
-  'inline-flex h-[46px] shrink-0 items-center justify-center rounded-control px-[18px]',
+  'inline-flex h-control shrink-0 items-center justify-center rounded-control px-control-x',
   'bg-surface-pressed text-label font-semibold text-ink-muted shadow-pressed',
 )
 
@@ -168,7 +168,7 @@ export function FriendsScreen({
             <Input
               type="search"
               placeholder="Find people by name…"
-              className="w-full pl-[50px]"
+              className="w-full pl-12.5"
               {...searchInputProps}
             />
           </span>
@@ -211,7 +211,7 @@ export function FriendsScreen({
                 key={f.sub}
                 {...f.onlineLinkProps}
                 className={cn(
-                  'group inline-flex items-center gap-2 rounded-[20px] text-small text-ink no-underline',
+                  'group inline-flex items-center gap-2 rounded-well text-small text-ink no-underline',
                   FOCUS_RING,
                 )}
               >

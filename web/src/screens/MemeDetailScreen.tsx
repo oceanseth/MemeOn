@@ -25,11 +25,11 @@ const SHARE_CAPTION = 'Every load counts a view; every new place it travels coun
  * than the card it sits beside, so the page is one column.
  */
 const detailGrid = cn(
-  'grid grid-cols-1 gap-[18px]',
-  '4xl:grid-cols-[minmax(0,410px)_minmax(0,1fr)] 4xl:gap-[30px]',
+  'grid grid-cols-1 gap-gutter',
+  '4xl:grid-cols-[minmax(0,410px)_minmax(0,1fr)] 4xl:gap-7.5',
 )
 
-const rail = 'flex min-w-0 flex-col gap-[18px]'
+const rail = 'flex min-w-0 flex-col gap-gutter'
 
 /* one DOM order for both layouts: stacked = title → hero → rail; split = hero left, meta top-right */
 const heroPlacement = '4xl:col-start-1 4xl:row-start-1 4xl:row-span-2'
@@ -81,7 +81,7 @@ function TierLadder({ model, hype }: { model: DetailTierLadderModel; hype: strin
 export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingLabel, detail }: MemeDetailScreenModel) {
   if (showNotFound) return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <EmptyState className="mt-[60px]">
+      <EmptyState className="mt-15">
         <h2>This card was pulled</h2>
         <p>{notFound.message}</p>
         <EmptyActions><Link className={buttonClasses()} {...notFound.linkProps}>{notFound.linkLabel}</Link></EmptyActions>
@@ -101,9 +101,9 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
       <div aria-hidden="true" className={detailGrid}>
         <Skeleton className="aspect-square" />
         <div className={rail}>
-          <Skeleton className="h-[88px]" />
-          <Skeleton className="h-[166px]" />
-          <Skeleton className="h-[240px]" />
+          <Skeleton className="h-22" />
+          <Skeleton className="h-41.5" />
+          <Skeleton className="h-60" />
         </div>
       </div>
     </PageContainer>
@@ -186,7 +186,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
             <h3>Share to go viral</h3>
             <p className={caption}>{SHARE_CAPTION}</p>
             <div className={panelRow}>
-              <Input className="min-w-[200px] flex-1 max-sm:w-full max-sm:flex-none" {...detail.shareInputProps} />
+              <Input className="min-w-50 flex-1 max-sm:w-full max-sm:flex-none" {...detail.shareInputProps} />
               {/* the ultraviolet companion: the card's one bubblegum belongs to the buy control */}
               <Button variant="secondary" className="max-sm:flex-1" {...detail.copyButtonProps}>
                 {detail.copyButtonLabel}
@@ -206,7 +206,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
                 <div className={cn(panelRow, 'items-end')}>
                   <Field>
                     <FieldLabel>{detail.listing.buyLabel}</FieldLabel>
-                    <Input type="number" className="w-[92px]" {...detail.listing.buyInputProps} />
+                    <Input type="number" className="w-23" {...detail.listing.buyInputProps} />
                   </Field>
                   <Button variant="primary" {...detail.listing.buyButtonProps}>{detail.listing.buyButtonLabel}</Button>
                 </div>
@@ -225,13 +225,13 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
               <div className={cn(panelRow, 'items-end')}>
                 <Field>
                   <FieldLabel>shares</FieldLabel>
-                  <Input type="number" className="w-[92px]" {...detail.list.sharesInputProps} />
+                  <Input type="number" className="w-23" {...detail.list.sharesInputProps} />
                 </Field>
                 <Field>
                   <FieldLabel>
                     <span aria-hidden="true">🧠/share</span><span className="sr-only">braincells per share</span>
                   </FieldLabel>
-                  <Input type="number" className="w-[100px]" {...detail.list.priceInputProps} />
+                  <Input type="number" className="w-25" {...detail.list.priceInputProps} />
                 </Field>
                 <Button variant="primary" {...detail.list.listButtonProps}>{detail.list.listButtonLabel}</Button>
               </div>
@@ -261,7 +261,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           {/* spread sources and cap table side by side under the market card */}
           <div
             data-slot="detail-spread"
-            className="flex flex-wrap items-start gap-[18px] [&>*]:min-w-[280px] [&>*]:flex-1 [&>[data-slot=panel]]:mt-0"
+            className="flex flex-wrap items-start gap-gutter [&>*]:min-w-70 [&>*]:flex-1 [&>[data-slot=panel]]:mt-0"
           >
             {detail.sources.length > 0 && (
               <Panel>

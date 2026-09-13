@@ -4,19 +4,19 @@ import { PageHead } from '../atoms/PageHead'
 import { cn } from '../lib/cn'
 
 /** Legal page layout: 720 measure, section hairlines. */
-const SECTION = 'mt-6 border-b border-line pb-[22px] last:border-b-0'
+const SECTION = 'mt-6 border-b border-line pb-5.5 last:border-b-0'
 const H2 = cn(
   'm-0 font-display text-card-title font-medium tracking-card-title text-ink',
   '[scroll-margin-top:calc(var(--topbar-h)+16px)]',
 )
-const P = 'mt-4 mb-0 max-w-[65ch] text-body text-ink'
+const P = 'mt-4 mb-0 max-w-measure text-body text-ink'
 const A = 'text-link underline underline-offset-[3px] decoration-1 font-semibold'
 /** The cross-link that closes the document: 16/24, 600, ultraviolet, underline offset 3. */
-const CROSS_LINK = cn(A, 'inline-block mt-[10px]')
+const CROSS_LINK = cn(A, 'inline-block mt-2.5')
 
 /* TOC chips: 44px target; current section is pressed, rest are outlined */
 const TOC_CHIP = cn(
-  'inline-flex min-h-11 items-center rounded-control px-[14px] text-small/[20px] text-ink no-underline',
+  'inline-flex min-h-11 items-center rounded-control px-3.5 text-small/[20px] text-ink no-underline',
   '[transition:background-color_var(--dur-base)_ease] motion-reduce:transition-none',
 )
 const TOC_CHIP_REST = cn(TOC_CHIP, 'border border-line hover:bg-surface-raised')
@@ -73,27 +73,27 @@ export function PrivacyScreen() {
 
       <section data-slot="legal-section" className={SECTION}>
         <h2 className={H2} id="what-we-collect">What we collect</h2>
-        <ul className="mt-[10px] mb-0 list-disc pl-6">
+        <ul className="mt-2.5 mb-0 list-disc pl-6">
           <li className={cn(P, 'mt-0')}>
             <strong>Avatar identity from Masky SSO:</strong> a pseudonymous id (unique to MemeOn and
             uncorrelatable with other sites), your avatar’s display name and picture. That’s the
             whole identity.
           </li>
-          <li className={cn(P, 'mt-[10px]')}>
+          <li className={cn(P, 'mt-2.5')}>
             <strong>Things you do on MemeOn:</strong> memes you mint or upload, share positions,
             listings, trades, friendships, follows, likes and passes, quest progress, braincell
             balance, and alerts. This is the product working as intended.
           </li>
-          <li className={cn(P, 'mt-[10px]')}>
+          <li className={cn(P, 'mt-2.5')}>
             <strong>Reshare counts:</strong> loads of a meme’s share link increment a counter. We
             count the event, not who loaded it.
           </li>
-          <li className={cn(P, 'mt-[10px]')}>
+          <li className={cn(P, 'mt-2.5')}>
             <strong>Online presence:</strong> while signed in, a “who’s online” flag keyed to your
             pseudonymous id (Firebase Realtime Database), visible only to signed-in users and
             removed when you disconnect.
           </li>
-          <li className={cn(P, 'mt-[10px]')}>
+          <li className={cn(P, 'mt-2.5')}>
             <strong>Discord (optional):</strong> if you run <code>/memeon-connect</code>, we store
             your Discord user id linked to your MemeOn account so search can rank your binder and
             friends first. Nothing else about your Discord account is read or stored, and the link

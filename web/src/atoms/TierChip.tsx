@@ -25,8 +25,8 @@ const CHIP = cn(
 )
 
 const SIZES: Record<TierChipSize, string> = {
-  sm: 'px-[9px] py-1 text-micro',
-  md: 'px-[11px] py-[5px] text-caption',
+  sm: 'px-chip-x py-1 text-micro',
+  md: 'px-2.75 py-1.25 text-caption',
 }
 
 export interface TierChipProps {

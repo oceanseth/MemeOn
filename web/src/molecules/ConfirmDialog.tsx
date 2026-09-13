@@ -42,7 +42,7 @@ export function ConfirmDialog({ model }: { model: ConfirmDialogModel }) {
         </Field>
       )}
       {/* Cancel left, commit right — danger variant when stakes are destructive */}
-      <FilterBar className="mt-[18px] justify-end">
+      <FilterBar className="mt-gutter justify-end">
         <Button {...model.cancelButtonProps}>{model.cancelLabel}</Button>
         <Button variant={model.danger ? 'danger' : 'primary'} {...model.confirmButtonProps}>
           {model.confirmLabel}

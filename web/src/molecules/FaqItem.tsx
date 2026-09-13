@@ -13,7 +13,7 @@ export interface FaqItemProps {
 }
 
 const TRIGGER = cn(
-  'group flex w-full min-h-11 cursor-pointer items-center gap-3 rounded-card px-[18px] py-3.5 text-left',
+  'group flex w-full min-h-11 cursor-pointer items-center gap-3 rounded-card px-gutter py-3.5 text-left',
   'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
   'contrast-more:focus-visible:outline-4 forced-colors:focus-visible:outline-[Highlight]',
 )
@@ -44,7 +44,7 @@ export function FaqItem({ question, children, defaultOpen = false, className }: 
             row's height is its own line box */}
         <h3 className="m-0 font-sans text-intro font-semibold tracking-normal text-ink">{question}</h3>
       </Collapsible.Trigger>
-      <Collapsible.Panel data-slot="faq-panel" className="px-[18px] pb-4 text-body text-ink-muted">
+      <Collapsible.Panel data-slot="faq-panel" className="px-gutter pb-4 text-body text-ink-muted">
         {children}
       </Collapsible.Panel>
     </Collapsible.Root>

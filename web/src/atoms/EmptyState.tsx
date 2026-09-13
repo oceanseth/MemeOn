@@ -57,7 +57,7 @@ export function EmptyActions({ className, children, ...rest }: HTMLAttributes<HT
       {...rest}
       data-slot="empty-actions"
       className={cn(
-        'mt-[18px] flex flex-wrap items-center justify-center gap-2.5',
+        'mt-gutter flex flex-wrap items-center justify-center gap-2.5',
         '[&>[data-slot=notice]]:my-0',
         className,
       )}

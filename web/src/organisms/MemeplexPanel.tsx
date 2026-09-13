@@ -62,7 +62,7 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
             {...model.pickerProps}
           />
           <Input
-            className="min-w-[180px]"
+            className="min-w-45"
             placeholder="…or paste a meme link"
             {...model.pastedProps}
           />

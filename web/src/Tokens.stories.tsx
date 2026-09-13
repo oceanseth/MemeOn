@@ -4,9 +4,10 @@ import { cn } from './lib/cn'
 
 /**
  * The Soft Press token sheet: every semantic colour, the two ramps, the seven tier chips, the two
- * materials, the radii and the type ladder, painted with nothing but the utilities `index.css`
- * emits. It is the swarm's visual reference — if a token looks wrong here it is wrong everywhere —
- * and a probe: each swatch carries `data-slot="swatch-<token>"` for `getComputedStyle`.
+ * materials, the radii, the spacing roles, the container widths and the type ladder, painted with
+ * nothing but the utilities `index.css` emits. It is the swarm's visual reference — if a token looks
+ * wrong here it is wrong everywhere — and a probe: each swatch carries `data-slot="swatch-<token>"`
+ * (`spacing-<token>`, `container-<token>`) for `getComputedStyle`.
  */
 
 const SEMANTIC: ReadonlyArray<{ token: string; bg: string; text?: string }> = [
@@ -103,7 +104,38 @@ const RADII = [
   ['shell 32', 'rounded-shell'],
   ['tabbar 30', 'rounded-tabbar'],
   ['pill 999', 'rounded-pill'],
+  ['band 28', 'rounded-band'],
+  ['well 20', 'rounded-well'],
+  ['segment 17', 'rounded-segment'],
+  ['control-sm 13', 'rounded-control-sm'],
+  ['avatar-hero 32', 'rounded-avatar-hero'],
 ] as const
+
+/* `--spacing-*` roles, each drawn as a bar exactly that long; the `w-*` utility is the probe. */
+const SPACING: ReadonlyArray<{ token: string; px: number; role: string; className: string }> = [
+  { token: 'nav-gap', px: 5, role: 'icon ↔ label in a bottom-nav item', className: 'w-nav-gap' },
+  { token: 'control-gap', px: 9, role: 'icon ↔ label inside a control', className: 'w-control-gap' },
+  { token: 'chip-x', px: 9, role: 'tier chip and badge inline padding', className: 'w-chip-x' },
+  { token: 'control-x', px: 18, role: 'control and field inline padding', className: 'w-control-x' },
+  { token: 'gutter', px: 18, role: 'phone card inset, phone grid gap, toolbar ↔ grid', className: 'w-gutter' },
+  { token: 'icon', px: 22, role: 'the icon lane', className: 'w-icon' },
+  { token: 'control-sm', px: 34, role: 'small square control, header avatar, segment', className: 'w-control-sm' },
+  { token: 'control', px: 46, role: 'button, pill, disclosure height', className: 'w-control' },
+  { token: 'field', px: 50, role: 'Input, the search well', className: 'w-field' },
+  { token: 'nav-item', px: 62, role: 'a bottom-nav item', className: 'w-nav-item' },
+  { token: 'avatar-hero-phone', px: 74, role: 'hero avatar under max-sm', className: 'w-avatar-hero-phone' },
+  { token: 'avatar-hero', px: 86, role: 'profile / invite hero avatar', className: 'w-avatar-hero' },
+]
+
+/* `--container-*` widths, drawn to scale against the 1440px app frame; `ch` steps are drawn in ch. */
+const CONTAINERS: ReadonlyArray<{ token: string; spec: string; className: string }> = [
+  { token: 'measure-sm', spec: '60ch · a notice, a caption paragraph', className: 'max-w-measure-sm' },
+  { token: 'measure', spec: '65ch · body prose', className: 'max-w-measure' },
+  { token: 'card', spec: '560px · the auth and invite card', className: 'max-w-card' },
+  { token: 'page-narrow', spec: '760px · PageContainer narrow', className: 'max-w-page-narrow' },
+  { token: 'hero-video', spec: '880px · the landing film', className: 'max-w-hero-video' },
+  { token: 'app', spec: '1440px · the design frame', className: 'max-w-app' },
+]
 
 function Heading({ children }: { children: string }) {
   return <h2 className="mt-8 mb-3 text-title tracking-title">{children}</h2>
@@ -142,7 +174,7 @@ export function TokenSheet() {
   return (
     <div className="mx-auto max-w-app bg-canvas p-6 text-ink" data-slot="token-sheet">
       <h1 className="text-display tracking-display">Soft Press tokens</h1>
-      <p className="max-w-[60ch] text-intro text-ink-muted">
+      <p className="max-w-measure-sm text-intro text-ink-muted">
         Every colour below is a <code>light-dark()</code> pair; the theme toolbar flips <code>data-theme</code> on{' '}
         <code>&lt;html&gt;</code> and the browser picks the arm. Same markup, both arms.
       </p>
@@ -166,11 +198,11 @@ export function TokenSheet() {
           <li key={tier.key} className="flex flex-col items-center gap-2">
             <div
               data-slot={`tier-frame-${tier.key}`}
-              className={cn('flex h-20 w-28 items-end rounded-field border-[3px] bg-surface-pressed p-2', tier.frame)}
+              className={cn('flex h-20 w-28 items-end rounded-field border-3 bg-surface-pressed p-2', tier.frame)}
             >
               <span
                 data-slot={`tier-chip-${tier.key}`}
-                className={cn('rounded-chip px-[9px] py-1 text-micro font-bold', tier.chip)}
+                className={cn('rounded-chip px-chip-x py-1 text-micro font-bold', tier.chip)}
               >
                 {tier.label}
               </span>
@@ -184,49 +216,49 @@ export function TokenSheet() {
       <div className="flex flex-wrap items-center gap-4 rounded-card bg-canvas-alt p-5">
         <span
           data-slot="material-raised"
-          className="inline-flex h-[46px] items-center rounded-control bg-surface-raised px-[18px] text-label font-semibold shadow-raised"
+          className="inline-flex h-control items-center rounded-control bg-surface-raised px-control-x text-label font-semibold shadow-raised"
         >
           Raised
         </span>
         <span
           data-slot="material-pressed"
-          className="inline-flex h-[46px] items-center rounded-control bg-surface-pressed px-[18px] text-label font-semibold shadow-pressed"
+          className="inline-flex h-control items-center rounded-control bg-surface-pressed px-control-x text-label font-semibold shadow-pressed"
         >
           Pressed
         </span>
         <span
           data-slot="material-primary"
-          className="inline-flex h-[46px] items-center rounded-control bg-action px-[18px] text-label font-semibold text-on-action shadow-raised"
+          className="inline-flex h-control items-center rounded-control bg-action px-control-x text-label font-semibold text-on-action shadow-raised"
         >
           Primary
         </span>
         <span
           data-slot="material-secondary"
-          className="inline-flex h-[46px] items-center rounded-control bg-action-secondary px-[18px] text-label font-semibold text-on-action-secondary shadow-raised"
+          className="inline-flex h-control items-center rounded-control bg-action-secondary px-control-x text-label font-semibold text-on-action-secondary shadow-raised"
         >
           Secondary
         </span>
         <span
           data-slot="material-destructive"
-          className="inline-flex h-[46px] items-center rounded-control bg-error-surface px-[18px] text-label font-semibold text-error-text shadow-raised"
+          className="inline-flex h-control items-center rounded-control bg-error-surface px-control-x text-label font-semibold text-error-text shadow-raised"
         >
           Destructive
         </span>
         <span
           data-slot="material-focus"
-          className="inline-flex h-[46px] items-center rounded-control bg-surface-raised px-[18px] text-label font-semibold shadow-raised outline-3 outline-offset-2 outline-focus"
+          className="inline-flex h-control items-center rounded-control bg-surface-raised px-control-x text-label font-semibold shadow-raised outline-3 outline-offset-2 outline-focus"
         >
           Focus
         </span>
         <span
           data-slot="material-disabled"
-          className="inline-flex h-[46px] items-center rounded-control bg-surface-raised px-[18px] text-label font-semibold opacity-(--state-disabled-opacity) shadow-raised"
+          className="inline-flex h-control items-center rounded-control bg-surface-raised px-control-x text-label font-semibold opacity-(--state-disabled-opacity) shadow-raised"
         >
           Disabled
         </span>
         <span
           data-slot="material-field"
-          className="inline-flex h-[50px] w-64 items-center rounded-field bg-surface-pressed px-[18px] text-body text-ink-muted shadow-pressed"
+          className="inline-flex h-field w-64 items-center rounded-field bg-surface-pressed px-control-x text-body text-ink-muted shadow-pressed"
         >
           Search well
         </span>
@@ -242,8 +274,38 @@ export function TokenSheet() {
       <ul className="flex flex-wrap gap-3">
         {RADII.map(([label, className]) => (
           <li key={className} className="flex flex-col items-center gap-1">
-            <div className={cn('h-16 w-24 border-[3px] border-line bg-surface', className)} />
+            <div className={cn('h-16 w-24 border-3 border-line bg-surface', className)} />
             <code className="text-micro">{label}</code>
+          </li>
+        ))}
+      </ul>
+
+      <Heading>Spacing roles</Heading>
+      <ul className="flex flex-col gap-2">
+        {SPACING.map(({ token, px, role, className }) => (
+          <li key={token} className="grid items-center gap-x-4 md:grid-cols-[280px_1fr]">
+            <code className="w-fit text-micro whitespace-normal">
+              {token} · {px}px · {role}
+            </code>
+            <div className="flex items-center gap-2">
+              <div data-slot={`spacing-${token}`} className={cn('h-3 rounded-pill bg-action', className)} />
+              <span className="text-micro text-ink-muted tabular-nums">{px}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <Heading>Widths</Heading>
+      <ul className="flex flex-col gap-2 overflow-hidden">
+        {CONTAINERS.map(({ token, spec, className }) => (
+          <li key={token} className="flex flex-col gap-1">
+            <code className="w-fit text-micro whitespace-normal">
+              {token} · {spec}
+            </code>
+            <div
+              data-slot={`container-${token}`}
+              className={cn('h-3 w-full rounded-pill bg-action-secondary', className)}
+            />
           </li>
         ))}
       </ul>
@@ -297,6 +359,14 @@ async function assertTokensPainted(arm: 'light' | 'dark') {
   await expect(getComputedStyle(action).backgroundColor).toContain(arm === 'light' ? '345' : '235')
   await expect(getComputedStyle(raised).boxShadow).toContain('inset')
   await expect(getComputedStyle(raised).borderRadius).toBe('23px')
+  await expect(getComputedStyle(raised).height).toBe('46px')
+  await expect(getComputedStyle(raised).paddingInline).toBe('18px')
+  const control = root.querySelector<HTMLElement>('[data-slot="spacing-control"]')!
+  const gutter = root.querySelector<HTMLElement>('[data-slot="spacing-gutter"]')!
+  const card = root.querySelector<HTMLElement>('[data-slot="container-card"]')!
+  await expect(getComputedStyle(control).width).toBe('46px')
+  await expect(getComputedStyle(gutter).width).toBe('18px')
+  await expect(getComputedStyle(card).maxWidth).toBe('560px')
   await expect(getComputedStyle(display).fontSize).toBe('44px')
   await expect(getComputedStyle(display).lineHeight).toBe('55px')
   await expect(getComputedStyle(display).fontFamily).toContain('Unbounded Variable')
