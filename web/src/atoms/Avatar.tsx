@@ -3,14 +3,16 @@ import type { ComponentPropsWithoutRef } from 'react'
 import { avatarInitial } from '../lib/avatarModel'
 import { cn } from '../lib/cn'
 
-/** `sm` 32px · `header` 34px (phone chrome) · `md` 40px · `lg` 56px. */
-export type AvatarSize = 'sm' | 'header' | 'md' | 'lg'
+/** `sm` 32 · `header` 34 · `md` 40 · `lg` 56 · `hero` 86/74 · `public` 60. */
+export type AvatarSize = 'sm' | 'header' | 'md' | 'lg' | 'hero' | 'public'
 
 const rootChrome: Record<AvatarSize, string> = {
   sm: 'size-8',
   header: 'size-control-sm rounded-control-sm', // tighter radius at the small disc
   md: 'size-10',
   lg: 'size-14',
+  hero: 'size-avatar-hero rounded-avatar-hero max-sm:size-avatar-hero-phone max-sm:rounded-band',
+  public: 'size-15 rounded-[22px]',
 }
 
 const fallbackChrome: Record<AvatarSize, string> = {
@@ -18,6 +20,8 @@ const fallbackChrome: Record<AvatarSize, string> = {
   header: 'text-caption',
   md: 'text-label',
   lg: 'text-card-title leading-none',
+  hero: 'text-title leading-none max-sm:text-card-title',
+  public: 'text-card-title leading-none',
 }
 
 /** Unlisted img props (e.g. `loading="lazy"`) pass through to the image. */

@@ -260,7 +260,7 @@ export const LoggedOut: Story = {
       capTable: [{ userId: 'a', label: 'oxfern', sharesLabel: '48/100' }, { userId: 'b', label: 'masky.moth', sharesLabel: '28/100' }, { userId: 'c', label: 'meme.custodian', sharesLabel: '24/100' }],
       signedOut: {
         title: 'Own a piece of this',
-        body: '10 shares listed at 🧠4 each. Log in with Masky to buy, remix, or mint your own.',
+        body: copy.signedOut.body,
         loginLabel: '🎭 Log in with Masky',
         loginButtonProps: { onClick: noop, disabled: false, 'aria-busy': false, 'aria-label': 'Log in with Masky' },
         browseLinkProps: { to: '/marketplace' }, browseLabel: 'Browse the marketplace', error: null, errorProps: { role: 'alert' },
@@ -271,6 +271,8 @@ export const LoggedOut: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('heading', { level: 1, name: listedHolo.title })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Log in with Masky' })).toBeVisible()
+    await expect(canvas.queryByText(/listed at/)).toBeNull()
+    await expect(canvas.getByText('for sale')).toBeVisible()
     // public view: tier line uses link colour inside the hero card
     const lines = canvasElement.querySelectorAll('[data-slot="detail-tier-line"]')
     await expect(lines).toHaveLength(1)

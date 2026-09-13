@@ -156,7 +156,8 @@ const PREVIEW_TITLE = cn(
   'font-display text-title font-medium tracking-title text-ink',
   'max-md:text-card-title-phone',
 )
-const PREVIEW_TIER_NOTE = 'mt-1.5 text-caption font-bold text-ink-muted'
+const PREVIEW_TIER_ROW = 'mt-1.5 flex items-center gap-2'
+const PREVIEW_TIER_NOTE = 'text-caption font-bold text-ink-muted'
 /** The plate the card will land on, at the card's own frame geometry. */
 const PREVIEW_PLACEHOLDER = cn(
   'flex aspect-square items-center justify-center rounded-card bg-surface-pressed shadow-pressed',
@@ -169,6 +170,10 @@ const PREVIEW_SUB = cn(
 
 /** The meme as it will ship, assembled while you type. */
 function PreviewCard({ card }: { card: CreateMemeCardModel }) {
+  const tierSuffix = card.tierLabel.startsWith(`${card.tierName} · `)
+    ? card.tierLabel.slice(card.tierName.length + 3)
+    : card.tierLabel
+
   return (
     <div
       {...card.cardProps}
@@ -186,14 +191,14 @@ function PreviewCard({ card }: { card: CreateMemeCardModel }) {
           ) : (
             <img data-slot="meme-art" className={PREVIEW_ART} {...card.media.imageProps} />
           )}
-          <TierChip tierKey="paper" label={card.tierName} className="absolute bottom-4 left-4 z-[2]" />
         </span>
         <div data-slot="meme-meta" className={PREVIEW_META}>
           <span data-slot="meme-title" className={PREVIEW_TITLE}>
             {card.title}
           </span>
-          <span data-slot="tier-note" className={PREVIEW_TIER_NOTE}>
-            {card.tierLabel}
+          <span data-slot="tier-note" className={PREVIEW_TIER_ROW}>
+            <TierChip tierKey="paper" label={card.tierName} size="sm" />
+            <span className={PREVIEW_TIER_NOTE}>{tierSuffix}</span>
           </span>
           <span data-slot="meme-sub" className={PREVIEW_SUB}>
             <span>{card.statsLabel}</span>

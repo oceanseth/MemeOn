@@ -17,8 +17,6 @@ const HERO = cn(
   'max-sm:rounded-nav max-sm:px-gutter',
 )
 
-const HERO_AVATAR = 'size-avatar-hero rounded-avatar-hero max-sm:size-avatar-hero-phone max-sm:rounded-band'
-
 /* The name is the page's display step (44/55, 32/40 on a phone); the verb line is one rung down. */
 const HERO_NAME = cn(
   'block font-display text-display font-medium tracking-display text-ink',
@@ -97,7 +95,7 @@ export function InviteScreen({
       <PageHead level="h1" title="You’re invited" className="mb-5" />
 
       <section className={HERO} data-slot="invite-hero">
-        <Avatar name={inviter.name} src={inviter.avatarSrc} size="lg" loading="eager" className={HERO_AVATAR} />
+        <Avatar name={inviter.name} src={inviter.avatarSrc} size="hero" loading="eager" />
         <h2 className="m-0 mt-3.5">
           <span className={HERO_NAME}>{inviter.name}</span>{' '}
           <span className={HERO_VERB}>invited you to MemeOn</span>

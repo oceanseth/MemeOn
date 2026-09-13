@@ -108,7 +108,7 @@ export function TradesScreen({
               {compose.error && <Notice tone="error" {...compose.errorNoticeProps}>{compose.error}</Notice>}
               <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3.5">
                 <span className="text-small text-ink-muted">They get a notification — nothing moves until they accept.</span>
-                <Button variant="primary" type="submit" className="max-md:w-full" {...compose.proposeButtonProps}>Propose trade</Button>
+                <Button variant="primary" type="submit" className="max-md:w-full" {...compose.proposeButtonProps}>{compose.proposeButtonLabel}</Button>
               </div>
             </form>
           </Panel>)}

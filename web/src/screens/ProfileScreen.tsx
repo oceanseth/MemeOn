@@ -19,10 +19,6 @@ const IDENTITY_CARD = cn(
   'max-sm:rounded-nav',
 )
 
-/** App avatar 86px; public 60px; one step down on phone. */
-const HERO_AVATAR = 'size-avatar-hero rounded-avatar-hero max-sm:size-avatar-hero-phone max-sm:rounded-band'
-const HERO_AVATAR_PUBLIC = 'size-15 rounded-[22px]'
-
 const IDENTITY_LINE =
   'm-0 truncate font-display text-title font-medium tracking-title text-ink [overflow-wrap:anywhere]'
 
@@ -206,8 +202,7 @@ export function ProfileScreen({
             <Avatar
               name={profile.name}
               src={profile.avatarSrc}
-              size="lg"
-              className={HERO_AVATAR_PUBLIC}
+              size="public"
               loading="lazy"
             />
             <div className="min-w-0 flex-1">
@@ -230,8 +225,7 @@ export function ProfileScreen({
             <Avatar
               name={profile.name}
               src={profile.avatarSrc}
-              size="lg"
-              className={publicView ? HERO_AVATAR_PUBLIC : HERO_AVATAR}
+              size={publicView ? 'public' : 'hero'}
               loading="lazy"
             />
             <div className="min-w-0 flex-1">

@@ -53,6 +53,7 @@ const twMerge = extendTailwindMerge({
         'title',
         'card-title',
         'card-title-phone',
+        'card-heading',
         'intro',
         'body',
         'label',
@@ -60,7 +61,7 @@ const twMerge = extendTailwindMerge({
         'caption',
         'micro',
       ],
-      tracking: ['display', 'title', 'card-title', 'ui'],
+      tracking: ['display', 'title', 'card-title', 'card-heading', 'ui'],
     },
   },
 })

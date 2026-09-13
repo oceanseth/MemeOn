@@ -185,6 +185,7 @@
   --tracking-display: -0.04em;
   --tracking-title: -0.025em;
   --tracking-card-title: -0.02em;
+  --tracking-card-heading: -0.02em;
   --tracking-ui: 0em;
 
   /* Role ladder. Display-face steps (Unbounded 500) sit above the Onest UI steps. `hero`,
@@ -207,6 +208,8 @@
   --text-card-title--line-height: 27px;
   --text-card-title-phone: 17px;
   --text-card-title-phone--line-height: 21px;
+  --text-card-heading: 20px;
+  --text-card-heading--line-height: 25px;
   --text-intro: 17px;
   --text-intro--line-height: 22px;
   --text-body: 16px;

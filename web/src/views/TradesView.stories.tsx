@@ -95,7 +95,7 @@ export const CloseReopenRejectsLateComposeAndProposes: Story = {
       await userEvent.clear(input!)
       await userEvent.type(input!, value)
     }
-    await userEvent.click(canvas.getByRole('button', { name: 'Propose trade' }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.newTrade }))
     await waitFor(() => expect(loaded.scenario.requests.find((request: { method: string; path: string }) => request.method === 'POST' && request.path === '/api/trades')?.body).toEqual({
       toId: 'friend-b', offer: { memes: [{ memeId: 'offer-b', shares: 4 }], coins: 12 }, ask: { memes: [{ memeId: 'ask-b', shares: 6 }], coins: 8 },
     }))
@@ -199,5 +199,5 @@ export const InitialFailureOffersRetry: Story = {
 
 export const ProposalFailureStaysInComposer: Story = {
   loaders: [connectedLoader({ failures: { 'POST /api/trades': { error: 'proposal rejected', status: 409 } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><TradesView /></ConnectedStory>,
-  play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click(await canvas.findByRole('button', { name: copy.newTrade })); const selects = await canvas.findAllByRole('combobox'); await waitFor(() => expect(selects[0]).toHaveTextContent('pal')); await pickOption(selects[0]!, 'pal'); await userEvent.type(canvas.getAllByRole('spinbutton')[1]!, '5'); await userEvent.click(canvas.getByRole('button', { name: 'Propose trade' })); await expect(await canvas.findByText('proposal rejected')).toBeInTheDocument(); await expect(canvas.getByRole('button', { name: copy.closeComposer })).toBeInTheDocument() },
+  play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click(await canvas.findByRole('button', { name: copy.newTrade })); const selects = await canvas.findAllByRole('combobox'); await waitFor(() => expect(selects[0]).toHaveTextContent('pal')); await pickOption(selects[0]!, 'pal'); await userEvent.type(canvas.getAllByRole('spinbutton')[1]!, '5'); await userEvent.click(canvas.getByRole('button', { name: copy.newTrade })); await expect(await canvas.findByText('proposal rejected')).toBeInTheDocument(); await expect(canvas.getByRole('button', { name: copy.closeComposer })).toBeInTheDocument() },
 }
