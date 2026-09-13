@@ -1,3 +1,4 @@
+import { createMemeCopy as copy } from '../../copy/createMeme'
 import type { CreateMemeContext } from '../../stores/createMemeMachine'
 import type { GiphyResult } from '../types'
 import type { CreateMemeScreenActions, CreateMemeScreenModel } from './types'
@@ -39,10 +40,10 @@ export function buildGiphyModeModel(
       : null,
     giphyStatusText:
       ctx.giphyResults.length > 0
-        ? `${ctx.giphyResults.length} GIPHY results for "${ctx.giphyQuery}"`
+        ? copy.giphy.results(ctx.giphyResults.length, ctx.giphyQuery)
         : ctx.giphySearched
-          ? `Nothing for "${ctx.giphyQuery}" — try a broader word or pick a category.`
-          : 'Pick a category or search to browse GIPHY.',
+          ? copy.giphy.emptySearch(ctx.giphyQuery)
+          : copy.giphy.idle,
     showGiphyResults: ctx.giphyResults.length > 0,
     showGiphyPick: !!ctx.giphyPick,
     showGiphyRemixButton: !!ctx.prompt.trim() && !!ctx.giphyPick,

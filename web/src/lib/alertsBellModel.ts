@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, HTMLAttributes, TimeHTMLAttributes } from 'react'
 import type { LinkProps } from 'react-router-dom'
+import { alertsBellCopy as copy } from '../copy/alertsBell'
 import type { Alert } from './types'
 
 /** One popover holds a session's worth of alerts; older ones live on the server. */
@@ -11,7 +12,7 @@ export function formatWhen(iso: string, now: number = Date.now()): string {
   const then = new Date(iso).getTime()
   if (Number.isNaN(then)) return ''
   const deltaMinutes = (then - now) / 60_000
-  if (Math.abs(deltaMinutes) < 1) return 'just now'
+  if (Math.abs(deltaMinutes) < 1) return copy.justNow
   const relative = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' })
   if (Math.abs(deltaMinutes) < 60) return relative.format(Math.round(deltaMinutes), 'minute')
   if (Math.abs(deltaMinutes) < 60 * 24) return relative.format(Math.round(deltaMinutes / 60), 'hour')
@@ -77,13 +78,11 @@ export function buildAlertsBellModel({
     open,
     onOpenChange,
     triggerProps: {
-      'aria-label': unreadCount > 0 ? `Alerts, ${unreadCount} unread` : 'Alerts',
+      'aria-label': copy.trigger(unreadCount),
     },
-    popupProps: { 'aria-label': 'Alerts' },
+    popupProps: { 'aria-label': copy.title },
     empty: alerts.length === 0,
-    emptyLabel: failed
-      ? "Alerts are offline — we'll retry in a moment."
-      : 'No alerts yet — go make noise.',
+    emptyLabel: failed ? copy.offline : copy.empty,
     unreadLabel: unreadCount > 0 ? (unreadCount > MAX_BADGE ? `${MAX_BADGE}+` : String(unreadCount)) : null,
     badgeProps: { 'aria-hidden': true },
     rows: alerts.slice(0, MAX_ROWS).map((alert) => {
@@ -96,7 +95,7 @@ export function buildAlertsBellModel({
       return {
         id: alert.id,
         unread,
-        statusLabel: unread ? 'Unread.' : null,
+        statusLabel: unread ? copy.unreadRow : null,
         message: alert.message,
         /* a row that navigates has done its job; leaving the popover open over the new route
            would be a second thing to dismiss */
@@ -109,6 +108,6 @@ export function buildAlertsBellModel({
       }
     }),
     overflowLabel:
-      alerts.length > MAX_ROWS ? `Showing your ${MAX_ROWS} most recent alerts.` : null,
+      alerts.length > MAX_ROWS ? copy.overflow(MAX_ROWS) : null,
   }
 }

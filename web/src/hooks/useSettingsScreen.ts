@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import type { ButtonHTMLAttributes } from 'react'
 import type { LinkProps } from 'react-router-dom'
+import { settingsCopy } from '../copy/settings'
 import type { Me } from '../lib/types'
 import type { ThemeControlModel } from '../molecules/ThemeControl'
 import { useAuth } from './useAuth'
@@ -69,34 +70,35 @@ export function buildSettingsScreenModel({
   theme: Pick<ThemeControlModel, 'value' | 'onChange'>
   onLogout: () => void
 }): SettingsScreenModel {
+  const copy = settingsCopy
   return {
-    title: 'Settings',
-    intro: 'Make yourself at home.',
+    title: copy.title,
+    intro: copy.intro,
     account: user
       ? {
-          heading: 'Account',
-          nameLabel: `🧠 ${user.name}`,
-          providerLabel: 'Masky avatar',
-          logoutLabel: 'Log out',
-          logoutButtonProps: { onClick: onLogout, 'aria-label': 'Log out' },
+          heading: copy.account.heading,
+          nameLabel: copy.account.name(user.name),
+          providerLabel: copy.account.provider,
+          logoutLabel: copy.account.logOut,
+          logoutButtonProps: { onClick: onLogout, 'aria-label': copy.account.logOut },
         }
       : null,
     appearance: {
-      heading: 'Appearance',
-      caption: 'Auto follows your device.',
+      heading: copy.appearance.heading,
+      caption: copy.appearance.caption,
       theme: { value: theme.value, onChange: theme.onChange, variant: 'segmented' },
     },
     connections: {
-      heading: 'Connections',
+      heading: copy.connections.heading,
       rows: [
         {
           key: 'discord',
-          serviceLabel: '🎭 Discord',
+          serviceLabel: copy.connections.discord.service,
           /* `Me` carries no Discord field, so the app cannot know: it says the one thing it does
              know rather than guessing "Linked". See the receipt's Known gaps. */
-          stateLabel: 'Not linked',
+          stateLabel: copy.connections.discord.notLinked,
           linked: false,
-          actionLabel: 'Connect Discord',
+          actionLabel: copy.connections.discord.connect,
           /* linking starts with /memeon-connect inside Discord (that is where the token comes
              from), and /discord is the page that hands it over. /discord/link without a token is
              the error state, so it is never the place to send somebody from here. */
@@ -105,11 +107,11 @@ export function buildSettingsScreenModel({
       ],
     },
     alerts: {
-      heading: 'Alerts',
-      caption: 'Coming soon — for now every alert lands in 🔔.',
+      heading: copy.alerts.heading,
+      caption: copy.alerts.caption,
       toggles: [
-        { key: 'sales', label: 'Sales', on: false, buttonProps: { disabled: true, 'aria-pressed': false } },
-        { key: 'tier-ups', label: 'Tier-ups', on: false, buttonProps: { disabled: true, 'aria-pressed': false } },
+        { key: 'sales', label: copy.alerts.sales, on: false, buttonProps: { disabled: true, 'aria-pressed': false } },
+        { key: 'tier-ups', label: copy.alerts.tierUps, on: false, buttonProps: { disabled: true, 'aria-pressed': false } },
       ],
     },
   }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { leaderboardCopy as copy } from '../copy/leaderboard'
 import { buildLeaderboardRowModel } from './useLeaderboardScreen'
 
 describe('leaderboard row model', () => {
@@ -11,7 +12,7 @@ describe('leaderboard row model', () => {
 
     expect(row).toMatchObject({ rankNumeral: '4', medalLabel: '', profileLinkProps: { to: '/u/top-brain' }, avatarSrc: '/top-brain.png' })
     expect(noAvatar.avatarSrc).toBeNull()
-    expect(noAvatar.medalLabel).toBe('🥇')
+    expect(noAvatar.medalLabel).toBe(copy.row.medals[0])
   })
 
   it('names the whole row once so the emoji columns can stay decorative', () => {
@@ -20,10 +21,10 @@ describe('leaderboard row model', () => {
     }, 0)
 
     expect(row).toMatchObject({
-      linkLabel: 'Rank 1, pal, 1,240 braincells',
-      collectionLabel: '📚 8 memes',
-      portfolioLabel: 'portfolio 🧠 90',
-      braincellsLabel: '🧠 1,240',
+      linkLabel: copy.row.label(1, 'pal', 1240),
+      collectionLabel: copy.row.collection(8),
+      portfolioLabel: copy.row.portfolio(90),
+      braincellsLabel: copy.row.braincells(1240),
       isMe: false,
     })
   })
@@ -33,7 +34,7 @@ describe('leaderboard row model', () => {
 
     expect(buildLeaderboardRowModel(leader, 1, 'user-lou')).toMatchObject({
       isMe: true,
-      linkLabel: 'You, rank 2, lou, 1 braincell',
+      linkLabel: copy.row.youLabel(copy.row.label(2, 'lou', 1)),
     })
     expect(buildLeaderboardRowModel(leader, 1, 'user-pal').isMe).toBe(false)
   })

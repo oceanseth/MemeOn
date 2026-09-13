@@ -3,6 +3,7 @@ import { autorun } from 'mobx'
 import { useCallback, type AnchorHTMLAttributes, type ButtonHTMLAttributes } from 'react'
 import { useLocation, useNavigate, type LinkProps } from 'react-router-dom'
 import type { IconName } from '../atoms/Icon'
+import { appShellCopy } from '../copy/appShell'
 import { buildAlertsBellModel, type AlertsBellModel } from '../lib/alertsBellModel'
 import { apiFetch, post } from '../lib/api'
 import { buildQuestBarModel, type QuestBarModel } from '../lib/questBarModel'
@@ -18,8 +19,7 @@ import { useTheme } from './useTheme'
 const POLL_MS = 30_000
 const QUEST_KEYS: QuestKey[] = ['pack', 'mint', 'share', 'friend', 'trade']
 
-/** Header tagline on signed-in routes. */
-const TAGLINE = 'the meme trading card market'
+const copy = appShellCopy
 
 /** Route family for chrome active-state; mint is separate for the phone tab bar. */
 export type RouteFamily =
@@ -78,26 +78,26 @@ export interface ShellIdentity {
 }
 
 const NAV_ITEMS: { families: RouteFamily[]; to: string; label: string; emoji: string | null; icon: IconName }[] = [
-  { families: ['marketplace'], to: '/marketplace', label: 'Marketplace', emoji: null, icon: 'storefront' },
-  { families: ['binder', 'mint'], to: '/binder', label: 'My Binder', emoji: null, icon: 'book' },
-  { families: ['friends'], to: '/friends', label: 'Friends', emoji: null, icon: 'users' },
-  { families: ['trade'], to: '/trade', label: 'Trade', emoji: null, icon: 'arrows-left-right' },
-  { families: ['leaderboard'], to: '/leaderboard', label: 'Top Brains', emoji: '🏆', icon: 'trophy' },
+  { families: ['marketplace'], to: '/marketplace', label: copy.nav.marketplace, emoji: null, icon: 'storefront' },
+  { families: ['binder', 'mint'], to: '/binder', label: copy.nav.binder, emoji: null, icon: 'book' },
+  { families: ['friends'], to: '/friends', label: copy.nav.friends, emoji: null, icon: 'users' },
+  { families: ['trade'], to: '/trade', label: copy.nav.trade, emoji: null, icon: 'arrows-left-right' },
+  { families: ['leaderboard'], to: '/leaderboard', label: copy.nav.leaderboard, emoji: copy.nav.leaderboardEmoji, icon: 'trophy' },
 ]
 
 const UTILITY_LINKS: { family: RouteFamily; to: string; label: string; emoji: string | null }[] = [
-  { family: 'discord', to: '/discord', label: 'Discord', emoji: null },
-  { family: 'developers', to: '/developers', label: 'Developers', emoji: '🔧' },
-  { family: 'settings', to: '/settings', label: 'Settings', emoji: null },
+  { family: 'discord', to: '/discord', label: copy.utility.discord, emoji: null },
+  { family: 'developers', to: '/developers', label: copy.utility.developers, emoji: copy.utility.developersEmoji },
+  { family: 'settings', to: '/settings', label: copy.utility.settings, emoji: null },
 ]
 
-/** Phone tab bar; 'Market' is the 62px abbreviation of Marketplace. */
+/** Phone tab bar; the labels are the 62px abbreviations. */
 const TAB_ITEMS: { family: RouteFamily; to: string; label: string; icon: IconName; primary: boolean }[] = [
-  { family: 'marketplace', to: '/marketplace', label: 'Market', icon: 'storefront', primary: false },
-  { family: 'binder', to: '/binder', label: 'Binder', icon: 'book', primary: false },
-  { family: 'mint', to: '/binder/new', label: 'Mint', icon: 'circle-plus', primary: true },
-  { family: 'friends', to: '/friends', label: 'Friends', icon: 'users', primary: false },
-  { family: 'trade', to: '/trade', label: 'Trade', icon: 'arrows-left-right', primary: false },
+  { family: 'marketplace', to: '/marketplace', label: copy.tabs.market, icon: 'storefront', primary: false },
+  { family: 'binder', to: '/binder', label: copy.tabs.binder, icon: 'book', primary: false },
+  { family: 'mint', to: '/binder/new', label: copy.tabs.mint, icon: 'circle-plus', primary: true },
+  { family: 'friends', to: '/friends', label: copy.tabs.friends, icon: 'users', primary: false },
+  { family: 'trade', to: '/trade', label: copy.tabs.trade, icon: 'arrows-left-right', primary: false },
 ]
 
 function allDone(user: Me | null): boolean {
@@ -141,7 +141,7 @@ export function buildAppShellScreenModel({
   context,
   pathname = '/',
   theme = { value: 'auto', onChange: () => {} },
-  contextLine = TAGLINE,
+  contextLine = copy.tagline,
   onLogout,
   onClaimPack,
   onDismissPack,
@@ -180,13 +180,13 @@ export function buildAppShellScreenModel({
     contextLine,
     coins: user
       ? {
-          text: `🧠 ${user.coins.toLocaleString()}`,
-          label: `${user.coins.toLocaleString()} braincells`,
+          text: copy.coins.text(user.coins),
+          label: copy.coins.label(user.coins),
         }
       : null,
     avatar: user
       ? {
-          linkProps: { to: profileTo, 'aria-label': 'Your profile' },
+          linkProps: { to: profileTo, 'aria-label': copy.avatar.profile },
           name: user.name,
           src: user.picture,
         }
@@ -195,7 +195,7 @@ export function buildAppShellScreenModel({
       ? {
           name: user.name,
           src: user.picture,
-          settingsLinkProps: { to: '/settings', 'aria-label': 'Settings' },
+          settingsLinkProps: { to: '/settings', 'aria-label': copy.identity.settings },
         }
       : null,
     bottomNav: TAB_ITEMS.map(({ family: own, ...item }) => ({ ...item, current: family === own })),
@@ -203,13 +203,13 @@ export function buildAppShellScreenModel({
       ? {
           name: user.name,
           src: user.picture,
-          triggerProps: { 'aria-label': 'Account menu' },
+          triggerProps: { 'aria-label': copy.accountMenu.trigger },
           items: [
-            { key: 'profile', label: 'Profile', to: profileTo },
-            { key: 'leaderboard', label: '🏆 Top Brains', to: '/leaderboard' },
-            { key: 'settings', label: 'Settings', to: '/settings' },
-            { key: 'developers', label: '🔧 Developers', to: '/developers' },
-            { key: 'logout', label: 'Log out', onSelect: onLogout },
+            { key: 'profile', label: copy.accountMenu.profile, to: profileTo },
+            { key: 'leaderboard', label: copy.accountMenu.leaderboard, to: '/leaderboard' },
+            { key: 'settings', label: copy.accountMenu.settings, to: '/settings' },
+            { key: 'developers', label: copy.accountMenu.developers, to: '/developers' },
+            { key: 'logout', label: copy.accountMenu.logOut, onSelect: onLogout },
           ],
         }
       : null,
@@ -230,7 +230,7 @@ export function buildAppShellScreenModel({
       onDismissPack,
       onDismissSteps: onDismissQuests,
     }) : null,
-    logoutButtonProps: { onClick: onLogout, 'aria-label': 'Log out' },
+    logoutButtonProps: { onClick: onLogout, 'aria-label': copy.logOut },
   }
 }
 

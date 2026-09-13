@@ -6,6 +6,7 @@ import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { invitePal, meLou, memeplexEmpty, paperMeme } from '../../.storybook/fixtures'
 import { TIERS } from '@memeon/shared/tiers'
+import { memeDetailCopy } from '../copy/memeDetail'
 import { authMachine } from '../stores/authMachine'
 import { createStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
@@ -182,7 +183,7 @@ it('actual MemeDetailView in the app route observes deferred loading and later d
   expect(host.querySelector('main [data-slot="spinner"]')).toBeNull()
   expect(host.querySelector('h1')?.textContent).toContain(paperMeme.title)
   expect(host.textContent).toContain('you hold 100/100')
-  await act(() => button('Delete forever').click())
+  await act(() => button(memeDetailCopy.actions.delete).click())
   // the confirmations are Base UI popups: mounted means open, so presence is the whole state
   expect(host.querySelector('[role="alertdialog"]')).not.toBeNull()
   await act(() => button('Cancel').click())

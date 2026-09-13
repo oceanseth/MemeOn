@@ -1,3 +1,4 @@
+import { sortChipsCopy as copy } from '../copy/sortChips'
 import type { SortDir, SortKey } from './sorting'
 
 export interface SortChipModel {
@@ -42,10 +43,10 @@ export interface BuildSortChipsModelInput {
 }
 
 const CHIP_OPTIONS: readonly { key: SortKey; label: string }[] = [
-  { key: 'new', label: 'Newest' },
-  { key: 'views', label: '👁️ Views' },
-  { key: 'reshares', label: '🔁 Reshares' },
-  { key: 'value', label: '🧠 Value' },
+  { key: 'new', label: copy.chips.new },
+  { key: 'views', label: copy.chips.views },
+  { key: 'reshares', label: copy.chips.reshares },
+  { key: 'value', label: copy.chips.value },
 ]
 
 const REASON_ID = 'sort-chips-reason'
@@ -59,7 +60,11 @@ export function buildSortChipsModel({
   return {
     chips: CHIP_OPTIONS.map(({ key, label }) => {
       const selected = key === sortKey
-      const directionLabel = selected ? (dir === 'desc' ? 'descending' : 'ascending') : null
+      const directionLabel = selected
+        ? dir === 'desc'
+          ? copy.direction.descending
+          : copy.direction.ascending
+        : null
       return {
         key,
         label,
@@ -68,7 +73,7 @@ export function buildSortChipsModel({
         arrow: selected ? (dir === 'desc' ? '↓' : '↑') : null,
         directionLabel,
         buttonProps: {
-          'aria-label': directionLabel ? `${label}, ${directionLabel}` : label,
+          'aria-label': copy.chipA11y(label, directionLabel),
         },
       }
     }),
@@ -77,7 +82,7 @@ export function buildSortChipsModel({
     disabled: !!disabledReason,
     groupProps: {
       role: 'group',
-      'aria-label': 'Sort by',
+      'aria-label': copy.group,
       ...(disabledReason ? { 'aria-describedby': REASON_ID } : {}),
     },
     select: (key) => onChange(key, 'desc'),

@@ -8,6 +8,7 @@ import {
   paperMeme,
   videoMeme,
 } from '../../.storybook/fixtures'
+import { createMemeCopy as copy } from '../copy/createMeme'
 import {
   buildCreateMemeScreenModel,
   MAX_VIDEO_BYTES,
@@ -274,7 +275,7 @@ export const Submitting: Story = {
   args: model(
     {
       prompt: 'a capybara in a business suit',
-      busy: 'Rendering your masterpiece (uses your Masky credits)…',
+      busy: copy.busy.generatingImage,
       busyElapsed: '12s',
     },
     'submitting',
@@ -285,7 +286,7 @@ export const Submitting: Story = {
     await expect(canvas.getByRole('button', { name: /Upload/ })).toBeDisabled()
     /* the busy text lands in a region that was already mounted and silent, not one inserted with it */
     const busyNotice = canvas
-      .getByText(/Rendering your masterpiece/)
+      .getByText(copy.busy.generatingImage)
       .closest('[data-slot="live-region"]')
     await expect(busyNotice).toHaveAttribute('role', 'status')
     await expect(busyNotice).toHaveTextContent('12s')
@@ -298,7 +299,7 @@ export const RenderingVideo: Story = {
     {
       mode: 'video',
       prompt: 'a capybara in a business suit',
-      busy: 'Rendering the video — hold the vibe.',
+      busy: copy.busy.renderingVideo,
       busyElapsed: '2m41s',
     },
     'submitting',
@@ -314,7 +315,7 @@ export const ResumedRender: Story = {
       tags: 'chaos, work',
       prompt: 'a capybara ignoring a burning office',
       imageUrl: paperMeme.imageUrl,
-      busy: 'Resuming a video render already in progress…',
+      busy: copy.busy.resumingRender,
       busyElapsed: '4m08s',
     },
     'submitting',

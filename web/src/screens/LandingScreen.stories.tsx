@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { TIERS } from '@memeon/shared/tiers'
 import { tierFrames } from '../../.storybook/fixtures'
+import { heroVideoCopy } from '../copy/heroVideo'
 import {
   buildLandingHeroCards,
   buildLandingTierModels,
@@ -155,7 +156,9 @@ export const Ready: Story = {
     const film = canvasElement.querySelector<HTMLElement>('[data-slot="landing-film"]')!
     await expect(within(film).getByRole('heading', { level: 2, name: 'MemeOn in 50 seconds' })).toBeInTheDocument()
     await expect(film.querySelector('video')).toHaveAttribute('poster', '/promo/memeon-promo-poster.jpg')
-    await expect(within(film).getByRole('button', { name: 'Play the 50-second tour' })).toBeInTheDocument()
+    await expect(
+      within(film).getByRole('button', { name: heroVideoCopy.play }),
+    ).toBeInTheDocument()
     const faq = canvasElement.querySelector<HTMLElement>('[data-slot="landing-faq"]')!
     await expect(film.nextElementSibling).toBe(faq)
     await expect(film.previousElementSibling).toBe(canvasElement.querySelector('[data-slot="landing-tiers"]'))

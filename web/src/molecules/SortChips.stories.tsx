@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
+import { sortChipsCopy as copy } from '../copy/sortChips'
 import { buildSortChipsModel } from '../lib/sortChipsModel'
 import { SortChips } from './SortChips'
 
@@ -20,9 +21,11 @@ type Story = StoryObj<typeof meta>
 export const NewestDesc: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const newest = canvas.getByRole('button', { name: 'Newest, descending' })
+    const newest = canvas.getByRole('button', {
+      name: copy.chipA11y(copy.chips.new, copy.direction.descending),
+    })
     await expect(newest).toHaveAttribute('aria-pressed', 'true')
-    await expect(canvas.getByRole('group', { name: 'Sort by' })).toBeInTheDocument()
+    await expect(canvas.getByRole('group', { name: copy.group })).toBeInTheDocument()
     await userEvent.click(newest)
     await expect(onNewestChange).toHaveBeenCalledWith('new', 'asc')
   },
@@ -33,11 +36,12 @@ export const ViewsAsc: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: '👁️ Views, ascending' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    )
-    await userEvent.click(canvas.getByRole('button', { name: '🧠 Value' }))
+    await expect(
+      canvas.getByRole('button', {
+        name: copy.chipA11y(copy.chips.views, copy.direction.ascending),
+      }),
+    ).toHaveAttribute('aria-pressed', 'true')
+    await userEvent.click(canvas.getByRole('button', { name: copy.chips.value }))
     await expect(onViewsChange).toHaveBeenCalledWith('value', 'desc')
   },
 }
@@ -53,8 +57,8 @@ export const RankingUnavailable: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: '🧠 Value' })).toBeDisabled()
-    await expect(canvas.getByRole('group', { name: 'Sort by' })).toHaveAccessibleDescription(
+    await expect(canvas.getByRole('button', { name: copy.chips.value })).toBeDisabled()
+    await expect(canvas.getByRole('group', { name: copy.group })).toHaveAccessibleDescription(
       /can't rank/,
     )
   },

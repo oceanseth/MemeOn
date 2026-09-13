@@ -1,6 +1,7 @@
 import { useProjectedActor } from './useProjectedActor'
 import { useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { createMemeCopy } from '../copy/createMeme'
 import { apiFetch, post } from '../lib/api'
 import { extractPoster } from '../lib/extractPoster'
 import {
@@ -27,6 +28,8 @@ import { useMountEffect } from './useMountEffect'
 
 export type { CreateMemeScreenModel } from '../lib/createMemeModel'
 
+const copy = createMemeCopy
+
 async function uploadFile(file: File | Blob, contentType?: string): Promise<string> {
   const type = contentType ?? (file as File).type
   const { uploadUrl, publicUrl } = await post<{ uploadUrl: string; publicUrl: string }>(
@@ -38,7 +41,8 @@ async function uploadFile(file: File | Blob, contentType?: string): Promise<stri
     headers: { 'content-type': type },
     body: file,
   })
-  if (!put.ok) throw new Error(`upload failed (${put.status})`)
+  // the message is what the alert shows, so it is copy rather than a developer note
+  if (!put.ok) throw new Error(copy.errors.uploadRejected(put.status))
   return publicUrl
 }
 
@@ -68,7 +72,7 @@ interface VideoPollRun {
 
 class CreationLifetimeCancelledError extends Error {
   constructor() {
-    super('creation lifetime ended')
+    super(copy.errors.lifetimeEnded)
     this.name = 'CreationLifetimeCancelledError'
   }
 }
@@ -193,13 +197,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
             return
           }
           if (Date.now() - startedAt > POLL_TIMEOUT_MS) {
-            return finish(() =>
-              reject(
-                new Error(
-                  `Still rendering after 8 minutes. It may finish on Masky (job ${generationId}) — reopen this page to pick the render back up.`,
-                ),
-              ),
-            )
+            return finish(() => reject(new Error(copy.errors.stillRendering(generationId))))
           }
           try {
             const st = await fetchVideoStatus(generationId)
@@ -211,7 +209,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
               const url = st.videoUrl
               finish(() => resolve(url))
             } else if (st.status === 'error') {
-              finish(() => reject(new Error(st.errorMessage ?? 'video generation failed')))
+              finish(() => reject(new Error(st.errorMessage ?? copy.errors.videoGenerationFailed)))
             }
           } catch (error) {
             if (!owner.active || pollRunRef.current !== run) {
@@ -251,7 +249,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         } else if (pendingVideoMatchesRemix(pending.remixId, remixId)) {
           if (pending.imageUrl) send({ type: 'SET_IMAGE_URL', imageUrl: pending.imageUrl })
           if (pending.draft) send({ type: 'RESTORE_DRAFT', draft: pending.draft })
-          beginBusy('Resuming a video render already in progress…', pending.startedAt)
+          beginBusy(copy.busy.resumingRender, pending.startedAt)
           void pollVideo(pending.generationId, pending.startedAt, owner)
             .then((url) => {
               assertActive(owner)
@@ -260,7 +258,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
             })
             .catch((e) => {
               if (!owner.active || isLifetimeCancellation(e)) return
-              settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'render failed' })
+              settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.renderFailed })
             })
         }
       } catch {
@@ -297,7 +295,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     async (q: string) => {
       if (!q.trim()) return
       send({ type: 'SET_GIPHY_QUERY', query: q })
-      beginBusy('Searching Giphy…')
+      beginBusy(copy.busy.searchingGiphy)
       try {
         const r = await apiFetch<{ results: GiphyResult[] }>(
           `/api/giphy/search?q=${encodeURIComponent(q)}`,
@@ -305,7 +303,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         send({ type: 'SET_GIPHY_RESULTS', results: r.results })
         settleBusy({ type: 'DONE' })
       } catch (e) {
-        settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'giphy search failed' })
+        settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.giphySearchFailed })
       }
     },
     [beginBusy, send, settleBusy],
@@ -315,14 +313,14 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     const url = actor.getSnapshot().context.urlDraft.trim()
     if (!url) return
     if (!/^https?:\/\//.test(url)) {
-      send({ type: 'FAIL', err: 'that is not a link — paste a full https:// address' })
+      send({ type: 'FAIL', err: copy.errors.notALink })
       return
     }
     if (/\.(png|jpe?g|gif|webp)($|\?)/i.test(url)) {
       send({ type: 'SET_RESOLVED', imageUrl: url, videoUrl: null, source: null })
       return
     }
-    beginBusy('Finding the main image on that page…')
+    beginBusy(copy.busy.resolvingPage)
     try {
       const out = await post<{
         imageUrl: string
@@ -342,13 +340,13 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       })
       settleBusy({ type: 'DONE' })
     } catch (e) {
-      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'could not resolve that page' })
+      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.resolveFailed })
     }
   }, [actor, beginBusy, send, settleBusy])
 
   const applyEdit = useCallback(
     async (sourceUrl: string) => {
-      beginBusy('Remixing with Masky (uses your credits)…')
+      beginBusy(copy.busy.editing)
       try {
         const out = await post<{ imageUrl: string }>('/api/aigen/image-edit', {
           prompt: actor.getSnapshot().context.prompt,
@@ -357,7 +355,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         send({ type: 'SET_IMAGE_URL', imageUrl: out.imageUrl, edited: true })
         settleBusy({ type: 'DONE' })
       } catch (e) {
-        settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'edit failed' })
+        settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.editFailed })
       }
     },
     [actor, beginBusy, send, settleBusy],
@@ -370,12 +368,12 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     if (!live.remixSource) return
     const remixBusy =
       live.remixOutput === 'image'
-        ? 'Remixing the art (uses your Masky credits)…'
+        ? copy.busy.remixImage
         : live.videoMode === 'restyle' &&
             live.remixSource.mediaType === 'video' &&
             live.remixSource.videoUrl
-          ? 'Restyling the whole video (uses your Masky credits)…'
-          : 'Applying your edit to the frame (uses your Masky credits)…'
+          ? copy.busy.restyleVideo
+          : copy.busy.editFrame
     beginBusy(remixBusy)
     try {
       if (live.remixOutput === 'image') {
@@ -391,21 +389,22 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         live.remixSource.mediaType === 'video' &&
         live.remixSource.videoUrl
       ) {
-        send({ type: 'BUSY', busy: 'Restyling the whole video (uses your Masky credits)…' })
+        send({ type: 'BUSY', busy: copy.busy.restyleVideo })
         send({ type: 'SET_IMAGE_URL', imageUrl: live.remixSource.imageUrl })
         const started = await post<{ generationId: string }>('/api/aigen/video', {
           prompt: live.prompt,
           srcVideo: live.remixSource.videoUrl,
         })
         assertActive(owner)
-        send({ type: 'BUSY', busy: 'Rendering video remix… hold the vibe.' })
+        send({ type: 'BUSY', busy: copy.busy.renderingRemix })
         const videoUrl = await pollVideo(started.generationId, Date.now(), owner)
         assertActive(owner)
         send({ type: 'SET_VIDEO_URL', videoUrl })
       } else {
-        send({ type: 'BUSY', busy: 'Applying your edit to the frame (uses your Masky credits)…' })
+        send({ type: 'BUSY', busy: copy.busy.editFrame })
         const edited = await post<{ imageUrl: string }>('/api/aigen/image-edit', {
-          prompt: `${live.prompt}, keep everything else identical`,
+          /* prompt text for the generation API, never shown: not copy */
+          prompt: `${live.prompt}${copy.prompts.keepIdentical}`,
           imageUrls: [live.remixSource.imageUrl],
         })
         assertActive(owner)
@@ -415,7 +414,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       settleBusy({ type: 'DONE' })
     } catch (e) {
       if (!owner.active || isLifetimeCancellation(e)) return
-      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'remix failed' })
+      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.remixFailed })
     }
   }, [actor, beginBusy, pollVideo, send, settleBusy])
 
@@ -424,28 +423,29 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     if (!owner?.active) return
     const live = actor.getSnapshot().context
     if (live.mode === 'video') {
-      beginBusy('Starting video render (usually 1–3 minutes, uses your Masky credits)…')
+      beginBusy(copy.busy.startingVideo)
       try {
         const thumb = await post<{ imageUrl: string }>('/api/aigen/image', {
-          prompt: `${live.prompt} — single dramatic still frame, meme thumbnail`,
+          /* prompt text for the generation API, never shown: not copy */
+          prompt: `${live.prompt}${copy.prompts.videoThumbnailSuffix}`,
           aspectRatio: '1:1',
         })
         assertActive(owner)
         send({ type: 'SET_IMAGE_URL', imageUrl: thumb.imageUrl })
         const started = await post<{ generationId: string }>('/api/aigen/video', { prompt: live.prompt })
         assertActive(owner)
-        send({ type: 'BUSY', busy: 'Rendering the video — hold the vibe.' })
+        send({ type: 'BUSY', busy: copy.busy.renderingVideo })
         const videoUrl = await pollVideo(started.generationId, Date.now(), owner)
         assertActive(owner)
         send({ type: 'SET_VIDEO_URL', videoUrl })
         settleBusy({ type: 'DONE' })
       } catch (e) {
         if (!owner.active || isLifetimeCancellation(e)) return
-        settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'video generation failed' })
+        settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.videoGenerationFailed })
       }
       return
     }
-    beginBusy('Rendering your masterpiece (uses your Masky credits)…')
+    beginBusy(copy.busy.generatingImage)
     try {
       const out = await post<{ imageUrl: string }>('/api/aigen/image', {
         prompt: live.prompt,
@@ -456,7 +456,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       settleBusy({ type: 'DONE' })
     } catch (e) {
       if (!owner.active || isLifetimeCancellation(e)) return
-      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'generation failed' })
+      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.generationFailed })
     }
   }, [actor, beginBusy, pollVideo, send, settleBusy])
 
@@ -465,13 +465,16 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     if (!owner?.active) return
     const live = actor.getSnapshot().context
     if (!live.editedFrame) return
-    beginBusy('Animating the approved frame (uses your Masky credits)…')
+    beginBusy(copy.busy.animatingFrame)
     try {
       const isVideoSource = live.remixSource?.mediaType === 'video' && live.remixSource.videoUrl
       const started = await post<{ generationId: string }>('/api/aigen/video', {
+        /* prompt text for the generation API, never shown: not copy */
         prompt: isVideoSource
-          ? `same video and motion as the source, with the change from the reference image applied${live.motionPrompt.trim() ? ` — ${live.motionPrompt.trim()}` : ''}`
-          : live.motionPrompt.trim() || 'subtle natural motion true to the scene, same style, short loop',
+          ? live.motionPrompt.trim()
+            ? copy.prompts.motionWithEdit(live.motionPrompt.trim())
+            : copy.prompts.motionFromReference
+          : live.motionPrompt.trim() || copy.prompts.motionDefault,
         image: live.editedFrame,
         ...(isVideoSource ? { srcVideo: live.remixSource!.videoUrl } : {}),
       })
@@ -483,13 +486,13 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       settleBusy({ type: 'DONE' })
     } catch (e) {
       if (!owner.active || isLifetimeCancellation(e)) return
-      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'animation failed' })
+      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.animationFailed })
     }
   }, [actor, beginBusy, pollVideo, send, settleBusy])
 
   const onMint = useCallback(async () => {
     const live = actor.getSnapshot().context
-    beginBusy('Minting…')
+    beginBusy(copy.busy.minting)
     try {
       const isVideo =
         live.mode === 'video' ||
@@ -513,7 +516,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         shareUrl: `${window.location.origin}/m/${out.meme.id}`,
       })
     } catch (e) {
-      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : 'mint failed' })
+      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.mintFailed })
     }
   }, [actor, beginBusy, settleBusy])
 
@@ -530,12 +533,12 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         send({ type: 'FAIL', err: overCapMessage('image', file.size, MAX_IMAGE_BYTES) })
         return
       }
-      beginBusy('Uploading image…')
+      beginBusy(copy.busy.uploadingImage)
       try {
         send({ type: 'SET_IMAGE_URL', imageUrl: await uploadFile(file) })
         settleBusy({ type: 'DONE' })
       } catch (er) {
-        settleBusy({ type: 'FAIL', err: er instanceof Error ? er.message : 'upload failed' })
+        settleBusy({ type: 'FAIL', err: er instanceof Error ? er.message : copy.errors.uploadFailed })
       }
     },
     [beginBusy, send, settleBusy],
@@ -547,17 +550,17 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         send({ type: 'FAIL', err: overCapMessage('video', file.size, MAX_VIDEO_BYTES) })
         return
       }
-      beginBusy('Uploading video…')
+      beginBusy(copy.busy.uploadingVideo)
       try {
         send({ type: 'SET_VIDEO_URL', videoUrl: await uploadFile(file) })
         if (!actor.getSnapshot().context.imageUrl) {
-          send({ type: 'BUSY', busy: 'Grabbing the first frame for the card…' })
+          send({ type: 'BUSY', busy: copy.busy.extractingPoster })
           const poster = await extractPoster(file)
           send({ type: 'SET_IMAGE_URL', imageUrl: await uploadFile(poster, 'image/png') })
         }
         settleBusy({ type: 'DONE' })
       } catch (er) {
-        settleBusy({ type: 'FAIL', err: er instanceof Error ? er.message : 'upload failed' })
+        settleBusy({ type: 'FAIL', err: er instanceof Error ? er.message : copy.errors.uploadFailed })
       }
     },
     [actor, beginBusy, send, settleBusy],

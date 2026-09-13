@@ -22,10 +22,11 @@ or moving a component. `pnpm run check-tiers` runs recursively and must pass;
 | **Screens** | `src/screens/` | One model object per route/chrome surface | No |
 | **Views** | `src/views/` | Engine wired to screen; `observer` wrap; `AppView` is the route switch | Via hooks |
 
-Beside the tiers, three folders are the engine side:
+Beside the tiers, four folders are the engine side:
 
 | Folder | What lives there |
 |---|---|
+| `src/copy/` | **Every user-facing string**, one plain-data module per surface (`settings.ts`, …) plus `shared.ts` for labels that recur. Keys name the role (`intro`, `account.logOut`), never the content; dynamic strings are small pure functions (`account.name(user.name)`, `` shown: (n) => `${plural(n, 'card')} shown` ``). `copy/` imports nothing but `copy/` and the two formatting helpers `lib/plural` and `lib/braincells`, so a noun stays beside its sentence. Hooks and `lib/*Model.ts` builders read it; tests and stories assert **through the same constant**, so a copy change touches one file. Tier components never import it — strings reach them as props. |
 | `src/hooks/` | One `useXScreen()` per screen (exports `XScreenModel`), plus `useAuth`, `useTheme`, `useProjectedActor`, `useDocumentTitle`, `useMountEffect` |
 | `src/stores/` | XState machines (`*Machine.ts`), the MobX `AuthStore` / `ThemeStore`, `createStores` + `StoresContext` |
 | `src/lib/` | Everything with no React tree: the API client, auth, presence, formatting (`braincells`, `plural`), `cn()`, `FOCUS_RING`, the imperative `cardMedia`, and the **model builders** (`*Model.ts`) that turn API records into the prop bags molecules and atoms render (`memeCardModel`, `tradeCardModel`, `questBarModel`, …). Hooks call the builders; components only import their types. |
@@ -97,7 +98,8 @@ signed-in player can reach is a `lazy()` chunk behind `RequireAuth`.
 | `stores/themeStore` + `hooks/useTheme` | preference `auto`/`light`/`dark`, resolved arm, per-avatar persistence; paints `data-theme` on `<html>` | observer views, `ThemeControl` (sidebar segmented + header button), `SettingsScreen` |
 | `stores/*Machine.ts` (one per flow) | XState source of truth for that screen | matching `useXScreen()` |
 | `stores/ActorSnapshotProjection` + `hooks/useProjectedActor` | route-local snapshot reference; action-safe MobX updates; XState actor mount lifetime | all stateful screen hooks within `observer` views |
-| `hooks/useXScreen.ts` | view-model: projected snapshot + callbacks + derived flags — and the screen's **copy** (titles, captions, labels are built here, not in the screen) | matching `XView` → `XScreen` |
+| `hooks/useXScreen.ts` | view-model: projected snapshot + callbacks + derived flags; picks the screen's strings out of `copy/<surface>.ts` (never spells them, never leaves that to the screen) | matching `XView` → `XScreen` |
+| `copy/<surface>.ts` | the strings themselves, as data; `copy/shared.ts` for the ones every surface shares | hooks, `lib/*Model.ts`, tests, stories |
 | `hooks/useAuth.ts` | `user`, `loading`, `error`, `refresh`, `logout` | `RequireAuth`, chrome, screens |
 | `lib/*Model.ts` | pure builders from API records to component prop bags (`buildMemeCardModel`, `buildTradeCardModel`, `buildQuestBarModel`, …); the dialog models carry their `DialogOpenerRef` via `lib/dialogOpener` | screen hooks, stories (fixtures), the components as types only |
 | `lib/cardMedia.ts` | the meme card's one imperative seam: a shared IntersectionObserver, `video.play()`, the paused foil ring; exports the stable `cardMediaRef` / `toggleCardMedia` handles the card model hands to `MemeCard` | `lib/memeCardModel` |
@@ -136,7 +138,8 @@ touch four.
 
 | You want to… | Edit | Then |
 |---|---|---|
-| Change copy (a title, caption, button label, error string) | the `build*Model` / `useXScreen` in `hooks/` (or the `lib/*Model.ts` builder for a card, dialog, chip or rail) | the story fixtures that spell the same copy, and any `play` assertion that reads it |
+| Change copy (a title, caption, button label, error string) | `copy/<surface>.ts` — the one place the string is spelled | nothing: the builder, its unit test and the story `play` all read the same constant. If a surface still spells its strings inline (see `scripts/copy-baseline.json`), move them into `copy/` first and run `pnpm --filter web run check-copy -- --update` |
+| Add a string | a role-named key in `copy/<surface>.ts` (a function when it takes a value: `name: (n) => …`); reuse `copy/shared.ts` for a label another surface already has | the builder picks it, the story asserts through it — never by respelling. A story that overrides one part of the model spreads the built model: `{ ...model.connections, rows: […] }` |
 | Change how something looks | the component in its tier: Tailwind utilities on the element (`cn()` merges them) | if a `@theme` token is new, add it in `index.css` **and** register its namespace in `lib/cn.ts`; run `pnpm run check-contrast` for a colour |
 | Add a state a screen can be in | the machine in `stores/`, the derived flags in the hook, a **Screen story** for the new state first | the view story that reaches it through the connected scenario |
 | Add a new component | its tier folder, pure props → markup, `data-slot` on the root, a sibling `*.stories.tsx` | `pnpm run check-tiers` |
@@ -145,8 +148,11 @@ touch four.
 | Change a token (colour, radius, type step, breakpoint) | `index.css` `@theme static` — one place; every arm is a `light-dark()` pair | `pnpm run check-contrast`; `Anatomy/Tokens` in Storybook shows the result |
 | Set a length (height, padding, gap, width) | a role token when the boards repeat it by role — `h-control`, `px-control-x`, `gap-control-gap`, `size-icon`, `p-gutter`, `h-field`, `size-control-sm`, `w-nav-item`, `max-w-measure`, `max-w-card`, `rounded-band` / `-well` / `-segment` / `-control-sm` (`index.css` `--spacing-*`, `--radius-*`, `--container-*`); otherwise a grid step (`mt-2.5`, `p-5.5`, `py-3.25`). No `h-[46px]`; `[…]` is for `calc()`, `env()`, `%` and `ch` only | a new role name goes in `index.css` **and** `lib/cn.ts` (`theme.spacing` / `radius` / `container`) with a `cn.test.ts` case |
 
-`pnpm run check` is the whole gate (tiers, contrast, layers, proxy, unit, runtime,
-stories). `pnpm run storybook` (port 6006, MSW-backed) is where a state is verified.
+`pnpm run check` is the whole gate (tiers, copy, contrast, layers, proxy, unit, runtime,
+stories). `check-copy` is a ratchet: it counts copy-like literals still spelled in `hooks/`
+and the `lib/*Model.ts` builders against `scripts/copy-baseline.json`, and a file may only
+match or fall below its number (`--list` names the strings, `--update` locks a drop in;
+it refuses to raise anything). `pnpm run storybook` (port 6006, MSW-backed) is where a state is verified.
 
 ## Soft Press additions (mo-263)
 
@@ -215,6 +221,9 @@ Probe these instead of a class name or copy string:
 - Do not put `observer` or `useState` below `views/`.
 - Model builders live in `lib/*Model.ts`, not in a tier folder: hooks call them, stories use them
   as fixtures, and a component imports only the model's *type*.
+- Strings live in `copy/`, spelled once. Builders read them; tests and stories assert through the
+  constant. No tier imports `copy/`, and `copy/` imports nothing but `copy/`, `lib/plural` and
+  `lib/braincells`.
 - Presentation is Tailwind utilities on the component, in `@layer utilities`. Only effects no
   utility can express get a co-located `.css` file — today the card foil (`atoms/foil.css`), the
   skeleton sweep, the spinner, the landing frame-slot shimmer (`screens/LandingScreen.css`) and the

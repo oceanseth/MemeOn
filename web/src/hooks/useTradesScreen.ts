@@ -1,5 +1,6 @@
 import { useProjectedActor } from './useProjectedActor'
 import { Fragment, createElement, useCallback, useRef, type ChangeEventHandler, type FormEventHandler, type HTMLAttributes } from 'react'
+import { tradesCopy } from '../copy/trades'
 import { apiFetch, post } from '../lib/api'
 import { buildConfirmDialogModel, type ConfirmDialogModel } from '../lib/confirmDialogModel'
 import type { FriendEntry, Meme, Trade } from '../lib/types'
@@ -47,12 +48,9 @@ export interface TradesScreenModel {
 }
 const COMPOSE_FORM_ID = 'trade-composer'
 const MAX_COINS = 1_000_000
-const LOAD_ERROR = "Couldn't load your trades. Try again."
-const RESPOND_ERROR = "Couldn't send your answer — this trade may already have been answered. Try again."
-const PROPOSE_ERROR = "Couldn't send that proposal. Check the numbers and try again."
-const FRIENDS_ERROR = "Couldn't load your friends list. Close this and open it again."
+const copy = tradesCopy
 /** an id that never resolves settles here, so a line stops shimmering and never shows a raw key */
-const RETIRED_MEME: TradeMemeInfo = { title: 'a retired meme', imageUrl: '', tierKey: '', tierName: '', tierLabel: '', reshares: 0 }
+const RETIRED_MEME: TradeMemeInfo = { title: copy.retiredMemeTitle, imageUrl: '', tierKey: '', tierName: '', tierLabel: '', reshares: 0 }
 
 function collectMemeIds(trades: Trade[]): string[] { const ids = new Set<string>(); for (const trade of trades) { for (const meme of trade.offer.memes) ids.add(meme.memeId); for (const meme of trade.ask.memes) ids.add(meme.memeId) }; return [...ids] }
 /**
@@ -70,7 +68,7 @@ const memeInfo = (meme: Meme): TradeMemeInfo => ({
   imageUrl: meme.imageUrl,
   tierKey: meme.tier.key,
   tierName: meme.tier.name,
-  tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`,
+  tierLabel: copy.memeTierLabel(meme.tier.name, meme.tier.rarity),
   reshares: meme.reshareCount ?? meme.reshares,
 })
 const errorText = (error: unknown, fallback: string): string => (error instanceof Error && error.message ? error.message : fallback)
@@ -107,7 +105,7 @@ export function useTradesScreen(): TradesScreenModel {
         send({ type: 'LOADED', trades: result.trades })
         resolveMemeNames(result.trades)
       })
-      .catch((error) => send({ type: 'FAIL', err: errorText(error, LOAD_ERROR) }))
+      .catch((error) => send({ type: 'FAIL', err: errorText(error, copy.errors.load) }))
   }, [resolveMemeNames, send])
   const retry = useCallback(() => {
     send({ type: 'RETRY' })
@@ -116,7 +114,7 @@ export function useTradesScreen(): TradesScreenModel {
   const loadCompose = useCallback((generation: number) => {
     apiFetch<{ friends: FriendEntry[] }>('/api/friends')
       .then((result) => send({ type: 'SET_FRIENDS', friends: result.friends.filter((friend) => friend.status === 'accepted'), composeGeneration: generation }))
-      .catch(() => send({ type: 'SET_COMPOSE_ERR', err: FRIENDS_ERROR, composeGeneration: generation }))
+      .catch(() => send({ type: 'SET_COMPOSE_ERR', err: copy.errors.friends, composeGeneration: generation }))
     apiFetch<{ memes: Meme[] }>('/api/binder')
       .then((result) => send({ type: 'SET_BINDER', binder: result.memes.filter((meme) => (meme.myShares ?? 0) > 0), composeGeneration: generation }))
       .catch(() => {})
@@ -135,8 +133,8 @@ export function useTradesScreen(): TradesScreenModel {
   const performRespond = (trade: Trade, action: TradeAction) => {
     send({ type: 'RESPOND', tradeId: trade.id, action })
     void post(`/api/trades/${trade.id}/respond`, { action })
-      .then(() => { send({ type: 'DONE', msg: action === 'accept' ? 'Trade executed 🤝' : null }); load(); void refresh() })
-      .catch((error) => send({ type: 'FAIL', err: errorText(error, RESPOND_ERROR) }))
+      .then(() => { send({ type: 'DONE', msg: action === 'accept' ? copy.toasts.executed : null }); load(); void refresh() })
+      .catch((error) => send({ type: 'FAIL', err: errorText(error, copy.errors.respond) }))
   }
   // accepting moves shares for good and withdrawing pulls a live offer: both get a confirm step
   const respond = (trade: Trade, action: TradeAction) => {
@@ -151,7 +149,7 @@ export function useTradesScreen(): TradesScreenModel {
     void post('/api/trades', tradeProposalPayload(live))
       .then(() => { send({ type: 'CLOSE_COMPOSE', composeGeneration: generation }); load() })
       .catch((error) => {
-        send({ type: 'SET_COMPOSE_ERR', err: errorText(error, PROPOSE_ERROR), composeGeneration: generation })
+        send({ type: 'SET_COMPOSE_ERR', err: errorText(error, copy.errors.propose), composeGeneration: generation })
         send({ type: 'SET_BUSY', busy: false, composeGeneration: generation })
       })
   }
@@ -164,7 +162,7 @@ export function useTradesScreen(): TradesScreenModel {
   const compose: TradeComposerModel | null = showNew ? {
     formProps: { id: COMPOSE_FORM_ID, onSubmit: (event) => { event.preventDefault(); propose() } },
     noFriends,
-    friendSelectProps: { value: context.toId, onValueChange: onToIdChange }, friends: context.friends, offerMemeSelectProps: { value: context.offerMeme, onValueChange: (value) => send({ type: 'SET_OFFER_MEME', memeId: value ?? '' }) }, binderOptions: context.binder.map((meme) => ({ id: meme.id, label: `${meme.title} (you hold ${meme.myShares})` })), showOfferShares: !!context.offerMeme, offerSharesInputProps: { value: context.offerShares, min: 1, max: offerSharesMax, onChange: (event) => send({ type: 'SET_OFFER_SHARES', shares: clampInt(event.target.value, 0, offerSharesMax) }) }, offerSharesHint: `you hold ${heldShares}`, offerCoinsInputProps: { value: context.offerCoins, min: 0, max: availableCoins, onChange: (event) => send({ type: 'SET_OFFER_COINS', coins: clampInt(event.target.value, 0, availableCoins) }) }, offerCoinsHint: `🧠 ${availableCoins.toLocaleString()} available`, askMemeSelectProps: { value: context.askMeme, onValueChange: (value) => send({ type: 'SET_ASK_MEME', memeId: value ?? '' }) }, theirMemeOptions: theirMemes.map((meme) => ({ id: meme.id, label: meme.title })), showAskShares: !!context.askMeme, askSharesInputProps: { value: context.askShares, min: 1, max: 100, onChange: (event) => send({ type: 'SET_ASK_SHARES', shares: clampInt(event.target.value, 0, 100) }) }, askCoinsInputProps: { value: context.askCoins, min: 0, onChange: (event) => send({ type: 'SET_ASK_COINS', coins: clampInt(event.target.value, 0, MAX_COINS) }) }, error: context.composeErr, errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' }, proposeButtonProps: { onClick: propose, disabled: !context.toId || context.busy || noFriends || emptyProposal || zeroShares },
+    friendSelectProps: { value: context.toId, onValueChange: onToIdChange }, friends: context.friends, offerMemeSelectProps: { value: context.offerMeme, onValueChange: (value) => send({ type: 'SET_OFFER_MEME', memeId: value ?? '' }) }, binderOptions: context.binder.map((meme) => ({ id: meme.id, label: copy.composer.binderOption(meme.title, meme.myShares ?? 0) })), showOfferShares: !!context.offerMeme, offerSharesInputProps: { value: context.offerShares, min: 1, max: offerSharesMax, onChange: (event) => send({ type: 'SET_OFFER_SHARES', shares: clampInt(event.target.value, 0, offerSharesMax) }) }, offerSharesHint: copy.composer.offerSharesHint(heldShares), offerCoinsInputProps: { value: context.offerCoins, min: 0, max: availableCoins, onChange: (event) => send({ type: 'SET_OFFER_COINS', coins: clampInt(event.target.value, 0, availableCoins) }) }, offerCoinsHint: copy.composer.offerCoinsHint(availableCoins), askMemeSelectProps: { value: context.askMeme, onValueChange: (value) => send({ type: 'SET_ASK_MEME', memeId: value ?? '' }) }, theirMemeOptions: theirMemes.map((meme) => ({ id: meme.id, label: meme.title })), showAskShares: !!context.askMeme, askSharesInputProps: { value: context.askShares, min: 1, max: 100, onChange: (event) => send({ type: 'SET_ASK_SHARES', shares: clampInt(event.target.value, 0, 100) }) }, askCoinsInputProps: { value: context.askCoins, min: 0, onChange: (event) => send({ type: 'SET_ASK_COINS', coins: clampInt(event.target.value, 0, MAX_COINS) }) }, error: context.composeErr, errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' }, proposeButtonProps: { onClick: propose, disabled: !context.toId || context.busy || noFriends || emptyProposal || zeroShares },
   } : null
   const actingId = phase === 'acting' ? context.actingTradeId : null
   const actingAction = phase === 'acting' ? context.actingAction : null
@@ -178,16 +176,16 @@ export function useTradesScreen(): TradesScreenModel {
     open: !!confirmingTrade,
     danger: !accepting,
     busy: phase === 'acting',
-    title: accepting ? 'Accept this trade?' : 'Withdraw this proposal?',
+    title: accepting ? copy.confirm.acceptTitle : copy.confirm.withdrawTitle,
     message: confirmingTrade
       ? accepting
         ? createElement(Fragment, null,
-            createElement('strong', null, 'You give '), tradeSideSentence(confirmingTrade.ask, context.memeNames), '. ',
-            createElement('strong', null, 'You get '), tradeSideSentence(confirmingTrade.offer, context.memeNames), '.')
+            createElement('strong', null, copy.confirm.give), tradeSideSentence(confirmingTrade.ask, context.memeNames), copy.confirm.betweenSides,
+            createElement('strong', null, copy.confirm.get), tradeSideSentence(confirmingTrade.offer, context.memeNames), copy.confirm.end)
         : createElement(Fragment, null,
-            `You offered ${tradeSideSentence(confirmingTrade.offer, context.memeNames)} for ${tradeSideSentence(confirmingTrade.ask, context.memeNames)}. Withdrawing takes it off ${confirmingTrade.toName}'s table.`)
+            copy.confirm.withdraw(tradeSideSentence(confirmingTrade.offer, context.memeNames), tradeSideSentence(confirmingTrade.ask, context.memeNames), confirmingTrade.toName))
       : '',
-    confirmLabel: accepting ? 'Accept' : 'Withdraw',
+    confirmLabel: accepting ? copy.confirm.acceptLabel : copy.confirm.withdrawLabel,
     onCancel: () => send({ type: 'CANCEL_CONFIRM' }),
     onConfirm: () => { if (confirmingTrade && confirming) performRespond(confirmingTrade, confirming.action) },
   })
@@ -195,12 +193,12 @@ export function useTradesScreen(): TradesScreenModel {
   return {
     phase,
     /* Opens the compose form; submit lives on the form itself. */
-    newTradeButtonLabel: showNew ? 'Close' : 'Propose a trade',
+    newTradeButtonLabel: showNew ? copy.closeComposer : copy.newTrade,
     newTradeButtonProps: { onClick: onToggleNew, 'aria-expanded': showNew, 'aria-controls': COMPOSE_FORM_ID },
     compose,
     open,
     /* "waiting" is already the state, not a countable noun — the number is the only plural */
-    openCountLabel: open.length > 0 ? `${open.length} waiting` : null,
+    openCountLabel: open.length > 0 ? copy.openCount(open.length) : null,
     history,
     msg: context.msg,
     noticeProps: { role: 'status', 'aria-live': 'polite' },
@@ -211,7 +209,7 @@ export function useTradesScreen(): TradesScreenModel {
     retryButtonProps: { onClick: retry },
     showLoading: phase === 'loading',
     loadingProps: { role: 'status', 'aria-live': 'polite' },
-    loadingLabel: 'Loading trades…',
+    loadingLabel: copy.loading,
     showLists: phase !== 'loading' && !showError,
     confirmDialog,
   }

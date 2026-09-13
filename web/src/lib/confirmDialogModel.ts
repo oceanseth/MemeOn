@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
+import { confirmDialogCopy as copy } from '../copy/confirmDialog'
 import { trackDialogOpener, type DialogOpenerRef } from './dialogOpener'
 
 export interface ConfirmPromptInput {
@@ -73,8 +74,8 @@ export function buildConfirmDialogModel({
   id = 'confirm',
   title,
   message,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel = copy.confirm,
+  cancelLabel = copy.cancel,
   danger = false,
   busy = false,
   prompt,
@@ -120,7 +121,7 @@ export function buildConfirmDialogModel({
       if (!nextOpen && !busy) onCancel()
     },
     cancelLabel,
-    confirmLabel: busy ? 'Working…' : confirmLabel,
+    confirmLabel: busy ? copy.busy : confirmLabel,
     cancelButtonProps: {
       onClick: busy ? undefined : onCancel,
       disabled: busy,

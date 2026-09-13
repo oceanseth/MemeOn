@@ -1,3 +1,4 @@
+import { createMemeCopy as copy } from '../../copy/createMeme'
 import type { CreateMemeContext } from '../../stores/createMemeMachine'
 import { isRemixOutput, isVideoRemixStyle } from './shared'
 import type { CreateMemeScreenActions, CreateMemeScreenModel } from './types'
@@ -40,17 +41,17 @@ export function buildRemixModeModel(
           creatorName: ctx.remixSource.creatorName,
         }
       : null,
-    remixSourceLoadingText: 'Loading the meme you are remixing…',
+    remixSourceLoadingText: copy.remix.loadingSource,
     remixPromptLabel: remixPromptIsPrecise
-      ? 'What to change (runs on your Masky credits)'
-      : 'Edit prompt (runs on your Masky credits)',
+      ? copy.remix.promptLabelPrecise
+      : copy.remix.promptLabelEdit,
     remixPromptPlaceholder:
       ctx.remixOutput === 'video'
         ? ctx.videoMode === 'edit'
-          ? 'add a claude icon to the tshirt he is wearing'
-          : 'make the whole scene look like a vaporwave painting'
-        : 'same scene but everyone is a skeleton and it is raining',
-    remixButtonLabel: ctx.remixOutput === 'video' ? 'Remix into video' : 'Remix image',
+          ? copy.remix.placeholder.editFrame
+          : copy.remix.placeholder.restyle
+        : copy.remix.placeholder.image,
+    remixButtonLabel: ctx.remixOutput === 'video' ? copy.remix.remixVideo : copy.remix.remixImage,
     showVideoRemixStyle: ctx.remixOutput === 'video' && ctx.remixSource?.mediaType === 'video',
     showEditedFrameApproval,
     showRemixButton: !showEditedFrameApproval,

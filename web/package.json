@@ -10,9 +10,11 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "check-tiers": "node scripts/check-tiers.mjs src",
+    "check-copy": "node scripts/check-copy.mjs src",
     "typecheck": "tsc",
     "check-contrast": "node scripts/check-contrast.mjs",
     "test:check-tiers": "node --test scripts/check-tiers.test.mjs",
+    "test:check-copy": "node --test scripts/check-copy.test.mjs",
     "test:check-layers": "node --test scripts/check-layers.test.mjs",
     "test:check-contrast": "node --test scripts/check-contrast.test.mjs",
     "test:proxy": "pnpm run build && node scripts/vite-proxy.test.mjs",
@@ -20,7 +22,7 @@
     "test:runtime": "vitest run --project=runtime",
     "test:stories": "vitest run --project=storybook",
     "test": "vitest run --project=unit --project=runtime",
-    "check": "pnpm run check-tiers && pnpm run check-contrast && pnpm run test:check-layers && pnpm run test:check-contrast && pnpm run test:proxy && pnpm run test:unit && pnpm run test:runtime && pnpm run test:stories"
+    "check": "pnpm run check-tiers && pnpm run check-copy && pnpm run check-contrast && pnpm run test:check-copy && pnpm run test:check-layers && pnpm run test:check-contrast && pnpm run test:proxy && pnpm run test:unit && pnpm run test:runtime && pnpm run test:stories"
   },
   "dependencies": {
     "@memeon/shared": "workspace:*",

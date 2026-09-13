@@ -1,6 +1,9 @@
 import type { ButtonHTMLAttributes } from 'react'
+import { tradesCopy } from '../copy/trades'
 import { braincells } from './braincells'
 import type { Trade, TradeSide } from './types'
+
+const copy = tradesCopy.card
 
 export type TradeAction = 'accept' | 'decline' | 'cancel'
 
@@ -78,18 +81,18 @@ export interface TradeCardModel {
 }
 
 const STATUS_BADGE: Record<Trade['status'], string> = {
-  proposed: '⏳ proposed',
-  accepted: '✅ accepted',
-  declined: '❌ declined',
-  cancelled: '🚫 cancelled',
+  proposed: copy.badge.proposed,
+  accepted: copy.badge.accepted,
+  declined: copy.badge.declined,
+  cancelled: copy.badge.cancelled,
 }
 
 /** The subline's first half once a trade is settled. */
 const STATUS_LINE: Record<Trade['status'], string> = {
-  proposed: 'Waiting',
-  accepted: 'Deal complete',
-  declined: 'Declined',
-  cancelled: 'Withdrawn',
+  proposed: copy.statusLine.proposed,
+  accepted: copy.statusLine.accepted,
+  declined: copy.statusLine.declined,
+  cancelled: copy.statusLine.cancelled,
 }
 
 const MINUTE = 60_000
@@ -99,28 +102,28 @@ const DAY = 24 * HOUR
 /** stands in for a title still in flight, until the meme's record lands */
 const PENDING_TITLE = '…'
 
-const sharesPhrase = (shares: number): string => `${shares} share${shares === 1 ? '' : 's'} of`
+const sharesPhrase = (shares: number): string => copy.sharesOf(shares)
 
 /** Relative age is what you scan when triaging proposals; the exact value rides on <time>. */
 function relativeAge(createdAt: string, now: number): string {
   const then = new Date(createdAt).getTime()
   if (!Number.isFinite(then)) return ''
   const elapsed = now - then
-  if (elapsed < MINUTE) return 'just now'
-  if (elapsed < HOUR) return `${Math.floor(elapsed / MINUTE)}m ago`
-  if (elapsed < DAY) return `${Math.floor(elapsed / HOUR)}h ago`
-  if (elapsed < 2 * DAY) return 'yesterday'
-  if (elapsed < 7 * DAY) return `${Math.floor(elapsed / DAY)}d ago`
+  if (elapsed < MINUTE) return copy.time.justNow
+  if (elapsed < HOUR) return copy.time.minutesAgo(Math.floor(elapsed / MINUTE))
+  if (elapsed < DAY) return copy.time.hoursAgo(Math.floor(elapsed / HOUR))
+  if (elapsed < 2 * DAY) return copy.time.yesterday
+  if (elapsed < 7 * DAY) return copy.time.daysAgo(Math.floor(elapsed / DAY))
   return new Date(then).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
 /** One side of a deal as a sentence, for the confirmation dialog. */
 export function tradeSideSentence(side: TradeSide, memeNames: TradeMemeInfoMap): string {
   const parts = side.memes.map(
-    (meme) => `${sharesPhrase(meme.shares)} "${memeNames[meme.memeId]?.title ?? 'that meme'}"`,
+    (meme) => `${sharesPhrase(meme.shares)} "${memeNames[meme.memeId]?.title ?? copy.pendingMemeTitle}"`,
   )
   if (side.coins > 0) parts.push(braincells(side.coins))
-  return parts.length === 0 ? 'nothing' : parts.join(' + ')
+  return parts.length === 0 ? copy.sideSentence.nothing : parts.join(' + ')
 }
 
 /** Finality note under the wells for incoming proposals you can still answer. */
@@ -132,10 +135,11 @@ function finalityLine(yours: TradeSide, memeNames: TradeMemeInfoMap): string | n
   })
   if (yours.coins > 0) parts.push(braincells(yours.coins))
   if (parts.length === 0) {
-    return 'Trades are final — nothing leaves your binder, but the cards you get are yours the moment you accept.'
+    return copy.finality.nothingLeaves
   }
-  const list = parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}`
-  return `Trades are final — ${list} leave your binder the moment you accept.`
+  const list =
+    parts.length === 1 ? parts[0]! : copy.finality.and(parts.slice(0, -1).join(', '), parts.at(-1)!)
+  return copy.finality.leaves(list)
 }
 
 function buildSideSummary(
@@ -195,13 +199,13 @@ export function buildTradeCardModel({
         ? [
             {
               kind: 'cancel',
-              label: running('cancel') ? 'Withdrawing…' : 'Withdraw',
+              label: running('cancel') ? copy.actions.withdrawing : copy.actions.withdraw,
               variant: 'danger',
               buttonProps: {
                 onClick: () => onRespond(trade, 'cancel'),
                 disabled: locked,
                 'aria-busy': running('cancel'),
-                'aria-label': `Withdraw your proposal to ${trade.toName}`,
+                'aria-label': copy.actions.withdrawA11y(trade.toName),
               },
             },
           ]
@@ -209,24 +213,24 @@ export function buildTradeCardModel({
           [
             {
               kind: 'decline',
-              label: running('decline') ? 'Declining…' : 'Decline',
+              label: running('decline') ? copy.actions.declining : copy.actions.decline,
               variant: 'default',
               buttonProps: {
                 onClick: () => onRespond(trade, 'decline'),
                 disabled: locked,
                 'aria-busy': running('decline'),
-                'aria-label': `Decline ${trade.fromName}'s trade`,
+                'aria-label': copy.actions.declineA11y(trade.fromName),
               },
             },
             {
               kind: 'accept',
-              label: running('accept') ? 'Accepting…' : 'Accept',
+              label: running('accept') ? copy.actions.accepting : copy.actions.accept,
               variant: 'primary',
               buttonProps: {
                 onClick: () => onRespond(trade, 'accept'),
                 disabled: locked,
                 'aria-busy': running('accept'),
-                'aria-label': `Accept ${trade.fromName}'s trade`,
+                'aria-label': copy.actions.acceptA11y(trade.fromName),
               },
             },
           ]
@@ -238,17 +242,21 @@ export function buildTradeCardModel({
     id: trade.id,
     partiesLabel: open
       ? mine
-        ? `You offered ${trade.toName} a deal`
-        : `${trade.fromName} offered you a deal`
-      : `Your deal with ${mine ? trade.toName : trade.fromName}`,
+        ? copy.parties.youOffered(trade.toName)
+        : copy.parties.offeredYou(trade.fromName)
+      : copy.parties.yourDeal(mine ? trade.toName : trade.fromName),
     statusLabel: STATUS_BADGE[trade.status],
     showStatusBadge: !open,
-    waitingLabel: open ? (mine ? 'Waiting on them' : 'Waiting on you') : STATUS_LINE[trade.status],
+    waitingLabel: open
+      ? mine
+        ? copy.waiting.onThem
+        : copy.waiting.onYou
+      : STATUS_LINE[trade.status],
     createdLabel: relativeAge(trade.createdAt, now),
     createdAtIso: trade.createdAt,
     createdTitle: new Date(trade.createdAt).toLocaleString(),
-    give: buildSideSummary(yours, 'You give', memeNames),
-    get: buildSideSummary(theirs, 'You get', memeNames),
+    give: buildSideSummary(yours, copy.sides.give, memeNames),
+    get: buildSideSummary(theirs, copy.sides.get, memeNames),
     finalityLine: actions.length > 0 && !mine ? finalityLine(yours, memeNames) : null,
     actions,
   }

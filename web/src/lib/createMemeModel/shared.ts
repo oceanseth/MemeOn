@@ -1,5 +1,6 @@
 import type { ChangeEvent, HTMLAttributes } from 'react'
 import { glowStyleFor, tierFor } from '@memeon/shared/tiers'
+import { createMemeCopy as copy } from '../../copy/createMeme'
 import { tierFrameClasses } from '../../atoms/foil'
 import {
   boundTitle,
@@ -29,8 +30,9 @@ const FRESH_TIER = tierFor(0)
 const megabytes = (bytes: number): number => Math.max(1, Math.round(bytes / (1024 * 1024)))
 
 export function overCapMessage(kind: 'image' | 'video', size: number, cap: number): string {
-  const advice = kind === 'video' ? 'try a shorter clip' : 'try a smaller file'
-  return `that ${kind} is ${megabytes(size)}MB — the cap is ${megabytes(cap)}MB, ${advice}`
+  const advice =
+    kind === 'video' ? copy.preview.overCapAdvice.video : copy.preview.overCapAdvice.image
+  return copy.preview.overCap(kind, megabytes(size), megabytes(cap), advice)
 }
 
 export function boundTags(value: string): string {
@@ -63,7 +65,9 @@ export function megabyteLabel(bytes: number): number {
 function originLabelFor(source: CreateMemeContext['artworkSource']): string | null {
   if (!source) return null
   const provider = source.provider === 'giphy' ? 'GIPHY' : source.provider
-  return source.author ? `from ${provider} · @${source.author}` : `from ${provider}`
+  return source.author
+    ? copy.preview.originFromAuthor(provider, source.author)
+    : copy.preview.originFrom(provider)
 }
 
 /**
@@ -73,7 +77,7 @@ function originLabelFor(source: CreateMemeContext['artworkSource']): string | nu
  */
 export function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
   const title = ctx.title.trim()
-  const label = title ? `"${title}"` : 'your meme'
+  const label = title ? `"${title}"` : copy.preview.yourMeme
   return {
     cardProps: {
       className: tierFrameClasses(FRESH_TIER.key),
@@ -90,17 +94,17 @@ export function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
             playsInline: true,
             autoPlay: true,
             controls: true,
-            'aria-label': 'Video preview',
+            'aria-label': copy.preview.videoA11y,
           },
         }
       : {
           kind: 'image',
-          imageProps: { src: ctx.imageUrl, alt: `Preview of ${label}` },
+          imageProps: { src: ctx.imageUrl, alt: copy.preview.previewOf(label) },
         },
-    title: title || 'Untitled',
+    title: title || copy.preview.untitled,
     titleIsPlaceholder: !title,
     tierName: FRESH_TIER.name,
-    tierLabel: `${FRESH_TIER.name} · freshly minted`,
+    tierLabel: copy.preview.freshlyMinted(FRESH_TIER.name),
     tierColor: FRESH_TIER.color,
     statsLabel: '👁️ 0 · 🔁 0',
     valueLabel: '🧠 0',
@@ -111,9 +115,9 @@ export function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
 export function nextStepFor(err: string | null): string | null {
   if (!err) return null
   if (/credit|402|quota|balance/i.test(err)) {
-    return 'Top up Masky credits, or switch to Upload and bring your own image.'
+    return copy.preview.nextStep.credits
   }
-  if (/upload failed|413|too large/i.test(err)) return 'Try a smaller file, or a shorter clip.'
+  if (/upload failed|413|too large/i.test(err)) return copy.preview.nextStep.tooLarge
   return null
 }
 
@@ -123,11 +127,11 @@ export function deriveMintState(ctx: CreateMemeContext, isBusy: boolean) {
     !!ctx.title.trim() && !!ctx.imageUrl && (!needsVideo || !!ctx.videoUrl) && !isBusy
   const mintHint =
     [
-      !ctx.title.trim() && 'add a title',
-      !ctx.imageUrl && 'add artwork',
+      !ctx.title.trim() && copy.preview.mintHint.title,
+      !ctx.imageUrl && copy.preview.mintHint.artwork,
       needsVideo &&
         !ctx.videoUrl &&
-        (ctx.mode === 'remix' ? 'animate the frame' : 'finish the video'),
+        (ctx.mode === 'remix' ? copy.preview.mintHint.animate : copy.preview.mintHint.video),
     ]
       .filter(Boolean)
       .join(' · ') || '…'

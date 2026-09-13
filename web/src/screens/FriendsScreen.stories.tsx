@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { fn } from 'storybook/test'
 import { friendAccepted, giftablePaper } from '../../.storybook/fixtures'
+import { friendsCopy as copy } from '../copy/friends'
 import { buildFriendLinkModel, type FriendsScreenModel } from '../hooks/useFriendsScreen'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
 import { buildGiftDialogModel } from '../lib/giftDialogModel'
@@ -12,7 +13,20 @@ const friendOutgoing = { ...friendAccepted, status: 'outgoing' as const }
 const searchHit = { sub: friendAccepted.sub, name: friendAccepted.name, picture: friendAccepted.picture }
 
 const friendLink = buildFriendLinkModel
-const statsLabel = `📚 ${friendAccepted.collectionSize} memes · 🧠 ${friendAccepted.portfolioValue.toLocaleString()} held`
+const statsLabel = copy.row.stats(friendAccepted.collectionSize, friendAccepted.portfolioValue)
+const searchInput = (value: string) => ({ value, onChange: fn(), 'aria-label': copy.search.inputLabel })
+const incomingRow = () => ({
+  ...friendLink(friendIncoming),
+  statsLabel,
+  acceptButtonProps: { onClick: fn(), 'aria-label': copy.row.accept(friendIncoming.name) },
+  declineButtonProps: { onClick: fn(), 'aria-label': copy.row.decline(friendIncoming.name) },
+})
+const outgoingRow = () => ({
+  ...friendLink(friendOutgoing),
+  statsLabel,
+  pendingLabel: copy.row.pending,
+  cancelButtonProps: { onClick: fn(), 'aria-label': copy.row.cancelRequest(friendOutgoing.name) },
+})
 
 const giftDialog = buildGiftDialogModel({
   open: false, recipient: null, memes: [], query: '', pick: null, shares: 1, busy: false, error: null,
@@ -28,23 +42,23 @@ const acceptedRow = (overrides: Partial<FriendsScreenModel['accepted'][number]> 
   onlineLabel: 'Online now',
   statsLabel,
   tradeLabel: 'Trade',
-  tradeLinkProps: { to: '/trade', 'aria-label': `Trade with ${friendAccepted.name}` },
-  giftLabel: 'Gift',
-  giftButtonProps: { onClick: fn(), 'aria-label': `Gift shares to ${friendAccepted.name}` },
-  removeLabel: 'Remove',
-  removeButtonProps: { onClick: fn(), 'aria-label': `Remove ${friendAccepted.name}` },
+  tradeLinkProps: { to: '/trade', 'aria-label': copy.row.tradeWith(friendAccepted.name) },
+  giftLabel: copy.row.gift,
+  giftButtonProps: { onClick: fn(), 'aria-label': copy.row.giftTo(friendAccepted.name) },
+  removeLabel: copy.row.remove,
+  removeButtonProps: { onClick: fn(), 'aria-label': copy.row.removeName(friendAccepted.name) },
   ...overrides,
 })
 
 const empty: FriendsScreenModel = {
   phase: 'empty',
-  searchInputProps: { value: '', onChange: fn(), 'aria-label': 'Find people by name' },
+  searchInputProps: searchInput(''),
   hits: [],
   msg: null,
   err: null,
-  inviteLabel: '💌 Invite a friend',
+  inviteLabel: copy.invite.button,
   onlineFriends: [],
-  onlineCountLabel: '0 friends online',
+  onlineCountLabel: copy.online.count(0),
   incoming: [],
   outgoing: [],
   accepted: [],
@@ -62,17 +76,17 @@ const empty: FriendsScreenModel = {
   showEmpty: true,
   showCircle: false,
   showCircleHint: false,
-  searchingLabel: 'Searching…',
-  noHitsMessage: 'No one goes by "pal" — check the spelling, or invite them.',
-  loadingLabel: 'Loading friends…',
-  errorTitle: "Couldn't load your friends.",
-  errorMessage: 'Check your connection and try again.',
-  retryLabel: 'Retry',
+  searchingLabel: copy.search.searching,
+  noHitsMessage: copy.search.noHits('pal'),
+  loadingLabel: copy.loading,
+  errorTitle: copy.loadError.title,
+  errorMessage: copy.loadError.body,
+  retryLabel: copy.loadError.retry,
   retryButtonProps: { onClick: fn() },
-  emptyTitle: 'No friends yet',
-  emptyMessage: "Invite someone and you can gift shares straight from your binder and watch each other's portfolios.",
+  emptyTitle: copy.empty.title,
+  emptyMessage: copy.empty.body,
   emptyActionProps: { onClick: fn() },
-  circleHintMessage: 'Accept a request to start your circle.',
+  circleHintMessage: copy.circleHint.incoming,
   inviteButtonProps: { onClick: fn() },
   giftDialog,
   removeDialog,
@@ -119,12 +133,7 @@ export const Incoming: Story = {
     showCircle: true,
     showIncoming: true,
     accepted: [acceptedRow()],
-    incoming: [{
-      ...friendLink(friendIncoming),
-      statsLabel,
-      acceptButtonProps: { onClick: fn(), 'aria-label': `Accept ${friendIncoming.name}'s request` },
-      declineButtonProps: { onClick: fn(), 'aria-label': `Decline ${friendIncoming.name}'s request` },
-    }],
+    incoming: [incomingRow()],
   },
 }
 
@@ -135,12 +144,7 @@ export const IncomingOnly: Story = {
     showEmpty: false,
     showIncoming: true,
     showCircleHint: true,
-    incoming: [{
-      ...friendLink(friendIncoming),
-      statsLabel,
-      acceptButtonProps: { onClick: fn(), 'aria-label': `Accept ${friendIncoming.name}'s request` },
-      declineButtonProps: { onClick: fn(), 'aria-label': `Decline ${friendIncoming.name}'s request` },
-    }],
+    incoming: [incomingRow()],
   },
 }
 
@@ -151,31 +155,26 @@ export const Outgoing: Story = {
     showEmpty: false,
     showOutgoing: true,
     showCircleHint: true,
-    circleHintMessage: 'No one has accepted yet — your sent requests are still out there.',
-    outgoing: [{
-      ...friendLink(friendOutgoing),
-      statsLabel,
-      pendingLabel: 'Pending',
-      cancelButtonProps: { onClick: fn(), 'aria-label': `Cancel your request to ${friendOutgoing.name}` },
-    }],
+    circleHintMessage: copy.circleHint.outgoing,
+    outgoing: [outgoingRow()],
   },
 }
 
 export const SearchHits: Story = {
   args: {
-    searchInputProps: { value: 'pal', onChange: fn(), 'aria-label': 'Find people by name' },
+    searchInputProps: searchInput('pal'),
     showSearchPanel: true,
     showHits: true,
     hits: [{
       ...buildFriendLinkModel(searchHit),
-      requestButtonProps: { onClick: fn(), 'aria-label': `Add friend — send ${searchHit.name} a friend request` },
+      requestButtonProps: { onClick: fn(), 'aria-label': copy.search.requestLabel(searchHit.name) },
     }],
   },
 }
 
 export const Searching: Story = {
   args: {
-    searchInputProps: { value: 'pal', onChange: fn(), 'aria-label': 'Find people by name' },
+    searchInputProps: searchInput('pal'),
     showSearchPanel: true,
     showSearching: true,
   },
@@ -183,7 +182,7 @@ export const Searching: Story = {
 
 export const NoSearchResults: Story = {
   args: {
-    searchInputProps: { value: 'pal', onChange: fn(), 'aria-label': 'Find people by name' },
+    searchInputProps: searchInput('pal'),
     showSearchPanel: true,
     showNoHits: true,
   },
@@ -196,7 +195,7 @@ export const RequestFailed: Story = {
     showCircle: true,
     accepted: [acceptedRow()],
     showErr: true,
-    err: "Couldn't send that friend request. Try again in a moment.",
+    err: copy.errors.request,
   },
 }
 

@@ -1,5 +1,6 @@
 import { useProjectedActor } from './useProjectedActor'
 import { useAuth } from './useAuth'
+import { leaderboardCopy } from '../copy/leaderboard'
 import { apiFetch } from '../lib/api'
 import type { LeaderRow } from '../lib/types'
 import { leaderboardMachine, type LeaderboardPhase } from '../stores/leaderboardMachine'
@@ -49,18 +50,12 @@ export interface LeaderboardRowModel {
   profileLinkProps: Pick<LinkProps, 'to'>
 }
 
-const medals = ['🥇', '🥈', '🥉']
-
-const LOAD_ERROR = "Couldn't load Top Brains."
-
-function braincells(count: number): string {
-  return `${count.toLocaleString()} ${count === 1 ? 'braincell' : 'braincells'}`
-}
+const copy = leaderboardCopy
 
 /** The whole row as one utterance, so the emoji columns can stay decorative. */
 function rowLabel(leader: LeaderRow, rank: number, isMe: boolean): string {
-  const label = `Rank ${rank}, ${leader.name}, ${braincells(leader.braincells)}`
-  return isMe ? `You, ${label.charAt(0).toLowerCase()}${label.slice(1)}` : label
+  const label = copy.row.label(rank, leader.name, leader.braincells)
+  return isMe ? copy.row.youLabel(label) : label
 }
 
 export function buildLeaderboardRowModel(
@@ -75,11 +70,11 @@ export function buildLeaderboardRowModel(
     isMe,
     avatarSrc: leader.picture,
     rankNumeral: `${index + 1}`,
-    medalLabel: medals[index] ?? '',
+    medalLabel: copy.row.medals[index] ?? '',
     linkLabel: rowLabel(leader, index + 1, isMe),
-    collectionLabel: `📚 ${leader.collectionSize} ${leader.collectionSize === 1 ? 'meme' : 'memes'}`,
-    portfolioLabel: `portfolio 🧠 ${leader.portfolioValue.toLocaleString()}`,
-    braincellsLabel: `🧠 ${leader.braincells.toLocaleString()}`,
+    collectionLabel: copy.row.collection(leader.collectionSize),
+    portfolioLabel: copy.row.portfolio(leader.portfolioValue),
+    braincellsLabel: copy.row.braincells(leader.braincells),
     profileLinkProps: { to: `/u/${encodeURIComponent(leader.sub)}` },
   }
 }
@@ -95,7 +90,7 @@ export function useLeaderboardScreen(): LeaderboardScreenModel {
   const load = () => {
     apiFetch<{ leaders: LeaderRow[] }>('/api/leaderboard')
       .then((r) => send({ type: 'DONE', leaders: r.leaders }))
-      .catch(() => send({ type: 'FAIL', err: LOAD_ERROR }))
+      .catch(() => send({ type: 'FAIL', err: copy.loadError }))
   }
 
   useMountEffect(() => {
@@ -110,28 +105,28 @@ export function useLeaderboardScreen(): LeaderboardScreenModel {
 
   return {
     phase,
-    subtitle: 'Collect, trade, climb.',
-    podiumTitle: '🏆 Podium',
-    podiumSubtitle: 'The wrinkliest braincell holders on MemeOn',
-    columnHeaders: { player: 'Ranked by braincell holdings', braincells: 'Braincells' },
+    subtitle: copy.subtitle,
+    podiumTitle: copy.podium.title,
+    podiumSubtitle: copy.podium.subtitle,
+    columnHeaders: { player: copy.columns.player, braincells: copy.columns.braincells },
     leaders,
     youRow,
     showMore: hidden > 0,
-    showMoreLabel: 'Show more brains',
+    showMoreLabel: copy.showMore,
     showMoreButtonProps: { onClick: () => send({ type: 'SHOW_MORE' }) },
     showLoading: phase === 'loading',
-    loadingMessage: 'Loading Top Brains…',
+    loadingMessage: copy.loading,
     showEmpty: phase === 'empty',
-    emptyMessage: "Nobody's earned a braincell yet. The throne is empty.",
+    emptyMessage: copy.empty,
     showError: phase === 'error',
-    errorMessage: ctx.err ?? LOAD_ERROR,
-    retryLabel: 'Try again',
+    errorMessage: ctx.err ?? copy.loadError,
+    retryLabel: copy.retry,
     retry: () => {
       send({ type: 'RETRY' })
       load()
     },
     showList: phase === 'ready',
-    listSummary: `${ranked.length} ${ranked.length === 1 ? 'brain' : 'brains'} on the board`,
-    youLabel: 'you',
+    listSummary: copy.listSummary(ranked.length),
+    youLabel: copy.row.you,
   }
 }

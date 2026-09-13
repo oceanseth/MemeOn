@@ -6,6 +6,7 @@ import type {
   ImgHTMLAttributes,
 } from 'react'
 import { TIERS, type Tier } from '@memeon/shared/tiers'
+import { landingCopy } from '../copy/landing'
 import { apiFetch } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
 import type { HeroVideoModel } from '../lib/heroVideoModel'
@@ -57,22 +58,24 @@ export interface LandingHeroCardModel extends Pick<Tier, 'glowStyle'> {
   caption: string
 }
 
+const copy = landingCopy
+
 /** Tier thresholds are reshare counts from the db `reshares` field. */
 export function buildLandingTierModels(): LandingTierModel[] {
   return TIERS.map((tier) => ({
     key: tier.key,
     name: tier.name,
     glowStyle: tier.glowStyle,
-    resharesLabel: `${tier.minReshares.toLocaleString()} reshares`,
+    resharesLabel: copy.tier.reshares(tier.minReshares),
     rarityLabel: tier.rarity,
   }))
 }
 
 /* Hero pile is three tiers (Gold, Silver, Prismatic), not the full ladder. */
 const HERO_PILE: { tierKey: string; caption: string }[] = [
-  { tierKey: 'gold', caption: 'one braincell left' },
-  { tierKey: 'silver', caption: 'this one' },
-  { tierKey: 'prismatic', caption: 'nothing here' },
+  { tierKey: 'gold', caption: copy.heroCaptions.gold },
+  { tierKey: 'silver', caption: copy.heroCaptions.silver },
+  { tierKey: 'prismatic', caption: copy.heroCaptions.prismatic },
 ]
 
 export function buildLandingHeroCards(): LandingHeroCardModel[] {
@@ -93,18 +96,17 @@ export function buildLandingHeroCards(): LandingHeroCardModel[] {
  * `/brand/tier-demo/*.png` before they ship costs seven 404s and a two-stage paint.
  */
 
-const LOGIN_ERROR_COPY = "Masky didn't answer. Tap Log in with Masky to try again."
-
 /** Thrown strings never reach the page: one authored sentence that names the recovery. */
 export function loginErrorCopy(err: string | null): string | null {
-  return err ? LOGIN_ERROR_COPY : null
+  return err ? copy.errors.login : null
 }
 
 const interactiveLandingMachine = landingMachine.provide({
   actions: {
     startLogin: ({ self }) => {
       void beginMaskyLogin().catch((e) => {
-        self.send({ type: 'FAIL', err: e instanceof Error ? e.message : 'login failed' })
+        /* the machine's err only flags the failure: `loginErrorCopy` replaces it before render */
+        self.send({ type: 'FAIL', err: e instanceof Error ? e.message : copy.machine.loginFailed })
       })
     },
   },
@@ -193,11 +195,9 @@ export function useLandingScreen(): LandingScreenModel {
     showMarketplaceCta: !!user,
     showLoginButton: !user,
     showErr: !!ctx.err,
-    loginLabel: ctx.busy ? 'Redirecting…' : '🎭 Log in with Masky',
-    closingLine: user
-      ? 'Your binder is waiting.'
-      : 'Your next group-chat classic is a card already.',
-    closingLoginLabel: ctx.busy ? 'Redirecting…' : '🎭 Grab your pack with Masky',
+    loginLabel: ctx.busy ? copy.login.busyLabel : copy.login.label,
+    closingLine: user ? copy.closing.lineLoggedIn : copy.closing.lineLoggedOut,
+    closingLoginLabel: ctx.busy ? copy.closing.busyLabel : copy.closing.label,
     heroCards: buildLandingHeroCards(),
     tiers: buildLandingTierModels(),
     heroVideo,
@@ -205,13 +205,13 @@ export function useLandingScreen(): LandingScreenModel {
       onClick: onLogin,
       disabled: ctx.busy,
       'aria-busy': ctx.busy,
-      'aria-label': ctx.busy ? 'Redirecting to Masky' : 'Log in with Masky',
+      'aria-label': ctx.busy ? copy.login.busyName : copy.login.name,
     },
     closingLoginButtonProps: {
       onClick: onLogin,
       disabled: ctx.busy,
       'aria-busy': ctx.busy,
-      'aria-label': ctx.busy ? 'Redirecting to Masky for your pack' : 'Grab your pack with Masky',
+      'aria-label': ctx.busy ? copy.closing.busyName : copy.closing.name,
     },
     frameImageProps,
     frameSlotProps,

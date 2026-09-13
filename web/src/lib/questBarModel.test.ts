@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { paperMeme, questStepsFresh, questStepsPackDone } from '../../.storybook/fixtures'
+import { questBarCopy as copy } from '../copy/questBar'
 import { buildQuestBarModel } from './questBarModel'
 
 const fresh = {
@@ -20,7 +21,7 @@ describe('buildQuestBarModel', () => {
     expect(freshModel.chips[0]).toMatchObject({ kind: 'claim', buttonProps: { disabled: false } })
     expect(opening.chips[0]).toMatchObject({
       kind: 'claim',
-      label: 'Opening…',
+      label: copy.claim.busy,
       busy: true,
       buttonProps: { disabled: true, 'aria-busy': true },
     })
@@ -48,16 +49,16 @@ describe('buildQuestBarModel', () => {
     const model = buildQuestBarModel({ ...fresh, steps: questStepsPackDone })
     expect(model.chips[0]).toMatchObject({
       kind: 'step',
-      statusLabel: 'Done.',
-      rewardAriaLabel: 'rewards 20 braincells',
+      statusLabel: copy.status.done,
+      rewardAriaLabel: copy.rewardAria(20),
     })
     expect(model.chips[1]).toMatchObject({
       kind: 'step',
-      statusLabel: 'Not done yet.',
+      statusLabel: copy.status.pending,
       rewardLabel: '+100🧠',
-      rewardAriaLabel: 'rewards 100 braincells',
+      rewardAriaLabel: copy.rewardAria(100),
     })
-    expect(model.dismissProps['aria-label']).toBe('Later — hide quests for now')
+    expect(model.dismissProps['aria-label']).toBe(copy.dismissA11y)
   })
 
   it('offers task destinations only for unfinished steps', () => {
@@ -91,21 +92,21 @@ describe('buildQuestBarModel', () => {
     expect(emptyVault.showSteps).toBe(false)
     expect(emptyVault.pack.open).toBe(true)
     expect(emptyVault.pack.showCards).toBe(false)
-    expect(emptyVault.pack.description).toBe('The vault was empty, so you got 20 🧠 braincells instead. Spend them wisely.')
+    expect(emptyVault.pack.description).toBe(copy.pack.emptyVault(20))
   })
 
   it('builds reward copy, card media, and a single-element binder exit for an opened pack', () => {
     const model = buildQuestBarModel({ ...fresh, packMemes: [paperMeme], packReward: 20 })
     expect(model.pack.open).toBe(true)
     expect(model.pack.showCards).toBe(true)
-    expect(model.pack.description).toBe('You now hold 10 shares in each of these — plus 20 🧠 braincells.')
+    expect(model.pack.description).toBe(copy.pack.withMemes(20))
     expect(model.pack.cards[0]?.detailLinkProps.to).toBe(`/m/${paperMeme.id}`)
     // the card's title and link already name it; the image is decorative inside the pack too
     expect(model.pack.cards[0]?.media).toMatchObject({ kind: 'image', imageProps: { src: paperMeme.imageUrl, alt: '' } })
     expect(model.pack.binderLinkProps.to).toBe('/binder')
     expect(model.pack.id).toBe('pack')
     expect(model.pack.titleId).toBe('pack-title')
-    expect(model.pack.closeLabel).toBe('Close')
+    expect(model.pack.closeLabel).toBe(copy.pack.close)
   })
 
   it('reports every Base UI dismissal as one call to the parent, and never a re-open', () => {

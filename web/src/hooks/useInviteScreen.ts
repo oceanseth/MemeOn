@@ -1,5 +1,6 @@
 import { useProjectedActor } from './useProjectedActor'
 import { useNavigate, useParams } from 'react-router-dom'
+import { inviteCopy } from '../copy/invite'
 import { apiFetch, post } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
 import {
@@ -13,6 +14,8 @@ import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import type { ButtonHTMLAttributes } from 'react'
 
 export const INVITE_KEY = 'memeon_invite_from'
+
+const copy = inviteCopy
 
 export interface InviteScreenModel {
   phase: InvitePhase
@@ -91,19 +94,20 @@ export function buildInviteStats(inviter: {
   portfolioValue: number
   followers: number
 }): readonly InviteStatModel[] {
+  const stats = copy.stats
   return [
-    { id: 'binder', emoji: '📚', value: inviter.collectionSize.toLocaleString(), label: 'in binder' },
+    { id: 'binder', emoji: stats.binder.emoji, value: inviter.collectionSize.toLocaleString(), label: stats.binder.label },
     {
       id: 'braincells',
-      emoji: '🧠',
+      emoji: stats.braincells.emoji,
       value: inviter.portfolioValue.toLocaleString(),
-      label: inviter.portfolioValue === 1 ? 'braincell' : 'braincells',
+      label: stats.braincells.label(inviter.portfolioValue),
     },
     {
       id: 'followers',
-      emoji: '⭐',
+      emoji: stats.followers.emoji,
       value: inviter.followers.toLocaleString(),
-      label: inviter.followers === 1 ? 'follower' : 'followers',
+      label: stats.followers.label(inviter.followers),
     },
   ]
 }
@@ -121,7 +125,7 @@ export function useInviteScreen(): InviteScreenModel {
     if (!sub) return
     apiFetch<InviteData>(`/api/invite/${encodeURIComponent(sub)}`)
       .then((data) => send({ type: 'DONE', data }))
-      .catch(() => send({ type: 'FAIL', err: 'This invite link is invalid or expired.' }))
+      .catch(() => send({ type: 'FAIL', err: copy.errors.load }))
   })
 
   const inviter = ctx.data?.inviter
@@ -143,7 +147,7 @@ export function useInviteScreen(): InviteScreenModel {
       await beginMaskyLogin()
     }
     void run().catch((e) => {
-      send({ type: 'FAIL', err: e instanceof Error ? e.message : 'accept request failed' })
+      send({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.acceptFallback })
     })
   }
 
@@ -151,7 +155,7 @@ export function useInviteScreen(): InviteScreenModel {
     if (ctx.busy) return
     send({ type: 'JOIN' })
     void beginMaskyLogin().catch((e) => {
-      send({ type: 'FAIL', err: e instanceof Error ? e.message : 'Could not reach Masky — try again.' })
+      send({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.masky })
     })
   }
 
@@ -163,11 +167,7 @@ export function useInviteScreen(): InviteScreenModel {
   }
 
   const copyLabel =
-    ctx.copy === 'copied'
-      ? '✅ Link copied'
-      : ctx.copy === 'failed'
-        ? '⚠️ Copy failed — try again'
-        : '🔗 Copy invite link'
+    ctx.copy === 'copied' ? copy.self.copied : ctx.copy === 'failed' ? copy.self.copyFailed : copy.self.copy
 
   return {
     phase,
@@ -177,36 +177,31 @@ export function useInviteScreen(): InviteScreenModel {
     showAcceptError: !!ctx.err && !!ctx.data,
     showAcceptSuccess: ctx.accepted && !!ctx.data,
     showHighlights: !!ctx.data && ctx.data.topMemes.length > 0,
-    loadingLabel: 'Loading invite…',
-    inviteBody:
-      'Mint memes, share the link, and trade your friends’ bangers before they go ✨Shiny✨.',
-    climbNote: 'Every share makes the card climb.',
-    acceptErrorMessage: "Couldn't accept this invite — try again.",
-    acceptSuccessMessage: `You and ${inviter?.name ?? 'your pal'} are now friends 🤝`,
-    highlightsTitle: `${inviter?.name ?? ''}'s binder highlights`,
+    loadingLabel: copy.loading,
+    inviteBody: copy.body,
+    climbNote: copy.climbNote,
+    acceptErrorMessage: copy.errors.accept,
+    acceptSuccessMessage: copy.accept.success(inviter?.name ?? copy.fallbackInviterName),
+    highlightsTitle: copy.highlightsTitle(inviter?.name ?? ''),
     fatalActions: {
-      title: 'This invite link expired',
-      joinLabel: ctx.busy ? '🎭 Opening Masky…' : '🎭 Join MemeOn anyway',
+      title: copy.fatal.title,
+      joinLabel: ctx.busy ? copy.openingMasky : copy.fatal.join,
       joinButtonProps: {
         onClick: onJoin,
         'aria-disabled': ctx.busy || undefined,
         'aria-busy': ctx.busy || undefined,
       },
-      homeLabel: 'Back to MemeOn',
+      homeLabel: copy.fatal.home,
       homeHref: '/',
     },
     selfActions: isSelf
       ? {
-          note: 'This is your own invite link — send it to a friend!',
+          note: copy.self.note,
           copyLabel,
           copyStatusMessage:
-            ctx.copy === 'copied'
-              ? 'Invite link copied to your clipboard.'
-              : ctx.copy === 'failed'
-                ? 'Could not copy the link. Try again.'
-                : '',
+            ctx.copy === 'copied' ? copy.self.copiedStatus : ctx.copy === 'failed' ? copy.self.copyFailedStatus : '',
           copyButtonProps: { onClick: onCopy },
-          friendsLabel: 'See your friends',
+          friendsLabel: copy.self.friends,
           friendsHref: '/friends',
         }
       : null,
@@ -215,9 +210,7 @@ export function useInviteScreen(): InviteScreenModel {
           name: inviter.name,
           avatarSrc: inviter.picture,
           stats: buildInviteStats(inviter),
-          acceptanceNote: isSelf
-            ? "Send this link to a friend — they'll join with Masky and you'll be friends instantly."
-            : `Sign in with your Masky avatar. You start with a free starter pack and ${inviter.name} as your first friend.`,
+          acceptanceNote: isSelf ? copy.acceptanceNote.self : copy.acceptanceNote.guest(inviter.name),
         }
       : null,
     cards: (ctx.data?.topMemes ?? []).map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) })),
@@ -229,10 +222,10 @@ export function useInviteScreen(): InviteScreenModel {
     // the busy label keeps the ready label's emoji, so the glyph never blinks out mid-press
     acceptLabel: ctx.busy
       ? user
-        ? `🤝 Adding ${inviter?.name ?? 'your pal'}…`
-        : '🎭 Opening Masky…'
+        ? copy.accept.adding(inviter?.name ?? copy.fallbackInviterName)
+        : copy.openingMasky
       : user
-        ? `🤝 Accept & befriend ${inviter?.name ?? ''}`
-        : `🎭 Join ${inviter?.name ?? 'MemeOn'} on MemeOn`,
+        ? copy.accept.befriend(inviter?.name ?? '')
+        : copy.accept.join(inviter?.name ?? copy.accept.joinFallbackName),
   }
 }

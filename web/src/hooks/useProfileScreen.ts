@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useLocation, useParams } from 'react-router-dom'
+import { profileCopy } from '../copy/profile'
 import { ApiError, apiFetch, post } from '../lib/api'
 import type { Meme } from '../lib/types'
 import { useAuth } from './useAuth'
@@ -118,6 +119,8 @@ interface ProfileViewModel {
 
 const CARDS_ID = 'profile-cards'
 
+const copy = profileCopy
+
 export function buildProfileTabProps(
   tab: ProfileTab,
   itemCount: number,
@@ -140,12 +143,10 @@ export function buildProfileTabProps(
     gridProps: {
       id: CARDS_ID,
       'aria-live': 'polite',
-      'aria-label': `${tab === 'created' ? 'Created' : 'Binder'} memes, ${plural(itemCount, 'card')}`,
+      'aria-label': copy.grid.label(tab === 'created' ? copy.tabs.created : copy.tabs.binder, itemCount),
     },
   }
 }
-
-const plural = (count: number, word: string): string => `${count} ${word}${count === 1 ? '' : 's'}`
 
 /** Everything `ProfileScreen` renders. The route actor owns data, errors, tabs and action state. */
 export function useProfileScreen({
@@ -166,7 +167,7 @@ export function useProfileScreen({
       .catch((cause: unknown) =>
         send({
           type: 'FAIL',
-          err: cause instanceof Error ? cause.message : 'profile load failed',
+          err: cause instanceof Error ? cause.message : copy.errors.loadFailed,
           kind: cause instanceof ApiError && cause.status === 404 ? 'notfound' : 'transport',
         }),
       )
@@ -196,7 +197,7 @@ export function useProfileScreen({
       send({ type: 'SETTLE_ACTION' })
       load()
     } catch {
-      send({ type: 'FAIL_ACTION', err: "Couldn't update — try again." })
+      send({ type: 'FAIL_ACTION', err: copy.errors.update })
     }
   }, [busy, followingByMe, load, profile, send])
 
@@ -210,7 +211,7 @@ export function useProfileScreen({
       send({ type: 'SETTLE_ACTION' })
       load()
     } catch {
-      send({ type: 'FAIL_ACTION', err: "Couldn't update — try again." })
+      send({ type: 'FAIL_ACTION', err: copy.errors.update })
     }
   }, [busy, friendStatus, load, profile, send])
 
@@ -218,37 +219,39 @@ export function useProfileScreen({
   const onShare = useCallback(async () => {
     const url = window.location.href
     if (navigator.share) {
-      await navigator.share({ title: profile ? `${profile.name} on MemeOn` : 'MemeOn', url }).catch(() => {})
+      await navigator
+        .share({ title: profile ? copy.share.title(profile.name) : copy.share.fallbackTitle, url })
+        .catch(() => {})
       return
     }
     await navigator.clipboard?.writeText(url).catch(() => {})
   }, [profile])
 
   const isEmpty = !!data && memes.length === 0
-  const ownName = profile?.name ?? 'this player'
+  const ownName = profile?.name ?? copy.fallbackName
   const emptyCopy = !isEmpty
     ? { title: '', body: '', link: null }
     : isSelf
       ? tab === 'created'
         ? {
-            title: "You haven't minted anything yet.",
-            body: 'Every meme you mint lands here as a 100-share card.',
-            link: { label: 'Mint your first meme', to: '/binder/new' },
+            title: copy.empty.self.created.title,
+            body: copy.empty.self.created.body,
+            link: { label: copy.empty.self.created.link, to: '/binder/new' },
           }
         : {
-            title: "You don't hold shares in any memes yet.",
-            body: "Buy into someone else's card and your shares show up here.",
-            link: { label: 'Browse the marketplace', to: '/marketplace' },
+            title: copy.empty.self.binder.title,
+            body: copy.empty.self.binder.body,
+            link: { label: copy.empty.self.binder.link, to: '/marketplace' },
           }
       : tab === 'created'
         ? {
-            title: `${ownName} hasn't minted anything yet.`,
-            body: 'New cards land here the moment they mint one.',
+            title: copy.empty.other.created.title(ownName),
+            body: copy.empty.other.created.body,
             link: null,
           }
         : {
-            title: `${ownName} doesn't hold shares in any memes yet.`,
-            body: 'Shares they buy, win or get gifted show up here.',
+            title: copy.empty.other.binder.title(ownName),
+            body: copy.empty.other.binder.body,
             link: null,
           }
 
@@ -256,19 +259,20 @@ export function useProfileScreen({
   const isPublicBinder = initialTab === 'binder' && !isSelf
   const createdCount = data?.created.length ?? 0
   const binderCount = data?.binder.length ?? 0
-  const portfolio = profile?.portfolioValue.toLocaleString() ?? '0'
+  const portfolio = profile?.portfolioValue ?? 0
+  const glyphs = copy.stats.glyphs
   const stats: ProfileStat[] = isPublicBinder
     ? [
-        { id: 'minted', glyph: '', text: `${createdCount} minted` },
-        { id: 'binder', glyph: '', text: `${binderCount} in binder` },
-        { id: 'braincells', glyph: '🧠', text: `${portfolio} braincells` },
+        { id: 'minted', glyph: '', text: copy.stats.minted(createdCount) },
+        { id: 'binder', glyph: '', text: copy.stats.inBinder(binderCount) },
+        { id: 'braincells', glyph: glyphs.braincells, text: copy.stats.braincells(portfolio) },
       ]
     : !user
-      ? [{ id: 'braincells', glyph: '🧠', text: `${portfolio} braincells held` }]
+      ? [{ id: 'braincells', glyph: glyphs.braincells, text: copy.stats.braincellsHeld(portfolio) }]
       : [
-          { id: 'collection', glyph: '📚', text: plural(profile?.collectionSize ?? 0, 'meme') },
-          { id: 'portfolio', glyph: '🧠', text: `${portfolio} held` },
-          { id: 'followers', glyph: '⭐', text: plural(profile?.followers ?? 0, 'follower') },
+          { id: 'collection', glyph: glyphs.collection, text: copy.stats.collection(profile?.collectionSize ?? 0) },
+          { id: 'portfolio', glyph: glyphs.braincells, text: copy.stats.held(portfolio) },
+          { id: 'followers', glyph: glyphs.followers, text: copy.stats.followers(profile?.followers ?? 0) },
         ]
   const visible = memes.slice(0, visibleLimit)
   /* the friend button is the meaningful relationship move, so it takes the card's one bubblegum
@@ -277,37 +281,40 @@ export function useProfileScreen({
 
   return {
     showErr: !!err,
-    errTitle: errKind === 'notfound' ? "No one's minted under this link." : "Couldn't load this profile.",
-    errBody:
-      errKind === 'notfound'
-        ? 'This profile may have been deleted.'
-        : 'Check your connection and try again.',
-    retryLabel: 'Retry',
+    errTitle: errKind === 'notfound' ? copy.loadError.notFound.title : copy.loadError.transport.title,
+    errBody: errKind === 'notfound' ? copy.loadError.notFound.body : copy.loadError.transport.body,
+    retryLabel: copy.loadError.retry,
     retryButtonProps: { onClick: load },
-    errorLinkLabel: 'Browse the marketplace',
+    errorLinkLabel: copy.loadError.browse,
     errorLinkProps: { to: '/marketplace' },
     showLoading: !err && !data,
-    loadingLabel: 'Loading profile',
-    title: isPublicBinder && profile ? `${profile.name}'s binder` : (profile?.name ?? ''),
+    loadingLabel: copy.loading,
+    title: isPublicBinder && profile ? copy.hero.binderTitle(profile.name) : (profile?.name ?? ''),
     intro: isPublicBinder
-      ? 'A collection worth passing around.'
+      ? copy.hero.publicIntro
       : !user && profile
-        ? `A collection worth passing around · ${plural(createdCount, 'meme')} · ${binderCount} in binder`
+        ? copy.hero.visitorIntro(createdCount, binderCount)
         : null,
-    identityLine: isPublicBinder || !user || !profile ? null : `Binder of ${profile.name}`,
+    identityLine: isPublicBinder || !user || !profile ? null : copy.hero.identity(profile.name),
     showBinderHero: isPublicBinder,
     profile: profile ? { name: profile.name, avatarSrc: profile.picture, stats } : null,
     showActions: !isSelf && !!user && !!profile,
-    tradeLabel: 'Trade',
-    tradeLinkProps: { to: '/trade', 'aria-label': `Trade with ${ownName}` },
-    shareLabel: '🔗 Share binder',
+    tradeLabel: copy.actions.trade,
+    tradeLinkProps: { to: '/trade', 'aria-label': copy.actions.tradeWith(ownName) },
+    shareLabel: copy.actions.share,
     shareButtonProps: { onClick: onShare },
     showSelfActions: isSelf && !!profile,
-    settingsLabel: 'Settings',
+    settingsLabel: copy.actions.settings,
     settingsLinkProps: { to: '/settings' },
     followButtonVariant: friendIsPrimary || followingByMe ? 'default' : 'primary',
-    followGlyph: followingByMe ? '★' : '☆',
-    followText: busy ? (followingByMe ? 'Unfollowing…' : 'Following…') : followingByMe ? 'Following' : 'Follow',
+    followGlyph: followingByMe ? copy.actions.follow.glyphOn : copy.actions.follow.glyph,
+    followText: busy
+      ? followingByMe
+        ? copy.actions.follow.busyOn
+        : copy.actions.follow.busy
+      : followingByMe
+        ? copy.actions.follow.labelOn
+        : copy.actions.follow.label,
     followButtonProps: {
       onClick: onToggleFollow,
       'aria-pressed': followingByMe,
@@ -315,26 +322,25 @@ export function useProfileScreen({
       disabled: busy,
     },
     showFriendButton: friendStatus === null || friendStatus === 'incoming',
-    friendGlyph: friendStatus === 'incoming' ? '✅' : '👋',
+    friendGlyph: friendStatus === 'incoming' ? copy.actions.friend.acceptGlyph : copy.actions.friend.addGlyph,
     friendText: busy
       ? friendStatus === 'incoming'
-        ? 'Accepting…'
-        : 'Sending…'
+        ? copy.actions.friend.accepting
+        : copy.actions.friend.adding
       : friendStatus === 'incoming'
-        ? 'Accept request'
-        : 'Add friend',
+        ? copy.actions.friend.accept
+        : copy.actions.friend.add,
     friendButtonProps: { onClick: onFriendAction, 'aria-busy': busy, disabled: busy },
     showFriendChip: friendStatus === 'accepted' || friendStatus === 'outgoing',
-    friendChipGlyph: friendStatus === 'accepted' ? '🤝' : '⏳',
-    friendChipText: friendStatus === 'accepted' ? 'Friends' : 'Request sent',
+    friendChipGlyph:
+      friendStatus === 'accepted' ? copy.actions.friendChip.friendsGlyph : copy.actions.friendChip.pendingGlyph,
+    friendChipText: friendStatus === 'accepted' ? copy.actions.friendChip.friends : copy.actions.friendChip.pending,
     showActionErr: !!actionErr,
     actionErr: actionErr ?? '',
     showJoin: !user && !!profile,
-    joinLabel: isPublicBinder && profile
-      ? `Log in to trade with ${profile.name}`
-      : 'Log in to start your own binder',
+    joinLabel: isPublicBinder && profile ? copy.join.trade(profile.name) : copy.join.binder,
     joinLinkProps: { to: '/', state: { next: pathname } },
-    reshareNote: 'Every reshare of these links levels the cards up.',
+    reshareNote: copy.join.reshareNote,
     createdCount,
     binderCount,
     cards: visible.map((meme) => ({
@@ -342,11 +348,11 @@ export function useProfileScreen({
       memeCard: buildMemeCardModel(meme),
       // "holds N/100" on others' binders, "N/100 shares" on yours
       sharesLabel:
-        meme.shares === undefined ? null : isSelf ? `${meme.shares}/100 shares` : `holds ${meme.shares}/100`,
+        meme.shares === undefined ? null : isSelf ? copy.cards.yourShares(meme.shares) : copy.cards.holds(meme.shares),
     })),
-    gridCountLabel: `Showing ${visible.length} of ${memes.length}`,
+    gridCountLabel: copy.grid.count(visible.length, memes.length),
     showMore: memes.length > visible.length,
-    showMoreLabel: `Show ${Math.min(BINDER_PAGE_SIZE, memes.length - visible.length)} more`,
+    showMoreLabel: copy.grid.showMore(Math.min(BINDER_PAGE_SIZE, memes.length - visible.length)),
     showMoreButtonProps: { onClick: () => send({ type: 'SHOW_MORE' }) },
     showEmpty: isEmpty,
     emptyTitle: emptyCopy.title,

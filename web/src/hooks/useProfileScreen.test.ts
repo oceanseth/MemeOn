@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { profileCopy as copy } from '../copy/profile'
 import { buildProfileTabProps } from './useProfileScreen'
 
 describe('profile tab model props', () => {
@@ -19,7 +20,7 @@ describe('profile tab model props', () => {
 
     expect(created.createdTabButtonProps['aria-controls']).toBe(created.gridProps.id)
     expect(created.binderTabButtonProps['aria-controls']).toBe(created.gridProps.id)
-    expect(created.gridProps['aria-label']).toBe('Created memes, 3 cards')
-    expect(binder.gridProps['aria-label']).toBe('Binder memes, 1 card')
+    expect(created.gridProps['aria-label']).toBe(copy.grid.label(copy.tabs.created, 3))
+    expect(binder.gridProps['aria-label']).toBe(copy.grid.label(copy.tabs.binder, 1))
   })
 })

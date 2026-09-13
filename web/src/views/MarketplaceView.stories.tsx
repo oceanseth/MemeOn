@@ -3,6 +3,7 @@ import { MemoryRouter, useLocation } from 'react-router-dom'
 import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
 import type { ConnectedScenario } from '../../.storybook/connected-scenario'
+import { marketplaceCopy as copy } from '../copy/marketplace'
 import { MarketplaceView } from './MarketplaceView'
 
 const meta = {
@@ -55,28 +56,28 @@ export const FiltersSortAndStyles: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('link', { name: /fresh paper/i })).toBeInTheDocument()
-    const search = canvas.getByRole('searchbox', { name: /search memes/i })
+    const search = canvas.getByRole('searchbox', { name: copy.search.label })
     await userEvent.type(search, 'holo')
     await waitFor(() => expect(canvas.queryByRole('link', { name: /fresh paper/i })).not.toBeInTheDocument())
     await expect(canvas.getByRole('link', { name: /holo hit/i })).toBeInTheDocument()
     /* Media type and For sale are pressed tabs; only tiers use a Select */
-    const media = within(canvas.getByRole('group', { name: 'Filter by media type' }))
-    await userEvent.click(media.getByRole('button', { name: 'Images' }))
-    await pickOption(canvas.getByRole('combobox', { name: /tier/i }), 'Holo')
-    await userEvent.click(canvas.getByRole('button', { name: 'For sale' }))
+    const media = within(canvas.getByRole('group', { name: copy.filters.media.groupLabel }))
+    await userEvent.click(media.getByRole('button', { name: copy.filters.media.images }))
+    await pickOption(canvas.getByRole('combobox', { name: copy.filters.tierLabel }), 'Holo')
+    await userEvent.click(canvas.getByRole('button', { name: copy.filters.listed }))
     await waitFor(() => expect(loaded.scenario.requests.some((request: { path: string }) => request.path.includes('listed=true'))).toBe(true))
     // single-select media, an independent For sale toggle — the row states itself, not a checkbox
-    await expect(media.getByRole('button', { name: 'Images' })).toHaveAttribute('aria-pressed', 'true')
-    await expect(media.getByRole('button', { name: 'All memes' })).toHaveAttribute('aria-pressed', 'false')
-    await expect(canvas.getByRole('button', { name: 'For sale' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(media.getByRole('button', { name: copy.filters.media.images })).toHaveAttribute('aria-pressed', 'true')
+    await expect(media.getByRole('button', { name: copy.filters.media.all })).toHaveAttribute('aria-pressed', 'false')
+    await expect(canvas.getByRole('button', { name: copy.filters.listed })).toHaveAttribute('aria-pressed', 'true')
     // the filter set is linkable and survives a reload
     await expect(canvas.getByLabelText('Current search')).toHaveTextContent(
       'q=holo&type=image&tier=holo&listed=true',
     )
     // ranking a loaded sample would be a wrong answer, so the chips say what the market can do
     await expect(canvas.getByRole('button', { name: /Value/ })).toBeDisabled()
-    await expect(canvas.getByRole('group', { name: 'Sort by' })).toHaveAccessibleDescription(/rank/)
-    await expect(canvas.getByRole('status')).toHaveTextContent('Images · Holo · for sale')
+    await expect(canvas.getByRole('group', { name: 'Sort by' })).toHaveAccessibleDescription(copy.sortDisabledReason)
+    await expect(canvas.getByRole('status')).toHaveTextContent(copy.results.line([copy.filters.media.images, 'Holo', copy.results.activeListed]))
     await expect(getComputedStyle(canvas.getByRole('link', { name: /Mint a meme/ })).fontWeight).toBe('600')
     await expect(loaded.scenario.unexpected).toEqual([])
   },
@@ -95,9 +96,9 @@ export const LoadFailureOffersRetry: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const alert = await canvas.findByRole('alert')
-    await expect(alert).toHaveTextContent(/Couldn't reach the market/)
+    await expect(alert).toHaveTextContent(copy.loadError)
     await expect(canvas.queryByText(/No memes match/)).not.toBeInTheDocument()
-    await userEvent.click(canvas.getByRole('button', { name: 'Try again' }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.retry }))
     await expect(await canvas.findByRole('link', { name: /fresh paper/i })).toBeInTheDocument()
   },
 }
@@ -122,11 +123,11 @@ export const LoadMoreFailureKeepsTheCursor: Story = {
     await expect(await canvas.findByRole('link', { name: /fresh paper/i })).toBeInTheDocument()
     await waitFor(() => expect(loaded.scenario.intersectionObservers.length).toBeGreaterThan(0))
     loaded.scenario.intersect()
-    await expect(await canvas.findByRole('alert')).toHaveTextContent(/next page/)
-    const retry = canvas.getByRole('button', { name: 'Try again' })
+    await expect(await canvas.findByRole('alert')).toHaveTextContent(copy.loadMoreError)
+    const retry = canvas.getByRole('button', { name: copy.loadMoreRetry })
     await userEvent.click(retry)
     await expect(await canvas.findByRole('link', { name: /story mint/ })).toBeInTheDocument()
-    await expect(canvas.getByText(/every meme matching these filters/)).toBeInTheDocument()
+    await expect(canvas.getByText(copy.endOfList)).toBeInTheDocument()
   },
 }
 
@@ -145,7 +146,7 @@ export const LoadingThenReady: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await waitFor(() => expect(canvasElement.querySelector('[data-slot="skeleton-card"]')).not.toBeNull())
-    await expect(canvas.getByRole('status')).toHaveTextContent('Searching the market…')
+    await expect(canvas.getByRole('status')).toHaveTextContent(copy.results.searching)
     loaded.scenario.release('market')
     await expect(await canvas.findByRole('link', { name: /fresh paper/ })).toBeInTheDocument()
   },

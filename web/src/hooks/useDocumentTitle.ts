@@ -1,7 +1,8 @@
+import { sharedCopy } from '../copy/shared'
 import { useMountEffect } from './useMountEffect'
 
 /** The product name every route's title ends on — the second half of `index.html`'s own title. */
-const SITE = 'MemeOn'
+const SITE = sharedCopy.brand
 
 /**
  * WCAG 2.4.2: a single-page app keeps `index.html`'s marketing title on every route unless the route

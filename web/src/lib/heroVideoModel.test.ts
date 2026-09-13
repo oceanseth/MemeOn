@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { heroVideoCopy as copy } from '../copy/heroVideo'
 import { buildHeroVideoModel, type HeroVideoState } from './heroVideoModel'
 
 const state = (overrides: Partial<HeroVideoState> = {}): HeroVideoState => ({
@@ -18,9 +19,9 @@ describe('buildHeroVideoModel', () => {
     expect(model.videoProps.preload).toBe('metadata')
     expect(model.showPlayPill).toBe(false)
     expect(model.showSoundPill).toBe(true)
-    expect(model.soundButtonProps['aria-label']).toBe('Unmute the video')
+    expect(model.soundButtonProps['aria-label']).toBe(copy.unmute)
     expect(model.soundButtonProps['aria-pressed']).toBe(false)
-    expect(model.soundLabel).toBe('🔇 Sound on')
+    expect(model.soundLabel).toBe(copy.soundOn)
   })
 
   it('withholds autoplay behind the poster and a play pill, downloading nothing', () => {
@@ -40,9 +41,9 @@ describe('buildHeroVideoModel', () => {
 
   it('names the way back once the sound is on', () => {
     const model = buildHeroVideoModel(state({ muted: false }))
-    expect(model.soundButtonProps['aria-label']).toBe('Mute the video')
+    expect(model.soundButtonProps['aria-label']).toBe(copy.mute)
     expect(model.soundButtonProps['aria-pressed']).toBe(true)
-    expect(model.soundLabel).toBe('🔊 Sound off')
+    expect(model.soundLabel).toBe(copy.soundOff)
   })
 
   it('hands the element and the handlers through untouched', () => {

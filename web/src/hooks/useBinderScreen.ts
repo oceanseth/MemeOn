@@ -1,7 +1,7 @@
 import { useProjectedActor } from './useProjectedActor'
+import { binderCopy } from '../copy/binder'
 import { apiFetch } from '../lib/api'
 import type { Meme } from '../lib/types'
-import { plural } from '../lib/plural'
 import { sortMemes, type SortDir, type SortKey } from '../lib/sorting'
 import { binderMachine, BINDER_PAGE_SIZE, type BinderPhase } from '../stores/binderMachine'
 import { useAuth } from './useAuth'
@@ -70,13 +70,10 @@ interface BinderCardModel {
   showPrivate: boolean
 }
 
+const copy = binderCopy
+
 /** How the active sort reads in the status line: plain words, never the chip's emoji. */
-const SORT_STATUS: Record<SortKey, readonly [descending: string, ascending: string]> = {
-  new: ['newest first', 'oldest first'],
-  views: ['most views first', 'fewest views first'],
-  reshares: ['most reshares first', 'fewest reshares first'],
-  value: ['highest value first', 'lowest value first'],
-}
+const SORT_STATUS: Record<SortKey, readonly [descending: string, ascending: string]> = copy.status.sort
 
 const SORT_KEYS: readonly string[] = ['new', 'views', 'reshares', 'value']
 const isSortKey = (value: string | null): value is SortKey =>
@@ -96,7 +93,7 @@ export function useBinderScreen(): BinderScreenModel {
       .catch((error: unknown) =>
         send({
           type: 'FAIL',
-          err: error instanceof Error ? error.message : 'binder unavailable',
+          err: error instanceof Error ? error.message : copy.machine.unavailable,
         }),
       )
   }, [send])
@@ -149,42 +146,40 @@ export function useBinderScreen(): BinderScreenModel {
   // one status line for the whole screen: the count is the live region, and the error box owns
   // the error copy — so a sort, a private-toggle or a state swap is never silent
   const statusMessage = showLoading
-    ? 'Loading your binder…'
+    ? copy.status.loading
     : showError
-      ? 'No cards loaded'
+      ? copy.status.failed
       : [
           showEmpty
-            ? 'No cards shown'
+            ? copy.status.empty
             : hidden > 0
-              ? `${visible.length} of ${plural(matching.length, 'card')} shown`
-              : `${plural(visible.length, 'card')} shown`,
+              ? copy.status.shownOf(visible.length, matching.length)
+              : copy.status.shown(visible.length),
           SORT_STATUS[ctx.sortKey][ctx.sortDir === 'desc' ? 0 : 1],
-          showGrid ? `🧠 ${visibleValue.toLocaleString()}` : null,
-          ctx.showPrivate && privateCount > 0 ? 'private included' : null,
+          showGrid ? copy.status.value(visibleValue) : null,
+          ctx.showPrivate && privateCount > 0 ? copy.status.privateIncluded : null,
         ]
           .filter(Boolean)
-          .join(' · ')
+          .join(copy.separator)
 
-  const emptyMessage = firstRun
-    ? 'Your binder is empty. Mint your first meme and start the grind to ✨Shiny✨.'
-    : `All ${privateCount} of your memes are private. Turn on "Show private" to see them.`
+  const emptyMessage = firstRun ? copy.emptyState.firstRun : copy.emptyState.allPrivate(privateCount)
 
   return {
     phase,
-    intro: 'Your corner of the internet. In card form.',
+    intro: copy.intro,
     identity: user
       ? {
           name: user.name,
           pictureUrl: user.picture,
-          statsLabel: `${plural(visible.length, 'card')} · ${plural(heldShares, 'share')}`,
+          statsLabel: copy.identity.stats(visible.length, heldShares),
         }
       : null,
     statusProps: { role: 'status', 'aria-live': 'polite' },
     statusMessage,
-    collectionHeading: 'Your collection',
+    collectionHeading: copy.collection.heading,
     showPrivateToggle: privateCount > 0,
     privateCount,
-    privateToggleLabel: `Show private (${privateCount})`,
+    privateToggleLabel: copy.collection.showPrivate(privateCount),
     privateToggleProps: {
       checked: ctx.showPrivate,
       onCheckedChange: (checked) => setShowPrivate(checked),
@@ -198,11 +193,11 @@ export function useBinderScreen(): BinderScreenModel {
       },
     }),
     createLinkProps: { to: '/binder/new' },
-    createLabel: 'Mint a meme',
+    createLabel: copy.collection.mint,
     cards: visible.map((meme) => {
       const memeCard = buildMemeCardModel(meme)
       const shares = meme.myShares ?? 0
-      const sharesLabel = `${shares}/100 shares`
+      const sharesLabel = copy.card.shares(shares)
       return {
         id: meme.id,
         memeCard,
@@ -210,11 +205,11 @@ export function useBinderScreen(): BinderScreenModel {
           meme.title,
           memeCard.tierLabel,
           sharesLabel,
-          meme.isCreator ? 'you minted this' : null,
-          meme.private ? 'private' : null,
+          meme.isCreator ? copy.card.minted : null,
+          meme.private ? copy.card.private : null,
         ]
           .filter(Boolean)
-          .join(' · '),
+          .join(copy.separator),
         sharesLabel,
         sharesPct: Math.max(0, Math.min(100, shares)),
         showCreator: !!meme.isCreator,
@@ -224,7 +219,7 @@ export function useBinderScreen(): BinderScreenModel {
     showMore:
       showGrid && hidden > 0
         ? {
-            label: `Show ${Math.min(hidden, BINDER_PAGE_SIZE)} more`,
+            label: copy.collection.showMore(Math.min(hidden, BINDER_PAGE_SIZE)),
             onClick: () => send({ type: 'SHOW_MORE' }),
           }
         : null,
@@ -236,17 +231,17 @@ export function useBinderScreen(): BinderScreenModel {
       : firstRun
         ? {
             kind: 'create',
-            label: '＋ Mint your first meme',
+            label: copy.emptyState.mintFirst,
             linkProps: { to: '/binder/new' },
           }
         : {
             kind: 'showPrivate',
-            label: `Show private (${privateCount})`,
+            label: copy.collection.showPrivate(privateCount),
             onClick: () => setShowPrivate(true),
           },
     showError,
-    errorTitle: "Couldn't load your binder.",
-    errorMessage: 'Your cards are safe — nothing was lost. Give it another go.',
+    errorTitle: copy.errorState.title,
+    errorMessage: copy.errorState.message,
     retryProps: {
       onClick: () => {
         send({ type: 'RETRY' })

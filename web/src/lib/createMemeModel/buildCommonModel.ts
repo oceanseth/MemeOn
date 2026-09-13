@@ -1,3 +1,4 @@
+import { createMemeCopy as copy } from '../../copy/createMeme'
 import type { CreateMemeContext, CreateMemeMode, CreateMemePhase } from '../../stores/createMemeMachine'
 import {
   boundTags,
@@ -66,17 +67,17 @@ export function buildCommonModel(
     phase,
     mode: ctx.mode,
     showRemixModeButton: !!ctx.remixId,
-    modeGroupProps: { role: 'group', 'aria-label': 'Source' },
+    modeGroupProps: { role: 'group', 'aria-label': copy.form.sourceGroup },
     busy: ctx.busy,
     busyElapsedLabel: ctx.busyElapsed,
     err: ctx.err,
     errorNextStep: nextStepFor(ctx.err),
     mintHint,
-    titlePlaceholder: 'e.g. cursed capybara',
-    titleHelpText: `Up to ${TITLE_MAX} characters — it has to fit the card banner.`,
+    titlePlaceholder: copy.form.titlePlaceholder,
+    titleHelpText: copy.form.titleHelp(TITLE_MAX),
     titleCounterLabel: `${countTitle(ctx.title)} / ${TITLE_MAX}`,
-    tagsPlaceholder: 'animals, chaos',
-    tagsHelpText: `Up to ${TAGS_MAX} tags, comma-separated — this is how people find it.`,
+    tagsPlaceholder: copy.form.tagsPlaceholder,
+    tagsHelpText: copy.form.tagsHelp(TAGS_MAX),
     tagsCounterLabel: `${countTags(ctx.tags)} / ${TAGS_MAX}`,
     helpIds: HELP_IDS,
     showBusy: isBusy,
@@ -119,18 +120,17 @@ export function buildCommonModel(
     mintStatus:
       phase === 'success'
         ? ctx.shareCopied
-          ? 'Share link copied to your clipboard.'
-          : 'Minted. Your card is live and the share link is ready.'
+          ? copy.form.success.copied
+          : copy.form.success.minted
         : '',
-    successHeading: '🧠 Minted. It is live.',
-    successBody:
-      'All 100 shares are yours. Send the link — every reshare pushes the card up the tier ladder.',
-    copyShareLinkLabel: ctx.shareCopied ? 'Copied ✓' : '🔗 Copy share link',
+    successHeading: copy.form.success.heading,
+    successBody: copy.form.success.body,
+    copyShareLinkLabel: ctx.shareCopied ? copy.form.copied : copy.form.success.copyLink,
     copyShareLinkButtonProps: {
       type: 'button',
       onClick: () => void actions.copyShareLink(),
     },
-    shareUrlInputProps: { value: ctx.shareUrl, readOnly: true, 'aria-label': 'Share link' },
+    shareUrlInputProps: { value: ctx.shareUrl, readOnly: true, 'aria-label': copy.form.success.shareLink },
     openMintedLinkProps: { to: `/m/${ctx.mintedId ?? ''}` },
   }
 }

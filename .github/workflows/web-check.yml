@@ -34,15 +34,17 @@ env:
 # a hang must fail, not sit for GitHub's 6-hour default.
 jobs:
   static:
-    name: tiers · contrast · layers · unit · typecheck
+    name: tiers · copy · contrast · layers · unit · typecheck
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
       - run: pnpm --filter web run check-tiers
+      - run: pnpm --filter web run check-copy
       - run: pnpm --filter web run check-contrast
       - run: pnpm --filter web run test:check-tiers
+      - run: pnpm --filter web run test:check-copy
       - run: pnpm --filter web run test:check-layers
       - run: pnpm --filter web run test:check-contrast
       - run: pnpm --filter web run test:unit

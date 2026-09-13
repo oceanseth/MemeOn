@@ -6,6 +6,9 @@
  *
  * Fails (exit 1) on:
  *   - a value import or re-export from a higher tier, or hooks/ or stores/, below views/
+ *   - a value import from copy/ in any tier (strings reach components through the model)
+ *   - a value import in copy/ that leaves copy/, other than lib/plural and lib/braincells
+ *     (copy is plain data; the two formatting helpers are the one allowance)
  *   - a React state hook in a component or helper below views/
  *   - a state-library import below views/
  *   - a component in a tier folder without a sibling story
@@ -22,6 +25,11 @@ import ts from "typescript"
 
 const TIERS = ["atoms", "molecules", "organisms", "screens", "views"]
 const ENGINES = ["hooks", "stores"]
+// User-facing strings. Read by hooks/, lib/ builders, stories and tests; never by a tier.
+const COPY = "copy"
+// The formatting primitives copy/ may call, so a noun stays beside its sentence
+// (`${plural(n, 'card')} shown`). Pure functions with no React and no strings of their own.
+const COPY_HELPERS = new Set(["lib/plural", "lib/braincells"])
 const ALLOWED = {
   atoms: ["atoms"],
   molecules: ["atoms", "molecules"],
@@ -137,9 +145,41 @@ const reportModule = (file, tier, spec) => {
     return
   }
   const folder = folderOf(file, spec)
+  if (folder === COPY) {
+    report(file, `${tier} imports from copy/ ("${spec}"): strings reach components through the model`)
+    return
+  }
   if (folder !== undefined && (TIERS.includes(folder) || ENGINES.includes(folder)) && !ALLOWED[tier].includes(folder)) {
     report(file, `${tier} imports from ${folder}/ ("${spec}")`)
   }
+}
+
+/** copy/ modules may import other copy/ modules, the listed formatting helpers, and types; nothing else. */
+const inspectCopySource = (file) => {
+  const sourceFile = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true, scriptKindFor(file))
+  const check = (spec) => {
+    if (folderOf(file, spec) === COPY) return
+    const target = spec.startsWith(".") ? relative(src, resolve(dirname(file), spec)).split(sep).join("/").replace(/\.(ts|js)$/, "") : spec
+    if (COPY_HELPERS.has(target)) return
+    report(file, `copy/ imports "${spec}": copy is plain data and imports only copy/ (plus ${[...COPY_HELPERS].join(", ")})`)
+  }
+  for (const statement of sourceFile.statements) {
+    if (ts.isImportDeclaration(statement) && !isTypeOnlyImport(statement.importClause)) {
+      const spec = staticModuleSpecifier(statement.moduleSpecifier)
+      if (spec) check(spec)
+    } else if (ts.isExportDeclaration(statement) && statement.moduleSpecifier && !isTypeOnlyExport(statement)) {
+      const spec = staticModuleSpecifier(statement.moduleSpecifier)
+      if (spec) check(spec)
+    }
+  }
+  const visit = (node) => {
+    if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+      const spec = staticModuleSpecifier(node.arguments[0])
+      if (spec) check(spec)
+    }
+    ts.forEachChild(node, visit)
+  }
+  ts.forEachChild(sourceFile, visit)
 }
 
 const reactDeclaration = (declaration) => /node_modules[\\/](@types[\\/]react|react)[\\/]/.test(declaration.getSourceFile().fileName)
@@ -270,6 +310,7 @@ for (const file of walk(src)) {
 
   if (!tier) {
     if (isComponentFile(name)) report(file, "component outside a tier folder")
+    else if (topLevel === COPY && isTierSourceFile(name)) inspectCopySource(file)
     continue
   }
 

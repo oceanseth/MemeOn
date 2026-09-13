@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { leaderboardRows, meLou } from '../../.storybook/fixtures'
+import { leaderboardCopy as copy } from '../copy/leaderboard'
 import { buildLeaderboardRowModel, type LeaderboardScreenModel } from '../hooks/useLeaderboardScreen'
 import type { LeaderRow } from '../lib/types'
 import { LeaderboardScreen } from './LeaderboardScreen'
@@ -27,33 +28,33 @@ const rows = (source: LeaderRow[], meSub: string | null = null) =>
 
 const empty: LeaderboardScreenModel = {
   phase: 'empty',
-  subtitle: 'Collect, trade, climb.',
-  podiumTitle: '🏆 Podium',
-  podiumSubtitle: 'The wrinkliest braincell holders on MemeOn',
-  columnHeaders: { player: 'Ranked by braincell holdings', braincells: 'Braincells' },
+  subtitle: copy.subtitle,
+  podiumTitle: copy.podium.title,
+  podiumSubtitle: copy.podium.subtitle,
+  columnHeaders: { player: copy.columns.player, braincells: copy.columns.braincells },
   leaders: [],
   youRow: null,
   showMore: false,
-  showMoreLabel: 'Show more brains',
+  showMoreLabel: copy.showMore,
   showMoreButtonProps: { onClick: () => {} },
   showLoading: false,
-  loadingMessage: 'Loading Top Brains…',
+  loadingMessage: copy.loading,
   showEmpty: true,
-  emptyMessage: "Nobody's earned a braincell yet. The throne is empty.",
+  emptyMessage: copy.empty,
   showError: false,
-  errorMessage: "Couldn't load Top Brains.",
-  retryLabel: 'Try again',
+  errorMessage: copy.loadError,
+  retryLabel: copy.retry,
   retry: () => {},
   showList: false,
-  listSummary: '0 brains on the board',
-  youLabel: 'you',
+  listSummary: copy.listSummary(0),
+  youLabel: copy.row.you,
 }
 
 const ready: Partial<LeaderboardScreenModel> = {
   phase: 'ready',
   showEmpty: false,
   showList: true,
-  listSummary: '2 brains on the board',
+  listSummary: copy.listSummary(2),
 }
 
 /** Storybook's viewport global; the vitest storybook project renders at the story's own width. */
@@ -80,7 +81,7 @@ export const Loading: Story = {
   args: { phase: 'loading', showEmpty: false, showLoading: true },
   play: async ({ canvasElement }) => {
     const status = within(canvasElement).getByRole('status')
-    await expect(status).toHaveTextContent('Loading Top Brains')
+    await expect(status).toHaveTextContent(copy.loading)
     await expect(status).toHaveAttribute('aria-busy', 'true')
   },
 }
@@ -92,9 +93,9 @@ export const Error: Story = {
   args: { phase: 'error', showEmpty: false, showError: true, retry: fn() },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('alert')).toHaveTextContent("Couldn't load Top Brains.")
-    await expect(canvas.queryByText(/throne is empty/i)).toBeNull()
-    await userEvent.click(canvas.getByRole('button', { name: 'Try again' }))
+    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.loadError)
+    await expect(canvas.queryByText(copy.empty)).toBeNull()
+    await userEvent.click(canvas.getByRole('button', { name: copy.retry }))
     await expect(args.retry).toHaveBeenCalled()
   },
 }
@@ -105,8 +106,8 @@ export const Ready: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('list').tagName).toBe('OL')
     await expect(canvas.getAllByRole('listitem')).toHaveLength(2)
-    await expect(canvas.getByRole('link', { name: 'Rank 1, pal, 240 braincells' })).toHaveAttribute('href', '/u/user-pal')
-    await expect(canvas.getByRole('status')).toHaveTextContent('2 brains on the board')
+    await expect(canvas.getByRole('link', { name: copy.row.label(1, 'pal', 240) })).toHaveAttribute('href', '/u/user-pal')
+    await expect(canvas.getByRole('status')).toHaveTextContent(copy.listSummary(2))
   },
 }
 
@@ -114,7 +115,7 @@ export const MixedAvatars: Story = {
   args: {
     ...ready,
     leaders: rows(mixedAvatarRows),
-    listSummary: '4 brains on the board',
+    listSummary: copy.listSummary(4),
   },
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelectorAll('[data-slot="person-row"] [data-slot="avatar"]')).toHaveLength(4)
@@ -126,7 +127,7 @@ export const BrokenAvatars: Story = {
   args: {
     ...ready,
     leaders: rows(realAccountRows),
-    listSummary: '3 brains on the board',
+    listSummary: copy.listSummary(3),
   },
   play: async ({ canvasElement }) => {
     const personRows = canvasElement.querySelectorAll<HTMLElement>('[data-slot="person-row"]')
@@ -145,8 +146,8 @@ export const SelfInTopTen: Story = {
   args: { ...ready, leaders: rows(leaderboardRows, meLou.sub) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByText('you')).toBeInTheDocument()
-    await expect(canvas.getByRole('link', { name: /^You, rank 2/ })).toBeInTheDocument()
+    await expect(canvas.getByText(copy.row.you)).toBeInTheDocument()
+    await expect(canvas.getByRole('link', { name: copy.row.youLabel(copy.row.label(2, meLou.name, meLou.coins)) })).toBeInTheDocument()
   },
 }
 
@@ -155,7 +156,7 @@ export const Full: Story = {
   args: {
     ...ready,
     leaders: rows(mixedAvatarRows),
-    listSummary: '4 brains on the board',
+    listSummary: copy.listSummary(4),
     youRow: buildLeaderboardRowModel(
       { sub: 'user-me', name: 'oxfern', picture: null, braincells: 2480, portfolioValue: 900, collectionSize: 6 },
       8,

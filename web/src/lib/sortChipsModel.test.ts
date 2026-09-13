@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { sortChipsCopy as copy } from '../copy/sortChips'
 import { buildSortChipsModel } from './sortChipsModel'
 
 describe('buildSortChipsModel', () => {
@@ -23,7 +24,7 @@ describe('buildSortChipsModel', () => {
   it('names the row as one group and leaves the chips live without a reason', () => {
     const model = buildSortChipsModel({ sortKey: 'new', dir: 'desc', onChange: vi.fn() })
 
-    expect(model.groupProps).toEqual({ role: 'group', 'aria-label': 'Sort by' })
+    expect(model.groupProps).toEqual({ role: 'group', 'aria-label': copy.group })
     expect(model.reason).toBeNull()
     expect(model.disabled).toBe(false)
   })

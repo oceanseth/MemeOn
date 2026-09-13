@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
+import { heroVideoCopy as copy } from '../copy/heroVideo'
 import { buildHeroVideoModel, type HeroVideoState } from '../lib/heroVideoModel'
 import { HeroVideo } from './HeroVideo'
 
@@ -33,8 +34,8 @@ export const Autoplaying: Story = {
     await expect(video).toBeInTheDocument()
     await expect(video).toHaveAttribute('preload', 'metadata')
     await expect(video!.controls).toBe(false)
-    await expect(canvas.queryByRole('button', { name: 'Play the 50-second tour' })).not.toBeInTheDocument()
-    const sound = canvas.getByRole('button', { name: 'Unmute the video' })
+    await expect(canvas.queryByRole('button', { name: copy.play })).not.toBeInTheDocument()
+    const sound = canvas.getByRole('button', { name: copy.unmute })
     await expect(sound).toHaveAttribute('aria-pressed', 'false')
     await userEvent.click(sound)
     await expect(handlers.onToggleSound).toHaveBeenCalledTimes(1)
@@ -48,9 +49,9 @@ export const SoundOn: Story = {
   args: { model: model({ autoplay: true, muted: false }) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const sound = canvas.getByRole('button', { name: 'Mute the video' })
+    const sound = canvas.getByRole('button', { name: copy.mute })
     await expect(sound).toHaveAttribute('aria-pressed', 'true')
-    await expect(sound).toHaveTextContent('Sound off')
+    await expect(sound).toHaveTextContent(copy.soundOff)
   },
 }
 
@@ -69,7 +70,7 @@ export const PosterWithPlayPill: Story = {
     await expect(video!.controls).toBe(false)
     await expect(video!.autoplay).toBe(false)
     await expect(canvas.queryByRole('button', { name: /the video$/ })).not.toBeInTheDocument()
-    await userEvent.click(canvas.getByRole('button', { name: 'Play the 50-second tour' }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.play }))
     await expect(handlers.onStart).toHaveBeenCalledTimes(1)
   },
 }
@@ -79,7 +80,7 @@ export const StartedByHand: Story = {
   args: { model: model({ autoplay: false, started: true }) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.queryByRole('button', { name: 'Play the 50-second tour' })).not.toBeInTheDocument()
-    await expect(canvas.getByRole('button', { name: 'Unmute the video' })).toBeInTheDocument()
+    await expect(canvas.queryByRole('button', { name: copy.play })).not.toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: copy.unmute })).toBeInTheDocument()
   },
 }

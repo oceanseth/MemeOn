@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory, RemountStory } from '../../.storybook/connected-story'
 import { friendAccepted, giftablePaper, paperMeme, silverMeme } from '../../.storybook/fixtures'
+import { tradesCopy as copy } from '../copy/trades'
 import { TradesView } from './TradesView'
 
 const meta = {
@@ -68,14 +69,14 @@ export const CloseReopenRejectsLateComposeAndProposes: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByText(/fresh paper/)).toBeInTheDocument()
-    await userEvent.click(canvas.getByRole('button', { name: /Propose a trade/ }))
-    await userEvent.click(canvas.getByRole('button', { name: 'Close' }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.newTrade }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.closeComposer }))
     loaded.scenario.release('friends-a'); loaded.scenario.release('binder-a'); loaded.scenario.release('memes-a')
     await waitFor(() => expect(loaded.scenario.checkpoints).toEqual(expect.arrayContaining(['friends-a-returned', 'binder-a-returned', 'memes-a-returned'])))
     await flushDeliveredCallbacks()
     await expect(canvas.queryByRole('combobox')).not.toBeInTheDocument()
-    await expect(canvas.getByRole('button', { name: /Propose a trade/ })).toBeInTheDocument()
-    await userEvent.click(canvas.getByRole('button', { name: /Propose a trade/ }))
+    await expect(canvas.getByRole('button', { name: copy.newTrade })).toBeInTheDocument()
+    await userEvent.click(canvas.getByRole('button', { name: copy.newTrade }))
     const selects = await canvas.findAllByRole('combobox')
     await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => ['/api/friends', '/api/binder', '/api/memes'].includes(request.path))).toHaveLength(6))
     await expect(selects[0]).not.toHaveTextContent('Friend A')
@@ -125,9 +126,9 @@ export const BReadyRejectsLateAComposeResults: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByText(/fresh paper/)).toBeInTheDocument()
-    await userEvent.click(canvas.getByRole('button', { name: /Propose a trade/ }))
-    await userEvent.click(canvas.getByRole('button', { name: 'Close' }))
-    await userEvent.click(canvas.getByRole('button', { name: /Propose a trade/ }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.newTrade }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.closeComposer }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.newTrade }))
     const selects = await canvas.findAllByRole('combobox')
     await waitFor(() => {
       expect(selects[0]).toHaveTextContent('Friend B')
@@ -159,9 +160,9 @@ export const RespondToProposal: Story = {
     await userEvent.click(await canvas.findByRole('button', { name: "Accept pal's trade" }))
     // the irreversible action restates the deal before it fires
     const dialog = within(await canvas.findByRole('alertdialog'))
-    await expect(dialog.getByText('Accept this trade?')).toBeInTheDocument()
-    await userEvent.click(dialog.getByRole('button', { name: 'Accept' }))
-    await expect(await canvas.findByText('Trade executed 🤝')).toBeInTheDocument()
+    await expect(dialog.getByText(copy.confirm.acceptTitle)).toBeInTheDocument()
+    await userEvent.click(dialog.getByRole('button', { name: copy.confirm.acceptLabel }))
+    await expect(await canvas.findByText(copy.toasts.executed)).toBeInTheDocument()
     await expect(loaded.scenario.requests.find((request: { path: string }) => request.path === '/api/trades/trade-1/respond')?.body).toEqual({ action: 'accept' })
     await waitFor(() => expect(loaded.scenario.stores.auth.snapshot.hasTag('settled')).toBe(true))
   },
@@ -198,5 +199,5 @@ export const InitialFailureOffersRetry: Story = {
 
 export const ProposalFailureStaysInComposer: Story = {
   loaders: [connectedLoader({ failures: { 'POST /api/trades': { error: 'proposal rejected', status: 409 } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><TradesView /></ConnectedStory>,
-  play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click(await canvas.findByRole('button', { name: /Propose a trade/ })); const selects = await canvas.findAllByRole('combobox'); await waitFor(() => expect(selects[0]).toHaveTextContent('pal')); await pickOption(selects[0]!, 'pal'); await userEvent.type(canvas.getAllByRole('spinbutton')[1]!, '5'); await userEvent.click(canvas.getByRole('button', { name: 'Propose trade' })); await expect(await canvas.findByText('proposal rejected')).toBeInTheDocument(); await expect(canvas.getByRole('button', { name: 'Close' })).toBeInTheDocument() },
+  play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click(await canvas.findByRole('button', { name: copy.newTrade })); const selects = await canvas.findAllByRole('combobox'); await waitFor(() => expect(selects[0]).toHaveTextContent('pal')); await pickOption(selects[0]!, 'pal'); await userEvent.type(canvas.getAllByRole('spinbutton')[1]!, '5'); await userEvent.click(canvas.getByRole('button', { name: 'Propose trade' })); await expect(await canvas.findByText('proposal rejected')).toBeInTheDocument(); await expect(canvas.getByRole('button', { name: copy.closeComposer })).toBeInTheDocument() },
 }
