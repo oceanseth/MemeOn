@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { meLou } from '../../.storybook/fixtures'
+import { settingsCopy as copy } from '../copy/settings'
 import { buildSettingsScreenModel } from '../hooks/useSettingsScreen'
 import { SettingsScreen } from './SettingsScreen'
 
@@ -37,12 +38,12 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('Settings')
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(copy.title)
     // the four cards Lou kept: Typography and Icon style are gone for good
-    await expect(canvas.getByRole('heading', { name: 'Account' })).toBeInTheDocument()
-    await expect(canvas.getByRole('heading', { name: 'Appearance' })).toBeInTheDocument()
-    await expect(canvas.getByRole('heading', { name: 'Connections' })).toBeInTheDocument()
-    await expect(canvas.getByRole('heading', { name: 'Alerts' })).toBeInTheDocument()
+    await expect(canvas.getByRole('heading', { name: copy.account.heading })).toBeInTheDocument()
+    await expect(canvas.getByRole('heading', { name: copy.appearance.heading })).toBeInTheDocument()
+    await expect(canvas.getByRole('heading', { name: copy.connections.heading })).toBeInTheDocument()
+    await expect(canvas.getByRole('heading', { name: copy.alerts.heading })).toBeInTheDocument()
     await expect(canvas.queryByRole('heading', { name: /Typography|Icon style/ })).toBeNull()
     // the one segmented well, bound to the theme store
     await expect(canvas.getByRole('group', { name: 'Theme' })).toBeInTheDocument()
@@ -52,7 +53,7 @@ export const Default: Story = {
 /** The account row's only control logs out; nothing else on the card can fire. */
 export const LogOut: Story = {
   play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole('button', { name: 'Log out' }))
+    await userEvent.click(within(canvasElement).getByRole('button', { name: copy.account.logOut }))
     await expect(onLogout).toHaveBeenCalled()
   },
 }
@@ -61,9 +62,9 @@ export const LogOut: Story = {
 export const NotLinked: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByText('🎭 Discord')).toBeInTheDocument()
-    await expect(canvas.getByText('Not linked')).toBeInTheDocument()
-    await expect(canvas.getByRole('link', { name: 'Connect Discord' })).toHaveAttribute('href', '/discord')
+    await expect(canvas.getByText(copy.connections.discord.service)).toBeInTheDocument()
+    await expect(canvas.getByText(copy.connections.discord.notLinked)).toBeInTheDocument()
+    await expect(canvas.getByRole('link', { name: copy.connections.discord.connect })).toHaveAttribute('href', '/discord')
   },
 }
 
@@ -71,21 +72,19 @@ export const NotLinked: Story = {
 export const Linked: Story = {
   args: {
     connections: {
-      heading: 'Connections',
+      ...model.connections,
       rows: [
         {
-          key: 'discord',
-          serviceLabel: '🎭 Discord',
-          stateLabel: 'Linked as oxfern#4417',
+          ...model.connections.rows[0],
+          stateLabel: copy.connections.discord.linkedAs('oxfern#4417'),
           linked: true,
-          actionLabel: 'Open Discord page',
-          actionLinkProps: { to: '/discord' },
+          actionLabel: copy.connections.discord.open,
         },
       ],
     },
   },
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByText('Linked as oxfern#4417')).toBeInTheDocument()
+    await expect(within(canvasElement).getByText(copy.connections.discord.linkedAs('oxfern#4417'))).toBeInTheDocument()
   },
 }
 
@@ -93,10 +92,10 @@ export const Linked: Story = {
 export const AlertsComingSoon: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const sales = canvas.getByRole('button', { name: 'Sales' })
+    const sales = canvas.getByRole('button', { name: copy.alerts.sales })
     await expect(sales).toBeDisabled()
-    await expect(canvas.getByRole('button', { name: 'Tier-ups' })).toBeDisabled()
-    await expect(canvas.getByText(/Coming soon/)).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: copy.alerts.tierUps })).toBeDisabled()
+    await expect(canvas.getByText(copy.alerts.caption)).toBeInTheDocument()
     await expect(sales).toHaveAttribute('aria-describedby', 'settings-alerts-note')
   },
 }
