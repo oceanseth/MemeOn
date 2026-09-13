@@ -1,5 +1,6 @@
 import { useProjectedActor } from './useProjectedActor'
 import type { AnchorHTMLAttributes } from 'react'
+import { discordPageCopy } from '../copy/discordPage'
 import { apiFetch } from '../lib/api'
 import {
   discordPageMachine,
@@ -43,9 +44,7 @@ export function useDiscordPageScreen(): DiscordPageScreenModel {
     showInstall,
     showPending: phase === 'ready' && !ctx.installUrl,
     showError: phase === 'errored',
-    installSteps: showInstall
-      ? 'Hit the button above.'
-      : 'The button above goes live the moment the app is registered.',
+    installSteps: showInstall ? discordPageCopy.installSteps.live : discordPageCopy.installSteps.pending,
     installLinkProps: {
       href: ctx.installUrl ?? undefined,
       target: '_blank',

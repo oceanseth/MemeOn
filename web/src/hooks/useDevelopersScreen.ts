@@ -7,6 +7,7 @@ import type {
   InputHTMLAttributes,
 } from 'react'
 import { Notice } from '../atoms/Notice'
+import { developersCopy } from '../copy/developers'
 import { apiFetch, post } from '../lib/api'
 import {
   buildConfirmDialogModel,
@@ -21,6 +22,8 @@ import { useMountEffect } from './useMountEffect'
 
 /** Key ceiling — shown in UI instead of letting the API reject a click. */
 const KEY_LIMIT = 5
+
+const copy = developersCopy
 
 export interface DeveloperKeyRowModel {
   prefix: string
@@ -124,13 +127,13 @@ export function useDevelopersScreen(): DevelopersScreenModel {
     send({ type: 'CREATE_START' })
     try {
       const out = await post<{ key: string }>('/api/developers/keys', {
-        label: current.label.trim() || 'my key',
+        label: current.label.trim() || copy.defaultLabel,
       })
       send({ type: 'CREATED', key: out.key })
       load()
     } catch (e) {
       // Prefer server error over generic create failure
-      send({ type: 'FAIL', err: e instanceof Error ? e.message : 'Couldn’t create that key. Try again.' })
+      send({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.create })
     }
   }, [actor, load, send])
 
@@ -142,7 +145,7 @@ export function useDevelopersScreen(): DevelopersScreenModel {
       await navigator.clipboard.writeText(key)
     } catch {
       // insecure origin or denied permission: the key is still on screen and still selectable
-      send({ type: 'FAIL', err: 'Couldn’t copy — select the key and copy it manually.' })
+      send({ type: 'FAIL', err: copy.errors.copy })
       return
     }
     send({ type: 'COPIED' })
@@ -158,7 +161,7 @@ export function useDevelopersScreen(): DevelopersScreenModel {
     try {
       await apiFetch(`/api/developers/keys/${row.prefix}`, { method: 'DELETE' })
     } catch {
-      send({ type: 'REVOKE_FAIL', err: `Couldn’t revoke ${row.label} — try again.` })
+      send({ type: 'REVOKE_FAIL', err: copy.errors.revoke(row.label) })
       return
     }
     send({ type: 'REVOKE_OK', label: row.label })
@@ -173,30 +176,32 @@ export function useDevelopersScreen(): DevelopersScreenModel {
     prefix: row.prefix,
     label: row.label,
     createdAt: row.createdAt,
-    createdLabel: `created ${new Date(row.createdAt).toLocaleDateString(undefined, {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    })}`,
+    createdLabel: copy.row.created(
+      new Date(row.createdAt).toLocaleDateString(undefined, {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      }),
+    ),
     revokeButtonProps: {
       onClick: () => send({ type: 'REVOKE', row }),
-      'aria-label': `Revoke API key ${row.label}`,
+      'aria-label': copy.row.revoke(row.label),
     },
   }))
   const confirmDialog = buildConfirmDialogModel({
     open: !!ctx.revoking,
     danger: true,
     busy: ctx.revokeBusy,
-    title: 'Revoke this API key?',
+    title: copy.revokeDialog.title,
     message: createElement(
       Fragment,
       null,
-      createElement('code', null, `${ctx.revoking?.prefix}…`),
-      ` (${ctx.revoking?.label}). This disconnects every app using it.`,
+      createElement('code', null, copy.revokeDialog.prefix(String(ctx.revoking?.prefix))),
+      copy.revokeDialog.body(String(ctx.revoking?.label)),
       // the page behind an open modal is inert, so the failure has to land inside the dialog
       ctx.revokeErr ? createElement(Notice, { tone: 'error' }, ctx.revokeErr) : null,
     ),
-    confirmLabel: 'Revoke it',
+    confirmLabel: copy.revokeDialog.confirm,
     onCancel: onRevokeCancel,
     onConfirm: () => void onRevokeConfirm(),
   })
@@ -214,23 +219,23 @@ export function useDevelopersScreen(): DevelopersScreenModel {
     showLoadError: phase === 'error',
     showOk: !!ctx.okMsg,
     okMsg: ctx.okMsg,
-    emptyCopy: 'No keys yet — name one above and hit Create key.',
-    emptyHint: 'You’ll see the full key exactly once, so paste it straight into your bot.',
-    loadingLabel: 'Loading your API keys…',
-    loadErrorMessage: 'Couldn’t reach the key list — your keys are still active.',
-    keysHeading: 'Your keys',
-    quotaLabel: keys ? `${rows.length} of ${KEY_LIMIT} keys` : null,
-    quotaNote: atQuota ? 'Key limit reached — revoke one to make room.' : null,
-    createLabel: ctx.creating ? 'Creating…' : 'Create key',
-    freshKeyHeading: 'Copy it now — shown once:',
-    copyLabel: 'Copy key',
-    copiedCaption: '✓ Copied',
+    emptyCopy: copy.emptyState.message,
+    emptyHint: copy.emptyState.hint,
+    loadingLabel: copy.loading,
+    loadErrorMessage: copy.errors.load,
+    keysHeading: copy.keysHeading,
+    quotaLabel: keys ? copy.quota(rows.length, KEY_LIMIT) : null,
+    quotaNote: atQuota ? copy.quotaNote : null,
+    createLabel: ctx.creating ? copy.creating : copy.createKey,
+    freshKeyHeading: copy.freshKey.heading,
+    copyLabel: copy.freshKey.copy,
+    copiedCaption: copy.freshKey.copied,
     copyDone: ctx.copied,
     labelInputProps: {
       value: ctx.label,
       onChange: (event) => send({ type: 'SET_LABEL', label: event.currentTarget.value }),
       maxLength: 60,
-      'aria-label': 'API key label',
+      'aria-label': copy.labelInput,
     },
     createFormProps: {
       onSubmit: (event) => {

@@ -2,6 +2,7 @@ import { useProjectedActor } from './useProjectedActor'
 import { useCallback, useMemo, useRef, type ChangeEventHandler, type RefCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { TIERS } from '@memeon/shared/tiers'
+import { marketplaceCopy } from '../copy/marketplace'
 import { apiFetch } from '../lib/api'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import { buildSortChipsModel, type SortChipsModel } from '../lib/sortChipsModel'
@@ -18,15 +19,7 @@ import { useMountEffect } from './useMountEffect'
 const PAGE = 60
 const SKELETON_COUNT = 8
 const FILTERS_PANEL_ID = 'market-filters'
-
-/**
- * `GET /api/memes` pages the catalogue newest-first and takes no sort key, so ranking by a stat
- * would only reorder the pages already loaded. The chips stay visible and inert until the API can
- * rank, rather than presenting a sample as the leaderboard of the whole market.
- */
-const SORT_DISABLED_REASON = "Newest first — the market can't rank by views, reshares or value yet."
-const LOAD_ERROR = "Couldn't reach the market. Your filters are still set."
-const MORE_ERROR = "Couldn't pull the next page."
+const copy = marketplaceCopy
 
 /** One pressed tab in the filter row. */
 export interface MarketFilterTabModel {
@@ -45,9 +38,9 @@ export interface MarketFilterTabsModel {
 }
 
 const MEDIA_TABS: readonly { key: string; label: string }[] = [
-  { key: '', label: 'All memes' },
-  { key: 'image', label: 'Images' },
-  { key: 'video', label: 'Videos' },
+  { key: '', label: copy.filters.media.all },
+  { key: 'image', label: copy.filters.media.images },
+  { key: 'video', label: copy.filters.media.videos },
 ]
 
 export interface BuildMarketFilterTabsInput {
@@ -68,10 +61,10 @@ export function buildMarketFilterTabs({
       pressed: tab.key === type,
       buttonProps: { onClick: () => onTypeChange(tab.key), 'aria-pressed': tab.key === type },
     })),
-    mediaGroupProps: { role: 'group', 'aria-label': 'Filter by media type' },
+    mediaGroupProps: { role: 'group', 'aria-label': copy.filters.media.groupLabel },
     listed: {
       key: 'listed',
-      label: 'For sale',
+      label: copy.filters.listed,
       pressed: listed,
       buttonProps: { onClick: () => onListedChange(!listed), 'aria-pressed': listed },
     },
@@ -155,20 +148,17 @@ function writeFilter(params: URLSearchParams, key: string, value: string, fallba
   else params.set(key, value)
 }
 
-const plural = (count: number, word: string): string =>
-  `${count} ${word}${count === 1 ? '' : 's'}`
-
-const typeLabel = (type: string): string => (type === 'video' ? 'Videos' : 'Images')
+const typeLabel = (type: string): string => (type === 'video' ? copy.filters.media.videos : copy.filters.media.images)
 
 const tierLabel = (tier: string): string =>
   TIERS.find((candidate) => candidate.key === tier)?.name ?? tier
 
 function activeFilterLabels(ctx: MarketplaceContext): string[] {
   const labels: string[] = []
-  if (ctx.q) labels.push(`“${ctx.q}”`)
+  if (ctx.q) labels.push(copy.results.activeQuery(ctx.q))
   if (ctx.type) labels.push(typeLabel(ctx.type))
   if (ctx.tier) labels.push(tierLabel(ctx.tier))
-  if (ctx.listed) labels.push('for sale')
+  if (ctx.listed) labels.push(copy.results.activeListed)
   return labels
 }
 
@@ -190,7 +180,7 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
     send({ type: 'FETCHING', scope: 'refresh' })
     apiFetch<{ memes: Meme[]; nextCursor: string | null }>(`/api/memes?${queryString(live)}`)
       .then((result) => send({ type: 'LOADED', memes: result.memes, nextCursor: result.nextCursor }))
-      .catch(() => send({ type: 'FAIL', err: 'load failed' }))
+      .catch(() => send({ type: 'FAIL', err: copy.machine.loadFailed }))
       .finally(() => { loadingRef.current = false })
   }, [actor, send])
 
@@ -212,7 +202,7 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
       )
       send({ type: 'APPEND', memes: result.memes, nextCursor: result.nextCursor })
     } catch {
-      send({ type: 'MORE_FAILED', err: 'append failed' })
+      send({ type: 'MORE_FAILED', err: copy.machine.appendFailed })
     } finally {
       loadingRef.current = false
     }
@@ -294,13 +284,12 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
   const filterLabels = activeFilterLabels(context)
   const narrowed = filterLabels.length > 0
   const countLabel = context.nextCursor
-    ? `${plural(cards.length, 'meme')} so far`
-    : plural(cards.length, 'meme')
+    ? copy.results.countSoFar(cards.length)
+    : copy.results.count(cards.length)
   // one status line: the count doubles as the live region, and the alert box owns the error copy
   const resultsLabel = showLoading || refreshing
-    ? 'Searching the market…'
-    : [showError ? 'No memes loaded' : showEmpty ? 'Nothing matches' : countLabel, ...filterLabels]
-      .join(' · ')
+    ? copy.results.searching
+    : copy.results.line([showError ? copy.results.errored : showEmpty ? copy.results.empty : countLabel, ...filterLabels])
   const hiddenFilterCount = [context.type, context.tier, context.listed ? 'listed' : ''].filter(
     Boolean,
   ).length
@@ -310,8 +299,8 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
     cards,
     queryInputProps: {
       value: context.q,
-      placeholder: 'Search memes or tags',
-      'aria-label': 'Search memes, tags and creators',
+      placeholder: copy.search.placeholder,
+      'aria-label': copy.search.label,
       onChange: onQueryChange,
     },
     filterTabs: buildMarketFilterTabs({
@@ -322,7 +311,7 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
     }),
     tierSelectProps: {
       value: context.tier,
-      'aria-label': 'Filter by tier',
+      'aria-label': copy.filters.tierLabel,
       onValueChange: onTierChange,
     },
     sortChips: buildSortChipsModel({
@@ -333,7 +322,7 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
         syncUrl()
         fetchFromStart()
       },
-      disabledReason: SORT_DISABLED_REASON,
+      disabledReason: copy.sortDisabledReason,
     }),
     createLinkProps: { to: '/binder/new' },
     filtersToggleProps: {
@@ -341,7 +330,7 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
       'aria-expanded': context.filtersOpen,
       'aria-controls': FILTERS_PANEL_ID,
     },
-    filtersToggleLabel: hiddenFilterCount ? `Filters · ${hiddenFilterCount}` : 'Filters',
+    filtersToggleLabel: hiddenFilterCount ? copy.filters.toggleWithCount(hiddenFilterCount) : copy.filters.toggle,
     filtersPanelProps: {
       id: FILTERS_PANEL_ID,
       'data-collapsed': context.filtersOpen ? 'false' : 'true',
@@ -355,22 +344,22 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
     showGrid,
     showMore,
     skeletonCount: SKELETON_COUNT,
-    errorMessage: LOAD_ERROR,
+    errorMessage: copy.loadError,
     retryButtonProps: { onClick: fetchFromStart, disabled: refreshing },
-    retryLabel: refreshing ? 'Trying again…' : 'Try again',
+    retryLabel: refreshing ? copy.retrying : copy.retry,
     loadMoreProps: {
       onClick: () => void loadMore(true),
       disabled: context.busy === 'more',
       'aria-busy': context.busy === 'more',
     },
     loadMoreLabel: context.busy === 'more'
-      ? 'Loading…'
+      ? copy.loadingMore
       : context.moreErr
-        ? 'Try again'
-        : 'Load more',
-    loadMoreError: context.moreErr ? MORE_ERROR : null,
+        ? copy.loadMoreRetry
+        : copy.loadMore,
+    loadMoreError: context.moreErr ? copy.loadMoreError : null,
     endOfListLabel: showGrid && !context.nextCursor
-      ? "That's every meme matching these filters."
+      ? copy.endOfList
       : null,
     sentinelRef,
   }

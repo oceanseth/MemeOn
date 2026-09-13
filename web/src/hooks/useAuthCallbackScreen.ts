@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { IconName } from '../atoms/Icon'
+import { authStatusCopy } from '../copy/authStatus'
 import { beginMaskyLogin, completeMaskyLogin } from '../lib/auth'
 import { post } from '../lib/api'
 import { useAuth } from './useAuth'
@@ -8,6 +9,8 @@ import { INVITE_KEY } from './useInviteScreen'
 
 /** Where a login that started from a Discord link (or another guarded route) resumes. */
 export const POST_LOGIN_KEY = 'memeon_post_login'
+
+const copy = authStatusCopy.callback
 
 /** Shared auth status card for OAuth callback and mobile forward. */
 export interface AuthStatusScreenModel {
@@ -48,7 +51,7 @@ export function useAuthCallbackScreen(): AuthStatusScreenModel {
     ran.current = true
     const code = params.get('code')
     if (!code) {
-      setErr(params.get('error') ?? 'missing authorization code')
+      setErr(params.get('error') ?? copy.errors.missingCode)
       return
     }
     completeMaskyLogin(code, params.get('state'))
@@ -64,25 +67,25 @@ export function useAuthCallbackScreen(): AuthStatusScreenModel {
         await refresh()
         navigate(postLogin ?? (inviterId ? '/friends' : '/marketplace'), { replace: true })
       })
-      .catch((e) => setErr(e instanceof Error ? e.message : 'login failed'))
+      .catch((e) => setErr(e instanceof Error ? e.message : copy.errors.loginFailed))
   }, [params, navigate, refresh])
 
   /* Failed hand-off offers retry instead of an endless spinner. */
   const retry = () => {
     setErr(null)
-    void beginMaskyLogin().catch((e) => setErr(e instanceof Error ? e.message : 'login failed'))
+    void beginMaskyLogin().catch((e) => setErr(e instanceof Error ? e.message : copy.errors.loginFailed))
   }
 
   return {
     phase: err ? 'error' : 'working',
-    title: err ? 'Masky login didn’t finish' : 'Completing Masky login…',
-    subtitle: err ? null : 'Taking you back to MemeOn.',
+    title: err ? copy.failed.title : copy.working.title,
+    subtitle: err ? null : copy.working.subtitle,
     error: err,
     primaryAction: null,
     fallback: {
-      prompt: err ? null : 'Taking longer than usual?',
-      retry: { label: 'Try again', onClick: retry },
-      home: { label: 'Back to MemeOn', to: '/' },
+      prompt: err ? null : copy.working.prompt,
+      retry: { label: copy.retry, onClick: retry },
+      home: { label: copy.home, to: '/' },
     },
   }
 }

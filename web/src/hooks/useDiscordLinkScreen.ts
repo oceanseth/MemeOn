@@ -2,6 +2,7 @@ import { useProjectedActor } from './useProjectedActor'
 import { autorun } from 'mobx'
 import { useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { discordLinkCopy } from '../copy/discordLink'
 import { ApiError, post } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
 import { POST_LOGIN_KEY } from './useAuthCallbackScreen'
@@ -17,18 +18,11 @@ export const DISCORD_LINK_KEY = 'memeon_discord_link_token'
 /** Consent survives the Masky round trip, so nobody is asked to agree to the same join twice. */
 export const DISCORD_LINK_CONSENT_KEY = 'memeon_discord_link_consent'
 
-const BUSY_MESSAGE: Partial<Record<DiscordLinkPhase, string>> = {
-  checking: 'Checking your link…',
-  redirecting: 'Taking you to Masky to log in…',
-  working: 'Connecting your Discord…',
-}
+const copy = discordLinkCopy
 
-const FAILURE_BODY: Record<DiscordLinkFailure, string> = {
-  'missing-token': 'This link is missing its code. Run /memeon-connect in Discord for a fresh one.',
-  expired: 'This link already got used or expired. Fresh links last 10 minutes.',
-  login: 'The Masky login never came back. Run /memeon-connect in Discord for a fresh link.',
-  unreachable: "MemeOn couldn't reach the linker. Try again in a moment.",
-}
+const BUSY_MESSAGE: Partial<Record<DiscordLinkPhase, string>> = copy.busy
+
+const FAILURE_BODY: Record<DiscordLinkFailure, string> = copy.error.body
 
 /** Only a transport hiccup is worth re-POSTing; a consumed token stays consumed. */
 const RETRYABLE: Record<DiscordLinkFailure, boolean> = {
@@ -135,13 +129,13 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
 
   return {
     phase,
-    heading: showError ? null : showDone ? '🎮 Connected!' : 'Connect Discord to MemeOn',
+    heading: showError ? null : showDone ? copy.done : copy.heading,
     showConfirm: phase === 'confirm',
     showBusy: phase === 'checking' || phase === 'redirecting' || phase === 'working',
     showDone,
     showError,
     busyMessage: BUSY_MESSAGE[phase] ?? null,
-    errTitle: showError ? "Couldn't connect Discord" : null,
+    errTitle: showError ? copy.error.title : null,
     errBody: showError && ctx.failure ? FAILURE_BODY[ctx.failure] : null,
     canRetry: showError && !!ctx.failure && RETRYABLE[ctx.failure],
     onConfirm,

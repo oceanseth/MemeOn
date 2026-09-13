@@ -1,7 +1,10 @@
 import { useEffect, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { authStatusCopy } from '../copy/authStatus'
 import { forwardToDeepLink } from '../lib/authNavigation'
 import type { AuthStatusScreenModel } from './useAuthCallbackScreen'
+
+const copy = authStatusCopy.mobileForward
 
 /**
  * Masky OAuth only allows https redirect URIs, so the mobile app uses `https://{host}/auth/mobile`
@@ -27,15 +30,15 @@ export function useMobileAuthForwardScreen(): AuthStatusScreenModel {
 
   return {
     phase: 'working',
-    title: 'Returning to the MemeOn app…',
-    subtitle: 'Open the MemeOn app, or keep going on the web.',
+    title: copy.title,
+    subtitle: copy.subtitle,
     error: null,
     // Page primary uses Central arrow icon, not emoji
-    primaryAction: { label: 'Open MemeOn', href: deepLink, icon: 'arrow-right' },
+    primaryAction: { label: copy.open, href: deepLink, icon: 'arrow-right' },
     fallback: {
-      prompt: 'Nothing happened?',
+      prompt: copy.prompt,
       retry: null,
-      home: { label: 'Continue on the web', to: '/' },
+      home: { label: copy.home, to: '/' },
     },
   }
 }

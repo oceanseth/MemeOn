@@ -1,5 +1,6 @@
 import { useProjectedActor } from './useProjectedActor'
 import { useCallback, useRef, type ChangeEventHandler } from 'react'
+import { friendsCopy } from '../copy/friends'
 import { useAuth } from './useAuth'
 import { apiFetch, post } from '../lib/api'
 import { watchPresence, type PresenceWatch } from '../lib/presence'
@@ -26,24 +27,12 @@ export type { FriendsPhase }
 /** Success banners clear themselves so they stop stacking up for the whole session. */
 const MSG_TTL_MS = 6000
 
+const copy = friendsCopy
+
 const REMOVAL_COPY: Record<
   PendingRemoval['kind'],
-  { title: (name: string) => string; message: string; confirmLabel: string; cancelLabel: string }
-> = {
-  remove: {
-    title: (name) => `Remove ${name}?`,
-    message:
-      "You'll drop out of each other's circles and lose the shortcut to trade and gift. You can send a new request later.",
-    confirmLabel: 'Remove',
-    cancelLabel: 'Keep friend',
-  },
-  decline: {
-    title: (name) => `Decline ${name}'s request?`,
-    message: "They are not told. If you change your mind they can send a new request.",
-    confirmLabel: 'Decline',
-    cancelLabel: 'Keep it',
-  },
-}
+  { title: (name: string) => string; body: string; confirm: string; cancel: string }
+> = copy.removeDialog
 
 type RowButtonProps = Pick<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -135,7 +124,7 @@ interface AcceptedFriendModel extends FriendLinkModel {
 }
 
 function statsLine(friend: { collectionSize: number; portfolioValue: number }): string {
-  return `📚 ${friend.collectionSize} ${friend.collectionSize === 1 ? 'meme' : 'memes'} · 🧠 ${friend.portfolioValue.toLocaleString()} held`
+  return copy.row.stats(friend.collectionSize, friend.portfolioValue)
 }
 
 /** Everything `FriendsScreen` renders. The hook is the engine; the screen is the terminal. */
@@ -157,7 +146,7 @@ export function useFriendsScreen(): FriendsScreenModel {
         )
         send({ type: 'DONE', friends: r.friends })
       })
-      .catch(() => send({ type: 'FAIL', err: 'Check your connection and try again.' }))
+      .catch(() => send({ type: 'FAIL', err: copy.loadError.body }))
   }, [send])
 
   useMountEffect(() => {
@@ -223,8 +212,8 @@ export function useFriendsScreen(): FriendsScreenModel {
     if (navigator.share) {
       await navigator
         .share({
-          title: 'Join me on MemeOn',
-          text: 'Memes are the new trading cards — join me on MemeOn!',
+          title: copy.invite.share.title,
+          text: copy.invite.share.text,
           url: inviteLink,
         })
         .catch(() => {})
@@ -243,11 +232,11 @@ export function useFriendsScreen(): FriendsScreenModel {
       send({ type: 'SET_PENDING', sub: userId })
       try {
         await post('/api/friends/request', { userId })
-        flashMsg('Friend request sent 👋')
+        flashMsg(copy.toasts.requestSent)
         onQueryChange('')
         load()
       } catch {
-        send({ type: 'SET_ACTION_ERR', err: "Couldn't send that friend request. Try again in a moment." })
+        send({ type: 'SET_ACTION_ERR', err: copy.errors.request })
       } finally {
         send({ type: 'SET_PENDING', sub: null })
       }
@@ -263,7 +252,7 @@ export function useFriendsScreen(): FriendsScreenModel {
         await post('/api/friends/respond', { userId, accept })
         load()
       } catch {
-        send({ type: 'SET_ACTION_ERR', err: "Couldn't update that request. Try again." })
+        send({ type: 'SET_ACTION_ERR', err: copy.errors.respond })
       } finally {
         send({ type: 'SET_PENDING', sub: null })
       }
@@ -279,7 +268,7 @@ export function useFriendsScreen(): FriendsScreenModel {
         await post('/api/friends/remove', { userId })
         load()
       } catch {
-        send({ type: 'SET_ACTION_ERR', err: "Couldn't remove that friend. Try again." })
+        send({ type: 'SET_ACTION_ERR', err: copy.errors.remove })
       } finally {
         send({ type: 'SET_PENDING', sub: null })
       }
@@ -318,12 +307,10 @@ export function useFriendsScreen(): FriendsScreenModel {
     send({ type: 'SET_GIFT_ERR', err: null })
     try {
       await post('/api/gift', { memeId: live.giftPick.id, toSub: live.gifting.sub, shares: giftShares })
-      flashMsg(
-        `🎁 Gifted ${giftShares} share${giftShares === 1 ? '' : 's'} of "${live.giftPick.title}" to ${live.gifting.name}`,
-      )
+      flashMsg(copy.toasts.gifted(giftShares, live.giftPick.title, live.gifting.name))
       closeGift()
     } catch (e) {
-      send({ type: 'SET_GIFT_ERR', err: e instanceof Error ? e.message : 'That gift did not go through. Try again.' })
+      send({ type: 'SET_GIFT_ERR', err: e instanceof Error ? e.message : copy.errors.gift })
     } finally {
       send({ type: 'SET_GIFT_BUSY', busy: false })
     }
@@ -344,7 +331,7 @@ export function useFriendsScreen(): FriendsScreenModel {
   > = {
     value: ctx.query,
     onChange: ((event) => onQueryChange(event.target.value)) as ChangeEventHandler<HTMLInputElement>,
-    'aria-label': 'Find people by name',
+    'aria-label': copy.search.inputLabel,
   }
   const friendLink = buildFriendLinkModel
   const giftMaxShares = Math.max(1, ctx.giftPick?.myShares ?? 1)
@@ -375,9 +362,9 @@ export function useFriendsScreen(): FriendsScreenModel {
     open: !!removal,
     danger: true,
     title: removalCopy.title(removal?.name ?? ''),
-    message: removalCopy.message,
-    confirmLabel: removalCopy.confirmLabel,
-    cancelLabel: removalCopy.cancelLabel,
+    message: removalCopy.body,
+    confirmLabel: removalCopy.confirm,
+    cancelLabel: removalCopy.cancel,
     onConfirm: onConfirmRemoval,
     onCancel: () => send({ type: 'CLOSE_REMOVE' }),
   })
@@ -387,16 +374,15 @@ export function useFriendsScreen(): FriendsScreenModel {
     searchInputProps,
     msg: ctx.msg,
     err: ctx.actionErr,
-    inviteLabel: ctx.copied ? 'Invite link copied ✓' : '💌 Invite a friend',
+    inviteLabel: ctx.copied ? copy.invite.copied : copy.invite.button,
     inviteButtonProps: { onClick: onCopyInvite },
     onlineFriends: onlineFriends.map(friendLink),
-    onlineCountLabel: `${onlineFriends.length} ${onlineFriends.length === 1 ? 'friend' : 'friends'} online`,
+    onlineCountLabel: copy.online.count(onlineFriends.length),
     hits: ctx.hits.map((hit) => ({
       ...friendLink(hit),
       requestButtonProps: {
         onClick: () => onRequest(hit.sub),
-        /* WCAG 2.5.3: the button's visible words lead its accessible name */
-        'aria-label': `Add friend — send ${hit.name} a friend request`,
+        'aria-label': copy.search.requestLabel(hit.name),
         disabled: busySub === hit.sub,
         'aria-busy': busySub === hit.sub,
       },
@@ -406,13 +392,13 @@ export function useFriendsScreen(): FriendsScreenModel {
       statsLabel: statsLine(friend),
       acceptButtonProps: {
         onClick: () => onRespond(friend.sub, true),
-        'aria-label': `Accept ${friend.name}'s request`,
+        'aria-label': copy.row.accept(friend.name),
         disabled: busySub === friend.sub,
         'aria-busy': busySub === friend.sub,
       },
       declineButtonProps: {
         onClick: () => send({ type: 'ASK_REMOVE', removal: { sub: friend.sub, name: friend.name, kind: 'decline' } }),
-        'aria-label': `Decline ${friend.name}'s request`,
+        'aria-label': copy.row.decline(friend.name),
         disabled: busySub === friend.sub,
         'aria-busy': busySub === friend.sub,
       },
@@ -420,10 +406,10 @@ export function useFriendsScreen(): FriendsScreenModel {
     outgoing: outgoing.map((friend) => ({
       ...friendLink(friend),
       statsLabel: statsLine(friend),
-      pendingLabel: 'Pending',
+      pendingLabel: copy.row.pending,
       cancelButtonProps: {
         onClick: () => onRemove(friend.sub),
-        'aria-label': `Cancel your request to ${friend.name}`,
+        'aria-label': copy.row.cancelRequest(friend.name),
         disabled: busySub === friend.sub,
         'aria-busy': busySub === friend.sub,
       },
@@ -431,20 +417,20 @@ export function useFriendsScreen(): FriendsScreenModel {
     accepted: accepted.map((friend) => ({
       ...friendLink(friend),
       isOnline: ctx.onlineSubs.includes(friend.sub),
-      onlineLabel: 'Online now',
+      onlineLabel: copy.online.label,
       statsLabel: statsLine(friend),
-      tradeLabel: 'Trade',
-      tradeLinkProps: { to: '/trade', 'aria-label': `Trade with ${friend.name}` },
-      giftLabel: 'Gift',
+      tradeLabel: copy.row.trade,
+      tradeLinkProps: { to: '/trade', 'aria-label': copy.row.tradeWith(friend.name) },
+      giftLabel: copy.row.gift,
       giftButtonProps: {
         onClick: () => onGiftOpen({ sub: friend.sub, name: friend.name }),
-        'aria-label': `Gift shares to ${friend.name}`,
+        'aria-label': copy.row.giftTo(friend.name),
         disabled: busySub === friend.sub,
       },
-      removeLabel: 'Remove',
+      removeLabel: copy.row.remove,
       removeButtonProps: {
         onClick: () => send({ type: 'ASK_REMOVE', removal: { sub: friend.sub, name: friend.name, kind: 'remove' } }),
-        'aria-label': `Remove ${friend.name}`,
+        'aria-label': copy.row.removeName(friend.name),
         disabled: busySub === friend.sub,
         'aria-busy': busySub === friend.sub,
       },
@@ -464,21 +450,17 @@ export function useFriendsScreen(): FriendsScreenModel {
     showEmpty,
     showCircle,
     showCircleHint,
-    searchingLabel: 'Searching…',
-    noHitsMessage: `No one goes by "${trimmedQuery}" — check the spelling, or invite them.`,
-    loadingLabel: 'Loading friends…',
-    errorTitle: "Couldn't load your friends.",
-    errorMessage: ctx.err ?? 'Check your connection and try again.',
-    retryLabel: 'Retry',
+    searchingLabel: copy.search.searching,
+    noHitsMessage: copy.search.noHits(trimmedQuery),
+    loadingLabel: copy.loading,
+    errorTitle: copy.loadError.title,
+    errorMessage: ctx.err ?? copy.loadError.body,
+    retryLabel: copy.loadError.retry,
     retryButtonProps: { onClick: load },
-    emptyTitle: 'No friends yet',
-    emptyMessage:
-      "Invite someone and you can gift shares straight from your binder and watch each other's portfolios.",
+    emptyTitle: copy.empty.title,
+    emptyMessage: copy.empty.body,
     emptyActionProps: { onClick: onCopyInvite },
-    circleHintMessage:
-      incoming.length > 0
-        ? 'Accept a request to start your circle.'
-        : 'No one has accepted yet — your sent requests are still out there.',
+    circleHintMessage: incoming.length > 0 ? copy.circleHint.incoming : copy.circleHint.outgoing,
     giftDialog,
     removeDialog,
   }
