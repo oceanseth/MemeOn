@@ -6,6 +6,8 @@
  *
  * Fails (exit 1) on:
  *   - a value import or re-export from a higher tier, or hooks/ or stores/, below views/
+ *   - a value import from copy/ in any tier (strings reach components through the model)
+ *   - a value import in copy/ that leaves copy/ (copy is plain data; it depends on nothing)
  *   - a React state hook in a component or helper below views/
  *   - a state-library import below views/
  *   - a component in a tier folder without a sibling story
@@ -22,6 +24,8 @@ import ts from "typescript"
 
 const TIERS = ["atoms", "molecules", "organisms", "screens", "views"]
 const ENGINES = ["hooks", "stores"]
+// User-facing strings. Read by hooks/, lib/ builders, stories and tests; never by a tier.
+const COPY = "copy"
 const ALLOWED = {
   atoms: ["atoms"],
   molecules: ["atoms", "molecules"],
@@ -137,9 +141,38 @@ const reportModule = (file, tier, spec) => {
     return
   }
   const folder = folderOf(file, spec)
+  if (folder === COPY) {
+    report(file, `${tier} imports from copy/ ("${spec}"): strings reach components through the model`)
+    return
+  }
   if (folder !== undefined && (TIERS.includes(folder) || ENGINES.includes(folder)) && !ALLOWED[tier].includes(folder)) {
     report(file, `${tier} imports from ${folder}/ ("${spec}")`)
   }
+}
+
+/** copy/ modules may import other copy/ modules and types; nothing else. */
+const inspectCopySource = (file) => {
+  const sourceFile = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true, scriptKindFor(file))
+  const check = (spec) => {
+    if (folderOf(file, spec) !== COPY) report(file, `copy/ imports "${spec}": copy is plain data and imports only copy/`)
+  }
+  for (const statement of sourceFile.statements) {
+    if (ts.isImportDeclaration(statement) && !isTypeOnlyImport(statement.importClause)) {
+      const spec = staticModuleSpecifier(statement.moduleSpecifier)
+      if (spec) check(spec)
+    } else if (ts.isExportDeclaration(statement) && statement.moduleSpecifier && !isTypeOnlyExport(statement)) {
+      const spec = staticModuleSpecifier(statement.moduleSpecifier)
+      if (spec) check(spec)
+    }
+  }
+  const visit = (node) => {
+    if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+      const spec = staticModuleSpecifier(node.arguments[0])
+      if (spec) check(spec)
+    }
+    ts.forEachChild(node, visit)
+  }
+  ts.forEachChild(sourceFile, visit)
 }
 
 const reactDeclaration = (declaration) => /node_modules[\\/](@types[\\/]react|react)[\\/]/.test(declaration.getSourceFile().fileName)
@@ -270,6 +303,7 @@ for (const file of walk(src)) {
 
   if (!tier) {
     if (isComponentFile(name)) report(file, "component outside a tier folder")
+    else if (topLevel === COPY && isTierSourceFile(name)) inspectCopySource(file)
     continue
   }
 
