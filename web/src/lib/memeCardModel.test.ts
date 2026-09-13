@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { tierFor } from '@memeon/shared/tiers'
+import { memeCardCopy as copy } from '../copy/memeCard'
 import { buildMemeCardModel, buildReducedMotionMemeCardModel } from './memeCardModel'
 import type { Meme } from './types'
 
@@ -29,19 +30,19 @@ describe('buildMemeCardModel', () => {
   it('builds the detail link, tier and listing labels', () => {
     const model = buildMemeCardModel(imageMeme)
 
-    expect(model.detailLinkProps).toEqual({ to: '/m/meme-1', 'aria-label': 'Open foil cat' })
+    expect(model.detailLinkProps).toEqual({ to: '/m/meme-1', 'aria-label': copy.open('foil cat') })
     expect(model.titleId).toBe('meme-card-title-meme-1')
     expect(model.tierName).toBe('Holo')
     expect(model.tierLabel).toBe('Holo · Rare')
     expect(model.valueLabel).toBe('5,678')
-    expect(model.valueA11yLabel).toBe('5,678 braincells card value')
+    expect(model.valueA11yLabel).toBe(copy.valueA11y('5,678'))
     expect(model.listing).toEqual({
       shares: 10,
       pricePerShare: 3,
       // Two footer lines, no pill on the art
-      forSaleLabel: 'for sale',
-      sharesLabel: '10 shares',
-      sharesA11yLabel: '10 shares for sale at 3 braincells each',
+      forSaleLabel: copy.forSale,
+      sharesLabel: copy.shares(10),
+      sharesA11yLabel: copy.sharesForSaleAt(10, 3),
     })
   })
 
@@ -50,13 +51,13 @@ describe('buildMemeCardModel', () => {
 
     expect(thin.viewsLabel).toBeNull()
     expect(thin.resharesLabel).toBe('1,234')
-    expect(thin.statsA11yLabel).toBe('1,234 reshares')
+    expect(thin.statsA11yLabel).toBe(copy.stats(null, '1,234'))
 
     const full = buildMemeCardModel({ ...imageMeme, views: 9876, reshareCount: 60 })
 
     expect(full.viewsLabel).toBe('9,876')
     expect(full.resharesLabel).toBe('60')
-    expect(full.statsA11yLabel).toBe('9,876 views, 60 reshares')
+    expect(full.statsA11yLabel).toBe(copy.stats('9,876', '60'))
   })
 
   it('leaves the media unnamed and excludes empty listings', () => {
@@ -96,7 +97,7 @@ describe('buildMemeCardModel', () => {
       poster: '/foil-cat.png',
       'aria-label': '',
     })
-    expect(video.media.toggleProps['aria-label']).toBe('Play foil cat')
+    expect(video.media.toggleProps['aria-label']).toBe(copy.play('foil cat'))
     expect(video.media.toggleProps['aria-pressed']).toBe(false)
     expect(missingVideo.media.kind).toBe('image')
   })

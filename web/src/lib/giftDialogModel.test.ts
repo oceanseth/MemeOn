@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { giftablePaper, giftableSilver, listedHolo } from '../../.storybook/fixtures'
+import { giftDialogCopy as copy } from '../copy/giftDialog'
 import { buildGiftDialogModel, clampGiftShares } from './giftDialogModel'
 
 const recipient = { sub: 'pal-sub', name: 'Pal' }
@@ -32,7 +33,7 @@ describe('gift dialog model', () => {
     expect(model.rows.map((row) => row.id)).toEqual([giftableSilver.id])
     model.searchInputProps.onChange?.({ target: { value: 'paper' } } as never)
     expect(onQueryChange).toHaveBeenCalledWith('paper')
-    expect(model.searchInputProps['aria-label']).toBe('Search your binder')
+    expect(model.searchInputProps['aria-label']).toBe(copy.search)
   })
 
   it('keeps the raw share text while typing and clamps only on blur and submit', () => {
@@ -61,9 +62,9 @@ describe('gift dialog model', () => {
       tierKey: 'paper',
       tierLabel: 'Paper',
       listed: false,
-      sharesLabel: 'you hold 12 of 100',
+      sharesLabel: copy.sharesHeld(12),
     })
-    expect(model.rows[1]).toMatchObject({ tierKey: 'holo', listed: true, listedLabel: 'Listed' })
+    expect(model.rows[1]).toMatchObject({ tierKey: 'holo', listed: true, listedLabel: copy.listed })
     expect(model.rows[0]?.imageProps).toMatchObject({ loading: 'lazy', decoding: 'async', width: 40, height: 40 })
   })
 
@@ -96,7 +97,7 @@ describe('gift dialog model', () => {
     const onClose = vi.fn()
     const model = buildModel({ onClose, memes: [] })
 
-    expect(model.closeLabel).toBe('Close gift dialog')
+    expect(model.closeLabel).toBe(copy.close)
     // the ✕, the scrim and Escape are all one channel now
     model.onOpenChange(false)
     model.cancelButtonProps.onClick?.({} as never)
@@ -133,8 +134,8 @@ describe('gift dialog model', () => {
   })
 
   it('never dead-ends an empty binder', () => {
-    expect(buildModel({ memes: [] }).emptyMessage).toBe('Nothing to gift here — you need shares in a meme first.')
-    expect(buildModel({ query: 'zzz' }).emptyMessage).toBe('Nothing in your binder matches "zzz".')
+    expect(buildModel({ memes: [] }).emptyMessage).toBe(copy.emptyBinder)
+    expect(buildModel({ query: 'zzz' }).emptyMessage).toBe(copy.emptySearch('zzz'))
   })
 
   it('records the opener, so the frame can hand focus back on the way out', () => {

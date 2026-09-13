@@ -4,6 +4,7 @@ import { expect, userEvent, within } from 'storybook/test'
 import { memeValue, TIERS, tierFor } from '@memeon/shared/tiers'
 import { holoMeme, listedHolo, paperMeme, silverMeme } from '../../.storybook/fixtures'
 import type { Meme } from '../lib/types'
+import { memeCardCopy as copy } from '../copy/memeCard'
 import { buildMemeCardModel, buildReducedMotionMemeCardModel } from '../lib/memeCardModel'
 import { MemeCard } from './MemeCard'
 
@@ -122,11 +123,9 @@ export const Listed: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // two lines in the 64px slot on screen, one sentence (with the price) for a screen reader
-    await expect(canvas.getByText('10 shares')).toBeVisible()
-    await expect(canvas.getByText('for sale')).toBeVisible()
-    await expect(
-      canvas.getByText('10 shares for sale at 3 braincells each'),
-    ).toBeInTheDocument()
+    await expect(canvas.getByText(copy.shares(10))).toBeVisible()
+    await expect(canvas.getByText(copy.forSale)).toBeVisible()
+    await expect(canvas.getByText(copy.sharesForSaleAt(10, 3))).toBeInTheDocument()
   },
 }
 
@@ -136,8 +135,8 @@ export const ForSale: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const slot = canvasElement.querySelector('[data-slot="for-sale"]')!
-    await expect(slot).toHaveTextContent('10 shares')
-    await expect(slot).toHaveTextContent('for sale')
+    await expect(slot).toHaveTextContent(copy.shares(10))
+    await expect(slot).toHaveTextContent(copy.forSale)
     // it lives in the footer row, never over the art
     await expect(slot.closest('[data-slot="meme-sub"]')).not.toBeNull()
     // a label, never a button: nothing here is clickable

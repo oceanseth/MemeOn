@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import { confirmDialogCopy as copy } from '../copy/confirmDialog'
 import { buildConfirmDialogModel } from './confirmDialogModel'
 
 describe('buildConfirmDialogModel', () => {
@@ -100,7 +101,7 @@ describe('buildConfirmDialogModel', () => {
 
     expect(onConfirm).toHaveBeenCalledOnce()
     expect(onCancel).toHaveBeenCalledOnce()
-    expect(model.confirmLabel).toBe('Confirm')
+    expect(model.confirmLabel).toBe(copy.confirm)
     expect(model.cancelLabel).toBe('Cancel')
     expect(model.prompt).toBeNull()
   })

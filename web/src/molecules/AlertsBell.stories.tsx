@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { readSale, unreadFriend, unreadSale } from '../../.storybook/fixtures'
+import { alertsBellCopy as copy } from '../copy/alertsBell'
 import { buildAlertsBellModel } from '../lib/alertsBellModel'
 import { AlertsBell } from './AlertsBell'
 
@@ -41,7 +42,7 @@ export const ClosedUnread: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     onOpenChange.mockClear()
-    const trigger = canvas.getByRole('button', { name: 'Alerts, 2 unread' })
+    const trigger = canvas.getByRole('button', { name: copy.trigger(2) })
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
     await expect(trigger).toHaveTextContent('2')
     await userEvent.click(trigger)
@@ -53,10 +54,10 @@ export const OpenUnread: Story = {
   args: { model: buildAlertsBellModel({ alerts, open: true, onOpenChange }) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const trigger = canvas.getByRole('button', { name: 'Alerts, 2 unread' })
+    const trigger = canvas.getByRole('button', { name: copy.trigger(2) })
     await expect(trigger).toHaveAttribute('aria-expanded', 'true')
     // Base UI owns the popup's id and points the trigger at it
-    const popup = canvas.getByRole('dialog', { name: 'Alerts' })
+    const popup = canvas.getByRole('dialog', { name: copy.title })
     await expect(trigger).toHaveAttribute('aria-controls', popup.id)
     onOpenChange.mockClear()
     await userEvent.click(trigger)
@@ -67,7 +68,7 @@ export const OpenUnread: Story = {
     const saleLink = canvas.getAllByText(unreadSale.message)[0]!.closest('a')!
     await expect(saleLink).toHaveAttribute('data-slot', 'alert-row')
     await expect(saleLink).toHaveAttribute('href', `/m/${unreadSale.memeId}`)
-    await expect(saleLink).toHaveAccessibleName(expect.stringContaining('Unread.'))
+    await expect(saleLink).toHaveAccessibleName(expect.stringContaining(copy.unreadRow))
     await userEvent.click(saleLink)
     await expect(onOpenChange).toHaveBeenCalledWith(false)
     onOpenChange.mockClear()
@@ -105,11 +106,11 @@ export const OpenKeyboardDismiss: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     onOpenChange.mockClear()
-    const trigger = canvas.getByRole('button', { name: 'Alerts, 2 unread' })
+    const trigger = canvas.getByRole('button', { name: copy.trigger(2) })
     trigger.focus()
     await userEvent.keyboard('{Escape}')
     await expect(onOpenChange).toHaveBeenCalledWith(false)
-    await waitFor(() => expect(canvas.queryByRole('dialog', { name: 'Alerts' })).toBeNull())
+    await waitFor(() => expect(canvas.queryByRole('dialog', { name: copy.title })).toBeNull())
     await expect(trigger).toHaveFocus()
   },
 }
@@ -126,9 +127,9 @@ export const OpenUnreadStaysMarked: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Alerts' })).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: copy.title })).toBeInTheDocument()
     await expect(canvasElement.querySelectorAll('[data-slot="alert-row"][data-unread]')).toHaveLength(2)
-    await expect(canvas.getAllByText('Unread.')).toHaveLength(2)
+    await expect(canvas.getAllByText(copy.unreadRow)).toHaveLength(2)
   },
 }
 
@@ -136,9 +137,9 @@ export const ManyUnread: Story = {
   args: { model: buildAlertsBellModel({ alerts: flood, open: true, onOpenChange }) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Alerts, 1284 unread' })).toHaveTextContent('99+')
+    await expect(canvas.getByRole('button', { name: copy.trigger(1284) })).toHaveTextContent('99+')
     await expect(rows(canvasElement)).toHaveLength(21)
-    await expect(canvas.getByText('Showing your 20 most recent alerts.')).toBeInTheDocument()
+    await expect(canvas.getByText(copy.overflow(20))).toBeInTheDocument()
   },
 }
 
@@ -147,7 +148,7 @@ export const AlertsOffline: Story = {
   args: { model: buildAlertsBellModel({ alerts: [], open: true, onOpenChange, failed: true }) },
   play: async ({ canvasElement }) => {
     await expect(
-      within(canvasElement).getByText("Alerts are offline — we'll retry in a moment."),
+      within(canvasElement).getByText(copy.offline),
     ).toBeInTheDocument()
   },
 }
