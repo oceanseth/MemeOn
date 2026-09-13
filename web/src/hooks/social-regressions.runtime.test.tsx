@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { friendAccepted, giftablePaper, meLou } from '../../.storybook/fixtures'
+import { friendsCopy as copy } from '../copy/friends'
 import type { Me } from '../lib/types'
 import { authMachine } from '../stores/authMachine'
 import { createStores, type AppStores } from '../stores/createStores'
@@ -216,7 +217,7 @@ describe('FriendsView gift lifetime', () => {
       await settle()
     })
     expect(giftDialogOpen()).toBe(false)
-    expect(host.textContent).toContain('Gifted 1 share')
+    expect(host.textContent).toContain(copy.toasts.gifted(1, giftablePaper.title, friendAccepted.name))
 
     dialog = await openAndPickGift()
     expect(button('Gift 1 of', dialog).disabled).toBe(false)
@@ -289,7 +290,7 @@ describe('FriendsView friend-request debounce ownership', () => {
     expect(host.querySelector<HTMLInputElement>('input[placeholder^="Find people"]')?.value).toBe('Bob')
     expect(api.userQueries).toEqual(['Alice', 'Bob'])
     // the raw API string never reaches the user; the surface names the problem and the recovery
-    expect(host.textContent).toContain("Couldn't send that friend request")
+    expect(host.textContent).toContain(copy.errors.request)
     expect(host.querySelector('[data-slot="notice"]')).not.toBeNull()
     expect(host.textContent).toContain('Bob')
     expect(button('Add friend')).toBeTruthy()

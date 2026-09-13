@@ -4,6 +4,8 @@ import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { listedHolo, meLou, memeplexEmpty, paperMeme, silverMeme } from '../../.storybook/fixtures'
+import { marketplaceCopy } from '../copy/marketplace'
+import { memeDetailCopy } from '../copy/memeDetail'
 import type { Me, Meme } from '../lib/types'
 import { authMachine } from '../stores/authMachine'
 import { createStores, type AppStores } from '../stores/createStores'
@@ -232,12 +234,12 @@ describe('MemeDetailView mutation overlap', () => {
     })
     await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
 
-    await click(button('Make public'))
+    await click(button(memeDetailCopy.actions.makePublic))
     await eventually(() => expect(detailReads).toBe(2))
-    await click(button('Delete forever'))
+    await click(button(memeDetailCopy.actions.delete))
     // the confirmations are Base UI popups: mounted means open, so presence is the whole state
     let dialog = host.querySelector('[role="alertdialog"]')!
-    await click(button('Delete it forever', dialog))
+    await click(button(memeDetailCopy.deleteDialog.confirm, dialog))
     expect(deleteRequests).toBe(1)
 
     await act(async () => {
@@ -254,11 +256,11 @@ describe('MemeDetailView mutation overlap', () => {
     expect(host.querySelector('[role="alertdialog"]')).toBeNull()
     // the failure ends the request: nothing on the page is still presented as in flight
     expect(host.querySelector('[aria-busy="true"]')).toBeNull()
-    expect(button('Delete forever').disabled).toBe(false)
+    expect(button(memeDetailCopy.actions.delete).disabled).toBe(false)
 
-    await click(button('Delete forever'))
+    await click(button(memeDetailCopy.actions.delete))
     dialog = host.querySelector('[role="alertdialog"]')!
-    await click(button('Delete it forever', dialog))
+    await click(button(memeDetailCopy.deleteDialog.confirm, dialog))
     await eventually(() => expect(host.querySelector('output[aria-label="Current route"]')?.textContent).toBe('/binder'))
     expect(deleteRequests).toBe(2)
     expect(host.textContent).toContain('Binder destination')
@@ -346,13 +348,13 @@ describe('MarketplaceView continuously visible pagination', () => {
     await eventually(() => {
       expect(requests).toEqual(['initial', 'cursor-a'])
       expect(cardTitles()).toEqual([paperMeme.title])
-      expect(host.textContent).toContain("Couldn't pull the next page.")
+      expect(host.textContent).toContain(marketplaceCopy.loadMoreError)
     })
     // the cursor survives the failure, and the observer stops auto-firing until it is retried
     await macrotask(30)
     expect(requests).toEqual(['initial', 'cursor-a'])
     expect(sentinel()).not.toBeNull()
-    expect(button('Try again').disabled).toBe(false)
+    expect(button(marketplaceCopy.loadMoreRetry).disabled).toBe(false)
   })
 
   it('guards a pending continuation from duplicate callbacks and disconnects on unmount', async () => {

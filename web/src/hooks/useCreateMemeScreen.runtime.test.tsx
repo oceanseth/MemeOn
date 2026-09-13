@@ -2,6 +2,7 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createMemeCopy as copy } from '../copy/createMeme'
 import { CreateMemeRoute } from '../views/AppView'
 
 function deferred<T>() {
@@ -146,7 +147,7 @@ describe('CreateMemeRoute settling requests', () => {
     expect(host.querySelector<HTMLImageElement>('img[data-slot="meme-art"]')?.getAttribute('src')).toBe('/finished.png')
     expect(host.querySelector('[data-slot="form-grid"]')?.getAttribute('aria-busy')).toBe('false')
     expect(button('Mint').disabled).toBe(false)
-    expect(host.textContent).not.toContain('Rendering your masterpiece')
+    expect(host.textContent).not.toContain(copy.busy.generatingImage)
   })
 
   it('clears busy, shows the error with a next step, and permits retry after a mode switch', async () => {
@@ -167,7 +168,7 @@ describe('CreateMemeRoute settling requests', () => {
     expect(host.querySelector('[role="alert"]')?.textContent).toContain('credits exhausted')
     expect(host.querySelector('[role="alert"]')?.textContent).toContain('Top up Masky credits')
     expect(host.querySelector('[data-slot="form-grid"]')?.getAttribute('aria-busy')).toBe('false')
-    expect(host.textContent).not.toContain('Rendering your masterpiece')
+    expect(host.textContent).not.toContain(copy.busy.generatingImage)
     await click(button('Upload'))
     await click(button('Generate image'))
     expect(button('Generate image').getAttribute('aria-pressed')).toBe('true')
