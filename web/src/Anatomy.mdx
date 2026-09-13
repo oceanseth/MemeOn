@@ -138,7 +138,7 @@ touch four.
 
 | You want to… | Edit | Then |
 |---|---|---|
-| Change copy (a title, caption, button label, error string) | `copy/<surface>.ts` — the one place the string is spelled | nothing: the builder, its unit test and the story `play` all read the same constant. If a surface still spells its strings inline (see `scripts/copy-baseline.json`), move them into `copy/` first and run `pnpm --filter web run check-copy -- --update` |
+| Change copy (a title, caption, button label, error string) | `copy/<surface>.ts` — the one place the string is spelled | nothing: the builder, its unit test and the story `play` all read the same constant. If a surface still spells its strings inline in a hook, model builder, or screen (see `scripts/copy-baseline.json`), move them into `copy/` first and run `pnpm --filter web run check-copy -- --update` |
 | Add a string | a role-named key in `copy/<surface>.ts` (a function when it takes a value: `name: (n) => …`); reuse `copy/shared.ts` for a label another surface already has | the builder picks it, the story asserts through it — never by respelling. A story that overrides one part of the model spreads the built model: `{ ...model.connections, rows: […] }` |
 | Change how something looks | the component in its tier: Tailwind utilities on the element (`cn()` merges them) | if a `@theme` token is new, add it in `index.css` **and** register its namespace in `lib/cn.ts`; run `pnpm run check-contrast` for a colour |
 | Add a state a screen can be in | the machine in `stores/`, the derived flags in the hook, a **Screen story** for the new state first | the view story that reaches it through the connected scenario |
@@ -149,8 +149,8 @@ touch four.
 | Set a length (height, padding, gap, width) | a role token when the boards repeat it by role — `h-control`, `px-control-x`, `gap-control-gap`, `size-icon`, `p-gutter`, `h-field`, `size-control-sm`, `w-nav-item`, `max-w-measure`, `max-w-card`, `rounded-band` / `-well` / `-segment` / `-control-sm` (`index.css` `--spacing-*`, `--radius-*`, `--container-*`); otherwise a grid step (`mt-2.5`, `p-5.5`, `py-3.25`). No `h-[46px]`; `[…]` is for `calc()`, `env()`, `%` and `ch` only | a new role name goes in `index.css` **and** `lib/cn.ts` (`theme.spacing` / `radius` / `container`) with a `cn.test.ts` case |
 
 `pnpm run check` is the whole gate (tiers, copy, contrast, layers, proxy, unit, runtime,
-stories). `check-copy` is a ratchet: it counts copy-like literals still spelled in `hooks/`
-and the `lib/*Model.ts` builders against `scripts/copy-baseline.json`, and a file may only
+stories). `check-copy` is a ratchet: it counts copy-like literals still spelled in `hooks/`,
+`screens/`, and the `lib/*Model.ts` builders against `scripts/copy-baseline.json`, and a file may only
 match or fall below its number (`--list` names the strings, `--update` locks a drop in;
 it refuses to raise anything). `pnpm run storybook` (port 6006, MSW-backed) is where a state is verified.
 

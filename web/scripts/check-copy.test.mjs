@@ -119,3 +119,48 @@ test("fails when a file drops below its baseline until --update locks the drop i
     assert.equal(check().status, 0)
   })
 })
+
+test("counts copy-like literals in screens/", () => {
+  withSrc({
+    "screens/ExampleScreen.tsx": [
+      "export const ExampleScreen = () => (",
+      "  <div className='flex flex-col gap-4'>",
+      "    <h1>{'Welcome back'}</h1>",
+      "  </div>",
+      ")",
+    ].join("\n"),
+    "screens/ExampleScreen.stories.tsx": "export default { title: 'Never counted: stories are out of scope' }\n",
+  }, ({ check, baseline }) => {
+    const first = check()
+    assert.equal(first.status, 1, first.output)
+    assert.match(first.output, /no baseline/)
+
+    const written = check("--update")
+    assert.equal(written.status, 0, written.output)
+    assert.deepEqual(JSON.parse(readFileSync(baseline, "utf8")), {
+      "screens/ExampleScreen.tsx": 2,
+    })
+
+    const again = check()
+    assert.equal(again.status, 0, again.output)
+  })
+})
+
+test("fails when a screen drops below its baseline until --update locks the drop in", () => {
+  withSrc({
+    "screens/ExampleScreen.tsx": "export const ExampleScreen = () => <div>{'One'}</div>\n",
+  }, ({ check, baseline }) => {
+    writeFileSync(baseline, JSON.stringify({ "screens/ExampleScreen.tsx": 3, "screens/GoneScreen.tsx": 2 }))
+
+    const result = check()
+    assert.equal(result.status, 1, result.output)
+    assert.match(result.output, /screens\/ExampleScreen\.tsx: 3 → 1/)
+    assert.match(result.output, /screens\/GoneScreen\.tsx: 2 → 0/)
+    assert.match(result.output, /--update/)
+
+    const lowered = check("--update")
+    assert.equal(lowered.status, 0, lowered.output)
+    assert.deepEqual(JSON.parse(readFileSync(baseline, "utf8")), { "screens/ExampleScreen.tsx": 1 })
+    assert.equal(check().status, 0)
+  })
+})
