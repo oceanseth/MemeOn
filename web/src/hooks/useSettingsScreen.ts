@@ -28,14 +28,6 @@ export interface SettingsConnectionModel {
   actionLinkProps: Pick<LinkProps, 'to'>
 }
 
-/** No alert API yet — toggles ship disabled so they do not look live. */
-export interface SettingsAlertToggleModel {
-  key: string
-  label: string
-  on: boolean
-  buttonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'disabled' | 'aria-pressed'>
-}
-
 export interface SettingsScreenModel {
   title: string
   intro: string
@@ -49,11 +41,6 @@ export interface SettingsScreenModel {
   connections: {
     heading: string
     rows: readonly SettingsConnectionModel[]
-  }
-  alerts: {
-    heading: string
-    caption: string
-    toggles: readonly SettingsAlertToggleModel[]
   }
 }
 
@@ -104,14 +91,6 @@ export function buildSettingsScreenModel({
              the error state, so it is never the place to send somebody from here. */
           actionLinkProps: { to: '/discord' },
         },
-      ],
-    },
-    alerts: {
-      heading: copy.alerts.heading,
-      caption: copy.alerts.caption,
-      toggles: [
-        { key: 'sales', label: copy.alerts.sales, on: false, buttonProps: { disabled: true, 'aria-pressed': false } },
-        { key: 'tier-ups', label: copy.alerts.tierUps, on: false, buttonProps: { disabled: true, 'aria-pressed': false } },
       ],
     },
   }

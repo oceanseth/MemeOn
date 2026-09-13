@@ -13,17 +13,14 @@ const CARD = 'px-5 py-gutter max-md:px-5 max-md:py-gutter'
 const ROW = 'mt-3.75 flex flex-wrap items-center gap-3'
 const SUBJECT = 'text-label font-bold text-ink'
 const FACT = 'text-small text-ink-muted'
-/** Alerts toggles are chips, not pills. */
-const TOGGLE = 'h-11 rounded-segment px-3.5 text-small'
 
-/** Account, Appearance, Connections, Alerts as a function of the model. Pure props → markup. */
+/** Account, Appearance, Connections as a function of the model. Pure props → markup. */
 export function SettingsScreen({
   title,
   intro,
   account,
   appearance,
   connections,
-  alerts,
 }: SettingsScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
@@ -66,27 +63,6 @@ export function SettingsScreen({
               </li>
             ))}
           </ul>
-        </Panel>
-
-        <Panel className={CARD}>
-          <PanelHeading size="section" className="mb-0">{alerts.heading}</PanelHeading>
-          <div data-slot="settings-alerts" className="mt-4 flex flex-wrap items-center gap-2.5">
-            {alerts.toggles.map((toggle) => (
-              <Button
-                key={toggle.key}
-                className={TOGGLE}
-                pressed={toggle.on}
-                aria-describedby="settings-alerts-note"
-                {...toggle.buttonProps}
-              >
-                {toggle.label}
-              </Button>
-            ))}
-          </div>
-          {/* never a switch that saves nothing: the caption is why they are inert */}
-          <p id="settings-alerts-note" className={cn(FACT, 'mt-2.5 mb-0')}>
-            {alerts.caption}
-          </p>
         </Panel>
       </div>
     </PageContainer>

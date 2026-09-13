@@ -22,7 +22,7 @@ const build = (overrides: Partial<Parameters<typeof buildSettingsScreenModel>[0]
   })
 
 describe('settings screen model', () => {
-  it('names the four cards Lou kept and nothing else', () => {
+  it('names the three cards Lou kept and nothing else', () => {
     const model = build()
 
     expect(model).toMatchObject({ title: copy.title, intro: copy.intro })
@@ -30,8 +30,7 @@ describe('settings screen model', () => {
       model.account?.heading,
       model.appearance.heading,
       model.connections.heading,
-      model.alerts.heading,
-    ]).toEqual([copy.account.heading, copy.appearance.heading, copy.connections.heading, copy.alerts.heading])
+    ]).toEqual([copy.account.heading, copy.appearance.heading, copy.connections.heading])
   })
 
   it('reads the account off the avatar, and drops the card when there is no session', () => {
@@ -76,14 +75,4 @@ describe('settings screen model', () => {
     ])
   })
 
-  it('ships the alert switches inert rather than faking a save', () => {
-    const model = build()
-
-    expect(model.alerts.toggles.map((toggle) => toggle.label)).toEqual([copy.alerts.sales, copy.alerts.tierUps])
-    for (const toggle of model.alerts.toggles) {
-      expect(toggle.buttonProps.disabled).toBe(true)
-      expect(toggle.on).toBe(false)
-    }
-    expect(model.alerts.caption).toBe(copy.alerts.caption)
-  })
 })
