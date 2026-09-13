@@ -27,10 +27,4 @@ export const settingsCopy = {
       open: 'Open Discord page',
     },
   },
-  alerts: {
-    heading: 'Alerts',
-    caption: 'Coming soon — for now every alert lands in 🔔.',
-    sales: 'Sales',
-    tierUps: 'Tier-ups',
-  },
 } as const

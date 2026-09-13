@@ -39,11 +39,10 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(copy.title)
-    // the four cards Lou kept: Typography and Icon style are gone for good
+    // the three cards Lou kept: Typography, Icon style, and Alerts are gone until their APIs exist
     await expect(canvas.getByRole('heading', { name: copy.account.heading })).toBeInTheDocument()
     await expect(canvas.getByRole('heading', { name: copy.appearance.heading })).toBeInTheDocument()
     await expect(canvas.getByRole('heading', { name: copy.connections.heading })).toBeInTheDocument()
-    await expect(canvas.getByRole('heading', { name: copy.alerts.heading })).toBeInTheDocument()
     await expect(canvas.queryByRole('heading', { name: /Typography|Icon style/ })).toBeNull()
     // the one segmented well, bound to the theme store
     await expect(canvas.getByRole('group', { name: 'Theme' })).toBeInTheDocument()
@@ -85,18 +84,6 @@ export const Linked: Story = {
   },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByText(copy.connections.discord.linkedAs('oxfern#4417'))).toBeInTheDocument()
-  },
-}
-
-/** No endpoint stores alert preferences: the switches are inert and say so. */
-export const AlertsComingSoon: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const sales = canvas.getByRole('button', { name: copy.alerts.sales })
-    await expect(sales).toBeDisabled()
-    await expect(canvas.getByRole('button', { name: copy.alerts.tierUps })).toBeDisabled()
-    await expect(canvas.getByText(copy.alerts.caption)).toBeInTheDocument()
-    await expect(sales).toHaveAttribute('aria-describedby', 'settings-alerts-note')
   },
 }
 
