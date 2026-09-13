@@ -384,7 +384,9 @@ export const Ready: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: /Mint/ })).toBeEnabled()
-    await expect(canvas.getByText('Paper · freshly minted')).toBeVisible()
+    const tierNote = canvasElement.querySelector('[data-slot="tier-note"]') as HTMLElement
+    await expect(within(tierNote).getByText('Paper')).toBeVisible()
+    await expect(within(tierNote).getByText('freshly minted')).toBeVisible()
   },
 }
 

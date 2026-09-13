@@ -4,6 +4,7 @@ import { cn } from '../lib/cn'
 const panelHeadingSizes = {
   intro: 'text-intro tracking-normal',
   section: 'text-intro tracking-normal',
+  hero: 'text-card-heading tracking-card-heading',
   card: 'text-card-title tracking-card-title',
   composer: 'text-title tracking-title',
 } as const

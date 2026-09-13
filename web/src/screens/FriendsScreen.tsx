@@ -37,7 +37,7 @@ const DOT = 'inline-block size-2.5 shrink-0 rounded-full bg-success-text'
 
 /** Person row: compact on desktop, stacked actions on phone. */
 const ROW = cn(
-  'flex items-center gap-3.5 rounded-band bg-surface px-5 py-3.5 shadow-raised',
+  'flex items-center gap-3.5 rounded-card bg-surface px-5 py-3.5 shadow-raised',
   'max-sm:flex-col max-sm:items-stretch max-sm:gap-3.5 max-sm:rounded-nav max-sm:py-5',
 )
 

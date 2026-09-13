@@ -84,6 +84,8 @@ export const memeCardSubClasses = SUB
 
 export interface MemeCardProps {
   model: MemeCardModel
+  /** Tier / reshare line between the title and the stats row (`MemeDetailScreen`). */
+  subTitle?: ReactNode | undefined
   footer?: ReactNode | undefined
   /** Right footer lane; replaces the market listing pair when set. */
   footerRight?: ReactNode | undefined
@@ -91,7 +93,7 @@ export interface MemeCardProps {
   size?: MemeCardSize | undefined
 }
 
-export function MemeCard({ model, footer, footerRight, size = 'default' }: MemeCardProps) {
+export function MemeCard({ model, subTitle, footer, footerRight, size = 'default' }: MemeCardProps) {
   const scale = SIZES[size]
   return (
     <article
@@ -128,6 +130,7 @@ export function MemeCard({ model, footer, footerRight, size = 'default' }: MemeC
           <span data-slot="meme-title" className={cn(TITLE, scale.title)} id={model.titleId}>
             {model.title}
           </span>
+          {subTitle}
           <span data-slot="meme-stats" className={STATS}>
             <span aria-hidden="true">
               {model.viewsLabel !== null && <>👁️ {model.viewsLabel} · </>}🔁{' '}

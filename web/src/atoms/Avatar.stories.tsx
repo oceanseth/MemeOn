@@ -105,14 +105,16 @@ export const Row: Story = {
   },
 }
 
-/** The four sizes, squircle and monogram on the ultraviolet fill. */
+/** Profile and chrome sizes, squircle and monogram on the ultraviolet fill. */
 export const Sizes: Story = {
   render: () => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
       <Avatar name="lou" size="sm" />
       <Avatar name="oxfern" size="header" />
       <Avatar name="ada" size="md" />
       <Avatar name="CyberSeth" size="lg" />
+      <Avatar name="pushrax" size="public" />
+      <Avatar name="Lou" size="hero" />
     </div>
   ),
 }

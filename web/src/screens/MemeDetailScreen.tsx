@@ -8,7 +8,7 @@ import { MemeCard } from '../atoms/MemeCard'
 import { Notice } from '../atoms/Notice'
 import { PageContainer } from '../atoms/PageContainer'
 import { PageHead } from '../atoms/PageHead'
-import { Panel } from '../atoms/Panel'
+import { Panel, PanelHeading } from '../atoms/Panel'
 import { Skeleton } from '../atoms/Skeleton'
 import { Spinner } from '../atoms/Spinner'
 import { cn } from '../lib/cn'
@@ -150,22 +150,22 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           <MemeCard
             model={detail.card}
             size="lg"
-            footer={<>
+            subTitle={
               <p
                 data-slot="detail-tier-line"
                 className={cn(heroTierLine, isPublic ? 'text-link' : 'text-success-text')}
               >
                 {detail.tierLine}
               </p>
-              <TierLadder model={detail.tierLadder} hype={detail.tierHype} />
-            </>}
+            }
+            footer={<TierLadder model={detail.tierLadder} hype={detail.tierHype} />}
           />
         </div>
 
         <div data-slot="detail-rail" className={cn(rail, railPlacement)}>
           {detail.signedOut && (
             <Panel>
-              <h2>{detail.signedOut.title}</h2>
+              <PanelHeading size="hero" className="mb-0">{detail.signedOut.title}</PanelHeading>
               <p className={caption}>{detail.signedOut.body}</p>
               <div className={panelRow}>
                 {/* the single bubblegum on a public card */}
@@ -196,9 +196,9 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           </Panel>
 
 
-          {detail.listing ? (
+          {detail.listing && !detail.signedOut ? (
             <Panel>
-              <h2>{detail.listing.saleLabel}</h2>
+              <PanelHeading size="hero" className="mb-0">{detail.listing.saleLabel}</PanelHeading>
               {detail.listing.showBuy && detail.listing.balanceLabel && (
                 <p className={caption}>{detail.listing.balanceLabel}</p>
               )}
@@ -220,7 +220,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
             </Panel>
           ) : detail.list.show ? (
             <Panel>
-              <h2>List shares for sale</h2>
+              <h3>List shares for sale</h3>
               <p className={caption}>Name your price — anyone in the market can pick up a slice of the joke.</p>
               <div className={cn(panelRow, 'items-end')}>
                 <Field>
@@ -241,7 +241,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
 
           {detail.actions.length > 0 && (
             <Panel>
-              <h2>Card controls</h2>
+              <h3>Card controls</h3>
               <p className={caption}>What you hold decides what you can do with this card.</p>
               <div className={panelRow}>
                 {detail.actions.map((action) => (
@@ -265,7 +265,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           >
             {detail.sources.length > 0 && (
               <Panel>
-                <h2>📡 Where it’s spreading</h2>
+                <h3>📡 Where it’s spreading</h3>
                 <div className={rowList}>
                   {detail.sources.map((source) => (
                     <div key={source.id} className={personRow}>
@@ -284,7 +284,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           </div>
 
           <Panel>
-            <h2>{detail.capTableTitle}</h2>
+            <h3>{detail.capTableTitle}</h3>
             <div className={rowList}>
               {detail.capTable.map((holder) => (
                 <div key={holder.userId} className={cn(personRow, 'tabular-nums')}>

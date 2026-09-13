@@ -346,10 +346,8 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
 
   const signedOut: DetailSignedOutModel | null = user ? null : {
     title: copy.signedOut.title,
-    /* Lead with the listing offer when there is one. */
-    body: meme.listing && meme.listing.shares > 0
-      ? copy.signedOut.bodyListed(meme.listing.shares, meme.listing.pricePerShare)
-      : copy.signedOut.body,
+    /* Listing price lives on the hero card footer — don't repeat it in this panel. */
+    body: copy.signedOut.body,
     loginLabel: context.loggingIn ? copy.signedOut.redirecting : copy.signedOut.login,
     loginButtonProps: {
       onClick: () => { send({ type: 'LOGIN_START' }); void beginMaskyLogin().catch((error) => send({ type: 'LOGIN_FAIL', err: error instanceof Error ? error.message : copy.errors.login })) },

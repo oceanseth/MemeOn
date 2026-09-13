@@ -41,6 +41,7 @@ export const HeadingSizes: Story = {
       <>
         <PanelHeading>Panel default — intro</PanelHeading>
         <PanelHeading size="section">Section card — intro</PanelHeading>
+        <PanelHeading size="hero">Market hero card — card-heading</PanelHeading>
         <PanelHeading size="card">Mint card — card-title</PanelHeading>
         <PanelHeading size="composer">Trade composer — title</PanelHeading>
         <h3>Bare h3 — still intro</h3>

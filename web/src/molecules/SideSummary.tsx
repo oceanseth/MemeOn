@@ -13,8 +13,8 @@ const LEGEND = 'mt-0 mb-2 font-sans text-caption font-bold tracking-normal text-
 
 const LINE = 'flex items-center gap-2'
 
-/** 30px thumb, radius 9, 2px line ring. */
-const THUMB = 'size-7.5 shrink-0 rounded-[9px] border-2 border-line bg-surface-raised object-cover'
+/** 36px thumb, radius 9, 2px line ring — board 30px, bumped for legibility in the well. */
+const THUMB = 'size-9 shrink-0 rounded-[9px] border-2 border-line bg-surface-raised object-cover'
 
 const MEME_LINE = 'min-w-0 font-sans text-caption font-medium text-ink'
 const COINS = 'font-sans text-small font-medium text-ink tabular-nums'
