@@ -66,7 +66,12 @@ export function DevelopersScreen({
         API keys act as <strong className="font-bold text-ink">your account</strong>: they can mint
         memes, gift shares (including to users your own site knows only by Masky avatar id), trade,
         and read everything you can. Full endpoint reference lives in{' '}
-        <a href="/skill.md" target="_blank" rel="noreferrer">
+        <a
+          className="text-link underline underline-offset-[3px] decoration-1"
+          href="/skill.md"
+          target="_blank"
+          rel="noreferrer"
+        >
           skill.md
         </a>{' '}
         (also at <code>/.well-known/skill.md</code> for agents). Treat keys like passwords.

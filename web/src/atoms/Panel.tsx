@@ -15,7 +15,7 @@ export interface PanelHeadingProps extends HTMLAttributes<HTMLHeadingElement> {
 
 /** Panel head; `data-slot` opts out of `Panel`'s default h3/h4 styling. */
 export function PanelHeading({ size = 'intro', as, className, children, ...rest }: PanelHeadingProps) {
-  const Tag = as ?? 'h3'
+  const Tag = as ?? 'h2'
   return (
     <Tag
       data-slot="panel-heading"
