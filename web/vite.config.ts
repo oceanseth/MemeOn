@@ -43,6 +43,10 @@ export default defineConfig({
   },
   test: {
     projects: [{
+      // node environment, no plugins; the `@` alias is restated because this project does not extend the root config
+      resolve: {
+        alias: { '@': path.resolve(dirname, 'src') },
+      },
       test: {
         name: 'unit',
         environment: 'node',

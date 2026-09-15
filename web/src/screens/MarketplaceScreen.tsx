@@ -10,7 +10,11 @@ import { FilterBar, PageHead } from '@/atoms/page-head'
 import { Select } from '@/atoms/select'
 import { SkeletonCard } from '@/atoms/skeleton'
 import type { MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
-import { cardGrid, cardSlot, filterRow, marketControls, marketDisclosures, marketFilters, marketToolbar, mintLink, resultsRow, searchWell, sectionHeading, summaryRow } from '../lib/marketplaceScreenLayout'
+import {
+  cardGrid, cardSlot, chipButton, endOfList, filterRow, marketControls, marketDisclosures,
+  marketFilters, marketToolbar, mintLink, resultsRow, searchGlyph, searchInput, searchWell,
+  sectionHeading, summaryRow, tierPill,
+} from '../lib/marketplaceScreenLayout'
 import { SortChips } from '@/molecules/sort-chips'
 
 /** Marketplace list as a function of its engine-provided model. */
@@ -38,8 +42,8 @@ export function MarketplaceScreen({
       <div data-slot="market-controls" className={marketControls}>
         <div data-slot="market-toolbar" className={marketToolbar}>
           <span className={searchWell}>
-            <Icon name="magnifying-glass" size={20} className="pointer-events-none absolute top-1/2 left-4.5 -translate-y-1/2 text-muted-foreground" />
-            <Input type="search" className="w-full pl-12.5" {...queryInputProps} />
+            <Icon name="magnifying-glass" size={20} className={searchGlyph} />
+            <Input type="search" className={searchInput} {...queryInputProps} />
           </span>
           {/* the phone's two disclosure pills: "you are here" on the left, the panel toggle right.
               While the panel is open this pill and the media row's own "All memes" tab are both on
@@ -74,7 +78,7 @@ export function MarketplaceScreen({
               ))}
             </div>
             <Button {...filterTabs.listed.buttonProps}>{filterTabs.listed.label}</Button>
-            <Select items={tierSelectItems} className="h-control rounded-lg material-raised px-4.5 font-semibold lift" {...tierSelectProps} />
+            <Select items={tierSelectItems} className={tierPill} {...tierSelectProps} />
           </FilterBar>
           <SortChips model={sortChips} />
         </div>
@@ -85,7 +89,7 @@ export function MarketplaceScreen({
         <div data-slot="market-summary" className={summaryRow} {...statusProps}>
           <span>{resultsLabel}</span>
           {clearFiltersProps && !showEmpty && (
-            <Button className="h-9 px-3 text-micro pointer-coarse:min-h-hit" {...clearFiltersProps}>{clearFiltersLabel}</Button>
+            <Button className={chipButton} {...clearFiltersProps}>{clearFiltersLabel}</Button>
           )}
         </div>
       </div>
@@ -129,7 +133,7 @@ export function MarketplaceScreen({
             </EmptyActions>
           </div>
         )}
-        {endOfListLabel && <PageState className="pt-8 text-small">{endOfListLabel}</PageState>}
+        {endOfListLabel && <PageState className={endOfList}>{endOfListLabel}</PageState>}
       </> : null}
     </PageContainer>
   )

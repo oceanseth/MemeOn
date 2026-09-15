@@ -56,10 +56,7 @@ const inlineLink = 'text-link underline underline-offset-3 decoration-1'
 const heroTierLine = 'm-0 text-caption font-bold'
 
 const ladderTrack = 'mt-2 h-track overflow-hidden rounded-full bg-muted'
-const ladderFill = cn(
-  'h-full w-(--fill) rounded-full',
-  'bg-linear-to-r from-brand via-primary to-brand',
-)
+const ladderFill = cn('h-full w-(--fill) rounded-full bg-linear-to-r from-brand via-primary to-brand')
 
 /** Where this card sits on the rarity ladder, and the tier's own line of hype under it. */
 function TierLadder({ model, hype }: { model: DetailTierLadderModel; hype: string }) {

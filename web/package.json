@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "lint:ds": "oxlint --max-warnings 141 src",
+    "lint:ds": "oxlint --max-warnings 126 src",
     "check-tiers": "node scripts/check-tiers.mjs src",
     "check-copy": "node scripts/check-copy.mjs src",
     "typecheck": "tsc",

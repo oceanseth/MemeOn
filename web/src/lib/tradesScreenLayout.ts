@@ -12,6 +12,9 @@ export const composeGrid = cn(
   'xl:[&>*:not([data-slot=fieldset])]:col-span-full',
 )
 
+/** Composer legends at intro size, not micro caps. */
+export const composeLegend = cn('mb-2.5 text-intro font-semibold tracking-normal text-foreground normal-case')
+
 /** A stack of cards, evenly spaced. */
 export const rowList = cn('flex flex-col gap-3.5')
 
