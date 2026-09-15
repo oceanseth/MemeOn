@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, within } from 'storybook/test'
+import { termsCopy as copy } from '../copy/terms'
+import { buildTermsScreenModel } from '../lib/termsModel'
 import { TermsScreen } from './TermsScreen'
 
 const phone = {
@@ -15,6 +17,7 @@ const phone = {
 const meta = {
   title: 'Screens/TermsScreen',
   component: TermsScreen,
+  args: { model: buildTermsScreenModel() },
   decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
 } satisfies Meta<typeof TermsScreen>
 
@@ -25,30 +28,30 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // every section is citable, and the on-this-page index reaches all eight
-    const toc = canvas.getByRole('navigation', { name: 'On this page' })
+    const toc = canvas.getByRole('navigation', { name: copy.tocLabel })
     await expect(within(toc).getAllByRole('link')).toHaveLength(8)
-    await expect(canvas.getByRole('heading', { name: 'Claims and takedowns' })).toHaveAttribute(
+    await expect(canvas.getByRole('heading', { name: copy.claimsAndTakedowns.heading })).toHaveAttribute(
       'id',
       'claims-and-takedowns',
     )
     // the named destinations are real links, not prose
-    await expect(canvas.getByRole('link', { name: 'the in-app claim flow' })).toHaveAttribute(
+    await expect(canvas.getByRole('link', { name: copy.claimsAndTakedowns.claimFlow.text })).toHaveAttribute(
       'href',
-      '/marketplace',
+      copy.claimsAndTakedowns.claimFlow.to,
     )
-    await expect(canvas.getByRole('link', { name: 'Discord’s terms' })).toHaveAttribute(
+    await expect(canvas.getByRole('link', { name: copy.thirdPartyServices.discordTerms.text })).toHaveAttribute(
       'href',
-      'https://discord.com/terms',
+      copy.thirdPartyServices.discordTerms.href,
     )
     // the takedown mailto arrives routable
-    await expect(canvas.getAllByRole('link', { name: 'seth@voicecert.com' })[0]).toHaveAttribute(
+    await expect(canvas.getAllByRole('link', { name: copy.claimsAndTakedowns.email })[0]).toHaveAttribute(
       'href',
-      'mailto:seth@voicecert.com?subject=MemeOn%20takedown%20request',
+      `mailto:${copy.claimsAndTakedowns.email}?subject=${encodeURIComponent(copy.claimsAndTakedowns.emailSubject)}`,
     )
     // the document ends on a route forward, not an orphan address
-    await expect(canvas.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute(
+    await expect(canvas.getByRole('link', { name: copy.crossLink.label })).toHaveAttribute(
       'href',
-      '/privacy',
+      copy.crossLink.to,
     )
   },
 }

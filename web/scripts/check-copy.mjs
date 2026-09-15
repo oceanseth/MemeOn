@@ -4,7 +4,7 @@
  *
  *   node scripts/check-copy.mjs [srcDir] [--update] [--list] [--baseline=<file>]
  *
- * Counts copy-like string literals per engine file (hooks/, lib/*Model.ts,
+ * Counts copy-like string literals per engine file (hooks/, screens/, lib/*Model.ts,
  * lib/createMemeModel/) and compares them with scripts/copy-baseline.json.
  * A file may only match or drop below its baseline; a new file starts at 0.
  * `--update` rewrites the baseline after a drop and refuses to raise any count,
@@ -37,6 +37,7 @@ const isTestLike = (name) => /\.(test|spec|stories|runtime)\./.test(name)
 const inScope = (sourcePath) => {
   if (!/\.tsx?$/.test(sourcePath) || isTestLike(sourcePath)) return false
   if (sourcePath.startsWith("hooks/")) return true
+  if (sourcePath.startsWith("screens/")) return true
   if (/^lib\/[^/]*Model\.ts$/.test(sourcePath)) return true
   return sourcePath.startsWith("lib/createMemeModel/")
 }
@@ -100,7 +101,7 @@ const countCopyLiterals = (file) => {
 }
 
 const counts = {}
-for (const file of [...walk(join(src, "hooks")), ...walk(join(src, "lib"))]) {
+for (const file of [...walk(join(src, "hooks")), ...walk(join(src, "lib")), ...walk(join(src, "screens"))]) {
   const sourcePath = toSourcePath(file)
   if (!inScope(sourcePath)) continue
   const hits = countCopyLiterals(file)

@@ -3,15 +3,39 @@ import { sharedCopy } from './shared'
 
 /** Every string the Trades screen spells itself; the trade cards read `lib/tradeCardModel`. */
 export const tradesCopy = {
+  pageTitle: 'Trade',
   newTrade: 'Propose a trade',
   closeComposer: sharedCopy.close,
   loading: 'Loading trades…',
+  retry: sharedCopy.tryAgain,
+  noMeme: '— braincells only, no meme —',
+  lists: {
+    openHeading: 'Open proposals',
+    openEmpty: 'Nothing pending. Propose something outrageous.',
+    historyHeading: 'History',
+    historyEmpty: 'No trade history yet.',
+  },
   /** "waiting" is already the state, not a countable noun — the number is the only plural */
   openCount: (count: number) => `${count} waiting`,
   /** an id that never resolves settles here, so a line stops shimmering and never shows a raw key */
   retiredMemeTitle: 'a retired meme',
   memeTierLabel: (name: string, rarity: string) => `${name} · ${rarity}`,
   composer: {
+    heading: 'New trade',
+    intro: 'Build a fair-ish deal with your people.',
+    noFriends: 'Trading needs a friend first.',
+    findFriends: 'Find your people',
+    tradeWith: 'Trade with',
+    pickFriend: 'Pick a friend…',
+    youGiveLegend: 'You give',
+    youGiveBinder: 'You give (from your binder)',
+    sharesToGive: 'Shares to give',
+    braincellsAdd: 'Braincells you add',
+    youWantLegend: 'You want',
+    youWantMemes: 'You want (their memes)',
+    sharesToWant: 'Shares you want',
+    braincellsWant: 'Braincells you want',
+    proposeCaption: 'They get a notification — nothing moves until they accept.',
     binderOption: (title: string, held: number) => `${title} (you hold ${held})`,
     offerSharesHint: (held: number) => `you hold ${held}`,
     offerCoinsHint: (available: number) => `${braincells(available)} available`,

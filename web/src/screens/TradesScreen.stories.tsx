@@ -27,25 +27,48 @@ const memeNames: TradeMemeInfoMap = {
 }
 const closedDialog = buildConfirmDialogModel({ open: false, title: '', message: '', onConfirm: noop, onCancel: noop })
 const empty: TradesScreenModel = {
-  phase: 'empty', newTradeButtonLabel: copy.newTrade, newTradeButtonProps: { onClick: noop, 'aria-expanded': false, 'aria-controls': 'trade-composer' },
+  phase: 'empty', pageTitle: copy.pageTitle, newTradeButtonLabel: copy.newTrade, newTradeButtonProps: { onClick: noop, 'aria-expanded': false, 'aria-controls': 'trade-composer' },
   compose: null, open: [], openCountLabel: null, history: [],
   msg: null, noticeProps: { role: 'status', 'aria-live': 'polite' },
   err: null, errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' }, showErrorNotice: false,
-  showError: false, retryButtonProps: { onClick: noop },
+  showError: false, retryButtonProps: { onClick: noop }, retryLabel: copy.retry,
   showLoading: false, loadingProps: { role: 'status', 'aria-live': 'polite' }, loadingLabel: copy.loading,
-  showLists: true, confirmDialog: closedDialog,
+  showLists: true, openHeading: copy.lists.openHeading, openEmptyMessage: copy.lists.openEmpty,
+  historyHeading: copy.lists.historyHeading, historyEmptyMessage: copy.lists.historyEmpty,
+  confirmDialog: closedDialog,
 }
 const compose: TradeComposerModel = {
   formProps: { id: 'trade-composer', onSubmit: (event) => { event.preventDefault(); composerActions.submit() } },
   noFriends: false,
-  friendSelectProps: { value: '', onValueChange: (value: string | null) => composerActions.friend(value) }, friends: [friendAccepted],
+  noFriendsMessage: copy.composer.noFriends,
+  findFriendsLinkProps: { to: '/friends' },
+  findFriendsLabel: copy.composer.findFriends,
+  heading: copy.composer.heading,
+  intro: copy.composer.intro,
+  tradeWithLabel: copy.composer.tradeWith,
+  friendSelectProps: { value: '', onValueChange: (value: string | null) => composerActions.friend(value) },
+  friendSelectItems: [{ value: '', label: copy.composer.pickFriend }, { value: friendAccepted.sub, label: friendAccepted.name }],
+  youGiveLegend: copy.composer.youGiveLegend,
+  youGiveBinderLabel: copy.composer.youGiveBinder,
   offerMemeSelectProps: { value: '', onValueChange: (value: string | null) => composerActions.offerMeme(value) },
-  binderOptions: [{ id: giftablePaper.id, label: copy.composer.binderOption(giftablePaper.title, giftablePaper.myShares ?? 0) }], showOfferShares: true,
-  offerSharesInputProps: { value: 5, min: 1, max: 12, onChange: (event: ChangeEvent<HTMLInputElement>) => composerActions.offerShares(Number(event.target.value)) }, offerSharesHint: copy.composer.offerSharesHint(12),
-  offerCoinsInputProps: { value: 0, min: 0, max: meLou.coins, onChange: (event: ChangeEvent<HTMLInputElement>) => composerActions.offerCoins(Number(event.target.value)) }, offerCoinsHint: copy.composer.offerCoinsHint(meLou.coins),
-  askMemeSelectProps: { value: '', onValueChange: (value: string | null) => composerActions.askMeme(value) }, theirMemeOptions: [{ id: silverMeme.id, label: silverMeme.title }], showAskShares: true,
+  offerMemeSelectItems: [{ value: '', label: copy.noMeme }, { value: giftablePaper.id, label: copy.composer.binderOption(giftablePaper.title, giftablePaper.myShares ?? 0) }],
+  showOfferShares: true,
+  sharesToGiveLabel: copy.composer.sharesToGive,
+  offerSharesInputProps: { value: 5, min: 1, max: 12, onChange: (event: ChangeEvent<HTMLInputElement>) => composerActions.offerShares(Number(event.target.value)) },
+  offerSharesHint: copy.composer.offerSharesHint(12),
+  braincellsAddLabel: copy.composer.braincellsAdd,
+  offerCoinsInputProps: { value: 0, min: 0, max: meLou.coins, onChange: (event: ChangeEvent<HTMLInputElement>) => composerActions.offerCoins(Number(event.target.value)) },
+  offerCoinsHint: copy.composer.offerCoinsHint(meLou.coins),
+  youWantLegend: copy.composer.youWantLegend,
+  youWantMemesLabel: copy.composer.youWantMemes,
+  askMemeSelectProps: { value: '', onValueChange: (value: string | null) => composerActions.askMeme(value) },
+  askMemeSelectItems: [{ value: '', label: copy.noMeme }, { value: silverMeme.id, label: silverMeme.title }],
+  showAskShares: true,
+  sharesToWantLabel: copy.composer.sharesToWant,
   askSharesInputProps: { value: 5, min: 1, max: 100, onChange: (event: ChangeEvent<HTMLInputElement>) => composerActions.askShares(Number(event.target.value)) },
+  braincellsWantLabel: copy.composer.braincellsWant,
   askCoinsInputProps: { value: 0, min: 0, onChange: (event: ChangeEvent<HTMLInputElement>) => composerActions.askCoins(Number(event.target.value)) },
+  proposeCaption: copy.composer.proposeCaption,
   error: null, errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' }, proposeButtonLabel: copy.newTrade, proposeButtonProps: { onClick: composerActions.propose, disabled: false },
 }
 const openTrade = buildTradeCardModel({ trade: proposedTrade, meSub: meLou.sub, memeNames, onRespond: noop, now: NOW })
@@ -99,7 +122,7 @@ export const ComposingEmptyProposal: Story = {
 }
 /** no accepted friends: the form has nothing to work with, so it says so */
 export const ComposingNoFriends: Story = {
-  args: { phase: 'composing', newTradeButtonLabel: copy.closeComposer, newTradeButtonProps: { onClick: noop, 'aria-expanded': true, 'aria-controls': 'trade-composer' }, compose: { ...compose, noFriends: true, friends: [] } },
+  args: { phase: 'composing', newTradeButtonLabel: copy.closeComposer, newTradeButtonProps: { onClick: noop, 'aria-expanded': true, 'aria-controls': 'trade-composer' }, compose: { ...compose, noFriends: true, friendSelectItems: [{ value: '', label: copy.composer.pickFriend }] } },
 }
 export const Acting: Story = { args: { phase: 'acting', open: [buildTradeCardModel({ trade: proposedTrade, meSub: 'not-the-sender', memeNames, onRespond: noop, busyTradeId: proposedTrade.id, busyAction: 'accept', now: NOW })] } }
 /** the one irreversible action on the surface restates the deal before it fires */

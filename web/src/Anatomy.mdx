@@ -17,7 +17,7 @@ or moving a component. `pnpm run check-tiers` runs recursively and must pass;
 | Tier | Folder | What lives there | Owns state? |
 |---|---|---|---|
 | **Atoms** | `src/atoms/` | `Avatar` (`sm`/`header`/`md`/`lg`), `Badge`, `Button` (`pressed`/`aria-pressed` toggle state), `Checkbox`, `EmptyState` (additive `tone`), `Field`, `Fieldset`, `Icon`, `Input` (its `controlChrome` is shared by `Select` and `Textarea`), `MemeCard` (plus `tierFrameClasses` from `foil.ts`, `memeCardSubClasses`; `footer` and `footerRight` slots), `Notice`, `PageContainer`, `PageHead`, `Panel` (+ `PanelHeading`: `intro`/`section` share intro · `card` card-title · `composer` title), `Select`, `Skeleton`, `Spinner`, `Textarea`, `TierChip` | No |
-| **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `HeroVideo`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `TradeCard` (`give`/`get`, not `offer`/`ask`) | No |
+| **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `HeroVideo`, `LegalDocument`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `TradeCard` (`give`/`get`, not `offer`/`ask`) | No |
 | **Organisms** | `src/organisms/` | `AppShell` (slots `sidebar` / `contextLine` / `headerEnd` / `quest` / `bottomNav`), `MemeplexPanel` | No |
 | **Screens** | `src/screens/` | One model object per route/chrome surface | No |
 | **Views** | `src/views/` | Engine wired to screen; `observer` wrap; `AppView` is the route switch | Via hooks |
@@ -49,8 +49,8 @@ Beside the tiers, four folders are the engine side:
 | `DevelopersScreen` | `useDevelopersScreen()` | `DevelopersScreenModel` | `loading` \| `ready` \| `empty` \| `error` |
 | `SettingsScreen` | `useSettingsScreen()` | `SettingsScreenModel` | — (no machine: reads `useAuth()` and `useTheme()` only) |
 | `AuthStatusScreen` | `useAuthCallbackScreen()` · `useMobileAuthForwardScreen()` | `AuthStatusScreenModel` | `working` \| `error` (no machine: one effect each — the OAuth code exchange, the `memeon://` forward) |
-| `PrivacyScreen` | none (static copy) | — | — |
-| `TermsScreen` | none (static copy) | — | — |
+| `PrivacyScreen` | `buildPrivacyScreenModel()` in `lib/privacyModel.ts` | `LegalDocumentModel` (`lib/legalDocumentModel.ts`: prose as `paragraph` / `list` blocks of plain inline segments; `LegalDocument` renders them) | — (static copy; no machine) |
+| `TermsScreen` | `buildTermsScreenModel()` in `lib/termsModel.ts` | `LegalDocumentModel` | — (static copy; no machine) |
 
 The table lists declared machine phases, including transient phases and states
 represented only by prop fixtures. In the reachable flows, initial list failures
@@ -149,9 +149,9 @@ touch four.
 | Set a length (height, padding, gap, width) | a role token when the boards repeat it by role — `h-control`, `px-control-x`, `gap-control-gap`, `size-icon`, `p-gutter`, `h-field`, `size-control-sm`, `w-nav-item`, `max-w-measure`, `max-w-card`, `rounded-band` / `-well` / `-segment` / `-control-sm` (`index.css` `--spacing-*`, `--radius-*`, `--container-*`); otherwise a grid step (`mt-2.5`, `p-5.5`, `py-3.25`). No `h-[46px]`; `[…]` is for `calc()`, `env()`, `%` and `ch` only | a new role name goes in `index.css` **and** `lib/cn.ts` (`theme.spacing` / `radius` / `container`) with a `cn.test.ts` case |
 
 `pnpm run check` is the whole gate (tiers, copy, contrast, layers, proxy, unit, runtime,
-stories). `check-copy` is a ratchet: it counts copy-like literals still spelled in `hooks/`
-and the `lib/*Model.ts` builders against `scripts/copy-baseline.json`, and a file may only
-match or fall below its number (`--list` names the strings, `--update` locks a drop in;
+stories). `check-copy` is a ratchet: it counts copy-like literals still spelled in `hooks/`,
+`screens/`, and the `lib/*Model.ts` builders against `scripts/copy-baseline.json`, and a file
+may only match or fall below its number (`--list` names the strings, `--update` locks a drop in;
 it refuses to raise anything). `pnpm run storybook` (port 6006, MSW-backed) is where a state is verified.
 
 ## Soft Press additions (mo-263)

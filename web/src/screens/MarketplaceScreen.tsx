@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
-import { TIERS } from '@memeon/shared/tiers'
-import { Button, buttonClasses } from '../atoms/Button'
+import { Button } from '../atoms/Button'
 import { EmptyActions, EmptyState, PageState } from '../atoms/EmptyState'
 import { Icon } from '../atoms/Icon'
 import { Input } from '../atoms/Input'
@@ -8,85 +7,29 @@ import { MemeCard } from '../atoms/MemeCard'
 import { Notice } from '../atoms/Notice'
 import { PageContainer } from '../atoms/PageContainer'
 import { FilterBar, PageHead } from '../atoms/PageHead'
-import { Select, type SelectOption } from '../atoms/Select'
+import { Select } from '../atoms/Select'
 import { SkeletonCard } from '../atoms/Skeleton'
-import { cn } from '../lib/cn'
 import type { MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
+import {
+  cardGrid, cardSlot, chipButton, endOfList, filterRow, marketControls, marketDisclosures,
+  marketFilters, marketToolbar, mintLink, resultsRow, searchGlyph, searchInput, searchWell,
+  sectionHeading, summaryRow, tierPill,
+} from '../lib/marketplaceScreenLayout'
 import { SortChips } from '../molecules/SortChips'
-
-const TIER_ITEMS: readonly SelectOption[] = [
-  { value: '', label: 'All tiers' },
-  ...TIERS.map((tier) => ({ value: tier.key, label: tier.name })),
-]
-
-const INTRO = 'Find your next group-chat obsession.'
-const SECTION = 'The good stuff'
-
-/**
- * The control plate docks under the topbar while the grid scrolls. It bleeds only into the page
- * container's own 20px gutter (`-mx-5 px-5`). A phone has no vertical budget to pin filters,
- * so ≤720 the whole treatment is absent.
- */
-const marketControls = cn(
-  'flex flex-col gap-3.5 pt-0 pb-3.5',
-  /* it docks under the phone header (`--topbar-h`); at the shell breakpoint that height is 0, so
-     the plate takes the sidebar's own 20px inset instead of the viewport edge */
-  'lg:sticky lg:top-(--topbar-h) lg:z-(--z-sticky) lg:-mx-5 lg:px-5',
-  '2xl:top-5',
-  'lg:bg-[color-mix(in_oklab,var(--color-canvas)_92%,transparent)] lg:backdrop-blur-[10px]',
-)
-
-/** Search well, phone disclosure pills, and Mint — stacked on phone, one row on desktop. */
-const marketToolbar = 'flex flex-wrap items-center gap-3'
-
-/* search icon at 18px gutter → 50px input padding (18 + 20 + 12) */
-const searchWell = 'relative flex w-full min-w-0 flex-1 lg:max-w-135'
-const searchGlyph = 'pointer-events-none absolute top-1/2 left-control-x -translate-y-1/2 text-ink-muted'
-
-/** Toolbar Mint: bubblegum on phone, neutral raised on desktop (sidebar owns primary). */
-const mintLink = cn(
-  buttonClasses('primary'),
-  'w-full lg:w-51.5 lg:bg-surface-raised lg:text-ink',
-)
-
-/** The pre-ox/ui grid: 4-up ~262 at the 1108 column (`minmax(230px, 1fr)`), 2-up 166 on the phone. */
-const cardGrid = cn(
-  'm-0 grid list-none items-start gap-5 p-0',
-  'grid-cols-[repeat(auto-fill,minmax(230px,1fr))]',
-  'max-sm:grid-cols-2 max-sm:gap-gutter',
-)
-
-/**
- * Skip-rendering box around a card. `content-visibility` must not sit on the card itself — it
- * would clip the foil bloom, which the padding / negative-margin pair contains without moving the
- * grid track.
- */
-const cardSlot = cn(
-  '[content-visibility:auto] [contain-intrinsic-size:auto_360px]',
-  'pointer-events-none p-7.5 -m-7.5 [&>*]:pointer-events-auto',
-  'max-sm:p-5 max-sm:[margin:-20px]',
-)
-
-/** Results / Count: the section heading left, the live count right, on one baseline. */
-const resultsRow = 'mt-1 mb-gutter flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2'
-const sectionHeading = 'm-0 font-display text-title font-medium tracking-title text-ink'
-const summaryRow = 'flex flex-wrap items-center gap-2.5 text-small text-ink-muted'
-
-/**
- * A small button keeps an explicit height: the pill is 46 tall now, and padding no longer shrinks
- * it. 36 is the drawn size; a coarse pointer still gets the 44 a finger needs.
- */
-const chipButton = 'h-9 px-3 text-micro pointer-coarse:min-h-11'
-
-/** Tier filter as a raised pill — same material as neighbours, not a recessed form Select. */
-const tierPill = cn(
-  'h-control rounded-control bg-surface-raised px-control-x font-semibold shadow-raised',
-  '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px',
-  'motion-reduce:hover:translate-y-0!',
-)
 
 /** Marketplace list as a function of its engine-provided model. */
 export function MarketplaceScreen({
+  pageTitle,
+  intro,
+  sectionHeading: sectionTitle,
+  mintLabel,
+  allMemesPill,
+  allMemesPillA11y,
+  tierSelectItems,
+  clearFiltersLabel,
+  emptyHeading,
+  emptyBody,
+  errorHeading,
   cards, queryInputProps, filterTabs, tierSelectProps, sortChips,
   createLinkProps, filtersToggleProps, filtersToggleLabel, filtersPanelProps, statusProps,
   resultsLabel, clearFiltersProps, showLoading, showEmpty, showError, showGrid, showMore,
@@ -95,58 +38,58 @@ export function MarketplaceScreen({
 }: MarketplaceScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <PageHead level="h1" title="Marketplace" subtitle={INTRO} className="mb-3.5" />
+      <PageHead level="h1" title={pageTitle} subtitle={intro} className="mb-3.5" />
       <div data-slot="market-controls" className={marketControls}>
         <div data-slot="market-toolbar" className={marketToolbar}>
           <span className={searchWell}>
             <Icon name="magnifying-glass" size={20} className={searchGlyph} />
-            <Input type="search" className="w-full pl-12.5" {...queryInputProps} />
+            <Input type="search" className={searchInput} {...queryInputProps} />
           </span>
           {/* the phone's two disclosure pills: "you are here" on the left, the panel toggle right.
               While the panel is open this pill and the media row's own "All memes" tab are both on
               screen, so the one that actually does something says so in its name. */}
-          <div data-slot="market-disclosures" className="flex w-full gap-3 lg:hidden">
+          <div data-slot="market-disclosures" className={marketDisclosures}>
             <Button
               className="flex-1"
               pressed={!clearFiltersProps}
               {...(clearFiltersProps
-                ? { onClick: clearFiltersProps.onClick, 'aria-label': 'All memes, clear every filter' }
+                ? { onClick: clearFiltersProps.onClick, 'aria-label': allMemesPillA11y }
                 : {})}
             >
-              All memes
+              {allMemesPill}
             </Button>
             <Button className="flex-1" data-slot="market-filters-toggle" {...filtersToggleProps}>
               {filtersToggleLabel}
             </Button>
           </div>
-          <Link {...createLinkProps} className={mintLink}>＋ Mint a meme</Link>
+          <Link {...createLinkProps} className={mintLink}>{mintLabel}</Link>
         </div>
         {/* on phones the filter rows collapse behind the disclosure so the grid starts on the first screenful */}
         <div
           data-slot="market-filters"
-          className="flex flex-col gap-3 max-lg:data-[collapsed=true]:hidden"
+          className={marketFilters}
           {...filtersPanelProps}
         >
           {/* media, listed, and tier filters — pressed tab for the active filter */}
           <FilterBar className="gap-3">
-            <div {...filterTabs.mediaGroupProps} className="flex flex-wrap items-center gap-3">
+            <div {...filterTabs.mediaGroupProps} className={filterRow}>
               {filterTabs.media.map((tab) => (
                 <Button key={tab.key} {...tab.buttonProps}>{tab.label}</Button>
               ))}
             </div>
             <Button {...filterTabs.listed.buttonProps}>{filterTabs.listed.label}</Button>
-            <Select items={TIER_ITEMS} className={tierPill} {...tierSelectProps} />
+            <Select items={tierSelectItems} className={tierPill} {...tierSelectProps} />
           </FilterBar>
           <SortChips model={sortChips} />
         </div>
       </div>
       <div className={resultsRow}>
-        <h2 className={sectionHeading}>{SECTION}</h2>
+        <h2 className={sectionHeading}>{sectionTitle}</h2>
         {/* one status line: the count doubles as the live region, and the state card owns the error copy */}
         <div data-slot="market-summary" className={summaryRow} {...statusProps}>
           <span>{resultsLabel}</span>
           {clearFiltersProps && !showEmpty && (
-            <Button className={chipButton} {...clearFiltersProps}>Clear filters</Button>
+            <Button className={chipButton} {...clearFiltersProps}>{clearFiltersLabel}</Button>
           )}
         </div>
       </div>
@@ -158,7 +101,7 @@ export function MarketplaceScreen({
         </div>
       ) : showError ? (
         <EmptyState error>
-          <h2>Couldn't load the market</h2>
+          <h2>{errorHeading}</h2>
           <p>{errorMessage}</p>
           <EmptyActions>
             <Button {...retryButtonProps}>{retryLabel}</Button>
@@ -168,11 +111,11 @@ export function MarketplaceScreen({
         /* the count line above is already this surface's live region; a second one would
            announce the same fact twice */
         <EmptyState role="none">
-          <h2>Nothing here yet</h2>
-          <p>No memes match these filters. Be the change — mint one!</p>
+          <h2>{emptyHeading}</h2>
+          <p>{emptyBody}</p>
           {clearFiltersProps && (
             <EmptyActions>
-              <Button {...clearFiltersProps}>Clear filters</Button>
+              <Button {...clearFiltersProps}>{clearFiltersLabel}</Button>
             </EmptyActions>
           )}
         </EmptyState>
@@ -190,7 +133,7 @@ export function MarketplaceScreen({
             </EmptyActions>
           </div>
         )}
-        {endOfListLabel && <PageState className="pt-8 text-small">{endOfListLabel}</PageState>}
+        {endOfListLabel && <PageState className={endOfList}>{endOfListLabel}</PageState>}
       </> : null}
     </PageContainer>
   )

@@ -3,6 +3,19 @@ import { sharedCopy } from './shared'
 
 /** Every string the Marketplace screen shows. Keys name the role, not the content. */
 export const marketplaceCopy = {
+  pageTitle: 'Marketplace',
+  intro: 'Find your next group-chat obsession.',
+  sectionHeading: 'The good stuff',
+  mint: '＋ Mint a meme',
+  allMemesPill: 'All memes',
+  allMemesPillA11y: 'All memes, clear every filter',
+  allTiers: 'All tiers',
+  clearFilters: 'Clear filters',
+  empty: {
+    heading: 'Nothing here yet',
+    body: 'No memes match these filters. Be the change — mint one!',
+  },
+  errorHeading: "Couldn't load the market",
   search: {
     placeholder: 'Search memes or tags',
     label: 'Search memes, tags and creators',
