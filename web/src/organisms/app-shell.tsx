@@ -16,7 +16,7 @@ const FOCUS = FOCUS_RING
 /** A bypass block costs nothing until it is focused: it waits 60px above the page. */
 const SKIP_LINK = cn(
   'absolute -top-15 left-3 z-[calc(var(--z-header)+10)]',
-  'rounded-control bg-surface-raised px-4 py-2.5 text-ink no-underline shadow-raised',
+  'rounded-control bg-accent px-4 py-2.5 text-foreground no-underline shadow-raised',
   '[transition:top_var(--dur-base)_ease] motion-reduce:transition-none',
   'focus:top-3',
   FOCUS,
@@ -35,7 +35,7 @@ const SIDEBAR_COLUMN = 'hidden w-59 shrink-0 py-5 pl-5 2xl:block'
  */
 const SIDEBAR = cn(
   'sticky top-5 z-(--z-header) flex h-[calc(100dvh-40px)] w-54 flex-col overflow-y-auto [scrollbar-width:thin]',
-  'rounded-shell bg-surface shadow-raised',
+  'rounded-shell bg-card shadow-raised',
 )
 
 /**
@@ -60,7 +60,7 @@ const HEADER = cn(
   'flex items-center gap-2.5',
   'max-2xl:sticky max-2xl:top-0 max-2xl:z-(--z-header) max-2xl:min-h-16 max-2xl:py-1.25',
   'max-2xl:[padding-inline:max(20px,env(safe-area-inset-left))_max(20px,env(safe-area-inset-right))]',
-  'max-2xl:bg-[color-mix(in_oklab,var(--color-canvas)_85%,transparent)] max-2xl:backdrop-blur-md',
+  'max-2xl:bg-[color-mix(in_oklab,var(--color-background)_85%,transparent)] max-2xl:backdrop-blur-md',
   '2xl:gap-gutter',
 )
 const HEADER_APP = '2xl:mt-7.25 2xl:min-h-13.5 2xl:px-5'
@@ -70,7 +70,7 @@ const HEADER_PUBLIC = '2xl:px-5 2xl:py-8'
 /** The wordmark: Unbounded at the display weight, the circle mark beside it; sized per slot. */
 const WORDMARK = cn(
   'inline-flex shrink-0 items-center gap-2 whitespace-nowrap',
-  'font-display font-medium tracking-title text-ink no-underline',
+  'font-display font-medium tracking-title text-foreground no-underline',
   FOCUS,
 )
 const WORDMARK_SIZE = {
@@ -97,17 +97,17 @@ function Wordmark({ size, className }: { size: keyof typeof WORDMARK_SIZE; class
 /** Sidebar nav row: 192×48, radius 24, icon lane 22 + label 15/19; current = pressed + 600. */
 export const NAV_ROW = cn(
   'flex h-12 items-center gap-3 rounded-nav px-3.5',
-  'text-label font-medium text-ink no-underline',
+  'text-label font-medium text-foreground no-underline',
   '[transition:background_var(--dur-base)_ease,box-shadow_var(--dur-base)_ease] motion-reduce:transition-none',
-  'hover:bg-surface-raised',
-  'aria-[current=page]:bg-surface-pressed aria-[current=page]:font-semibold aria-[current=page]:shadow-pressed',
+  'hover:bg-accent',
+  'aria-[current=page]:bg-muted aria-[current=page]:font-semibold aria-[current=page]:shadow-pressed',
   FOCUS,
 )
 
 /** The chrome's one primary: bubblegum in light, sky in dark, raised, 46 tall. */
 export const PRIMARY_PILL = cn(
   'inline-flex h-control items-center justify-center gap-control-gap whitespace-nowrap rounded-control px-control-x',
-  'bg-action text-label font-semibold text-on-action no-underline shadow-raised',
+  'bg-primary text-label font-semibold text-primary-foreground no-underline shadow-raised',
   '[transition:transform_var(--dur-fast)_ease] motion-reduce:transition-none',
   '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px motion-reduce:hover:translate-y-0!',
   'pointer-coarse:active:translate-y-px',
@@ -117,10 +117,10 @@ export const PRIMARY_PILL = cn(
 /** Utility link: current page = 36px pressed pill. */
 export const UTILITY_LINK = cn(
   '-ml-3 inline-flex h-9 items-center rounded-field px-3',
-  'text-small font-medium text-ink no-underline',
+  'text-small font-medium text-foreground no-underline',
   '[transition:background_var(--dur-base)_ease] motion-reduce:transition-none',
-  'hover:bg-surface-raised',
-  'aria-[current=page]:bg-surface-pressed aria-[current=page]:font-bold aria-[current=page]:shadow-pressed',
+  'hover:bg-accent',
+  'aria-[current=page]:bg-muted aria-[current=page]:font-bold aria-[current=page]:shadow-pressed',
   'pointer-coarse:min-h-11',
   FOCUS,
 )
@@ -128,29 +128,29 @@ export const UTILITY_LINK = cn(
 /** Tab bar item: 62×44, radius 22, icon 22 over a 12px label; current = pressed + 700. */
 export const TAB_ITEM = cn(
   'flex h-11 w-nav-item shrink-0 flex-col items-center justify-center gap-nav-gap rounded-pill',
-  'text-micro leading-tight font-semibold text-ink no-underline',
-  'aria-[current=page]:bg-surface-pressed aria-[current=page]:font-bold aria-[current=page]:shadow-pressed',
+  'text-micro leading-tight font-semibold text-foreground no-underline',
+  'aria-[current=page]:bg-muted aria-[current=page]:font-bold aria-[current=page]:shadow-pressed',
   FOCUS,
 )
 
 /** The centre Mint item: the tab bar's single primary, raised in the action colour; pressed when current. */
 export const TAB_ITEM_PRIMARY = cn(
-  'bg-action text-on-action shadow-raised',
-  'aria-[current=page]:bg-action aria-[current=page]:text-on-action',
+  'bg-primary text-primary-foreground shadow-raised',
+  'aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground',
 )
 
 /** 370×80 at 10 from the bottom, fluid to the phone's width, radius 30, raised. */
 const TAB_BAR = cn(
   'fixed bottom-[calc(10px+env(safe-area-inset-bottom,0px))] left-1/2 z-(--z-header) -translate-x-1/2',
   'flex h-20 w-[calc(100%-20px)] max-w-92.5 items-center justify-around pb-3',
-  'rounded-tabbar bg-surface shadow-raised',
+  'rounded-tabbar bg-card shadow-raised',
   '2xl:hidden',
 )
 
 const FOOTER = cn(
-  'mt-12 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-line',
+  'mt-12 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-border',
   'px-5 pt-5.5 pb-[max(34px,env(safe-area-inset-bottom))]',
-  'text-caption text-ink-muted',
+  'text-caption text-muted-foreground',
   'max-2xl:flex-col max-2xl:items-center',
 )
 const FOOTER_APP = '2xl:px-5'
@@ -158,10 +158,10 @@ const FOOTER_PUBLIC = '2xl:px-5'
 
 /** Onest 13 ink-muted; the current page is bold ink (react-router's `aria-current` from NavLink). */
 const FOOTER_LINK = cn(
-  'text-ink-muted no-underline',
+  'text-muted-foreground no-underline',
   '[transition:color_var(--dur-base)_ease] motion-reduce:transition-none',
-  'hover:text-ink',
-  'aria-[current=page]:font-bold aria-[current=page]:text-ink',
+  'hover:text-foreground',
+  'aria-[current=page]:font-bold aria-[current=page]:text-foreground',
   'pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center',
   FOCUS,
 )
@@ -211,7 +211,7 @@ export function AppShell({ sidebar, contextLine, headerEnd, quest, bottomNav, ch
             <Wordmark size="header" className={app ? '2xl:hidden' : undefined} />
             {app && contextLine ? (
               <p
-                className="m-0 hidden min-w-0 truncate text-label font-medium text-ink-muted 2xl:block"
+                className="m-0 hidden min-w-0 truncate text-label font-medium text-muted-foreground 2xl:block"
                 data-slot="context-line"
               >
                 {contextLine}
@@ -224,7 +224,7 @@ export function AppShell({ sidebar, contextLine, headerEnd, quest, bottomNav, ch
           {quest}
           {children}
           <footer className={cn(FOOTER, app ? FOOTER_APP : FOOTER_PUBLIC)} data-slot="site-footer">
-            <span className="font-display text-card-title font-medium tracking-card-title text-ink">MemeOn</span>
+            <span className="font-display text-card-title font-medium tracking-card-title text-foreground">MemeOn</span>
             <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 2xl:ml-auto" aria-label="Footer">
               <NavLink to="/privacy" className={() => FOOTER_LINK}>
                 Privacy

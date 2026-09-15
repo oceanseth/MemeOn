@@ -13,7 +13,7 @@
    without moving the box. Both hosts of a frame — the tier ladder and the hero's trading-card pile
    — wear them. Selectors key off `data-slot`/`data-state`, so this file owns the whole effect
    including its own reduced-motion pause. The failed tint reads `currentColor`, which the screen
-   sets from the tier's own `--color-tier-<key>-frame` token. */
+   sets from the tier's own `--tier-<key>-frame` token. */
 @layer components {
   @keyframes landing-tier-shimmer {
     0% {
@@ -41,7 +41,7 @@
 
   [data-slot='tier-frame-slot'][data-state='error'],
   [data-slot='hero-card-slot'][data-state='error'] {
-    background: color-mix(in oklab, currentColor 18%, var(--color-surface-pressed));
+    background: color-mix(in oklab, currentColor 18%, var(--color-muted));
     box-shadow: inset 0 0 0 1px color-mix(in oklab, currentColor 45%, transparent);
   }
 

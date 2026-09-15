@@ -12,14 +12,14 @@ import './foil.css'
 export type MemeCardSize = 'default' | 'lg'
 
 const CARD = cn(
-  'group relative isolate self-start rounded-card bg-surface p-2 shadow-raised',
+  'group relative isolate self-start rounded-card bg-card p-2 shadow-raised',
   '@container',
   'transition-transform duration-(--dur-base) ease-[ease] motion-reduce:transition-none',
   'pointer-coarse:active:scale-[0.99]',
-  'has-[a:focus-visible]:outline-3 has-[a:focus-visible]:outline-focus',
+  'has-[a:focus-visible]:outline-3 has-[a:focus-visible]:outline-ring',
   'has-[a:focus-visible]:outline-offset-2',
   'contrast-more:has-[a:focus-visible]:outline-4',
-  'forced-colors:has-[a:focus-visible]:outline-[Highlight]',
+  'forced-colors:has-[a:focus-visible]:outline-fc-highlight',
 )
 
 const CARD_LIFT = cn(
@@ -30,15 +30,15 @@ const CARD_LIFT = cn(
 
 const INNER = 'relative flex h-full flex-col'
 
-const FRAME = 'foil-frame foil-media relative rounded-field bg-surface-pressed'
+const FRAME = 'foil-frame foil-media relative rounded-field bg-muted'
 
-const ART = 'block aspect-square w-full bg-surface-pressed object-contain'
+const ART = 'block aspect-square w-full bg-muted object-contain'
 
 const TOGGLE = cn(
   'absolute right-2 bottom-2 z-[2] inline-flex items-center justify-center',
   'size-8 p-0 pointer-coarse:size-11',
-  'cursor-pointer whitespace-nowrap text-label leading-none text-ink',
-  'rounded-chip bg-surface-raised shadow-raised',
+  'cursor-pointer whitespace-nowrap text-label leading-none text-foreground',
+  'rounded-chip bg-accent shadow-raised',
   '[transition:transform_var(--dur-fast)_ease,background_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
   '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px',
@@ -51,18 +51,18 @@ const CHIP_POS = 'absolute bottom-4 left-4 z-[2]'
 
 const META = 'flex flex-col'
 
-const TITLE = 'font-display font-medium tracking-card-title text-ink'
+const TITLE = 'font-display font-medium tracking-card-title text-foreground'
 
 const TITLE_HERO = 'text-title tracking-title'
 
-const STATS = 'flex items-center text-micro/normal text-ink-muted tabular-nums'
+const STATS = 'flex items-center text-micro/normal text-muted-foreground tabular-nums'
 
 const SUB = cn(
-  'flex items-start justify-between gap-2 text-micro/tight font-medium text-ink tabular-nums',
+  'flex items-start justify-between gap-2 text-micro/tight font-medium text-foreground tabular-nums',
   '@max-[220px]:flex-wrap @max-[220px]:gap-y-0.5',
 )
 
-const VALUE = 'text-small font-bold text-ink'
+const VALUE = 'text-small font-bold text-foreground'
 
 const RIGHT_SLOT = 'min-w-16 shrink-0 text-right [&>span]:whitespace-nowrap' // floor keeps footer lanes aligned
 

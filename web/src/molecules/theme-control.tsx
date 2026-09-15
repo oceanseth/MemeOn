@@ -26,7 +26,7 @@ const nextAfter = (value: ThemePreference) =>
   OPTIONS[(OPTIONS.findIndex((o) => o.value === value) + 1) % OPTIONS.length]!
 
 /** Segmented well: 184×40, pressed surface. */
-const WELL = 'inline-flex h-10 w-46 shrink-0 items-center gap-0.5 rounded-well bg-surface-pressed p-0.75 shadow-pressed'
+const WELL = 'inline-flex h-10 w-46 shrink-0 items-center gap-0.5 rounded-well bg-muted p-0.75 shadow-pressed'
 
 /**
  * Three equal segments, 34 tall, radius 17; the current one is raised and bold. On a coarse pointer
@@ -37,11 +37,11 @@ const WELL = 'inline-flex h-10 w-46 shrink-0 items-center gap-0.5 rounded-well b
 const SEGMENT = cn(
   'relative inline-flex h-control-sm min-w-0 flex-1 cursor-pointer items-center justify-center rounded-segment border-0 bg-transparent px-1',
   'pointer-coarse:before:absolute pointer-coarse:before:inset-x-0 pointer-coarse:before:-inset-y-1.25 pointer-coarse:before:content-[""]',
-  'text-micro font-semibold whitespace-nowrap text-ink-muted',
+  'text-micro font-semibold whitespace-nowrap text-muted-foreground',
   '[transition:background_var(--dur-base)_ease,color_var(--dur-base)_ease,box-shadow_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
-  'hover:text-ink',
-  'aria-pressed:bg-surface-raised aria-pressed:font-bold aria-pressed:text-ink aria-pressed:shadow-raised',
+  'hover:text-foreground',
+  'aria-pressed:bg-accent aria-pressed:font-bold aria-pressed:text-foreground aria-pressed:shadow-raised',
   FOCUS,
 )
 
@@ -52,7 +52,7 @@ const SEGMENT = cn(
  */
 const BUTTON = cn(
   'relative inline-flex size-control-sm shrink-0 cursor-pointer items-center justify-center rounded-control-sm border-0 p-0',
-  'bg-surface-raised text-[16px] leading-none text-ink shadow-raised',
+  'bg-accent text-[16px] leading-none text-foreground shadow-raised',
   'pointer-coarse:before:absolute pointer-coarse:before:-inset-1.25 pointer-coarse:before:content-[""]',
   FOCUS,
 )

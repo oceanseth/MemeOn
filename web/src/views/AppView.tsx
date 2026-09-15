@@ -82,7 +82,7 @@ function AuthSpinner() {
       {/* a labelled spinner row, never a bare spinner */}
       <div
         data-slot="loading-state"
-        className="flex items-center justify-center gap-2.5 px-5 py-15 text-small text-ink-muted"
+        className="flex items-center justify-center gap-2.5 px-5 py-15 text-small text-muted-foreground"
         role="status"
       >
         <Spinner />

@@ -40,7 +40,7 @@ const TRIGGER = cn(
 
 /** A raised card of 44px rows. */
 const POPUP = cn(
-  'min-w-52 rounded-card bg-surface p-2 shadow-pop outline-none',
+  'min-w-52 rounded-card bg-card p-2 shadow-pop outline-none',
   FOCUS,
 )
 
@@ -51,11 +51,11 @@ const POPUP = cn(
  */
 const ITEM = cn(
   'flex min-h-11 w-full cursor-pointer items-center rounded-field border-0 bg-transparent px-3',
-  'text-label font-medium text-ink no-underline select-none',
-  'data-highlighted:bg-surface-raised',
-  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:-outline-offset-2',
+  'text-label font-medium text-foreground no-underline select-none',
+  'data-highlighted:bg-accent',
+  'focus-visible:outline-3 focus-visible:outline-ring focus-visible:-outline-offset-2',
   'contrast-more:focus-visible:outline-4',
-  'forced-colors:focus-visible:outline-[Highlight]',
+  'forced-colors:focus-visible:outline-fc-highlight',
 )
 
 /**

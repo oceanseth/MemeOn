@@ -8,12 +8,12 @@ const BASE = cn(
 )
 
 const TONE_CLASSES: Record<BadgeTone, string> = {
-  neutral: 'bg-surface-pressed text-ink-muted',
-  action: 'bg-action text-on-action',
-  success: 'bg-success-surface text-success-text',
-  warning: 'bg-warning-surface text-warning-text',
-  error: 'bg-error-surface text-error-text',
-  info: 'bg-info-surface text-info-text',
+  neutral: 'bg-muted text-muted-foreground',
+  action: 'bg-primary text-primary-foreground',
+  success: 'bg-success text-success-foreground',
+  warning: 'bg-warning text-warning-foreground',
+  error: 'bg-error text-error-foreground',
+  info: 'bg-info text-info-foreground',
 }
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {

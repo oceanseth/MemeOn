@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
 import { cn } from './lib/cn'
+import '@/atoms/foil.css'
 
 /**
  * The Soft Press token sheet: every semantic colour, the two ramps, the seven tier chips, the two
@@ -11,69 +12,46 @@ import { cn } from './lib/cn'
  */
 
 const SEMANTIC: ReadonlyArray<{ token: string; bg: string; text?: string }> = [
-  { token: 'canvas', bg: 'bg-canvas' },
-  { token: 'canvas-alt', bg: 'bg-canvas-alt' },
-  { token: 'surface', bg: 'bg-surface' },
-  { token: 'surface-raised', bg: 'bg-surface-raised' },
-  { token: 'surface-pressed', bg: 'bg-surface-pressed' },
-  { token: 'ink', bg: 'bg-ink' },
-  { token: 'ink-muted', bg: 'bg-ink-muted' },
-  { token: 'line', bg: 'bg-line' },
+  { token: 'background', bg: 'bg-background', text: 'text-foreground' },
+  { token: 'card', bg: 'bg-card', text: 'text-card-foreground' },
+  { token: 'popover', bg: 'bg-popover', text: 'text-popover-foreground' },
+  { token: 'accent', bg: 'bg-accent', text: 'text-accent-foreground' },
+  { token: 'secondary', bg: 'bg-secondary', text: 'text-secondary-foreground' },
+  { token: 'muted', bg: 'bg-muted', text: 'text-muted-foreground' },
+  { token: 'foreground', bg: 'bg-foreground' },
+  { token: 'muted-foreground', bg: 'bg-muted-foreground' },
+  { token: 'border', bg: 'bg-border' },
+  { token: 'input', bg: 'bg-input' },
+  { token: 'ring', bg: 'bg-ring' },
   { token: 'link', bg: 'bg-link' },
-  { token: 'focus', bg: 'bg-focus' },
-  { token: 'action', bg: 'bg-action', text: 'text-on-action' },
-  { token: 'action-secondary', bg: 'bg-action-secondary', text: 'text-on-action-secondary' },
-  { token: 'success-surface', bg: 'bg-success-surface', text: 'text-success-text' },
-  { token: 'warning-surface', bg: 'bg-warning-surface', text: 'text-warning-text' },
-  { token: 'error-surface', bg: 'bg-error-surface', text: 'text-error-text' },
-  { token: 'info-surface', bg: 'bg-info-surface', text: 'text-info-text' },
-  { token: 'success-text', bg: 'bg-success-text' },
-  { token: 'warning-text', bg: 'bg-warning-text' },
-  { token: 'error-text', bg: 'bg-error-text' },
-  { token: 'info-text', bg: 'bg-info-text' },
-  { token: 'shadow', bg: 'bg-shadow' },
-  { token: 'highlight', bg: 'bg-highlight' },
-  { token: 'scrim', bg: 'bg-scrim' },
-  { token: 'brand-discord', bg: 'bg-brand-discord' },
+  { token: 'primary', bg: 'bg-primary', text: 'text-primary-foreground' },
+  { token: 'brand', bg: 'bg-brand', text: 'text-brand-foreground' },
+  { token: 'destructive', bg: 'bg-destructive', text: 'text-destructive-foreground' },
+  { token: 'success', bg: 'bg-success', text: 'text-success-foreground' },
+  { token: 'warning', bg: 'bg-warning', text: 'text-warning-foreground' },
+  { token: 'error', bg: 'bg-error', text: 'text-error-foreground' },
+  { token: 'info', bg: 'bg-info', text: 'text-info-foreground' },
+  { token: 'success-foreground', bg: 'bg-success-foreground' },
+  { token: 'warning-foreground', bg: 'bg-warning-foreground' },
+  { token: 'error-foreground', bg: 'bg-error-foreground' },
+  { token: 'info-foreground', bg: 'bg-info-foreground' },
+  { token: 'braincell', bg: 'bg-braincell' },
+  { token: 'overlay', bg: 'bg-overlay' },
 ]
 
-const BUBBLEGUM = [
-  ['50', 'bg-bubblegum-50'],
-  ['100', 'bg-bubblegum-100'],
-  ['200', 'bg-bubblegum-200'],
-  ['300', 'bg-bubblegum-300'],
-  ['500', 'bg-bubblegum-500'],
-  ['700', 'bg-bubblegum-700'],
-  ['800', 'bg-bubblegum-800'],
-  ['900', 'bg-bubblegum-900'],
-  ['950', 'bg-bubblegum-950'],
-] as const
-
-const ULTRAVIOLET = [
-  ['50', 'bg-ultraviolet-50'],
-  ['100', 'bg-ultraviolet-100'],
-  ['200', 'bg-ultraviolet-200'],
-  ['300', 'bg-ultraviolet-300'],
-  ['500', 'bg-ultraviolet-500'],
-  ['700', 'bg-ultraviolet-700'],
-  ['800', 'bg-ultraviolet-800'],
-  ['900', 'bg-ultraviolet-900'],
-  ['950', 'bg-ultraviolet-950'],
-] as const
-
 const TIERS: ReadonlyArray<{ key: string; label: string; chip: string; frame: string }> = [
-  { key: 'paper', label: 'Paper', chip: 'bg-tier-paper-chip text-tier-paper-chip-text', frame: 'border-tier-paper-frame' },
-  { key: 'silver', label: 'Silver', chip: 'bg-tier-silver-chip text-tier-silver-chip-text', frame: 'border-tier-silver-frame' },
-  { key: 'holo', label: 'Holo', chip: 'bg-tier-holo-chip text-tier-holo-chip-text', frame: 'border-tier-holo-frame' },
-  { key: 'chrome', label: 'Chrome', chip: 'bg-tier-chrome-chip text-tier-chrome-chip-text', frame: 'border-tier-chrome-frame' },
-  { key: 'gold', label: 'Gold', chip: 'bg-tier-gold-chip text-tier-gold-chip-text', frame: 'border-tier-gold-frame' },
+  { key: 'paper', label: 'Paper', chip: 'bg-tier-paper-chip text-tier-paper-chip-text', frame: 'tier-paper' },
+  { key: 'silver', label: 'Silver', chip: 'bg-tier-silver-chip text-tier-silver-chip-text', frame: 'tier-silver' },
+  { key: 'holo', label: 'Holo', chip: 'bg-tier-holo-chip text-tier-holo-chip-text', frame: 'tier-holo' },
+  { key: 'chrome', label: 'Chrome', chip: 'bg-tier-chrome-chip text-tier-chrome-chip-text', frame: 'tier-chrome' },
+  { key: 'gold', label: 'Gold', chip: 'bg-tier-gold-chip text-tier-gold-chip-text', frame: 'tier-gold' },
   {
     key: 'prismatic',
     label: 'Prismatic',
     chip: 'bg-tier-prismatic-chip bg-(image:--gradient-tier-prismatic-chip) text-tier-prismatic-chip-text',
-    frame: 'border-tier-prismatic-frame',
+    frame: 'tier-prismatic',
   },
-  { key: 'shiny', label: 'Shiny', chip: 'bg-tier-shiny-chip text-tier-shiny-chip-text', frame: 'border-tier-shiny-frame' },
+  { key: 'shiny', label: 'Shiny', chip: 'bg-tier-shiny-chip text-tier-shiny-chip-text', frame: 'tier-shiny' },
 ]
 
 const LADDER: ReadonlyArray<{ step: string; spec: string; className: string }> = [
@@ -146,7 +124,7 @@ function Swatch({ token, bg, text }: { token: string; bg: string; text?: string 
     <li className="flex flex-col gap-1">
       <div
         data-slot={`swatch-${token}`}
-        className={cn('flex h-14 items-center justify-center rounded-chip border border-line text-micro', bg, text)}
+        className={cn('flex h-14 items-center justify-center rounded-chip border border-border text-micro', bg, text)}
       >
         {text ? 'on it' : ''}
       </div>
@@ -155,26 +133,11 @@ function Swatch({ token, bg, text }: { token: string; bg: string; text?: string 
   )
 }
 
-function Ramp({ name, steps }: { name: string; steps: ReadonlyArray<readonly [string, string]> }) {
-  return (
-    <div className="flex flex-col gap-1">
-      <code className="w-fit text-micro">{name}</code>
-      <ul className="flex overflow-hidden rounded-chip border border-line" data-slot={`ramp-${name}`}>
-        {steps.map(([step, bg]) => (
-          <li key={step} className={cn('flex h-12 flex-1 items-end justify-center pb-1 text-micro', bg)}>
-            <span className="rounded-pill bg-surface px-1 text-ink">{step}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
-
 export function TokenSheet() {
   return (
-    <div className="mx-auto max-w-app bg-canvas p-6 text-ink" data-slot="token-sheet">
-      <h1 className="text-display tracking-display">Soft Press tokens</h1>
-      <p className="max-w-measure-sm text-intro text-ink-muted">
+    <div className="mx-auto max-w-app bg-background p-6 text-foreground" data-slot="token-sheet">
+      <h1 className="text-display tracking-display">Tokens</h1>
+      <p className="max-w-measure-sm text-intro text-muted-foreground">
         Every colour below is a <code>light-dark()</code> pair; the theme toolbar flips <code>data-theme</code> on{' '}
         <code>&lt;html&gt;</code> and the browser picks the arm. Same markup, both arms.
       </p>
@@ -186,26 +149,19 @@ export function TokenSheet() {
         ))}
       </ul>
 
-      <Heading>Ramps</Heading>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Ramp name="bubblegum" steps={BUBBLEGUM} />
-        <Ramp name="ultraviolet" steps={ULTRAVIOLET} />
-      </div>
-
       <Heading>Tier chips and frames</Heading>
       <ul className="flex flex-wrap gap-4">
         {TIERS.map((tier) => (
           <li key={tier.key} className="flex flex-col items-center gap-2">
-            <div
-              data-slot={`tier-frame-${tier.key}`}
-              className={cn('flex h-20 w-28 items-end rounded-field border-3 bg-surface-pressed p-2', tier.frame)}
-            >
-              <span
-                data-slot={`tier-chip-${tier.key}`}
-                className={cn('rounded-chip px-chip-x py-1 text-micro font-bold', tier.chip)}
-              >
-                {tier.label}
-              </span>
+            <div data-slot={`tier-frame-${tier.key}`} className={cn('foil-card rounded-field', tier.frame)}>
+              <div className="foil-frame flex h-20 w-28 items-end rounded-field bg-muted p-2">
+                <span
+                  data-slot={`tier-chip-${tier.key}`}
+                  className={cn('rounded-chip px-chip-x py-1 text-micro font-bold', tier.chip)}
+                >
+                  {tier.label}
+                </span>
+              </div>
             </div>
             <code className="text-micro">{tier.key}</code>
           </li>
@@ -213,40 +169,40 @@ export function TokenSheet() {
       </ul>
 
       <Heading>Materials</Heading>
-      <div className="flex flex-wrap items-center gap-4 rounded-card bg-canvas-alt p-5">
+      <div className="flex flex-wrap items-center gap-4 rounded-card bg-muted p-5">
         <span
           data-slot="material-raised"
-          className="inline-flex h-control items-center rounded-control bg-surface-raised px-control-x text-label font-semibold shadow-raised"
+          className="inline-flex h-control items-center rounded-control bg-accent px-control-x text-label font-semibold shadow-raised"
         >
           Raised
         </span>
         <span
           data-slot="material-pressed"
-          className="inline-flex h-control items-center rounded-control bg-surface-pressed px-control-x text-label font-semibold shadow-pressed"
+          className="inline-flex h-control items-center rounded-control bg-muted px-control-x text-label font-semibold shadow-pressed"
         >
           Pressed
         </span>
         <span
           data-slot="material-primary"
-          className="inline-flex h-control items-center rounded-control bg-action px-control-x text-label font-semibold text-on-action shadow-raised"
+          className="inline-flex h-control items-center rounded-control bg-primary px-control-x text-label font-semibold text-primary-foreground shadow-raised"
         >
           Primary
         </span>
         <span
           data-slot="material-secondary"
-          className="inline-flex h-control items-center rounded-control bg-action-secondary px-control-x text-label font-semibold text-on-action-secondary shadow-raised"
+          className="inline-flex h-control items-center rounded-control bg-brand px-control-x text-label font-semibold text-brand-foreground shadow-raised"
         >
           Secondary
         </span>
         <span
           data-slot="material-destructive"
-          className="inline-flex h-control items-center rounded-control bg-error-surface px-control-x text-label font-semibold text-error-text shadow-raised"
+          className="inline-flex h-control items-center rounded-control bg-error px-control-x text-label font-semibold text-error-foreground shadow-raised"
         >
           Destructive
         </span>
         <span
           data-slot="material-focus"
-          className="inline-flex h-control items-center rounded-control bg-surface-raised px-control-x text-label font-semibold shadow-raised outline-3 outline-offset-2 outline-focus"
+          className="inline-flex h-control items-center rounded-control bg-accent px-control-x text-label font-semibold shadow-raised outline-3 outline-offset-2 outline-ring"
         >
           Focus
         </span>
@@ -254,20 +210,20 @@ export function TokenSheet() {
           type="button"
           disabled
           data-slot="material-disabled"
-          className="inline-flex h-control items-center rounded-control border-0 bg-surface-raised px-control-x text-label font-semibold opacity-(--state-disabled-opacity) shadow-raised"
+          className="inline-flex h-control items-center rounded-control border-0 bg-accent px-control-x text-label font-semibold opacity-(--state-disabled-opacity) shadow-raised"
         >
           Disabled
         </button>
         <span
           data-slot="material-field"
-          className="inline-flex h-field w-64 items-center rounded-field bg-surface-pressed px-control-x text-body text-ink-muted shadow-pressed"
+          className="inline-flex h-field w-64 items-center rounded-field bg-muted px-control-x text-body text-muted-foreground shadow-pressed"
         >
           Search well
         </span>
-        <span data-slot="material-pop" className="inline-flex rounded-card bg-surface px-4 py-3 text-small shadow-pop">
+        <span data-slot="material-pop" className="inline-flex rounded-card bg-card px-4 py-3 text-small shadow-pop">
           pop
         </span>
-        <span data-slot="material-modal" className="inline-flex rounded-card bg-surface px-4 py-3 text-small shadow-modal">
+        <span data-slot="material-modal" className="inline-flex rounded-card bg-card px-4 py-3 text-small shadow-modal">
           modal
         </span>
       </div>
@@ -276,7 +232,7 @@ export function TokenSheet() {
       <ul className="flex flex-wrap gap-3">
         {RADII.map(([label, className]) => (
           <li key={className} className="flex flex-col items-center gap-1">
-            <div className={cn('h-16 w-24 border-3 border-line bg-surface', className)} />
+            <div className={cn('h-16 w-24 border-3 border-border bg-card', className)} />
             <code className="text-micro">{label}</code>
           </li>
         ))}
@@ -290,8 +246,8 @@ export function TokenSheet() {
               {token} · {px}px · {role}
             </code>
             <div className="flex items-center gap-2">
-              <div data-slot={`spacing-${token}`} className={cn('h-3 rounded-pill bg-action', className)} />
-              <span className="text-micro text-ink-muted tabular-nums">{px}</span>
+              <div data-slot={`spacing-${token}`} className={cn('h-3 rounded-pill bg-primary', className)} />
+              <span className="text-micro text-muted-foreground tabular-nums">{px}</span>
             </div>
           </li>
         ))}
@@ -306,7 +262,7 @@ export function TokenSheet() {
             </code>
             <div
               data-slot={`container-${token}`}
-              className={cn('h-3 w-full rounded-pill bg-action-secondary', className)}
+              className={cn('h-3 w-full rounded-pill bg-brand', className)}
             />
           </li>
         ))}
@@ -325,7 +281,7 @@ export function TokenSheet() {
       </ul>
 
       <Heading>Headings from the base layer</Heading>
-      <div className="rounded-card bg-surface p-5 shadow-raised">
+      <div className="rounded-card bg-card p-5 shadow-raised">
         <h1>h1 is display</h1>
         <h2>h2 is title</h2>
         <h3>h3 is card-title</h3>

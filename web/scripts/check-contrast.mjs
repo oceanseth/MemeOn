@@ -185,47 +185,66 @@ const css = stripComments(readFileSync(CSS_PATH, "utf8"))
 const tokens = { ...customProperties(block(css, "@theme static")), ...customProperties(block(css, ":root")) }
 
 /**
- * Every pair is real, and a pair leaves this list the moment no markup paints it: an audited pair
- * that nothing renders pins a token the palette would otherwise be free to drop. Ink and muted ink
- * are body copy on each of the five surfaces; the on-action pairs are the primary and secondary
- * button labels; each status text sits on its status surface (the Notice, the field error); link is
- * the anchor colour on the page and in a card; each tier's chip label sits on its chip (Prismatic's
- * on the gradient's first stop, the flat fallback). A background is a token name, or
- * `{ tint, over }`: a translucent state tint composited on the lightest surface it can land on.
- *
- * Dropped in wave 5 because nothing painted them any more: `--color-text-inverse` on
- * `--color-danger-fill` (the alerts badge is `bg-error-text text-canvas`, the confirm dialog is
- * `<Button variant="danger">`) and the `--state-error-bg` / `--state-success-bg` washes (no call
- * site in `src/`). The wave-5 cleanup pass removed all four properties from `index.css`.
+ * Forced-colours mode paints `--color-fc-*` with the platform's own system colours (`Highlight`,
+ * `CanvasText`); there is no value to measure, so no pair may name one and the guard below says so
+ * rather than failing on a colour it cannot parse.
  */
-const SURFACES = ["--color-canvas", "--color-canvas-alt", "--color-surface", "--color-surface-raised", "--color-surface-pressed"]
+const isSystemColor = (name) => typeof name === "string" && name.startsWith("--color-fc-")
+
+/**
+ * Every pair is real, and a pair leaves this list the moment no markup paints it: an audited pair
+ * that nothing renders pins a token the palette would otherwise be free to drop. Foreground and
+ * muted foreground are body copy on each of the four surfaces and, muted, on every status fill
+ * (EmptyState tones, the create-meme notice, the alerts popover); the primary, brand and
+ * destructive foregrounds are their button and badge labels; each status foreground sits on its
+ * own fill (the Notice, the field error) and, where a screen paints it off that fill, on the
+ * surface it lands on (a developers key row on accent, a quest step on muted, a detail badge on
+ * card); link is the anchor colour on the page, a card, a raised row and a well; braincell is the
+ * leaderboard count on card and accent; each tier's chip label sits on its chip, Prismatic's on
+ * both stops of its gradient. A background is a token name, or `{ tint, over }`: a translucent
+ * state tint composited on the lightest surface it can land on.
+ */
+const SURFACES = ["--color-background", "--color-card", "--color-accent", "--color-muted"]
+const STATUS = ["success", "warning", "error", "info"]
 const TIERS = ["paper", "silver", "holo", "chrome", "gold", "prismatic", "shiny"]
 const PAIRS = [
-  ...SURFACES.map((surface) => ["--color-ink", surface]),
-  ...SURFACES.map((surface) => ["--color-ink-muted", surface]),
-  ["--color-on-action", "--color-action"],
-  ["--color-on-action-secondary", "--color-action-secondary"],
-  ["--color-success-text", "--color-success-surface"],
-  ["--color-warning-text", "--color-warning-surface"],
-  ["--color-error-text", "--color-error-surface"],
-  ["--color-info-text", "--color-info-surface"],
-  ["--color-link", "--color-canvas"],
-  ["--color-link", "--color-surface"],
+  ...SURFACES.map((surface) => ["--color-foreground", surface]),
+  ...SURFACES.map((surface) => ["--color-muted-foreground", surface]),
+  ["--color-primary-foreground", "--color-primary"],
+  ["--color-brand-foreground", "--color-brand"],
+  ["--color-destructive-foreground", "--color-destructive"],
+  ...STATUS.map((status) => [`--color-${status}-foreground`, `--color-${status}`]),
+  ...STATUS.map((status) => ["--color-muted-foreground", `--color-${status}`]),
+  ["--color-foreground", "--color-info"],
+  ["--color-error-foreground", "--color-accent"],
+  ["--color-error-foreground", "--color-muted"],
+  ["--color-success-foreground", "--color-card"],
+  ["--color-link", "--color-background"],
+  ["--color-link", "--color-card"],
+  ["--color-link", "--color-accent"],
+  ["--color-link", "--color-muted"],
+  ["--color-braincell", "--color-card"],
+  ["--color-braincell", "--color-accent"],
   ...TIERS.map((tier) => [`--color-tier-${tier}-chip-text`, `--color-tier-${tier}-chip`]),
-]
+  ["--color-tier-prismatic-chip-text", "--tier-prismatic-chip-end"],
+].filter(([fg, bg]) => {
+  if (!isSystemColor(fg) && !isSystemColor(bg)) return true
+  console.error(`check-contrast: ${fg} on ${bg} names a system colour and cannot be measured — dropped`)
+  return false
+})
 
 /**
  * Tokens that are not text colours, and the guard that keeps them from becoming one.
  *
- * `--color-focus` is the ring: it is chosen to sit *against* a surface at 3px, not to be read on
- * one, and its dark arm measures Lc -53 on `--color-surface` — under the floor above. Twice now a
+ * `--color-ring` is the focus ring: it is chosen to sit *against* a surface at 3px, not to be read
+ * on one, and its dark arm measures Lc -53 on `--color-card` — under the floor above. Twice now a
  * screen has picked it up as an accent for bare text (Friends' quiet exits, Trade's swap glyph)
  * because the board draws that accent in the same hue; both now use `--color-link`, which is the
  * same idea inside the floor. Auditing the pair would only fail the gate, so the guard is a scan:
  * no source file may paint text in it.
  */
 const NOT_TEXT = [
-  { token: "--color-focus", instead: "--color-link", patterns: [/\btext-focus\b/, /(^|[;{\s])color:\s*var\(--color-focus\)/] },
+  { token: "--color-ring", instead: "--color-link", patterns: [/\btext-ring\b/, /(^|[;{\s])color:\s*var\(--color-ring\)/] },
 ]
 
 /** Repo-relative where that reads, absolute where it would be a stack of `..`. */

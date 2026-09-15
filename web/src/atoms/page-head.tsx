@@ -11,7 +11,7 @@ export interface PageHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, 'tit
 
 /** Page title: Unbounded display (phone display under the cut), tracking −0.04em. */
 const HEADING = cn(
-  'm-0 font-display text-display font-medium tracking-display text-ink',
+  'm-0 font-display text-display font-medium tracking-display text-foreground',
   'max-md:text-display-phone',
 )
 
@@ -32,7 +32,7 @@ export function PageHead({ title, subtitle, level = 'h2', className, children, .
       {subtitle ? (
         <div className="min-w-0">
           {heading}
-          <span data-slot="page-subtitle" className="mt-1.5 block text-intro text-ink-muted">
+          <span data-slot="page-subtitle" className="mt-1.5 block text-intro text-muted-foreground">
             {subtitle}
           </span>
         </div>

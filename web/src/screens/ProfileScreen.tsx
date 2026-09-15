@@ -15,17 +15,17 @@ const SKELETON_CARDS = ['a', 'b', 'c', 'd']
 
 /* identity card: min height floor so wrapped content can grow past the avatar row */
 const IDENTITY_CARD = cn(
-  'mb-5 flex flex-wrap items-center gap-y-4 gap-x-3.5 rounded-band bg-surface p-5 shadow-raised',
+  'mb-5 flex flex-wrap items-center gap-y-4 gap-x-3.5 rounded-band bg-card p-5 shadow-raised',
   'max-sm:rounded-nav',
 )
 
 const IDENTITY_LINE =
-  'm-0 truncate font-display text-title font-medium tracking-title text-ink [overflow-wrap:anywhere]'
+  'm-0 truncate font-display text-title font-medium tracking-title text-foreground [overflow-wrap:anywhere]'
 
-const META_LINE = 'm-0 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-label font-semibold text-ink-muted'
+const META_LINE = 'm-0 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-label font-semibold text-muted-foreground'
 
 /** The friend state is a caption, not a pill: a standing fact never competes with the actions. */
-const FRIEND_CAPTION = 'm-0 mt-1.5 text-label font-semibold text-ink-muted'
+const FRIEND_CAPTION = 'm-0 mt-1.5 text-label font-semibold text-muted-foreground'
 
 const ACTIONS = 'flex flex-wrap items-center gap-3 max-sm:w-full max-sm:[&>*]:flex-1'
 
@@ -35,7 +35,7 @@ const TABS = 'mb-gutter flex flex-wrap items-center gap-3.5 max-sm:[&>*]:flex-1'
 const BINDER_HERO = 'flex items-center gap-4 max-sm:items-start'
 const BINDER_HERO_STACK = 'mt-5 mb-10 flex flex-col gap-2.5'
 /** Binder intro is label weight, not PageHead subtitle. */
-const BINDER_INTRO = 'm-0 text-label text-ink-muted'
+const BINDER_INTRO = 'm-0 text-label text-muted-foreground'
 
 /** Profile as a function of its model. Tabs, relationship state and copy are controlled props. */
 export function ProfileScreen({
@@ -267,7 +267,7 @@ export function ProfileScreen({
                   /* one footer row: shares count on the right */
                   footerRight={
                     card.sharesLabel !== null ? (
-                      <span className="font-semibold text-ink">{card.sharesLabel}</span>
+                      <span className="font-semibold text-foreground">{card.sharesLabel}</span>
                     ) : undefined
                   }
                 />
@@ -279,7 +279,7 @@ export function ProfileScreen({
               <Button className="max-sm:w-full" {...showMoreButtonProps}>
                 {showMoreLabel}
               </Button>
-              <p className="m-0 text-micro text-ink-muted tabular-nums">{gridCountLabel}</p>
+              <p className="m-0 text-micro text-muted-foreground tabular-nums">{gridCountLabel}</p>
             </div>
           )}
         </>
@@ -293,7 +293,7 @@ export function ProfileScreen({
               {joinLabel}
             </Link>
           </div>
-          <p className="m-0 text-label text-ink-muted">{reshareNote}</p>
+          <p className="m-0 text-label text-muted-foreground">{reshareNote}</p>
         </div>
       )}
     </PageContainer>

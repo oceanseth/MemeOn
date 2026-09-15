@@ -37,7 +37,7 @@ export function Avatar({ name, src, alt = '', size = 'sm', className, ...imgProp
     <BaseAvatar.Root
       className={cn(
         'inline-flex shrink-0 items-center justify-center overflow-hidden select-none',
-        'rounded-avatar border-0 bg-action-secondary shadow-raised',
+        'rounded-avatar border-0 bg-brand shadow-raised',
         rootChrome[size],
         className,
       )}
@@ -55,7 +55,7 @@ export function Avatar({ name, src, alt = '', size = 'sm', className, ...imgProp
       <BaseAvatar.Fallback
         aria-hidden="true"
         className={cn(
-          'flex size-full items-center justify-center font-semibold text-on-action-secondary',
+          'flex size-full items-center justify-center font-semibold text-brand-foreground',
           fallbackChrome[size],
         )}
       >

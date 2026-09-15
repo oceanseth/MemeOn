@@ -87,7 +87,7 @@ export const Scrolling: Story = {
     children: (
       <>
         {Array.from({ length: 30 }, (_, index) => (
-          <p key={index} className="mt-2 text-small text-ink-muted">
+          <p key={index} className="mt-2 text-small text-muted-foreground">
             Line {index + 1} of a very long explanation.
           </p>
         ))}

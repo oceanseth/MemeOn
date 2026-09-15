@@ -27,14 +27,14 @@ export const All: Story = {
         gridTemplateColumns: 'repeat(4, 1fr)',
         gap: 20,
         padding: 20,
-        background: 'var(--color-canvas)',
-        color: 'var(--color-ink)',
+        background: 'var(--color-background)',
+        color: 'var(--color-foreground)',
       }}
     >
       {ICON_NAMES.map((name) => (
         <div key={name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
           <Icon name={name} size={22} />
-          <span style={{ fontSize: 12, color: 'var(--color-ink-muted)' }}>{name}</span>
+          <span style={{ fontSize: 12, color: 'var(--color-muted-foreground)' }}>{name}</span>
         </div>
       ))}
     </div>

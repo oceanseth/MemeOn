@@ -6,12 +6,12 @@ import type { NoticeTone } from '@/atoms/notice'
 export type EmptyStateTone = 'neutral' | NoticeTone
 
 const TONE_CLASSES: Record<EmptyStateTone, string> = {
-  neutral: 'bg-surface [&_:where(h2,h3)]:text-ink',
-  error: 'bg-error-surface [&_:where(h2,h3)]:text-error-text [&_strong]:text-error-text',
-  ok: 'bg-success-surface [&_:where(h2,h3)]:text-success-text',
-  warning: 'bg-warning-surface [&_:where(h2,h3)]:text-warning-text',
-  info: 'bg-info-surface [&_:where(h2,h3)]:text-info-text',
-  busy: 'bg-info-surface [&_:where(h2,h3)]:text-info-text',
+  neutral: 'bg-card [&_:where(h2,h3)]:text-foreground',
+  error: 'bg-error [&_:where(h2,h3)]:text-error-foreground [&_strong]:text-error-foreground',
+  ok: 'bg-success [&_:where(h2,h3)]:text-success-foreground',
+  warning: 'bg-warning [&_:where(h2,h3)]:text-warning-foreground',
+  info: 'bg-info [&_:where(h2,h3)]:text-info-foreground',
+  busy: 'bg-info [&_:where(h2,h3)]:text-info-foreground',
 }
 
 export interface EmptyStateProps extends HTMLAttributes<HTMLDivElement> {
@@ -37,7 +37,7 @@ export function EmptyState({
       data-tone={resolved}
       role={role ?? (error || resolved === 'error' ? 'alert' : 'status')}
       className={cn(
-        'rounded-card border-0 shadow-raised px-5 py-15 text-center text-label text-ink-muted',
+        'rounded-card border-0 shadow-raised px-5 py-15 text-center text-label text-muted-foreground',
         '[&_:where(h2,h3)]:mt-0 [&_:where(h2,h3)]:mb-3 [&_:where(h2,h3)]:text-card-title',
         '[&_:where(h2,h3)]:tracking-card-title',
         '[&_p]:m-0 [&_p]:mb-1.5 [&_p]:text-label',
@@ -70,12 +70,12 @@ export function EmptyActions({ className, children, ...rest }: HTMLAttributes<HT
 /** Centred page-level state (loading / not found / redirecting). */
 export function PageState({ className, children, ...rest }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div {...rest} data-slot="page-state" className={cn('pt-20 text-center text-ink-muted', className)}>
+    <div {...rest} data-slot="page-state" className={cn('pt-20 text-center text-muted-foreground', className)}>
       {children}
     </div>
   )
 }
 
 export function Muted({ className, ...rest }: HTMLAttributes<HTMLSpanElement>) {
-  return <span {...rest} data-slot="muted" className={cn('text-ink-muted', className)} />
+  return <span {...rest} data-slot="muted" className={cn('text-muted-foreground', className)} />
 }

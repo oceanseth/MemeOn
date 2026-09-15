@@ -11,7 +11,7 @@ const chipChrome = cn(
   'inline-flex h-control items-center justify-center whitespace-nowrap max-sm:h-10',
   /* 40px drawn height; coarse pointer still needs 44 */
   'pointer-coarse:min-h-11',
-  'rounded-control bg-surface-raised px-4 text-label/4.5 font-semibold text-ink shadow-raised',
+  'rounded-control bg-accent px-4 text-label/4.5 font-semibold text-foreground shadow-raised',
   'cursor-pointer',
   '[transition:transform_var(--dur-fast)_ease,background_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
@@ -21,9 +21,9 @@ const chipChrome = cn(
   FOCUS_RING,
   'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',
   /* selected = pressed well; label weight stays 600 on every tab */
-  'data-[pressed]:bg-surface-pressed data-[pressed]:shadow-pressed',
+  'data-[pressed]:bg-muted data-[pressed]:shadow-pressed',
   'data-[pressed]:translate-y-0!',
-  'forced-colors:data-[pressed]:border forced-colors:data-[pressed]:border-[Highlight]',
+  'forced-colors:data-[pressed]:border forced-colors:data-[pressed]:border-fc-highlight',
 )
 
 /**
@@ -57,7 +57,7 @@ export function SortChips({ model }: { model: SortChipsModel }) {
           >
             {chip.label}
             {chip.arrow && (
-              <span aria-hidden="true" className="ml-1 font-bold text-ink">
+              <span aria-hidden="true" className="ml-1 font-bold text-foreground">
                 {chip.arrow}
               </span>
             )}

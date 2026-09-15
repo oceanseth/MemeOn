@@ -10,11 +10,11 @@ const BASE = cn(
 )
 
 const TONE_CLASSES: Record<NoticeTone, string> = {
-  error: 'bg-error-surface text-error-text',
-  ok: 'bg-success-surface text-success-text',
-  warning: 'bg-warning-surface text-warning-text',
-  busy: 'bg-info-surface text-info-text',
-  info: 'bg-info-surface text-info-text',
+  error: 'bg-error text-error-foreground',
+  ok: 'bg-success text-success-foreground',
+  warning: 'bg-warning text-warning-foreground',
+  busy: 'bg-info text-info-foreground',
+  info: 'bg-info text-info-foreground',
 }
 
 export interface NoticeProps extends HTMLAttributes<HTMLDivElement> {

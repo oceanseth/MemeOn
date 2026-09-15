@@ -13,11 +13,11 @@ import type { LeaderboardRowModel, LeaderboardScreenModel } from '../hooks/useLe
 const skeletonRows = [0, 1, 2, 3, 4]
 
 /** Braincell count colour: bubblegum ramp flips with theme. */
-const COUNT = 'font-sans font-bold text-[light-dark(var(--color-bubblegum-700),var(--color-bubblegum-300))] tabular-nums'
+const COUNT = 'font-sans font-bold text-braincell tabular-nums'
 
 /** Podium panel: head left, three cards right; stacks on phone. */
 const PODIUM_PANEL = cn(
-  'mb-5 flex items-center gap-10 rounded-card bg-surface p-5 shadow-raised',
+  'mb-5 flex items-center gap-10 rounded-card bg-card p-5 shadow-raised',
   'max-md:flex-col max-md:items-stretch max-md:gap-5',
 )
 
@@ -31,17 +31,17 @@ const BOARD = 'm-0 flex list-none flex-col gap-5 p-0 max-md:gap-3.5'
 
 /* #1 gets action border on raised surface; #2 and #3 stay plain */
 const PODIUM = cn(
-  'flex h-full flex-col items-center rounded-band bg-surface px-5 pt-gutter pb-5 text-center shadow-raised',
+  'flex h-full flex-col items-center rounded-band bg-card px-5 pt-gutter pb-5 text-center shadow-raised',
   'md:w-54.5',
   'max-md:flex-row max-md:items-center max-md:gap-3 max-md:rounded-nav max-md:px-5 max-md:py-3.5 max-md:text-left',
 )
-const PODIUM_FIRST = 'bg-surface-raised border-2 border-action'
+const PODIUM_FIRST = 'bg-accent border-2 border-primary'
 
 const RANK_ROW = cn(
-  'flex items-center gap-3 rounded-band bg-surface px-5 py-3.25 shadow-raised',
+  'flex items-center gap-3 rounded-band bg-card px-5 py-3.25 shadow-raised',
   'max-md:rounded-nav max-md:px-gutter max-md:py-3.5',
 )
-const RANK_ROW_ME = 'bg-surface-raised border-2 border-action-secondary'
+const RANK_ROW_ME = 'bg-accent border-2 border-brand'
 
 const ROW_LINK = cn(
   'text-inherit no-underline',
@@ -51,9 +51,9 @@ const ROW_LINK = cn(
   'motion-reduce:hover:translate-y-0!',
 )
 
-const NAME = 'min-w-0 flex-1 truncate font-display text-card-title-phone font-medium tracking-card-title text-ink'
+const NAME = 'min-w-0 flex-1 truncate font-display text-card-title-phone font-medium tracking-card-title text-foreground'
 
-const RANK_NUMERAL = 'w-7 shrink-0 text-center font-display text-intro font-medium tracking-card-title text-ink-muted'
+const RANK_NUMERAL = 'w-7 shrink-0 text-center font-display text-intro font-medium tracking-card-title text-muted-foreground'
 
 function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: string }) {
   return (
@@ -134,10 +134,10 @@ export function LeaderboardScreen({
           {/* podium: head + top three; ranks 4+ continue in the list below */}
           <div className={PODIUM_PANEL} data-slot="podium">
             <div className="max-w-75 flex-1" data-slot="podium-head">
-              <h2 className="m-0 font-display text-section font-medium tracking-title text-ink max-md:text-section-phone">
+              <h2 className="m-0 font-display text-section font-medium tracking-title text-foreground max-md:text-section-phone">
                 {podiumTitle}
               </h2>
-              <p className="m-0 mt-1.5 text-body text-ink-muted">{podiumSubtitle}</p>
+              <p className="m-0 mt-1.5 text-body text-muted-foreground">{podiumSubtitle}</p>
             </div>
 
             <ol className={PODIUM_LIST} data-slot="podium-cards" aria-label={podiumTitle}>

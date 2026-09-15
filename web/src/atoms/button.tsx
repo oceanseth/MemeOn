@@ -8,28 +8,28 @@ export type ButtonVariant = 'default' | 'primary' | 'secondary' | 'danger' | 'lo
 const BASE = cn(
   'inline-flex items-center justify-center gap-control-gap whitespace-nowrap cursor-pointer',
   'h-control rounded-control px-control-x text-label font-semibold',
-  'border-0 bg-surface-raised text-ink shadow-raised',
+  'border-0 bg-accent text-foreground shadow-raised',
   '[transition:transform_var(--dur-fast)_ease,box-shadow_var(--dur-base)_ease,background-color_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
   /* hover, active and aria-pressed all write box-shadow — scope each so cascade order never picks the winner */
-  '[&:not(:disabled):not([aria-pressed=true]):hover:not(:active)]:shadow-[var(--color-highlight)_0_1px_1px_inset,var(--color-shadow)_0_-1px_1px_inset,var(--color-shadow)_0_4px_7px]',
+  '[&:not(:disabled):not([aria-pressed=true]):hover:not(:active)]:shadow-[var(--relief-highlight)_0_1px_1px_inset,var(--relief-shadow)_0_-1px_1px_inset,var(--relief-shadow)_0_4px_7px]',
   '[@media(hover:hover)_and_(pointer:fine)]:[&:not(:disabled):not([aria-pressed=true]):hover:not(:active)]:-translate-y-px',
   'motion-reduce:[&:not(:disabled):not([aria-pressed=true]):hover:not(:active)]:translate-y-0!',
   '[&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:shadow-pressed',
-  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
+  'focus-visible:outline-3 focus-visible:outline-ring focus-visible:outline-offset-2',
   'contrast-more:focus-visible:outline-4',
-  'forced-colors:focus-visible:outline-[Highlight]',
-  'aria-pressed:bg-surface-pressed aria-pressed:text-ink aria-pressed:shadow-pressed',
+  'forced-colors:focus-visible:outline-fc-highlight',
+  'aria-pressed:bg-muted aria-pressed:text-foreground aria-pressed:shadow-pressed',
   'aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed aria-disabled:opacity-(--state-disabled-opacity)',
 )
 
-const PRIMARY = 'bg-action text-on-action'
+const PRIMARY = 'bg-primary text-primary-foreground'
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   default: '',
   primary: PRIMARY,
-  secondary: 'bg-action-secondary text-on-action-secondary',
-  danger: 'bg-error-surface text-error-text',
+  secondary: 'bg-brand text-brand-foreground',
+  danger: 'bg-error text-error-foreground',
   login: cn(
     PRIMARY,
     'w-full min-w-64 max-w-full md:w-auto',

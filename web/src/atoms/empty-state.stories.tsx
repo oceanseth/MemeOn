@@ -111,7 +111,7 @@ export const Tones: Story = {
     await expect(canvas.getByRole('alert')).toHaveAttribute('data-tone', 'error')
     // one bubblegum per card, never two
     for (const card of cards) {
-      await expect(card.querySelectorAll('.bg-action').length).toBeLessThanOrEqual(1)
+      await expect(card.querySelectorAll('.bg-primary').length).toBeLessThanOrEqual(1)
     }
   },
 }

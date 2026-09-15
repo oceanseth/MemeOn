@@ -5,17 +5,17 @@ import type { HeroVideoModel } from '../lib/heroVideoModel'
 /* Soft Press materials: the relief is the edge, so the frame is a raised surface rather than a
    hairline box. On phones it bleeds to the container's own gutter and drops its radius. */
 const FRAME = cn(
-  'relative aspect-video overflow-hidden rounded-card border-0 bg-surface shadow-raised',
+  'relative aspect-video overflow-hidden rounded-card border-0 bg-card shadow-raised',
   'max-md:-mx-5 max-md:rounded-none',
 )
 
 /* the shared pill chrome: font/line-height are reset so each pill can size its own text */
 const PILL = cn(
-  'absolute cursor-pointer rounded-pill border-0 font-[inherit] leading-none text-ink shadow-raised',
-  'bg-[color-mix(in_oklab,var(--color-surface-raised)_82%,transparent)] backdrop-blur-[6px]',
+  'absolute cursor-pointer rounded-pill border-0 font-[inherit] leading-none text-foreground shadow-raised',
+  'bg-[color-mix(in_oklab,var(--color-accent)_82%,transparent)] backdrop-blur-[6px]',
   '[transition:background_var(--dur-base)_ease,box-shadow_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
-  'hover:bg-surface-raised',
+  'hover:bg-accent',
   FOCUS_RING,
 )
 

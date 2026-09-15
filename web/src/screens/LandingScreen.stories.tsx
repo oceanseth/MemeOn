@@ -45,7 +45,7 @@ const slots = (state: LandingFrameSlotState): LandingScreenModel['frameSlotProps
   Object.fromEntries(
     TIERS.map((tier) => [
       tier.key,
-      { 'data-state': state, style: { color: `var(--color-tier-${tier.key}-frame)` } },
+      { 'data-state': state, style: { color: `var(--tier-${tier.key}-frame)` } },
     ]),
   )
 

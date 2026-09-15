@@ -21,7 +21,7 @@ export function PanelHeading({ size = 'intro', as, className, children, ...rest 
     <Tag
       data-slot="panel-heading"
       {...rest}
-      className={cn('mt-0 mb-1.5 font-display font-medium text-ink', panelHeadingSizes[size], className)}
+      className={cn('mt-0 mb-1.5 font-display font-medium text-foreground', panelHeadingSizes[size], className)}
     >
       {children}
     </Tag>
@@ -35,12 +35,12 @@ export function Panel({ className, children, ...rest }: HTMLAttributes<HTMLDivEl
       data-slot="panel"
       {...rest}
       className={cn(
-        'rounded-card border-0 bg-surface shadow-raised p-6 max-md:p-gutter',
+        'rounded-card border-0 bg-card shadow-raised p-6 max-md:p-gutter',
         '[&_:where(h3,h4):not([data-slot=panel-heading])]:mt-0',
         '[&_:where(h3,h4):not([data-slot=panel-heading])]:mb-1.5',
         '[&_:where(h3,h4):not([data-slot=panel-heading])]:text-intro',
         '[&_:where(h3,h4):not([data-slot=panel-heading])]:tracking-normal',
-        '[&_:where(h3,h4):not([data-slot=panel-heading])]:text-ink',
+        '[&_:where(h3,h4):not([data-slot=panel-heading])]:text-foreground',
         className,
       )}
     >

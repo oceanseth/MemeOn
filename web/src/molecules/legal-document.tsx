@@ -7,12 +7,12 @@ import type { LegalBlock, LegalDocumentModel, LegalInline } from '../lib/legalDo
 export type { LegalDocumentModel, LegalDocumentSection } from '../lib/legalDocumentModel'
 
 /** Legal page layout: 720 measure, section hairlines. */
-const SECTION = 'mt-6 border-b border-line pb-5.5 last:border-b-0'
+const SECTION = 'mt-6 border-b border-border pb-5.5 last:border-b-0'
 const H2 = cn(
-  'm-0 font-display text-card-title font-medium tracking-card-title text-ink',
+  'm-0 font-display text-card-title font-medium tracking-card-title text-foreground',
   '[scroll-margin-top:calc(var(--topbar-h)+16px)]',
 )
-const P = 'mt-4 mb-0 max-w-measure text-body text-ink'
+const P = 'mt-4 mb-0 max-w-measure text-body text-foreground'
 const A = 'text-link underline underline-offset-3 decoration-1 font-semibold'
 const LIST = 'mt-2.5 mb-0 list-disc pl-6'
 const LIST_ITEM_FIRST = cn(P, 'mt-0')
@@ -22,11 +22,11 @@ const CROSS_LINK = cn(A, 'inline-block mt-2.5')
 
 /* TOC chips: 44px target; current section is pressed, rest are outlined */
 const TOC_CHIP = cn(
-  'inline-flex min-h-11 items-center rounded-control px-3.5 text-small/5 text-ink no-underline',
+  'inline-flex min-h-11 items-center rounded-control px-3.5 text-small/5 text-foreground no-underline',
   '[transition:background-color_var(--dur-base)_ease] motion-reduce:transition-none',
 )
-const TOC_CHIP_REST = cn(TOC_CHIP, 'border border-line hover:bg-surface-raised')
-const TOC_CHIP_CURRENT = cn(TOC_CHIP, 'border-0 bg-surface-pressed shadow-pressed')
+const TOC_CHIP_REST = cn(TOC_CHIP, 'border border-border hover:bg-accent')
+const TOC_CHIP_CURRENT = cn(TOC_CHIP, 'border-0 bg-muted shadow-pressed')
 
 function Inline({ inline }: { inline: LegalInline }) {
   if (typeof inline === 'string') return inline

@@ -14,7 +14,7 @@ export function Field({ className, ...props }: Styled<FieldRootProps>) {
   return (
     <BaseField.Root
       className={cn(
-        'flex flex-col gap-1.5 text-small font-semibold text-ink',
+        'flex flex-col gap-1.5 text-small font-semibold text-foreground',
         className,
       )}
       {...props}
@@ -23,11 +23,11 @@ export function Field({ className, ...props }: Styled<FieldRootProps>) {
   )
 }
 
-export const labelChrome = 'text-small font-semibold text-ink'
+export const labelChrome = 'text-small font-semibold text-foreground'
 
-export const hintChrome = 'mt-1 block text-caption font-normal text-ink-muted'
+export const hintChrome = 'mt-1 block text-caption font-normal text-muted-foreground'
 
-export const errorChrome = 'mt-1 block text-caption font-normal text-error-text'
+export const errorChrome = 'mt-1 block text-caption font-normal text-error-foreground'
 
 export function FieldLabel({ className, ...props }: Styled<FieldLabelProps>) {
   return (
@@ -73,7 +73,7 @@ export function FieldCounter({ className, ...props }: ComponentPropsWithoutRef<'
   return (
     <span
       className={cn(
-        'ml-auto shrink-0 text-caption font-normal text-ink-muted tabular-nums',
+        'ml-auto shrink-0 text-caption font-normal text-muted-foreground tabular-nums',
         className,
       )}
       {...props}

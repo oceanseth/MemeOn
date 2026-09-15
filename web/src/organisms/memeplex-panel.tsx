@@ -13,14 +13,14 @@ const PICK_PLACEHOLDER: SelectOption = { value: '', label: 'Link from your binde
 
 /* The strip's own copy scale: 14/18 on ink-muted, which is the smallest the ladder goes before
    the micro line the cards themselves use. */
-const LINE = 'text-small text-ink-muted'
+const LINE = 'text-small text-muted-foreground'
 
 /** This meme's ancestry, remixes, related cards, and controlled linking controls. */
 export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
   if (!model.show) return null
 
   return (
-    /* The raised section card every panel on the page wears (`atoms/Panel`): bg-surface,
+    /* The raised section card every panel on the page wears (`atoms/Panel`): bg-card,
        radius-card, shadow-raised, with its head at the shared intro step. */
     <Panel className="mt-4">
       <PanelHeading size="section">🕸️ Memeplex</PanelHeading>

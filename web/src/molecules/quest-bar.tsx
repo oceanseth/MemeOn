@@ -15,14 +15,14 @@ const BRAINCELL_IMG = 'inline-block size-6.5 rounded-full object-cover align-mid
 
 /** Pressed well: quest lane left, claim pill right; stacks below 900. */
 const RAIL = cn(
-  'mx-5 mt-3 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-nav bg-surface-pressed p-gutter shadow-pressed',
+  'mx-5 mt-3 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-nav bg-muted p-gutter shadow-pressed',
   '2xl:mt-2 2xl:flex-nowrap 2xl:px-6 2xl:py-5',
 )
 
 /** Unbounded card-title; phone steps to card-title-phone. */
 const TITLE = cn(
   'inline-flex items-center gap-1.75 whitespace-nowrap',
-  'font-display text-card-title font-medium tracking-card-title text-ink',
+  'font-display text-card-title font-medium tracking-card-title text-foreground',
   'max-2xl:text-card-title-phone',
 )
 
@@ -30,10 +30,10 @@ const CHIPS = 'flex flex-wrap items-center gap-x-6 gap-y-2 max-2xl:gap-x-2'
 
 /** Onest 15/19 500 ink-muted (14/18 on the phone); a linked chip darkens on hover. */
 const CHIP = cn(
-  'inline-flex items-center gap-1.5 text-label font-medium whitespace-nowrap text-ink-muted',
+  'inline-flex items-center gap-1.5 text-label font-medium whitespace-nowrap text-muted-foreground',
   'max-2xl:text-small',
   '[transition:color_var(--dur-base)_ease] motion-reduce:transition-none',
-  'group-hover:text-ink',
+  'group-hover:text-foreground',
 )
 
 const CHIP_LINK = cn(
@@ -45,9 +45,9 @@ const CHIP_LINK = cn(
 /** Dismiss is text-weight so the claim pill stays the only loud control in the rail. */
 const TEXT_BUTTON = cn(
   'inline-flex min-h-8 shrink-0 cursor-pointer items-center rounded-chip border-0 bg-transparent px-2 py-1',
-  'text-small font-medium text-ink-muted',
+  'text-small font-medium text-muted-foreground',
   '[transition:color_var(--dur-base)_ease] motion-reduce:transition-none',
-  'hover:text-ink',
+  'hover:text-foreground',
   'pointer-coarse:min-h-11',
   FOCUS,
 )
@@ -55,7 +55,7 @@ const TEXT_BUTTON = cn(
 /** Neutral raised claim pill — not the chrome primary. Busy = progress cursor, no spinner. */
 const CLAIM_BUTTON = cn(
   'inline-flex h-control shrink-0 cursor-pointer items-center justify-center gap-control-gap whitespace-nowrap rounded-control px-control-x',
-  'border-0 bg-surface-raised text-label font-semibold text-ink shadow-raised',
+  'border-0 bg-accent text-label font-semibold text-foreground shadow-raised',
   '[transition:transform_var(--dur-fast)_ease] motion-reduce:transition-none',
   '[@media(hover:hover)_and_(pointer:fine)]:[&:not(:disabled):hover]:-translate-y-px',
   'motion-reduce:[&:not(:disabled):hover]:translate-y-0!',
@@ -101,7 +101,7 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
               </small>
             )}
             {model.errorMessage && (
-              <span className="text-small text-error-text" data-slot="questbar-error" {...model.errorProps}>
+              <span className="text-small text-error-foreground" data-slot="questbar-error" {...model.errorProps}>
                 {model.errorMessage}
               </span>
             )}

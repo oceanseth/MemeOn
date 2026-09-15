@@ -23,17 +23,17 @@ export type SelectOption = {
 export const selectTriggerChrome = cn(
   controlChrome,
   'inline-flex items-center justify-between gap-3 text-left',
-  'data-[popup-open]:inset-ring-2 data-[popup-open]:inset-ring-action',
+  'data-[popup-open]:inset-ring-2 data-[popup-open]:inset-ring-primary',
 )
 
 export const selectPopupChrome =
   'z-(--z-modal) max-h-[min(24rem,var(--available-height))] min-w-[var(--anchor-width)] overflow-y-auto ' +
-  'rounded-card border-0 bg-surface-raised p-1.5 text-ink shadow-pop'
+  'rounded-card border-0 bg-accent p-1.5 text-foreground shadow-pop'
 
 export const selectItemChrome =
   'grid grid-cols-[1.25rem_1fr] min-h-11 items-center gap-2 rounded-field px-3 text-label ' +
   'cursor-default select-none outline-none ' +
-  'data-[highlighted]:bg-surface-pressed data-[selected]:font-semibold ' +
+  'data-[highlighted]:bg-muted data-[selected]:font-semibold ' +
   'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-(--state-disabled-opacity)'
 
 const CHECK = '✓'
@@ -89,7 +89,7 @@ export function Select({
             ))}
           </span>
         </span>
-        <SelectIcon className="flex shrink-0 text-ink-muted" aria-hidden="true">
+        <SelectIcon className="flex shrink-0 text-muted-foreground" aria-hidden="true">
           <span className="after:content-['▾']" />
         </SelectIcon>
       </SelectTrigger>
@@ -105,7 +105,7 @@ export function Select({
                   className={selectItemChrome}
                   data-slot="select-item"
                 >
-                  <SelectItemIndicator className="col-start-1 text-ink" aria-hidden="true">
+                  <SelectItemIndicator className="col-start-1 text-foreground" aria-hidden="true">
                     {CHECK}
                   </SelectItemIndicator>
                   <SelectItemText className="col-start-2">{item.label}</SelectItemText>

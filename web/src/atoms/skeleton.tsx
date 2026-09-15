@@ -3,9 +3,9 @@ import { cn } from '../lib/cn'
 import './skeleton.css'
 
 const BASE = cn(
-  'relative overflow-hidden rounded-card border-0 bg-surface-pressed shadow-pressed',
+  'relative overflow-hidden rounded-card border-0 bg-muted shadow-pressed',
   "after:content-[''] after:absolute after:inset-0 after:-translate-x-full",
-  'after:bg-[linear-gradient(90deg,transparent,var(--color-highlight),transparent)]',
+  'after:bg-[linear-gradient(90deg,transparent,var(--relief-highlight),transparent)]',
   'after:animate-[atom-skeleton-sweep_1.4s_linear_infinite] motion-reduce:after:animate-none',
 )
 

@@ -26,23 +26,23 @@ const AVATAR_LINK = cn('inline-flex shrink-0 rounded-avatar no-underline', FOCUS
 
 /** "🧠 2,480": a neutral raised pill at 900+; bare bold text in the phone cluster (the design's, and the only way it fits 350). */
 const COINS = cn(
-  'inline-flex h-control shrink-0 items-center rounded-control bg-surface-raised px-control-x',
-  'text-label font-semibold whitespace-nowrap text-ink tabular-nums shadow-raised',
+  'inline-flex h-control shrink-0 items-center rounded-control bg-accent px-control-x',
+  'text-label font-semibold whitespace-nowrap text-foreground tabular-nums shadow-raised',
   'max-2xl:h-auto max-2xl:rounded-none max-2xl:bg-transparent max-2xl:px-0 max-2xl:font-bold max-2xl:shadow-none',
 )
 
 const GEAR_LINK = cn(
-  'inline-flex size-icon shrink-0 items-center justify-center rounded-lg text-ink no-underline',
-  'hover:text-ink-muted',
+  'inline-flex size-icon shrink-0 items-center justify-center rounded-lg text-foreground no-underline',
+  'hover:text-muted-foreground',
   'pointer-coarse:size-11',
   FOCUS,
 )
 
 const LOGOUT_LINK = cn(
   '-ml-3 inline-flex h-9 cursor-pointer items-center rounded-field border-0 bg-transparent px-3',
-  'text-small font-medium text-ink-muted',
+  'text-small font-medium text-muted-foreground',
   '[transition:color_var(--dur-base)_ease] motion-reduce:transition-none',
-  'hover:text-ink',
+  'hover:text-foreground',
   'pointer-coarse:min-h-11',
   FOCUS,
 )
@@ -100,7 +100,7 @@ export function AppShellScreen({
         {identity && (
           <div className="mx-1 mt-3 flex min-h-13.75 items-center gap-3" data-slot="identity">
             <Avatar name={identity.name} src={identity.src} size="md" className="rounded-avatar shadow-raised" />
-            <span className="min-w-0 flex-1 truncate text-label font-semibold text-ink" data-slot="identity-name">
+            <span className="min-w-0 flex-1 truncate text-label font-semibold text-foreground" data-slot="identity-name">
               {identity.name}
             </span>
             <Link {...identity.settingsLinkProps} className={GEAR_LINK} data-slot="identity-settings">

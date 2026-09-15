@@ -5,12 +5,12 @@ import { SideSummary } from '@/molecules/side-summary'
 import type { TradeCardModel } from '../lib/tradeCardModel'
 
 /** Raised surface card, 20px padding. */
-const CARD = 'rounded-card border-0 bg-surface p-5 shadow-raised'
+const CARD = 'rounded-card border-0 bg-card p-5 shadow-raised'
 
 /** Unbounded 17/22 — a card headline, not a section heading. */
-const HEADLINE = 'font-display text-card-title-phone font-medium tracking-card-title text-ink'
+const HEADLINE = 'font-display text-card-title-phone font-medium tracking-card-title text-foreground'
 
-const SUBLINE = 'mt-1 block text-caption text-ink-muted'
+const SUBLINE = 'mt-1 block text-caption text-muted-foreground'
 
 /** Give/get stay left/right regardless of proposer — "You give" is always the left plate. */
 const DEAL = cn(
@@ -19,7 +19,7 @@ const DEAL = cn(
   'max-2xl:grid-cols-1 max-2xl:gap-2.5',
 )
 
-/** Swap glyph uses `--color-link`: `--color-focus` fails contrast on surface text. */
+/** Swap glyph uses `--color-link`: `--color-ring` fails contrast on surface text. */
 const SWAP = cn(
   'self-center font-display text-title text-link',
   'max-2xl:rotate-90 max-2xl:justify-self-center',
@@ -50,7 +50,7 @@ export function TradeCard({ model }: { model: TradeCardModel }) {
         <SideSummary model={model.get} />
       </div>
       {model.finalityLine && (
-        <p data-slot="trade-finality" className="m-0 mb-3.5 text-small text-ink-muted">
+        <p data-slot="trade-finality" className="m-0 mb-3.5 text-small text-muted-foreground">
           {model.finalityLine}
         </p>
       )}

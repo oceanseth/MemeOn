@@ -37,14 +37,14 @@ const metaPlacement = '4xl:col-start-2 4xl:row-start-1'
 const railPlacement = '4xl:col-start-2 4xl:row-start-2'
 
 /** The caption under a panel heading: 13/16 on ink-muted. */
-const caption = 'mt-1.5 mb-0 text-caption text-ink-muted'
+const caption = 'mt-1.5 mb-0 text-caption text-muted-foreground'
 
 const panelRow = 'mt-4 flex flex-wrap items-center gap-2.5'
 
 /** The sources / cap-table row: a shallow well, not a bordered box. */
 const personRow = cn(
-  'flex flex-wrap items-center gap-x-3 gap-y-1 rounded-field bg-surface-pressed px-3.5 py-2.5',
-  'text-small text-ink [&>*]:min-w-0',
+  'flex flex-wrap items-center gap-x-3 gap-y-1 rounded-field bg-muted px-3.5 py-2.5',
+  'text-small text-foreground [&>*]:min-w-0',
 )
 
 const rowList = 'mt-3 flex flex-col gap-2'
@@ -54,10 +54,10 @@ const inlineLink = 'text-link underline underline-offset-3 decoration-1'
 /** Tier line: success colour signed in, link colour on public card — one element, one swap. */
 const heroTierLine = 'm-0 text-caption font-bold'
 
-const ladderTrack = 'mt-2 h-2 overflow-hidden rounded-pill bg-surface-pressed'
+const ladderTrack = 'mt-2 h-2 overflow-hidden rounded-pill bg-muted'
 const ladderFill = cn(
   'h-full rounded-pill',
-  'bg-[linear-gradient(90deg,var(--color-action-secondary),var(--color-action),var(--color-action-secondary))]',
+  'bg-[linear-gradient(90deg,var(--color-brand),var(--color-primary),var(--color-brand))]',
 )
 
 /** Where this card sits on the rarity ladder, and the tier's own line of hype under it. */
@@ -66,8 +66,8 @@ function TierLadder({ model, hype }: { model: DetailTierLadderModel; hype: strin
     /* +12px top margin: MemeCard footer already gaps 6px; design wants 18 before the meter */
     <div data-slot="tier-progression" className="mt-3">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-        <span className="text-caption font-bold text-success-text">{model.currentLabel}</span>
-        <span className="text-micro/tight font-medium text-ink-muted tabular-nums">{model.nextLabel}</span>
+        <span className="text-caption font-bold text-success-foreground">{model.currentLabel}</span>
+        <span className="text-micro/tight font-medium text-muted-foreground tabular-nums">{model.nextLabel}</span>
       </div>
       <div className={ladderTrack} {...model.meterProps}>
         <div className={ladderFill} style={model.fillStyle} />
@@ -93,7 +93,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
       {/* a labelled spinner row, never a bare spinner, over the shape the page is about to take */}
       <div
         data-slot="loading-state"
-        className="flex items-center justify-center gap-2.5 px-5 py-10 text-small text-ink-muted"
+        className="flex items-center justify-center gap-2.5 px-5 py-10 text-small text-muted-foreground"
         role="status"
       >
         <Spinner />{loadingLabel}
@@ -123,18 +123,18 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
       <div className={detailGrid}>
         <div data-slot="detail-metadata" className={cn('flex min-w-0 flex-col', metaPlacement)}>
           {isPublic && (
-            <h1 className="m-0 flex flex-wrap items-center gap-x-3 font-display text-display font-medium tracking-display text-ink max-md:text-display-phone [overflow-wrap:anywhere]">
+            <h1 className="m-0 flex flex-wrap items-center gap-x-3 font-display text-display font-medium tracking-display text-foreground max-md:text-display-phone [overflow-wrap:anywhere]">
               {detail.title}{privateBadge}
             </h1>
           )}
-          <p className={cn('mb-0 text-label font-medium text-ink-muted', isPublic ? 'mt-2.5' : 'mt-0')}>
+          <p className={cn('mb-0 text-label font-medium text-muted-foreground', isPublic ? 'mt-2.5' : 'mt-0')}>
             minted by <Link className={inlineLink} {...detail.creatorLinkProps}>{detail.creatorName}</Link>
             {' · '}owned by <Link className={inlineLink} {...detail.ownerLinkProps}>{detail.ownerName}</Link>
             {detail.tagsLabel && <> · {detail.tagsLabel}</>}
             {detail.remixLinkProps && <> · <Link className={inlineLink} {...detail.remixLinkProps}>🧬 remix</Link></>}
             {detail.sourceLinkProps && <> · <a className={inlineLink} {...detail.sourceLinkProps}>{detail.sourceLabel}</a></>}
           </p>
-          <p className="mt-4 mb-0 text-intro font-bold text-ink tabular-nums">
+          <p className="mt-4 mb-0 text-intro font-bold text-foreground tabular-nums">
             👁️ {detail.viewsLabel} {detail.viewsWord} · 🔁 {detail.resharesLabel} {detail.resharesWord}
             {' · '}🧠 {detail.valueLabel} card value
             {detail.holdingsLabel && <> · you hold {detail.holdingsLabel}</>}
@@ -153,7 +153,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
             subTitle={
               <p
                 data-slot="detail-tier-line"
-                className={cn(heroTierLine, isPublic ? 'text-link' : 'text-success-text')}
+                className={cn(heroTierLine, isPublic ? 'text-link' : 'text-success-foreground')}
               >
                 {detail.tierLine}
               </p>
@@ -274,7 +274,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
                           ? <a className={inlineLink} {...source.linkProps}>{source.label}</a>
                           : source.label}
                       </span>
-                      <span className="ml-auto shrink-0 text-ink-muted tabular-nums">👁️ {source.viewsLabel}</span>
+                      <span className="ml-auto shrink-0 text-muted-foreground tabular-nums">👁️ {source.viewsLabel}</span>
                     </div>
                   ))}
                 </div>

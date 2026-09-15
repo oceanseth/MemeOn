@@ -12,7 +12,7 @@ export const marketControls = cn(
      the plate takes the sidebar's own 20px inset instead of the viewport edge */
   'lg:sticky lg:top-(--topbar-h) lg:z-(--z-sticky) lg:-mx-5 lg:px-5',
   '2xl:top-5',
-  'lg:bg-[color-mix(in_oklab,var(--color-canvas)_92%,transparent)] lg:backdrop-blur-[10px]',
+  'lg:bg-[color-mix(in_oklab,var(--color-background)_92%,transparent)] lg:backdrop-blur-[10px]',
 )
 
 /** Search well, phone disclosure pills, and Mint — stacked on phone, one row on desktop. */
@@ -20,12 +20,12 @@ export const marketToolbar = 'flex flex-wrap items-center gap-3'
 
 /* search icon at 18px gutter → 50px input padding (18 + 20 + 12) */
 export const searchWell = 'relative flex w-full min-w-0 flex-1 lg:max-w-135'
-export const searchGlyph = 'pointer-events-none absolute top-1/2 left-control-x -translate-y-1/2 text-ink-muted'
+export const searchGlyph = 'pointer-events-none absolute top-1/2 left-control-x -translate-y-1/2 text-muted-foreground'
 
 /** Toolbar Mint: bubblegum on phone, neutral raised on desktop (sidebar owns primary). */
 export const mintLink = cn(
   buttonClasses('primary'),
-  'w-full lg:w-51.5 lg:bg-surface-raised lg:text-ink',
+  'w-full lg:w-51.5 lg:bg-accent lg:text-foreground',
 )
 
 /** The pre-ox/ui grid: 4-up ~262 at the 1108 column (`minmax(230px, 1fr)`), 2-up 166 on the phone. */
@@ -48,8 +48,8 @@ export const cardSlot = cn(
 
 /** Results / Count: the section heading left, the live count right, on one baseline. */
 export const resultsRow = 'mt-1 mb-gutter flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2'
-export const sectionHeading = 'm-0 font-display text-title font-medium tracking-title text-ink'
-export const summaryRow = 'flex flex-wrap items-center gap-2.5 text-small text-ink-muted'
+export const sectionHeading = 'm-0 font-display text-title font-medium tracking-title text-foreground'
+export const summaryRow = 'flex flex-wrap items-center gap-2.5 text-small text-muted-foreground'
 
 /**
  * A small button keeps an explicit height: the pill is 46 tall now, and padding no longer shrinks
@@ -69,7 +69,7 @@ export const endOfList = 'pt-8 text-small'
 
 /** Tier filter as a raised pill — same material as neighbours, not a recessed form Select. */
 export const tierPill = cn(
-  'h-control rounded-control bg-surface-raised px-control-x font-semibold shadow-raised',
+  'h-control rounded-control bg-accent px-control-x font-semibold shadow-raised',
   '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px',
   'motion-reduce:hover:translate-y-0!',
 )

@@ -38,26 +38,26 @@ export const binderCardSlotClasses = cn(
 const binderCardFooterClasses = cn(memeCardSubClasses, 'mt-0.5')
 
 /** The ownership groove: a recessed track with the braincell-gold fill the binder counts in. */
-const OWNERSHIP_TRACK = 'mt-1 block h-1 overflow-hidden rounded-sm bg-surface-pressed'
+const OWNERSHIP_TRACK = 'mt-1 block h-1 overflow-hidden rounded-sm bg-muted'
 
 /* reward rail lives in AppShell QuestBar — claim is a one-shot shell mutation, not duplicated here */
 
-const SECTION_HEADING = 'm-0 font-display text-title font-medium tracking-title text-ink'
+const SECTION_HEADING = 'm-0 font-display text-title font-medium tracking-title text-foreground'
 
 /** The toolbar row: heading + live count on the left, the 46px control lane on the right. */
 const TOOLBAR = 'mt-7 mb-gutter flex flex-wrap items-end justify-between gap-x-6 gap-y-3.5'
 
 /** Private toggle as a real checkbox inside a pill — checked state presses the pill. */
 const PRIVATE_PILL = cn(
-  'ms-0 min-h-control gap-2.5 rounded-control bg-surface-raised px-control-x py-0 shadow-raised',
-  'text-label font-semibold text-ink',
-  'has-[[data-checked]]:bg-surface-pressed has-[[data-checked]]:shadow-pressed',
+  'ms-0 min-h-control gap-2.5 rounded-control bg-accent px-control-x py-0 shadow-raised',
+  'text-label font-semibold text-foreground',
+  'has-[[data-checked]]:bg-muted has-[[data-checked]]:shadow-pressed',
 )
 
 /** Toolbar Mint: bubblegum on phone, neutral on desktop (sidebar owns primary). */
 const MINT_LINK = cn(
   buttonClasses(),
-  'max-2xl:w-full max-2xl:bg-action max-2xl:text-on-action',
+  'max-2xl:w-full max-2xl:bg-primary max-2xl:text-primary-foreground',
 )
 
 /** Own binder as a function of its model. Every engine state is one set of args. */
@@ -93,7 +93,7 @@ export function BinderScreen({
       {identity && (
         <div
           data-slot="binder-identity"
-          className="mb-6 flex min-h-24.5 items-center gap-4 rounded-card bg-surface p-5 shadow-raised"
+          className="mb-6 flex min-h-24.5 items-center gap-4 rounded-card bg-card p-5 shadow-raised"
         >
           <Avatar
             name={identity.name}
@@ -104,11 +104,11 @@ export function BinderScreen({
           <div className="min-w-0">
             <p
               data-slot="binder-identity-name"
-              className="m-0 font-display text-title font-medium tracking-title text-ink"
+              className="m-0 font-display text-title font-medium tracking-title text-foreground"
             >
               {identity.name}
             </p>
-            <p className="m-0 mt-1.75 text-small font-medium text-ink-muted tabular-nums">
+            <p className="m-0 mt-1.75 text-small font-medium text-muted-foreground tabular-nums">
               {identity.statsLabel}
             </p>
           </div>
@@ -120,7 +120,7 @@ export function BinderScreen({
           <h3 className={SECTION_HEADING}>{collectionHeading}</h3>
           {/* mounted in every state, text swapped: a live region inserted with its content is missed */}
           <span
-            className="mt-1 block text-small text-ink-muted tabular-nums"
+            className="mt-1 block text-small text-muted-foreground tabular-nums"
             {...statusProps}
           >
             {statusMessage}
@@ -190,19 +190,19 @@ export function BinderScreen({
               <MemeCard
                 model={card.memeCard}
                 /* one footer row: shares count on the right */
-                footerRight={<span className="font-semibold text-ink">{card.sharesLabel}</span>}
+                footerRight={<span className="font-semibold text-foreground">{card.sharesLabel}</span>}
                 footer={
                   <>
                     {(card.showCreator || card.showPrivate) && (
                       <span className={binderCardFooterClasses}>
-                        <span className="flex flex-wrap items-center gap-1.5 text-ink-muted">
+                        <span className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
                           {card.showCreator && <span>you minted this</span>}
                           {card.showPrivate && <Badge>🙈 private</Badge>}
                         </span>
                       </span>
                     )}
                     <span className={OWNERSHIP_TRACK} aria-hidden="true">
-                      <i className="block h-full bg-warning-text" style={{ width: `${card.sharesPct}%` }} />
+                      <i className="block h-full bg-warning-foreground" style={{ width: `${card.sharesPct}%` }} />
                     </span>
                   </>
                 }

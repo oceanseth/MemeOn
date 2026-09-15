@@ -19,9 +19,9 @@ const POPUP = cn(
   'fixed inset-0 z-(--z-modal) m-auto h-fit box-border overflow-y-auto [scrollbar-width:thin]',
   'max-h-[min(86dvh,86vh)] max-w-[calc(100vw-24px)]',
   // the modal card: radius 25, 24 of padding, the surface colour, no border — the shadow is the edge
-  'rounded-card border-0 bg-surface p-6 text-ink shadow-modal',
-  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
-  'contrast-more:focus-visible:outline-4 forced-colors:focus-visible:outline-[Highlight]',
+  'rounded-card border-0 bg-card p-6 text-foreground shadow-modal',
+  'focus-visible:outline-3 focus-visible:outline-ring focus-visible:outline-offset-2',
+  'contrast-more:focus-visible:outline-4 forced-colors:focus-visible:outline-fc-highlight',
   // ≤720px: a bottom sheet, so an on-screen keyboard pushes the dialog instead of burying it
   'max-lg:mb-0 max-lg:w-full max-lg:max-w-none max-lg:rounded-b-none',
   'max-lg:pb-[max(24px,env(safe-area-inset-bottom))]',
@@ -38,16 +38,16 @@ const SIZE = {
  * The danger frame: a 2px ring drawn inside the card, so the box never grows and the modal shadow
  * underneath it is untouched (Tailwind composes `inset-ring` and `shadow` into the one property).
  */
-const DANGER = 'inset-ring-2 inset-ring-error-text'
+const DANGER = 'inset-ring-2 inset-ring-destructive'
 
 /** The ✕ is a 40px neutral raised square — the design has no drawn x, and the glyph is the button. */
 const CLOSE = cn(
   'absolute top-6 right-6 inline-flex size-10 pointer-coarse:size-11 cursor-pointer items-center justify-center',
-  'rounded-control-sm border-0 bg-surface-raised p-0 text-label text-ink shadow-raised',
+  'rounded-control-sm border-0 bg-accent p-0 text-label text-foreground shadow-raised',
   '[transition:transform_var(--dur-fast)_ease,box-shadow_var(--dur-base)_ease] motion-reduce:transition-none',
   '[&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:shadow-pressed',
-  'focus-visible:outline-3 focus-visible:outline-focus focus-visible:outline-offset-2',
-  'contrast-more:focus-visible:outline-4 forced-colors:focus-visible:outline-[Highlight]',
+  'focus-visible:outline-3 focus-visible:outline-ring focus-visible:outline-offset-2',
+  'contrast-more:focus-visible:outline-4 forced-colors:focus-visible:outline-fc-highlight',
   'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',
 )
 
@@ -155,7 +155,7 @@ export function DialogFrame({
       {open && (
         <Dialog.Portal container={anchorContainer(anchorId)} className="contents">
           <Dialog.Backdrop
-            className="fixed inset-0 z-(--z-modal) bg-scrim backdrop-blur-[6px]"
+            className="fixed inset-0 z-(--z-modal) bg-overlay backdrop-blur-[6px]"
             data-slot="dialog-backdrop"
           />
           <Dialog.Popup
@@ -187,7 +187,7 @@ export function DialogFrame({
                 id={descriptionId ?? `${id}-description`}
                 render={descriptionAs === 'div' ? <div /> : <p />}
                 // label scale, not body — matches every modal description in the app
-                className={cn('m-0 text-label text-ink-muted', descriptionClassName)}
+                className={cn('m-0 text-label text-muted-foreground', descriptionClassName)}
                 data-slot="dialog-description"
               >
                 {description}
