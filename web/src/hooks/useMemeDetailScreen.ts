@@ -1,5 +1,4 @@
 import { useProjectedActor } from './useProjectedActor'
-import { autorun } from 'mobx'
 import { createElement, Fragment, useCallback, useRef, type ChangeEventHandler, type HTMLAttributes } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { TIERS } from '@memeon/shared/tiers'
@@ -241,7 +240,8 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
         .catch(() => {})
     }
     const unsubscribeActor = actor.subscribe(loadBinderWhenEligible)
-    const disposeAuth = autorun(loadBinderWhenEligible)
+    loadBinderWhenEligible()
+    const disposeAuth = auth.subscribe(loadBinderWhenEligible)
     load()
     const memeId = actor.getSnapshot().context.id
     if (memeId) apiFetch<Memeplex>(`/api/memes/${memeId}/memeplex`).then((plex) => send({ type: 'SET_PLEX', plex })).catch(() => {})

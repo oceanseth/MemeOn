@@ -1,4 +1,3 @@
-import { autorun } from 'mobx'
 import { useCallback, useMemo, useSyncExternalStore } from 'react'
 import { useStores } from '../stores/StoresContext'
 import type { Me } from '../lib/types'
@@ -11,18 +10,12 @@ export interface AuthModel {
   logout: () => void
 }
 
-/** Auth state and actions, subscribed through the MobX snapshot projection. */
+/** Auth state and actions, subscribed through the actor snapshot projection. */
 export function useAuth(): AuthModel {
   const { auth } = useStores()
-  const subscribe = useCallback(
-    (onStoreChange: () => void) => autorun(() => {
-      void auth.snapshot
-      onStoreChange()
-    }),
-    [auth],
-  )
-  const getSnapshot = useCallback(() => auth.snapshot, [auth])
-  useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
+  const subscribe = useCallback((onStoreChange: () => void) => auth.subscribe(onStoreChange), [auth])
+  const getSnapshot = useCallback(() => auth.getSnapshot(), [auth])
+  const snapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 
   return useMemo(
     () => ({
@@ -32,6 +25,6 @@ export function useAuth(): AuthModel {
       refresh: () => auth.refresh(),
       logout: () => auth.logout(),
     }),
-    [auth, auth.user, auth.loading, auth.error, auth.snapshot],
+    [auth, snapshot, auth.user, auth.loading, auth.error],
   )
 }

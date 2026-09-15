@@ -1,17 +1,16 @@
 import { act, StrictMode, Suspense, useState, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import { configure, isObservable } from 'mobx'
-import { observer } from 'mobx-react-lite'
 import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { ConnectedScenario } from '../../.storybook/connected-scenario'
 import { maskyAccessToken, sessionToken } from '../lib/api'
 import type { Me } from '../lib/types'
+import { useAuth } from '../hooks/useAuth'
 import { useAuthRuntime } from '../hooks/useAuthRuntime'
 import { useMountEffect } from '../hooks/useMountEffect'
 import { authMachine } from './authMachine'
 import { createStores, type AppStores } from './createStores'
-import { StoresProvider, useStores } from './StoresContext'
+import { StoresProvider } from './StoresContext'
 
 const adapters = vi.hoisted(() => ({
   firebase: vi.fn(),
@@ -133,10 +132,10 @@ function AuthRuntime() {
   return null
 }
 
-const AuthProjection = observer(function AuthProjection() {
-  const { auth } = useStores()
+function AuthProjection() {
+  const auth = useAuth()
   return <output>{auth.loading ? 'loading' : auth.user?.name ?? 'logged out'}</output>
-})
+}
 
 beforeEach(() => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
@@ -162,7 +161,6 @@ afterEach(async () => {
   host.remove()
   localStorage.clear()
   sessionStorage.clear()
-  configure({ enforceActions: 'observed' })
   vi.restoreAllMocks()
   vi.clearAllMocks()
   vi.unstubAllGlobals()
@@ -215,8 +213,6 @@ it('leaves abandoned Suspense renders inert even after queued microtasks and res
 })
 
 it('processes the actual child AuthRuntime refresh queued before parent retention', async () => {
-  const warning = vi.spyOn(console, 'warn')
-  configure({ enforceActions: 'always' })
   await act(() => root.render(
     <StrictMode><OwnedStores><AuthRuntime /><AuthProjection /></OwnedStores></StrictMode>,
   ))
@@ -228,15 +224,13 @@ it('processes the actual child AuthRuntime refresh queued before parent retentio
   expect(kept.lifecycle).toMatchObject({ starts: 1, stops: 0, invocations: 1, activeSubscriptions: 2 })
   expect(kept.refreshes).toHaveLength(1)
   expect(host.textContent).toBe('loading')
-  expect(kept.stores.auth.snapshot).toBe(kept.actor.getSnapshot())
-  expect(isObservable(kept.stores.auth.snapshot.context)).toBe(false)
+  expect(kept.stores.auth.getSnapshot()).toBe(kept.actor.getSnapshot())
 
   await act(async () => { kept.loads[0]!.resolve(me); await kept.refreshes[0] })
   expect(host.textContent).toBe(me.name)
-  expect(kept.stores.auth.snapshot).toBe(kept.actor.getSnapshot())
+  expect(kept.stores.auth.getSnapshot()).toBe(kept.actor.getSnapshot())
   expect(kept.stores.auth.user).toBe(kept.actor.getSnapshot().context.user)
   expect(kept.lifecycle.activeSubscriptions).toBe(1)
-  expect(warning).not.toHaveBeenCalled()
   expect(adapters.firebase).toHaveBeenCalledTimes(2)
   expect(adapters.unsubscribeFirebase).toHaveBeenCalledTimes(1)
   expect(adapters.presence).toHaveBeenCalledTimes(2)

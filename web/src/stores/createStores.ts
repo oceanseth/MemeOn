@@ -1,4 +1,3 @@
-import { reaction } from 'mobx'
 import { createActor, type ActorRefFrom } from 'xstate'
 import { AuthStore } from './AuthStore'
 import { authMachine } from './authMachine'
@@ -12,9 +11,10 @@ export type AppStores = ReturnType<typeof createStores>
  * StrictMode replay; it is not reference counting or a restart after disposal.
  *
  * The theme store rides along: `retain()` connects it (it starts following the
- * OS setting) and binds it to the signed-in avatar through a reaction on
- * `auth.user`, so a login re-reads that avatar's persisted choice and a logout
- * falls back to the device's. Disposal stops the reaction and the listener.
+ * OS setting) and binds it to the signed-in avatar through an auth subscription
+ * on `auth.user`, so a login re-reads that avatar's persisted choice and a
+ * logout falls back to the device's. Disposal stops the subscription and the
+ * listener.
  */
 export function createStores(
   authActor: ActorRefFrom<typeof authMachine> = createActor(authMachine),
@@ -34,11 +34,15 @@ export function createStores(
       lifecycle = 'retained'
       auth.connect()
       theme.connect()
-      stopThemeSync = reaction(
-        () => auth.user?.sub ?? null,
-        (sub) => theme.bindUser(sub),
-        { fireImmediately: true },
-      )
+      let lastSub: string | null | undefined
+      theme.bindUser(auth.user?.sub ?? null)
+      lastSub = auth.user?.sub ?? null
+      stopThemeSync = auth.subscribe(() => {
+        const sub = auth.user?.sub ?? null
+        if (sub === lastSub) return
+        lastSub = sub
+        theme.bindUser(sub)
+      })
       authActor.start()
     },
     dispose() {

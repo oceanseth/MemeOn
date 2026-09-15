@@ -1,5 +1,4 @@
 import { useProjectedActor } from './useProjectedActor'
-import { autorun } from 'mobx'
 import { useCallback, type AnchorHTMLAttributes, type ButtonHTMLAttributes } from 'react'
 import { useLocation, useNavigate, type LinkProps } from 'react-router-dom'
 import type { IconName } from '../atoms/Icon'
@@ -250,7 +249,7 @@ export function useAppShellScreen(): AppShellScreenModel {
     let disposeLoads = () => {}
     let refetchOnVisible = () => {}
 
-    const disposeUser = autorun(() => {
+    const onUserChange = () => {
       const next = auth.user
       const done = allDone(next)
       if (next === lastUser) return
@@ -288,7 +287,9 @@ export function useAppShellScreen(): AppShellScreenModel {
       poll = setInterval(() => {
         if (document.visibilityState === 'visible') loadAlerts()
       }, POLL_MS)
-    })
+    }
+    onUserChange()
+    const disposeUser = auth.subscribe(onUserChange)
 
     const onVisibility = () => refetchOnVisible()
     document.addEventListener('visibilitychange', onVisibility)
