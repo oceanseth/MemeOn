@@ -8,11 +8,11 @@ export type AvatarSize = 'sm' | 'header' | 'md' | 'lg' | 'hero' | 'public'
 
 const rootChrome: Record<AvatarSize, string> = {
   sm: 'size-8',
-  header: 'size-control-sm rounded-control-sm', // tighter radius at the small disc
+  header: 'size-control-sm rounded-sm', // tighter radius at the small disc
   md: 'size-10',
   lg: 'size-14',
-  hero: 'size-avatar-hero rounded-avatar-hero max-sm:size-avatar-hero-phone max-sm:rounded-band',
-  public: 'size-15 rounded-[22px]',
+  hero: 'size-21.5 rounded-xl max-sm:size-18.5 max-sm:rounded-xl',
+  public: 'size-15 rounded-lg',
 }
 
 const fallbackChrome: Record<AvatarSize, string> = {
@@ -37,7 +37,7 @@ export function Avatar({ name, src, alt = '', size = 'sm', className, ...imgProp
     <BaseAvatar.Root
       className={cn(
         'inline-flex shrink-0 items-center justify-center overflow-hidden select-none',
-        'rounded-avatar border-0 bg-brand shadow-raised',
+        'rounded-md border-0 bg-brand shadow-raised',
         rootChrome[size],
         className,
       )}

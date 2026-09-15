@@ -28,10 +28,10 @@ export const selectTriggerChrome = cn(
 
 export const selectPopupChrome =
   'z-(--z-modal) max-h-[min(24rem,var(--available-height))] min-w-[var(--anchor-width)] overflow-y-auto ' +
-  'rounded-card border-0 bg-accent p-1.5 text-foreground shadow-pop'
+  'rounded-lg border-0 bg-accent p-1.5 text-foreground shadow-pop'
 
 export const selectItemChrome =
-  'grid grid-cols-[1.25rem_1fr] min-h-11 items-center gap-2 rounded-field px-3 text-label ' +
+  'grid grid-cols-[1.25rem_1fr] min-h-hit items-center gap-2 rounded-md px-3 text-label ' +
   'cursor-default select-none outline-none ' +
   'data-[highlighted]:bg-muted data-[selected]:font-semibold ' +
   'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-(--state-disabled-opacity)'

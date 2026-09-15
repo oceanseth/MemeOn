@@ -22,28 +22,28 @@ import {
 const ICON_LANE = 'inline-flex size-icon shrink-0 items-center justify-center'
 
 /** The desktop header avatar is a link to the profile; the phone one opens the account menu. */
-const AVATAR_LINK = cn('inline-flex shrink-0 rounded-avatar no-underline', FOCUS)
+const AVATAR_LINK = cn('inline-flex shrink-0 rounded-md no-underline', FOCUS)
 
 /** "🧠 2,480": a neutral raised pill at 900+; bare bold text in the phone cluster (the design's, and the only way it fits 350). */
 const COINS = cn(
-  'inline-flex h-control shrink-0 items-center rounded-control bg-accent px-control-x',
+  'inline-flex h-control shrink-0 items-center rounded-lg bg-accent px-4.5',
   'text-label font-semibold whitespace-nowrap text-foreground tabular-nums shadow-raised',
-  'max-2xl:h-auto max-2xl:rounded-none max-2xl:bg-transparent max-2xl:px-0 max-2xl:font-bold max-2xl:shadow-none',
+  'max-xl:h-auto max-xl:rounded-none max-xl:bg-transparent max-xl:px-0 max-xl:font-bold max-xl:shadow-none',
 )
 
 const GEAR_LINK = cn(
-  'inline-flex size-icon shrink-0 items-center justify-center rounded-lg text-foreground no-underline',
+  'inline-flex size-icon shrink-0 items-center justify-center rounded-xs text-foreground no-underline',
   'hover:text-muted-foreground',
-  'pointer-coarse:size-11',
+  'pointer-coarse:size-hit',
   FOCUS,
 )
 
 const LOGOUT_LINK = cn(
-  '-ml-3 inline-flex h-9 cursor-pointer items-center rounded-field border-0 bg-transparent px-3',
+  '-ml-3 inline-flex h-9 cursor-pointer items-center rounded-md border-0 bg-transparent px-3',
   'text-small font-medium text-muted-foreground',
   '[transition:color_var(--dur-base)_ease] motion-reduce:transition-none',
   'hover:text-foreground',
-  'pointer-coarse:min-h-11',
+  'pointer-coarse:min-h-hit',
   FOCUS,
 )
 
@@ -68,13 +68,13 @@ export function AppShellScreen({
 }: AppShellScreenModel & { children: ReactNode }) {
   const sidebar = showNav ? (
     <>
-      <nav className="mt-9.5 flex flex-col gap-2.75" aria-label="Main" data-slot="sidebar-nav">
+      <nav className="mt-10 flex flex-col gap-3" aria-label="Main" data-slot="sidebar-nav">
         {navItems.map((item) => (
           <Link key={item.to} to={item.to} className={NAV_ROW} aria-current={item.current ? 'page' : undefined}>
             <span className={ICON_LANE} aria-hidden="true" data-slot="nav-icon">
               {/* an emoji stays an emoji: it takes the icon lane instead of a drawn twin */}
               {item.emoji ? (
-                <span className="text-[19px] leading-none">{item.emoji}</span>
+                <span className="text-glyph">{item.emoji}</span>
               ) : (
                 <Icon name={item.icon} size={22} />
               )}
@@ -83,12 +83,12 @@ export function AppShellScreen({
           </Link>
         ))}
       </nav>
-      <Link {...mintLinkProps} className={cn(PRIMARY_PILL, 'mx-1 mt-10.75')} data-slot="mint-link">
+      <Link {...mintLinkProps} className={cn(PRIMARY_PILL, 'mx-1 mt-11')} data-slot="mint-link">
         <span aria-hidden="true">＋</span> Mint a meme
       </Link>
       <div className="mt-auto flex flex-col pt-6" data-slot="sidebar-foot">
         <ThemeControl model={theme} className="mx-1" />
-        <nav className="mx-3 mt-4 flex flex-col items-start gap-nav-gap" aria-label="More" data-slot="utility-links">
+        <nav className="mx-3 mt-4 flex flex-col items-start gap-1" aria-label="More" data-slot="utility-links">
           {utilityLinks.map((link) => (
             <Link key={link.to} to={link.to} className={UTILITY_LINK} aria-current={link.current ? 'page' : undefined}>
               {/* NBSP after emoji so it does not glue to the label */}
@@ -98,8 +98,8 @@ export function AppShellScreen({
           ))}
         </nav>
         {identity && (
-          <div className="mx-1 mt-3 flex min-h-13.75 items-center gap-3" data-slot="identity">
-            <Avatar name={identity.name} src={identity.src} size="md" className="rounded-avatar shadow-raised" />
+          <div className="mx-1 mt-3 flex min-h-14 items-center gap-3" data-slot="identity">
+            <Avatar name={identity.name} src={identity.src} size="md" className="rounded-md shadow-raised" />
             <span className="min-w-0 flex-1 truncate text-label font-semibold text-foreground" data-slot="identity-name">
               {identity.name}
             </span>
@@ -120,7 +120,7 @@ export function AppShellScreen({
       {/* the sidebar carries the segmented control at 900+; the header button is the phone's and the public pages' */}
       <ThemeControl
         model={{ ...theme, variant: 'button' }}
-        className={showNav ? '2xl:hidden' : '2xl:size-10 2xl:rounded-avatar 2xl:text-[18px]'}
+        className={showNav ? 'xl:hidden' : 'xl:size-10 xl:rounded-md xl:text-glyph'}
       />
       {showToolbar && coins && (
         <span className={COINS} data-slot="coins">
@@ -130,12 +130,12 @@ export function AppShellScreen({
       )}
       {showToolbar && <AlertsBell model={alertsBell} />}
       {showToolbar && avatar && (
-        <Link {...avatar.linkProps} className={cn(AVATAR_LINK, 'max-2xl:hidden')}>
-          <Avatar name={avatar.name} src={avatar.src} size="md" className="rounded-avatar shadow-raised" />
+        <Link {...avatar.linkProps} className={cn(AVATAR_LINK, 'max-xl:hidden')}>
+          <Avatar name={avatar.name} src={avatar.src} size="md" className="rounded-md shadow-raised" />
         </Link>
       )}
       {showToolbar && avatarMenu && (
-        <div className="inline-flex 2xl:hidden" data-slot="avatar-menu-slot">
+        <div className="inline-flex xl:hidden" data-slot="avatar-menu-slot">
           <AvatarMenu model={avatarMenu} />
         </div>
       )}

@@ -13,8 +13,8 @@ import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
 
 /** Hero card centred on the avatar, grows with copy. */
 const HERO = cn(
-  'flex flex-col items-center gap-1.75 rounded-band bg-card px-5 pt-5 pb-7 text-center shadow-raised',
-  'max-sm:rounded-nav max-sm:px-gutter',
+  'flex flex-col items-center gap-2 rounded-xl bg-card px-5 pt-5 pb-7 text-center shadow-raised',
+  'max-sm:rounded-lg max-sm:px-gutter',
 )
 
 /* The name is the page's display step (44/55, 32/40 on a phone); the verb line is one rung down. */

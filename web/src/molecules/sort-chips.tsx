@@ -10,8 +10,8 @@ import type { SortKey } from '../lib/sorting'
 const chipChrome = cn(
   'inline-flex h-control items-center justify-center whitespace-nowrap max-sm:h-10',
   /* 40px drawn height; coarse pointer still needs 44 */
-  'pointer-coarse:min-h-11',
-  'rounded-control bg-accent px-4 text-label/4.5 font-semibold text-foreground shadow-raised',
+  'pointer-coarse:min-h-hit',
+  'rounded-lg bg-accent px-4 text-label/4.5 font-semibold text-foreground shadow-raised',
   'cursor-pointer',
   '[transition:transform_var(--dur-fast)_ease,background_var(--dur-base)_ease]',
   'motion-reduce:transition-none',

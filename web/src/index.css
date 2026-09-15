@@ -134,58 +134,50 @@
   --color-tier-shiny-chip: var(--color-primary);
   --color-tier-shiny-chip-text: var(--color-primary-foreground);
 
-  /* ── Radii, one per part */
-  --radius-card: 25px;
-  --radius-control: 23px;
-  --radius-field: 18px;
-  --radius-nav: 24px;
-  --radius-avatar: 15px;
-  --radius-chip: 12px;
-  --radius-shell: 32px;
-  --radius-tabbar: 30px;
-  --radius-pill: 999px;
-  /* the parts the 46px control does not cover */
-  --radius-band: 28px; /* full-width rows and hero bands (leaderboard/friends rows, podium, invite card) */
-  --radius-well: 20px; /* pressed wells and what sits in them (theme well, side summary, friend link) */
-  --radius-segment: 17px; /* a segment inside a well, a chip-shaped toggle */
-  --radius-control-sm: 13px; /* the 34–40px square: header avatar, theme button, dialog ✕ */
-  --radius-avatar-hero: 32px; /* the 86px hero avatar; its phone size takes `band` */
+  /* ── Radius: one base, five steps. Stock 2/4/6/8/12/16/24/32 are reset so `rounded-lg` can only
+     mean this ladder. xs = checkbox box, skeleton line, thumb · sm = chip, badge, the 34px square
+     control · md = field, avatar, segment · lg = card, control, nav row, well, public avatar ·
+     xl = shell, band, tab bar, hero avatar · `rounded-full` for pills. */
+  --radius-*: initial;
+  --radius: 24px;
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
 
   /* ── Spacing, by role. Tailwind's numeric steps (`p-4` = 16px, `p-4.5` = 18px) are the 4px grid
-     and stay the default for one-off rhythm; these are the lengths the boards repeat by role, so a
-     control can change height without moving a card inset. `h-control`, `px-control-x`, `p-gutter`
-     and the rest read straight off this block. `lib/cn.ts` registers each name for tailwind-merge. */
-  --spacing-control: 46px; /* button, pill, disclosure height (components.md › Buttons) */
-  --spacing-control-x: 18px; /* control and field inline padding; the search glyph's inset */
-  --spacing-control-gap: 9px; /* icon ↔ label inside a control */
+     and the default for rhythm; a role exists only where the same length is written in three or
+     more files. A component owns its own heights and paddings (`h-12.5` in the input, `w-15.5` in
+     the tab bar). `lib/cn.ts` registers each name for the merge. */
+  --spacing-control: 46px; /* button, pill, disclosure height */
   --spacing-control-sm: 34px; /* the small square control, the header avatar, a well's segment */
-  --spacing-field: 50px; /* Input, the search well */
   --spacing-icon: 22px; /* the 22×22 icon lane in nav rows and checkboxes */
   --spacing-gutter: 18px; /* phone card/panel inset, phone grid gap, toolbar ↔ grid stack */
-  --spacing-chip-x: 9px; /* tier chip and badge inline padding */
-  --spacing-nav-item: 62px; /* a bottom-nav item's width */
-  --spacing-nav-gap: 5px; /* icon ↔ label in a bottom-nav item; the sidebar utility-link stack */
-  --spacing-avatar-hero: 86px; /* profile / invite hero avatar */
-  --spacing-avatar-hero-phone: 74px;
+  --spacing-hit: 44px; /* the pointer target: `min-h-hit`, `size-hit`, the `hit-44` halo */
+  --spacing-page-x: 20px; /* the page and shell gutter: `px-page-x`, `-mx-page-x` bleeds, `px-page-safe` */
+  --spacing-card-inset: 24px; /* a card or panel's inset; the phone takes `gutter` */
+  --spacing-bloom: 30px; /* the foil bloom guard around a card slot: `p-bloom -m-bloom` */
+  --spacing-track: 6px; /* a meter's track height */
+  --spacing-halo: 5px; /* the coarse-pointer halo around a 34px control: (44 − 34) / 2 */
 
   /* ── Type. Display is Unbounded at weight 500 (800 blows up the measure); everything else is
      Onest. The weight lives in `@layer base` as `--font-weight-display` because Tailwind would
-     read a `--font-weight-*` theme key as a `font-<name>` utility and collide with the family. */
+     read a `--font-weight-*` theme key as a `font-<name>` utility and collide with the family.
+     `--font-heading` is the name registry files use for the display face. */
   --font-display: 'Unbounded Variable', 'Unbounded', system-ui, sans-serif;
+  --font-heading: var(--font-display);
   --font-sans: 'Onest Variable', 'Onest', system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
   --tracking-display: -0.04em;
   --tracking-title: -0.025em;
   --tracking-card-title: -0.02em;
-  --tracking-card-heading: -0.02em;
-  --tracking-ui: 0em;
 
-  /* Role ladder. Display-face steps (Unbounded 500) sit above the Onest UI steps. `hero`,
-     `display`, `section` and `card-title` shrink under `max-md` (`< 641px`). */
-  --text-hero: 48px;
-  --text-hero--line-height: 52px;
-  --text-hero-phone: 36px;
-  --text-hero-phone--line-height: 42px;
+  /* Role ladder; stock `text-xs…9xl` are reset so this is the only ladder. Each step carries its
+     line-height: `/tight`, `leading-*` appear only inside an atom. Display-face steps (Unbounded
+     500) sit above the Onest UI steps; `display`, `section` and `card-title` shrink under
+     `max-md` (< 641px). The glyph steps size emoji: unitless leading, no `text-[Npx]`. */
+  --text-*: initial;
   --text-display: 44px;
   --text-display--line-height: 55px;
   --text-display-phone: 32px;
@@ -200,8 +192,6 @@
   --text-card-title--line-height: 27px;
   --text-card-title-phone: 17px;
   --text-card-title-phone--line-height: 21px;
-  --text-card-heading: 20px;
-  --text-card-heading--line-height: 25px;
   --text-intro: 17px;
   --text-intro--line-height: 22px;
   --text-body: 16px;
@@ -214,26 +204,34 @@
   --text-caption--line-height: 16px;
   --text-micro: 12px;
   --text-micro--line-height: 16px;
+  --text-glyph-sm: 16px;
+  --text-glyph-sm--line-height: 1;
+  --text-glyph: 20px;
+  --text-glyph--line-height: 1.25;
+  --text-glyph-lg: 25px;
+  --text-glyph-lg--line-height: 1.25;
+  --text-glyph-hero: 48px;
+  --text-glyph-hero--line-height: 1.25;
 
-  /* ── Layout. `app` is the design's frame; the others are the widths routes and prose stop at. */
-  --container-app: 1440px;
-  --container-page-narrow: 760px; /* PageContainer `narrow`: Developers, legal */
+  /* ── Layout. The widths routes and prose stop at; single-use widths are a grid step on the
+     element instead. `card-narrow` is a container-query cut (`@max-card-narrow:`). */
   --container-card: 560px; /* the one centred card of the auth and invite routes */
-  --container-hero-video: 880px;
   --container-measure: 65ch; /* body prose */
-  --container-measure-sm: 60ch; /* a notice, a caption paragraph */
+  --container-search: 540px; /* the search well */
+  --container-tabbar: 370px; /* the phone tab bar */
+  --container-card-narrow: 220px; /* a meme card too narrow for its meta row */
 
-  /* the widths this app branches on. Tailwind writes `bp:` as (width >= N) and `max-bp:` as
-     (width < N), so a `max-width: N` breakpoint is exact at N + 1 and a `min-width: N` at N. */
+  /* The widths this app branches on: six named cuts, no literals. Tailwind writes `bp:` as
+     (width >= N) and `max-bp:` as (width < N), so a `max-width: N` breakpoint is exact at N + 1
+     and a `min-width: N` at N. Registry files are written against stock sm 640 / md 768 /
+     lg 1024: re-read every `sm:`/`md:`/`lg:` in a merged file. */
   --breakpoint-*: initial;
   --breakpoint-xs: 481px; /* max-xs ≙ max-width: 480px (discord link, alerts popover) */
   --breakpoint-sm: 561px; /* max-sm ≙ max-width: 560px (2-up grids, leaderboard and person rows, login CTA) */
-  --breakpoint-md: 641px; /* max-md ≙ max-width: 640px (link status, profile filter bar, hero video; the phone cut) */
+  --breakpoint-md: 641px; /* max-md ≙ max-width: 640px (the phone cut: link status, filter bars, hero video) */
   --breakpoint-lg: 721px; /* max-lg ≙ max-width: 720px (bottom-sheet dialogs, market controls, quest scroller) */
-  --breakpoint-xl: 761px; /* max-xl ≙ max-width: 760px and xl ≙ min-width: 761px (two-row topbar, page head) */
-  --breakpoint-2xl: 900px; /* 2xl ≙ min-width: 900px (trade compose); max-2xl is one pixel under the ≤ 900px detail stack */
-  --breakpoint-3xl: 1000px; /* 3xl ≙ min-width: 1000px (create layout rail) */
-  --breakpoint-4xl: 1100px; /* 4xl ≙ min-width: 1100px (four-column tier grid) */
+  --breakpoint-xl: 900px; /* xl ≙ min-width: 900px (the shell: sidebar in, phone header out; trade compose) */
+  --breakpoint-2xl: 1100px; /* 2xl ≙ min-width: 1100px (four-column tier grid, the create rail) */
 }
 
 @layer base {
@@ -291,6 +289,8 @@
     --topbar-h: 64px;
     /* display weight, kept out of `@theme` so it cannot shadow the `font-display` family utility */
     --font-weight-display: 500;
+    /* body tracking; only `body` reads it, and the dark arm opens it a touch (below) */
+    --tracking-ui: 0em;
     /* Prismatic's real chip: a bubblegum→ultraviolet sweep, deeper stops in the dark arm.
        `light-dark()` only takes colours, so the flip sits on each stop rather than on the image;
        `--color-tier-prismatic-chip` is the first stop for anything that needs a flat colour and
@@ -405,14 +405,16 @@
     letter-spacing: var(--tracking-card-title);
   }
 
-  /* the phone sizes of the two levels that shrink (the `max-md` cut, < 641px) */
-  @media (width < 641px) {
-    h1 {
+  /* the phone sizes of the two levels that shrink (the `max-md` cut) */
+  h1 {
+    @variant max-md {
       font-size: var(--text-display-phone);
       line-height: var(--text-display-phone--line-height);
     }
+  }
 
-    h3 {
+  h3 {
+    @variant max-md {
       font-size: var(--text-card-title-phone);
       line-height: var(--text-card-title-phone--line-height);
     }
@@ -429,7 +431,7 @@
     color: var(--color-foreground);
     background: var(--color-muted);
     border: 1px solid var(--color-border);
-    border-radius: 6px;
+    border-radius: var(--radius-xs);
     padding: 1px 5px;
     white-space: nowrap;
   }

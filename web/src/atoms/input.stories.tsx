@@ -25,7 +25,7 @@ export const Default: Story = {
     const canvas = within(canvasElement)
     const input = canvas.getByLabelText('Title')
     await expect(input).toHaveAttribute('data-slot', 'input')
-    // the recessed well: 50 tall, radius 18 (--radius-field)
+    // the recessed well: 50 tall, radius 16 (--radius-md)
     await expect(input.offsetHeight).toBe(50)
     await expect(getComputedStyle(input).borderRadius).toBe('18px')
     await userEvent.type(input, '!')

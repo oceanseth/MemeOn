@@ -32,9 +32,9 @@ const anchorContainer = {
 /** Bare emoji trigger — no raised chrome. Pseudo-element carries the 44px hit target. */
 const TRIGGER = cn(
   'relative inline-flex shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0',
-  'text-[20px] leading-[25px] text-foreground',
-  '2xl:text-[22px] 2xl:leading-[28px]',
-  'before:absolute before:top-1/2 before:left-1/2 before:size-11 before:-translate-x-1/2',
+  'text-glyph text-foreground',
+  'xl:text-glyph-lg',
+  'before:absolute before:top-1/2 before:left-1/2 before:size-hit before:-translate-x-1/2',
   'before:-translate-y-1/2 before:content-[""]',
   FOCUS,
 )
@@ -42,7 +42,7 @@ const TRIGGER = cn(
 /** Canvas on the error text colour: the pair `check-contrast` guards (WP1 deviation 2), 10px bold. */
 const BADGE = cn(
   'absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center px-1',
-  'rounded-pill bg-destructive text-micro leading-none font-bold text-destructive-foreground tabular-nums',
+  'rounded-full bg-destructive text-micro leading-none font-bold text-destructive-foreground tabular-nums',
 )
 
 /**
@@ -59,13 +59,13 @@ const POSITIONER = cn(
 /** A raised card of rows. */
 const POPUP = cn(
   'w-[min(340px,calc(100vw-24px))] max-h-[min(420px,60dvh)] overflow-y-auto [scrollbar-width:thin]',
-  'rounded-card bg-card p-2 shadow-pop',
+  'rounded-lg bg-card p-2 shadow-pop',
   'max-xs:w-auto max-xs:max-h-[calc(100dvh-var(--topbar-h)-24px)]',
   FOCUS,
 )
 
 const ROW = cn(
-  'block min-h-11 rounded-field px-3 py-2.5 text-small text-foreground',
+  'block min-h-hit rounded-md px-3 py-2.5 text-small text-foreground',
   '[transition:background_var(--dur-base)_ease] motion-reduce:transition-none',
 )
 
@@ -132,7 +132,7 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
                     <span className="group-hover:underline" data-slot="alert-message">
                       {row.message}
                     </span>
-                    <time className="mt-0.75 block text-micro font-normal text-muted-foreground" {...row.timeProps}>
+                    <time className="mt-1 block text-micro font-normal text-muted-foreground" {...row.timeProps}>
                       {row.timeLabel}
                     </time>
                   </>

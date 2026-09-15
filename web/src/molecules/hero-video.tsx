@@ -5,13 +5,13 @@ import type { HeroVideoModel } from '../lib/heroVideoModel'
 /* Soft Press materials: the relief is the edge, so the frame is a raised surface rather than a
    hairline box. On phones it bleeds to the container's own gutter and drops its radius. */
 const FRAME = cn(
-  'relative aspect-video overflow-hidden rounded-card border-0 bg-card shadow-raised',
-  'max-md:-mx-5 max-md:rounded-none',
+  'relative aspect-video overflow-hidden rounded-lg border-0 bg-card shadow-raised',
+  'max-md:-mx-page-x max-md:rounded-none',
 )
 
 /* the shared pill chrome: font/line-height are reset so each pill can size its own text */
 const PILL = cn(
-  'absolute cursor-pointer rounded-pill border-0 font-[inherit] leading-none text-foreground shadow-raised',
+  'absolute cursor-pointer rounded-full border-0 font-[inherit] leading-none text-foreground shadow-raised',
   'bg-[color-mix(in_oklab,var(--color-accent)_82%,transparent)] backdrop-blur-[6px]',
   '[transition:background_var(--dur-base)_ease,box-shadow_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
@@ -40,7 +40,7 @@ export function HeroVideo({ model, className }: { model: HeroVideoModel; classNa
           data-slot="hero-video-play"
           className={cn(
             PILL,
-            'top-1/2 left-1/2 min-h-11 -translate-x-1/2 -translate-y-1/2 px-5 py-3 text-label font-semibold',
+            'top-1/2 left-1/2 min-h-hit -translate-x-1/2 -translate-y-1/2 px-5 py-3 text-label font-semibold',
           )}
           {...model.playButtonProps}
         >
@@ -54,7 +54,7 @@ export function HeroVideo({ model, className }: { model: HeroVideoModel; classNa
           className={cn(
             PILL,
             'right-3 bottom-3 px-3.5 py-2 text-caption',
-            'max-md:top-2 max-md:right-2 max-md:bottom-auto max-md:px-2.75 max-md:py-1.75 max-md:text-micro',
+            'max-md:top-2 max-md:right-2 max-md:bottom-auto max-md:px-3 max-md:py-2 max-md:text-micro',
           )}
           {...model.soundButtonProps}
         >

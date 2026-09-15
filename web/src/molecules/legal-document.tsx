@@ -22,7 +22,7 @@ const CROSS_LINK = cn(A, 'inline-block mt-2.5')
 
 /* TOC chips: 44px target; current section is pressed, rest are outlined */
 const TOC_CHIP = cn(
-  'inline-flex min-h-11 items-center rounded-control px-3.5 text-small/5 text-foreground no-underline',
+  'inline-flex min-h-hit items-center rounded-lg px-3.5 text-small/5 text-foreground no-underline',
   '[transition:background-color_var(--dur-base)_ease] motion-reduce:transition-none',
 )
 const TOC_CHIP_REST = cn(TOC_CHIP, 'border border-border hover:bg-accent')

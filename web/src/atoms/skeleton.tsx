@@ -3,7 +3,7 @@ import { cn } from '../lib/cn'
 import './skeleton.css'
 
 const BASE = cn(
-  'relative overflow-hidden rounded-card border-0 bg-muted shadow-pressed',
+  'relative overflow-hidden rounded-lg border-0 bg-muted shadow-pressed',
   "after:content-[''] after:absolute after:inset-0 after:-translate-x-full",
   'after:bg-[linear-gradient(90deg,transparent,var(--relief-highlight),transparent)]',
   'after:animate-[atom-skeleton-sweep_1.4s_linear_infinite] motion-reduce:after:animate-none',
@@ -42,7 +42,7 @@ export function SkeletonBlock({ className, 'aria-hidden': ariaHidden, ...rest }:
     <div
       data-slot="skeleton-block"
       aria-hidden={ariaHidden ?? 'true'}
-      className={cn(BASE, 'h-3.5 rounded-lg', className)}
+      className={cn(BASE, 'h-3.5 rounded-xs', className)}
       {...rest}
     />
   )

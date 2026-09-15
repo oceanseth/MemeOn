@@ -10,7 +10,7 @@ import { ThemeControl } from '@/molecules/theme-control'
 /** Settings section card — Panel raised material. */
 const CARD = 'px-5 py-gutter max-md:px-5 max-md:py-gutter'
 
-const ROW = 'mt-3.75 flex flex-wrap items-center gap-3'
+const ROW = 'mt-4 flex flex-wrap items-center gap-3'
 const SUBJECT = 'text-label font-bold text-foreground'
 const FACT = 'text-small text-muted-foreground'
 

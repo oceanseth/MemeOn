@@ -14,12 +14,12 @@ import { DialogFrame } from '@/molecules/dialog-frame'
  * "selected" border survives — the relief is the state, as every other tab and toggle in the app.
  */
 const ROW = cn(
-  'h-auto min-h-15.5 w-full flex-wrap justify-start gap-2.5 px-3 py-2 text-left',
+  'h-auto min-h-16 w-full flex-wrap justify-start gap-2.5 px-3 py-2 text-left',
   '[line-height:1.3]',
 )
 
 /** The thumbnail plate: the card system's recessed art well, one step down from the row. */
-const THUMB = 'block size-11 shrink-0 overflow-hidden rounded-chip bg-muted'
+const THUMB = 'block size-hit shrink-0 overflow-hidden rounded-sm bg-muted'
 
 /**
  * Gift shares from your binder to a friend. Its engine supplies all behavior, including the

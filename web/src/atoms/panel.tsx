@@ -4,7 +4,7 @@ import { cn } from '../lib/cn'
 const panelHeadingSizes = {
   intro: 'text-intro tracking-normal',
   section: 'text-intro tracking-normal',
-  hero: 'text-card-heading tracking-card-heading',
+  hero: 'text-card-title tracking-card-title',
   card: 'text-card-title tracking-card-title',
   composer: 'text-title tracking-title',
 } as const
@@ -35,7 +35,7 @@ export function Panel({ className, children, ...rest }: HTMLAttributes<HTMLDivEl
       data-slot="panel"
       {...rest}
       className={cn(
-        'rounded-card border-0 bg-card shadow-raised p-6 max-md:p-gutter',
+        'rounded-lg border-0 bg-card shadow-raised p-card-inset max-md:p-gutter',
         '[&_:where(h3,h4):not([data-slot=panel-heading])]:mt-0',
         '[&_:where(h3,h4):not([data-slot=panel-heading])]:mb-1.5',
         '[&_:where(h3,h4):not([data-slot=panel-heading])]:text-intro',

@@ -33,14 +33,14 @@ const anchorContainer = {
 
 /** The 34px header avatar (`atoms/Avatar` size `header`), with the coarse-pointer halo to 44. */
 const TRIGGER = cn(
-  'relative inline-flex shrink-0 cursor-pointer rounded-control-sm border-0 bg-transparent p-0',
-  'pointer-coarse:before:absolute pointer-coarse:before:-inset-1.25 pointer-coarse:before:content-[""]',
+  'relative inline-flex shrink-0 cursor-pointer rounded-sm border-0 bg-transparent p-0',
+  'pointer-coarse:before:absolute pointer-coarse:before:-inset-halo pointer-coarse:before:content-[""]',
   FOCUS,
 )
 
 /** A raised card of 44px rows. */
 const POPUP = cn(
-  'min-w-52 rounded-card bg-card p-2 shadow-pop outline-none',
+  'min-w-52 rounded-lg bg-card p-2 shadow-pop outline-none',
   FOCUS,
 )
 
@@ -50,7 +50,7 @@ const POPUP = cn(
  * — it is what a pointer user sees — but it is not the accessible focus indicator on its own.
  */
 const ITEM = cn(
-  'flex min-h-11 w-full cursor-pointer items-center rounded-field border-0 bg-transparent px-3',
+  'flex min-h-hit w-full cursor-pointer items-center rounded-md border-0 bg-transparent px-3',
   'text-label font-medium text-foreground no-underline select-none',
   'data-highlighted:bg-accent',
   'focus-visible:outline-3 focus-visible:outline-ring focus-visible:-outline-offset-2',

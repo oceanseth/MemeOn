@@ -26,15 +26,15 @@ const SHARE_CAPTION = 'Every load counts a view; every new place it travels coun
  */
 const detailGrid = cn(
   'grid grid-cols-1 gap-gutter',
-  '4xl:grid-cols-[minmax(0,410px)_minmax(0,1fr)] 4xl:gap-7.5',
+  '2xl:grid-cols-[minmax(0,410px)_minmax(0,1fr)] 2xl:gap-8',
 )
 
 const rail = 'flex min-w-0 flex-col gap-gutter'
 
 /* one DOM order for both layouts: stacked = title → hero → rail; split = hero left, meta top-right */
-const heroPlacement = '4xl:col-start-1 4xl:row-start-1 4xl:row-span-2'
-const metaPlacement = '4xl:col-start-2 4xl:row-start-1'
-const railPlacement = '4xl:col-start-2 4xl:row-start-2'
+const heroPlacement = '2xl:col-start-1 2xl:row-start-1 2xl:row-span-2'
+const metaPlacement = '2xl:col-start-2 2xl:row-start-1'
+const railPlacement = '2xl:col-start-2 2xl:row-start-2'
 
 /** The caption under a panel heading: 13/16 on ink-muted. */
 const caption = 'mt-1.5 mb-0 text-caption text-muted-foreground'
@@ -43,7 +43,7 @@ const panelRow = 'mt-4 flex flex-wrap items-center gap-2.5'
 
 /** The sources / cap-table row: a shallow well, not a bordered box. */
 const personRow = cn(
-  'flex flex-wrap items-center gap-x-3 gap-y-1 rounded-field bg-muted px-3.5 py-2.5',
+  'flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-muted px-3.5 py-2.5',
   'text-small text-foreground [&>*]:min-w-0',
 )
 
@@ -54,9 +54,9 @@ const inlineLink = 'text-link underline underline-offset-3 decoration-1'
 /** Tier line: success colour signed in, link colour on public card — one element, one swap. */
 const heroTierLine = 'm-0 text-caption font-bold'
 
-const ladderTrack = 'mt-2 h-2 overflow-hidden rounded-pill bg-muted'
+const ladderTrack = 'mt-2 h-track overflow-hidden rounded-full bg-muted'
 const ladderFill = cn(
-  'h-full rounded-pill',
+  'h-full rounded-full',
   'bg-[linear-gradient(90deg,var(--color-brand),var(--color-primary),var(--color-brand))]',
 )
 

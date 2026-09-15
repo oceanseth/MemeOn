@@ -17,7 +17,7 @@ const COUNT = 'font-sans font-bold text-braincell tabular-nums'
 
 /** Podium panel: head left, three cards right; stacks on phone. */
 const PODIUM_PANEL = cn(
-  'mb-5 flex items-center gap-10 rounded-card bg-card p-5 shadow-raised',
+  'mb-5 flex items-center gap-10 rounded-lg bg-card p-5 shadow-raised',
   'max-md:flex-col max-md:items-stretch max-md:gap-5',
 )
 
@@ -31,15 +31,15 @@ const BOARD = 'm-0 flex list-none flex-col gap-5 p-0 max-md:gap-3.5'
 
 /* #1 gets action border on raised surface; #2 and #3 stay plain */
 const PODIUM = cn(
-  'flex h-full flex-col items-center rounded-band bg-card px-5 pt-gutter pb-5 text-center shadow-raised',
+  'flex h-full flex-col items-center rounded-xl bg-card px-5 pt-gutter pb-5 text-center shadow-raised',
   'md:w-54.5',
-  'max-md:flex-row max-md:items-center max-md:gap-3 max-md:rounded-nav max-md:px-5 max-md:py-3.5 max-md:text-left',
+  'max-md:flex-row max-md:items-center max-md:gap-3 max-md:rounded-lg max-md:px-5 max-md:py-3.5 max-md:text-left',
 )
 const PODIUM_FIRST = 'bg-accent border-2 border-primary'
 
 const RANK_ROW = cn(
-  'flex items-center gap-3 rounded-band bg-card px-5 py-3.25 shadow-raised',
-  'max-md:rounded-nav max-md:px-gutter max-md:py-3.5',
+  'flex items-center gap-3 rounded-xl bg-card px-5 py-3.25 shadow-raised',
+  'max-md:rounded-lg max-md:px-gutter max-md:py-3.5',
 )
 const RANK_ROW_ME = 'bg-accent border-2 border-brand'
 
@@ -64,7 +64,7 @@ function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: 
       className={cn(ROW_LINK, RANK_ROW, leader.isMe && RANK_ROW_ME)}
     >
       <span className={RANK_NUMERAL}>{leader.rankNumeral}</span>
-      <Avatar name={leader.name} src={leader.avatarSrc} size="md" className="size-9 rounded-control-sm" loading="lazy" />
+      <Avatar name={leader.name} src={leader.avatarSrc} size="md" className="size-9 rounded-sm" loading="lazy" />
       <span className={NAME}>{leader.name}</span>
       {leader.isMe ? (
         <Badge tone="info" className="shrink-0">
@@ -150,14 +150,14 @@ export function LeaderboardScreen({
                     className={cn(ROW_LINK, 'block h-full')}
                   >
                     <span className={cn(PODIUM, l.rankNumeral === '1' && PODIUM_FIRST)}>
-                      <span aria-hidden="true" className="text-[25px]/[31px] max-md:text-[20px]/[24px]">
+                      <span aria-hidden="true" className="text-glyph-lg max-md:text-glyph">
                         {l.medalLabel}
                       </span>
                       <Avatar
                         name={l.name}
                         src={l.avatarSrc}
                         size="md"
-                        className="size-12.5 rounded-field md:mt-2.5 max-md:size-9 max-md:rounded-control-sm"
+                        className="size-12.5 rounded-md md:mt-2.5 max-md:size-9 max-md:rounded-sm"
                         loading="lazy"
                       />
                       <span

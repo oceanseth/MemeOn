@@ -12,7 +12,7 @@ import './foil.css'
 export type MemeCardSize = 'default' | 'lg'
 
 const CARD = cn(
-  'group relative isolate self-start rounded-card bg-card p-2 shadow-raised',
+  'group relative isolate self-start rounded-lg bg-card p-2 shadow-raised',
   '@container',
   'transition-transform duration-(--dur-base) ease-[ease] motion-reduce:transition-none',
   'pointer-coarse:active:scale-[0.99]',
@@ -30,15 +30,15 @@ const CARD_LIFT = cn(
 
 const INNER = 'relative flex h-full flex-col'
 
-const FRAME = 'foil-frame foil-media relative rounded-field bg-muted'
+const FRAME = 'foil-frame foil-media relative rounded-md bg-muted'
 
 const ART = 'block aspect-square w-full bg-muted object-contain'
 
 const TOGGLE = cn(
   'absolute right-2 bottom-2 z-[2] inline-flex items-center justify-center',
-  'size-8 p-0 pointer-coarse:size-11',
+  'size-8 p-0 pointer-coarse:size-hit',
   'cursor-pointer whitespace-nowrap text-label leading-none text-foreground',
-  'rounded-chip bg-accent shadow-raised',
+  'rounded-sm bg-accent shadow-raised',
   '[transition:transform_var(--dur-fast)_ease,background_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
   '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px',
@@ -59,7 +59,7 @@ const STATS = 'flex items-center text-micro/normal text-muted-foreground tabular
 
 const SUB = cn(
   'flex items-start justify-between gap-2 text-micro/tight font-medium text-foreground tabular-nums',
-  '@max-[220px]:flex-wrap @max-[220px]:gap-y-0.5',
+  '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
 )
 
 const VALUE = 'text-small font-bold text-foreground'
@@ -69,8 +69,8 @@ const RIGHT_SLOT = 'min-w-16 shrink-0 text-right [&>span]:whitespace-nowrap' // 
 const SIZES: Record<MemeCardSize, Record<'card' | 'meta' | 'title', string>> = {
   default: {
     card: CARD_LIFT,
-    meta: 'gap-1 px-1.5 pt-3.5 pb-1.5 @max-[220px]:pt-2.5',
-    title: 'line-clamp-2 text-card-title @max-[220px]:text-card-title-phone',
+    meta: 'gap-1 px-1.5 pt-3.5 pb-1.5 @max-card-narrow:pt-2.5',
+    title: 'line-clamp-2 text-card-title @max-card-narrow:text-card-title-phone',
   },
   lg: {
     card: '',

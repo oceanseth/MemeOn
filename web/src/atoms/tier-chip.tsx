@@ -20,13 +20,13 @@ const TIER_SKIN: Record<string, string> = {
 const skinFor = (tierKey: string): string => TIER_SKIN[tierKey] ?? (TIER_SKIN['paper'] as string)
 
 const CHIP = cn(
-  'inline-flex max-w-full items-center justify-center rounded-chip font-sans font-bold',
+  'inline-flex max-w-full items-center justify-center rounded-sm font-sans font-bold',
   'whitespace-nowrap [overflow-wrap:anywhere]',
 )
 
 const SIZES: Record<TierChipSize, string> = {
-  sm: 'px-chip-x py-1 text-micro',
-  md: 'px-2.75 py-1.25 text-caption',
+  sm: 'px-2 py-1 text-micro',
+  md: 'px-3 py-1 text-caption',
 }
 
 export interface TierChipProps {

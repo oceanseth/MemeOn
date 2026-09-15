@@ -5,7 +5,7 @@ import { cn } from '../lib/cn'
 export type NoticeTone = 'error' | 'ok' | 'warning' | 'busy' | 'info'
 
 const BASE = cn(
-  'inline-block max-w-measure-sm text-left mt-3 mb-0 rounded-card border-0 px-gutter py-4 text-label',
+  'inline-block max-w-[60ch] text-left mt-3 mb-0 rounded-lg border-0 px-gutter py-4 text-label',
   'contrast-more:inset-ring-1 contrast-more:inset-ring-current',
 )
 
@@ -31,7 +31,7 @@ export function Notice({ tone, role, compact = false, className, children, ...re
       {...rest}
       data-tone={tone}
       role={role ?? (tone === 'error' ? 'alert' : 'status')}
-      className={cn(BASE, TONE_CLASSES[tone], compact && 'rounded-field', className)}
+      className={cn(BASE, TONE_CLASSES[tone], compact && 'rounded-md', className)}
     >
       {children}
     </div>

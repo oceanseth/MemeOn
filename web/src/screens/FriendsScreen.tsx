@@ -17,13 +17,13 @@ import { ConfirmDialog } from '@/molecules/confirm-dialog'
 import { GiftDialog } from '@/molecules/gift-dialog'
 
 /* search icon at 18px gutter → 50px input padding */
-const SEARCH_WELL = 'relative flex w-full min-w-0 flex-1 md:max-w-142.5'
-const SEARCH_GLYPH = 'pointer-events-none absolute top-1/2 left-control-x -translate-y-1/2 text-muted-foreground'
+const SEARCH_WELL = 'relative flex w-full min-w-0 flex-1 md:max-w-search'
+const SEARCH_GLYPH = 'pointer-events-none absolute top-1/2 left-4.5 -translate-y-1/2 text-muted-foreground'
 
 /** Online strip is recessed so raised friend cards below read as actionable. */
 const ONLINE_STRIP = cn(
-  'mb-5 flex flex-wrap items-center gap-5 rounded-band bg-muted px-5 py-4 shadow-pressed',
-  'max-sm:gap-3.5 max-sm:rounded-nav max-sm:px-gutter',
+  'mb-5 flex flex-wrap items-center gap-5 rounded-xl bg-muted px-5 py-4 shadow-pressed',
+  'max-sm:gap-3.5 max-sm:rounded-lg max-sm:px-gutter',
 )
 
 /** Fixed title width so avatar lanes align across strips. */
@@ -37,12 +37,12 @@ const DOT = 'inline-block size-2.5 shrink-0 rounded-full bg-success-foreground'
 
 /** Person row: compact on desktop, stacked actions on phone. */
 const ROW = cn(
-  'flex items-center gap-3.5 rounded-card bg-card px-5 py-3.5 shadow-raised',
-  'max-sm:flex-col max-sm:items-stretch max-sm:gap-3.5 max-sm:rounded-nav max-sm:py-5',
+  'flex items-center gap-3.5 rounded-lg bg-card px-5 py-3.5 shadow-raised',
+  'max-sm:flex-col max-sm:items-stretch max-sm:gap-3.5 max-sm:rounded-lg max-sm:py-5',
 )
 
 const IDENTITY = cn(
-  'flex min-w-0 flex-1 items-center gap-3.5 rounded-well text-inherit no-underline',
+  'flex min-w-0 flex-1 items-center gap-3.5 rounded-lg text-inherit no-underline',
   FOCUS_RING,
 )
 
@@ -61,16 +61,16 @@ const ROW_PILL = 'max-sm:flex-1 max-sm:px-3'
 
 /** Quiet exit as link-coloured text — confirm dialog carries the weight, not a red row button. */
 const TEXT_ACTION = cn(
-  'shrink-0 cursor-pointer rounded-control border-0 bg-transparent px-2.5 py-3.5',
+  'shrink-0 cursor-pointer rounded-lg border-0 bg-transparent px-2.5 py-3.5',
   'text-small font-semibold text-link',
   FOCUS_RING,
   'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',
-  'pointer-coarse:min-h-11',
+  'pointer-coarse:min-h-hit',
 )
 
 /** Pending is a pressed pill with no action behind it. */
 const PENDING_PILL = cn(
-  'inline-flex h-control shrink-0 items-center justify-center rounded-control px-control-x',
+  'inline-flex h-control shrink-0 items-center justify-center rounded-lg px-4.5',
   'bg-muted text-label font-semibold text-muted-foreground shadow-pressed',
 )
 
@@ -162,7 +162,7 @@ export function FriendsScreen({
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
       <PageHead level="h1" title="Friends">
-        <FilterBar className="w-full xl:justify-start!">
+        <FilterBar className="w-full lg:justify-start!">
           <span className={SEARCH_WELL}>
             <Icon name="magnifying-glass" size={20} className={SEARCH_GLYPH} />
             <Input
@@ -211,7 +211,7 @@ export function FriendsScreen({
                 key={f.sub}
                 {...f.onlineLinkProps}
                 className={cn(
-                  'group inline-flex items-center gap-2 rounded-well text-small text-foreground no-underline',
+                  'group inline-flex items-center gap-2 rounded-lg text-small text-foreground no-underline',
                   FOCUS_RING,
                 )}
               >

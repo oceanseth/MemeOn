@@ -6,8 +6,8 @@ import { Spinner } from '@/atoms/spinner'
 export type ButtonVariant = 'default' | 'primary' | 'secondary' | 'danger' | 'login'
 
 const BASE = cn(
-  'inline-flex items-center justify-center gap-control-gap whitespace-nowrap cursor-pointer',
-  'h-control rounded-control px-control-x text-label font-semibold',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer',
+  'h-control rounded-lg px-4.5 text-label font-semibold',
   'border-0 bg-accent text-foreground shadow-raised',
   '[transition:transform_var(--dur-fast)_ease,box-shadow_var(--dur-base)_ease,background-color_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
@@ -33,7 +33,7 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   login: cn(
     PRIMARY,
     'w-full min-w-64 max-w-full md:w-auto',
-    'h-auto min-h-control px-6.5 py-3.25 whitespace-normal',
+    'h-auto min-h-control px-4.5 py-3.25 whitespace-normal',
     '[line-height:20px]', // login wraps; pin row height so emoji labels stay 46px tall
   ),
 }

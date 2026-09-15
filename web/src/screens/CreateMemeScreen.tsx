@@ -38,9 +38,9 @@ const focusOutcome = (node: HTMLHeadingElement | null): void => node?.focus()
 
 /** Form and preview columns; preview stacks below the form under 1000px. */
 const LAYOUT =
-  'grid grid-cols-[minmax(0,1fr)] items-start gap-5 3xl:grid-cols-[minmax(0,555fr)_minmax(0,522fr)] 3xl:gap-7.75'
+  'grid grid-cols-[minmax(0,1fr)] items-start gap-5 2xl:grid-cols-[minmax(0,555fr)_minmax(0,522fr)] 2xl:gap-8'
 /** the preview column sticks to the top of the scroll once the two columns split */
-const RAIL = 'flex flex-col gap-4 3xl:sticky 3xl:top-[calc(var(--topbar-h)+16px)]'
+const RAIL = 'flex flex-col gap-4 2xl:sticky 2xl:top-[calc(var(--topbar-h)+16px)]'
 const FORM_GRID = 'flex flex-col gap-3.5'
 /* option copy is words, so it lives here with the rest of them; the model only carries the value */
 const REMIX_OUTPUT_OPTIONS: SelectOption[] = [
@@ -68,7 +68,7 @@ const OUTCOME_HEADING = cn(
   'max-md:text-display-phone',
 )
 
-const CARD_SUB = 'm-0 mt-1.25 text-small font-normal text-muted-foreground'
+const CARD_SUB = 'm-0 mt-1 text-small font-normal text-muted-foreground'
 
 /**
  * The source row: 34px raised pills (44 on a phone, where they are the primary control row), radius
@@ -76,8 +76,8 @@ const CARD_SUB = 'm-0 mt-1.25 text-small font-normal text-muted-foreground'
  * paints off `aria-pressed`, so this is geometry only — no second "selected" look.
  */
 const CHIP = cn(
-  'h-control-sm rounded-segment px-3 text-caption font-medium',
-  'max-md:h-11 max-md:rounded-pill max-md:text-label pointer-coarse:h-11 pointer-coarse:rounded-pill',
+  'h-control-sm rounded-md px-3 text-caption font-medium',
+  'max-md:h-hit max-md:rounded-full max-md:text-label pointer-coarse:h-hit pointer-coarse:rounded-full',
 )
 const MODE_ROW = 'mb-5 flex flex-wrap items-center gap-2'
 
@@ -87,7 +87,7 @@ const FORM_NOTE = 'mt-1 text-micro font-medium text-muted-foreground'
 
 /** Mint state cards: left-aligned, tone-coloured titles override the form Panel's h3 step. */
 const STATE_CARD = cn(
-  'rounded-field p-4 text-left',
+  'rounded-md p-4 text-left',
   '[&_h3]:m-0 [&_h3]:font-display [&_h3]:text-card-title-phone [&_h3]:font-medium [&_h3]:tracking-card-title',
   '[&_p]:m-0 [&_p]:mt-2 [&_p]:text-small [&_p]:font-medium [&_p]:text-muted-foreground',
 )
@@ -95,14 +95,14 @@ const STATE_CARD = cn(
 const STATE_CARD_BUSY = cn(STATE_CARD, 'bg-accent shadow-raised', '[&_h3]:text-muted-foreground')
 const STATE_CARD_APPROVAL = cn(STATE_CARD, '[&_h3]:text-success-foreground')
 /** Progress groove: pressed track with the action colour */
-const TRACK = 'mt-3 block h-1.5 overflow-hidden rounded-pill bg-muted'
+const TRACK = 'mt-3 block h-track overflow-hidden rounded-full bg-muted'
 const TRACK_FILL = cn(
-  'block h-full w-[35%] rounded-pill bg-primary',
+  'block h-full w-[35%] rounded-full bg-primary',
   'animate-pulse motion-reduce:animate-none',
 )
 
 const GIPHY_CELL = cn(
-  'block h-auto aspect-square w-full overflow-hidden rounded-field bg-muted p-0',
+  'block h-auto aspect-square w-full overflow-hidden rounded-md bg-muted p-0',
   'shadow-pressed',
 )
 /* the picked cell keeps its ring on hover: the state is a ring, never a border colour */
@@ -111,7 +111,7 @@ const GIPHY_MARK = 'text-micro font-bold tracking-wider whitespace-nowrap text-m
 const LOADING_STATE = 'flex items-center justify-center gap-2.5 px-5 py-15 text-small text-muted-foreground'
 /** Preflight strips the file-selector button bare; this gives it the app's own neutral pill. */
 const FILE_INPUT = cn(
-  'file:mr-2.5 file:cursor-pointer file:rounded-control file:border-0 file:bg-accent',
+  'file:mr-2.5 file:cursor-pointer file:rounded-lg file:border-0 file:bg-accent',
   'file:px-3 file:py-1.5 file:text-small file:font-semibold file:text-foreground file:shadow-raised',
 )
 
@@ -144,9 +144,9 @@ function ModeChip({
    `MemeCardModel` until it is minted: the card is `atoms/MemeCard`'s recipe (raised surface, 8px of
    padding, radius 25) and the frame carries the 3px tier border `atoms/foil.css` paints on
    `.foil-frame` off the variables `cardProps.className` sets. */
-const PREVIEW_CARD = 'group relative isolate rounded-card bg-card p-2 shadow-raised @container'
+const PREVIEW_CARD = 'group relative isolate rounded-lg bg-card p-2 shadow-raised @container'
 const PREVIEW_INNER = 'relative flex h-full flex-col'
-const PREVIEW_FRAME = 'foil-frame foil-media relative rounded-field bg-muted'
+const PREVIEW_FRAME = 'foil-frame foil-media relative rounded-md bg-muted'
 /* same plate the marketplace card uses: a square, the whole meme contained */
 const PREVIEW_ART = 'block aspect-square w-full bg-muted object-contain'
 const PREVIEW_META = 'flex flex-col px-1.5 pt-3.5 pb-1.5'
@@ -160,12 +160,12 @@ const PREVIEW_TIER_ROW = 'mt-1.5 flex items-center gap-2'
 const PREVIEW_TIER_NOTE = 'text-caption font-bold text-muted-foreground'
 /** The plate the card will land on, at the card's own frame geometry. */
 const PREVIEW_PLACEHOLDER = cn(
-  'flex aspect-square items-center justify-center rounded-card bg-muted shadow-pressed',
+  'flex aspect-square items-center justify-center rounded-lg bg-muted shadow-pressed',
   'text-small font-medium text-muted-foreground',
 )
 const PREVIEW_SUB = cn(
   'mt-3 flex items-center justify-between gap-2 text-small font-semibold text-muted-foreground tabular-nums',
-  '@max-[220px]:flex-wrap @max-[220px]:gap-y-0.5',
+  '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
 )
 
 /** The meme as it will ship, assembled while you type. */
@@ -385,7 +385,7 @@ export function CreateMemeScreen({
                   <FilterBar>
                     <img
                       {...remixSource.imageProps}
-                      className="size-21 rounded-field object-cover"
+                      className="size-21 rounded-md object-cover"
                     />
                     <Hint as="span">
                       Remixing <Link {...remixSource.linkProps}>"{remixSource.title}"</Link> by{' '}

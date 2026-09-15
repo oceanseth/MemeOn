@@ -3,15 +3,15 @@ import { buttonClasses } from '@/atoms/button'
 
 /**
  * The control plate docks under the topbar while the grid scrolls. It bleeds only into the page
- * container's own 20px gutter (`-mx-5 px-5`). A phone has no vertical budget to pin filters,
+ * container's own gutter (`-mx-page-x px-page-x`). A phone has no vertical budget to pin filters,
  * so ≤720 the whole treatment is absent.
  */
 export const marketControls = cn(
   'flex flex-col gap-3.5 pt-0 pb-3.5',
   /* it docks under the phone header (`--topbar-h`); at the shell breakpoint that height is 0, so
-     the plate takes the sidebar's own 20px inset instead of the viewport edge */
-  'lg:sticky lg:top-(--topbar-h) lg:z-(--z-sticky) lg:-mx-5 lg:px-5',
-  '2xl:top-5',
+     the plate takes the sidebar's own `page-x` inset instead of the viewport edge */
+  'lg:sticky lg:top-(--topbar-h) lg:z-(--z-sticky) lg:-mx-page-x lg:px-page-x',
+  'xl:top-5',
   'lg:bg-[color-mix(in_oklab,var(--color-background)_92%,transparent)] lg:backdrop-blur-[10px]',
 )
 
@@ -19,8 +19,8 @@ export const marketControls = cn(
 export const marketToolbar = 'flex flex-wrap items-center gap-3'
 
 /* search icon at 18px gutter → 50px input padding (18 + 20 + 12) */
-export const searchWell = 'relative flex w-full min-w-0 flex-1 lg:max-w-135'
-export const searchGlyph = 'pointer-events-none absolute top-1/2 left-control-x -translate-y-1/2 text-muted-foreground'
+export const searchWell = 'relative flex w-full min-w-0 flex-1 lg:max-w-search'
+export const searchGlyph = 'pointer-events-none absolute top-1/2 left-4.5 -translate-y-1/2 text-muted-foreground'
 
 /** Toolbar Mint: bubblegum on phone, neutral raised on desktop (sidebar owns primary). */
 export const mintLink = cn(
@@ -42,8 +42,8 @@ export const cardGrid = cn(
  */
 export const cardSlot = cn(
   '[content-visibility:auto] [contain-intrinsic-size:auto_360px]',
-  'pointer-events-none p-7.5 -m-7.5 [&>*]:pointer-events-auto',
-  'max-sm:p-5 max-sm:[margin:-20px]',
+  'pointer-events-none p-bloom -m-bloom [&>*]:pointer-events-auto',
+  'max-sm:p-page-x max-sm:-m-page-x',
 )
 
 /** Results / Count: the section heading left, the live count right, on one baseline. */
@@ -55,7 +55,7 @@ export const summaryRow = 'flex flex-wrap items-center gap-2.5 text-small text-m
  * A small button keeps an explicit height: the pill is 46 tall now, and padding no longer shrinks
  * it. 36 is the drawn size; a coarse pointer still gets the 44 a finger needs.
  */
-export const chipButton = 'h-9 px-3 text-micro pointer-coarse:min-h-11'
+export const chipButton = 'h-9 px-3 text-micro pointer-coarse:min-h-hit'
 
 export const searchInput = 'w-full pl-12.5'
 
@@ -69,7 +69,7 @@ export const endOfList = 'pt-8 text-small'
 
 /** Tier filter as a raised pill — same material as neighbours, not a recessed form Select. */
 export const tierPill = cn(
-  'h-control rounded-control bg-accent px-control-x font-semibold shadow-raised',
+  'h-control rounded-lg bg-accent px-4.5 font-semibold shadow-raised',
   '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px',
   'motion-reduce:hover:translate-y-0!',
 )

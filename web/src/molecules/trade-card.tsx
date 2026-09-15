@@ -5,7 +5,7 @@ import { SideSummary } from '@/molecules/side-summary'
 import type { TradeCardModel } from '../lib/tradeCardModel'
 
 /** Raised surface card, 20px padding. */
-const CARD = 'rounded-card border-0 bg-card p-5 shadow-raised'
+const CARD = 'rounded-lg border-0 bg-card p-5 shadow-raised'
 
 /** Unbounded 17/22 — a card headline, not a section heading. */
 const HEADLINE = 'font-display text-card-title-phone font-medium tracking-card-title text-foreground'
@@ -16,13 +16,13 @@ const SUBLINE = 'mt-1 block text-caption text-muted-foreground'
 const DEAL = cn(
   /* stretch, not center: equal-height wells read as one comparison */
   'my-3.5 grid grid-cols-[1fr_auto_1fr] items-stretch gap-3.5 [&>*]:min-w-0',
-  'max-2xl:grid-cols-1 max-2xl:gap-2.5',
+  'max-xl:grid-cols-1 max-xl:gap-2.5',
 )
 
 /** Swap glyph uses `--color-link`: `--color-ring` fails contrast on surface text. */
 const SWAP = cn(
   'self-center font-display text-title text-link',
-  'max-2xl:rotate-90 max-2xl:justify-self-center',
+  'max-xl:rotate-90 max-xl:justify-self-center',
 )
 
 const ACTIONS = 'flex flex-wrap items-center justify-end gap-3'

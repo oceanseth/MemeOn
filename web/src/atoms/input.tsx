@@ -5,7 +5,7 @@ import type { Styled } from '@/atoms/field'
 
 /** Shared recessed well for input, select, and textarea. `font-normal` resists Field's 600 weight. */
 export const controlChrome =
-  'h-field rounded-field border-0 bg-muted shadow-pressed px-control-x ' +
+  'h-12.5 rounded-md border-0 bg-muted shadow-pressed px-4.5 ' +
   'text-label font-normal text-foreground pointer-coarse:text-[length:max(16px,1em)] ' +
   'focus-visible:outline-3 focus-visible:outline-ring focus-visible:outline-offset-2 ' +
   'contrast-more:focus-visible:outline-4 forced-colors:focus-visible:outline-fc-highlight ' +

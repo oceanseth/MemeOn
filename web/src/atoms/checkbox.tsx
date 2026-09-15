@@ -5,11 +5,11 @@ import { cn } from '../lib/cn'
 import type { Styled } from '@/atoms/field'
 
 export const checkboxLabelChrome =
-  'inline-flex min-h-11 -ms-2 cursor-pointer items-center gap-2.5 px-2 py-1 text-label text-foreground ' +
+  'inline-flex min-h-hit -ms-2 cursor-pointer items-center gap-2.5 px-2 py-1 text-label text-foreground ' +
   'has-[[data-disabled]]:cursor-not-allowed has-[[data-disabled]]:opacity-(--state-disabled-opacity)'
 
 export const checkboxBoxChrome =
-  'inline-flex size-icon shrink-0 items-center justify-center rounded-[7px] border-0 ' +
+  'inline-flex size-icon shrink-0 items-center justify-center rounded-xs border-0 ' +
   'bg-accent shadow-raised text-caption leading-none text-transparent ' +
   'data-[checked]:bg-primary data-[checked]:text-primary-foreground ' +
   'data-[indeterminate]:bg-primary data-[indeterminate]:text-primary-foreground ' +

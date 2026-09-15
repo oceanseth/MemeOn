@@ -15,51 +15,51 @@ const BRAINCELL_IMG = 'inline-block size-6.5 rounded-full object-cover align-mid
 
 /** Pressed well: quest lane left, claim pill right; stacks below 900. */
 const RAIL = cn(
-  'mx-5 mt-3 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-nav bg-muted p-gutter shadow-pressed',
-  '2xl:mt-2 2xl:flex-nowrap 2xl:px-6 2xl:py-5',
+  'mx-page-x mt-3 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-lg bg-muted p-gutter shadow-pressed',
+  'xl:mt-2 xl:flex-nowrap xl:px-6 xl:py-5',
 )
 
 /** Unbounded card-title; phone steps to card-title-phone. */
 const TITLE = cn(
-  'inline-flex items-center gap-1.75 whitespace-nowrap',
+  'inline-flex items-center gap-2 whitespace-nowrap',
   'font-display text-card-title font-medium tracking-card-title text-foreground',
-  'max-2xl:text-card-title-phone',
+  'max-xl:text-card-title-phone',
 )
 
-const CHIPS = 'flex flex-wrap items-center gap-x-6 gap-y-2 max-2xl:gap-x-2'
+const CHIPS = 'flex flex-wrap items-center gap-x-6 gap-y-2 max-xl:gap-x-2'
 
 /** Onest 15/19 500 ink-muted (14/18 on the phone); a linked chip darkens on hover. */
 const CHIP = cn(
   'inline-flex items-center gap-1.5 text-label font-medium whitespace-nowrap text-muted-foreground',
-  'max-2xl:text-small',
+  'max-xl:text-small',
   '[transition:color_var(--dur-base)_ease] motion-reduce:transition-none',
   'group-hover:text-foreground',
 )
 
 const CHIP_LINK = cn(
   'no-underline',
-  'pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center',
+  'pointer-coarse:inline-flex pointer-coarse:min-h-hit pointer-coarse:items-center',
   FOCUS,
 )
 
 /** Dismiss is text-weight so the claim pill stays the only loud control in the rail. */
 const TEXT_BUTTON = cn(
-  'inline-flex min-h-8 shrink-0 cursor-pointer items-center rounded-chip border-0 bg-transparent px-2 py-1',
+  'inline-flex min-h-8 shrink-0 cursor-pointer items-center rounded-sm border-0 bg-transparent px-2 py-1',
   'text-small font-medium text-muted-foreground',
   '[transition:color_var(--dur-base)_ease] motion-reduce:transition-none',
   'hover:text-foreground',
-  'pointer-coarse:min-h-11',
+  'pointer-coarse:min-h-hit',
   FOCUS,
 )
 
 /** Neutral raised claim pill — not the chrome primary. Busy = progress cursor, no spinner. */
 const CLAIM_BUTTON = cn(
-  'inline-flex h-control shrink-0 cursor-pointer items-center justify-center gap-control-gap whitespace-nowrap rounded-control px-control-x',
+  'inline-flex h-control shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4.5',
   'border-0 bg-accent text-label font-semibold text-foreground shadow-raised',
   '[transition:transform_var(--dur-fast)_ease] motion-reduce:transition-none',
   '[@media(hover:hover)_and_(pointer:fine)]:[&:not(:disabled):hover]:-translate-y-px',
   'motion-reduce:[&:not(:disabled):hover]:translate-y-0!',
-  'pointer-coarse:min-h-11',
+  'pointer-coarse:min-h-hit',
   FOCUS,
 )
 
@@ -77,7 +77,7 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
     <>
       {model.showSteps && (
         <div className={RAIL} data-slot="questbar">
-          <div className="flex min-w-0 flex-col gap-2.5 max-2xl:w-full 2xl:flex-1" data-slot="questbar-head">
+          <div className="flex min-w-0 flex-col gap-2.5 max-xl:w-full xl:flex-1" data-slot="questbar-head">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span className={TITLE} data-slot="questbar-title">
                 <img className={BRAINCELL_IMG} src={BRAINCELL_SRC} alt="" width={26} height={26} />{' '}
@@ -132,7 +132,7 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
               data-slot="quest-claim"
               className={cn(
                 CLAIM_BUTTON,
-                'max-2xl:w-full',
+                'max-xl:w-full',
                 claim.busy
                   ? 'cursor-progress opacity-100'
                   : 'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',

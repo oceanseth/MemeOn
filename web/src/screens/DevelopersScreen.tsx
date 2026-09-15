@@ -172,7 +172,7 @@ export function DevelopersScreen({
           <ul className="m-0 mt-2 list-none p-0 [&>li+li]:border-t [&>li+li]:border-border">
             {keys.map((k) => (
               <li key={k.prefix} className={KEY_ROW}>
-                <div className="flex min-w-0 flex-col gap-0.75">
+                <div className="flex min-w-0 flex-col gap-1">
                   {/* `overflow-wrap:anywhere` keeps a 60-character label inside the row */}
                   <span className="text-body font-semibold text-foreground [overflow-wrap:anywhere]">
                     {k.label}

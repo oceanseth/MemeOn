@@ -4,7 +4,7 @@ import type { TradeSideSummaryModel } from '../lib/tradeCardModel'
 
 /** Recessed well inside the raised proposal card. */
 const WELL = cn(
-  'rounded-well bg-muted p-3.75 shadow-pressed',
+  'rounded-lg bg-muted p-4 shadow-pressed',
   'text-small [overflow-wrap:anywhere] [&_em]:[overflow-wrap:anywhere]',
 )
 
@@ -14,7 +14,7 @@ const LEGEND = 'mt-0 mb-2 font-sans text-caption font-bold tracking-normal text-
 const LINE = 'flex items-center gap-2'
 
 /** 36px thumb, radius 9, 2px line ring — board 30px, bumped for legibility in the well. */
-const THUMB = 'size-9 shrink-0 rounded-[9px] border-2 border-border bg-accent object-cover'
+const THUMB = 'size-9 shrink-0 rounded-xs border-2 border-border bg-accent object-cover'
 
 const MEME_LINE = 'min-w-0 font-sans text-caption font-medium text-foreground'
 const COINS = 'font-sans text-small font-medium text-foreground tabular-nums'

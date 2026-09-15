@@ -14,7 +14,7 @@ const TITLE = cn(
 )
 
 const ROW = cn(
-  'flex flex-wrap items-center justify-between gap-4 rounded-control px-4 py-3',
+  'flex flex-wrap items-center justify-between gap-4 rounded-lg px-4 py-3',
   'max-md:flex-col max-md:items-start max-md:gap-2.5 max-md:px-3.5',
 )
 
@@ -25,7 +25,7 @@ const ROW_LABEL = 'm-0 text-small font-semibold [&_code]:bg-transparent [&_code]
  * The row's own action is 40 tall, not the page's 46: it answers the row, not the page. A finger
  * still gets 44 — at any width, because a touch screen is not always a narrow one.
  */
-const ROW_ACTION = 'h-10 shrink-0 max-md:h-11 pointer-coarse:min-h-11'
+const ROW_ACTION = 'h-10 shrink-0 max-md:h-hit pointer-coarse:min-h-hit'
 
 /** Discord connect ritual as a function of its model. Every engine state is one set of args. */
 export function DiscordLinkScreen({
@@ -45,7 +45,7 @@ export function DiscordLinkScreen({
     <PageContainer as="main" id="main" tabIndex={-1}>
       <div className={cn(COLUMN, 'pt-14 max-md:pt-6')}>
         {/* the brain mark is the page's one ornament and stays an emoji */}
-        <p aria-hidden="true" className="m-0 text-[48px]/[60px]">
+        <p aria-hidden="true" className="m-0 text-glyph-hero">
           🧠
         </p>
         <h1 className={cn(TITLE, 'mt-2.5')}>{heading ?? errTitle}</h1>

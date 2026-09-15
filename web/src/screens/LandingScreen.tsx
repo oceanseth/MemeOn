@@ -18,10 +18,10 @@ const FACE = 'font-display font-medium text-foreground'
 const SECTION_TITLE = cn(FACE, 'm-0 text-section-phone tracking-title md:text-section')
 const SECTION = 'mt-14 max-md:mt-10'
 
-const CARD = 'rounded-card border-0 bg-card p-gutter shadow-raised'
+const CARD = 'rounded-lg border-0 bg-card p-gutter shadow-raised'
 
 /** Hero pile card: percentage positions scale with the column, no phone transform. */
-const PILE_CARD = 'absolute origin-top-left rounded-card bg-card p-1.75 shadow-raised'
+const PILE_CARD = 'absolute origin-top-left rounded-lg bg-card p-2 shadow-raised'
 
 const PILE_LAYOUT = [
   'left-0 top-[19%] w-[38.2%]',
@@ -65,14 +65,14 @@ export function LandingScreen({
       {/* hero band bleeds into the page gutter, not the shell sidebar gap */}
       <section
         data-slot="landing-hero"
-        className="-mx-5 border-b border-border bg-accent px-5 pt-12 pb-14 max-md:pt-8 max-md:pb-10"
+        className="-mx-page-x border-b border-border bg-accent px-page-x pt-12 pb-14 max-md:pt-8 max-md:pb-10"
       >
         <div className="grid items-center gap-12 max-md:gap-8 lg:grid-cols-[minmax(0,570px)_minmax(0,405px)] lg:justify-between">
           <div className="min-w-0">
             <h1
               className={cn(
-                'm-0 font-display text-hero-phone font-medium tracking-display text-foreground text-pretty',
-                'md:text-hero',
+                'm-0 font-display text-display-phone font-medium tracking-display text-foreground text-pretty',
+                'md:text-display',
               )}
             >
               Memes are the new trading cards
@@ -120,7 +120,7 @@ export function LandingScreen({
                     tierFrameClasses(card.tierKey),
                   )}
                 >
-                  <span className="foil-frame foil-media relative block overflow-hidden rounded-field bg-muted">
+                  <span className="foil-frame foil-media relative block overflow-hidden rounded-md bg-muted">
                     <span
                       data-slot="hero-card-slot"
                       className="relative block aspect-[4/3] w-full"
@@ -144,7 +144,7 @@ export function LandingScreen({
                     tierKey={card.tierKey}
                     label={card.tierName}
                     /* pile seal one step smaller than grid thumb so it never crowds the title */
-                    className="absolute right-2.5 bottom-2.5 px-1.75 py-0.75 text-micro"
+                    className="absolute right-2.5 bottom-2.5 px-2 py-1 text-micro"
                   />
                 </li>
               )
@@ -176,7 +176,7 @@ export function LandingScreen({
           The Virality Tiers
         </h2>
         {/* an ordered climb, so the ladder is an <ol>: the sequence is the section's argument */}
-        <ol className="mt-6 grid list-none grid-cols-[repeat(auto-fill,minmax(136px,1fr))] gap-3 p-0 max-sm:grid-cols-2 4xl:grid-cols-7">
+        <ol className="mt-6 grid list-none grid-cols-[repeat(auto-fill,minmax(136px,1fr))] gap-3 p-0 max-sm:grid-cols-2 2xl:grid-cols-7">
           {tiers.map((t) => (
             <li
               key={t.key}
@@ -185,12 +185,12 @@ export function LandingScreen({
               /* `tier-card` is part of the foil effect API (`atoms/foil.css`): it is what the
                  forced-colors rarity border keys off. The box model around it is this screen's. */
               className={cn(
-                'tier-card flex flex-col rounded-card bg-accent p-3 shadow-raised',
+                'tier-card flex flex-col rounded-lg bg-accent p-3 shadow-raised',
                 tierFrameClasses(t.key),
               )}
             >
               {/* the slot is permanent, so loading, ready and failed all keep the same box */}
-              <span className="foil-frame foil-media relative block overflow-hidden rounded-field bg-muted">
+              <span className="foil-frame foil-media relative block overflow-hidden rounded-md bg-muted">
                 <span
                   data-slot="tier-frame-slot"
                   className="relative block aspect-[4/3] min-h-26 w-full"
@@ -211,7 +211,7 @@ export function LandingScreen({
               <span className="mt-2.5 text-small font-bold text-link tabular-nums">
                 {t.resharesLabel}
               </span>
-              <span className="mt-0.75 text-micro/tight text-muted-foreground">{t.rarityLabel}</span>
+              <span className="mt-1 text-micro/tight text-muted-foreground">{t.rarityLabel}</span>
             </li>
           ))}
         </ol>
@@ -221,7 +221,7 @@ export function LandingScreen({
           before the FAQ answers the questions it raises. */}
       <section data-slot="landing-film" className={SECTION}>
         <h2 className={SECTION_TITLE}>MemeOn in 50 seconds</h2>
-        <HeroVideo model={heroVideo} className="mt-6 max-w-hero-video" />
+        <HeroVideo model={heroVideo} className="mt-6 max-w-220" />
       </section>
 
       {/* FAQ */}
@@ -290,8 +290,8 @@ export function LandingScreen({
         <section
           data-slot="landing-closing"
           className={cn(
-            'mt-10 flex items-center justify-between gap-4 rounded-card bg-brand',
-            'px-6.25 py-5.5 shadow-raised',
+            'mt-10 flex items-center justify-between gap-4 rounded-lg bg-brand',
+            'px-6 py-5.5 shadow-raised',
             'max-lg:flex-col max-lg:items-stretch max-lg:gap-4',
           )}
         >

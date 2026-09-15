@@ -25,7 +25,7 @@ export function PageHead({ title, subtitle, level = 'h2', className, children, .
       data-slot="page-head"
       className={cn(
         'mx-0 mt-5 mb-6 flex flex-wrap items-center justify-between gap-4',
-        'xl:[&>[data-slot=filter-bar]]:flex-auto xl:[&>[data-slot=filter-bar]]:justify-end',
+        'lg:[&>[data-slot=filter-bar]]:flex-auto lg:[&>[data-slot=filter-bar]]:justify-end',
         className,
       )}
     >

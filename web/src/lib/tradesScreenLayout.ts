@@ -8,8 +8,8 @@ export const columnFields = 'flex flex-col gap-2.5'
 /** Give and want side by side at 2xl, stacked below. */
 export const composeGrid = cn(
   'flex flex-col gap-5',
-  '2xl:grid 2xl:grid-cols-[repeat(2,minmax(0,1fr))] 2xl:gap-x-7 2xl:gap-y-5',
-  '2xl:[&>*:not([data-slot=fieldset])]:col-span-full',
+  'xl:grid xl:grid-cols-[repeat(2,minmax(0,1fr))] xl:gap-x-7 xl:gap-y-5',
+  'xl:[&>*:not([data-slot=fieldset])]:col-span-full',
 )
 
 /** Composer legends at intro size, not micro caps. */
