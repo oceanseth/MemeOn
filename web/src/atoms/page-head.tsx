@@ -1,40 +1,41 @@
-import type { ElementType, HTMLAttributes, ReactNode } from 'react'
-import { cn } from '../lib/cn'
+import { cva } from 'class-variance-authority'
+import { createElement, type HTMLAttributes, type ReactNode } from 'react'
+import { cn } from '@/lib/cn'
 
-export interface PageHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
-  title: ReactNode
-  /** The page's introduction: Onest intro, ink-muted, under the title. */
-  subtitle?: ReactNode
-  /** Heading-level agnostic: a screen can promote its title to <h1> with no size change. */
-  level?: 'h1' | 'h2'
-}
+/**
+ * The page title row: title (and its intro) on the left, whatever the screen puts beside it on
+ * the right. From the `lg` cut a direct `FilterBar` child absorbs the row's slack instead of
+ * clipping its own field.
+ */
+const pageHeadVariants = cva([
+  'mx-0 mt-5 mb-6 flex flex-wrap items-center justify-between gap-4',
+  'lg:*:data-[slot=filter-bar]:flex-auto lg:*:data-[slot=filter-bar]:justify-end',
+])
 
-/** Page title: Unbounded display (phone display under the cut), tracking −0.04em. */
+/** Unbounded display (the phone step under the cut), tracking −0.04em. */
 const HEADING = cn(
   'm-0 font-display text-display font-medium tracking-display text-foreground',
   'max-md:text-display-phone',
 )
 
-/** ≥761px: a direct FilterBar child absorbs the row's slack instead of clipping its own field. */
+export interface PageHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
+  title: ReactNode
+  /** The page's introduction: Onest intro, muted, under the title. */
+  subtitle?: ReactNode
+  /** Heading-level agnostic: a screen can promote its title to <h1> with no size change. */
+  level?: 'h1' | 'h2'
+}
+
 export function PageHead({ title, subtitle, level = 'h2', className, children, ...rest }: PageHeadProps) {
-  const Heading: ElementType = level
-  const heading = <Heading className={HEADING}>{title}</Heading>
+  const heading = createElement(level, { className: HEADING }, title)
   return (
-    <div
-      {...rest}
-      data-slot="page-head"
-      className={cn(
-        'mx-0 mt-5 mb-6 flex flex-wrap items-center justify-between gap-4',
-        'lg:[&>[data-slot=filter-bar]]:flex-auto lg:[&>[data-slot=filter-bar]]:justify-end',
-        className,
-      )}
-    >
+    <div data-slot="page-head" className={cn(pageHeadVariants(), className)} {...rest}>
       {subtitle ? (
         <div className="min-w-0">
           {heading}
-          <span data-slot="page-subtitle" className="mt-1.5 block text-intro text-muted-foreground">
+          <p data-slot="page-subtitle" className="mt-1.5 text-intro text-muted-foreground">
             {subtitle}
-          </span>
+          </p>
         </div>
       ) : (
         heading
@@ -45,10 +46,8 @@ export function PageHead({ title, subtitle, level = 'h2', className, children, .
 }
 
 /** Layout only; inputs, selects and buttons are supplied by the consumer. */
-export function FilterBar({ className, children, ...rest }: HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div {...rest} data-slot="filter-bar" className={cn('flex flex-wrap items-center gap-2.5', className)}>
-      {children}
-    </div>
-  )
+export function FilterBar({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
+  return <div data-slot="filter-bar" className={cn('flex flex-wrap items-center gap-2.5', className)} {...rest} />
 }
+
+export { pageHeadVariants }

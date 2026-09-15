@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
+import { expect, within } from 'storybook/test'
 import { Badge } from '@/atoms/badge'
 
 const meta = {
@@ -10,22 +11,56 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const Default: Story = {}
-export const State: Story = { args: { state: true, children: 'Friends' } }
+export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    const badge = canvasElement.querySelector('[data-slot="badge"]')
+    await expect(badge).not.toBeNull()
+    await expect(badge).toHaveAttribute('data-variant', 'default')
+  },
+}
 
-/** The six tones, in the order a screen reaches for them. */
-export const Tones: Story = {
+export const Info: Story = { args: { variant: 'info', children: 'Friends' } }
+
+/** `tone` is the pre-registry spelling the screens still pass; it resolves to `variant`. */
+export const LegacyTone: Story = {
+  args: { tone: 'info', children: 'Friends' },
+  play: async ({ canvasElement }) => {
+    const badge = canvasElement.querySelector('[data-slot="badge"]')
+    await expect(badge).toHaveAttribute('data-variant', 'info')
+  },
+}
+
+/** The six variants, in the order a screen reaches for them. */
+export const Variants: Story = {
   render: () => (
     <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, padding: 16 }}>
       <Badge>12 held</Badge>
-      <Badge tone="action">For sale</Badge>
-      <Badge tone="success">Minted</Badge>
-      <Badge tone="warning">Pending</Badge>
-      <Badge tone="error">Failed</Badge>
-      <Badge tone="info">Friends</Badge>
+      <Badge variant="primary">For sale</Badge>
+      <Badge variant="success">Minted</Badge>
+      <Badge variant="warning">Pending</Badge>
+      <Badge variant="error">Failed</Badge>
+      <Badge variant="info">Friends</Badge>
       <Badge>🙈 private</Badge>
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelectorAll('[data-slot="badge"]')).toHaveLength(7)
+  },
 }
 
-export const Dark: Story = { ...Tones, globals: { theme: 'dark' } }
+/** `render` swaps the span for a link, so a status pill can be the way to the thing it names. */
+export const AsLink: Story = {
+  render: () => (
+    <Badge variant="primary" render={<a href="/marketplace" />}>
+      For sale
+    </Badge>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const link = canvas.getByRole('link', { name: 'For sale' })
+    await expect(link).toHaveAttribute('data-slot', 'badge')
+    await expect(link).toHaveAttribute('data-variant', 'primary')
+  },
+}
+
+export const Dark: Story = { ...Variants, globals: { theme: 'dark' } }

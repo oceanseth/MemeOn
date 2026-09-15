@@ -18,6 +18,8 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = canvas.getByRole('button', { name: 'Do the thing' })
+    await expect(button).toHaveAttribute('data-slot', 'button')
+    await expect(button).toHaveAttribute('type', 'button')
     await expect(button.offsetHeight).toBe(46)
     await expect(getComputedStyle(button).borderRadius).toBe(token('--radius-lg'))
   },
@@ -25,9 +27,21 @@ export const Default: Story = {
 export const Primary: Story = { args: { variant: 'primary' } }
 
 /** The ultraviolet companion — a second action on a card that must not spend the bubblegum. */
-export const Secondary: Story = { args: { variant: 'secondary', children: 'Show more brains' } }
-export const Danger: Story = { args: { variant: 'danger', children: '🗑️ Delete forever' } }
-export const Login: Story = { args: { variant: 'login', children: 'Continue with Discord' } }
+export const Brand: Story = { args: { variant: 'brand', children: 'Show more brains' } }
+export const Destructive: Story = { args: { variant: 'destructive', children: '🗑️ Delete forever' } }
+export const Ghost: Story = { args: { variant: 'ghost', children: 'Skip for now' } }
+export const LinkVariant: Story = { args: { variant: 'link', children: 'Read the rules' } }
+
+/** The sign-in CTA is a size, not a colour: primary, full width on the phone, wraps its label. */
+export const Login: Story = {
+  args: { variant: 'primary', size: 'login', children: 'Continue with Discord' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = canvas.getByRole('button', { name: 'Continue with Discord' })
+    await expect(button.offsetHeight).toBeGreaterThanOrEqual(46)
+    await expect(getComputedStyle(button).whiteSpace).toBe('normal')
+  },
+}
 
 /**
  * A toggle or tab that is on: the pressed well instead of the raised pill, announced with
@@ -44,29 +58,104 @@ export const Pressed: Story = {
   },
 }
 
+/** The size axis: control (46), row action (40), chip (34) and the two square icon boxes. */
+export const Sizes: Story = {
+  render: () => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: 16 }}>
+      <Button>Default</Button>
+      <Button size="sm">Small</Button>
+      <Button size="xs">Chip</Button>
+      <Button size="icon" aria-label="Settings">
+        ⚙️
+      </Button>
+      <Button size="icon-sm" aria-label="Close">
+        ✕
+      </Button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Default' }).offsetHeight).toBe(46)
+    await expect(canvas.getByRole('button', { name: 'Small' }).offsetHeight).toBe(40)
+    await expect(canvas.getByRole('button', { name: 'Chip' }).offsetHeight).toBe(34)
+    const icon = canvas.getByRole('button', { name: 'Settings' })
+    await expect(icon.offsetWidth).toBe(46)
+    await expect(icon.offsetHeight).toBe(46)
+    const iconSm = canvas.getByRole('button', { name: 'Close' })
+    await expect(iconSm.offsetWidth).toBe(34)
+    await expect(getComputedStyle(iconSm).borderRadius).toBe(token('--radius-sm'))
+  },
+}
+
 /** Every variant in one row, which is also the dark twin's subject. */
 export const Variants: Story = {
   render: () => (
     <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: 16 }}>
       <Button>Load more</Button>
       <Button variant="primary">＋ Mint a meme</Button>
-      <Button variant="secondary">Show more brains</Button>
-      <Button variant="danger">🗑️ Delete forever</Button>
+      <Button variant="brand">Show more brains</Button>
+      <Button variant="destructive">🗑️ Delete forever</Button>
+      <Button variant="mint">＋ Mint</Button>
+      <Button variant="ghost">Skip for now</Button>
+      <Button variant="link">Read the rules</Button>
       <Button pressed>All memes</Button>
       <Button disabled>Unavailable</Button>
       <Button variant="primary" busy>
         Minting…
       </Button>
-      <Button variant="login">Log in with Masky</Button>
+      <Button variant="primary" size="login">
+        Log in with Masky
+      </Button>
     </div>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getAllByRole('button')).toHaveLength(8)
+    await expect(canvas.getAllByRole('button')).toHaveLength(11)
   },
 }
 
 export const Dark: Story = { ...Variants, globals: { theme: 'dark' } }
+
+/**
+ * The names the screens still pass (`secondary`, `danger`, `login`) resolve to the registry axes:
+ * brand, destructive, and primary at the login size.
+ */
+export const LegacyNames: Story = {
+  render: () => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: 16 }}>
+      <Button variant="secondary">Secondary</Button>
+      <Button variant="danger">Danger</Button>
+      <Button variant="login">Login</Button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: 'Secondary' })).toHaveClass('bg-brand')
+    await expect(canvas.getByRole('button', { name: 'Danger' })).toHaveClass('bg-error')
+    const login = canvas.getByRole('button', { name: 'Login' })
+    await expect(login).toHaveClass('bg-primary')
+    await expect(login).toHaveClass('min-h-control')
+  },
+}
+
+/**
+ * The pill on a link: Base UI's `render` swaps the element, `nativeButton={false}` tells it the
+ * element is not a `<button>`. The anchor is announced as a button, which is Base UI's contract.
+ */
+export const AsLink: Story = {
+  render: () => (
+    <Button variant="primary" render={<a href="/marketplace" />} nativeButton={false}>
+      Browse the marketplace
+    </Button>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const link = canvas.getByRole('button', { name: 'Browse the marketplace' })
+    await expect(link.tagName).toBe('A')
+    await expect(link).toHaveAttribute('href', '/marketplace')
+    await expect(link).toHaveAttribute('data-slot', 'button')
+  },
+}
 
 export const Busy: Story = {
   args: { variant: 'primary', busy: true },
@@ -107,8 +196,8 @@ export const BusyViaAriaBusyStringProp: Story = {
 /**
  * Real call sites (InviteScreen, ProfileScreen) spread both `aria-disabled` and `aria-busy` while
  * a request is in flight — a button that is disabled-looking at rest but must read at full
- * opacity the moment it goes busy. BASE's `aria-disabled:opacity-*` carries an attribute-selector
- * specificity bump that would otherwise outrank a plain `opacity-100`, so busy must win with `!`.
+ * opacity the moment it goes busy. `disabled-look` carries an attribute-selector specificity
+ * bump that would otherwise outrank a plain `opacity-100`, so busy must win with `!`.
  */
 export const BusyWhileAriaDisabled: Story = {
   args: { variant: 'primary', busy: true, 'aria-disabled': true },
