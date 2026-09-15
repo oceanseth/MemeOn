@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, within } from 'storybook/test'
-import { proposedTrade } from '../../.storybook/fixtures'
+import { holoMeme, paperMeme, proposedTrade, silverMeme } from '../../.storybook/fixtures'
 import { TradeCard } from './TradeCard'
 import { buildTradeCardModel, type TradeMemeInfoMap } from '../lib/tradeCardModel'
 
@@ -10,8 +10,8 @@ const onRespond = fn()
 const NOW = new Date(proposedTrade.createdAt).getTime() + 3 * 60 * 60 * 1000
 
 const resolvedNames: TradeMemeInfoMap = {
-  'meme-paper': { title: 'fresh paper', imageUrl: '/brand/paper.png', tierKey: 'paper', tierName: 'Paper', tierLabel: 'Paper · common', reshares: 0 },
-  'meme-silver': { title: 'group-chat silver', imageUrl: '/brand/silver.png', tierKey: 'silver', tierName: 'Silver', tierLabel: 'Silver · uncommon', reshares: 12 },
+  'meme-paper': { title: paperMeme.title, imageUrl: paperMeme.imageUrl, tierKey: 'paper', tierName: 'Paper', tierLabel: 'Paper · common', reshares: 0 },
+  'meme-silver': { title: silverMeme.title, imageUrl: silverMeme.imageUrl, tierKey: 'silver', tierName: 'Silver', tierLabel: 'Silver · uncommon', reshares: 12 },
 }
 
 const meta = {
@@ -90,7 +90,7 @@ export const FoilSide: Story = {
       meSub: 'not-the-sender',
       memeNames: {
         ...resolvedNames,
-        'meme-holo': { title: 'holo hit', imageUrl: '/brand/holo.png', tierKey: 'holo', tierName: 'Holo', tierLabel: 'Holo · rare', reshares: 60 },
+        'meme-holo': { title: holoMeme.title, imageUrl: holoMeme.imageUrl, tierKey: 'holo', tierName: 'Holo', tierLabel: 'Holo · rare', reshares: 60 },
       },
       onRespond,
       now: NOW,

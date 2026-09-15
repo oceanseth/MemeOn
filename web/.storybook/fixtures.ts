@@ -1,14 +1,17 @@
 import { memeValue, tierFor } from '../../shared/tiers'
 import type { Alert, FriendEntry, GiphyResult, LeaderRow, Me, Meme, Memeplex, QuestStep, Trade } from '../src/lib/types'
+import { devMemeMedia } from './dev-meme-media'
 
 export const FIXED_NOW = '2026-09-08T00:00:00.000Z'
+
+const media = devMemeMedia.roles
 
 function meme(partial: Pick<Meme, 'id' | 'title' | 'reshares'> & Partial<Meme>): Meme {
   const tier = tierFor(partial.reshares)
   return {
     description: null,
     mediaType: 'image',
-    imageUrl: '/brand/og-home.png',
+    imageUrl: media.paper.imageUrl,
     videoUrl: null,
     tags: [],
     creatorId: 'user-lou',
@@ -29,13 +32,70 @@ function meme(partial: Pick<Meme, 'id' | 'title' | 'reshares'> & Partial<Meme>):
   }
 }
 
-export const paperMeme = meme({ id: 'meme-paper', title: 'fresh paper', reshares: 0 })
-export const silverMeme = meme({ id: 'meme-silver', title: 'group-chat silver', reshares: 12 })
-export const holoMeme = meme({ id: 'meme-holo', title: 'holo hit', reshares: 60 })
+/** Stable story ids/titles; art synced from dev.memeon.ai via sync-storybook-memes.mjs */
+export const paperMeme = meme({
+  id: 'meme-paper',
+  title: 'fresh paper',
+  reshares: 0,
+  imageUrl: media.paper.imageUrl,
+})
+export const silverMeme = meme({
+  id: 'meme-silver',
+  title: 'group-chat silver',
+  reshares: 12,
+  imageUrl: media.silver.imageUrl,
+})
+export const holoMeme = meme({
+  id: 'meme-holo',
+  title: 'holo hit',
+  reshares: 60,
+  imageUrl: media.holo.imageUrl,
+})
+export const chromeMeme = meme({
+  id: 'meme-chrome',
+  title: media.chrome.title,
+  reshares: media.chrome.reshares,
+  imageUrl: media.chrome.imageUrl,
+  creatorId: media.chrome.creatorId,
+  creatorName: media.chrome.creatorName,
+  ownerId: media.chrome.ownerId,
+  ownerName: media.chrome.ownerName,
+})
+export const goldMeme = meme({
+  id: 'meme-gold',
+  title: media.gold.title,
+  reshares: media.gold.reshares,
+  imageUrl: media.gold.imageUrl,
+  creatorId: media.gold.creatorId,
+  creatorName: media.gold.creatorName,
+  ownerId: media.gold.ownerId,
+  ownerName: media.gold.ownerName,
+})
+export const prismaticMeme = meme({
+  id: 'meme-prismatic',
+  title: media.prismatic.title,
+  reshares: media.prismatic.reshares,
+  imageUrl: media.prismatic.imageUrl,
+  creatorId: media.prismatic.creatorId,
+  creatorName: media.prismatic.creatorName,
+  ownerId: media.prismatic.ownerId,
+  ownerName: media.prismatic.ownerName,
+})
+export const shinyMeme = meme({
+  id: 'meme-shiny',
+  title: media.shiny.title,
+  reshares: media.shiny.reshares,
+  imageUrl: media.shiny.imageUrl,
+  creatorId: media.shiny.creatorId,
+  creatorName: media.shiny.creatorName,
+  ownerId: media.shiny.ownerId,
+  ownerName: media.shiny.ownerName,
+})
 export const listedHolo = meme({
   id: 'meme-listed',
   title: 'listed holo',
   reshares: 60,
+  imageUrl: media.holo.imageUrl,
   listing: { sellerId: 'user-lou', pricePerShare: 3, shares: 10 },
 })
 
@@ -156,18 +216,23 @@ export const marketplacePage = [paperMeme, silverMeme, holoMeme, listedHolo]
 
 export const videoMeme: Meme = meme({
   id: 'meme-video',
-  title: 'moving paper',
-  reshares: 0,
+  title: media.video.title,
+  reshares: media.video.reshares,
   mediaType: 'video',
-  videoUrl: '/brand/og-home.png',
+  imageUrl: media.video.imageUrl,
+  videoUrl: media.video.videoUrl,
+  creatorId: media.video.creatorId,
+  creatorName: media.video.creatorName,
+  ownerId: media.video.ownerId,
+  ownerName: media.video.ownerName,
 })
 
 export const giphyCat: GiphyResult = {
   id: 'giphy-cat',
   title: 'cat keyboard',
-  stillUrl: '/brand/og-home.png',
-  gifUrl: '/brand/og-home.png',
-  mp4Url: null,
+  stillUrl: media.video.imageUrl,
+  gifUrl: media.video.imageUrl,
+  mp4Url: media.video.videoUrl,
   author: 'giphy-user',
   url: 'https://giphy.com/gifs/cat-keyboard',
 }
@@ -175,8 +240,8 @@ export const giphyCat: GiphyResult = {
 export const giphyDog: GiphyResult = {
   id: 'giphy-dog',
   title: 'dog office',
-  stillUrl: '/brand/og-home.png',
-  gifUrl: '/brand/og-home.png',
+  stillUrl: media.paper.imageUrl,
+  gifUrl: media.paper.imageUrl,
   mp4Url: null,
   author: null,
   url: 'https://giphy.com/gifs/dog-office',
@@ -184,15 +249,7 @@ export const giphyDog: GiphyResult = {
 
 export const giphyCategories = ['reactions', 'animals', 'memes']
 
-export const tierFrames: Record<string, string> = {
-  paper: '/brand/og-home.png',
-  silver: '/brand/og-home.png',
-  holo: '/brand/og-home.png',
-  chrome: '/brand/og-home.png',
-  gold: '/brand/og-home.png',
-  prismatic: '/brand/og-home.png',
-  shiny: '/brand/og-home.png',
-}
+export const tierFrames: Record<string, string> = devMemeMedia.frames
 
 export const invitePal = {
   inviter: {

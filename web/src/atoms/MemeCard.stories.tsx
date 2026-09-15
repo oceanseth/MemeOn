@@ -1,44 +1,63 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, within } from 'storybook/test'
-import { memeValue, TIERS, tierFor } from '@memeon/shared/tiers'
-import { holoMeme, listedHolo, paperMeme, silverMeme } from '../../.storybook/fixtures'
+import { memeValue, tierFor, TIERS } from '@memeon/shared/tiers'
+import {
+  chromeMeme,
+  goldMeme,
+  holoMeme,
+  listedHolo,
+  paperMeme,
+  prismaticMeme,
+  shinyMeme,
+  silverMeme,
+  videoMeme,
+} from '../../.storybook/fixtures'
 import type { Meme } from '../lib/types'
 import { memeCardCopy as copy } from '../copy/memeCard'
 import { buildMemeCardModel, buildReducedMotionMemeCardModel } from '../lib/memeCardModel'
 import { MemeCard } from './MemeCard'
 
-/** Story-local fixtures: the shared bag carries four tiers, this file needs all seven and the video branch. */
+/** Story-local fixtures: tier ladder uses real dev art; ids stay stable for link assertions. */
 function localMeme(partial: Pick<Meme, 'id' | 'title' | 'reshares'> & Partial<Meme>): Meme {
+  const art =
+    partial.reshares >= 25_000
+      ? shinyMeme
+      : partial.reshares >= 5_000
+        ? prismaticMeme
+        : partial.reshares >= 1_000
+          ? goldMeme
+          : partial.reshares >= 250
+            ? chromeMeme
+            : partial.reshares >= 50
+              ? holoMeme
+              : partial.reshares >= 10
+                ? silverMeme
+                : paperMeme
   const tier = tierFor(partial.reshares)
   return {
     description: null,
     mediaType: 'image',
-    imageUrl: '/brand/og-home.png',
-    videoUrl: null,
+    imageUrl: art.imageUrl,
+    videoUrl: art.videoUrl,
     tags: [],
-    creatorId: 'user-lou',
-    creatorName: 'lou',
-    ownerId: 'user-lou',
-    ownerName: 'lou',
+    creatorId: art.creatorId,
+    creatorName: art.creatorName,
+    ownerId: art.ownerId,
+    ownerName: art.ownerName,
     listing: null,
     createdAt: '2026-09-08T00:00:00.000Z',
     tier,
     tierKey: tier.key,
     value: memeValue(partial.reshares),
-    views: partial.reshares * 12,
-    reshareCount: partial.reshares,
+    views: partial.views ?? partial.reshares * 12,
+    reshareCount: partial.reshareCount ?? partial.reshares,
     remixOf: null,
     private: false,
     source: null,
     ...partial,
   }
 }
-
-const chromeMeme = localMeme({ id: 'meme-chrome', title: 'chrome streak', reshares: 250 })
-const goldMeme = localMeme({ id: 'meme-gold', title: 'gold standard', reshares: 1000 })
-const prismaticMeme = localMeme({ id: 'meme-prismatic', title: 'prismatic run', reshares: 5000 })
-const shinyMeme = localMeme({ id: 'meme-shiny', title: 'shiny legend', reshares: 41_000 })
 
 /** the product caps a title at 20 characters, so the ellipsis must never fire inside that cap */
 const longTitleMeme = localMeme({
@@ -54,15 +73,6 @@ const noViewsMeme = localMeme({
   reshares: 60,
   views: undefined,
   reshareCount: 60,
-})
-
-const videoLoop = localMeme({
-  id: 'meme-video',
-  title: 'looping bit',
-  reshares: 60,
-  mediaType: 'video',
-  videoUrl: '/promo/memeon-promo.mp4',
-  imageUrl: '/promo/memeon-promo-poster.jpg',
 })
 
 const allTiers = TIERS.map((tier, index) =>
@@ -157,21 +167,21 @@ export const NoViews: Story = {
 
 /** autoplay is loaned out by the viewport observer and can always be taken back */
 export const Video: Story = {
-  args: { model: buildMemeCardModel(videoLoop) },
+  args: { model: buildMemeCardModel(videoMeme) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const toggle = canvas.getByRole('button', { name: `Play ${videoLoop.title}` })
+    const toggle = canvas.getByRole('button', { name: `Play ${videoMeme.title}` })
     await expect(toggle).toHaveAttribute('aria-pressed', 'false')
   },
 }
 
 /** the OS asked for stillness: the poster is the whole card until the player presses play */
 export const VideoReducedMotion: Story = {
-  args: { model: buildReducedMotionMemeCardModel(videoLoop) },
+  args: { model: buildReducedMotionMemeCardModel(videoMeme) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('article').dataset.mediaAutoplay).toBe('off')
-    await expect(canvas.getByRole('button', { name: `Play ${videoLoop.title}` })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: `Play ${videoMeme.title}` })).toBeVisible()
   },
 }
 
