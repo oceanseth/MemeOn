@@ -1,11 +1,11 @@
-import { NavigationContainer, DarkTheme } from '@react-navigation/native'
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { StatusBar } from 'expo-status-bar'
-import { ActivityIndicator, View } from 'react-native'
+import { ActivityIndicator, useColorScheme, View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import { AuthProvider, useAuth } from './src/context/AuthContext'
-import { colors } from './src/lib/theme'
+import { useColors } from './src/lib/theme'
 import LoginScreen from './src/screens/LoginScreen'
 import FeedScreen from './src/screens/FeedScreen'
 import InvestScreen from './src/screens/InvestScreen'
@@ -25,30 +25,47 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
 
-const theme = {
-  ...DarkTheme,
-  colors: {
-    ...DarkTheme.colors,
-    background: colors.bg,
-    card: colors.raised,
-    text: colors.text,
-    border: colors.border,
-    primary: colors.accent,
-  },
-}
-
 function Root() {
   const { user, loading } = useAuth()
+  const scheme = useColorScheme()
+  const colors = useColors()
+  const baseNavTheme = scheme === 'light' ? DefaultTheme : DarkTheme
+  const navTheme = {
+    ...baseNavTheme,
+    colors: {
+      ...baseNavTheme.colors,
+      background: colors.bg,
+      card: colors.raised,
+      text: colors.text,
+      border: colors.border,
+      primary: colors.accent,
+    },
+  }
+
+  const statusBar = <StatusBar style={scheme === 'light' ? 'dark' : 'light'} />
+
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator color={colors.accent} size="large" />
-      </View>
+      <>
+        {statusBar}
+        <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator color={colors.accent} size="large" />
+        </View>
+      </>
     )
   }
-  if (!user) return <LoginScreen />
+  if (!user) {
+    return (
+      <>
+        {statusBar}
+        <LoginScreen />
+      </>
+    )
+  }
   return (
-    <NavigationContainer theme={theme}>
+    <>
+      {statusBar}
+      <NavigationContainer theme={navTheme}>
       <Stack.Navigator
         screenOptions={{
           headerStyle: { backgroundColor: colors.bg },
@@ -64,6 +81,7 @@ function Root() {
         <Stack.Screen name="About" component={AboutScreen} options={{ title: 'MemeOn' }} />
       </Stack.Navigator>
     </NavigationContainer>
+    </>
   )
 }
 
@@ -72,7 +90,6 @@ export default function App() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AuthProvider>
-          <StatusBar style="light" />
           <Root />
         </AuthProvider>
       </SafeAreaProvider>

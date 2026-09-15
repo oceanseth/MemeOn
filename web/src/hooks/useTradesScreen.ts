@@ -6,6 +6,7 @@ import { buildConfirmDialogModel, type ConfirmDialogModel } from '../lib/confirm
 import type { FriendEntry, Meme, Trade } from '../lib/types'
 import { buildTradeCardModel, tradeSideSentence, type TradeCardModel, type TradeAction, type TradeMemeInfo } from '../lib/tradeCardModel'
 import { tradeProposalPayload, tradesMachine, type TradesPhase } from '../stores/tradesMachine'
+import type { SelectOption } from '../atoms/Select'
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
 
@@ -13,18 +14,43 @@ export interface TradeComposerModel {
   formProps: { id: string; onSubmit: FormEventHandler<HTMLFormElement> }
   /** friends loaded and none of them accepted: the form has nothing to work with */
   noFriends: boolean
-  friendSelectProps: { value: string; onValueChange: (value: string | null) => void }; friends: readonly FriendEntry[]
-  offerMemeSelectProps: { value: string; onValueChange: (value: string | null) => void }; binderOptions: readonly { id: string; label: string }[]; showOfferShares: boolean
-  offerSharesInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }; offerSharesHint: string
-  offerCoinsInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }; offerCoinsHint: string
-  askMemeSelectProps: { value: string; onValueChange: (value: string | null) => void }; theirMemeOptions: readonly { id: string; label: string }[]; showAskShares: boolean
-  askSharesInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }; askCoinsInputProps: { value: number; min: number; onChange: ChangeEventHandler<HTMLInputElement> }
-  error: string | null; errorNoticeProps: HTMLAttributes<HTMLParagraphElement>
+  noFriendsMessage: string
+  findFriendsLinkProps: { to: string }
+  findFriendsLabel: string
+  heading: string
+  intro: string
+  tradeWithLabel: string
+  friendSelectProps: { value: string; onValueChange: (value: string | null) => void }
+  friendSelectItems: readonly SelectOption[]
+  youGiveLegend: string
+  youGiveBinderLabel: string
+  offerMemeSelectProps: { value: string; onValueChange: (value: string | null) => void }
+  offerMemeSelectItems: readonly SelectOption[]
+  showOfferShares: boolean
+  sharesToGiveLabel: string
+  offerSharesInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }
+  offerSharesHint: string
+  braincellsAddLabel: string
+  offerCoinsInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }
+  offerCoinsHint: string
+  youWantLegend: string
+  youWantMemesLabel: string
+  askMemeSelectProps: { value: string; onValueChange: (value: string | null) => void }
+  askMemeSelectItems: readonly SelectOption[]
+  showAskShares: boolean
+  sharesToWantLabel: string
+  askSharesInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }
+  braincellsWantLabel: string
+  askCoinsInputProps: { value: number; min: number; onChange: ChangeEventHandler<HTMLInputElement> }
+  proposeCaption: string
+  error: string | null
+  errorNoticeProps: HTMLAttributes<HTMLParagraphElement>
   proposeButtonLabel: string
   proposeButtonProps: { onClick: () => void; disabled: boolean }
 }
 export interface TradesScreenModel {
   phase: TradesPhase
+  pageTitle: string
   newTradeButtonLabel: string
   newTradeButtonProps: { onClick: () => void; 'aria-expanded': boolean; 'aria-controls': string }
   compose: TradeComposerModel | null
@@ -42,10 +68,15 @@ export interface TradesScreenModel {
   /** the list itself could not be fetched: offer the retry, hide the lists */
   showError: boolean
   retryButtonProps: { onClick: () => void }
+  retryLabel: string
   showLoading: boolean
   loadingProps: HTMLAttributes<HTMLDivElement>
   loadingLabel: string
   showLists: boolean
+  openHeading: string
+  openEmptyMessage: string
+  historyHeading: string
+  historyEmptyMessage: string
   confirmDialog: ConfirmDialogModel
 }
 const COMPOSE_FORM_ID = 'trade-composer'
@@ -161,10 +192,48 @@ export function useTradesScreen(): TradesScreenModel {
   const noFriends = context.friendsLoaded && context.friends.length === 0
   const emptyProposal = !context.offerMeme && context.offerCoins <= 0 && !context.askMeme && context.askCoins <= 0
   const zeroShares = (!!context.offerMeme && context.offerShares < 1) || (!!context.askMeme && context.askShares < 1)
+  const binderOptions = context.binder.map((meme) => ({
+    value: meme.id,
+    label: copy.composer.binderOption(meme.title, meme.myShares ?? 0),
+  }))
+  const theirMemeOptions = theirMemes.map((meme) => ({ value: meme.id, label: meme.title }))
+  const noMemeOption = { value: '', label: copy.noMeme }
   const compose: TradeComposerModel | null = showNew ? {
     formProps: { id: COMPOSE_FORM_ID, onSubmit: (event) => { event.preventDefault(); propose() } },
     noFriends,
-    friendSelectProps: { value: context.toId, onValueChange: onToIdChange }, friends: context.friends, offerMemeSelectProps: { value: context.offerMeme, onValueChange: (value) => send({ type: 'SET_OFFER_MEME', memeId: value ?? '' }) }, binderOptions: context.binder.map((meme) => ({ id: meme.id, label: copy.composer.binderOption(meme.title, meme.myShares ?? 0) })), showOfferShares: !!context.offerMeme, offerSharesInputProps: { value: context.offerShares, min: 1, max: offerSharesMax, onChange: (event) => send({ type: 'SET_OFFER_SHARES', shares: clampInt(event.target.value, 0, offerSharesMax) }) }, offerSharesHint: copy.composer.offerSharesHint(heldShares), offerCoinsInputProps: { value: context.offerCoins, min: 0, max: availableCoins, onChange: (event) => send({ type: 'SET_OFFER_COINS', coins: clampInt(event.target.value, 0, availableCoins) }) }, offerCoinsHint: copy.composer.offerCoinsHint(availableCoins), askMemeSelectProps: { value: context.askMeme, onValueChange: (value) => send({ type: 'SET_ASK_MEME', memeId: value ?? '' }) }, theirMemeOptions: theirMemes.map((meme) => ({ id: meme.id, label: meme.title })), showAskShares: !!context.askMeme, askSharesInputProps: { value: context.askShares, min: 1, max: 100, onChange: (event) => send({ type: 'SET_ASK_SHARES', shares: clampInt(event.target.value, 0, 100) }) }, askCoinsInputProps: { value: context.askCoins, min: 0, onChange: (event) => send({ type: 'SET_ASK_COINS', coins: clampInt(event.target.value, 0, MAX_COINS) }) }, error: context.composeErr, errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' }, proposeButtonLabel: copy.newTrade, proposeButtonProps: { onClick: propose, disabled: !context.toId || context.busy || noFriends || emptyProposal || zeroShares },
+    noFriendsMessage: copy.composer.noFriends,
+    findFriendsLinkProps: { to: '/friends' },
+    findFriendsLabel: copy.composer.findFriends,
+    heading: copy.composer.heading,
+    intro: copy.composer.intro,
+    tradeWithLabel: copy.composer.tradeWith,
+    friendSelectProps: { value: context.toId, onValueChange: onToIdChange },
+    friendSelectItems: [{ value: '', label: copy.composer.pickFriend }, ...context.friends.map((friend) => ({ value: friend.sub, label: friend.name }))],
+    youGiveLegend: copy.composer.youGiveLegend,
+    youGiveBinderLabel: copy.composer.youGiveBinder,
+    offerMemeSelectProps: { value: context.offerMeme, onValueChange: (value) => send({ type: 'SET_OFFER_MEME', memeId: value ?? '' }) },
+    offerMemeSelectItems: [noMemeOption, ...binderOptions],
+    showOfferShares: !!context.offerMeme,
+    sharesToGiveLabel: copy.composer.sharesToGive,
+    offerSharesInputProps: { value: context.offerShares, min: 1, max: offerSharesMax, onChange: (event) => send({ type: 'SET_OFFER_SHARES', shares: clampInt(event.target.value, 0, offerSharesMax) }) },
+    offerSharesHint: copy.composer.offerSharesHint(heldShares),
+    braincellsAddLabel: copy.composer.braincellsAdd,
+    offerCoinsInputProps: { value: context.offerCoins, min: 0, max: availableCoins, onChange: (event) => send({ type: 'SET_OFFER_COINS', coins: clampInt(event.target.value, 0, availableCoins) }) },
+    offerCoinsHint: copy.composer.offerCoinsHint(availableCoins),
+    youWantLegend: copy.composer.youWantLegend,
+    youWantMemesLabel: copy.composer.youWantMemes,
+    askMemeSelectProps: { value: context.askMeme, onValueChange: (value) => send({ type: 'SET_ASK_MEME', memeId: value ?? '' }) },
+    askMemeSelectItems: [noMemeOption, ...theirMemeOptions],
+    showAskShares: !!context.askMeme,
+    sharesToWantLabel: copy.composer.sharesToWant,
+    askSharesInputProps: { value: context.askShares, min: 1, max: 100, onChange: (event) => send({ type: 'SET_ASK_SHARES', shares: clampInt(event.target.value, 0, 100) }) },
+    braincellsWantLabel: copy.composer.braincellsWant,
+    askCoinsInputProps: { value: context.askCoins, min: 0, onChange: (event) => send({ type: 'SET_ASK_COINS', coins: clampInt(event.target.value, 0, MAX_COINS) }) },
+    proposeCaption: copy.composer.proposeCaption,
+    error: context.composeErr,
+    errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' },
+    proposeButtonLabel: copy.newTrade,
+    proposeButtonProps: { onClick: propose, disabled: !context.toId || context.busy || noFriends || emptyProposal || zeroShares },
   } : null
   const actingId = phase === 'acting' ? context.actingTradeId : null
   const actingAction = phase === 'acting' ? context.actingAction : null
@@ -194,6 +263,7 @@ export function useTradesScreen(): TradesScreenModel {
   const showError = context.loadFailed
   return {
     phase,
+    pageTitle: copy.pageTitle,
     /* Opens the compose form; submit lives on the form itself. */
     newTradeButtonLabel: showNew ? copy.closeComposer : copy.newTrade,
     newTradeButtonProps: { onClick: onToggleNew, 'aria-expanded': showNew, 'aria-controls': COMPOSE_FORM_ID },
@@ -209,10 +279,15 @@ export function useTradesScreen(): TradesScreenModel {
     showErrorNotice: !!context.err && !showError,
     showError,
     retryButtonProps: { onClick: retry },
+    retryLabel: copy.retry,
     showLoading: phase === 'loading',
     loadingProps: { role: 'status', 'aria-live': 'polite' },
     loadingLabel: copy.loading,
     showLists: phase !== 'loading' && !showError,
+    openHeading: copy.lists.openHeading,
+    openEmptyMessage: copy.lists.openEmpty,
+    historyHeading: copy.lists.historyHeading,
+    historyEmptyMessage: copy.lists.historyEmpty,
     confirmDialog,
   }
 }

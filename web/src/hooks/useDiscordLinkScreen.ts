@@ -1,5 +1,4 @@
 import { useProjectedActor } from './useProjectedActor'
-import { autorun } from 'mobx'
 import { useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { discordLinkCopy } from '../copy/discordLink'
@@ -76,7 +75,7 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
   }
 
   useMountEffect(() => {
-    const dispose = autorun(() => {
+    const settle = () => {
       if (auth.loading || settled.current) return
       settled.current = true
       const token = tokenRef.current
@@ -92,8 +91,9 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
         return
       }
       send({ type: 'READY' })
-    })
-    return dispose
+    }
+    settle()
+    return auth.subscribe(settle)
   })
 
   const onConfirm = (): void => {

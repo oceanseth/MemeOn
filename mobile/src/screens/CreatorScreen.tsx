@@ -5,14 +5,13 @@ import {
   FlatList,
   Image,
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from 'react-native'
 import type { RootStackParamList } from '../../App'
 import { FoilCard } from '../components/FoilCard'
 import { apiFetch, post } from '../lib/api'
-import { colors } from '../lib/theme'
+import { useColors, useThemedStyles, type LegacyColors } from '../lib/theme'
 import type { CreatorProfile, Meme } from '../lib/types'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Creator'>
@@ -22,6 +21,8 @@ export default function CreatorScreen({ route, navigation }: Props) {
   const [data, setData] = useState<CreatorProfile | null>(null)
   const [err, setErr] = useState<string | null>(null)
   const [tab, setTab] = useState<'created' | 'binder'>('created')
+  const colors = useColors()
+  const styles = useThemedStyles(createStyles)
 
   const load = useCallback(() => {
     apiFetch<CreatorProfile>(`/api/users/${encodeURIComponent(sub)}/profile`)
@@ -138,29 +139,31 @@ export default function CreatorScreen({ route, navigation }: Props) {
   )
 }
 
-const styles = StyleSheet.create({
-  center: { flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' },
-  head: { alignItems: 'center', padding: 20, gap: 6 },
-  avatar: { width: 84, height: 84, borderRadius: 42, borderWidth: 2, borderColor: colors.border },
-  name: { color: colors.text, fontSize: 22, fontWeight: '800', marginTop: 6 },
-  stats: { color: colors.dim, fontSize: 13.5 },
-  actions: { flexDirection: 'row', gap: 10, marginTop: 10 },
-  btn: {
-    backgroundColor: '#2c7fd8',
-    borderRadius: 10,
-    paddingHorizontal: 18,
-    paddingVertical: 9,
-  },
-  btnGhost: { backgroundColor: colors.raised, borderWidth: 1, borderColor: colors.border },
-  btnText: { color: '#fff', fontWeight: '700' },
-  tabs: { flexDirection: 'row', gap: 22, marginTop: 16 },
-  tab: { color: colors.dim, fontWeight: '700', fontSize: 15 },
-  tabActive: { color: colors.accent },
-  gridCard: {
-    backgroundColor: colors.card,
-    paddingBottom: 8,
-  },
-  gridImg: { width: '100%', aspectRatio: 1 },
-  gridTitle: { color: colors.text, fontWeight: '700', paddingHorizontal: 8, paddingTop: 6 },
-  gridTier: { fontSize: 11.5, fontWeight: '700', paddingHorizontal: 8, paddingTop: 2 },
-})
+function createStyles(colors: LegacyColors) {
+  return {
+    center: { flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' },
+    head: { alignItems: 'center', padding: 20, gap: 6 },
+    avatar: { width: 84, height: 84, borderRadius: 42, borderWidth: 2, borderColor: colors.border },
+    name: { color: colors.text, fontSize: 22, fontWeight: '800', marginTop: 6 },
+    stats: { color: colors.dim, fontSize: 13.5 },
+    actions: { flexDirection: 'row', gap: 10, marginTop: 10 },
+    btn: {
+      backgroundColor: '#2c7fd8',
+      borderRadius: 10,
+      paddingHorizontal: 18,
+      paddingVertical: 9,
+    },
+    btnGhost: { backgroundColor: colors.raised, borderWidth: 1, borderColor: colors.border },
+    btnText: { color: '#fff', fontWeight: '700' },
+    tabs: { flexDirection: 'row', gap: 22, marginTop: 16 },
+    tab: { color: colors.dim, fontWeight: '700', fontSize: 15 },
+    tabActive: { color: colors.accent },
+    gridCard: {
+      backgroundColor: colors.card,
+      paddingBottom: 8,
+    },
+    gridImg: { width: '100%', aspectRatio: 1 },
+    gridTitle: { color: colors.text, fontWeight: '700', paddingHorizontal: 8, paddingTop: 6 },
+    gridTier: { fontSize: 11.5, fontWeight: '700', paddingHorizontal: 8, paddingTop: 2 },
+  } as const
+}

@@ -8,6 +8,7 @@ import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import { buildSortChipsModel, type SortChipsModel } from '../lib/sortChipsModel'
 import type { SortDir, SortKey } from '../lib/sorting'
 import type { Meme } from '../lib/types'
+import type { SelectOption } from '../atoms/Select'
 import {
   marketplaceMachine,
   type MarketplaceContext,
@@ -71,8 +72,25 @@ export function buildMarketFilterTabs({
   }
 }
 
+/** Static: the tiers and their labels never change between renders, so the Select sees one array. */
+export const TIER_SELECT_ITEMS: readonly SelectOption[] = [
+  { value: '', label: copy.allTiers },
+  ...TIERS.map((tier) => ({ value: tier.key, label: tier.name })),
+]
+
 export interface MarketplaceScreenModel {
   phase: MarketplacePhase
+  pageTitle: string
+  intro: string
+  sectionHeading: string
+  mintLabel: string
+  allMemesPill: string
+  allMemesPillA11y: string
+  tierSelectItems: readonly SelectOption[]
+  clearFiltersLabel: string
+  emptyHeading: string
+  emptyBody: string
+  errorHeading: string
   cards: readonly MemeCardModel[]
   queryInputProps: {
     value: string
@@ -296,6 +314,17 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
 
   return {
     phase,
+    pageTitle: copy.pageTitle,
+    intro: copy.intro,
+    sectionHeading: copy.sectionHeading,
+    mintLabel: copy.mint,
+    allMemesPill: copy.allMemesPill,
+    allMemesPillA11y: copy.allMemesPillA11y,
+    tierSelectItems: TIER_SELECT_ITEMS,
+    clearFiltersLabel: copy.clearFilters,
+    emptyHeading: copy.empty.heading,
+    emptyBody: copy.empty.body,
+    errorHeading: copy.errorHeading,
     cards,
     queryInputProps: {
       value: context.q,

@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native'
 import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg'
-import { colors } from '../lib/theme'
+import { useColors } from '../lib/theme'
 import type { HistoryPoint } from '../lib/types'
 
 /** Stock-style value-over-time area chart (pure svg, no chart lib). */
@@ -8,13 +8,16 @@ export function ValueChart({
   points,
   width,
   height = 160,
-  color = colors.accent,
+  color,
 }: {
   points: HistoryPoint[]
   width: number
   height?: number
   color?: string
 }) {
+  const colors = useColors()
+  const stroke = color ?? colors.accent
+
   if (points.length === 0) return null
   const pts = points.length === 1 ? [points[0], points[0]] : points
   const values = pts.map((p) => p.value)
@@ -48,12 +51,12 @@ export function ValueChart({
       <Svg width={width} height={height}>
         <Defs>
           <LinearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={color} stopOpacity={0.35} />
-            <Stop offset="1" stopColor={color} stopOpacity={0.02} />
+            <Stop offset="0" stopColor={stroke} stopOpacity={0.35} />
+            <Stop offset="1" stopColor={stroke} stopOpacity={0.02} />
           </LinearGradient>
         </Defs>
         <Path d={area} fill="url(#fill)" />
-        <Path d={line} stroke={color} strokeWidth={2.5} fill="none" />
+        <Path d={line} stroke={stroke} strokeWidth={2.5} fill="none" />
       </Svg>
     </View>
   )

@@ -119,3 +119,24 @@ test("fails when a file drops below its baseline until --update locks the drop i
     assert.equal(check().status, 0)
   })
 })
+
+test("counts copy-like literals in screens/ and requires --update when a screen drops", () => {
+  withSrc({
+    "screens/TradeScreen.tsx": "export const title = 'Trade'\nexport const intro = 'Build a fair deal.'\n",
+    "hooks/useTradeScreen.ts": "export const a = 'Settings'\n",
+  }, ({ check, baseline, src }) => {
+    writeFileSync(baseline, JSON.stringify({ "hooks/useTradeScreen.ts": 1, "screens/TradeScreen.tsx": 2 }))
+    writeFileSync(join(src, "screens/TradeScreen.tsx"), "export const title = 'Trade'\n")
+
+    const result = check()
+    assert.equal(result.status, 1, result.output)
+    assert.match(result.output, /screens\/TradeScreen\.tsx: 2 → 1/)
+
+    const lowered = check("--update")
+    assert.equal(lowered.status, 0, lowered.output)
+    assert.deepEqual(JSON.parse(readFileSync(baseline, "utf8")), {
+      "hooks/useTradeScreen.ts": 1,
+      "screens/TradeScreen.tsx": 1,
+    })
+  })
+})

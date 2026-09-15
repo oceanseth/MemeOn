@@ -5,11 +5,23 @@ import { marketplacePage } from '../../.storybook/fixtures'
 import { marketplaceCopy as copy } from '../copy/marketplace'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { buildSortChipsModel } from '../lib/sortChipsModel'
-import { buildMarketFilterTabs, type MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
+import { buildMarketFilterTabs, TIER_SELECT_ITEMS, type MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
 import { MarketplaceScreen } from './MarketplaceScreen'
 
 const empty: MarketplaceScreenModel = {
-  phase: 'empty', cards: [],
+  phase: 'empty',
+  pageTitle: copy.pageTitle,
+  intro: copy.intro,
+  sectionHeading: copy.sectionHeading,
+  mintLabel: copy.mint,
+  allMemesPill: copy.allMemesPill,
+  allMemesPillA11y: copy.allMemesPillA11y,
+  tierSelectItems: TIER_SELECT_ITEMS,
+  clearFiltersLabel: copy.clearFilters,
+  emptyHeading: copy.empty.heading,
+  emptyBody: copy.empty.body,
+  errorHeading: copy.errorHeading,
+  cards: [],
   queryInputProps: {
     value: '', placeholder: copy.search.placeholder,
     'aria-label': copy.search.label, onChange: fn(),
@@ -109,7 +121,7 @@ export const FiltersNarrowed: Story = {
     await expect(media.getByRole('button', { name: copy.filters.media.images })).toHaveAttribute('aria-pressed', 'true')
     await expect(media.getByRole('button', { name: copy.filters.media.all })).toHaveAttribute('aria-pressed', 'false')
     await expect(canvas.getByRole('button', { name: copy.filters.listed })).toHaveAttribute('aria-pressed', 'true')
-    await userEvent.click(canvas.getByRole('button', { name: 'Clear filters' }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.clearFilters }))
     await expect(args.clearFiltersProps?.onClick).toHaveBeenCalled()
   },
 }
