@@ -5,7 +5,7 @@ import { SideSummary } from '@/molecules/side-summary'
 import type { TradeCardModel } from '../lib/tradeCardModel'
 
 /** Raised surface card, 20px padding. */
-const CARD = 'rounded-lg border-0 bg-card p-5 shadow-raised'
+const CARD = 'rounded-lg material-card p-5'
 
 /** Unbounded 17/22 — a card headline, not a section heading. */
 const HEADLINE = 'font-display text-card-title-phone font-medium tracking-card-title text-foreground'
@@ -15,7 +15,7 @@ const SUBLINE = 'mt-1 block text-caption text-muted-foreground'
 /** Give/get stay left/right regardless of proposer — "You give" is always the left plate. */
 const DEAL = cn(
   /* stretch, not center: equal-height wells read as one comparison */
-  'my-3.5 grid grid-cols-[1fr_auto_1fr] items-stretch gap-3.5 [&>*]:min-w-0',
+  'my-3.5 grid grid-cols-[1fr_auto_1fr] items-stretch gap-3.5 *:min-w-0',
   'max-xl:grid-cols-1 max-xl:gap-2.5',
 )
 

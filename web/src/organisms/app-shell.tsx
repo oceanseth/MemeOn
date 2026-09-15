@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { cn } from '../lib/cn'
-import { FOCUS_RING } from '../lib/focus'
 import './app-shell.css'
 
 /**
@@ -11,12 +10,12 @@ import './app-shell.css'
  */
 
 /** The shared ring (`lib/focus`), on every control this file paints itself. */
-const FOCUS = FOCUS_RING
+const FOCUS = 'focus-ring'
 
 /** A bypass block costs nothing until it is focused: it waits 60px above the page. */
 const SKIP_LINK = cn(
   'absolute -top-15 left-3 z-[calc(var(--z-header)+10)]',
-  'rounded-lg bg-accent px-4 py-2.5 text-foreground no-underline shadow-raised',
+  'rounded-lg material-raised px-4 py-2.5 text-foreground no-underline',
   '[transition:top_var(--dur-base)_ease] motion-reduce:transition-none',
   'focus:top-3',
   FOCUS,
@@ -34,8 +33,8 @@ const SIDEBAR_COLUMN = 'hidden w-59 shrink-0 py-5 pl-page-x xl:block'
  * never paint over the navigation.
  */
 const SIDEBAR = cn(
-  'sticky top-5 z-(--z-header) flex h-[calc(100dvh-40px)] w-54 flex-col overflow-y-auto [scrollbar-width:thin]',
-  'rounded-xl bg-card shadow-raised',
+  'sticky top-5 z-(--z-header) flex h-[calc(100dvh-40px)] w-54 flex-col overflow-y-auto scrollbar-thin',
+  'rounded-xl material-card',
 )
 
 /**
@@ -59,8 +58,7 @@ const CONTENT_ABOVE_TABS = 'max-xl:pb-[calc(100px+env(safe-area-inset-bottom,0px
 const HEADER = cn(
   'flex items-center gap-2.5',
   'max-xl:sticky max-xl:top-0 max-xl:z-(--z-header) max-xl:min-h-16 max-xl:py-1',
-  'max-xl:[padding-inline:max(20px,env(safe-area-inset-left))_max(20px,env(safe-area-inset-right))]',
-  'max-xl:bg-[color-mix(in_oklab,var(--color-background)_85%,transparent)] max-xl:backdrop-blur-md',
+  'max-xl:px-page-safe max-xl:glass',
   'xl:gap-gutter',
 )
 const HEADER_APP = 'xl:mt-7 xl:min-h-14 xl:px-page-x'
@@ -98,19 +96,17 @@ function Wordmark({ size, className }: { size: keyof typeof WORDMARK_SIZE; class
 export const NAV_ROW = cn(
   'flex h-12 items-center gap-3 rounded-lg px-3.5',
   'text-label font-medium text-foreground no-underline',
-  '[transition:background_var(--dur-base)_ease,box-shadow_var(--dur-base)_ease] motion-reduce:transition-none',
+  'transition-press',
   'hover:bg-accent',
-  'aria-[current=page]:bg-muted aria-[current=page]:font-semibold aria-[current=page]:shadow-pressed',
+  'aria-[current=page]:material-pressed aria-[current=page]:font-semibold',
   FOCUS,
 )
 
 /** The chrome's one primary: bubblegum in light, sky in dark, raised, 46 tall. */
 export const PRIMARY_PILL = cn(
   'inline-flex h-control items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4.5',
-  'bg-primary text-label font-semibold text-primary-foreground no-underline shadow-raised',
-  '[transition:transform_var(--dur-fast)_ease] motion-reduce:transition-none',
-  '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px motion-reduce:hover:translate-y-0!',
-  'pointer-coarse:active:translate-y-px',
+  'material-raised bg-primary text-label font-semibold text-primary-foreground no-underline',
+  'transition-press lift press',
   FOCUS,
 )
 
@@ -118,9 +114,9 @@ export const PRIMARY_PILL = cn(
 export const UTILITY_LINK = cn(
   '-ml-3 inline-flex h-9 items-center rounded-md px-3',
   'text-small font-medium text-foreground no-underline',
-  '[transition:background_var(--dur-base)_ease] motion-reduce:transition-none',
+  'transition-tint',
   'hover:bg-accent',
-  'aria-[current=page]:bg-muted aria-[current=page]:font-bold aria-[current=page]:shadow-pressed',
+  'aria-[current=page]:material-pressed aria-[current=page]:font-bold',
   'pointer-coarse:min-h-hit',
   FOCUS,
 )
@@ -129,13 +125,13 @@ export const UTILITY_LINK = cn(
 export const TAB_ITEM = cn(
   'flex h-hit w-15.5 shrink-0 flex-col items-center justify-center gap-1 rounded-full',
   'text-micro leading-tight font-semibold text-foreground no-underline',
-  'aria-[current=page]:bg-muted aria-[current=page]:font-bold aria-[current=page]:shadow-pressed',
+  'aria-[current=page]:material-pressed aria-[current=page]:font-bold',
   FOCUS,
 )
 
 /** The centre Mint item: the tab bar's single primary, raised in the action colour; pressed when current. */
 export const TAB_ITEM_PRIMARY = cn(
-  'bg-primary text-primary-foreground shadow-raised',
+  'material-raised bg-primary text-primary-foreground',
   'aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground',
 )
 
@@ -143,13 +139,13 @@ export const TAB_ITEM_PRIMARY = cn(
 const TAB_BAR = cn(
   'fixed bottom-[calc(10px+env(safe-area-inset-bottom,0px))] left-1/2 z-(--z-header) -translate-x-1/2',
   'flex h-20 w-[calc(100%-var(--spacing-page-x))] max-w-tabbar items-center justify-around pb-3',
-  'rounded-xl bg-card shadow-raised',
+  'rounded-xl material-card',
   'xl:hidden',
 )
 
 const FOOTER = cn(
   'mt-12 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-border',
-  'px-page-x pt-5.5 pb-[max(34px,env(safe-area-inset-bottom))]',
+  'px-page-x pt-5.5 pb-safe-8.5',
   'text-caption text-muted-foreground',
   'max-xl:flex-col max-xl:items-center',
 )
@@ -159,7 +155,7 @@ const FOOTER_PUBLIC = 'xl:px-page-x'
 /** Onest 13 ink-muted; the current page is bold ink (react-router's `aria-current` from NavLink). */
 const FOOTER_LINK = cn(
   'text-muted-foreground no-underline',
-  '[transition:color_var(--dur-base)_ease] motion-reduce:transition-none',
+  'transition-tint',
   'hover:text-foreground',
   'aria-[current=page]:font-bold aria-[current=page]:text-foreground',
   'pointer-coarse:inline-flex pointer-coarse:min-h-hit pointer-coarse:items-center',

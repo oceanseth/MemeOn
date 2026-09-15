@@ -8,19 +8,13 @@ export type ButtonVariant = 'default' | 'primary' | 'secondary' | 'danger' | 'lo
 const BASE = cn(
   'inline-flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer',
   'h-control rounded-lg px-4.5 text-label font-semibold',
-  'border-0 bg-accent text-foreground shadow-raised',
-  '[transition:transform_var(--dur-fast)_ease,box-shadow_var(--dur-base)_ease,background-color_var(--dur-base)_ease]',
-  'motion-reduce:transition-none',
-  /* hover, active and aria-pressed all write box-shadow — scope each so cascade order never picks the winner */
-  '[&:not(:disabled):not([aria-pressed=true]):hover:not(:active)]:shadow-[var(--relief-highlight)_0_1px_1px_inset,var(--relief-shadow)_0_-1px_1px_inset,var(--relief-shadow)_0_4px_7px]',
-  '[@media(hover:hover)_and_(pointer:fine)]:[&:not(:disabled):not([aria-pressed=true]):hover:not(:active)]:-translate-y-px',
-  'motion-reduce:[&:not(:disabled):not([aria-pressed=true]):hover:not(:active)]:translate-y-0!',
-  '[&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:shadow-pressed',
-  'focus-visible:outline-3 focus-visible:outline-ring focus-visible:outline-offset-2',
-  'contrast-more:focus-visible:outline-4',
-  'forced-colors:focus-visible:outline-fc-highlight',
-  'aria-pressed:bg-muted aria-pressed:text-foreground aria-pressed:shadow-pressed',
-  'aria-disabled:pointer-events-none aria-disabled:cursor-not-allowed aria-disabled:opacity-(--state-disabled-opacity)',
+  'material-raised text-foreground',
+  'transition-press',
+  /* lift deepens the raised relief on hover; press sinks it on active; aria-pressed is the pressed material */
+  'lift press',
+  'focus-ring',
+  'aria-pressed:material-pressed aria-pressed:text-foreground',
+  'aria-disabled:pointer-events-none disabled-look',
 )
 
 const PRIMARY = 'bg-primary text-primary-foreground'
@@ -78,7 +72,7 @@ export function Button({
         buttonClasses(variant),
         isBusy
           ? 'opacity-100! cursor-progress' // beats aria-disabled opacity specificity
-          : 'disabled:opacity-(--state-disabled-opacity) disabled:cursor-not-allowed',
+          : 'disabled-look',
         className,
       )}
     >

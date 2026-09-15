@@ -29,8 +29,8 @@ export const binderGridClasses = cn(
  * grid track.
  */
 export const binderCardSlotClasses = cn(
-  '[content-visibility:auto] [contain-intrinsic-size:auto_360px]',
-  'pointer-events-none p-bloom -m-bloom [&>*]:pointer-events-auto',
+  'skip-render',
+  'pointer-events-none p-bloom -m-bloom *:pointer-events-auto',
   'max-sm:p-page-x max-sm:-m-page-x',
 )
 
@@ -49,9 +49,9 @@ const TOOLBAR = 'mt-7 mb-gutter flex flex-wrap items-end justify-between gap-x-6
 
 /** Private toggle as a real checkbox inside a pill — checked state presses the pill. */
 const PRIVATE_PILL = cn(
-  'ms-0 min-h-control gap-2.5 rounded-lg bg-accent px-4.5 py-0 shadow-raised',
+  'ms-0 min-h-control gap-2.5 rounded-lg material-raised px-4.5 py-0',
   'text-label font-semibold text-foreground',
-  'has-[[data-checked]]:bg-muted has-[[data-checked]]:shadow-pressed',
+  'has-data-checked:material-pressed',
 )
 
 /** Toolbar Mint: bubblegum on phone, neutral on desktop (sidebar owns primary). */
@@ -93,7 +93,7 @@ export function BinderScreen({
       {identity && (
         <div
           data-slot="binder-identity"
-          className="mb-6 flex min-h-24.5 items-center gap-4 rounded-lg bg-card p-5 shadow-raised"
+          className="mb-6 flex min-h-24.5 items-center gap-4 rounded-lg material-card p-5"
         >
           <Avatar
             name={identity.name}

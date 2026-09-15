@@ -44,7 +44,7 @@ const panelRow = 'mt-4 flex flex-wrap items-center gap-2.5'
 /** The sources / cap-table row: a shallow well, not a bordered box. */
 const personRow = cn(
   'flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-muted px-3.5 py-2.5',
-  'text-small text-foreground [&>*]:min-w-0',
+  'text-small text-foreground *:min-w-0',
 )
 
 const rowList = 'mt-3 flex flex-col gap-2'
@@ -57,7 +57,7 @@ const heroTierLine = 'm-0 text-caption font-bold'
 const ladderTrack = 'mt-2 h-track overflow-hidden rounded-full bg-muted'
 const ladderFill = cn(
   'h-full rounded-full',
-  'bg-[linear-gradient(90deg,var(--color-brand),var(--color-primary),var(--color-brand))]',
+  'bg-linear-to-r from-brand via-primary to-brand',
 )
 
 /** Where this card sits on the rarity ladder, and the tier's own line of hype under it. */
@@ -123,7 +123,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
       <div className={detailGrid}>
         <div data-slot="detail-metadata" className={cn('flex min-w-0 flex-col', metaPlacement)}>
           {isPublic && (
-            <h1 className="m-0 flex flex-wrap items-center gap-x-3 font-display text-display font-medium tracking-display text-foreground max-md:text-display-phone [overflow-wrap:anywhere]">
+            <h1 className="m-0 flex flex-wrap items-center gap-x-3 font-display text-display font-medium tracking-display text-foreground max-md:text-display-phone wrap-anywhere">
               {detail.title}{privateBadge}
             </h1>
           )}
@@ -261,7 +261,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           {/* spread sources and cap table side by side under the market card */}
           <div
             data-slot="detail-spread"
-            className="flex flex-wrap items-start gap-gutter [&>*]:min-w-70 [&>*]:flex-1 [&>[data-slot=panel]]:mt-0"
+            className="flex flex-wrap items-start gap-gutter *:min-w-70 *:flex-1 [&>[data-slot=panel]]:mt-0"
           >
             {detail.sources.length > 0 && (
               <Panel>

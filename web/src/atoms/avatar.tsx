@@ -37,7 +37,7 @@ export function Avatar({ name, src, alt = '', size = 'sm', className, ...imgProp
     <BaseAvatar.Root
       className={cn(
         'inline-flex shrink-0 items-center justify-center overflow-hidden select-none',
-        'rounded-md border-0 bg-brand shadow-raised',
+        'rounded-md material-raised bg-brand',
         rootChrome[size],
         className,
       )}

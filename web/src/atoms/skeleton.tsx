@@ -1,12 +1,11 @@
 import type { HTMLAttributes } from 'react'
 import { cn } from '../lib/cn'
-import './skeleton.css'
 
 const BASE = cn(
-  'relative overflow-hidden rounded-lg border-0 bg-muted shadow-pressed',
-  "after:content-[''] after:absolute after:inset-0 after:-translate-x-full",
-  'after:bg-[linear-gradient(90deg,transparent,var(--relief-highlight),transparent)]',
-  'after:animate-[atom-skeleton-sweep_1.4s_linear_infinite] motion-reduce:after:animate-none',
+  'relative overflow-hidden rounded-lg material-pressed',
+  'after:absolute after:inset-0 after:-translate-x-full',
+  'after:bg-linear-to-r after:from-transparent after:via-(--relief-highlight) after:to-transparent',
+  'after:animate-sweep motion-reduce:after:animate-none',
 )
 
 export function Skeleton({ className, 'aria-hidden': ariaHidden, ...rest }: HTMLAttributes<HTMLDivElement>) {

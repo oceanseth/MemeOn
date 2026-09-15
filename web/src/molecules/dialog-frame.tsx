@@ -16,15 +16,14 @@ const anchorContainer = (anchorId: string) => ({
 
 /** `margin: auto` + `inset: 0` is how a native modal `<dialog>` centres itself; `mb-0` drops it to the floor. */
 const POPUP = cn(
-  'fixed inset-0 z-(--z-modal) m-auto h-fit box-border overflow-y-auto [scrollbar-width:thin]',
+  'fixed inset-0 z-(--z-modal) m-auto h-fit box-border overflow-y-auto scrollbar-thin',
   'max-h-[min(86dvh,86vh)] max-w-[calc(100vw-24px)]',
   // the modal card: radius 25, 24 of padding, the surface colour, no border — the shadow is the edge
-  'rounded-lg border-0 bg-card p-card-inset text-foreground shadow-modal',
-  'focus-visible:outline-3 focus-visible:outline-ring focus-visible:outline-offset-2',
-  'contrast-more:focus-visible:outline-4 forced-colors:focus-visible:outline-fc-highlight',
+  'rounded-lg material-modal p-card-inset text-foreground',
+  'focus-ring',
   // ≤720px: a bottom sheet, so an on-screen keyboard pushes the dialog instead of burying it
   'max-lg:mb-0 max-lg:w-full max-lg:max-w-none max-lg:rounded-b-none',
-  'max-lg:pb-[max(24px,env(safe-area-inset-bottom))]',
+  'max-lg:pb-safe-6',
 )
 
 const SIZE = {
@@ -43,12 +42,11 @@ const DANGER = 'inset-ring-2 inset-ring-destructive'
 /** The ✕ is a 40px neutral raised square — the design has no drawn x, and the glyph is the button. */
 const CLOSE = cn(
   'absolute top-6 right-6 inline-flex size-10 pointer-coarse:size-hit cursor-pointer items-center justify-center',
-  'rounded-sm border-0 bg-accent p-0 text-label text-foreground shadow-raised',
-  '[transition:transform_var(--dur-fast)_ease,box-shadow_var(--dur-base)_ease] motion-reduce:transition-none',
-  '[&:not(:disabled):active]:translate-y-px [&:not(:disabled):active]:shadow-pressed',
-  'focus-visible:outline-3 focus-visible:outline-ring focus-visible:outline-offset-2',
-  'contrast-more:focus-visible:outline-4 forced-colors:focus-visible:outline-fc-highlight',
-  'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',
+  'rounded-sm material-raised p-0 text-label text-foreground',
+  'transition-press',
+  'press',
+  'focus-ring',
+  'disabled-look',
 )
 
 export interface DialogFrameCloseModel {

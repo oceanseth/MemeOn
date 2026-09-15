@@ -18,10 +18,10 @@ const FACE = 'font-display font-medium text-foreground'
 const SECTION_TITLE = cn(FACE, 'm-0 text-section-phone tracking-title md:text-section')
 const SECTION = 'mt-14 max-md:mt-10'
 
-const CARD = 'rounded-lg border-0 bg-card p-gutter shadow-raised'
+const CARD = 'rounded-lg material-card p-gutter'
 
 /** Hero pile card: percentage positions scale with the column, no phone transform. */
-const PILE_CARD = 'absolute origin-top-left rounded-lg bg-card p-2 shadow-raised'
+const PILE_CARD = 'absolute origin-top-left rounded-lg material-card p-2'
 
 const PILE_LAYOUT = [
   'left-0 top-[19%] w-[38.2%]',
@@ -123,7 +123,7 @@ export function LandingScreen({
                   <span className="foil-frame foil-media relative block overflow-hidden rounded-md bg-muted">
                     <span
                       data-slot="hero-card-slot"
-                      className="relative block aspect-[4/3] w-full"
+                      className="relative block aspect-4/3 w-full"
                       {...frameSlotProps[card.tierKey]}
                     >
                       {image ? (
@@ -185,7 +185,7 @@ export function LandingScreen({
               /* `tier-card` is part of the foil effect API (`atoms/foil.css`): it is what the
                  forced-colors rarity border keys off. The box model around it is this screen's. */
               className={cn(
-                'tier-card flex flex-col rounded-lg bg-accent p-3 shadow-raised',
+                'tier-card flex flex-col rounded-lg material-raised p-3',
                 tierFrameClasses(t.key),
               )}
             >
@@ -193,7 +193,7 @@ export function LandingScreen({
               <span className="foil-frame foil-media relative block overflow-hidden rounded-md bg-muted">
                 <span
                   data-slot="tier-frame-slot"
-                  className="relative block aspect-[4/3] min-h-26 w-full"
+                  className="relative block aspect-4/3 min-h-26 w-full"
                   {...frameSlotProps[t.key]}
                 >
                   {frameImageProps[t.key] ? (
@@ -290,8 +290,8 @@ export function LandingScreen({
         <section
           data-slot="landing-closing"
           className={cn(
-            'mt-10 flex items-center justify-between gap-4 rounded-lg bg-brand',
-            'px-6 py-5.5 shadow-raised',
+            'mt-10 flex items-center justify-between gap-4 rounded-lg material-raised bg-brand',
+            'px-6 py-5.5',
             'max-lg:flex-col max-lg:items-stretch max-lg:gap-4',
           )}
         >

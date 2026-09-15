@@ -11,7 +11,6 @@ import { FilterBar, PageHead } from '@/atoms/page-head'
 import { Panel } from '@/atoms/panel'
 import { Spinner } from '@/atoms/spinner'
 import { cn } from '../lib/cn'
-import { FOCUS_RING } from '../lib/focus'
 import type { FriendsScreenModel } from '../hooks/useFriendsScreen'
 import { ConfirmDialog } from '@/molecules/confirm-dialog'
 import { GiftDialog } from '@/molecules/gift-dialog'
@@ -22,7 +21,7 @@ const SEARCH_GLYPH = 'pointer-events-none absolute top-1/2 left-4.5 -translate-y
 
 /** Online strip is recessed so raised friend cards below read as actionable. */
 const ONLINE_STRIP = cn(
-  'mb-5 flex flex-wrap items-center gap-5 rounded-xl bg-muted px-5 py-4 shadow-pressed',
+  'mb-5 flex flex-wrap items-center gap-5 rounded-xl material-pressed px-5 py-4',
   'max-sm:gap-3.5 max-sm:rounded-lg max-sm:px-gutter',
 )
 
@@ -37,18 +36,18 @@ const DOT = 'inline-block size-2.5 shrink-0 rounded-full bg-success-foreground'
 
 /** Person row: compact on desktop, stacked actions on phone. */
 const ROW = cn(
-  'flex items-center gap-3.5 rounded-lg bg-card px-5 py-3.5 shadow-raised',
+  'flex items-center gap-3.5 rounded-lg material-card px-5 py-3.5',
   'max-sm:flex-col max-sm:items-stretch max-sm:gap-3.5 max-sm:rounded-lg max-sm:py-5',
 )
 
 const IDENTITY = cn(
   'flex min-w-0 flex-1 items-center gap-3.5 rounded-lg text-inherit no-underline',
-  FOCUS_RING,
+  'focus-ring',
 )
 
 const NAME = cn(
   'block truncate font-display text-card-title-phone font-medium tracking-card-title text-foreground',
-  '[overflow-wrap:anywhere]',
+  'wrap-anywhere',
 )
 
 const META = 'mt-0.5 block truncate text-micro font-medium text-muted-foreground'
@@ -63,15 +62,15 @@ const ROW_PILL = 'max-sm:flex-1 max-sm:px-3'
 const TEXT_ACTION = cn(
   'shrink-0 cursor-pointer rounded-lg border-0 bg-transparent px-2.5 py-3.5',
   'text-small font-semibold text-link',
-  FOCUS_RING,
-  'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',
+  'focus-ring',
+  'disabled-look',
   'pointer-coarse:min-h-hit',
 )
 
 /** Pending is a pressed pill with no action behind it. */
 const PENDING_PILL = cn(
   'inline-flex h-control shrink-0 items-center justify-center rounded-lg px-4.5',
-  'bg-muted text-label font-semibold text-muted-foreground shadow-pressed',
+  'material-pressed text-label font-semibold text-muted-foreground',
 )
 
 const SECTION_HEADING = 'mt-8 mb-3 font-display text-title font-medium tracking-title text-foreground'
@@ -212,7 +211,7 @@ export function FriendsScreen({
                 {...f.onlineLinkProps}
                 className={cn(
                   'group inline-flex items-center gap-2 rounded-lg text-small text-foreground no-underline',
-                  FOCUS_RING,
+                  'focus-ring',
                 )}
               >
                 <Avatar name={f.name} src={f.avatarSrc} size="md" loading="lazy" />

@@ -9,7 +9,7 @@ import type { AuthStatusScreenModel } from '../hooks/useAuthCallbackScreen'
 /** Centred auth status card — tighter padding on phone. */
 const CARD = cn(
   'mx-auto flex w-full max-w-card flex-col items-center justify-center text-center',
-  'rounded-lg border-0 bg-card px-8 py-10 shadow-raised max-md:p-6.5',
+  'rounded-lg material-card px-8 py-10 max-md:p-6.5',
 )
 
 /**

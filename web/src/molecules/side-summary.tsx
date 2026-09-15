@@ -4,8 +4,8 @@ import type { TradeSideSummaryModel } from '../lib/tradeCardModel'
 
 /** Recessed well inside the raised proposal card. */
 const WELL = cn(
-  'rounded-lg bg-muted p-4 shadow-pressed',
-  'text-small [overflow-wrap:anywhere] [&_em]:[overflow-wrap:anywhere]',
+  'rounded-lg material-pressed p-4',
+  'text-small wrap-anywhere [&_em]:wrap-anywhere',
 )
 
 /** Owner label: caption, bold, ink-muted. */

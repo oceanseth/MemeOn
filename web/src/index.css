@@ -232,6 +232,14 @@
   --breakpoint-lg: 721px; /* max-lg ≙ max-width: 720px (bottom-sheet dialogs, market controls, quest scroller) */
   --breakpoint-xl: 900px; /* xl ≙ min-width: 900px (the shell: sidebar in, phone header out; trade compose) */
   --breakpoint-2xl: 1100px; /* 2xl ≙ min-width: 1100px (four-column tier grid, the create rail) */
+
+  /* the skeleton's travelling sheen: `after:animate-sweep` */
+  --animate-sweep: sweep 1.4s linear infinite;
+  @keyframes sweep {
+    to {
+      transform: translateX(100%);
+    }
+  }
 }
 
 @layer base {
@@ -302,8 +310,8 @@
       var(--tier-prismatic-chip-end)
     );
     --selection-bg: color-mix(in oklab, var(--color-primary) 35%, transparent);
-    /* state vocabulary, expressed once on the semantic role so it flips with the theme */
-    --state-disabled-opacity: 0.42;
+    /* the one disabled opacity; `disabled-look` paints it */
+    --opacity-disabled: 0.42;
     /* Follow the OS by default; `stores/themeStore.ts` pins one arm through `data-theme` (below).
        This is also what resolves every `light-dark()` token above, and it flips the browser's own
        chrome — form controls, scrollbars — with the page. */
@@ -463,4 +471,207 @@
       outline-width: 4px;
     }
   }
+}
+
+/* ── Utilities: the idioms components compose ─────────────────────────────────────────────────────
+   Materials, the focus ring, the pointer halo, the motion recipes, the disabled look, the docked
+   glass plate. A component composes these; a caller may not pass them (no-restyle files a custom
+   utility as unclassified) and nothing spells the recipe out in TSX again. Variants apply as
+   usual: `aria-pressed:material-pressed`, `max-xl:glass`, `file:material-raised`. */
+
+/* Materials: the ceramic look, bg + relief in one class; the only way to paint the shadow vars.
+   A single-property utility (`bg-primary`) sorts after a multi-property one, so a raised primary
+   pill is `material-raised bg-primary`. */
+@utility material-card {
+  border: 0;
+  background-color: var(--color-card);
+  box-shadow: var(--shadow-raised);
+}
+
+@utility material-raised {
+  border: 0;
+  background-color: var(--color-accent);
+  box-shadow: var(--shadow-raised);
+}
+
+@utility material-pressed {
+  border: 0;
+  background-color: var(--color-muted);
+  box-shadow: var(--shadow-pressed);
+}
+
+@utility material-pop {
+  border: 0;
+  background-color: var(--color-popover);
+  box-shadow: var(--shadow-pop);
+}
+
+@utility material-modal {
+  border: 0;
+  background-color: var(--color-card);
+  box-shadow: var(--shadow-modal);
+}
+
+/* The translucent plate a sticky header or control band scrolls the page under. */
+@utility glass {
+  background-color: color-mix(in oklab, var(--color-background) 85%, transparent);
+  backdrop-filter: blur(var(--blur-md));
+}
+
+/* Docked under the phone header: sticky at `--topbar-h`, above the page, on glass. */
+@utility docked {
+  position: sticky;
+  top: var(--topbar-h);
+  z-index: var(--z-sticky);
+  background-color: color-mix(in oklab, var(--color-background) 85%, transparent);
+  backdrop-filter: blur(var(--blur-md));
+}
+
+/* The one focus ring: 3px of `ring` two out, 4px under prefers-contrast, the platform's own
+   Highlight in forced colours. `focus-ring-inset` lands it inside a row's own padding. The base
+   layer already rings every native focusable at zero specificity; this is for elements that
+   are not, and for atoms that want the ring to win over their own outline. */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 3px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  @media (prefers-contrast: more) {
+    &:focus-visible {
+      outline-width: 4px;
+    }
+  }
+  @media (forced-colors: active) {
+    &:focus-visible {
+      outline-color: var(--color-fc-highlight);
+    }
+  }
+}
+
+@utility focus-ring-inset {
+  &:focus-visible {
+    outline: 3px solid var(--color-ring);
+    outline-offset: -2px;
+  }
+  @media (prefers-contrast: more) {
+    &:focus-visible {
+      outline-width: 4px;
+    }
+  }
+  @media (forced-colors: active) {
+    &:focus-visible {
+      outline-color: var(--color-fc-highlight);
+    }
+  }
+}
+
+/* A 34px control's transparent halo to the 44px pointer target on a coarse pointer, centred and
+   never smaller than the control itself. Rows use `min-h-hit` instead. */
+@utility hit-44 {
+  position: relative;
+  @media (pointer: coarse) {
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, var(--spacing-hit));
+      height: max(100%, var(--spacing-hit));
+      translate: -50% -50%;
+    }
+  }
+}
+
+/* Motion recipes. Each carries its own reduced-motion off switch. `--dur-fast`/`--dur-base` are
+   the two durations (`:root`). Tailwind's translate utilities write `translate`, so it is listed. */
+@utility transition-press {
+  transition:
+    transform var(--dur-fast) ease,
+    translate var(--dur-fast) ease,
+    box-shadow var(--dur-base) ease,
+    background-color var(--dur-base) ease;
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+@utility transition-tint {
+  transition:
+    color var(--dur-base) ease,
+    background-color var(--dur-base) ease;
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+@utility transition-lift {
+  transition:
+    transform var(--dur-base) ease,
+    translate var(--dur-base) ease,
+    scale var(--dur-base) ease;
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+
+/* Hover lift on a fine pointer (never on a disabled, pressed or active control; off under reduced
+   motion) and the 1px press on active, which also sinks the relief to the pressed material. Both
+   keep a `-translate-x-*` the element already carries. */
+@utility lift {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:where(:not(:disabled, [aria-disabled='true'], [aria-pressed='true'], [data-pressed], :active)) {
+      translate: var(--tw-translate-x, 0) -1px;
+    }
+    /* a raised material also deepens its relief as it lifts; a bare link or row does not */
+    &:where(.material-raised, .material-card):hover:where(:not(:disabled, [aria-disabled='true'], [aria-pressed='true'], [data-pressed], :active)) {
+      box-shadow: var(--shadow-raised-hover);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &:hover {
+      translate: var(--tw-translate-x, 0) 0;
+    }
+  }
+}
+
+@utility press {
+  &:active:where(:not(:disabled, [aria-disabled='true'])) {
+    translate: var(--tw-translate-x, 0) 1px;
+    box-shadow: var(--shadow-pressed);
+  }
+}
+
+/* Disabled, whichever way the element says so. */
+@utility disabled-look {
+  &:disabled,
+  &[aria-disabled='true'],
+  &[data-disabled] {
+    cursor: not-allowed;
+    opacity: var(--opacity-disabled);
+  }
+}
+
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+/* A card slot the browser may skip rendering off-screen; the size keeps the scrollbar honest. */
+@utility skip-render {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 360px;
+}
+
+/* The page gutter, never under a notch. */
+@utility px-page-safe {
+  padding-inline: max(var(--spacing-page-x), env(safe-area-inset-left)) max(var(--spacing-page-x), env(safe-area-inset-right));
+}
+
+/* Bottom padding that clears the home indicator: `pb-safe` is the inset alone, `pb-safe-<n>` a
+   grid step or the inset, whichever is larger. */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@utility pb-safe-* {
+  padding-bottom: max(calc(var(--spacing) * --value(number)), env(safe-area-inset-bottom, 0px));
 }

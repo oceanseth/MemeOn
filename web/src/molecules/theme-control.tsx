@@ -1,7 +1,6 @@
 import { Toggle } from '@base-ui/react/toggle'
 import { ToggleGroup } from '@base-ui/react/toggle-group'
 import { cn } from '../lib/cn'
-import { FOCUS_RING as FOCUS } from '../lib/focus'
 import type { ThemePreference } from '../stores/themeStore'
 
 /**
@@ -26,7 +25,7 @@ const nextAfter = (value: ThemePreference) =>
   OPTIONS[(OPTIONS.findIndex((o) => o.value === value) + 1) % OPTIONS.length]!
 
 /** Segmented well: 184×40, pressed surface. */
-const WELL = 'inline-flex h-10 w-46 shrink-0 items-center gap-0.5 rounded-full bg-muted p-0.75 shadow-pressed'
+const WELL = 'inline-flex h-10 w-46 shrink-0 items-center gap-0.5 rounded-full material-pressed p-0.75'
 
 /**
  * Three equal segments, 34 tall, radius 17; the current one is raised and bold. On a coarse pointer
@@ -36,13 +35,12 @@ const WELL = 'inline-flex h-10 w-46 shrink-0 items-center gap-0.5 rounded-full b
  */
 const SEGMENT = cn(
   'relative inline-flex h-control-sm min-w-0 flex-1 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent px-1',
-  'pointer-coarse:before:absolute pointer-coarse:before:inset-x-0 pointer-coarse:before:-inset-y-halo pointer-coarse:before:content-[""]',
+  'hit-44',
   'text-micro font-semibold whitespace-nowrap text-muted-foreground',
-  '[transition:background_var(--dur-base)_ease,color_var(--dur-base)_ease,box-shadow_var(--dur-base)_ease]',
-  'motion-reduce:transition-none',
+  'transition-press',
   'hover:text-foreground',
-  'aria-pressed:bg-accent aria-pressed:font-bold aria-pressed:text-foreground aria-pressed:shadow-raised',
-  FOCUS,
+  'aria-pressed:material-raised aria-pressed:font-bold aria-pressed:text-foreground',
+  'focus-ring',
 )
 
 /**
@@ -52,9 +50,9 @@ const SEGMENT = cn(
  */
 const BUTTON = cn(
   'relative inline-flex size-control-sm shrink-0 cursor-pointer items-center justify-center rounded-sm border-0 p-0',
-  'bg-accent text-glyph-sm text-foreground shadow-raised',
-  'pointer-coarse:before:absolute pointer-coarse:before:-inset-halo pointer-coarse:before:content-[""]',
-  FOCUS,
+  'material-raised text-glyph-sm text-foreground',
+  'hit-44',
+  'focus-ring',
 )
 
 /**

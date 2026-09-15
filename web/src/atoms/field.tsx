@@ -23,11 +23,11 @@ export function Field({ className, ...props }: Styled<FieldRootProps>) {
   )
 }
 
-export const labelChrome = 'text-small font-semibold text-foreground'
+export const labelChrome = cn('text-small font-semibold text-foreground')
 
-export const hintChrome = 'mt-1 block text-caption font-normal text-muted-foreground'
+export const hintChrome = cn('mt-1 block text-caption font-normal text-muted-foreground')
 
-export const errorChrome = 'mt-1 block text-caption font-normal text-error-foreground'
+export const errorChrome = cn('mt-1 block text-caption font-normal text-error-foreground')
 
 export function FieldLabel({ className, ...props }: Styled<FieldLabelProps>) {
   return (
@@ -62,7 +62,7 @@ export function ErrorText({ as: Tag = 'p', className, ...props }: TextProps) {
 export function FieldFooter({ className, ...props }: ComponentPropsWithoutRef<'div'>) {
   return (
     <div
-      className={cn('mt-1 flex items-baseline justify-between gap-2 [&>*]:mt-0', className)}
+      className={cn('mt-1 flex items-baseline justify-between gap-2 *:mt-0', className)}
       {...props}
       data-slot="field-footer"
     />

@@ -23,18 +23,20 @@ export type SelectOption = {
 export const selectTriggerChrome = cn(
   controlChrome,
   'inline-flex items-center justify-between gap-3 text-left',
-  'data-[popup-open]:inset-ring-2 data-[popup-open]:inset-ring-primary',
+  'data-popup-open:inset-ring-2 data-popup-open:inset-ring-primary',
 )
 
-export const selectPopupChrome =
-  'z-(--z-modal) max-h-[min(24rem,var(--available-height))] min-w-[var(--anchor-width)] overflow-y-auto ' +
-  'rounded-lg border-0 bg-accent p-1.5 text-foreground shadow-pop'
+export const selectPopupChrome = cn(
+  'z-(--z-modal) max-h-[min(24rem,var(--available-height))] min-w-[var(--anchor-width)] overflow-y-auto',
+  'rounded-lg material-pop p-1.5 text-foreground',
+)
 
-export const selectItemChrome =
-  'grid grid-cols-[1.25rem_1fr] min-h-hit items-center gap-2 rounded-md px-3 text-label ' +
-  'cursor-default select-none outline-none ' +
-  'data-[highlighted]:bg-muted data-[selected]:font-semibold ' +
-  'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-(--state-disabled-opacity)'
+export const selectItemChrome = cn(
+  'grid grid-cols-[1.25rem_1fr] min-h-hit items-center gap-2 rounded-md px-3 text-label',
+  'cursor-default select-none outline-none',
+  'data-highlighted:bg-muted data-selected:font-semibold',
+  'disabled-look',
+)
 
 const CHECK = '✓'
 
@@ -75,10 +77,10 @@ export function Select({
       >
         {/* invisible sizer keeps trigger width at the widest option */}
         <span className="grid min-w-0">
-          <SelectValue placeholder={placeholder} className="[grid-area:1/1] truncate" />
+          <SelectValue placeholder={placeholder} className="col-start-1 row-start-1 truncate" />
           <span
             aria-hidden="true"
-            className="[grid-area:1/1] invisible h-0 overflow-hidden"
+            className="col-start-1 row-start-1 invisible h-0 overflow-hidden"
             data-slot="select-sizer"
           >
             {placeholder === undefined ? null : <span className="block">{placeholder}</span>}

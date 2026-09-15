@@ -35,7 +35,7 @@ export function Panel({ className, children, ...rest }: HTMLAttributes<HTMLDivEl
       data-slot="panel"
       {...rest}
       className={cn(
-        'rounded-lg border-0 bg-card shadow-raised p-card-inset max-md:p-gutter',
+        'rounded-lg material-card p-card-inset max-md:p-gutter',
         '[&_:where(h3,h4):not([data-slot=panel-heading])]:mt-0',
         '[&_:where(h3,h4):not([data-slot=panel-heading])]:mb-1.5',
         '[&_:where(h3,h4):not([data-slot=panel-heading])]:text-intro',

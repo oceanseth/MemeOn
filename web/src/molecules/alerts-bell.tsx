@@ -3,11 +3,7 @@ import { Link } from 'react-router-dom'
 import { cn } from '../lib/cn'
 import type { AlertsBellModel } from '../lib/alertsBellModel'
 
-const FOCUS = cn(
-  'focus-visible:outline-3 focus-visible:outline-ring focus-visible:outline-offset-2',
-  'contrast-more:focus-visible:outline-4',
-  'forced-colors:focus-visible:outline-fc-highlight',
-)
+const FOCUS = 'focus-ring'
 
 /**
  * There is one bell on a page — it lives in the shell's header — so one id is enough. The portal
@@ -34,8 +30,7 @@ const TRIGGER = cn(
   'relative inline-flex shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0',
   'text-glyph text-foreground',
   'xl:text-glyph-lg',
-  'before:absolute before:top-1/2 before:left-1/2 before:size-hit before:-translate-x-1/2',
-  'before:-translate-y-1/2 before:content-[""]',
+  'hit-44',
   FOCUS,
 )
 
@@ -58,15 +53,15 @@ const POSITIONER = cn(
 
 /** A raised card of rows. */
 const POPUP = cn(
-  'w-[min(340px,calc(100vw-24px))] max-h-[min(420px,60dvh)] overflow-y-auto [scrollbar-width:thin]',
-  'rounded-lg bg-card p-2 shadow-pop',
+  'w-[min(340px,calc(100vw-24px))] max-h-[min(420px,60dvh)] overflow-y-auto scrollbar-thin',
+  'rounded-lg material-pop p-2',
   'max-xs:w-auto max-xs:max-h-[calc(100dvh-var(--topbar-h)-24px)]',
   FOCUS,
 )
 
 const ROW = cn(
   'block min-h-hit rounded-md px-3 py-2.5 text-small text-foreground',
-  '[transition:background_var(--dur-base)_ease] motion-reduce:transition-none',
+  'transition-tint',
 )
 
 /** Unread is the info tint plus weight; the dot in the same family is the shape cue. */

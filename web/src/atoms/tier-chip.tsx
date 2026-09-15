@@ -21,7 +21,7 @@ const skinFor = (tierKey: string): string => TIER_SKIN[tierKey] ?? (TIER_SKIN['p
 
 const CHIP = cn(
   'inline-flex max-w-full items-center justify-center rounded-sm font-sans font-bold',
-  'whitespace-nowrap [overflow-wrap:anywhere]',
+  'whitespace-nowrap wrap-anywhere',
 )
 
 const SIZES: Record<TierChipSize, string> = {

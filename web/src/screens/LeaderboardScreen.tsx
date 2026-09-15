@@ -7,7 +7,6 @@ import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { SkeletonRow } from '@/atoms/skeleton'
 import { cn } from '../lib/cn'
-import { FOCUS_RING } from '../lib/focus'
 import type { LeaderboardRowModel, LeaderboardScreenModel } from '../hooks/useLeaderboardScreen'
 
 const skeletonRows = [0, 1, 2, 3, 4]
@@ -17,7 +16,7 @@ const COUNT = 'font-sans font-bold text-braincell tabular-nums'
 
 /** Podium panel: head left, three cards right; stacks on phone. */
 const PODIUM_PANEL = cn(
-  'mb-5 flex items-center gap-10 rounded-lg bg-card p-5 shadow-raised',
+  'mb-5 flex items-center gap-10 rounded-lg material-card p-5',
   'max-md:flex-col max-md:items-stretch max-md:gap-5',
 )
 
@@ -31,24 +30,22 @@ const BOARD = 'm-0 flex list-none flex-col gap-5 p-0 max-md:gap-3.5'
 
 /* #1 gets action border on raised surface; #2 and #3 stay plain */
 const PODIUM = cn(
-  'flex h-full flex-col items-center rounded-xl bg-card px-5 pt-gutter pb-5 text-center shadow-raised',
+  'flex h-full flex-col items-center rounded-xl material-card px-5 pt-gutter pb-5 text-center',
   'md:w-54.5',
   'max-md:flex-row max-md:items-center max-md:gap-3 max-md:rounded-lg max-md:px-5 max-md:py-3.5 max-md:text-left',
 )
 const PODIUM_FIRST = 'bg-accent border-2 border-primary'
 
 const RANK_ROW = cn(
-  'flex items-center gap-3 rounded-xl bg-card px-5 py-3.25 shadow-raised',
+  'flex items-center gap-3 rounded-xl material-card px-5 py-3.25',
   'max-md:rounded-lg max-md:px-gutter max-md:py-3.5',
 )
 const RANK_ROW_ME = 'bg-accent border-2 border-brand'
 
 const ROW_LINK = cn(
   'text-inherit no-underline',
-  FOCUS_RING,
-  '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px',
-  'transition-transform duration-(--dur-fast) ease-[ease] motion-reduce:transition-none',
-  'motion-reduce:hover:translate-y-0!',
+  'focus-ring',
+  'lift transition-press',
 )
 
 const NAME = 'min-w-0 flex-1 truncate font-display text-card-title-phone font-medium tracking-card-title text-foreground'

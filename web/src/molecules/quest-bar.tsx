@@ -3,7 +3,6 @@ import { Button, buttonClasses } from '@/atoms/button'
 import { MemeCard } from '@/atoms/meme-card'
 import { FilterBar } from '@/atoms/page-head'
 import { cn } from '../lib/cn'
-import { FOCUS_RING as FOCUS } from '../lib/focus'
 import type { QuestBarModel } from '../lib/questBarModel'
 import { DialogFrame } from '@/molecules/dialog-frame'
 
@@ -15,7 +14,7 @@ const BRAINCELL_IMG = 'inline-block size-6.5 rounded-full object-cover align-mid
 
 /** Pressed well: quest lane left, claim pill right; stacks below 900. */
 const RAIL = cn(
-  'mx-page-x mt-3 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-lg bg-muted p-gutter shadow-pressed',
+  'mx-page-x mt-3 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-lg material-pressed p-gutter',
   'xl:mt-2 xl:flex-nowrap xl:px-6 xl:py-5',
 )
 
@@ -32,35 +31,33 @@ const CHIPS = 'flex flex-wrap items-center gap-x-6 gap-y-2 max-xl:gap-x-2'
 const CHIP = cn(
   'inline-flex items-center gap-1.5 text-label font-medium whitespace-nowrap text-muted-foreground',
   'max-xl:text-small',
-  '[transition:color_var(--dur-base)_ease] motion-reduce:transition-none',
+  'transition-tint',
   'group-hover:text-foreground',
 )
 
 const CHIP_LINK = cn(
   'no-underline',
   'pointer-coarse:inline-flex pointer-coarse:min-h-hit pointer-coarse:items-center',
-  FOCUS,
+  'focus-ring',
 )
 
 /** Dismiss is text-weight so the claim pill stays the only loud control in the rail. */
 const TEXT_BUTTON = cn(
   'inline-flex min-h-8 shrink-0 cursor-pointer items-center rounded-sm border-0 bg-transparent px-2 py-1',
   'text-small font-medium text-muted-foreground',
-  '[transition:color_var(--dur-base)_ease] motion-reduce:transition-none',
+  'transition-tint',
   'hover:text-foreground',
   'pointer-coarse:min-h-hit',
-  FOCUS,
+  'focus-ring',
 )
 
 /** Neutral raised claim pill — not the chrome primary. Busy = progress cursor, no spinner. */
 const CLAIM_BUTTON = cn(
   'inline-flex h-control shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4.5',
-  'border-0 bg-accent text-label font-semibold text-foreground shadow-raised',
-  '[transition:transform_var(--dur-fast)_ease] motion-reduce:transition-none',
-  '[@media(hover:hover)_and_(pointer:fine)]:[&:not(:disabled):hover]:-translate-y-px',
-  'motion-reduce:[&:not(:disabled):hover]:translate-y-0!',
+  'material-raised text-label font-semibold text-foreground',
+  'transition-press lift',
   'pointer-coarse:min-h-hit',
-  FOCUS,
+  'focus-ring',
 )
 
 /** The card grid with the starter pack's tighter tracks; under 561px only the gap tightens. */
@@ -135,7 +132,7 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
                 'max-xl:w-full',
                 claim.busy
                   ? 'cursor-progress opacity-100'
-                  : 'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',
+                  : 'disabled-look',
               )}
               {...claim.buttonProps}
             >

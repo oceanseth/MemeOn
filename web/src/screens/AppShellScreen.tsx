@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { Avatar } from '@/atoms/avatar'
 import { Icon } from '@/atoms/icon'
 import { cn } from '../lib/cn'
-import { FOCUS_RING as FOCUS } from '../lib/focus'
 import type { AppShellScreenModel } from '../hooks/useAppShellScreen'
 import { AlertsBell } from '@/molecules/alerts-bell'
 import { AvatarMenu } from '@/molecules/avatar-menu'
@@ -22,12 +21,12 @@ import {
 const ICON_LANE = 'inline-flex size-icon shrink-0 items-center justify-center'
 
 /** The desktop header avatar is a link to the profile; the phone one opens the account menu. */
-const AVATAR_LINK = cn('inline-flex shrink-0 rounded-md no-underline', FOCUS)
+const AVATAR_LINK = cn('inline-flex shrink-0 rounded-md no-underline', 'focus-ring')
 
 /** "🧠 2,480": a neutral raised pill at 900+; bare bold text in the phone cluster (the design's, and the only way it fits 350). */
 const COINS = cn(
-  'inline-flex h-control shrink-0 items-center rounded-lg bg-accent px-4.5',
-  'text-label font-semibold whitespace-nowrap text-foreground tabular-nums shadow-raised',
+  'inline-flex h-control shrink-0 items-center rounded-lg material-raised px-4.5',
+  'text-label font-semibold whitespace-nowrap text-foreground tabular-nums',
   'max-xl:h-auto max-xl:rounded-none max-xl:bg-transparent max-xl:px-0 max-xl:font-bold max-xl:shadow-none',
 )
 
@@ -35,16 +34,16 @@ const GEAR_LINK = cn(
   'inline-flex size-icon shrink-0 items-center justify-center rounded-xs text-foreground no-underline',
   'hover:text-muted-foreground',
   'pointer-coarse:size-hit',
-  FOCUS,
+  'focus-ring',
 )
 
 const LOGOUT_LINK = cn(
   '-ml-3 inline-flex h-9 cursor-pointer items-center rounded-md border-0 bg-transparent px-3',
   'text-small font-medium text-muted-foreground',
-  '[transition:color_var(--dur-base)_ease] motion-reduce:transition-none',
+  'transition-tint',
   'hover:text-foreground',
   'pointer-coarse:min-h-hit',
-  FOCUS,
+  'focus-ring',
 )
 
 /** App chrome as a function of its model. QuestBar, AlertsBell, ThemeControl and AvatarMenu take model props. */
@@ -99,7 +98,7 @@ export function AppShellScreen({
         </nav>
         {identity && (
           <div className="mx-1 mt-3 flex min-h-14 items-center gap-3" data-slot="identity">
-            <Avatar name={identity.name} src={identity.src} size="md" className="rounded-md shadow-raised" />
+            <Avatar name={identity.name} src={identity.src} size="md" className="rounded-md material-raised" />
             <span className="min-w-0 flex-1 truncate text-label font-semibold text-foreground" data-slot="identity-name">
               {identity.name}
             </span>
@@ -131,7 +130,7 @@ export function AppShellScreen({
       {showToolbar && <AlertsBell model={alertsBell} />}
       {showToolbar && avatar && (
         <Link {...avatar.linkProps} className={cn(AVATAR_LINK, 'max-xl:hidden')}>
-          <Avatar name={avatar.name} src={avatar.src} size="md" className="rounded-md shadow-raised" />
+          <Avatar name={avatar.name} src={avatar.src} size="md" className="rounded-md material-raised" />
         </Link>
       )}
       {showToolbar && avatarMenu && (

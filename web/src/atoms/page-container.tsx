@@ -16,7 +16,7 @@ export function PageContainer({ as, narrow = false, className, children, ...rest
       data-slot="page-container"
       className={cn(
         'mx-auto w-full pt-0 pb-16',
-        '[padding-inline:max(20px,env(safe-area-inset-left))_max(20px,env(safe-area-inset-right))]',
+        'px-page-safe',
         narrow && 'max-w-190',
         className,
       )}

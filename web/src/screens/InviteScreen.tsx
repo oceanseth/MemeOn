@@ -13,14 +13,14 @@ import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
 
 /** Hero card centred on the avatar, grows with copy. */
 const HERO = cn(
-  'flex flex-col items-center gap-2 rounded-xl bg-card px-5 pt-5 pb-7 text-center shadow-raised',
+  'flex flex-col items-center gap-2 rounded-xl material-card px-5 pt-5 pb-7 text-center',
   'max-sm:rounded-lg max-sm:px-gutter',
 )
 
 /* The name is the page's display step (44/55, 32/40 on a phone); the verb line is one rung down. */
 const HERO_NAME = cn(
   'block font-display text-display font-medium tracking-display text-foreground',
-  'max-md:text-display-phone [overflow-wrap:anywhere]',
+  'max-md:text-display-phone wrap-anywhere',
 )
 const HERO_VERB = cn(
   'block font-display text-section-phone font-medium tracking-title text-foreground',
@@ -29,9 +29,9 @@ const HERO_VERB = cn(
 
 const HERO_STATS = 'm-0 mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-label font-semibold text-muted-foreground'
 
-const HERO_BODY = 'm-0 mt-4 max-w-card text-intro font-medium text-muted-foreground [text-wrap:pretty]'
+const HERO_BODY = 'm-0 mt-4 max-w-card text-intro font-medium text-muted-foreground text-pretty'
 
-const HERO_NOTE = 'm-0 mt-3 max-w-measure text-label font-medium text-muted-foreground [text-wrap:pretty]'
+const HERO_NOTE = 'm-0 mt-3 max-w-measure text-label font-medium text-muted-foreground text-pretty'
 
 const SECTION_HEADING = 'mt-8 mb-3.5 font-display text-title font-medium tracking-title text-foreground'
 

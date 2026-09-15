@@ -38,7 +38,7 @@ const focusOutcome = (node: HTMLHeadingElement | null): void => node?.focus()
 
 /** Form and preview columns; preview stacks below the form under 1000px. */
 const LAYOUT =
-  'grid grid-cols-[minmax(0,1fr)] items-start gap-5 2xl:grid-cols-[minmax(0,555fr)_minmax(0,522fr)] 2xl:gap-8'
+  'grid grid-cols-1 items-start gap-5 2xl:grid-cols-[minmax(0,555fr)_minmax(0,522fr)] 2xl:gap-8'
 /** the preview column sticks to the top of the scroll once the two columns split */
 const RAIL = 'flex flex-col gap-4 2xl:sticky 2xl:top-[calc(var(--topbar-h)+16px)]'
 const FORM_GRID = 'flex flex-col gap-3.5'
@@ -58,7 +58,7 @@ const LIVE_REGION = 'empty:sr-only [&:not(:empty)]:mb-4'
 /**
  * A caption row sits 4px under its control on this form, where `Field`'s own rhythm is the 6px it
  * puts between a label and its control. `-mt-0.5` spends the difference, so the pair reads as one
- * unit; `[&>*]:mt-0` inside `FieldFooter` keeps its children from adding a second offset.
+ * unit; `*:mt-0` inside `FieldFooter` keeps its children from adding a second offset.
  */
 const CAPTION_OFFSET = '-mt-0.5'
 
@@ -92,7 +92,7 @@ const STATE_CARD = cn(
   '[&_p]:m-0 [&_p]:mt-2 [&_p]:text-small [&_p]:font-medium [&_p]:text-muted-foreground',
 )
 /* busy uses raised fill so it reads inside the surface-toned form panel */
-const STATE_CARD_BUSY = cn(STATE_CARD, 'bg-accent shadow-raised', '[&_h3]:text-muted-foreground')
+const STATE_CARD_BUSY = cn(STATE_CARD, 'material-raised', '[&_h3]:text-muted-foreground')
 const STATE_CARD_APPROVAL = cn(STATE_CARD, '[&_h3]:text-success-foreground')
 /** Progress groove: pressed track with the action colour */
 const TRACK = 'mt-3 block h-track overflow-hidden rounded-full bg-muted'
@@ -102,8 +102,7 @@ const TRACK_FILL = cn(
 )
 
 const GIPHY_CELL = cn(
-  'block h-auto aspect-square w-full overflow-hidden rounded-md bg-muted p-0',
-  'shadow-pressed',
+  'block h-auto aspect-square w-full overflow-hidden rounded-md material-pressed p-0',
 )
 /* the picked cell keeps its ring on hover: the state is a ring, never a border colour */
 const GIPHY_CELL_PICKED = 'inset-ring-2 inset-ring-primary'
@@ -111,8 +110,8 @@ const GIPHY_MARK = 'text-micro font-bold tracking-wider whitespace-nowrap text-m
 const LOADING_STATE = 'flex items-center justify-center gap-2.5 px-5 py-15 text-small text-muted-foreground'
 /** Preflight strips the file-selector button bare; this gives it the app's own neutral pill. */
 const FILE_INPUT = cn(
-  'file:mr-2.5 file:cursor-pointer file:rounded-lg file:border-0 file:bg-accent',
-  'file:px-3 file:py-1.5 file:text-small file:font-semibold file:text-foreground file:shadow-raised',
+  'file:mr-2.5 file:cursor-pointer file:rounded-lg file:material-raised',
+  'file:px-3 file:py-1.5 file:text-small file:font-semibold file:text-foreground',
 )
 
 /** The form card's own headline per source — the copy deck's "Make a fresh image" and its siblings. */
@@ -144,7 +143,7 @@ function ModeChip({
    `MemeCardModel` until it is minted: the card is `atoms/MemeCard`'s recipe (raised surface, 8px of
    padding, radius 25) and the frame carries the 3px tier border `atoms/foil.css` paints on
    `.foil-frame` off the variables `cardProps.className` sets. */
-const PREVIEW_CARD = 'group relative isolate rounded-lg bg-card p-2 shadow-raised @container'
+const PREVIEW_CARD = 'group relative isolate rounded-lg material-card p-2 @container'
 const PREVIEW_INNER = 'relative flex h-full flex-col'
 const PREVIEW_FRAME = 'foil-frame foil-media relative rounded-md bg-muted'
 /* same plate the marketplace card uses: a square, the whole meme contained */
@@ -160,7 +159,7 @@ const PREVIEW_TIER_ROW = 'mt-1.5 flex items-center gap-2'
 const PREVIEW_TIER_NOTE = 'text-caption font-bold text-muted-foreground'
 /** The plate the card will land on, at the card's own frame geometry. */
 const PREVIEW_PLACEHOLDER = cn(
-  'flex aspect-square items-center justify-center rounded-lg bg-muted shadow-pressed',
+  'flex aspect-square items-center justify-center rounded-lg material-pressed',
   'text-small font-medium text-muted-foreground',
 )
 const PREVIEW_SUB = cn(

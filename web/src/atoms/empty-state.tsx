@@ -37,7 +37,7 @@ export function EmptyState({
       data-tone={resolved}
       role={role ?? (error || resolved === 'error' ? 'alert' : 'status')}
       className={cn(
-        'rounded-lg border-0 shadow-raised px-5 py-15 text-center text-label text-muted-foreground',
+        'rounded-lg material-card px-5 py-15 text-center text-label text-muted-foreground',
         '[&_:where(h2,h3)]:mt-0 [&_:where(h2,h3)]:mb-3 [&_:where(h2,h3)]:text-card-title',
         '[&_:where(h2,h3)]:tracking-card-title',
         '[&_p]:m-0 [&_p]:mb-1.5 [&_p]:text-label',

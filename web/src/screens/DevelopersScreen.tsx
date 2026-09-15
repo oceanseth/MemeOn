@@ -112,7 +112,7 @@ export function DevelopersScreen({
           <Panel className={FRESH_CARD}>
             <p className="m-0 text-intro font-semibold text-foreground">{freshKeyHeading}</p>
             <div
-              className="mt-2.5 font-mono text-label font-bold text-foreground [overflow-wrap:anywhere] select-all"
+              className="mt-2.5 font-mono text-label font-bold text-foreground wrap-anywhere select-all"
               {...freshKeyProps}
             >
               {freshKey}
@@ -131,7 +131,7 @@ export function DevelopersScreen({
         <div className="flex items-center justify-between gap-4">
           <PanelHeading size="section" className="mb-0">{keysHeading}</PanelHeading>
           {quotaLabel && (
-            <span className="shrink-0 text-caption font-medium text-muted-foreground [font-variant-numeric:tabular-nums]">
+            <span className="shrink-0 text-caption font-medium text-muted-foreground tabular-nums">
               {quotaLabel}
             </span>
           )}
@@ -169,15 +169,15 @@ export function DevelopersScreen({
           </EmptyState>
         )}
         {showKeys && keys && (
-          <ul className="m-0 mt-2 list-none p-0 [&>li+li]:border-t [&>li+li]:border-border">
+          <ul className="m-0 mt-2 list-none p-0 divide-y divide-border">
             {keys.map((k) => (
               <li key={k.prefix} className={KEY_ROW}>
                 <div className="flex min-w-0 flex-col gap-1">
                   {/* `overflow-wrap:anywhere` keeps a 60-character label inside the row */}
-                  <span className="text-body font-semibold text-foreground [overflow-wrap:anywhere]">
+                  <span className="text-body font-semibold text-foreground wrap-anywhere">
                     {k.label}
                   </span>
-                  <span className="text-caption font-medium text-muted-foreground [font-variant-numeric:tabular-nums]">
+                  <span className="text-caption font-medium text-muted-foreground tabular-nums">
                     {k.prefix}… · <time dateTime={k.createdAt}>{k.createdLabel}</time>
                   </span>
                 </div>

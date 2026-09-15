@@ -10,17 +10,16 @@ export const marketControls = cn(
   'flex flex-col gap-3.5 pt-0 pb-3.5',
   /* it docks under the phone header (`--topbar-h`); at the shell breakpoint that height is 0, so
      the plate takes the sidebar's own `page-x` inset instead of the viewport edge */
-  'lg:sticky lg:top-(--topbar-h) lg:z-(--z-sticky) lg:-mx-page-x lg:px-page-x',
+  'lg:docked lg:-mx-page-x lg:px-page-x',
   'xl:top-5',
-  'lg:bg-[color-mix(in_oklab,var(--color-background)_92%,transparent)] lg:backdrop-blur-[10px]',
 )
 
 /** Search well, phone disclosure pills, and Mint — stacked on phone, one row on desktop. */
-export const marketToolbar = 'flex flex-wrap items-center gap-3'
+export const marketToolbar = cn('flex flex-wrap items-center gap-3')
 
 /* search icon at 18px gutter → 50px input padding (18 + 20 + 12) */
-export const searchWell = 'relative flex w-full min-w-0 flex-1 lg:max-w-search'
-export const searchGlyph = 'pointer-events-none absolute top-1/2 left-4.5 -translate-y-1/2 text-muted-foreground'
+export const searchWell = cn('relative flex w-full min-w-0 flex-1 lg:max-w-search')
+export const searchGlyph = cn('pointer-events-none absolute top-1/2 left-4.5 -translate-y-1/2 text-muted-foreground')
 
 /** Toolbar Mint: bubblegum on phone, neutral raised on desktop (sidebar owns primary). */
 export const mintLink = cn(
@@ -41,35 +40,34 @@ export const cardGrid = cn(
  * grid track.
  */
 export const cardSlot = cn(
-  '[content-visibility:auto] [contain-intrinsic-size:auto_360px]',
-  'pointer-events-none p-bloom -m-bloom [&>*]:pointer-events-auto',
+  'skip-render',
+  'pointer-events-none p-bloom -m-bloom *:pointer-events-auto',
   'max-sm:p-page-x max-sm:-m-page-x',
 )
 
 /** Results / Count: the section heading left, the live count right, on one baseline. */
-export const resultsRow = 'mt-1 mb-gutter flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2'
-export const sectionHeading = 'm-0 font-display text-title font-medium tracking-title text-foreground'
-export const summaryRow = 'flex flex-wrap items-center gap-2.5 text-small text-muted-foreground'
+export const resultsRow = cn('mt-1 mb-gutter flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2')
+export const sectionHeading = cn('m-0 font-display text-title font-medium tracking-title text-foreground')
+export const summaryRow = cn('flex flex-wrap items-center gap-2.5 text-small text-muted-foreground')
 
 /**
  * A small button keeps an explicit height: the pill is 46 tall now, and padding no longer shrinks
  * it. 36 is the drawn size; a coarse pointer still gets the 44 a finger needs.
  */
-export const chipButton = 'h-9 px-3 text-micro pointer-coarse:min-h-hit'
+export const chipButton = cn('h-9 px-3 text-micro pointer-coarse:min-h-hit')
 
-export const searchInput = 'w-full pl-12.5'
+export const searchInput = cn('w-full pl-12.5')
 
-export const marketDisclosures = 'flex w-full gap-3 lg:hidden'
+export const marketDisclosures = cn('flex w-full gap-3 lg:hidden')
 
-export const marketFilters = 'flex flex-col gap-3 max-lg:data-[collapsed=true]:hidden'
+export const marketFilters = cn('flex flex-col gap-3 max-lg:data-[collapsed=true]:hidden')
 
-export const filterRow = 'flex flex-wrap items-center gap-3'
+export const filterRow = cn('flex flex-wrap items-center gap-3')
 
-export const endOfList = 'pt-8 text-small'
+export const endOfList = cn('pt-8 text-small')
 
 /** Tier filter as a raised pill — same material as neighbours, not a recessed form Select. */
 export const tierPill = cn(
-  'h-control rounded-lg bg-accent px-4.5 font-semibold shadow-raised',
-  '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px',
-  'motion-reduce:hover:translate-y-0!',
+  'h-control rounded-lg material-raised px-4.5 font-semibold',
+  'lift',
 )

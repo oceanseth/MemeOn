@@ -51,7 +51,7 @@ export function GiftDialog({ model }: { model: GiftDialogModel }) {
         {...model.searchInputProps}
       />
       <div
-        className="mt-3 flex max-h-75 flex-col gap-2 overflow-y-auto [scrollbar-width:thin]"
+        className="mt-3 flex max-h-75 flex-col gap-2 overflow-y-auto scrollbar-thin"
         data-slot="gift-list"
       >
         {/* my-4 is the UA paragraph margin preflight removed; the empty binder read as a gap, not a row */}

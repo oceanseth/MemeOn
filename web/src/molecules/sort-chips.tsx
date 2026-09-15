@@ -2,7 +2,6 @@ import { Toggle } from '@base-ui/react/toggle'
 import { ToggleGroup } from '@base-ui/react/toggle-group'
 import { Hint } from '@/atoms/field'
 import { cn } from '../lib/cn'
-import { FOCUS_RING } from '../lib/focus'
 import type { SortChipsModel } from '../lib/sortChipsModel'
 import type { SortKey } from '../lib/sorting'
 
@@ -11,19 +10,15 @@ const chipChrome = cn(
   'inline-flex h-control items-center justify-center whitespace-nowrap max-sm:h-10',
   /* 40px drawn height; coarse pointer still needs 44 */
   'pointer-coarse:min-h-hit',
-  'rounded-lg bg-accent px-4 text-label/4.5 font-semibold text-foreground shadow-raised',
+  'rounded-lg material-raised px-4 text-label/4.5 font-semibold text-foreground',
   'cursor-pointer',
-  '[transition:transform_var(--dur-fast)_ease,background_var(--dur-base)_ease]',
-  'motion-reduce:transition-none',
-  '[@media(hover:hover)_and_(pointer:fine)]:[&:not(:disabled):hover]:-translate-y-px',
-  'motion-reduce:[&:not(:disabled):hover]:translate-y-0!',
-  'pointer-coarse:[&:not(:disabled):active]:translate-y-px',
-  FOCUS_RING,
-  'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',
+  'transition-press lift press',
+  'focus-ring',
+  'disabled-look',
   /* selected = pressed well; label weight stays 600 on every tab */
-  'data-[pressed]:bg-muted data-[pressed]:shadow-pressed',
-  'data-[pressed]:translate-y-0!',
-  'forced-colors:data-[pressed]:border forced-colors:data-[pressed]:border-fc-highlight',
+  'data-pressed:material-pressed',
+  'data-pressed:translate-y-0!',
+  'forced-colors:data-pressed:border forced-colors:data-pressed:border-fc-highlight',
 )
 
 /**

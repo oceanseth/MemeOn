@@ -1,22 +1,21 @@
 import { cn } from '../lib/cn'
-import { FOCUS_RING } from '../lib/focus'
 import type { HeroVideoModel } from '../lib/heroVideoModel'
 
 /* Soft Press materials: the relief is the edge, so the frame is a raised surface rather than a
    hairline box. On phones it bleeds to the container's own gutter and drops its radius. */
 const FRAME = cn(
-  'relative aspect-video overflow-hidden rounded-lg border-0 bg-card shadow-raised',
+  'relative aspect-video overflow-hidden rounded-lg material-card',
   'max-md:-mx-page-x max-md:rounded-none',
 )
 
 /* the shared pill chrome: font/line-height are reset so each pill can size its own text */
 const PILL = cn(
-  'absolute cursor-pointer rounded-full border-0 font-[inherit] leading-none text-foreground shadow-raised',
-  'bg-[color-mix(in_oklab,var(--color-accent)_82%,transparent)] backdrop-blur-[6px]',
-  '[transition:background_var(--dur-base)_ease,box-shadow_var(--dur-base)_ease]',
-  'motion-reduce:transition-none',
+  'absolute cursor-pointer rounded-full font-[inherit] leading-none text-foreground',
+  /* glass sorts after the material, so the plate is glass and the relief is raised */
+  'material-raised glass',
+  'transition-press',
   'hover:bg-accent',
-  FOCUS_RING,
+  'focus-ring',
 )
 
 /**

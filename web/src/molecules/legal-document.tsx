@@ -23,10 +23,10 @@ const CROSS_LINK = cn(A, 'inline-block mt-2.5')
 /* TOC chips: 44px target; current section is pressed, rest are outlined */
 const TOC_CHIP = cn(
   'inline-flex min-h-hit items-center rounded-lg px-3.5 text-small/5 text-foreground no-underline',
-  '[transition:background-color_var(--dur-base)_ease] motion-reduce:transition-none',
+  'transition-tint',
 )
 const TOC_CHIP_REST = cn(TOC_CHIP, 'border border-border hover:bg-accent')
-const TOC_CHIP_CURRENT = cn(TOC_CHIP, 'border-0 bg-muted shadow-pressed')
+const TOC_CHIP_CURRENT = cn(TOC_CHIP, 'material-pressed')
 
 function Inline({ inline }: { inline: LegalInline }) {
   if (typeof inline === 'string') return inline

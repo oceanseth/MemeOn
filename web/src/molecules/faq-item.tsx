@@ -14,8 +14,7 @@ export interface FaqItemProps {
 
 const TRIGGER = cn(
   'group flex w-full min-h-hit cursor-pointer items-center gap-3 rounded-lg px-gutter py-3.5 text-left',
-  'focus-visible:outline-3 focus-visible:outline-ring focus-visible:outline-offset-2',
-  'contrast-more:focus-visible:outline-4 forced-colors:focus-visible:outline-fc-highlight',
+  'focus-ring',
 )
 
 /**
@@ -30,13 +29,13 @@ export function FaqItem({ question, children, defaultOpen = false, className }: 
     <Collapsible.Root
       defaultOpen={defaultOpen}
       data-slot="faq-item"
-      className={cn('mb-2.5 rounded-lg border-0 bg-accent shadow-raised', className)}
+      className={cn('mb-2.5 rounded-lg material-raised', className)}
     >
       <Collapsible.Trigger className={TRIGGER} data-slot="faq-trigger">
         {/* no caret icon — ▾ glyph rotates when open */}
         <span
           aria-hidden="true"
-          className="shrink-0 text-label text-muted-foreground transition-transform duration-(--dur-base) group-data-[panel-open]:rotate-180 motion-reduce:transition-none"
+          className="shrink-0 text-label text-muted-foreground transition-lift group-data-panel-open:rotate-180"
         >
           ▾
         </span>

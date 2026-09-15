@@ -4,18 +4,19 @@ import type { ReactNode } from 'react'
 import { cn } from '../lib/cn'
 import type { Styled } from '@/atoms/field'
 
-export const checkboxLabelChrome =
-  'inline-flex min-h-hit -ms-2 cursor-pointer items-center gap-2.5 px-2 py-1 text-label text-foreground ' +
-  'has-[[data-disabled]]:cursor-not-allowed has-[[data-disabled]]:opacity-(--state-disabled-opacity)'
+export const checkboxLabelChrome = cn(
+  'inline-flex min-h-hit -ms-2 cursor-pointer items-center gap-2.5 px-2 py-1 text-label text-foreground',
+  'has-data-disabled:cursor-not-allowed has-data-disabled:opacity-(--opacity-disabled)',
+)
 
-export const checkboxBoxChrome =
-  'inline-flex size-icon shrink-0 items-center justify-center rounded-xs border-0 ' +
-  'bg-accent shadow-raised text-caption leading-none text-transparent ' +
-  'data-[checked]:bg-primary data-[checked]:text-primary-foreground ' +
-  'data-[indeterminate]:bg-primary data-[indeterminate]:text-primary-foreground ' +
-  'data-[invalid]:inset-ring-2 data-[invalid]:inset-ring-destructive ' +
-  'focus-visible:outline-3 focus-visible:outline-ring focus-visible:outline-offset-2 ' +
-  'contrast-more:focus-visible:outline-4 forced-colors:focus-visible:outline-fc-highlight'
+export const checkboxBoxChrome = cn(
+  'inline-flex size-icon shrink-0 items-center justify-center rounded-xs',
+  'material-raised text-caption leading-none text-transparent',
+  'data-checked:bg-primary data-checked:text-primary-foreground',
+  'data-indeterminate:bg-primary data-indeterminate:text-primary-foreground',
+  'data-invalid:inset-ring-2 data-invalid:inset-ring-destructive',
+  'focus-ring',
+)
 
 export function Checkbox({
   label,

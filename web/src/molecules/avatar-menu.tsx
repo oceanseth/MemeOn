@@ -2,7 +2,6 @@ import { Menu } from '@base-ui/react/menu'
 import { Link } from 'react-router-dom'
 import { Avatar } from '@/atoms/avatar'
 import { cn } from '../lib/cn'
-import { FOCUS_RING as FOCUS } from '../lib/focus'
 
 export type AvatarMenuItemModel =
   | { key: string; label: string; to: string }
@@ -34,14 +33,14 @@ const anchorContainer = {
 /** The 34px header avatar (`atoms/Avatar` size `header`), with the coarse-pointer halo to 44. */
 const TRIGGER = cn(
   'relative inline-flex shrink-0 cursor-pointer rounded-sm border-0 bg-transparent p-0',
-  'pointer-coarse:before:absolute pointer-coarse:before:-inset-halo pointer-coarse:before:content-[""]',
-  FOCUS,
+  'hit-44',
+  'focus-ring',
 )
 
 /** A raised card of 44px rows. */
 const POPUP = cn(
-  'min-w-52 rounded-lg bg-card p-2 shadow-pop outline-none',
-  FOCUS,
+  'min-w-52 rounded-lg material-pop p-2 outline-none',
+  'focus-ring',
 )
 
 /**
@@ -53,9 +52,7 @@ const ITEM = cn(
   'flex min-h-hit w-full cursor-pointer items-center rounded-md border-0 bg-transparent px-3',
   'text-label font-medium text-foreground no-underline select-none',
   'data-highlighted:bg-accent',
-  'focus-visible:outline-3 focus-visible:outline-ring focus-visible:-outline-offset-2',
-  'contrast-more:focus-visible:outline-4',
-  'forced-colors:focus-visible:outline-fc-highlight',
+  'focus-ring-inset',
 )
 
 /**

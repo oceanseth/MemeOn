@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { glowStyleFor } from '@memeon/shared/tiers'
 import { cn } from '../lib/cn'
-import { FOCUS_RING } from '../lib/focus'
 import type { MemeCardModel } from '../lib/memeCardModel'
 import { tierFrameClasses } from '@/atoms/foil'
 import { TierChip } from '@/atoms/tier-chip'
@@ -12,10 +11,10 @@ import './foil.css'
 export type MemeCardSize = 'default' | 'lg'
 
 const CARD = cn(
-  'group relative isolate self-start rounded-lg bg-card p-2 shadow-raised',
+  'group relative isolate self-start rounded-lg material-card p-2',
   '@container',
-  'transition-transform duration-(--dur-base) ease-[ease] motion-reduce:transition-none',
-  'pointer-coarse:active:scale-[0.99]',
+  'transition-lift',
+  'pointer-coarse:active:scale-99',
   'has-[a:focus-visible]:outline-3 has-[a:focus-visible]:outline-ring',
   'has-[a:focus-visible]:outline-offset-2',
   'contrast-more:has-[a:focus-visible]:outline-4',
@@ -23,8 +22,8 @@ const CARD = cn(
 )
 
 const CARD_LIFT = cn(
-  '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-1',
-  '[@media(hover:hover)_and_(pointer:fine)]:hover:scale-[1.01]',
+  'pointer-fine:hover:-translate-y-1',
+  'pointer-fine:hover:scale-101',
   'motion-reduce:hover:translate-y-0! motion-reduce:hover:scale-100!',
 )
 
@@ -38,13 +37,10 @@ const TOGGLE = cn(
   'absolute right-2 bottom-2 z-[2] inline-flex items-center justify-center',
   'size-8 p-0 pointer-coarse:size-hit',
   'cursor-pointer whitespace-nowrap text-label leading-none text-foreground',
-  'rounded-sm bg-accent shadow-raised',
-  '[transition:transform_var(--dur-fast)_ease,background_var(--dur-base)_ease]',
-  'motion-reduce:transition-none',
-  '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px',
-  'motion-reduce:hover:translate-y-0!',
-  'pointer-coarse:active:translate-y-px active:shadow-pressed',
-  FOCUS_RING,
+  'rounded-sm material-raised',
+  'transition-press',
+  'lift press',
+  'focus-ring',
 )
 
 const CHIP_POS = 'absolute bottom-4 left-4 z-[2]'

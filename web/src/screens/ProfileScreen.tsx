@@ -15,21 +15,21 @@ const SKELETON_CARDS = ['a', 'b', 'c', 'd']
 
 /* identity card: min height floor so wrapped content can grow past the avatar row */
 const IDENTITY_CARD = cn(
-  'mb-5 flex flex-wrap items-center gap-y-4 gap-x-3.5 rounded-xl bg-card p-5 shadow-raised',
+  'mb-5 flex flex-wrap items-center gap-y-4 gap-x-3.5 rounded-xl material-card p-5',
   'max-sm:rounded-lg',
 )
 
 const IDENTITY_LINE =
-  'm-0 truncate font-display text-title font-medium tracking-title text-foreground [overflow-wrap:anywhere]'
+  'm-0 truncate font-display text-title font-medium tracking-title text-foreground wrap-anywhere'
 
 const META_LINE = 'm-0 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-label font-semibold text-muted-foreground'
 
 /** The friend state is a caption, not a pill: a standing fact never competes with the actions. */
 const FRIEND_CAPTION = 'm-0 mt-1.5 text-label font-semibold text-muted-foreground'
 
-const ACTIONS = 'flex flex-wrap items-center gap-3 max-sm:w-full max-sm:[&>*]:flex-1'
+const ACTIONS = 'flex flex-wrap items-center gap-3 max-sm:w-full max-sm:*:flex-1'
 
-const TABS = 'mb-gutter flex flex-wrap items-center gap-3.5 max-sm:[&>*]:flex-1'
+const TABS = 'mb-gutter flex flex-wrap items-center gap-3.5 max-sm:*:flex-1'
 
 /** Public binder hero: bare row, intro below the avatar row at page edge. */
 const BINDER_HERO = 'flex items-center gap-4 max-sm:items-start'
@@ -287,7 +287,7 @@ export function ProfileScreen({
 
       {showJoin && (
         <div className="mt-9 flex flex-col items-center gap-3 text-center">
-          <div className="flex flex-wrap items-center justify-center gap-3 max-sm:w-full max-sm:[&>*]:w-full">
+          <div className="flex flex-wrap items-center justify-center gap-3 max-sm:w-full max-sm:*:w-full">
             {showBinderHero ? <Button {...shareButtonProps}>{shareLabel}</Button> : null}
             <Link className={cn(buttonClasses('primary'), 'max-sm:w-full')} {...joinLinkProps}>
               {joinLabel}
