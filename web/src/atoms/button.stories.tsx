@@ -2,6 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { Button } from '@/atoms/button'
 
+/** A token as `:root` declares it, so the assertion follows the scale rather than pinning a literal. */
+const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+
 const meta = {
   title: 'Atoms/Button',
   component: Button,
@@ -16,7 +19,7 @@ export const Default: Story = {
     const canvas = within(canvasElement)
     const button = canvas.getByRole('button', { name: 'Do the thing' })
     await expect(button.offsetHeight).toBe(46)
-    await expect(getComputedStyle(button).borderRadius).toBe('23px')
+    await expect(getComputedStyle(button).borderRadius).toBe(token('--radius-lg'))
   },
 }
 export const Primary: Story = { args: { variant: 'primary' } }

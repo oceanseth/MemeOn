@@ -2,6 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, waitFor, within } from 'storybook/test'
 import { Avatar } from '@/atoms/avatar'
 
+/** A token as `:root` declares it, so the assertion follows the scale rather than pinning a literal. */
+const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+
 const LOGO = '/brand/memeon-logo-circle-64.png'
 /* the first fetch of the logo on a cold test shard outruns testing-library's 1 s default */
 const IMAGE_LOAD = { timeout: 8000 }
@@ -67,7 +70,7 @@ export const Header: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const root = canvas.getByText('L').closest('[data-slot="avatar"]')!
-    await expect(root).toHaveStyle({ width: '34px', height: '34px', borderRadius: '13px' })
+    await expect(root).toHaveStyle({ width: token('--spacing-control-sm'), height: token('--spacing-control-sm'), borderRadius: token('--radius-sm') })
   },
 }
 

@@ -3,6 +3,9 @@ import { expect, userEvent, within } from 'storybook/test'
 import { Field, FieldLabel } from '@/atoms/field'
 import { Input } from '@/atoms/input'
 
+/** A token as `:root` declares it, so the assertion follows the scale rather than pinning a literal. */
+const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+
 const meta = {
   title: 'Atoms/Input',
   component: Input,
@@ -27,7 +30,7 @@ export const Default: Story = {
     await expect(input).toHaveAttribute('data-slot', 'input')
     // the recessed well: 50 tall, radius 16 (--radius-md)
     await expect(input.offsetHeight).toBe(50)
-    await expect(getComputedStyle(input).borderRadius).toBe('18px')
+    await expect(getComputedStyle(input).borderRadius).toBe(token('--radius-md'))
     await userEvent.type(input, '!')
     await expect(input).toHaveValue('chrome streak!')
   },
