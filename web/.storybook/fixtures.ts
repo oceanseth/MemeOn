@@ -229,12 +229,12 @@ export const videoMeme: Meme = meme({
 
 export const giphyCat: GiphyResult = {
   id: 'giphy-cat',
-  title: media.video.title,
+  title: 'cat keyboard',
   stillUrl: media.video.imageUrl,
   gifUrl: media.video.imageUrl,
   mp4Url: media.video.videoUrl,
-  author: media.video.creatorName,
-  url: 'https://giphy.com/gifs/happy-dnd',
+  author: 'giphy-user',
+  url: 'https://giphy.com/gifs/cat-keyboard',
 }
 
 export const giphyDog: GiphyResult = {
