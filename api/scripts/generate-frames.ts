@@ -7,7 +7,7 @@
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { Jimp } from 'jimp'
-import { TIERS } from '../../shared/tiers'
+import { TIERS } from '@memeon/shared/tiers'
 import { framePrompt } from '../src/routes'
 
 const KEY_PARAM = process.env.MASKY_KEY_PARAM ?? '/chooseastory/production/masky_api_key'

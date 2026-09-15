@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto'
 import * as db from './db'
 import { search, trending } from './giphy'
 import { indexMeme } from './vectors'
-import { TIERS } from '../../shared/tiers'
+import { TIERS } from '@memeon/shared/tiers'
 import type { Meme } from './types'
 
 const EMOTIONS = [

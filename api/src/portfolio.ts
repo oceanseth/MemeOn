@@ -1,5 +1,5 @@
 import * as db from './db'
-import { memeValue } from '../../shared/tiers'
+import { memeValue } from '@memeon/shared/tiers'
 
 /**
  * Positions past this cap are counted but not priced, bounding request-time
