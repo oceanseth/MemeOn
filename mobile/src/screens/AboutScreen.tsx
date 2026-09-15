@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { TIER_GRADIENTS } from '../components/FoilCard'
 import { apiFetch } from '../lib/api'
 import { useColors, useThemedStyles, type LegacyColors } from '../lib/theme'
-import { TIERS } from '../../../shared/tiers'
+import { TIERS } from '@memeon/shared/tiers'
 
 interface FrameInfo {
   key: string

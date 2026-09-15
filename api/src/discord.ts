@@ -7,7 +7,7 @@ import * as db from './db'
 import * as vectors from './vectors'
 import { env } from './env'
 import { getJsonSecret, getSecret } from './ssm'
-import { memeValue, tierFor } from '../../shared/tiers'
+import { memeValue, tierFor } from '@memeon/shared/tiers'
 import type { Meme } from './types'
 
 export interface DiscordConfig {

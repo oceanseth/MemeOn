@@ -12,7 +12,7 @@ import {
 } from '@aws-sdk/lib-dynamodb'
 import { randomUUID } from 'node:crypto'
 import { env } from './env'
-import { memeValue, tierFor } from '../../shared/tiers'
+import { memeValue, tierFor } from '@memeon/shared/tiers'
 import type {
   Alert,
   AlertType,

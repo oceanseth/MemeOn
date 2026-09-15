@@ -11,7 +11,7 @@ import { env } from './env'
 import { safeFetch } from './safeFetch'
 import { assetAgeSeconds, assetExists, assetUrl, putAsset, putAssetShortCache } from './s3'
 import { getSharedSecret } from './ssm'
-import { TIERS, tierFor } from '../../shared/tiers'
+import { TIERS, tierFor } from '@memeon/shared/tiers'
 import type { Meme } from './types'
 
 // Card geometry: frames are 900x1200 (3:4) with an open square art window.

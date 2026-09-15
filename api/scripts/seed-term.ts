@@ -4,7 +4,7 @@
 import { randomUUID } from 'node:crypto'
 import * as db from '../src/db'
 import { search } from '../src/giphy'
-import { TIERS } from '../../shared/tiers'
+import { TIERS } from '@memeon/shared/tiers'
 import type { Meme } from '../src/types'
 
 const base = process.argv[2]

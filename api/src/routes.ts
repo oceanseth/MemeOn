@@ -19,7 +19,7 @@ import {
 } from './og'
 import * as ogModule from './og'
 import { assetUrl, presignUpload, putAsset } from './s3'
-import { memeValue, TIERS, tierFor, tierIndexFor } from '../../shared/tiers'
+import { memeValue, TIERS, tierFor, tierIndexFor } from '@memeon/shared/tiers'
 import type { Meme, Trade, TradeSide } from './types'
 import { SafeFetchError, assertPublicUrl, safeFetch } from './safeFetch'
 
