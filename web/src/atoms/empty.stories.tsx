@@ -115,6 +115,28 @@ export const ErrorVariant: Story = {
   },
 }
 
+/** The mint flow's approval card: field radius, tight inset, left-aligned, the phone title step. */
+export const Inline: Story = {
+  render: () => (
+    <Empty variant="success" size="inline" role="none">
+      <EmptyHeader>
+        <EmptyTitle>✅ Edit applied — happy with this frame?</EmptyTitle>
+        <EmptyDescription>
+          Keep it, then animate it or run another edit — check the card preview before you mint.
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const card = canvasElement.querySelector<HTMLElement>('[data-slot="empty"]')!
+    await expect(card).toHaveAttribute('data-size', 'inline')
+    await expect(getComputedStyle(card).textAlign).toBe('left')
+    // the title takes the phone step (17px) inside the inline card
+    await expect(getComputedStyle(canvas.getByText(/Edit applied/)).fontSize).toBe('17px')
+  },
+}
+
 /** Every variant stacked. */
 export const Variants: Story = {
   render: () => (

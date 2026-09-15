@@ -220,10 +220,16 @@ export const Pill: Story = {
   },
 }
 
-/** Composed from the parts, with groups: what a screen writes when the items array is not enough. */
+/**
+ * Composed from the parts, with groups: what a screen writes when the items array is not enough.
+ * The root still takes `items` so `SelectValue` shows the label, not the value.
+ */
 export const Composed: Story = {
   render: () => (
-    <SelectRoot defaultValue="holo">
+    <SelectRoot
+      defaultValue="holo"
+      items={{ paper: 'Paper', silver: 'Silver', holo: 'Holo', shiny: 'Shiny' }}
+    >
       <SelectTrigger aria-label="Tier">
         <SelectValue />
       </SelectTrigger>
@@ -250,7 +256,10 @@ export const Composed: Story = {
     await userEvent.click(trigger)
     const listbox = await screen.findByRole('listbox')
     await expect(within(listbox).getAllByRole('group')).toHaveLength(2)
-    await expect(within(listbox).getByRole('option', { name: 'Shiny' })).toBeVisible()
+    // the popup fades in, so visibility is awaited rather than read on the first frame
+    await waitFor(() =>
+      expect(within(listbox).getByRole('option', { name: 'Shiny' })).toBeVisible(),
+    )
   },
 }
 

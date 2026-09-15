@@ -47,10 +47,14 @@ export function SelectTrigger({
       {...props}
     >
       {children}
+      {/* the svg is the child, not the `render` element: Base UI's Icon merges a default "▼" into
+          whatever it renders, and that glyph would land inside the svg and in the trigger's text */}
       <BaseSelect.Icon
         data-slot="select-icon"
-        render={<ChevronDownIcon className="pointer-events-none size-4 shrink-0 text-muted-foreground" />}
-      />
+        className="pointer-events-none flex shrink-0 text-muted-foreground"
+      >
+        <ChevronDownIcon className="size-4" />
+      </BaseSelect.Icon>
     </BaseSelect.Trigger>
   )
 }
@@ -94,7 +98,10 @@ export function SelectSizer({
 
 /**
  * Portal → positioner → popup → list. Ours opens 6px under the trigger as a menu
- * (`alignItemWithTrigger` off) at the modal layer; `aria-label` names the listbox.
+ * (`alignItemWithTrigger` off) at the modal layer, fades in and unmounts at once: the registry's
+ * exit animation leaves a closed listbox in the DOM for a beat, which is a second `listbox` for
+ * anything that queries by role and an unnamed field for axe. `aria-label` / `aria-labelledby`
+ * name the listbox.
  */
 export function SelectContent({
   className,
@@ -126,14 +133,17 @@ export function SelectContent({
             'origin-(--transform-origin) overflow-x-hidden overflow-y-auto',
             'rounded-lg material-pop p-1.5 text-foreground',
             'duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95',
-            'data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95',
             'motion-reduce:animate-none',
             className,
           )}
           {...props}
         >
           <SelectScrollUpButton />
-          <BaseSelect.List aria-label={ariaLabel} aria-labelledby={ariaLabelledBy}>
+          {/* an explicit `undefined` would overwrite the label Base UI derives from the trigger */}
+          <BaseSelect.List
+            {...(ariaLabel === undefined ? {} : { 'aria-label': ariaLabel })}
+            {...(ariaLabelledBy === undefined ? {} : { 'aria-labelledby': ariaLabelledBy })}
+          >
             {children}
           </BaseSelect.List>
           <SelectScrollDownButton />

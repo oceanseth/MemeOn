@@ -5,12 +5,14 @@ import { cn } from '@/lib/cn'
 
 /**
  * The raised card a screen shows in place of content: nothing here, an error, an outcome.
- * The variant tints the card and colours the title; the description stays muted.
+ * The variant tints the card and colours the title; the description stays muted. `inline` is
+ * the mint flow's state card: field radius, a tight inset, left-aligned, the phone title step —
+ * the parts read the size through the `empty` group.
  */
 export const emptyVariants = cva(
   [
-    'flex w-full min-w-0 flex-col items-center justify-center gap-gutter',
-    'rounded-lg material-card p-card-inset text-center text-label',
+    'group/empty flex w-full min-w-0 flex-col items-center justify-center',
+    'rounded-lg material-card text-center text-label',
   ],
   {
     variants: {
@@ -21,8 +23,12 @@ export const emptyVariants = cva(
         warning: 'bg-warning text-warning-foreground',
         info: 'bg-info text-info-foreground',
       },
+      size: {
+        default: 'gap-gutter p-card-inset',
+        inline: 'items-start gap-3 rounded-md p-4 text-left',
+      },
     },
-    defaultVariants: { variant: 'neutral' },
+    defaultVariants: { variant: 'neutral', size: 'default' },
   },
 )
 
@@ -31,13 +37,14 @@ export type EmptyVariant = NonNullable<VariantProps<typeof emptyVariants>['varia
 export type EmptyProps = ComponentPropsWithoutRef<'div'> & VariantProps<typeof emptyVariants>
 
 /** A live region like `Alert`: `error` interrupts, the rest is polite; an explicit `role` wins. */
-export function Empty({ className, variant, role, ...props }: EmptyProps) {
+export function Empty({ className, variant, size, role, ...props }: EmptyProps) {
   return (
     <div
       data-slot="empty"
       data-variant={variant ?? 'neutral'}
+      data-size={size ?? 'default'}
       role={role ?? (variant === 'error' ? 'alert' : 'status')}
-      className={cn(emptyVariants({ variant }), className)}
+      className={cn(emptyVariants({ variant, size }), className)}
       {...props}
     />
   )
@@ -47,7 +54,11 @@ export function EmptyHeader({ className, ...props }: ComponentPropsWithoutRef<'d
   return (
     <div
       data-slot="empty-header"
-      className={cn('flex max-w-[60ch] flex-col items-center gap-3', className)}
+      className={cn(
+        'flex max-w-[60ch] flex-col items-center gap-3',
+        'group-data-[size=inline]/empty:items-start group-data-[size=inline]/empty:gap-2',
+        className,
+      )}
       {...props}
     />
   )
@@ -94,6 +105,7 @@ export function EmptyTitle({
       'data-slot': 'empty-title',
       className: cn(
         'm-0 font-display text-card-title font-medium tracking-card-title text-balance',
+        'group-data-[size=inline]/empty:text-card-title-phone',
         className,
       ),
     },
@@ -104,7 +116,11 @@ export function EmptyDescription({ className, ...props }: ComponentPropsWithoutR
   return (
     <p
       data-slot="empty-description"
-      className={cn('m-0 text-label text-muted-foreground text-pretty', className)}
+      className={cn(
+        'm-0 text-label text-muted-foreground text-pretty',
+        'group-data-[size=inline]/empty:text-small group-data-[size=inline]/empty:font-medium',
+        className,
+      )}
       {...props}
     />
   )

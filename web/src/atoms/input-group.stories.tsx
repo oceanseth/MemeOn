@@ -35,8 +35,12 @@ export const Search: Story = {
     const input = canvas.getByRole('searchbox', { name: 'Search memes' })
     await expect(input).toHaveAttribute('data-slot', 'input-group-control')
     // the group is the well: 50 tall, the control fills it without a second relief
+    // (`shadow-none` leaves Tailwind's transparent ring slots in place, so every shadow is a no-op)
     await expect(group.offsetHeight).toBe(50)
-    await expect(getComputedStyle(input).boxShadow).toBe('none')
+    await expect(getComputedStyle(group).boxShadow).not.toBe('none')
+    await expect(getComputedStyle(input).boxShadow).toMatch(
+      /^(none|(rgba\(0, 0, 0, 0\) 0px 0px 0px 0px(, )?)+)$/,
+    )
     // a click on the glyph lands in the control
     await userEvent.click(canvasElement.querySelector('[data-slot="input-group-addon"]')!)
     await expect(input).toHaveFocus()
