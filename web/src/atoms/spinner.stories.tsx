@@ -10,10 +10,13 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
+/** Decorative by default: the parent owns the status, so the ring is hidden from the tree. */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
-    const spinner = canvasElement.querySelector('[data-slot="spinner"]')
+    const spinner = canvasElement.querySelector<HTMLElement>('[data-slot="spinner"]')!
     await expect(spinner).toHaveAttribute('aria-hidden', 'true')
+    await expect(spinner).toHaveAttribute('data-size', 'sm')
+    await expect(spinner.offsetWidth).toBe(18)
   },
 }
 
@@ -23,6 +26,36 @@ export const BesideLabel: Story = {
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--color-muted-foreground)' }}>
       <Spinner />
       Loading…
+    </div>
+  ),
+}
+
+/** The 24px ring of a full-panel wait (the Discord link status card). */
+export const Medium: Story = {
+  args: { size: 'md' },
+  play: async ({ canvasElement }) => {
+    const spinner = canvasElement.querySelector<HTMLElement>('[data-slot="spinner"]')!
+    await expect(spinner).toHaveAttribute('data-size', 'md')
+    await expect(spinner.offsetWidth).toBe(24)
+  },
+}
+
+/** `tone="current"`: the ring takes the host's text colour, which is how a busy Button carries it. */
+export const Current: Story = {
+  render: () => (
+    <div
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 10,
+        padding: '12px 18px',
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--color-primary)',
+        color: 'var(--color-primary-foreground)',
+      }}
+    >
+      <Spinner tone="current" />
+      Minting…
     </div>
   ),
 }

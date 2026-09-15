@@ -17,4 +17,18 @@
       transform: rotate(360deg);
     }
   }
+
+  /* The turn, keyed on the atom's slot so the TSX carries no animation escape. 0.8s is a legacy
+     constant, not one of the `--dur-*` tokens; under reduced motion the ring still turns, at a
+     quarter of the pace, because a frozen ring reads as a hang. A `--animate-*` theme entry would
+     let a utility replace this block. */
+  [data-slot='spinner'] {
+    animation: atom-rot 0.8s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-slot='spinner'] {
+      animation-duration: 2s;
+    }
+  }
 }
