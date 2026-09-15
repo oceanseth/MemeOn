@@ -1,5 +1,4 @@
 import { createActor } from 'xstate'
-import { autorun, configure, isObservable } from 'mobx'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import {
   maskyAccessToken,
@@ -72,24 +71,18 @@ async function authenticate() {
   expect(stores.auth.user).toEqual(me)
 }
 
-test('auth projects exact snapshots and action-safe observed updates', async () => {
-  expect(stores.auth.snapshot).toBe(actor.getSnapshot())
-  expect(isObservable(stores.auth.snapshot.context)).toBe(false)
+test('auth projects exact snapshots and notifies subscribers on change', async () => {
+  expect(stores.auth.getSnapshot()).toBe(actor.getSnapshot())
   const observed: Array<string | null> = []
-  const dispose = autorun(() => observed.push(stores.auth.user?.sub ?? null))
-  const warning = vi.spyOn(console, 'warn').mockImplementation(() => {})
-  configure({ enforceActions: 'always' })
+  const dispose = stores.auth.subscribe(() => observed.push(stores.auth.user?.sub ?? null))
   try {
     await authenticate()
-    expect(stores.auth.snapshot).toBe(actor.getSnapshot())
+    expect(stores.auth.getSnapshot()).toBe(actor.getSnapshot())
     expect(stores.auth.user).toBe(actor.getSnapshot().context.user)
     stores.auth.logout()
     expect(observed).toEqual([null, me.sub, null])
-    expect(warning).not.toHaveBeenCalled()
   } finally {
     dispose()
-    warning.mockRestore()
-    configure({ enforceActions: 'observed' })
   }
 })
 

@@ -1,5 +1,4 @@
 import { createActor, fromPromise } from 'xstate'
-import { autorun, configure, isObservable } from 'mobx'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../lib/types'
 import { AuthStore } from './AuthStore'
@@ -110,50 +109,45 @@ test('disposing an unretained bag acquires no actor resources', async () => {
   expect(subscribe).not.toHaveBeenCalled()
 })
 
-test('projection connection catches up by exact reference inside an action and is reversible', async () => {
+test('projection connection catches up by exact reference and is reversible', async () => {
   const actor = createActor(authMachine.provide({
     actors: { loadMe: fromPromise<Me | null>(async () => me) },
     actions: { clearSessionAndFirebase: () => {} },
   }))
-  const subscribe = vi.spyOn(actor, 'subscribe')
+  const actorSubscribe = vi.spyOn(actor, 'subscribe')
   const auth = new AuthStore(actor)
   const initial = actor.getSnapshot()
-  expect(auth.snapshot).toBe(initial)
-  expect(isObservable(auth.snapshot.context)).toBe(false)
-  expect(subscribe).not.toHaveBeenCalled()
+  expect(auth.getSnapshot()).toBe(initial)
+  expect(actorSubscribe).not.toHaveBeenCalled()
   const observed: unknown[] = []
-  const unobserve = autorun(() => observed.push(auth.snapshot))
-  const warning = vi.spyOn(console, 'warn')
-  configure({ enforceActions: 'always' })
+  const unobserve = auth.subscribe(() => observed.push(auth.getSnapshot()))
   try {
     actor.start()
     actor.send({ type: 'LOGOUT' })
     const beforeConnect = actor.getSnapshot()
-    expect(auth.snapshot).toBe(initial)
+    expect(auth.getSnapshot()).toBe(initial)
     auth.connect()
     auth.connect()
-    expect(subscribe).toHaveBeenCalledOnce()
-    expect(auth.snapshot).toBe(beforeConnect)
-    expect(observed).toEqual([initial, beforeConnect])
-    const unsubscribe = vi.spyOn(subscribe.mock.results[0]!.value, 'unsubscribe')
+    expect(actorSubscribe).toHaveBeenCalledOnce()
+    expect(auth.getSnapshot()).toBe(beforeConnect)
+    expect(observed).toEqual([beforeConnect])
+    const unsubscribe = vi.spyOn(actorSubscribe.mock.results[0]!.value, 'unsubscribe')
     await auth.refresh()
-    expect(auth.snapshot).toBe(actor.getSnapshot())
+    expect(auth.getSnapshot()).toBe(actor.getSnapshot())
     expect(auth.user).toBe(me)
     auth.disconnect()
     auth.disconnect()
     expect(unsubscribe).toHaveBeenCalledOnce()
-    const disconnected = auth.snapshot
+    const disconnected = auth.getSnapshot()
     actor.send({ type: 'LOGOUT' })
-    expect(auth.snapshot).toBe(disconnected)
+    expect(auth.getSnapshot()).toBe(disconnected)
     auth.connect()
-    expect(auth.snapshot).toBe(actor.getSnapshot())
+    expect(auth.getSnapshot()).toBe(actor.getSnapshot())
     expect(auth.user).toBeNull()
-    expect(warning).not.toHaveBeenCalled()
   } finally {
     unobserve()
     auth.disconnect()
     actor.stop()
-    configure({ enforceActions: 'observed' })
   }
 })
 
