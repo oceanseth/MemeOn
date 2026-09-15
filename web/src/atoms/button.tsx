@@ -1,83 +1,129 @@
-import type { ButtonHTMLAttributes } from 'react'
-import { cn } from '../lib/cn'
+import { Button as ButtonPrimitive } from '@base-ui/react/button'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { cn } from '@/lib/cn'
 import { Spinner } from '@/atoms/spinner'
 
-/** Raised pill variants; toggles use `pressed`, not a sixth variant. */
-export type ButtonVariant = 'default' | 'primary' | 'secondary' | 'danger' | 'login'
+/* The raised pill and its relief: `lift` deepens the shadow on a fine-pointer hover, `press` sinks
+   it on active, `aria-pressed` swaps the whole material for the pressed well. Every raised variant
+   composes this; ghost and link paint no material and so take no relief. */
+const RAISED = 'material-raised lift press aria-pressed:material-pressed aria-pressed:text-foreground'
 
-const BASE = cn(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer',
-  'h-control rounded-lg px-4.5 text-label font-semibold',
-  'material-raised text-foreground',
-  'transition-press',
-  /* lift deepens the raised relief on hover; press sinks it on active; aria-pressed is the pressed material */
-  'lift press',
-  'focus-ring',
-  'aria-pressed:material-pressed aria-pressed:text-foreground',
-  'aria-disabled:pointer-events-none disabled-look',
+const buttonVariants = cva(
+  [
+    'inline-flex items-center justify-center gap-2 whitespace-nowrap',
+    'cursor-pointer select-none rounded-lg font-semibold text-foreground',
+    'transition-press focus-ring hit-44',
+    'aria-disabled:pointer-events-none disabled-look',
+  ],
+  {
+    variants: {
+      variant: {
+        /** the neutral raised pill: cancel, share, load more, a tab that is off */
+        default: RAISED,
+        /** the one bubblegum action per task or card */
+        primary: [RAISED, 'bg-primary text-primary-foreground'],
+        /** the ultraviolet companion: a second action on a card that must not spend the bubblegum */
+        brand: [RAISED, 'bg-brand text-brand-foreground'],
+        /** tinted, not the strong red: delete, revoke, decline */
+        destructive: [RAISED, 'bg-error text-error-foreground'],
+        /** the toolbar Mint: bubblegum under the shell cut, neutral once the sidebar owns primary */
+        mint: [RAISED, 'bg-primary text-primary-foreground xl:bg-accent xl:text-foreground'],
+        /** no plate; a tint on hover and the pressed well when it is on */
+        ghost: 'hover:bg-accent aria-pressed:material-pressed',
+        /** an inline link that shares the button's box */
+        link: 'text-link underline underline-offset-3 hover:no-underline',
+      },
+      size: {
+        /** 46px, the control height */
+        default: 'h-control px-4.5 text-label',
+        /** 40px: a row action beside a line of copy */
+        sm: 'h-10 px-3.5 text-small',
+        /** 34px chip: a mode or filter toggle; the halo makes up the pointer target */
+        xs: 'h-control-sm rounded-sm px-3 text-caption',
+        icon: 'size-control',
+        'icon-sm': 'size-control-sm rounded-sm',
+        /** the sign-in CTA: full width on the phone, wraps, never under the control height */
+        login: 'h-auto min-h-control w-full min-w-64 max-w-full px-4.5 py-3 text-label leading-5 whitespace-normal md:w-auto',
+      },
+    },
+    defaultVariants: { variant: 'default', size: 'default' },
+  },
 )
 
-const PRIMARY = 'bg-primary text-primary-foreground'
+type RegistryVariant = NonNullable<VariantProps<typeof buttonVariants>['variant']>
+export type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>['size']>
 
-const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  default: '',
-  primary: PRIMARY,
-  secondary: 'bg-brand text-brand-foreground',
-  danger: 'bg-error text-error-foreground',
-  login: cn(
-    PRIMARY,
-    'w-full min-w-64 max-w-full md:w-auto',
-    'h-auto min-h-control px-4.5 py-3.25 whitespace-normal',
-    '[line-height:20px]', // login wraps; pin row height so emoji labels stay 46px tall
-  ),
+/** The three names the screens and models still pass; each resolves to a registry axis below. */
+type LegacyButtonVariant = 'secondary' | 'danger' | 'login'
+
+export type ButtonVariant = RegistryVariant | LegacyButtonVariant
+
+const LEGACY: Record<LegacyButtonVariant, { variant: RegistryVariant; size?: ButtonSize }> = {
+  secondary: { variant: 'brand' },
+  danger: { variant: 'destructive' },
+  login: { variant: 'primary', size: 'login' },
 }
 
-/** Link styling; combine with `aria-disabled` for a locked link. */
-export function buttonClasses(variant: ButtonVariant = 'default'): string {
-  return cn(
-    BASE,
-    '[line-height:normal]', // arbitrary property — survives caller text-*; see lib/cn.test.ts
-    VARIANT_CLASSES[variant],
-  )
+const isLegacy = (variant: ButtonVariant): variant is LegacyButtonVariant => variant in LEGACY
+
+interface ResolvedVariants {
+  variant: RegistryVariant
+  size: ButtonSize | null | undefined
 }
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant
-  busy?: boolean
+/** Legacy names map onto the axes; a size the caller passes beats the legacy default. */
+function resolveVariants(
+  variant: ButtonVariant | null | undefined,
+  size: ButtonSize | null | undefined,
+): ResolvedVariants {
+  const named = variant ?? 'default'
+  if (!isLegacy(named)) return { variant: named, size }
+  const legacy = LEGACY[named]
+  return { variant: legacy.variant, size: size ?? legacy.size }
+}
+
+/**
+ * The classes alone, for a `<Link>`/`<a>` that wears the pill: `<Button render={<Link />}>` is
+ * the registry form and replaces this at every site; combine with `aria-disabled` for a locked
+ * link meanwhile.
+ */
+export function buttonClasses(variant: ButtonVariant = 'default', size?: ButtonSize): string {
+  return cn(buttonVariants(resolveVariants(variant, size)))
+}
+
+export interface ButtonProps extends Omit<ButtonPrimitive.Props, 'className'> {
+  variant?: ButtonVariant | null | undefined
+  size?: ButtonSize | null | undefined
+  /** In flight: `aria-busy`, a spinner in the host's colour, full opacity even while disabled. */
+  busy?: boolean | undefined
   /** Sets `aria-pressed` and the pressed well material. */
-  pressed?: boolean
+  pressed?: boolean | undefined
+  className?: string | undefined
 }
 
-/** `busy` wins over disabled dimming; spread `aria-busy` is honoured when `busy` is omitted. */
-export function Button({
-  variant = 'default',
-  busy,
-  pressed,
-  disabled,
-  type = 'button',
-  className,
-  children,
-  ...rest
-}: ButtonProps) {
+/**
+ * `busy` wins over disabled dimming; a spread `aria-busy` (boolean or string) is honoured when
+ * `busy` is omitted, because every screen model spreads a prop bag rather than passing `busy`.
+ * Base UI supplies `type="button"` for a native button and `render` for a link or span.
+ */
+export function Button({ variant, size, busy, pressed, className, children, ...rest }: ButtonProps) {
   const isBusy = busy ?? (rest['aria-busy'] === true || rest['aria-busy'] === 'true')
   return (
-    <button
+    <ButtonPrimitive
+      data-slot="button"
       {...rest}
-      type={type}
-      disabled={disabled}
       aria-busy={isBusy || undefined}
       aria-pressed={pressed ?? rest['aria-pressed']}
-      data-slot="button"
       className={cn(
-        buttonClasses(variant),
-        isBusy
-          ? 'opacity-100! cursor-progress' // beats aria-disabled opacity specificity
-          : 'disabled-look',
+        buttonVariants(resolveVariants(variant, size)),
+        isBusy && 'opacity-100! cursor-progress', // beats the attribute-selector specificity of disabled-look
         className,
       )}
     >
-      {isBusy && <Spinner className="border-current/30 border-t-current" />}
+      {isBusy && <Spinner tone="current" />}
       {children}
-    </button>
+    </ButtonPrimitive>
   )
 }
+
+export { buttonVariants }
