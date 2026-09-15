@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes } from 'react'
 import type { LinkProps } from 'react-router-dom'
 import { settingsCopy } from '../copy/settings'
 import type { Me } from '../lib/types'
-import type { ThemeControlModel } from '../molecules/ThemeControl'
+import type { ThemeControlModel } from '@/molecules/theme-control'
 import { useAuth } from './useAuth'
 import { useTheme } from './useTheme'
 

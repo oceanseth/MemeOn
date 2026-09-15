@@ -7,106 +7,70 @@ describe('cn', () => {
   })
 
   it('lets the later Tailwind utility win a conflict', () => {
-    expect(cn('p-2 text-ink', 'p-4')).toBe('text-ink p-4')
+    expect(cn('p-2 text-foreground', 'p-4')).toBe('text-foreground p-4')
   })
 
-  /* the @theme namespaces tailwind-merge cannot infer from the CSS; without the extendTailwindMerge
-     config in cn.ts each of these keeps both classes and source-scan order picks the winner */
-  it('merges the project container measure against a stock one', () => {
-    expect(cn('max-w-app', 'max-w-sm')).toBe('max-w-sm')
-    expect(cn('max-w-sm', 'max-w-app')).toBe('max-w-app')
+  /* the @theme namespaces cn cannot infer from the CSS; without the extend block in cn.ts each of
+     these keeps both classes and source-scan order picks the winner */
+  it('merges the container widths against each other and against stock ones', () => {
+    expect(cn('max-w-card', 'max-w-search')).toBe('max-w-search')
+    expect(cn('max-w-measure', 'max-w-card')).toBe('max-w-card')
+    expect(cn('max-w-tabbar', 'max-w-full')).toBe('max-w-full')
+    expect(cn('max-w-full', 'max-w-card-narrow')).toBe('max-w-card-narrow')
   })
 
   it('merges the named spacing roles against the numeric grid and each other', () => {
     expect(cn('h-control', 'h-11')).toBe('h-11')
     expect(cn('h-11', 'h-control')).toBe('h-control')
-    expect(cn('min-h-11', 'min-h-control')).toBe('min-h-control')
+    expect(cn('min-h-11', 'min-h-hit')).toBe('min-h-hit')
     expect(cn('h-control', 'min-h-control')).toBe('h-control min-h-control')
-    expect(cn('px-4', 'px-control-x')).toBe('px-control-x')
-    expect(cn('px-control-x', 'px-gutter')).toBe('px-gutter')
-    expect(cn('p-6', 'max-md:p-gutter')).toBe('p-6 max-md:p-gutter')
-    expect(cn('gap-2', 'gap-control-gap')).toBe('gap-control-gap')
+    expect(cn('px-4', 'px-page-x')).toBe('px-page-x')
+    expect(cn('px-page-x', 'px-gutter')).toBe('px-gutter')
+    expect(cn('p-card-inset', 'max-md:p-gutter')).toBe('p-card-inset max-md:p-gutter')
     expect(cn('size-8', 'size-icon')).toBe('size-icon')
-    expect(cn('size-control-sm', 'size-avatar-hero')).toBe('size-avatar-hero')
-    expect(cn('w-nav-item', 'w-full')).toBe('w-full')
-    expect(cn('left-4', 'left-control-x')).toBe('left-control-x')
+    expect(cn('size-control-sm', 'size-hit')).toBe('size-hit')
+    expect(cn('-mx-5', '-mx-page-x')).toBe('-mx-page-x')
+    expect(cn('p-bloom', '-m-bloom')).toBe('p-bloom -m-bloom')
+    expect(cn('h-2', 'h-track')).toBe('h-track')
+    expect(cn('-inset-1', '-inset-halo')).toBe('-inset-halo')
     expect(cn('mb-gutter', 'mb-0')).toBe('mb-0')
-    expect(cn('max-w-measure', 'max-w-card')).toBe('max-w-card')
-    expect(cn('max-w-page-narrow', 'max-w-hero-video')).toBe('max-w-hero-video')
   })
 
-  it('merges the project radii against each other and against stock ones', () => {
-    expect(cn('rounded-band', 'rounded-well')).toBe('rounded-well')
-    expect(cn('rounded-segment', 'rounded-pill')).toBe('rounded-pill')
-    expect(cn('rounded-control-sm', 'rounded-avatar-hero')).toBe('rounded-avatar-hero')
-    expect(cn('rounded-avatar-hero', 'max-sm:rounded-band')).toBe('rounded-avatar-hero max-sm:rounded-band')
-    expect(cn('rounded-card', 'rounded-pill')).toBe('rounded-pill')
-    expect(cn('rounded-control', 'rounded-lg')).toBe('rounded-lg')
-    expect(cn('rounded-lg', 'rounded-control')).toBe('rounded-control')
-    expect(cn('rounded-field', 'rounded-chip')).toBe('rounded-chip')
-    expect(cn('rounded-nav', 'rounded-avatar')).toBe('rounded-avatar')
-    expect(cn('rounded-shell', 'rounded-tabbar')).toBe('rounded-tabbar')
-    expect(cn('rounded-tabbar', 'rounded-full')).toBe('rounded-full')
-  })
-
-  it('merges the project shadows and keeps a shadow colour beside them', () => {
-    expect(cn('shadow-pop', 'shadow-modal')).toBe('shadow-modal')
-    expect(cn('shadow-md', 'shadow-pop')).toBe('shadow-pop')
-    expect(cn('shadow-pop', 'shadow-link')).toBe('shadow-pop shadow-link')
-    expect(cn('shadow-raised', 'shadow-pressed')).toBe('shadow-pressed')
-    expect(cn('shadow-pressed', 'shadow-raised')).toBe('shadow-raised')
-    expect(cn('shadow-raised', 'shadow-none')).toBe('shadow-none')
-  })
-
-  /* the Soft Press ladder is named, not t-shirt sized, so `text-display` has to be registered as a
-     font size — otherwise tailwind-merge files it under text colour and `text-ink` deletes it */
+  /* the role ladder is named, not t-shirt sized, so `text-display` has to be registered as a font
+     size — otherwise cn files it under text colour and `text-foreground` deletes it */
   it('merges the type ladder as font sizes, not colours', () => {
     expect(cn('text-display', 'text-title')).toBe('text-title')
-    expect(cn('text-lg', 'text-card-title')).toBe('text-card-title')
-    expect(cn('text-micro', 'text-sm')).toBe('text-sm')
-    expect(cn('text-ink', 'text-body')).toBe('text-ink text-body')
-    expect(cn('text-label', 'text-ink-muted')).toBe('text-label text-ink-muted')
+    expect(cn('text-foreground', 'text-body')).toBe('text-foreground text-body')
+    expect(cn('text-label', 'text-muted-foreground')).toBe('text-label text-muted-foreground')
     expect(cn('text-small', 'text-intro')).toBe('text-intro')
-    expect(cn('text-hero-phone', 'text-ink', 'md:text-hero')).toBe('text-hero-phone text-ink md:text-hero')
-    expect(cn('text-section-phone', 'text-ink', 'md:text-section')).toBe(
-      'text-section-phone text-ink md:text-section',
+    expect(cn('text-display-phone', 'text-foreground', 'md:text-display')).toBe(
+      'text-display-phone text-foreground md:text-display',
     )
-    expect(cn('text-caption', 'text-ink-muted')).toBe('text-caption text-ink-muted')
+    expect(cn('text-section-phone', 'md:text-section')).toBe('text-section-phone md:text-section')
+    expect(cn('text-caption', 'text-muted-foreground')).toBe('text-caption text-muted-foreground')
+    expect(cn('text-glyph', 'text-glyph-lg')).toBe('text-glyph-lg')
+    expect(cn('text-glyph-sm', 'text-primary-foreground')).toBe('text-glyph-sm text-primary-foreground')
   })
 
-  it('merges the display trackings against each other and a stock one', () => {
+  it('merges the display trackings against each other', () => {
     expect(cn('tracking-display', 'tracking-title')).toBe('tracking-title')
-    expect(cn('tracking-tight', 'tracking-card-title')).toBe('tracking-card-title')
-    expect(cn('tracking-display', 'tracking-normal')).toBe('tracking-normal')
-    expect(cn('tracking-ui', 'tracking-display')).toBe('tracking-display')
     expect(cn('tracking-card-title', 'md:tracking-title')).toBe('tracking-card-title md:tracking-title')
-  })
-
-  it('merges the stock type sizes', () => {
-    expect(cn('text-xl', 'text-2xl')).toBe('text-2xl')
-    expect(cn('text-ink', 'text-2xl')).toBe('text-ink text-2xl')
   })
 
   it('merges inside the project breakpoint variants', () => {
     expect(cn('max-lg:hidden', 'max-lg:flex')).toBe('max-lg:flex')
     expect(cn('max-xs:p-2', 'max-xs:p-4')).toBe('max-xs:p-4')
-    expect(cn('4xl:rounded-card', '4xl:rounded-pill')).toBe('4xl:rounded-pill')
+    expect(cn('2xl:rounded-lg', '2xl:rounded-full')).toBe('2xl:rounded-full')
   })
 
   it('keeps utilities that only differ by variant', () => {
-    expect(cn('rounded-card', 'max-lg:rounded-pill')).toBe('rounded-card max-lg:rounded-pill')
+    expect(cn('rounded-lg', 'max-lg:rounded-full')).toBe('rounded-lg max-lg:rounded-full')
     expect(cn('text-display', 'max-md:text-display-phone')).toBe('text-display max-md:text-display-phone')
   })
 
-  /* Why `atoms/Button.tsx` spells its baseline line-height as an arbitrary property. `font-size`
-     and `leading` share one conflict group, so a caller's `text-*` deletes a `leading-*` that
-     sorts before it — which silently made every `text-xs` button preflight-tall. The
-     arbitrary-property group does not conflict with `text-*`, and another `[line-height:…]`
-     still overrides it. */
-  it('keeps an arbitrary line-height through a caller font size, unlike leading-[…]', () => {
-    expect(cn('leading-[normal]', 'text-xs')).toBe('text-xs')
-    expect(cn('[line-height:normal]', 'text-xs')).toBe('[line-height:normal] text-xs')
-    expect(cn('[line-height:normal]', 'text-[17px]')).toBe('[line-height:normal] text-[17px]')
-    expect(cn('[line-height:normal]', '[line-height:1.125]')).toBe('[line-height:1.125]')
+  /* the custom utilities index.css declares have no conflict group: cn passes them through, so a
+     component composes one material and never stacks two */
+  it('passes the material and focus utilities through untouched', () => {
+    expect(cn('material-card', 'focus-ring', 'bg-card')).toBe('material-card focus-ring bg-card')
   })
 })

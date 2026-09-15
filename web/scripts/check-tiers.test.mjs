@@ -208,3 +208,30 @@ test("rejects new components adjacent to an exact exception and retired folders"
   assert.match(result.output, /stores\/UnlistedProvider\.tsx: component outside a tier folder/)
   assert.match(result.output, /lib\/Unlisted\.tsx: component outside a tier folder/)
 })
+
+test("resolves the @/ alias like the relative form and lets only atoms use the context API", () => {
+  const result = runChecker({
+    "atoms/Variant.tsx": "import { createContext, useContext } from 'react'\nconst Ctx = createContext('sm')\nexport function Variant() { return <div>{useContext(Ctx)}</div> }\n",
+    "atoms/Variant.stories.tsx": story,
+    "atoms/Upward.tsx": "import { Molecule } from '@/molecules/Molecule'\nexport function Upward() { return <Molecule /> }\n",
+    "atoms/Upward.stories.tsx": story,
+    "atoms/Copy.tsx": "import { label } from '@/copy/thing'\nexport function Copy() { return <div>{label}</div> }\n",
+    "atoms/Copy.stories.tsx": story,
+    "copy/thing.ts": "export const label = 'Label'\n",
+    "molecules/Molecule.tsx": "import { Variant } from '@/atoms/Variant'\nexport function Molecule() { return <Variant /> }\n",
+    "molecules/Molecule.stories.tsx": story,
+    "molecules/Reader.tsx": "import { createContext, useContext } from 'react'\nconst Ctx = createContext(0)\nexport function Reader() { return <div>{useContext(Ctx)}</div> }\n",
+    "molecules/Reader.stories.tsx": story,
+    "molecules/AliasHook.tsx": "import { useState } from '@/atoms/react'\nexport function AliasHook() { const [value] = useState(0); return <div>{value}</div> }\n",
+    "molecules/AliasHook.stories.tsx": story,
+    "atoms/react.ts": "export { useState } from 'react'\n",
+  })
+
+  assert.equal(result.status, 1, result.output)
+  assert.doesNotMatch(result.output, /atoms\/Variant\.tsx/)
+  assert.doesNotMatch(result.output, /molecules\/Molecule\.tsx/)
+  assert.match(result.output, /atoms\/Upward\.tsx: atoms imports from molecules\/ \("@\/molecules\/Molecule"\)/)
+  assert.match(result.output, /atoms\/Copy\.tsx: atoms imports from copy\//)
+  assert.match(result.output, /molecules\/Reader\.tsx: React context below views/)
+  assert.match(result.output, /molecules\/AliasHook\.tsx: React state hook below views/)
+})

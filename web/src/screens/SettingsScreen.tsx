@@ -1,18 +1,18 @@
 import { Link } from 'react-router-dom'
-import { Button, buttonClasses } from '../atoms/Button'
-import { PageContainer } from '../atoms/PageContainer'
-import { PageHead } from '../atoms/PageHead'
-import { Panel, PanelHeading } from '../atoms/Panel'
+import { Button, buttonClasses } from '@/atoms/button'
+import { PageContainer } from '@/atoms/page-container'
+import { PageHead } from '@/atoms/page-head'
+import { Panel, PanelHeading } from '@/atoms/panel'
 import { cn } from '../lib/cn'
 import type { SettingsScreenModel } from '../hooks/useSettingsScreen'
-import { ThemeControl } from '../molecules/ThemeControl'
+import { ThemeControl } from '@/molecules/theme-control'
 
 /** Settings section card — Panel raised material. */
 const CARD = 'px-5 py-gutter max-md:px-5 max-md:py-gutter'
 
-const ROW = 'mt-3.75 flex flex-wrap items-center gap-3'
-const SUBJECT = 'text-label font-bold text-ink'
-const FACT = 'text-small text-ink-muted'
+const ROW = 'mt-4 flex flex-wrap items-center gap-3'
+const SUBJECT = 'text-label font-bold text-foreground'
+const FACT = 'text-small text-muted-foreground'
 
 /** Account, Appearance, Connections as a function of the model. Pure props → markup. */
 export function SettingsScreen({

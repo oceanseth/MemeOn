@@ -1,0 +1,179 @@
+import { Link } from 'react-router-dom'
+import { Button, buttonClasses } from '@/atoms/button'
+import { MemeCard } from '@/atoms/meme-card'
+import { FilterBar } from '@/atoms/page-head'
+import { cn } from '../lib/cn'
+import type { QuestBarModel } from '../lib/questBarModel'
+import { DialogFrame } from '@/molecules/dialog-frame'
+
+/** One path, changed once when the asset lands under public/brand/. */
+const BRAINCELL_SRC = '/api/brand/braincell.png'
+
+/** `inline-block` is load-bearing in the dialog heading: preflight would drop the coin onto its own line. */
+const BRAINCELL_IMG = 'inline-block size-6.5 rounded-full object-cover align-middle'
+
+/** Pressed well: quest lane left, claim pill right; stacks below 900. */
+const RAIL = cn(
+  'mx-page-x mt-3 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-lg material-pressed p-gutter',
+  'xl:mt-2 xl:flex-nowrap xl:px-6 xl:py-5',
+)
+
+/** Unbounded card-title; phone steps to card-title-phone. */
+const TITLE = cn(
+  'inline-flex items-center gap-2 whitespace-nowrap',
+  'font-display text-card-title font-medium tracking-card-title text-foreground',
+  'max-xl:text-card-title-phone',
+)
+
+const CHIPS = 'flex flex-wrap items-center gap-x-6 gap-y-2 max-xl:gap-x-2'
+
+/** Onest 15/19 500 ink-muted (14/18 on the phone); a linked chip darkens on hover. */
+const CHIP = cn(
+  'inline-flex items-center gap-1.5 text-label font-medium whitespace-nowrap text-muted-foreground',
+  'max-xl:text-small',
+  'transition-tint',
+  'group-hover:text-foreground',
+)
+
+const CHIP_LINK = cn(
+  'no-underline',
+  'pointer-coarse:inline-flex pointer-coarse:min-h-hit pointer-coarse:items-center',
+  'focus-ring',
+)
+
+/** Dismiss is text-weight so the claim pill stays the only loud control in the rail. */
+const TEXT_BUTTON = cn(
+  'inline-flex min-h-8 shrink-0 cursor-pointer items-center rounded-sm border-0 bg-transparent px-2 py-1',
+  'text-small font-medium text-muted-foreground',
+  'transition-tint',
+  'hover:text-foreground',
+  'pointer-coarse:min-h-hit',
+  'focus-ring',
+)
+
+/** Neutral raised claim pill — not the chrome primary. Busy = progress cursor, no spinner. */
+const CLAIM_BUTTON = cn(
+  'inline-flex h-control shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4.5',
+  'material-raised text-label font-semibold text-foreground',
+  'transition-press lift',
+  'pointer-coarse:min-h-hit',
+  'focus-ring',
+)
+
+/** The card grid with the starter pack's tighter tracks; under 561px only the gap tightens. */
+const PACK_GRID = 'm-0 grid list-none items-start grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-5 p-0 max-sm:gap-3'
+
+/** Onboarding quest rail — parent owns steps, pack dialog, claim, and dismiss. */
+export function QuestBar({ model }: { model: QuestBarModel }) {
+  if (!model.visible) return null
+
+  const claim = model.chips.find((chip) => chip.kind === 'claim')
+  const steps = model.chips.filter((chip) => chip.kind === 'step')
+
+  return (
+    <>
+      {model.showSteps && (
+        <div className={RAIL} data-slot="questbar">
+          <div className="flex min-w-0 flex-col gap-2.5 max-xl:w-full xl:flex-1" data-slot="questbar-head">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <span className={TITLE} data-slot="questbar-title">
+                <img className={BRAINCELL_IMG} src={BRAINCELL_SRC} alt="" width={26} height={26} />{' '}
+                Earn your braincells ·{' '}
+                <span data-slot="questbar-count">{model.completionLabel}</span>
+              </span>
+              {/* dismiss ends the title row beside the claim pill at 900+, above it on phone */}
+              <button
+                type="button"
+                className={cn(TEXT_BUTTON, 'ml-auto')}
+                data-slot="quest-later"
+                {...model.dismissProps}
+              >
+                {model.dismissLabel}
+              </button>
+            </div>
+            {/* hint is sr-only: every quest is visible inline, nothing to hover for instructions */}
+            {model.hint && (
+              <small className="sr-only" data-slot="quest-hint">
+                {model.hint}
+              </small>
+            )}
+            {model.errorMessage && (
+              <span className="text-small text-error-foreground" data-slot="questbar-error" {...model.errorProps}>
+                {model.errorMessage}
+              </span>
+            )}
+            <div className={CHIPS} data-slot="questbar-inner">
+              {steps.map((chip) => {
+                const content = (
+                  <span key={chip.key} className={CHIP} data-slot="quest-chip">
+                    <span aria-hidden="true">{chip.done ? '✅' : '⬜'}</span>
+                    <span className="sr-only">{chip.statusLabel} </span>{' '}
+                    {chip.title}{' '}
+                    <em className="text-small not-italic" aria-hidden="true">{chip.rewardLabel}</em>
+                    <span className="sr-only">, {chip.rewardAriaLabel}</span>
+                  </span>
+                )
+                return chip.linkProps ? (
+                  <Link key={chip.key} {...chip.linkProps} className={cn(CHIP_LINK, 'group')}>
+                    {content}
+                  </Link>
+                ) : (
+                  content
+                )
+              })}
+            </div>
+          </div>
+          {claim && (
+            <button
+              type="button"
+              data-slot="quest-claim"
+              className={cn(
+                CLAIM_BUTTON,
+                'max-xl:w-full',
+                claim.busy
+                  ? 'cursor-progress opacity-100'
+                  : 'disabled-look',
+              )}
+              {...claim.buttonProps}
+            >
+              🎁 {claim.label}
+            </button>
+          )}
+        </div>
+      )}
+
+      <DialogFrame
+        id={model.pack.id}
+        open={model.pack.open}
+        onOpenChange={model.pack.onOpenChange}
+        // the model recorded the opener; without it a press on the scrim strands focus on <main>
+        finalFocus={model.pack.opener}
+        title={
+          <>
+            <img className={BRAINCELL_IMG} src={BRAINCELL_SRC} alt="" width={26} height={26} /> 🎁
+            Starter pack opened!
+          </>
+        }
+        titleId={model.pack.titleId}
+        close={{ label: model.pack.closeLabel }}
+        description={model.pack.description}
+        // the legacy `<p class="muted">` kept the body size and its UA paragraph margins
+        descriptionClassName="my-4 text-body"
+      >
+        {model.pack.showCards && (
+          <div className={PACK_GRID} data-slot="pack-grid">
+            {model.pack.cards.map((card) => (
+              <MemeCard key={card.id} model={card} />
+            ))}
+          </div>
+        )}
+        <FilterBar className="mt-4">
+          <Link className={buttonClasses('primary')} {...model.pack.binderLinkProps}>
+            View in My Binder
+          </Link>
+          <Button {...model.pack.exploreButtonProps}>Keep exploring</Button>
+        </FilterBar>
+      </DialogFrame>
+    </>
+  )
+}

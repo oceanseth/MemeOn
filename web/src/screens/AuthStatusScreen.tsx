@@ -1,15 +1,15 @@
 import { Link } from 'react-router-dom'
-import { Button, buttonClasses } from '../atoms/Button'
-import { Icon } from '../atoms/Icon'
-import { Notice } from '../atoms/Notice'
-import { PageContainer } from '../atoms/PageContainer'
+import { Button, buttonClasses } from '@/atoms/button'
+import { Icon } from '@/atoms/icon'
+import { Notice } from '@/atoms/notice'
+import { PageContainer } from '@/atoms/page-container'
 import { cn } from '../lib/cn'
 import type { AuthStatusScreenModel } from '../hooks/useAuthCallbackScreen'
 
 /** Centred auth status card — tighter padding on phone. */
 const CARD = cn(
   'mx-auto flex w-full max-w-card flex-col items-center justify-center text-center',
-  'rounded-card border-0 bg-surface px-8 py-10 shadow-raised max-md:p-6.5',
+  'rounded-lg material-card px-8 py-10 max-md:p-6.5',
 )
 
 /**
@@ -17,19 +17,19 @@ const CARD = cn(
  * same ring, static — the arc still reads as "one thing is still happening".
  */
 const RING = cn(
-  'size-9.5 shrink-0 rounded-full border-3 border-line border-t-action',
+  'size-9.5 shrink-0 rounded-full border-3 border-border border-t-primary',
   'motion-safe:animate-spin',
-  'forced-colors:border-[CanvasText] forced-colors:border-t-[Highlight]',
+  'forced-colors:border-fc-text forced-colors:border-t-fc-highlight',
 )
 
 /* text-balance keeps long titles from breaking mid-phrase on narrow cards */
-const TITLE = 'mb-0 text-balance font-display text-display-phone font-medium tracking-display text-ink'
+const TITLE = 'mb-0 text-balance font-display text-display-phone font-medium tracking-display text-foreground'
 
-const SUBTITLE = 'mt-3 mb-0 max-w-105 text-label text-ink-muted'
+const SUBTITLE = 'mt-3 mb-0 max-w-105 text-label text-muted-foreground'
 
 /** Quiet way out beside the primary control. */
 const TEXT_LINK = cn(
-  'inline-flex h-control items-center text-label font-semibold text-ink underline underline-offset-3',
+  'inline-flex h-control items-center text-label font-semibold text-foreground underline underline-offset-3',
 )
 
 /** Inline fallback link — ultraviolet, underlined, no box. */
@@ -63,7 +63,7 @@ export function AuthStatusScreen({
         )}
         {fallback.retry ? (
           <div data-slot="auth-timeout" className="mt-6 flex flex-col items-center gap-3">
-            {fallback.prompt && <p className="m-0 text-label text-ink-muted">{fallback.prompt}</p>}
+            {fallback.prompt && <p className="m-0 text-label text-muted-foreground">{fallback.prompt}</p>}
             <div className="flex flex-wrap items-center justify-center gap-4">
               {/* ultraviolet, not bubblegum: a retry is the companion action, never the page's primary */}
               <Button variant="secondary" onClick={fallback.retry.onClick}>
@@ -76,7 +76,7 @@ export function AuthStatusScreen({
           </div>
         ) : (
           /* no retry beside it: prompt and fallback read as one sentence */
-          <p data-slot="auth-timeout" className="mt-4 mb-0 text-label text-ink-muted">
+          <p data-slot="auth-timeout" className="mt-4 mb-0 text-label text-muted-foreground">
             {fallback.prompt && <>{fallback.prompt} </>}
             <Link data-slot="auth-web-fallback" to={fallback.home.to} className={INLINE_LINK}>
               {fallback.home.label}

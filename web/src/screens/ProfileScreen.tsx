@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom'
-import { Avatar } from '../atoms/Avatar'
-import { Button, buttonClasses } from '../atoms/Button'
-import { EmptyActions, EmptyState } from '../atoms/EmptyState'
-import { MemeCard } from '../atoms/MemeCard'
-import { Notice } from '../atoms/Notice'
-import { PageContainer } from '../atoms/PageContainer'
-import { PageHead } from '../atoms/PageHead'
-import { Skeleton, SkeletonBlock, SkeletonCard } from '../atoms/Skeleton'
+import { Avatar } from '@/atoms/avatar'
+import { Button, buttonClasses } from '@/atoms/button'
+import { EmptyActions, EmptyState } from '@/atoms/empty-state'
+import { MemeCard } from '@/atoms/meme-card'
+import { Notice } from '@/atoms/notice'
+import { PageContainer } from '@/atoms/page-container'
+import { PageHead } from '@/atoms/page-head'
+import { Skeleton, SkeletonBlock, SkeletonCard } from '@/atoms/skeleton'
 import { cn } from '../lib/cn'
 import type { ProfileScreenModel } from '../hooks/useProfileScreen'
 import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
@@ -15,27 +15,27 @@ const SKELETON_CARDS = ['a', 'b', 'c', 'd']
 
 /* identity card: min height floor so wrapped content can grow past the avatar row */
 const IDENTITY_CARD = cn(
-  'mb-5 flex flex-wrap items-center gap-y-4 gap-x-3.5 rounded-band bg-surface p-5 shadow-raised',
-  'max-sm:rounded-nav',
+  'mb-5 flex flex-wrap items-center gap-y-4 gap-x-3.5 rounded-xl material-card p-5',
+  'max-sm:rounded-lg',
 )
 
 const IDENTITY_LINE =
-  'm-0 truncate font-display text-title font-medium tracking-title text-ink [overflow-wrap:anywhere]'
+  'm-0 truncate font-display text-title font-medium tracking-title text-foreground wrap-anywhere'
 
-const META_LINE = 'm-0 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-label font-semibold text-ink-muted'
+const META_LINE = 'm-0 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-label font-semibold text-muted-foreground'
 
 /** The friend state is a caption, not a pill: a standing fact never competes with the actions. */
-const FRIEND_CAPTION = 'm-0 mt-1.5 text-label font-semibold text-ink-muted'
+const FRIEND_CAPTION = 'm-0 mt-1.5 text-label font-semibold text-muted-foreground'
 
-const ACTIONS = 'flex flex-wrap items-center gap-3 max-sm:w-full max-sm:[&>*]:flex-1'
+const ACTIONS = 'flex flex-wrap items-center gap-3 max-sm:w-full max-sm:*:flex-1'
 
-const TABS = 'mb-gutter flex flex-wrap items-center gap-3.5 max-sm:[&>*]:flex-1'
+const TABS = 'mb-gutter flex flex-wrap items-center gap-3.5 max-sm:*:flex-1'
 
 /** Public binder hero: bare row, intro below the avatar row at page edge. */
 const BINDER_HERO = 'flex items-center gap-4 max-sm:items-start'
 const BINDER_HERO_STACK = 'mt-5 mb-10 flex flex-col gap-2.5'
 /** Binder intro is label weight, not PageHead subtitle. */
-const BINDER_INTRO = 'm-0 text-label text-ink-muted'
+const BINDER_INTRO = 'm-0 text-label text-muted-foreground'
 
 /** Profile as a function of its model. Tabs, relationship state and copy are controlled props. */
 export function ProfileScreen({
@@ -118,7 +118,7 @@ export function ProfileScreen({
       <PageContainer as="main" id="main" tabIndex={-1}>
         <div role="status" aria-live="polite" className="sr-only">{loadingLabel}</div>
         <div className={cn(IDENTITY_CARD, 'mt-5 sm:min-h-34.5')} aria-hidden="true">
-          <Skeleton className="size-avatar-hero rounded-avatar-hero" />
+          <Skeleton className="size-21.5 rounded-xl" />
           <div className="min-w-0 flex-1">
             <SkeletonBlock className="mb-2.5 h-7.5 w-55 max-w-full" />
             <SkeletonBlock className="w-65 max-w-full" />
@@ -267,7 +267,7 @@ export function ProfileScreen({
                   /* one footer row: shares count on the right */
                   footerRight={
                     card.sharesLabel !== null ? (
-                      <span className="font-semibold text-ink">{card.sharesLabel}</span>
+                      <span className="font-semibold text-foreground">{card.sharesLabel}</span>
                     ) : undefined
                   }
                 />
@@ -279,7 +279,7 @@ export function ProfileScreen({
               <Button className="max-sm:w-full" {...showMoreButtonProps}>
                 {showMoreLabel}
               </Button>
-              <p className="m-0 text-micro text-ink-muted tabular-nums">{gridCountLabel}</p>
+              <p className="m-0 text-micro text-muted-foreground tabular-nums">{gridCountLabel}</p>
             </div>
           )}
         </>
@@ -287,13 +287,13 @@ export function ProfileScreen({
 
       {showJoin && (
         <div className="mt-9 flex flex-col items-center gap-3 text-center">
-          <div className="flex flex-wrap items-center justify-center gap-3 max-sm:w-full max-sm:[&>*]:w-full">
+          <div className="flex flex-wrap items-center justify-center gap-3 max-sm:w-full max-sm:*:w-full">
             {showBinderHero ? <Button {...shareButtonProps}>{shareLabel}</Button> : null}
             <Link className={cn(buttonClasses('primary'), 'max-sm:w-full')} {...joinLinkProps}>
               {joinLabel}
             </Link>
           </div>
-          <p className="m-0 text-label text-ink-muted">{reshareNote}</p>
+          <p className="m-0 text-label text-muted-foreground">{reshareNote}</p>
         </div>
       )}
     </PageContainer>

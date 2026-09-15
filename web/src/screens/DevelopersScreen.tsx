@@ -1,19 +1,19 @@
-import { Button, buttonClasses } from '../atoms/Button'
-import { EmptyActions, EmptyState } from '../atoms/EmptyState'
-import { Hint } from '../atoms/Field'
-import { Input } from '../atoms/Input'
-import { Notice } from '../atoms/Notice'
-import { PageContainer } from '../atoms/PageContainer'
-import { PageHead } from '../atoms/PageHead'
-import { Panel, PanelHeading } from '../atoms/Panel'
-import { Spinner } from '../atoms/Spinner'
+import { Button, buttonClasses } from '@/atoms/button'
+import { EmptyActions, EmptyState } from '@/atoms/empty-state'
+import { Hint } from '@/atoms/field'
+import { Input } from '@/atoms/input'
+import { Notice } from '@/atoms/notice'
+import { PageContainer } from '@/atoms/page-container'
+import { PageHead } from '@/atoms/page-head'
+import { Panel, PanelHeading } from '@/atoms/panel'
+import { Spinner } from '@/atoms/spinner'
 import type { DevelopersScreenModel } from '../hooks/useDevelopersScreen'
-import { ConfirmDialog } from '../molecules/ConfirmDialog'
+import { ConfirmDialog } from '@/molecules/confirm-dialog'
 
-const EXPLAINER = 'mt-0 mb-0 max-w-measure text-body text-ink-muted'
+const EXPLAINER = 'mt-0 mb-0 max-w-measure text-body text-muted-foreground'
 const FORM_CARD = 'mt-5 p-gutter max-md:p-gutter'
 /** Fresh key state: inset action ring marks the one-time reveal. */
-const FRESH_CARD = 'mt-5 p-5 max-md:p-5 inset-ring-2 inset-ring-action'
+const FRESH_CARD = 'mt-5 p-5 max-md:p-5 inset-ring-2 inset-ring-primary'
 const INVENTORY_CARD = 'mt-5 p-5.5 max-md:p-gutter'
 const KEY_ROW = 'flex flex-wrap items-center justify-between gap-4 gap-y-2.5 py-3'
 
@@ -63,7 +63,7 @@ export function DevelopersScreen({
         </a>
       </PageHead>
       <p className={EXPLAINER}>
-        API keys act as <strong className="font-bold text-ink">your account</strong>: they can mint
+        API keys act as <strong className="font-bold text-foreground">your account</strong>: they can mint
         memes, gift shares (including to users your own site knows only by Masky avatar id), trade,
         and read everything you can. Full endpoint reference lives in{' '}
         <a
@@ -110,9 +110,9 @@ export function DevelopersScreen({
       <div {...freshKeyRegionProps}>
         {showFreshKey && (
           <Panel className={FRESH_CARD}>
-            <p className="m-0 text-intro font-semibold text-ink">{freshKeyHeading}</p>
+            <p className="m-0 text-intro font-semibold text-foreground">{freshKeyHeading}</p>
             <div
-              className="mt-2.5 font-mono text-label font-bold text-ink [overflow-wrap:anywhere] select-all"
+              className="mt-2.5 font-mono text-label font-bold text-foreground wrap-anywhere select-all"
               {...freshKeyProps}
             >
               {freshKey}
@@ -120,7 +120,7 @@ export function DevelopersScreen({
             <div className="mt-3.5 flex flex-wrap items-center gap-3">
               <Button {...copyButtonProps}>{copyLabel}</Button>
               {copyDone && (
-                <span className="text-caption font-bold text-success-text">{copiedCaption}</span>
+                <span className="text-caption font-bold text-success-foreground">{copiedCaption}</span>
               )}
             </div>
           </Panel>
@@ -131,7 +131,7 @@ export function DevelopersScreen({
         <div className="flex items-center justify-between gap-4">
           <PanelHeading size="section" className="mb-0">{keysHeading}</PanelHeading>
           {quotaLabel && (
-            <span className="shrink-0 text-caption font-medium text-ink-muted [font-variant-numeric:tabular-nums]">
+            <span className="shrink-0 text-caption font-medium text-muted-foreground tabular-nums">
               {quotaLabel}
             </span>
           )}
@@ -143,7 +143,7 @@ export function DevelopersScreen({
           /* a labelled spinner row, never a bare spinner */
           <div
             data-slot="loading-state"
-            className="flex items-center justify-center gap-2.5 px-5 py-15 text-label text-ink-muted"
+            className="flex items-center justify-center gap-2.5 px-5 py-15 text-label text-muted-foreground"
             {...loadingProps}
           >
             <Spinner />
@@ -169,20 +169,20 @@ export function DevelopersScreen({
           </EmptyState>
         )}
         {showKeys && keys && (
-          <ul className="m-0 mt-2 list-none p-0 [&>li+li]:border-t [&>li+li]:border-line">
+          <ul className="m-0 mt-2 list-none p-0 divide-y divide-border">
             {keys.map((k) => (
               <li key={k.prefix} className={KEY_ROW}>
-                <div className="flex min-w-0 flex-col gap-0.75">
+                <div className="flex min-w-0 flex-col gap-1">
                   {/* `overflow-wrap:anywhere` keeps a 60-character label inside the row */}
-                  <span className="text-body font-semibold text-ink [overflow-wrap:anywhere]">
+                  <span className="text-body font-semibold text-foreground wrap-anywhere">
                     {k.label}
                   </span>
-                  <span className="text-caption font-medium text-ink-muted [font-variant-numeric:tabular-nums]">
+                  <span className="text-caption font-medium text-muted-foreground tabular-nums">
                     {k.prefix}… · <time dateTime={k.createdAt}>{k.createdLabel}</time>
                   </span>
                 </div>
                 {/* the destructive act on a neutral pill: the page's one primary is "Create key" */}
-                <Button className="shrink-0 text-error-text" {...k.revokeButtonProps}>
+                <Button className="shrink-0 text-error-foreground" {...k.revokeButtonProps}>
                   Revoke
                 </Button>
               </li>

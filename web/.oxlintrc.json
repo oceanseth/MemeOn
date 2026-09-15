@@ -1,0 +1,58 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "jsPlugins": ["@shadcn/lint"],
+  "plugins": [],
+  "categories": { "correctness": "off" },
+  "ignorePatterns": ["**/*.test.ts", "**/*.test.tsx"],
+  "settings": {
+    "shadcn": {
+      "ui": "@/atoms",
+      "componentImports": ["(^|/)(molecules|organisms)/"],
+      "note": "Tokens: src/index.css @theme. Appearance belongs in the component's variants. Exceptions live in web/.oxlintrc.json."
+    }
+  },
+  "rules": {
+    "shadcn/no-raw-colors": [
+      "error",
+      {
+        "allow": [
+          "text-display", "text-display-phone", "text-section", "text-section-phone", "text-title",
+          "text-card-title", "text-card-title-phone", "text-intro", "text-body", "text-label", "text-small",
+          "text-caption", "text-micro", "text-glyph-sm", "text-glyph", "text-glyph-lg", "text-glyph-hero",
+          "text-display/*", "text-display-phone/*", "text-section/*", "text-section-phone/*", "text-title/*",
+          "text-card-title/*", "text-card-title-phone/*", "text-intro/*", "text-body/*", "text-label/*",
+          "text-small/*", "text-caption/*", "text-micro/*", "text-glyph-sm/*", "text-glyph/*", "text-glyph-lg/*",
+          "text-glyph-hero/*"
+        ]
+      }
+    ],
+    "shadcn/no-unknown-classes": [
+      "error",
+      {
+        "allow": [
+          "foil-card", "foil-frame", "foil-media", "sheen", "sparkle", "tier-card",
+          "tier-paper", "tier-silver", "tier-holo", "tier-chrome", "tier-gold", "tier-prismatic", "tier-shiny"
+        ]
+      }
+    ],
+    "shadcn/no-inline-styles": "error",
+    "shadcn/no-restyle": [
+      "warn",
+      {
+        "allow": ["layout"],
+        "contracts": [
+          { "pattern": "^(Panel|Card|PageContainer|Empty|EmptyState)$", "allow": ["layout", "spacing"] },
+          { "pattern": "^(Skeleton|SkeletonBlock|SkeletonRow|SkeletonCard)$", "allow": ["layout", "spacing", "h", "size"] },
+          { "pattern": "^Icon$", "allow": ["layout", "color"] },
+          { "pattern": "^(Avatar|Spinner)$", "allow": ["layout", "size-*"] }
+        ]
+      }
+    ],
+    "shadcn/no-arbitrary-values": ["warn", { "allow": ["layout", "pointer-coarse:text-[length:max(16px,1em)]"] }],
+    "shadcn/require-static-classes": "warn"
+  },
+  "overrides": [
+    { "files": ["src/atoms/**"], "rules": { "shadcn/no-restyle": "off" } },
+    { "files": ["**/*.stories.tsx"], "rules": { "shadcn/no-inline-styles": "off", "shadcn/no-restyle": "off" } }
+  ]
+}

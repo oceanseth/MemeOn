@@ -9,7 +9,7 @@ import { useProjectedActor } from './useProjectedActor'
 import { BINDER_PAGE_SIZE } from '../stores/binderMachine'
 import { profileMachine, type ProfileData, type ProfileTab } from '../stores/profileMachine'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
-import type { ButtonVariant } from '../atoms/Button'
+import type { ButtonVariant } from '@/atoms/button'
 import type { ButtonHTMLAttributes } from 'react'
 import type { LinkProps } from 'react-router-dom'
 

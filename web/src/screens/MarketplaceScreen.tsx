@@ -1,21 +1,21 @@
 import { Link } from 'react-router-dom'
-import { Button } from '../atoms/Button'
-import { EmptyActions, EmptyState, PageState } from '../atoms/EmptyState'
-import { Icon } from '../atoms/Icon'
-import { Input } from '../atoms/Input'
-import { MemeCard } from '../atoms/MemeCard'
-import { Notice } from '../atoms/Notice'
-import { PageContainer } from '../atoms/PageContainer'
-import { FilterBar, PageHead } from '../atoms/PageHead'
-import { Select } from '../atoms/Select'
-import { SkeletonCard } from '../atoms/Skeleton'
+import { Button } from '@/atoms/button'
+import { EmptyActions, EmptyState, PageState } from '@/atoms/empty-state'
+import { Icon } from '@/atoms/icon'
+import { Input } from '@/atoms/input'
+import { MemeCard } from '@/atoms/meme-card'
+import { Notice } from '@/atoms/notice'
+import { PageContainer } from '@/atoms/page-container'
+import { FilterBar, PageHead } from '@/atoms/page-head'
+import { Select } from '@/atoms/select'
+import { SkeletonCard } from '@/atoms/skeleton'
 import type { MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
 import {
   cardGrid, cardSlot, chipButton, endOfList, filterRow, marketControls, marketDisclosures,
   marketFilters, marketToolbar, mintLink, resultsRow, searchGlyph, searchInput, searchWell,
   sectionHeading, summaryRow, tierPill,
 } from '../lib/marketplaceScreenLayout'
-import { SortChips } from '../molecules/SortChips'
+import { SortChips } from '@/molecules/sort-chips'
 
 /** Marketplace list as a function of its engine-provided model. */
 export function MarketplaceScreen({

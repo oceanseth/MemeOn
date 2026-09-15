@@ -1,0 +1,27 @@
+import type { ElementType, HTMLAttributes } from 'react'
+import { cn } from '../lib/cn'
+
+export interface PageContainerProps extends HTMLAttributes<HTMLElement> {
+  /** Prose-width routes (Developers, legal). */
+  narrow?: boolean
+  as?: 'div' | 'main' | 'section'
+}
+
+/** Route content box; measure comes from the shell column. */
+export function PageContainer({ as, narrow = false, className, children, ...rest }: PageContainerProps) {
+  const Tag: ElementType = as ?? 'div'
+  return (
+    <Tag
+      {...rest}
+      data-slot="page-container"
+      className={cn(
+        'mx-auto w-full pt-0 pb-16',
+        'px-page-safe',
+        narrow && 'max-w-190',
+        className,
+      )}
+    >
+      {children}
+    </Tag>
+  )
+}

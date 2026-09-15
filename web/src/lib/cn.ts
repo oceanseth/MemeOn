@@ -1,51 +1,19 @@
-import { clsx, type ClassValue } from 'clsx'
-import { extendTailwindMerge } from 'tailwind-merge'
+import { createCn } from 'cn/config'
 
-/* tailwind-merge cannot read the CSS `@theme`, so every namespace whose values are not already
-   accepted by its stock validators must be registered here or conflicting classes both survive.
-   `--color-*` (any name), `--breakpoint-xs…4xl` and `--font-*` already validate; `--radius-*`,
-   `--shadow-*`, `--container-*`, `--tracking-*`, the named `--spacing-*` roles and any `--text-*`
-   that is not a t-shirt size do not — an unregistered `text-display` would be read as a text
-   *colour* and lose to `text-ink`, and an unregistered `h-control` would survive beside `h-11`.
+/* `cn` cannot read the CSS `@theme`, so every namespace whose values its stock validators do not
+   already accept is registered here, or two conflicting classes both survive a merge. `--color-*`
+   (any name), `--breakpoint-*` and `--font-*` validate on their own; the named `--spacing-*` roles,
+   `--container-*`, `--tracking-*` and any `--text-*` step that is not a t-shirt size do not — an
+   unregistered `text-label` reads as a text *colour* and loses to `text-foreground`, an
+   unregistered `h-control` survives beside `h-11`. Radii are stock names now and the materials are
+   `:root` vars that only the `material-*` utilities paint, so neither namespace needs an entry.
    Add a group here whenever `@theme` grows. */
-const twMerge = extendTailwindMerge({
+export const cn = createCn({
   extend: {
     theme: {
-      radius: [
-        'card',
-        'control',
-        'field',
-        'nav',
-        'avatar',
-        'chip',
-        'shell',
-        'tabbar',
-        'pill',
-        'band',
-        'well',
-        'segment',
-        'control-sm',
-        'avatar-hero',
-      ],
-      shadow: ['raised', 'pressed', 'pop', 'modal'],
-      container: ['app', 'page-narrow', 'card', 'hero-video', 'measure', 'measure-sm'],
-      spacing: [
-        'control',
-        'control-x',
-        'control-gap',
-        'control-sm',
-        'field',
-        'icon',
-        'gutter',
-        'chip-x',
-        'nav-item',
-        'nav-gap',
-        'avatar-hero',
-        'avatar-hero-phone',
-      ],
+      container: ['card', 'measure', 'search', 'tabbar', 'card-narrow'],
+      spacing: ['control', 'control-sm', 'icon', 'gutter', 'hit', 'page-x', 'card-inset', 'bloom', 'track', 'halo'],
       text: [
-        'hero',
-        'hero-phone',
         'display',
         'display-phone',
         'section',
@@ -53,19 +21,18 @@ const twMerge = extendTailwindMerge({
         'title',
         'card-title',
         'card-title-phone',
-        'card-heading',
         'intro',
         'body',
         'label',
         'small',
         'caption',
         'micro',
+        'glyph-sm',
+        'glyph',
+        'glyph-lg',
+        'glyph-hero',
       ],
-      tracking: ['display', 'title', 'card-title', 'card-heading', 'ui'],
+      tracking: ['display', 'title', 'card-title'],
     },
   },
 })
-
-export function cn(...inputs: ClassValue[]): string {
-  return twMerge(clsx(inputs))
-}

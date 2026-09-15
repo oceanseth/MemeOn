@@ -1,0 +1,68 @@
+import { Badge } from '@/atoms/badge'
+import { Button } from '@/atoms/button'
+import { cn } from '../lib/cn'
+import { SideSummary } from '@/molecules/side-summary'
+import type { TradeCardModel } from '../lib/tradeCardModel'
+
+/** Raised surface card, 20px padding. */
+const CARD = 'rounded-lg material-card p-5'
+
+/** Unbounded 17/22 — a card headline, not a section heading. */
+const HEADLINE = 'font-display text-card-title-phone font-medium tracking-card-title text-foreground'
+
+const SUBLINE = 'mt-1 block text-caption text-muted-foreground'
+
+/** Give/get stay left/right regardless of proposer — "You give" is always the left plate. */
+const DEAL = cn(
+  /* stretch, not center: equal-height wells read as one comparison */
+  'my-3.5 grid grid-cols-[1fr_auto_1fr] items-stretch gap-3.5 *:min-w-0',
+  'max-xl:grid-cols-1 max-xl:gap-2.5',
+)
+
+/** Swap glyph uses `--color-link`: `--color-ring` fails contrast on surface text. */
+const SWAP = cn(
+  'self-center font-display text-title text-link',
+  'max-xl:rotate-90 max-xl:justify-self-center',
+)
+
+const ACTIONS = 'flex flex-wrap items-center justify-end gap-3'
+
+export function TradeCard({ model }: { model: TradeCardModel }) {
+  return (
+    <div data-slot="trade-card" className={CARD}>
+      <div className="flex flex-wrap items-start gap-x-2.5 gap-y-1">
+        <div className="min-w-0 flex-1">
+          <strong className={HEADLINE}>{model.partiesLabel}</strong>
+          <span className={SUBLINE}>
+            {model.waitingLabel} ·{' '}
+            <time dateTime={model.createdAtIso} title={model.createdTitle}>
+              {model.createdLabel}
+            </time>
+          </span>
+        </div>
+        {model.showStatusBadge && <Badge>{model.statusLabel}</Badge>}
+      </div>
+      <div className={DEAL}>
+        <SideSummary model={model.give} />
+        <div aria-hidden="true" className={SWAP}>
+          ⇄
+        </div>
+        <SideSummary model={model.get} />
+      </div>
+      {model.finalityLine && (
+        <p data-slot="trade-finality" className="m-0 mb-3.5 text-small text-muted-foreground">
+          {model.finalityLine}
+        </p>
+      )}
+      {model.actions.length > 0 && (
+        <div className={ACTIONS}>
+          {model.actions.map((action) => (
+            <Button key={action.kind} variant={action.variant} {...action.buttonProps}>
+              {action.label}
+            </Button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}

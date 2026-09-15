@@ -1,23 +1,22 @@
 import { Link } from 'react-router-dom'
-import { Avatar } from '../atoms/Avatar'
-import { Badge } from '../atoms/Badge'
-import { Button } from '../atoms/Button'
-import { EmptyActions, EmptyState } from '../atoms/EmptyState'
-import { PageContainer } from '../atoms/PageContainer'
-import { PageHead } from '../atoms/PageHead'
-import { SkeletonRow } from '../atoms/Skeleton'
+import { Avatar } from '@/atoms/avatar'
+import { Badge } from '@/atoms/badge'
+import { Button } from '@/atoms/button'
+import { EmptyActions, EmptyState } from '@/atoms/empty-state'
+import { PageContainer } from '@/atoms/page-container'
+import { PageHead } from '@/atoms/page-head'
+import { SkeletonRow } from '@/atoms/skeleton'
 import { cn } from '../lib/cn'
-import { FOCUS_RING } from '../lib/focus'
 import type { LeaderboardRowModel, LeaderboardScreenModel } from '../hooks/useLeaderboardScreen'
 
 const skeletonRows = [0, 1, 2, 3, 4]
 
 /** Braincell count colour: bubblegum ramp flips with theme. */
-const COUNT = 'font-sans font-bold text-[light-dark(var(--color-bubblegum-700),var(--color-bubblegum-300))] tabular-nums'
+const COUNT = 'font-sans font-bold text-braincell tabular-nums'
 
 /** Podium panel: head left, three cards right; stacks on phone. */
 const PODIUM_PANEL = cn(
-  'mb-5 flex items-center gap-10 rounded-card bg-surface p-5 shadow-raised',
+  'mb-5 flex items-center gap-10 rounded-lg material-card p-5',
   'max-md:flex-col max-md:items-stretch max-md:gap-5',
 )
 
@@ -31,29 +30,27 @@ const BOARD = 'm-0 flex list-none flex-col gap-5 p-0 max-md:gap-3.5'
 
 /* #1 gets action border on raised surface; #2 and #3 stay plain */
 const PODIUM = cn(
-  'flex h-full flex-col items-center rounded-band bg-surface px-5 pt-gutter pb-5 text-center shadow-raised',
+  'flex h-full flex-col items-center rounded-xl material-card px-5 pt-gutter pb-5 text-center',
   'md:w-54.5',
-  'max-md:flex-row max-md:items-center max-md:gap-3 max-md:rounded-nav max-md:px-5 max-md:py-3.5 max-md:text-left',
+  'max-md:flex-row max-md:items-center max-md:gap-3 max-md:rounded-lg max-md:px-5 max-md:py-3.5 max-md:text-left',
 )
-const PODIUM_FIRST = 'bg-surface-raised border-2 border-action'
+const PODIUM_FIRST = 'bg-accent border-2 border-primary'
 
 const RANK_ROW = cn(
-  'flex items-center gap-3 rounded-band bg-surface px-5 py-3.25 shadow-raised',
-  'max-md:rounded-nav max-md:px-gutter max-md:py-3.5',
+  'flex items-center gap-3 rounded-xl material-card px-5 py-3.25',
+  'max-md:rounded-lg max-md:px-gutter max-md:py-3.5',
 )
-const RANK_ROW_ME = 'bg-surface-raised border-2 border-action-secondary'
+const RANK_ROW_ME = 'bg-accent border-2 border-brand'
 
 const ROW_LINK = cn(
   'text-inherit no-underline',
-  FOCUS_RING,
-  '[@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-px',
-  'transition-transform duration-(--dur-fast) ease-[ease] motion-reduce:transition-none',
-  'motion-reduce:hover:translate-y-0!',
+  'focus-ring',
+  'lift transition-press',
 )
 
-const NAME = 'min-w-0 flex-1 truncate font-display text-card-title-phone font-medium tracking-card-title text-ink'
+const NAME = 'min-w-0 flex-1 truncate font-display text-card-title-phone font-medium tracking-card-title text-foreground'
 
-const RANK_NUMERAL = 'w-7 shrink-0 text-center font-display text-intro font-medium tracking-card-title text-ink-muted'
+const RANK_NUMERAL = 'w-7 shrink-0 text-center font-display text-intro font-medium tracking-card-title text-muted-foreground'
 
 function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: string }) {
   return (
@@ -64,7 +61,7 @@ function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: 
       className={cn(ROW_LINK, RANK_ROW, leader.isMe && RANK_ROW_ME)}
     >
       <span className={RANK_NUMERAL}>{leader.rankNumeral}</span>
-      <Avatar name={leader.name} src={leader.avatarSrc} size="md" className="size-9 rounded-control-sm" loading="lazy" />
+      <Avatar name={leader.name} src={leader.avatarSrc} size="md" className="size-9 rounded-sm" loading="lazy" />
       <span className={NAME}>{leader.name}</span>
       {leader.isMe ? (
         <Badge tone="info" className="shrink-0">
@@ -134,10 +131,10 @@ export function LeaderboardScreen({
           {/* podium: head + top three; ranks 4+ continue in the list below */}
           <div className={PODIUM_PANEL} data-slot="podium">
             <div className="max-w-75 flex-1" data-slot="podium-head">
-              <h2 className="m-0 font-display text-section font-medium tracking-title text-ink max-md:text-section-phone">
+              <h2 className="m-0 font-display text-section font-medium tracking-title text-foreground max-md:text-section-phone">
                 {podiumTitle}
               </h2>
-              <p className="m-0 mt-1.5 text-body text-ink-muted">{podiumSubtitle}</p>
+              <p className="m-0 mt-1.5 text-body text-muted-foreground">{podiumSubtitle}</p>
             </div>
 
             <ol className={PODIUM_LIST} data-slot="podium-cards" aria-label={podiumTitle}>
@@ -150,14 +147,14 @@ export function LeaderboardScreen({
                     className={cn(ROW_LINK, 'block h-full')}
                   >
                     <span className={cn(PODIUM, l.rankNumeral === '1' && PODIUM_FIRST)}>
-                      <span aria-hidden="true" className="text-[25px]/[31px] max-md:text-[20px]/[24px]">
+                      <span aria-hidden="true" className="text-glyph-lg max-md:text-glyph">
                         {l.medalLabel}
                       </span>
                       <Avatar
                         name={l.name}
                         src={l.avatarSrc}
                         size="md"
-                        className="size-12.5 rounded-field md:mt-2.5 max-md:size-9 max-md:rounded-control-sm"
+                        className="size-12.5 rounded-md md:mt-2.5 max-md:size-9 max-md:rounded-sm"
                         loading="lazy"
                       />
                       <span

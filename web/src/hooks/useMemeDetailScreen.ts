@@ -42,7 +42,8 @@ export interface DetailTierLadderModel {
   /** the meter's left label — the tier this card is wearing right now */
   currentLabel: string
   nextLabel: string
-  fillStyle: { width: string }
+  /** the meter fill as a CSS length, read into a custom property by the screen */
+  fillWidth: string
   meterProps: {
     role: 'progressbar'
     'aria-label': string
@@ -155,7 +156,7 @@ export function buildTierLadderModel(tierKey: string, views: number): DetailTier
     return {
       currentLabel: copy.ladder.current(tier.name),
       nextLabel: copy.ladder.top(tier.name),
-      fillStyle: { width: '100%' },
+      fillWidth: '100%',
       meterProps: {
         role: 'progressbar', 'aria-label': copy.ladder.meterLabel,
         'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': 100,
@@ -170,7 +171,7 @@ export function buildTierLadderModel(tierKey: string, views: number): DetailTier
   return {
     currentLabel: copy.ladder.current(tier.name),
     nextLabel,
-    fillStyle: { width: `${progress}%` },
+    fillWidth: `${progress}%`,
     meterProps: {
       role: 'progressbar', 'aria-label': copy.ladder.meterLabel,
       'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': progress,

@@ -1,8 +1,8 @@
 import { lazy, Suspense, type ReactNode } from 'react'
 import { observer } from 'mobx-react-lite'
 import { Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom'
-import { PageContainer } from '../atoms/PageContainer'
-import { Spinner } from '../atoms/Spinner'
+import { PageContainer } from '@/atoms/page-container'
+import { Spinner } from '@/atoms/spinner'
 import { useAuth } from '../hooks/useAuth'
 import { AppShellView } from './AppShellView'
 import { AuthCallbackView } from './AuthCallbackView'
@@ -82,7 +82,7 @@ function AuthSpinner() {
       {/* a labelled spinner row, never a bare spinner */}
       <div
         data-slot="loading-state"
-        className="flex items-center justify-center gap-2.5 px-5 py-15 text-small text-ink-muted"
+        className="flex items-center justify-center gap-2.5 px-5 py-15 text-small text-muted-foreground"
         role="status"
       >
         <Spinner />

@@ -6,7 +6,7 @@ import type {
   HTMLAttributes,
   InputHTMLAttributes,
 } from 'react'
-import { Notice } from '../atoms/Notice'
+import { Notice } from '@/atoms/notice'
 import { developersCopy } from '../copy/developers'
 import { apiFetch, post } from '../lib/api'
 import {

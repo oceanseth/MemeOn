@@ -1,57 +1,56 @@
 import type { ReactNode } from 'react'
 import { Link, type LinkProps } from 'react-router-dom'
-import { Avatar } from '../atoms/Avatar'
-import { Button, buttonClasses } from '../atoms/Button'
-import { EmptyActions, EmptyState } from '../atoms/EmptyState'
-import { Icon } from '../atoms/Icon'
-import { Input } from '../atoms/Input'
-import { Notice } from '../atoms/Notice'
-import { PageContainer } from '../atoms/PageContainer'
-import { FilterBar, PageHead } from '../atoms/PageHead'
-import { Panel } from '../atoms/Panel'
-import { Spinner } from '../atoms/Spinner'
+import { Avatar } from '@/atoms/avatar'
+import { Button, buttonClasses } from '@/atoms/button'
+import { EmptyActions, EmptyState } from '@/atoms/empty-state'
+import { Icon } from '@/atoms/icon'
+import { Input } from '@/atoms/input'
+import { Notice } from '@/atoms/notice'
+import { PageContainer } from '@/atoms/page-container'
+import { FilterBar, PageHead } from '@/atoms/page-head'
+import { Panel } from '@/atoms/panel'
+import { Spinner } from '@/atoms/spinner'
 import { cn } from '../lib/cn'
-import { FOCUS_RING } from '../lib/focus'
 import type { FriendsScreenModel } from '../hooks/useFriendsScreen'
-import { ConfirmDialog } from '../molecules/ConfirmDialog'
-import { GiftDialog } from '../molecules/GiftDialog'
+import { ConfirmDialog } from '@/molecules/confirm-dialog'
+import { GiftDialog } from '@/molecules/gift-dialog'
 
 /* search icon at 18px gutter → 50px input padding */
-const SEARCH_WELL = 'relative flex w-full min-w-0 flex-1 md:max-w-142.5'
-const SEARCH_GLYPH = 'pointer-events-none absolute top-1/2 left-control-x -translate-y-1/2 text-ink-muted'
+const SEARCH_WELL = 'relative flex w-full min-w-0 flex-1 md:max-w-search'
+const SEARCH_GLYPH = 'pointer-events-none absolute top-1/2 left-4.5 -translate-y-1/2 text-muted-foreground'
 
 /** Online strip is recessed so raised friend cards below read as actionable. */
 const ONLINE_STRIP = cn(
-  'mb-5 flex flex-wrap items-center gap-5 rounded-band bg-surface-pressed px-5 py-4 shadow-pressed',
-  'max-sm:gap-3.5 max-sm:rounded-nav max-sm:px-gutter',
+  'mb-5 flex flex-wrap items-center gap-5 rounded-xl material-pressed px-5 py-4',
+  'max-sm:gap-3.5 max-sm:rounded-lg max-sm:px-gutter',
 )
 
 /** Fixed title width so avatar lanes align across strips. */
 const ONLINE_TITLE = cn(
-  'w-35 shrink-0 font-display text-card-title-phone font-medium tracking-card-title text-ink',
+  'w-35 shrink-0 font-display text-card-title-phone font-medium tracking-card-title text-foreground',
   'max-sm:w-full',
 )
 
 /** The presence dot: 10px, the success ink, never the only carrier of the fact (an sr-only says it). */
-const DOT = 'inline-block size-2.5 shrink-0 rounded-full bg-success-text'
+const DOT = 'inline-block size-2.5 shrink-0 rounded-full bg-success-foreground'
 
 /** Person row: compact on desktop, stacked actions on phone. */
 const ROW = cn(
-  'flex items-center gap-3.5 rounded-card bg-surface px-5 py-3.5 shadow-raised',
-  'max-sm:flex-col max-sm:items-stretch max-sm:gap-3.5 max-sm:rounded-nav max-sm:py-5',
+  'flex items-center gap-3.5 rounded-lg material-card px-5 py-3.5',
+  'max-sm:flex-col max-sm:items-stretch max-sm:gap-3.5 max-sm:rounded-lg max-sm:py-5',
 )
 
 const IDENTITY = cn(
-  'flex min-w-0 flex-1 items-center gap-3.5 rounded-well text-inherit no-underline',
-  FOCUS_RING,
+  'flex min-w-0 flex-1 items-center gap-3.5 rounded-lg text-inherit no-underline',
+  'focus-ring',
 )
 
 const NAME = cn(
-  'block truncate font-display text-card-title-phone font-medium tracking-card-title text-ink',
-  '[overflow-wrap:anywhere]',
+  'block truncate font-display text-card-title-phone font-medium tracking-card-title text-foreground',
+  'wrap-anywhere',
 )
 
-const META = 'mt-0.5 block truncate text-micro font-medium text-ink-muted'
+const META = 'mt-0.5 block truncate text-micro font-medium text-muted-foreground'
 
 /* The action cluster: raised companion first, the row's one bubblegum second, the quiet exit last.
    On a phone the two pills share the 310px row and the text action keeps its own 44px target. */
@@ -61,20 +60,20 @@ const ROW_PILL = 'max-sm:flex-1 max-sm:px-3'
 
 /** Quiet exit as link-coloured text — confirm dialog carries the weight, not a red row button. */
 const TEXT_ACTION = cn(
-  'shrink-0 cursor-pointer rounded-control border-0 bg-transparent px-2.5 py-3.5',
+  'shrink-0 cursor-pointer rounded-lg border-0 bg-transparent px-2.5 py-3.5',
   'text-small font-semibold text-link',
-  FOCUS_RING,
-  'disabled:cursor-not-allowed disabled:opacity-(--state-disabled-opacity)',
-  'pointer-coarse:min-h-11',
+  'focus-ring',
+  'disabled-look',
+  'pointer-coarse:min-h-hit',
 )
 
 /** Pending is a pressed pill with no action behind it. */
 const PENDING_PILL = cn(
-  'inline-flex h-control shrink-0 items-center justify-center rounded-control px-control-x',
-  'bg-surface-pressed text-label font-semibold text-ink-muted shadow-pressed',
+  'inline-flex h-control shrink-0 items-center justify-center rounded-lg px-4.5',
+  'material-pressed text-label font-semibold text-muted-foreground',
 )
 
-const SECTION_HEADING = 'mt-8 mb-3 font-display text-title font-medium tracking-title text-ink'
+const SECTION_HEADING = 'mt-8 mb-3 font-display text-title font-medium tracking-title text-foreground'
 
 const SECTION = 'flex flex-col gap-3.5'
 
@@ -162,7 +161,7 @@ export function FriendsScreen({
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
       <PageHead level="h1" title="Friends">
-        <FilterBar className="w-full xl:justify-start!">
+        <FilterBar className="w-full lg:justify-start!">
           <span className={SEARCH_WELL}>
             <Icon name="magnifying-glass" size={20} className={SEARCH_GLYPH} />
             <Input
@@ -185,8 +184,8 @@ export function FriendsScreen({
         <Panel className="mb-5">
           <h2 className="font-display text-card-title-phone font-medium tracking-card-title">Search results</h2>
           <div role="status">
-            {showSearching && <p className="m-0 text-label text-ink-muted">{searchingLabel}</p>}
-            {showNoHits && <p className="m-0 text-label text-ink-muted">{noHitsMessage}</p>}
+            {showSearching && <p className="m-0 text-label text-muted-foreground">{searchingLabel}</p>}
+            {showNoHits && <p className="m-0 text-label text-muted-foreground">{noHitsMessage}</p>}
           </div>
           {showHits && (
             <div className={cn(SECTION, 'mt-3.5')}>
@@ -211,8 +210,8 @@ export function FriendsScreen({
                 key={f.sub}
                 {...f.onlineLinkProps}
                 className={cn(
-                  'group inline-flex items-center gap-2 rounded-well text-small text-ink no-underline',
-                  FOCUS_RING,
+                  'group inline-flex items-center gap-2 rounded-lg text-small text-foreground no-underline',
+                  'focus-ring',
                 )}
               >
                 <Avatar name={f.name} src={f.avatarSrc} size="md" loading="lazy" />
@@ -220,7 +219,7 @@ export function FriendsScreen({
               </Link>
             ))}
           </div>
-          <span className="flex shrink-0 items-center gap-2 text-micro font-semibold text-ink-muted max-sm:ml-auto">
+          <span className="flex shrink-0 items-center gap-2 text-micro font-semibold text-muted-foreground max-sm:ml-auto">
             <span aria-hidden="true" className={DOT} />
             {onlineCountLabel}
           </span>
@@ -228,7 +227,7 @@ export function FriendsScreen({
       ) : null}
 
       {showLoading ? (
-        <div role="status" className="flex items-center justify-center gap-2.5 px-5 py-15 text-label text-ink-muted">
+        <div role="status" className="flex items-center justify-center gap-2.5 px-5 py-15 text-label text-muted-foreground">
           <Spinner />
           {loadingLabel}
         </div>
@@ -309,7 +308,7 @@ export function FriendsScreen({
         </>
       )}
 
-      {showCircleHint ? <p className="mt-6 text-label text-ink-muted">{circleHintMessage}</p> : null}
+      {showCircleHint ? <p className="mt-6 text-label text-muted-foreground">{circleHintMessage}</p> : null}
 
       <GiftDialog model={giftDialog} />
       <ConfirmDialog model={removeDialog} />

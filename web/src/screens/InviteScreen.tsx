@@ -1,39 +1,39 @@
 import { Link } from 'react-router-dom'
-import { Avatar } from '../atoms/Avatar'
-import { Button, buttonClasses } from '../atoms/Button'
-import { EmptyActions, EmptyState } from '../atoms/EmptyState'
-import { MemeCard } from '../atoms/MemeCard'
-import { Notice } from '../atoms/Notice'
-import { PageContainer } from '../atoms/PageContainer'
-import { PageHead } from '../atoms/PageHead'
-import { Spinner } from '../atoms/Spinner'
+import { Avatar } from '@/atoms/avatar'
+import { Button, buttonClasses } from '@/atoms/button'
+import { EmptyActions, EmptyState } from '@/atoms/empty-state'
+import { MemeCard } from '@/atoms/meme-card'
+import { Notice } from '@/atoms/notice'
+import { PageContainer } from '@/atoms/page-container'
+import { PageHead } from '@/atoms/page-head'
+import { Spinner } from '@/atoms/spinner'
 import { cn } from '../lib/cn'
 import type { InviteScreenModel } from '../hooks/useInviteScreen'
 import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
 
 /** Hero card centred on the avatar, grows with copy. */
 const HERO = cn(
-  'flex flex-col items-center gap-1.75 rounded-band bg-surface px-5 pt-5 pb-7 text-center shadow-raised',
-  'max-sm:rounded-nav max-sm:px-gutter',
+  'flex flex-col items-center gap-2 rounded-xl material-card px-5 pt-5 pb-7 text-center',
+  'max-sm:rounded-lg max-sm:px-gutter',
 )
 
 /* The name is the page's display step (44/55, 32/40 on a phone); the verb line is one rung down. */
 const HERO_NAME = cn(
-  'block font-display text-display font-medium tracking-display text-ink',
-  'max-md:text-display-phone [overflow-wrap:anywhere]',
+  'block font-display text-display font-medium tracking-display text-foreground',
+  'max-md:text-display-phone wrap-anywhere',
 )
 const HERO_VERB = cn(
-  'block font-display text-section-phone font-medium tracking-title text-ink',
+  'block font-display text-section-phone font-medium tracking-title text-foreground',
   'md:text-section',
 )
 
-const HERO_STATS = 'm-0 mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-label font-semibold text-ink-muted'
+const HERO_STATS = 'm-0 mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-label font-semibold text-muted-foreground'
 
-const HERO_BODY = 'm-0 mt-4 max-w-card text-intro font-medium text-ink-muted [text-wrap:pretty]'
+const HERO_BODY = 'm-0 mt-4 max-w-card text-intro font-medium text-muted-foreground text-pretty'
 
-const HERO_NOTE = 'm-0 mt-3 max-w-measure text-label font-medium text-ink-muted [text-wrap:pretty]'
+const HERO_NOTE = 'm-0 mt-3 max-w-measure text-label font-medium text-muted-foreground text-pretty'
 
-const SECTION_HEADING = 'mt-8 mb-3.5 font-display text-title font-medium tracking-title text-ink'
+const SECTION_HEADING = 'mt-8 mb-3.5 font-display text-title font-medium tracking-title text-foreground'
 
 /** Invite landing as a function of its model. Every engine state is one set of args. */
 export function InviteScreen({
@@ -80,7 +80,7 @@ export function InviteScreen({
         <div
           role="status"
           aria-busy="true"
-          className="flex items-center justify-center gap-2.5 px-5 py-15 text-label text-ink-muted"
+          className="flex items-center justify-center gap-2.5 px-5 py-15 text-label text-muted-foreground"
         >
           <Spinner />
           {loadingLabel}
@@ -148,7 +148,7 @@ export function InviteScreen({
               </li>
             ))}
           </ul>
-          <p className="mt-5 text-center text-label text-ink-muted">{climbNote}</p>
+          <p className="mt-5 text-center text-label text-muted-foreground">{climbNote}</p>
         </>
       )}
     </PageContainer>

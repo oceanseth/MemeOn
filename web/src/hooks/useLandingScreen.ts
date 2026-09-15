@@ -184,7 +184,7 @@ export function useLandingScreen(): LandingScreenModel {
       tier.key,
       {
         'data-state': !framesReady ? 'loading' : frameImageProps[tier.key] ? 'ready' : 'error',
-        style: { color: `var(--color-tier-${tier.key}-frame)` },
+        style: { color: `var(--tier-${tier.key}-frame)` },
       } satisfies LandingFrameSlotProps,
     ]),
   )

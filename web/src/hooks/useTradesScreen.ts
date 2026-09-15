@@ -6,7 +6,7 @@ import { buildConfirmDialogModel, type ConfirmDialogModel } from '../lib/confirm
 import type { FriendEntry, Meme, Trade } from '../lib/types'
 import { buildTradeCardModel, tradeSideSentence, type TradeCardModel, type TradeAction, type TradeMemeInfo } from '../lib/tradeCardModel'
 import { tradeProposalPayload, tradesMachine, type TradesPhase } from '../stores/tradesMachine'
-import type { SelectOption } from '../atoms/Select'
+import type { SelectOption } from '@/atoms/select'
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
 

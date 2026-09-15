@@ -27,16 +27,16 @@
                                                   `MemeCard` puts both names on one element: the
                                                   frame *is* the media box.
 
-   Colour comes from the tier tokens (`--color-tier-<key>-frame`, `index.css`), so every frame and
+   Colour comes from the tier tokens (`--tier-<key>-frame`, `index.css`), so every frame and
    every bloom flips with the theme. The still frame is that colour flat; holo, chrome, gold,
    prismatic and shiny add the turning conic ring and a bloom on top of it, bounded to the image
    frame. Paper and silver are still by design — the rarity ladder starts quiet.
 
    `atoms/foil.ts` exports `tierFrameClasses(tierKey)`; it has no React import, so a code-split
    route can pull in the classes without dragging the atom's module graph onto its critical path.
-   `atoms/MemeCard.tsx`, `screens/LandingScreen.tsx` (the tier ladder) and
+   `atoms/meme-card.tsx`, `screens/LandingScreen.tsx` (the tier ladder) and
    `hooks/useCreateMemeScreen.ts` (the live mint preview) all write `tierFrameClasses`, and
-   `molecules/GiftDialog.tsx` shows its tier with a `<TierChip>`. The legacy padding frame —
+   `molecules/gift-dialog.tsx` shows its tier with a `<TierChip>`. The legacy padding frame —
    `.glow-border`, `--glow-width`, `.tier-card-inner` — was the dead-code pass's first removal from
    this file; nothing in the app has drawn it since the Soft Press frame moved onto the art.
    Anything else that wants a foil frame writes the names above; nothing else here is addressable
@@ -85,8 +85,8 @@
      further down. */
   :where(.foil-card) {
     --frame-width: 3px;
-    --tier-frame: var(--color-line);
-    --frame-fill: var(--color-surface-pressed);
+    --tier-frame: var(--color-border);
+    --frame-fill: var(--color-muted);
     --glow-bloom: transparent;
     --glow-blur: 16px;
     --glow-opacity: 0.32;
@@ -103,7 +103,7 @@
      The always-on 3px solid tier border. It is a real border, so `border-radius` and `overflow`
      come from the host's utilities and the art clips to the frame's inner radius. */
   .foil-frame {
-    border: var(--frame-width, 3px) solid var(--tier-frame, var(--color-line));
+    border: var(--frame-width, 3px) solid var(--tier-frame, var(--color-border));
   }
 
   /* Holo and up: the same 3px is a conic ring that turns. Two background layers — the frame's own
@@ -135,42 +135,42 @@
      percentages against a darker surface, which is why they are conservative). `background` is a
      fallback paint — a card that owns its surface overrides it with `bg-*`. */
   .tier-paper {
-    --tier-frame: var(--color-tier-paper-frame);
+    --tier-frame: var(--tier-paper-frame);
     background: var(--tier-frame);
   }
 
   .tier-silver {
-    --tier-frame: var(--color-tier-silver-frame);
+    --tier-frame: var(--tier-silver-frame);
     background: var(--tier-frame);
   }
 
   .tier-holo {
-    --tier-frame: var(--color-tier-holo-frame);
-    --glow-bloom: color-mix(in oklab, var(--color-tier-holo-frame) 40%, transparent);
+    --tier-frame: var(--tier-holo-frame);
+    --glow-bloom: color-mix(in oklab, var(--tier-holo-frame) 40%, transparent);
     background: var(--tier-frame);
   }
 
   .tier-chrome {
-    --tier-frame: var(--color-tier-chrome-frame);
-    --glow-bloom: color-mix(in oklab, var(--color-tier-chrome-frame) 24%, transparent);
+    --tier-frame: var(--tier-chrome-frame);
+    --glow-bloom: color-mix(in oklab, var(--tier-chrome-frame) 24%, transparent);
     background: var(--tier-frame);
   }
 
   .tier-gold {
-    --tier-frame: var(--color-tier-gold-frame);
-    --glow-bloom: color-mix(in oklab, var(--color-tier-gold-frame) 40%, transparent);
+    --tier-frame: var(--tier-gold-frame);
+    --glow-bloom: color-mix(in oklab, var(--tier-gold-frame) 40%, transparent);
     background: var(--tier-frame);
   }
 
   .tier-prismatic {
-    --tier-frame: var(--color-tier-prismatic-frame);
-    --glow-bloom: color-mix(in oklab, var(--color-tier-prismatic-frame) 42%, transparent);
+    --tier-frame: var(--tier-prismatic-frame);
+    --glow-bloom: color-mix(in oklab, var(--tier-prismatic-frame) 42%, transparent);
     background: var(--tier-frame);
   }
 
   .tier-shiny {
-    --tier-frame: var(--color-tier-shiny-frame);
-    --glow-bloom: color-mix(in oklab, var(--color-tier-shiny-frame) 46%, transparent);
+    --tier-frame: var(--tier-shiny-frame);
+    --glow-bloom: color-mix(in oklab, var(--tier-shiny-frame) 46%, transparent);
     background: var(--tier-frame);
   }
 
@@ -193,7 +193,7 @@
     --glow-stops:
       var(--tier-frame) 0deg,
       var(--tier-frame) 96deg,
-      color-mix(in oklab, var(--color-highlight) 70%, var(--tier-frame)) 130deg,
+      color-mix(in oklab, var(--relief-highlight) 70%, var(--tier-frame)) 130deg,
       var(--tier-frame) 170deg,
       var(--tier-frame) 360deg;
     --glow-duration: 12s;
@@ -222,7 +222,7 @@
     --glow-stops:
       var(--tier-frame) 0deg,
       var(--tier-frame) 128deg,
-      color-mix(in oklab, var(--color-highlight) 85%, var(--tier-frame)) 169deg,
+      color-mix(in oklab, var(--relief-highlight) 85%, var(--tier-frame)) 169deg,
       var(--tier-frame) 205deg,
       var(--tier-frame) 360deg;
     --glow-duration: 4.5s;
