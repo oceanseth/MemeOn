@@ -19,8 +19,9 @@ const frameImages = (canvasElement: HTMLElement) =>
 function invokeRenderedLogin(button: HTMLButtonElement): void {
   const reactPropsKey = Object.keys(button).find((key) => key.startsWith('__reactProps$'))
   if (!reactPropsKey) throw new Error('Rendered login callback is unavailable')
-  const props = (button as unknown as Record<string, { onClick?: () => void }>)[reactPropsKey]
-  props?.onClick?.()
+  const props = (button as unknown as Record<string, { onClick?: (event: MouseEvent) => void }>)[reactPropsKey]
+  // Base UI's disabled guard reads event.preventDefault(), so the probe passes a real event
+  props?.onClick?.(new MouseEvent('click'))
 }
 
 function expectAuthorizationUrl(url: string): void {
