@@ -29,11 +29,11 @@ const SUBTITLE = 'mt-3 mb-0 max-w-105 text-label text-ink-muted'
 
 /** Quiet way out beside the primary control. */
 const TEXT_LINK = cn(
-  'inline-flex h-control items-center text-label font-semibold text-ink underline underline-offset-[3px]',
+  'inline-flex h-control items-center text-label font-semibold text-ink underline underline-offset-3',
 )
 
 /** Inline fallback link — ultraviolet, underlined, no box. */
-const INLINE_LINK = 'text-link underline underline-offset-[3px] decoration-1 font-medium'
+const INLINE_LINK = 'text-link underline underline-offset-3 decoration-1 font-medium'
 
 /** One centred card for every auth hand-off: the OAuth callback and the mobile deep-link forward. */
 export function AuthStatusScreen({

@@ -49,14 +49,14 @@ const personRow = cn(
 
 const rowList = 'mt-3 flex flex-col gap-2'
 
-const inlineLink = 'text-link underline underline-offset-[3px] decoration-1'
+const inlineLink = 'text-link underline underline-offset-3 decoration-1'
 
 /** Tier line: success colour signed in, link colour on public card — one element, one swap. */
 const heroTierLine = 'm-0 text-caption font-bold'
 
-const ladderTrack = 'mt-2 h-2 overflow-hidden rounded-[5px] bg-surface-pressed'
+const ladderTrack = 'mt-2 h-2 overflow-hidden rounded-pill bg-surface-pressed'
 const ladderFill = cn(
-  'h-full rounded-[5px]',
+  'h-full rounded-pill',
   'bg-[linear-gradient(90deg,var(--color-action-secondary),var(--color-action),var(--color-action-secondary))]',
 )
 
@@ -67,7 +67,7 @@ function TierLadder({ model, hype }: { model: DetailTierLadderModel; hype: strin
     <div data-slot="tier-progression" className="mt-3">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
         <span className="text-caption font-bold text-success-text">{model.currentLabel}</span>
-        <span className="text-micro/[15px] font-medium text-ink-muted tabular-nums">{model.nextLabel}</span>
+        <span className="text-micro/tight font-medium text-ink-muted tabular-nums">{model.nextLabel}</span>
       </div>
       <div className={ladderTrack} {...model.meterProps}>
         <div className={ladderFill} style={model.fillStyle} />

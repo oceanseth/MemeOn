@@ -55,14 +55,14 @@ const TITLE = 'font-display font-medium tracking-card-title text-ink'
 
 const TITLE_HERO = 'text-title tracking-title'
 
-const STATS = 'flex items-center text-micro/[18px] text-ink-muted tabular-nums'
+const STATS = 'flex items-center text-micro/normal text-ink-muted tabular-nums'
 
 const SUB = cn(
-  'flex items-start justify-between gap-2 text-micro/[15px] font-medium text-ink tabular-nums',
+  'flex items-start justify-between gap-2 text-micro/tight font-medium text-ink tabular-nums',
   '@max-[220px]:flex-wrap @max-[220px]:gap-y-0.5',
 )
 
-const VALUE = 'text-small/[18px] font-bold text-ink'
+const VALUE = 'text-small font-bold text-ink'
 
 const RIGHT_SLOT = 'min-w-16 shrink-0 text-right [&>span]:whitespace-nowrap' // floor keeps footer lanes aligned
 

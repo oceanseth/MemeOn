@@ -51,7 +51,7 @@ const NAME = cn(
   '[overflow-wrap:anywhere]',
 )
 
-const META = 'mt-0.5 block truncate text-micro/[16px] font-medium text-ink-muted'
+const META = 'mt-0.5 block truncate text-micro font-medium text-ink-muted'
 
 /* The action cluster: raised companion first, the row's one bubblegum second, the quiet exit last.
    On a phone the two pills share the 310px row and the text action keeps its own 44px target. */
@@ -220,7 +220,7 @@ export function FriendsScreen({
               </Link>
             ))}
           </div>
-          <span className="flex shrink-0 items-center gap-2 text-micro/[16px] font-semibold text-ink-muted max-sm:ml-auto">
+          <span className="flex shrink-0 items-center gap-2 text-micro font-semibold text-ink-muted max-sm:ml-auto">
             <span aria-hidden="true" className={DOT} />
             {onlineCountLabel}
           </span>

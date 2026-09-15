@@ -94,10 +94,10 @@ const STATE_CARD = cn(
 /* busy uses raised fill so it reads inside the surface-toned form panel */
 const STATE_CARD_BUSY = cn(STATE_CARD, 'bg-surface-raised shadow-raised', '[&_h3]:text-ink-muted')
 const STATE_CARD_APPROVAL = cn(STATE_CARD, '[&_h3]:text-success-text')
-/** Progress groove: pressed track with the action colour. */
-const TRACK = 'mt-3 block h-1.5 overflow-hidden rounded-[3px] bg-surface-pressed'
+/** Progress groove: pressed track with the action colour */
+const TRACK = 'mt-3 block h-1.5 overflow-hidden rounded-pill bg-surface-pressed'
 const TRACK_FILL = cn(
-  'block h-full w-[35%] rounded-[3px] bg-action',
+  'block h-full w-[35%] rounded-pill bg-action',
   'animate-pulse motion-reduce:animate-none',
 )
 
@@ -107,7 +107,7 @@ const GIPHY_CELL = cn(
 )
 /* the picked cell keeps its ring on hover: the state is a ring, never a border colour */
 const GIPHY_CELL_PICKED = 'inset-ring-2 inset-ring-action'
-const GIPHY_MARK = 'text-micro font-bold tracking-[0.6px] whitespace-nowrap text-ink-muted uppercase'
+const GIPHY_MARK = 'text-micro font-bold tracking-wider whitespace-nowrap text-ink-muted uppercase'
 const LOADING_STATE = 'flex items-center justify-center gap-2.5 px-5 py-15 text-small text-ink-muted'
 /** Preflight strips the file-selector button bare; this gives it the app's own neutral pill. */
 const FILE_INPUT = cn(

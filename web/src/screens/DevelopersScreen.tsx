@@ -67,7 +67,7 @@ export function DevelopersScreen({
         memes, gift shares (including to users your own site knows only by Masky avatar id), trade,
         and read everything you can. Full endpoint reference lives in{' '}
         <a
-          className="text-link underline underline-offset-[3px] decoration-1"
+          className="text-link underline underline-offset-3 decoration-1"
           href="/skill.md"
           target="_blank"
           rel="noreferrer"

@@ -332,7 +332,7 @@ export function TokenSheet() {
         <h4>h4 is card-title-phone</h4>
         <p>
           Body copy is Onest 16/24 on ink. A{' '}
-          <a className="text-link underline underline-offset-[3px] decoration-1" href="#top">
+          <a className="text-link underline underline-offset-3 decoration-1" href="#top">
             link
           </a>{' '}
           wears <code>--color-link</code>; inline{' '}

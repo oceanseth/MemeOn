@@ -11,7 +11,7 @@ const chipChrome = cn(
   'inline-flex h-control items-center justify-center whitespace-nowrap max-sm:h-10',
   /* 40px drawn height; coarse pointer still needs 44 */
   'pointer-coarse:min-h-11',
-  'rounded-control bg-surface-raised px-4 text-label/[18px] font-semibold text-ink shadow-raised',
+  'rounded-control bg-surface-raised px-4 text-label/4.5 font-semibold text-ink shadow-raised',
   'cursor-pointer',
   '[transition:transform_var(--dur-fast)_ease,background_var(--dur-base)_ease]',
   'motion-reduce:transition-none',
