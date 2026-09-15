@@ -3,6 +3,16 @@ import { useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { createMemeCopy } from '../copy/createMeme'
 import { apiFetch, post } from '../lib/api'
+import { uploadCreateMemeFile } from '../lib/createMemeUpload'
+import {
+  assertActive,
+  cancelVideoPollForOwner,
+  isLifetimeCancellation,
+  POLL_TIMEOUT_MS,
+  pollVideoStatus,
+  type CreationLifetime,
+  type VideoPollRun,
+} from '../lib/createMemeVideoPoll'
 import { extractPoster } from '../lib/extractPoster'
 import {
   buildCreateMemeScreenModel,
@@ -30,73 +40,8 @@ export type { CreateMemeScreenModel } from '../lib/createMemeModel'
 
 const copy = createMemeCopy
 
-async function uploadFile(file: File | Blob, contentType?: string): Promise<string> {
-  const type = contentType ?? (file as File).type
-  const { uploadUrl, publicUrl } = await post<{ uploadUrl: string; publicUrl: string }>(
-    '/api/uploads',
-    { contentType: type, size: file.size },
-  )
-  const put = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: { 'content-type': type },
-    body: file,
-  })
-  // the message is what the alert shows, so it is copy rather than a developer note
-  if (!put.ok) throw new Error(copy.errors.uploadRejected(put.status))
-  return publicUrl
-}
-
-function fetchVideoStatus(id: string): Promise<{
-  status: string
-  videoUrl?: string
-  errorMessage?: string
-}> {
-  return apiFetch(`/api/aigen/video/${id}`)
-}
-
 export { PENDING_VIDEO_KEY, pendingVideoMatchesRemix, pendingVideoRecord, draftOf } from '../lib/createMemeModel'
 export { MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, overCapMessage } from '../lib/createMemeModel'
-
-const POLL_TIMEOUT_MS = 8 * 60_000
-
-interface CreationLifetime {
-  active: boolean
-}
-
-interface VideoPollRun {
-  owner: CreationLifetime
-  interval: ReturnType<typeof setInterval> | null
-  reject: (reason: Error) => void
-  settled: boolean
-}
-
-class CreationLifetimeCancelledError extends Error {
-  constructor() {
-    super(copy.errors.lifetimeEnded)
-    this.name = 'CreationLifetimeCancelledError'
-  }
-}
-
-function assertActive(owner: CreationLifetime): void {
-  if (!owner.active) throw new CreationLifetimeCancelledError()
-}
-
-function isLifetimeCancellation(error: unknown): boolean {
-  return error instanceof CreationLifetimeCancelledError
-}
-
-function clearPendingVideoIfOwned(generationId: string, startedAt: number): void {
-  const raw = sessionStorage.getItem(PENDING_VIDEO_KEY)
-  if (!raw) return
-  try {
-    const pending = JSON.parse(raw) as { generationId?: unknown; startedAt?: unknown }
-    if (pending.generationId === generationId && pending.startedAt === startedAt) {
-      sessionStorage.removeItem(PENDING_VIDEO_KEY)
-    }
-  } catch {
-    /* A malformed record is handled by the mount-time recovery path. */
-  }
-}
 
 /** Everything `CreateMemeScreen` renders. The hook is the engine; the screen is the terminal. */
 export function useCreateMemeScreen(): CreateMemeScreenModel {
@@ -157,71 +102,21 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     }, 400)
   }, [actor])
 
-  const cancelPollRun = useCallback((run: VideoPollRun) => {
-    if (run.settled) return
-    run.settled = true
-    if (run.interval) clearInterval(run.interval)
-    if (pollRunRef.current === run) pollRunRef.current = null
-    run.reject(new CreationLifetimeCancelledError())
-  }, [])
+  const persistPendingVideo = useCallback(
+    (generationId: string, startedAt: number) => {
+      const live = actor.getSnapshot().context
+      sessionStorage.setItem(
+        PENDING_VIDEO_KEY,
+        JSON.stringify(pendingVideoRecord(live, generationId, startedAt)),
+      )
+    },
+    [actor],
+  )
 
   const pollVideo = useCallback(
     (generationId: string, startedAt: number, owner: CreationLifetime): Promise<string> =>
-      new Promise<string>((resolve, reject) => {
-        if (!owner.active) {
-          reject(new CreationLifetimeCancelledError())
-          return
-        }
-        if (pollRunRef.current) cancelPollRun(pollRunRef.current)
-        const run: VideoPollRun = { owner, interval: null, reject, settled: false }
-        pollRunRef.current = run
-        const live = actor.getSnapshot().context
-        sessionStorage.setItem(
-          PENDING_VIDEO_KEY,
-          JSON.stringify(pendingVideoRecord(live, generationId, startedAt)),
-        )
-        const finish = (fn: () => void) => {
-          if (!owner.active || pollRunRef.current !== run) {
-            cancelPollRun(run)
-            return
-          }
-          run.settled = true
-          if (run.interval) clearInterval(run.interval)
-          pollRunRef.current = null
-          clearPendingVideoIfOwned(generationId, startedAt)
-          fn()
-        }
-        run.interval = setInterval(async () => {
-          if (!owner.active || pollRunRef.current !== run) {
-            cancelPollRun(run)
-            return
-          }
-          if (Date.now() - startedAt > POLL_TIMEOUT_MS) {
-            return finish(() => reject(new Error(copy.errors.stillRendering(generationId))))
-          }
-          try {
-            const st = await fetchVideoStatus(generationId)
-            if (!owner.active || pollRunRef.current !== run) {
-              cancelPollRun(run)
-              return
-            }
-            if (st.status === 'video' && st.videoUrl) {
-              const url = st.videoUrl
-              finish(() => resolve(url))
-            } else if (st.status === 'error') {
-              finish(() => reject(new Error(st.errorMessage ?? copy.errors.videoGenerationFailed)))
-            }
-          } catch (error) {
-            if (!owner.active || pollRunRef.current !== run) {
-              cancelPollRun(run)
-              return
-            }
-            if (isLifetimeCancellation(error)) return
-            /* transient poll failure — keep going until timeout */
-          }
-        }, 5000)
-      }),
-    [actor, cancelPollRun],
+      pollVideoStatus(pollRunRef, generationId, startedAt, owner, persistPendingVideo),
+    [persistPendingVideo],
   )
 
   useMountEffect(() => {
@@ -271,8 +166,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       if (lifetimeRef.current === owner) lifetimeRef.current = null
       stopElapsed()
       if (draftTimerRef.current) clearTimeout(draftTimerRef.current)
-      const pollRun = pollRunRef.current
-      if (pollRun?.owner === owner) cancelPollRun(pollRun)
+      cancelVideoPollForOwner(pollRunRef, owner)
     }
   })
 
@@ -535,7 +429,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       }
       beginBusy(copy.busy.uploadingImage)
       try {
-        send({ type: 'SET_IMAGE_URL', imageUrl: await uploadFile(file) })
+        send({ type: 'SET_IMAGE_URL', imageUrl: await uploadCreateMemeFile(file) })
         settleBusy({ type: 'DONE' })
       } catch (er) {
         settleBusy({ type: 'FAIL', err: er instanceof Error ? er.message : copy.errors.uploadFailed })
@@ -552,11 +446,11 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       }
       beginBusy(copy.busy.uploadingVideo)
       try {
-        send({ type: 'SET_VIDEO_URL', videoUrl: await uploadFile(file) })
+        send({ type: 'SET_VIDEO_URL', videoUrl: await uploadCreateMemeFile(file) })
         if (!actor.getSnapshot().context.imageUrl) {
           send({ type: 'BUSY', busy: copy.busy.extractingPoster })
           const poster = await extractPoster(file)
-          send({ type: 'SET_IMAGE_URL', imageUrl: await uploadFile(poster, 'image/png') })
+          send({ type: 'SET_IMAGE_URL', imageUrl: await uploadCreateMemeFile(poster, 'image/png') })
         }
         settleBusy({ type: 'DONE' })
       } catch (er) {
