@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import type { IconName } from '../atoms/Icon'
+import type { IconName } from '@/atoms/icon'
 import { authStatusCopy } from '../copy/authStatus'
 import { beginMaskyLogin, completeMaskyLogin } from '../lib/auth'
 import { post } from '../lib/api'

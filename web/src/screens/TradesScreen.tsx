@@ -1,23 +1,23 @@
 import { Link } from 'react-router-dom'
-import { Button, buttonClasses } from '../atoms/Button'
-import { EmptyActions, EmptyState } from '../atoms/EmptyState'
-import { Field, FieldHint, FieldLabel } from '../atoms/Field'
-import { Fieldset, FieldsetLegend } from '../atoms/Fieldset'
-import { Input } from '../atoms/Input'
-import { Notice } from '../atoms/Notice'
-import { PageContainer } from '../atoms/PageContainer'
-import { PageHead } from '../atoms/PageHead'
-import { Panel, PanelHeading } from '../atoms/Panel'
-import { Select } from '../atoms/Select'
-import { SkeletonRow } from '../atoms/Skeleton'
+import { Button, buttonClasses } from '@/atoms/button'
+import { EmptyActions, EmptyState } from '@/atoms/empty-state'
+import { Field, FieldHint, FieldLabel } from '@/atoms/field'
+import { Fieldset, FieldsetLegend } from '@/atoms/fieldset'
+import { Input } from '@/atoms/input'
+import { Notice } from '@/atoms/notice'
+import { PageContainer } from '@/atoms/page-container'
+import { PageHead } from '@/atoms/page-head'
+import { Panel, PanelHeading } from '@/atoms/panel'
+import { Select } from '@/atoms/select'
+import { SkeletonRow } from '@/atoms/skeleton'
 import { cn } from '../lib/cn'
 import type { TradesScreenModel } from '../hooks/useTradesScreen'
 import {
   columnFields, composeGrid, composeLegend, composerIntro, countNote, headingRow, listHeading,
   liveRegion, proposeCaption, proposeRow, rowList,
 } from '../lib/tradesScreenLayout'
-import { ConfirmDialog } from '../molecules/ConfirmDialog'
-import { TradeCard } from '../molecules/TradeCard'
+import { ConfirmDialog } from '@/molecules/confirm-dialog'
+import { TradeCard } from '@/molecules/trade-card'
 
 const SKELETON_ROWS = ['a', 'b', 'c']
 

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { Button, buttonClasses } from '../atoms/Button'
-import { EmptyState } from '../atoms/EmptyState'
+import { Button, buttonClasses } from '@/atoms/button'
+import { EmptyState } from '@/atoms/empty-state'
 import {
   Field,
   FieldCounter,
@@ -9,22 +9,22 @@ import {
   FieldHint,
   FieldLabel,
   Hint,
-} from '../atoms/Field'
-import { Input } from '../atoms/Input'
+} from '@/atoms/field'
+import { Input } from '@/atoms/input'
 /* the foil sheet and the chip, not the card atom: this screen paints a card frame out of its own
    markup, and the mint route is code-split — pulling `MemeCard.tsx` in would put its `react-router`
    and model imports on the critical path of a `lazy()` route that renders none of them.
    `atoms/foil.css` and `atoms/TierChip` are the dependency-free halves of that seam. */
-import '../atoms/foil.css'
-import { Notice } from '../atoms/Notice'
-import { PageContainer } from '../atoms/PageContainer'
-import { FilterBar, PageHead } from '../atoms/PageHead'
-import { Panel, PanelHeading } from '../atoms/Panel'
-import { Select, type SelectOption } from '../atoms/Select'
-import { SkeletonCard } from '../atoms/Skeleton'
-import { Spinner } from '../atoms/Spinner'
-import { Textarea } from '../atoms/Textarea'
-import { TierChip } from '../atoms/TierChip'
+import '@/atoms/foil.css'
+import { Notice } from '@/atoms/notice'
+import { PageContainer } from '@/atoms/page-container'
+import { FilterBar, PageHead } from '@/atoms/page-head'
+import { Panel, PanelHeading } from '@/atoms/panel'
+import { Select, type SelectOption } from '@/atoms/select'
+import { SkeletonCard } from '@/atoms/skeleton'
+import { Spinner } from '@/atoms/spinner'
+import { Textarea } from '@/atoms/textarea'
+import { TierChip } from '@/atoms/tier-chip'
 import type {
   CreateMemeCardModel,
   CreateMemeModeButtonModel,

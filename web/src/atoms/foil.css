@@ -34,9 +34,9 @@
 
    `atoms/foil.ts` exports `tierFrameClasses(tierKey)`; it has no React import, so a code-split
    route can pull in the classes without dragging the atom's module graph onto its critical path.
-   `atoms/MemeCard.tsx`, `screens/LandingScreen.tsx` (the tier ladder) and
+   `atoms/meme-card.tsx`, `screens/LandingScreen.tsx` (the tier ladder) and
    `hooks/useCreateMemeScreen.ts` (the live mint preview) all write `tierFrameClasses`, and
-   `molecules/GiftDialog.tsx` shows its tier with a `<TierChip>`. The legacy padding frame —
+   `molecules/gift-dialog.tsx` shows its tier with a `<TierChip>`. The legacy padding frame —
    `.glow-border`, `--glow-width`, `.tier-card-inner` — was the dead-code pass's first removal from
    this file; nothing in the app has drawn it since the Soft Press frame moved onto the art.
    Anything else that wants a foil frame writes the names above; nothing else here is addressable

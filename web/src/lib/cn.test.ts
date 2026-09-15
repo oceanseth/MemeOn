@@ -98,7 +98,7 @@ describe('cn', () => {
     expect(cn('text-display', 'max-md:text-display-phone')).toBe('text-display max-md:text-display-phone')
   })
 
-  /* Why `atoms/Button.tsx` spells its baseline line-height as an arbitrary property. `font-size`
+  /* Why `atoms/button.tsx` spells its baseline line-height as an arbitrary property. `font-size`
      and `leading` share one conflict group, so a caller's `text-*` deletes a `leading-*` that
      sorts before it — which silently made every `text-xs` button preflight-tall. The
      arbitrary-property group does not conflict with `text-*`, and another `[line-height:…]`

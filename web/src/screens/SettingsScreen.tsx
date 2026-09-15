@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom'
-import { Button, buttonClasses } from '../atoms/Button'
-import { PageContainer } from '../atoms/PageContainer'
-import { PageHead } from '../atoms/PageHead'
-import { Panel, PanelHeading } from '../atoms/Panel'
+import { Button, buttonClasses } from '@/atoms/button'
+import { PageContainer } from '@/atoms/page-container'
+import { PageHead } from '@/atoms/page-head'
+import { Panel, PanelHeading } from '@/atoms/panel'
 import { cn } from '../lib/cn'
 import type { SettingsScreenModel } from '../hooks/useSettingsScreen'
-import { ThemeControl } from '../molecules/ThemeControl'
+import { ThemeControl } from '@/molecules/theme-control'
 
 /** Settings section card — Panel raised material. */
 const CARD = 'px-5 py-gutter max-md:px-5 max-md:py-gutter'

@@ -1,14 +1,14 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { Avatar } from '../atoms/Avatar'
-import { Icon } from '../atoms/Icon'
+import { Avatar } from '@/atoms/avatar'
+import { Icon } from '@/atoms/icon'
 import { cn } from '../lib/cn'
 import { FOCUS_RING as FOCUS } from '../lib/focus'
 import type { AppShellScreenModel } from '../hooks/useAppShellScreen'
-import { AlertsBell } from '../molecules/AlertsBell'
-import { AvatarMenu } from '../molecules/AvatarMenu'
-import { QuestBar } from '../molecules/QuestBar'
-import { ThemeControl } from '../molecules/ThemeControl'
+import { AlertsBell } from '@/molecules/alerts-bell'
+import { AvatarMenu } from '@/molecules/avatar-menu'
+import { QuestBar } from '@/molecules/quest-bar'
+import { ThemeControl } from '@/molecules/theme-control'
 import {
   AppShell,
   NAV_ROW,
@@ -16,7 +16,7 @@ import {
   TAB_ITEM,
   TAB_ITEM_PRIMARY,
   UTILITY_LINK,
-} from '../organisms/AppShell'
+} from '@/organisms/app-shell'
 
 /** The 22×22 icon lane every nav row shares, so labels line up whatever glyph sits in it. */
 const ICON_LANE = 'inline-flex size-icon shrink-0 items-center justify-center'

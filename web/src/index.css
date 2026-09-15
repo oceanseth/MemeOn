@@ -1,5 +1,5 @@
 /* The cascade contract, declared once, here, and restated by every co-located component sheet
-   (`atoms/*.css`, `organisms/AppShell.css`, `screens/LandingScreen.css`) because a layer's rank is
+   (`atoms/*.css`, `organisms/app-shell.css`, `screens/LandingScreen.css`) because a layer's rank is
    fixed the first time its name is seen in a bundle:
 
      properties  Tailwind's own `@property` fallback block. It has to rank BELOW `utilities`, or its
@@ -253,7 +253,7 @@
     --z-modal: 60;
     --dur-fast: 0.08s;
     --dur-base: 0.15s;
-    /* the phone header's height. `organisms/AppShell.css` authors the real value (64 below the
+    /* the phone header's height. `organisms/app-shell.css` authors the real value (64 below the
        shell breakpoint, 0 at and above it); this root default only ever paints in an isolated
        Storybook story that mounts a screen without the shell. */
     --topbar-h: 64px;

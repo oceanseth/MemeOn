@@ -23,6 +23,9 @@ const proxy = {
 };
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: { '@': path.resolve(dirname, 'src') },
+  },
   optimizeDeps: {
     include: ['msw-storybook-addon/csf3'],
   },

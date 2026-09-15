@@ -1,0 +1,53 @@
+import { Button } from '@/atoms/button'
+import { Field, FieldCounter, FieldFooter, FieldHint, FieldLabel } from '@/atoms/field'
+import { FilterBar } from '@/atoms/page-head'
+import { Textarea } from '@/atoms/textarea'
+import type { ConfirmDialogModel } from '../lib/confirmDialogModel'
+import { DialogFrame } from '@/molecules/dialog-frame'
+
+/**
+ * The app's confirmation modal: an `alertdialog` whose message is its description, so a screen
+ * reader reads the stakes with the name. Render it always; the model controls visibility.
+ *
+ *   <ConfirmDialog model={confirmDialog} />
+ */
+export function ConfirmDialog({ model }: { model: ConfirmDialogModel }) {
+  return (
+    <DialogFrame
+      id={model.id}
+      open={model.open}
+      onOpenChange={model.onOpenChange}
+      // the model recorded the opener; without it a press on the scrim strands focus on <main>
+      finalFocus={model.opener}
+      role="alertdialog"
+      size="sm"
+      danger={model.danger}
+      title={model.title}
+      titleId={model.titleId}
+      description={model.message}
+      descriptionId={model.messageId}
+      // the message carries block content on some screens (a failure notice); a <p> could not hold it
+      descriptionAs="div"
+    >
+      {model.prompt && (
+        <Field className="mt-3.5">
+          <FieldLabel>{model.prompt.label}</FieldLabel>
+          <Textarea className="w-full" {...model.prompt.textareaProps} />
+          <FieldFooter>
+            {model.prompt.hint && (
+              <FieldHint id={model.prompt.hintId}>{model.prompt.hint}</FieldHint>
+            )}
+            <FieldCounter>{model.prompt.counterLabel}</FieldCounter>
+          </FieldFooter>
+        </Field>
+      )}
+      {/* Cancel left, commit right — danger variant when stakes are destructive */}
+      <FilterBar className="mt-gutter justify-end">
+        <Button {...model.cancelButtonProps}>{model.cancelLabel}</Button>
+        <Button variant={model.danger ? 'danger' : 'primary'} {...model.confirmButtonProps}>
+          {model.confirmLabel}
+        </Button>
+      </FilterBar>
+    </DialogFrame>
+  )
+}

@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
-import { Button, buttonClasses } from '../atoms/Button'
-import { PageContainer } from '../atoms/PageContainer'
-import { Panel } from '../atoms/Panel'
-import { Spinner } from '../atoms/Spinner'
+import { Button, buttonClasses } from '@/atoms/button'
+import { PageContainer } from '@/atoms/page-container'
+import { Panel } from '@/atoms/panel'
+import { Spinner } from '@/atoms/spinner'
 import { cn } from '../lib/cn'
 import type { DiscordLinkScreenModel } from '../hooks/useDiscordLinkScreen'
 

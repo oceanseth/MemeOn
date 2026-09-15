@@ -1,7 +1,7 @@
 import type { ChangeEvent, HTMLAttributes } from 'react'
 import { glowStyleFor, tierFor } from '@memeon/shared/tiers'
 import { createMemeCopy as copy } from '../../copy/createMeme'
-import { tierFrameClasses } from '../../atoms/foil'
+import { tierFrameClasses } from '@/atoms/foil'
 import {
   boundTitle,
   countTitle,

@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
-import { Button, buttonClasses } from '../atoms/Button'
-import { Icon } from '../atoms/Icon'
-import { Notice } from '../atoms/Notice'
-import { PageContainer } from '../atoms/PageContainer'
+import { Button, buttonClasses } from '@/atoms/button'
+import { Icon } from '@/atoms/icon'
+import { Notice } from '@/atoms/notice'
+import { PageContainer } from '@/atoms/page-container'
 import { cn } from '../lib/cn'
 import type { AuthStatusScreenModel } from '../hooks/useAuthCallbackScreen'
 

@@ -1,5 +1,5 @@
 import { cn } from './cn'
-import { buttonClasses } from '../atoms/Button'
+import { buttonClasses } from '@/atoms/button'
 
 /**
  * The control plate docks under the topbar while the grid scrolls. It bleeds only into the page

@@ -1,17 +1,17 @@
 import { Link } from 'react-router-dom'
-import { Button, buttonClasses } from '../atoms/Button'
-import { tierFrameClasses } from '../atoms/foil'
+import { Button, buttonClasses } from '@/atoms/button'
+import { tierFrameClasses } from '@/atoms/foil'
 /* the foil sheet, imported directly (not by way of `atoms/MemeCard`'s side effect): this screen
    assembles the hero pile and the tier ladder from its own markup, on the dependency-free half of
    the seam */
-import '../atoms/foil.css'
-import { Notice } from '../atoms/Notice'
-import { PageContainer } from '../atoms/PageContainer'
-import { TierChip } from '../atoms/TierChip'
+import '@/atoms/foil.css'
+import { Notice } from '@/atoms/notice'
+import { PageContainer } from '@/atoms/page-container'
+import { TierChip } from '@/atoms/tier-chip'
 import { cn } from '../lib/cn'
 import type { LandingScreenModel } from '../hooks/useLandingScreen'
-import { FaqItem } from '../molecules/FaqItem'
-import { HeroVideo } from '../molecules/HeroVideo'
+import { FaqItem } from '@/molecules/faq-item'
+import { HeroVideo } from '@/molecules/hero-video'
 import './LandingScreen.css'
 
 const FACE = 'font-display font-medium text-ink'

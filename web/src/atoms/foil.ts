@@ -7,8 +7,8 @@ const SHEEN_TIERS = new Set(['holo', 'chrome', 'gold', 'prismatic', 'shiny'])
  * needs the tier's variables and the two bounded effects. This module is the dependency-free half
  * of the seam — no React import — so a code-split route (`screens/CreateMemeScreen.tsx`'s mint
  * preview, behind `views/CreateMemeView`'s `lazy()`) can pull in `tierFrameClasses` without
- * dragging `atoms/MemeCard.tsx` and `react-router-dom`'s `Link` onto its critical path.
- * `atoms/MemeCard.tsx`, `screens/LandingScreen.tsx` and `hooks/useCreateMemeScreen.ts` all import
+ * dragging `atoms/meme-card.tsx` and `react-router-dom`'s `Link` onto its critical path.
+ * `atoms/meme-card.tsx`, `screens/LandingScreen.tsx` and `hooks/useCreateMemeScreen.ts` all import
  * `tierFrameClasses` directly from here.
  */
 export function tierFrameClasses(tierKey: string): string {

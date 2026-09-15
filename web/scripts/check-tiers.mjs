@@ -10,6 +10,8 @@
  *   - a value import in copy/ that leaves copy/, other than lib/plural and lib/braincells
  *     (copy is plain data; the two formatting helpers are the one allowance)
  *   - a React state hook in a component or helper below views/
+ *   - React context (createContext / useContext) below views/, except inside atoms/, where a
+ *     compound atom (toggle group, tabs) hands its variant to its parts through a context
  *   - a state-library import below views/
  *   - a component in a tier folder without a sibling story
  *   - a .tsx or .jsx component outside a tier folder, except the listed
@@ -38,6 +40,16 @@ const ALLOWED = {
   views: [...TIERS, ...ENGINES],
 }
 const STATE_HOOKS = new Set(["useState", "useReducer", "useEffect", "useLayoutEffect", "useContext", "useSyncExternalStore"])
+// The context API is component-local wiring, not state: a shadcn-style compound atom creates a
+// context for its variant and its parts read it. Allowed in atoms/ only; everywhere else below
+// views/ it is reported like a state hook.
+const CONTEXT_API = new Set(["createContext", "useContext"])
+const CHECKED = new Set([...STATE_HOOKS, ...CONTEXT_API])
+const isAllowedInTier = (tier, name) => tier === "atoms" && CONTEXT_API.has(name)
+const hookProblem = (name) => (CONTEXT_API.has(name) ? "React context below views/ (only an atom may create or read a variant context)" : "React state hook below views/ (lift it into hooks/ and pass a prop)")
+// `@/x/…` is `src/x/…` (tsconfig `paths`, vite `resolve.alias`); a tier import spelled through the
+// alias lands in the folder the relative form would.
+const ALIAS = "@/"
 const STATE_LIBS = /^(mobx|mobx-react(-lite)?|zustand|jotai|valtio|recoil|redux|@reduxjs\/toolkit|react-redux|@tanstack\/react-query|swr|@xstate\/react|xstate)(\/|$)/
 
 // These are integration points, not tier components. Keep this list exact so a
@@ -63,10 +75,17 @@ const isTestFile = (name) => /\.(test|spec)\.(ts|tsx|jsx)$/.test(name)
 const isComponentFile = (name) => /\.(tsx|jsx)$/.test(name) && !isStoryFile(name) && !isTestFile(name)
 const isTierSourceFile = (name) => /\.(ts|tsx|jsx)$/.test(name) && !isStoryFile(name) && !isTestFile(name)
 
+/** The absolute file an alias or relative specifier names, before extension probing; undefined for a package. */
+const specifierTarget = (fromFile, spec) => {
+  if (spec.startsWith(ALIAS)) return resolve(src, spec.slice(ALIAS.length))
+  if (spec.startsWith(".")) return resolve(dirname(fromFile), spec)
+  return undefined
+}
+
 /** Which top-level folder under src a resolved import lands in, if any. */
 const folderOf = (fromFile, spec) => {
-  if (!spec.startsWith(".")) return undefined
-  const target = resolve(dirname(fromFile), spec)
+  const target = specifierTarget(fromFile, spec)
+  if (!target) return undefined
   const sourceRelative = relative(src, target)
   if (sourceRelative.startsWith("..")) return undefined
   const [first] = sourceRelative.split(sep)
@@ -85,8 +104,8 @@ const staticModuleSpecifier = (node) => {
 }
 
 const relativeModuleFile = (fromFile, spec) => {
-  if (!spec.startsWith(".")) return undefined
-  const base = resolve(dirname(fromFile), spec)
+  const base = specifierTarget(fromFile, spec)
+  if (!base) return undefined
   const candidates = [base, ...[".ts", ".tsx", ".js", ".jsx"].map((extension) => `${base}${extension}`), ...["index.ts", "index.tsx", "index.js", "index.jsx"].map((index) => join(base, index))]
   return candidates.find((candidate) => existsSync(candidate) && statSync(candidate).isFile())
 }
@@ -105,7 +124,7 @@ const isReactHookExport = (file, spec, exportedName, visited = new Set()) => {
     const target = staticModuleSpecifier(statement.moduleSpecifier)
     if (!target) return false
     if (target === "react" && statement.exportClause && ts.isNamedExports(statement.exportClause)) {
-      return statement.exportClause.elements.some((element) => (element.name.text === exportedName) && STATE_HOOKS.has(element.propertyName?.text ?? element.name.text))
+      return statement.exportClause.elements.some((element) => (element.name.text === exportedName) && CHECKED.has(element.propertyName?.text ?? element.name.text))
     }
     if (statement.exportClause && ts.isNamedExports(statement.exportClause)) {
       return statement.exportClause.elements.some((element) => element.name.text === exportedName && isReactHookExport(moduleFile, target, element.propertyName?.text ?? element.name.text, visited))
@@ -159,7 +178,8 @@ const inspectCopySource = (file) => {
   const sourceFile = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true, scriptKindFor(file))
   const check = (spec) => {
     if (folderOf(file, spec) === COPY) return
-    const target = spec.startsWith(".") ? relative(src, resolve(dirname(file), spec)).split(sep).join("/").replace(/\.(ts|js)$/, "") : spec
+    const resolved = specifierTarget(file, spec)
+    const target = resolved ? relative(src, resolved).split(sep).join("/").replace(/\.(ts|js)$/, "") : spec
     if (COPY_HELPERS.has(target)) return
     report(file, `copy/ imports "${spec}": copy is plain data and imports only copy/ (plus ${[...COPY_HELPERS].join(", ")})`)
   }
@@ -190,7 +210,7 @@ const resolvedSymbol = (checker, node) => {
   return symbol
 }
 
-const isReactHookSymbol = (symbol) => symbol && STATE_HOOKS.has(symbol.getName()) && symbol.declarations?.some(reactDeclaration)
+const isReactHookSymbol = (symbol) => symbol && CHECKED.has(symbol.getName()) && symbol.declarations?.some(reactDeclaration)
 
 const isReactNamespaceSymbol = (symbol) => symbol?.declarations?.some((declaration) => {
   let current = declaration
@@ -204,21 +224,27 @@ const unwrapExpression = (expression) => {
   return unwrapped
 }
 
-const isReactDestructuredHook = (checker, symbol) => symbol?.declarations?.some((declaration) => {
-  if (!ts.isBindingElement(declaration) || !ts.isObjectBindingPattern(declaration.parent)) return false
-  const variable = declaration.parent.parent
-  if (!ts.isVariableDeclaration(variable) || !variable.initializer) return false
-  const propertyName = declaration.propertyName?.getText() ?? declaration.name.getText()
-  if (!STATE_HOOKS.has(propertyName)) return false
-  return ts.isIdentifier(variable.initializer) && isReactNamespaceSymbol(checker.getSymbolAtLocation(variable.initializer))
-})
+/** The React name a `const { useState: s } = React` binding destructures, when it is one this script checks. */
+const reactDestructuredHookName = (checker, symbol) => {
+  for (const declaration of symbol?.declarations ?? []) {
+    if (!ts.isBindingElement(declaration) || !ts.isObjectBindingPattern(declaration.parent)) continue
+    const variable = declaration.parent.parent
+    if (!ts.isVariableDeclaration(variable) || !variable.initializer) continue
+    const propertyName = declaration.propertyName?.getText() ?? declaration.name.getText()
+    if (!CHECKED.has(propertyName)) continue
+    if (ts.isIdentifier(variable.initializer) && isReactNamespaceSymbol(checker.getSymbolAtLocation(variable.initializer))) return propertyName
+  }
+  return undefined
+}
 
-const isReactHookCall = (checker, call) => {
+/** The React hook or context call `call` resolves to, by symbol, or undefined. */
+const reactHookCallName = (checker, call) => {
   const callee = unwrapExpression(call.expression)
   const symbol = ts.isPropertyAccessExpression(callee)
     ? resolvedSymbol(checker, callee.name)
     : resolvedSymbol(checker, callee)
-  return isReactHookSymbol(symbol) || (ts.isIdentifier(callee) && isReactDestructuredHook(checker, symbol))
+  if (isReactHookSymbol(symbol)) return symbol.getName()
+  return ts.isIdentifier(callee) ? reactDestructuredHookName(checker, symbol) : undefined
 }
 
 const bindingPatternContains = (name, target) => {
@@ -246,7 +272,7 @@ const isShadowed = (node, name) => {
 const inspectTierSource = (file, tier, checker, program) => {
   const sourceFile = program.getSourceFile(file)
   if (!sourceFile) return
-  const stateHookImports = new Set()
+  const stateHookImports = new Map()
   const reactNamespaceImports = new Set()
 
   for (const statement of sourceFile.statements) {
@@ -262,7 +288,7 @@ const inspectTierSource = (file, tier, checker, program) => {
           for (const binding of bindings.elements) {
             if (binding.isTypeOnly) continue
             const importedName = binding.propertyName?.text ?? binding.name.text
-            if (STATE_HOOKS.has(importedName) && (spec === "react" || isReactHookExport(file, spec, importedName))) stateHookImports.add(binding.name.text)
+            if (CHECKED.has(importedName) && (spec === "react" || isReactHookExport(file, spec, importedName))) stateHookImports.set(binding.name.text, importedName)
             if (spec === "react" && importedName === "default") reactNamespaceImports.add(binding.name.text)
           }
         }
@@ -282,13 +308,12 @@ const inspectTierSource = (file, tier, checker, program) => {
         if (spec) reportModule(file, tier, spec)
       }
 
-      if (tier !== "views" && isReactHookCall(checker, node)) {
-        report(file, "React state hook below views/ (lift it into hooks/ and pass a prop)")
-      } else if (tier !== "views") {
+      if (tier !== "views") {
         const callee = unwrapExpression(node.expression)
-        const isDirectImport = ts.isIdentifier(callee) && stateHookImports.has(callee.text) && !isShadowed(callee, callee.text)
-        const isNamespaceImport = ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression) && reactNamespaceImports.has(callee.expression.text) && STATE_HOOKS.has(callee.name.text) && !isShadowed(callee.expression, callee.expression.text)
-        if (isDirectImport || isNamespaceImport) report(file, "React state hook below views/ (lift it into hooks/ and pass a prop)")
+        const direct = ts.isIdentifier(callee) && stateHookImports.has(callee.text) && !isShadowed(callee, callee.text) ? stateHookImports.get(callee.text) : undefined
+        const namespaced = ts.isPropertyAccessExpression(callee) && ts.isIdentifier(callee.expression) && reactNamespaceImports.has(callee.expression.text) && CHECKED.has(callee.name.text) && !isShadowed(callee.expression, callee.expression.text) ? callee.name.text : undefined
+        const hook = reactHookCallName(checker, node) ?? direct ?? namespaced
+        if (hook && !isAllowedInTier(tier, hook)) report(file, hookProblem(hook))
       }
     }
     ts.forEachChild(node, visit)
@@ -336,7 +361,7 @@ if (typeof ts.createSourceFile !== "function" || typeof ts.createProgram !== "fu
     module: ts.ModuleKind.ESNext,
     moduleResolution: ts.ModuleResolutionKind.Bundler,
     noEmit: true,
-    paths: { react: ["node_modules/@types/react/index.d.ts"] },
+    paths: { react: ["node_modules/@types/react/index.d.ts"], "@/*": [join(src, "*")] },
     skipLibCheck: true,
     target: ts.ScriptTarget.Latest,
   })

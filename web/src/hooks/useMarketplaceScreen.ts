@@ -8,7 +8,7 @@ import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import { buildSortChipsModel, type SortChipsModel } from '../lib/sortChipsModel'
 import type { SortDir, SortKey } from '../lib/sorting'
 import type { Meme } from '../lib/types'
-import type { SelectOption } from '../atoms/Select'
+import type { SelectOption } from '@/atoms/select'
 import {
   marketplaceMachine,
   type MarketplaceContext,
