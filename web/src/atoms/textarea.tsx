@@ -1,9 +1,9 @@
 import { Field as BaseField } from '@base-ui/react/field'
 import type { ComponentPropsWithoutRef } from 'react'
-import { cn } from '../lib/cn'
-import { controlChrome, placeholderChrome } from '@/atoms/input'
+import { inputVariants } from '@/atoms/input'
+import { cn } from '@/lib/cn'
 
-/** Base UI textarea via `Field.Control`; 120px min-height with vertical padding. */
+/** The well as a multi-line control, wired into Field validity through `Field.Control`. */
 export function Textarea({
   className,
   ...props
@@ -11,13 +11,8 @@ export function Textarea({
   return (
     <BaseField.Control
       render={<textarea {...props} />}
-      className={cn(
-        controlChrome,
-        placeholderChrome,
-        'h-auto min-h-30 py-4 resize-y',
-        className,
-      )}
       data-slot="textarea"
+      className={cn(inputVariants(), 'h-auto min-h-30 py-4 resize-y', className)}
     />
   )
 }

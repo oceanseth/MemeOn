@@ -1,8 +1,19 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { expect, fn, screen, userEvent, waitFor, within } from 'storybook/test'
-import { Field, FieldHint, FieldLabel } from '@/atoms/field'
-import { Select, type SelectOption } from '@/atoms/select'
+import { Field, FieldDescription, FieldLabel } from '@/atoms/field'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  type SelectOption,
+  SelectRoot,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from '@/atoms/select'
 
 const tiers: SelectOption[] = [
   { value: '', label: 'All tiers' },
@@ -18,12 +29,19 @@ const tiers: SelectOption[] = [
 const onValueChange = fn()
 
 /** Controlled is the only mode the screens use, so the stories drive it the same way. */
-function ControlledSelect({ initial = '' }: { initial?: string }) {
+function ControlledSelect({
+  initial = '',
+  variant,
+}: {
+  initial?: string
+  variant?: 'default' | 'pill'
+}) {
   const [value, setValue] = useState<string | null>(initial)
   return (
     <Select
       items={tiers}
       value={value}
+      variant={variant}
       onValueChange={(next) => {
         setValue(next)
         onValueChange(next)
@@ -55,6 +73,7 @@ export const Default: Story = {
     const canvas = within(canvasElement)
     const trigger = canvas.getByRole('combobox', { name: 'Tier' })
     await expect(trigger).toHaveAttribute('data-slot', 'select')
+    await expect(trigger).toHaveAttribute('data-variant', 'default')
     await expect(trigger).toHaveTextContent('Holo')
   },
 }
@@ -73,9 +92,11 @@ export const Open: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('combobox', { name: 'Tier' }))
     const listbox = await screen.findByRole('listbox')
-    await expect(within(listbox).getByRole('option', { name: 'Holo' })).toHaveAttribute(
-      'data-selected',
-    )
+    await expect(listbox.closest('[data-slot="select-content"]')).not.toBeNull()
+    const holo = within(listbox).getByRole('option', { name: 'Holo' })
+    await expect(holo).toHaveAttribute('data-selected')
+    await expect(holo).toHaveAttribute('data-slot', 'select-item')
+    await expect(holo.querySelector('[data-slot="select-item-indicator"]')).not.toBeNull()
     await expect(within(listbox).getAllByRole('option')).toHaveLength(tiers.length)
   },
 }
@@ -163,6 +184,7 @@ export const StableWidth: Story = {
     onValueChange.mockClear()
     const canvas = within(canvasElement)
     const trigger = canvas.getByRole('combobox', { name: 'Tier' })
+    await expect(trigger.querySelector('[data-slot="select-sizer"]')).not.toBeNull()
     const widthAtHolo = trigger.getBoundingClientRect().width
     await userEvent.click(trigger)
     const listbox = await screen.findByRole('listbox')
@@ -177,12 +199,58 @@ export const InField: Story = {
     <Field>
       <FieldLabel>Tier</FieldLabel>
       <ControlledSelect initial="silver" />
-      <FieldHint>Rarity climbs with reshares.</FieldHint>
+      <FieldDescription>Rarity climbs with reshares.</FieldDescription>
     </Field>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('combobox', { name: 'Tier' })).toHaveTextContent('Silver')
+  },
+}
+
+/** The market's tier filter: a raised toolbar pill, the same material as the buttons beside it. */
+export const Pill: Story = {
+  render: () => <ControlledSelect initial="" variant="pill" />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const trigger = canvas.getByRole('combobox', { name: 'Tier' })
+    await expect(trigger).toHaveAttribute('data-variant', 'pill')
+    // the control height, not the field height
+    await expect(trigger.offsetHeight).toBe(46)
+  },
+}
+
+/** Composed from the parts, with groups: what a screen writes when the items array is not enough. */
+export const Composed: Story = {
+  render: () => (
+    <SelectRoot defaultValue="holo">
+      <SelectTrigger aria-label="Tier">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent aria-label="Tier">
+        <SelectGroup>
+          <SelectLabel>Common</SelectLabel>
+          <SelectItem value="paper">Paper</SelectItem>
+          <SelectItem value="silver">Silver</SelectItem>
+        </SelectGroup>
+        <SelectSeparator />
+        <SelectGroup>
+          <SelectLabel>Rare</SelectLabel>
+          <SelectItem value="holo">Holo</SelectItem>
+          <SelectItem value="shiny">Shiny</SelectItem>
+        </SelectGroup>
+      </SelectContent>
+    </SelectRoot>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const trigger = canvas.getByRole('combobox', { name: 'Tier' })
+    await expect(trigger).toHaveAttribute('data-slot', 'select-trigger')
+    await expect(trigger).toHaveTextContent('Holo')
+    await userEvent.click(trigger)
+    const listbox = await screen.findByRole('listbox')
+    await expect(within(listbox).getAllByRole('group')).toHaveLength(2)
+    await expect(within(listbox).getByRole('option', { name: 'Shiny' })).toBeVisible()
   },
 }
 

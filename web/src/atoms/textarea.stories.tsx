@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, userEvent, within } from 'storybook/test'
-import { Field, FieldError, FieldHint, FieldLabel } from '@/atoms/field'
+import { Field, FieldDescription, FieldError, FieldLabel } from '@/atoms/field'
 import { Textarea } from '@/atoms/textarea'
 
 const meta = {
@@ -46,7 +46,7 @@ export const InField: Story = {
     <Field>
       <FieldLabel>Why are you reporting this?</FieldLabel>
       <Textarea rows={3} placeholder="Optional" />
-      <FieldHint>A moderator reads every report.</FieldHint>
+      <FieldDescription>A moderator reads every report.</FieldDescription>
     </Field>
   ),
   play: async ({ canvasElement }) => {
