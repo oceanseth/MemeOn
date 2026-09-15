@@ -60,7 +60,7 @@ const HEADER = cn(
   'flex items-center gap-2.5',
   'max-2xl:sticky max-2xl:top-0 max-2xl:z-(--z-header) max-2xl:min-h-16 max-2xl:py-1.25',
   'max-2xl:[padding-inline:max(20px,env(safe-area-inset-left))_max(20px,env(safe-area-inset-right))]',
-  'max-2xl:bg-[color-mix(in_oklab,var(--color-canvas)_85%,transparent)] max-2xl:backdrop-blur-[12px]',
+  'max-2xl:bg-[color-mix(in_oklab,var(--color-canvas)_85%,transparent)] max-2xl:backdrop-blur-md',
   '2xl:gap-gutter',
 )
 const HEADER_APP = '2xl:mt-7.25 2xl:min-h-13.5 2xl:px-5'
@@ -128,7 +128,7 @@ export const UTILITY_LINK = cn(
 /** Tab bar item: 62×44, radius 22, icon 22 over a 12px label; current = pressed + 700. */
 export const TAB_ITEM = cn(
   'flex h-11 w-nav-item shrink-0 flex-col items-center justify-center gap-nav-gap rounded-pill',
-  'text-micro leading-[15px] font-semibold text-ink no-underline',
+  'text-micro leading-tight font-semibold text-ink no-underline',
   'aria-[current=page]:bg-surface-pressed aria-[current=page]:font-bold aria-[current=page]:shadow-pressed',
   FOCUS,
 )

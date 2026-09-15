@@ -208,10 +208,10 @@ export function LandingScreen({
               <h3 className={cn(FACE, 'mt-3 mb-0 text-card-title-phone tracking-card-title')}>
                 {t.name}
               </h3>
-              <span className="mt-2.5 text-small/[18px] font-bold text-link tabular-nums">
+              <span className="mt-2.5 text-small font-bold text-link tabular-nums">
                 {t.resharesLabel}
               </span>
-              <span className="mt-0.75 text-micro/[15px] text-ink-muted">{t.rarityLabel}</span>
+              <span className="mt-0.75 text-micro/tight text-ink-muted">{t.rarityLabel}</span>
             </li>
           ))}
         </ol>

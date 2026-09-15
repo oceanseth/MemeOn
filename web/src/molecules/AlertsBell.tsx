@@ -65,7 +65,7 @@ const POPUP = cn(
 )
 
 const ROW = cn(
-  'block min-h-11 rounded-field px-3 py-2.5 text-small leading-[18px] text-ink',
+  'block min-h-11 rounded-field px-3 py-2.5 text-small text-ink',
   '[transition:background_var(--dur-base)_ease] motion-reduce:transition-none',
 )
 
