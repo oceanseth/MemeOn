@@ -12,10 +12,7 @@ import { Select } from '@/atoms/select'
 import { SkeletonRow } from '@/atoms/skeleton'
 import { cn } from '../lib/cn'
 import type { TradesScreenModel } from '../hooks/useTradesScreen'
-import {
-  columnFields, composeGrid, composeLegend, composerIntro, countNote, headingRow, listHeading,
-  liveRegion, proposeCaption, proposeRow, rowList,
-} from '../lib/tradesScreenLayout'
+import { columnFields, composeGrid, composerIntro, countNote, headingRow, listHeading, liveRegion, proposeCaption, proposeRow, rowList } from '../lib/tradesScreenLayout'
 import { ConfirmDialog } from '@/molecules/confirm-dialog'
 import { TradeCard } from '@/molecules/trade-card'
 
@@ -69,7 +66,7 @@ export function TradesScreen({
             <form className={cn(composeGrid, 'mt-5')} {...compose.formProps}>
               <Field><FieldLabel>{compose.tradeWithLabel}</FieldLabel><Select items={compose.friendSelectItems} {...compose.friendSelectProps} /></Field>
               <Fieldset>
-                <FieldsetLegend className={composeLegend}>{compose.youGiveLegend}</FieldsetLegend>
+                <FieldsetLegend className="mb-2.5 text-intro font-semibold tracking-normal text-foreground normal-case">{compose.youGiveLegend}</FieldsetLegend>
                 <div className={columnFields}>
                   <Field><FieldLabel>{compose.youGiveBinderLabel}</FieldLabel><Select items={compose.offerMemeSelectItems} {...compose.offerMemeSelectProps} /></Field>
                   {compose.showOfferShares && <Field><FieldLabel>{compose.sharesToGiveLabel}</FieldLabel><Input type="number" {...compose.offerSharesInputProps} /><FieldHint>{compose.offerSharesHint}</FieldHint></Field>}
@@ -77,7 +74,7 @@ export function TradesScreen({
                 </div>
               </Fieldset>
               <Fieldset>
-                <FieldsetLegend className={composeLegend}>{compose.youWantLegend}</FieldsetLegend>
+                <FieldsetLegend className="mb-2.5 text-intro font-semibold tracking-normal text-foreground normal-case">{compose.youWantLegend}</FieldsetLegend>
                 <div className={columnFields}>
                   <Field><FieldLabel>{compose.youWantMemesLabel}</FieldLabel><Select items={compose.askMemeSelectItems} {...compose.askMemeSelectProps} /></Field>
                   {compose.showAskShares && <Field><FieldLabel>{compose.sharesToWantLabel}</FieldLabel><Input type="number" {...compose.askSharesInputProps} /></Field>}

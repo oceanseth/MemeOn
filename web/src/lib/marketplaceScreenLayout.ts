@@ -19,8 +19,6 @@ export const marketToolbar = cn('flex flex-wrap items-center gap-3')
 
 /* search icon at 18px gutter → 50px input padding (18 + 20 + 12) */
 export const searchWell = cn('relative flex w-full min-w-0 flex-1 lg:max-w-search')
-export const searchGlyph = cn('pointer-events-none absolute top-1/2 left-4.5 -translate-y-1/2 text-muted-foreground')
-
 /** Toolbar Mint: bubblegum on phone, neutral raised on desktop (sidebar owns primary). */
 export const mintLink = cn(
   buttonClasses('primary'),
@@ -50,12 +48,6 @@ export const resultsRow = cn('mt-1 mb-gutter flex flex-wrap items-baseline justi
 export const sectionHeading = cn('m-0 font-display text-title font-medium tracking-title text-foreground')
 export const summaryRow = cn('flex flex-wrap items-center gap-2.5 text-small text-muted-foreground')
 
-/**
- * A small button keeps an explicit height: the pill is 46 tall now, and padding no longer shrinks
- * it. 36 is the drawn size; a coarse pointer still gets the 44 a finger needs.
- */
-export const chipButton = cn('h-9 px-3 text-micro pointer-coarse:min-h-hit')
-
 export const searchInput = cn('w-full pl-12.5')
 
 export const marketDisclosures = cn('flex w-full gap-3 lg:hidden')
@@ -65,9 +57,3 @@ export const marketFilters = cn('flex flex-col gap-3 max-lg:data-[collapsed=true
 export const filterRow = cn('flex flex-wrap items-center gap-3')
 
 export const endOfList = cn('pt-8 text-small')
-
-/** Tier filter as a raised pill — same material as neighbours, not a recessed form Select. */
-export const tierPill = cn(
-  'h-control rounded-lg material-raised px-4.5 font-semibold',
-  'lift',
-)

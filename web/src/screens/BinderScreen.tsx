@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { Avatar } from '@/atoms/avatar'
 import { Badge } from '@/atoms/badge'
@@ -202,7 +203,7 @@ export function BinderScreen({
                       </span>
                     )}
                     <span className={OWNERSHIP_TRACK} aria-hidden="true">
-                      <i className="block h-full bg-warning-foreground" style={{ width: `${card.sharesPct}%` }} />
+                      <i className="block h-full w-(--fill) bg-warning-foreground" style={{ '--fill': `${card.sharesPct}%` } as CSSProperties} />
                     </span>
                   </>
                 }

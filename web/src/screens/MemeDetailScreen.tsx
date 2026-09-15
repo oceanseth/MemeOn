@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { Badge } from '@/atoms/badge'
 import { Button, buttonClasses } from '@/atoms/button'
@@ -56,7 +57,7 @@ const heroTierLine = 'm-0 text-caption font-bold'
 
 const ladderTrack = 'mt-2 h-track overflow-hidden rounded-full bg-muted'
 const ladderFill = cn(
-  'h-full rounded-full',
+  'h-full w-(--fill) rounded-full',
   'bg-linear-to-r from-brand via-primary to-brand',
 )
 
@@ -70,7 +71,7 @@ function TierLadder({ model, hype }: { model: DetailTierLadderModel; hype: strin
         <span className="text-micro/tight font-medium text-muted-foreground tabular-nums">{model.nextLabel}</span>
       </div>
       <div className={ladderTrack} {...model.meterProps}>
-        <div className={ladderFill} style={model.fillStyle} />
+        <div className={ladderFill} style={{ '--fill': model.fillWidth } as CSSProperties} />
       </div>
       <p className={caption}>{hype}</p>
     </div>
