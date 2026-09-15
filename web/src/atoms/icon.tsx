@@ -1,4 +1,4 @@
-import { cn } from '../lib/cn'
+import { cn } from '@/lib/cn'
 
 /** Central icon family glyphs drawn in the product (emoji controls stay emoji). */
 export type IconName =
