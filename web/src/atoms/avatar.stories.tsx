@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, waitFor, within } from 'storybook/test'
-import { Avatar } from '@/atoms/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/atoms/avatar'
 
 /** A token as `:root` declares it, so the assertion follows the scale rather than pinning a literal. */
 const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
@@ -30,7 +30,10 @@ export const Fallback: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('L')).toBeVisible()
-    await expect(canvas.getByText('L').closest('[data-slot="avatar"]')).not.toBeNull()
+    const root = canvas.getByText('L').closest('[data-slot="avatar"]')
+    await expect(root).not.toBeNull()
+    await expect(root).toHaveAttribute('data-size', 'sm')
+    await expect(canvas.getByText('L')).toHaveAttribute('data-slot', 'avatar-fallback')
   },
 }
 
@@ -40,6 +43,7 @@ export const WithImage: Story = {
     const canvas = within(canvasElement)
     const image = await waitFor(() => canvas.getByRole('img', { name: 'lou' }), IMAGE_LOAD)
     await expect(image).toHaveAttribute('referrerpolicy', 'no-referrer')
+    await expect(image).toHaveAttribute('data-slot', 'avatar-image')
     await waitFor(() => expect(canvas.queryByText('L')).toBeNull())
   },
 }
@@ -82,16 +86,34 @@ export const Large: Story = {
   },
 }
 
+/** The monogram's type step follows the disc: card-title at 56px, read through the root's size. */
 export const LargeFallback: Story = {
   args: { size: 'lg', name: 'Órla' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByText('Ó')).toBeVisible()
+    const monogram = canvas.getByText('Ó')
+    await expect(monogram).toBeVisible()
+    await expect(getComputedStyle(monogram).fontSize).toBe(token('--text-card-title'))
   },
 }
 
 /** A blank display name still gets a disc, and the monogram says so. */
 export const Nameless: Story = { args: { name: '  ' } }
+
+/** The registry form: the root with its parts as children, for a caller that owns the fallback. */
+export const Composed: Story = {
+  render: () => (
+    <Avatar size="md">
+      <AvatarImage src={LOGO} alt="lou" />
+      <AvatarFallback>🧠</AvatarFallback>
+    </Avatar>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await waitFor(() => expect(canvas.getByRole('img', { name: 'lou' })).toBeVisible(), IMAGE_LOAD)
+    await expect(canvasElement.querySelector('[data-slot="avatar"]')).toHaveAttribute('data-size', 'md')
+  },
+}
 
 export const Row: Story = {
   render: () => (
@@ -108,18 +130,25 @@ export const Row: Story = {
   },
 }
 
-/** Profile and chrome sizes, squircle and monogram on the ultraviolet fill. */
+/** Profile, chrome and leaderboard sizes, squircle and monogram on the ultraviolet fill. */
 export const Sizes: Story = {
   render: () => (
     <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
       <Avatar name="lou" size="sm" />
       <Avatar name="oxfern" size="header" />
+      <Avatar name="rank" size="rank" />
       <Avatar name="ada" size="md" />
+      <Avatar name="podium" size="podium" />
       <Avatar name="CyberSeth" size="lg" />
       <Avatar name="pushrax" size="public" />
       <Avatar name="Lou" size="hero" />
     </div>
   ),
+  play: async ({ canvasElement }) => {
+    const roots = canvasElement.querySelectorAll<HTMLElement>('[data-slot="avatar"]')
+    await expect(roots).toHaveLength(8)
+    await expect(Array.from(roots, (root) => root.offsetWidth)).toEqual([32, 34, 36, 40, 50, 56, 60, 86])
+  },
 }
 
 export const Dark: Story = { ...Sizes, globals: { theme: 'dark' } }
