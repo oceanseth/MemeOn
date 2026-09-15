@@ -6,8 +6,8 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
-    "backgroundColor": "#0b0d14",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#0e0e19",
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "ai.memeon.app",
@@ -18,7 +18,7 @@
     "android": {
       "package": "ai.memeon.app",
       "adaptiveIcon": {
-        "backgroundColor": "#0b0d14",
+        "backgroundColor": "#0e0e19",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -35,7 +35,7 @@
         {
           "image": "./assets/splash-icon.png",
           "imageWidth": 220,
-          "backgroundColor": "#0b0d14"
+          "backgroundColor": "#0e0e19"
         }
       ],
       "expo-video"

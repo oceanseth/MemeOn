@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Pressable, Text, View } from 'react-native'
 import { useAuth } from '../context/AuthContext'
 import { apiFetch, post } from '../lib/api'
-import { colors } from '../lib/theme'
+import { useColors, useThemedStyles, type LegacyColors } from '../lib/theme'
 import type { Meme, Trade, TradeSide } from '../lib/types'
 
 const STATUS: Record<Trade['status'], string> = {
@@ -18,6 +18,8 @@ export default function TradesScreen() {
   const { user, refresh } = useAuth()
   const [trades, setTrades] = useState<Trade[] | null>(null)
   const [err, setErr] = useState<string | null>(null)
+  const colors = useColors()
+  const styles = useThemedStyles(createStyles)
 
   const load = useCallback(() => {
     apiFetch<{ trades: Trade[] }>('/api/trades')
@@ -55,16 +57,16 @@ export default function TradesScreen() {
               </Text>
               <Text style={styles.status}>{STATUS[item.status]}</Text>
             </View>
-            <SideLine label={`${item.fromName} gives`} side={item.offer} />
-            <SideLine label={`${item.toName} gives`} side={item.ask} />
+            <SideLine label={`${item.fromName} gives`} side={item.offer} styles={styles} />
+            <SideLine label={`${item.toName} gives`} side={item.ask} styles={styles} />
             {item.status === 'proposed' && (
               <View style={styles.actions}>
                 {mine ? (
-                  <Btn label="Cancel" danger onPress={() => respond(item, 'cancel')} />
+                  <Btn label="Cancel" danger onPress={() => respond(item, 'cancel')} styles={styles} />
                 ) : (
                   <>
-                    <Btn label="Accept" onPress={() => respond(item, 'accept')} />
-                    <Btn label="Decline" danger onPress={() => respond(item, 'decline')} />
+                    <Btn label="Accept" onPress={() => respond(item, 'accept')} styles={styles} />
+                    <Btn label="Decline" danger onPress={() => respond(item, 'decline')} styles={styles} />
                   </>
                 )}
               </View>
@@ -81,7 +83,15 @@ export default function TradesScreen() {
   )
 }
 
-function SideLine({ label, side }: { label: string; side: TradeSide }) {
+function SideLine({
+  label,
+  side,
+  styles,
+}: {
+  label: string
+  side: TradeSide
+  styles: ReturnType<typeof createStyles>
+}) {
   return (
     <View style={{ marginTop: 6 }}>
       <Text style={styles.sideLabel}>{label}</Text>
@@ -110,7 +120,17 @@ function MemeName({ id }: { id: string }) {
   return <Text style={{ fontStyle: 'italic' }}>"{name}"</Text>
 }
 
-function Btn({ label, onPress, danger }: { label: string; onPress: () => void; danger?: boolean }) {
+function Btn({
+  label,
+  onPress,
+  danger,
+  styles,
+}: {
+  label: string
+  onPress: () => void
+  danger?: boolean
+  styles: ReturnType<typeof createStyles>
+}) {
   return (
     <Pressable style={[styles.btn, danger && styles.btnDanger]} onPress={onPress}>
       <Text style={styles.btnText}>{label}</Text>
@@ -118,33 +138,35 @@ function Btn({ label, onPress, danger }: { label: string; onPress: () => void; d
   )
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.card,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: 14,
-    padding: 14,
-  },
-  head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  who: { color: colors.text, fontWeight: '700', fontSize: 15 },
-  status: { color: colors.dim, fontSize: 12.5, fontWeight: '700' },
-  sideLabel: {
-    color: colors.dim,
-    fontSize: 11,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-  },
-  sideText: { color: colors.text, fontSize: 13.5, marginTop: 2 },
-  actions: { flexDirection: 'row', gap: 10, marginTop: 12 },
-  btn: {
-    backgroundColor: '#2c7fd8',
-    borderRadius: 10,
-    paddingHorizontal: 18,
-    paddingVertical: 9,
-  },
-  btnDanger: { backgroundColor: '#5b2733' },
-  btnText: { color: '#fff', fontWeight: '700' },
-  empty: { color: colors.dim, textAlign: 'center', padding: 40, fontSize: 15 },
-})
+function createStyles(colors: LegacyColors) {
+  return {
+    card: {
+      backgroundColor: colors.card,
+      borderColor: colors.border,
+      borderWidth: 1,
+      borderRadius: 14,
+      padding: 14,
+    },
+    head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    who: { color: colors.text, fontWeight: '700', fontSize: 15 },
+    status: { color: colors.dim, fontSize: 12.5, fontWeight: '700' },
+    sideLabel: {
+      color: colors.dim,
+      fontSize: 11,
+      fontWeight: '800',
+      textTransform: 'uppercase',
+      letterSpacing: 0.6,
+    },
+    sideText: { color: colors.text, fontSize: 13.5, marginTop: 2 },
+    actions: { flexDirection: 'row', gap: 10, marginTop: 12 },
+    btn: {
+      backgroundColor: '#2c7fd8',
+      borderRadius: 10,
+      paddingHorizontal: 18,
+      paddingVertical: 9,
+    },
+    btnDanger: { backgroundColor: '#5b2733' },
+    btnText: { color: '#fff', fontWeight: '700' },
+    empty: { color: colors.dim, textAlign: 'center', padding: 40, fontSize: 15 },
+  } as const
+}

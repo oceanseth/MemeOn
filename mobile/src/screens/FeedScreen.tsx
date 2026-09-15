@@ -25,7 +25,7 @@ import { tierHasSheen, Sheen } from '../components/FoilCard'
 import { MemeMedia } from '../components/MemeMedia'
 import { useAuth } from '../context/AuthContext'
 import { apiFetch, post } from '../lib/api'
-import { colors } from '../lib/theme'
+import { useColors, useThemedStyles, type LegacyColors } from '../lib/theme'
 import type { FeedItem } from '../lib/types'
 
 type Nav = NativeStackNavigationProp<RootStackParamList>
@@ -39,6 +39,8 @@ export default function FeedScreen() {
   const [cursor, setCursor] = useState<string | null>('0')
   const [loading, setLoading] = useState(false)
   const loadingRef = useRef(false)
+  const colors = useColors()
+  const styles = useThemedStyles(createStyles)
 
   const loadMore = useCallback(async () => {
     if (loadingRef.current || cursor === null) return
@@ -75,7 +77,9 @@ export default function FeedScreen() {
       <FlatList
         data={items}
         keyExtractor={(m) => m.id}
-        renderItem={({ item }) => <FeedCard item={item} height={height} onDismiss={dismiss} />}
+        renderItem={({ item }) => (
+          <FeedCard item={item} height={height} onDismiss={dismiss} styles={styles} />
+        )}
         pagingEnabled
         showsVerticalScrollIndicator={false}
         snapToInterval={height}
@@ -126,15 +130,20 @@ export default function FeedScreen() {
       <View style={[styles.hint, { bottom: insets.bottom + 10 }]}>
         <Text style={styles.hintText}>← swipe to pass · swipe to invest →</Text>
       </View>
-      {user && !user.onboarding?.pack && <PackBanner />}
+      {user && !user.onboarding?.pack && <PackBanner styles={styles} top={insets.top + 46} />}
     </View>
   )
 }
 
 /** First-login hook: claim the free starter pack right from the feed. */
-function PackBanner() {
+function PackBanner({
+  styles,
+  top,
+}: {
+  styles: ReturnType<typeof createStyles>
+  top: number
+}) {
   const { refresh } = useAuth()
-  const insets = useSafeAreaInsets()
   const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle')
   const [summary, setSummary] = useState('')
 
@@ -158,7 +167,7 @@ function PackBanner() {
   }
 
   return (
-    <View style={[styles.packBanner, { top: insets.top + 46 }]}>
+    <View style={[styles.packBanner, { top }]}>
       {state === 'done' ? (
         <Text style={styles.packText}>🎁 Pack opened! {summary}</Text>
       ) : (
@@ -179,10 +188,12 @@ function FeedCard({
   item,
   height,
   onDismiss,
+  styles,
 }: {
   item: FeedItem
   height: number
   onDismiss: (id: string) => void
+  styles: ReturnType<typeof createStyles>
 }) {
   const navigation = useNavigation<Nav>()
   const { width } = useWindowDimensions()
@@ -299,89 +310,91 @@ function FeedCard({
   )
 }
 
-const styles = StyleSheet.create({
-  card: { backgroundColor: colors.bg, overflow: 'hidden', justifyContent: 'flex-end' },
-  shade: {
-    ...(StyleSheet.absoluteFill as object),
-    backgroundColor: 'transparent',
-    borderBottomWidth: 260,
-    borderBottomColor: 'rgba(6,8,14,0.72)',
-  },
-  burst: {
-    ...(StyleSheet.absoluteFill as object),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  topbar: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  logo: { color: colors.accent, fontWeight: '800', fontSize: 20 },
-  logoImg: { width: 38, height: 38 },
-  topActions: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  coins: { color: colors.gold, fontWeight: '700', fontSize: 15 },
-  miniAvatar: { width: 30, height: 30, borderRadius: 15, borderWidth: 1, borderColor: colors.border },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -8,
-    backgroundColor: colors.danger,
-    borderRadius: 999,
-    paddingHorizontal: 4,
-    minWidth: 16,
-    alignItems: 'center',
-  },
-  badgeText: { color: '#fff', fontSize: 10, fontWeight: '800' },
-  packBanner: {
-    position: 'absolute',
-    left: 14,
-    right: 14,
-    backgroundColor: 'rgba(44, 127, 216, 0.92)',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  packText: { color: '#fff', fontWeight: '700', fontSize: 13.5, textAlign: 'center' },
-  hint: { position: 'absolute', alignSelf: 'center' },
-  hintText: { color: 'rgba(255,255,255,0.45)', fontSize: 12 },
-  friendChip: {
-    position: 'absolute',
-    top: 110,
-    left: 16,
-    backgroundColor: 'rgba(10,13,22,0.75)',
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  friendChipText: { color: colors.text, fontSize: 12.5, fontWeight: '600' },
-  info: { padding: 18, paddingBottom: 64, gap: 6, paddingRight: 86 },
-  tierChip: {
-    alignSelf: 'flex-start',
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  tierChipText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8 },
-  title: { color: colors.text, fontSize: 22, fontWeight: '800' },
-  creator: { color: colors.accent, fontSize: 14.5, fontWeight: '600' },
-  stats: { color: colors.dim, fontSize: 14 },
-  rail: {
-    position: 'absolute',
-    right: 12,
-    bottom: 120,
-    alignItems: 'center',
-    gap: 22,
-  },
-  railBtn: { alignItems: 'center' },
-  railCount: { color: colors.text, fontSize: 12, fontWeight: '700', marginTop: 2 },
-  empty: { alignItems: 'center', justifyContent: 'center', padding: 40 },
-  emptyText: { color: colors.dim, textAlign: 'center', fontSize: 16, lineHeight: 24 },
-})
+function createStyles(colors: LegacyColors) {
+  return {
+    card: { backgroundColor: colors.bg, overflow: 'hidden', justifyContent: 'flex-end' },
+    shade: {
+      ...(StyleSheet.absoluteFill as object),
+      backgroundColor: 'transparent',
+      borderBottomWidth: 260,
+      borderBottomColor: 'rgba(6,8,14,0.72)',
+    },
+    burst: {
+      ...(StyleSheet.absoluteFill as object),
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    topbar: {
+      position: 'absolute',
+      left: 16,
+      right: 16,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    logo: { color: colors.accent, fontWeight: '800', fontSize: 20 },
+    logoImg: { width: 38, height: 38 },
+    topActions: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+    coins: { color: colors.gold, fontWeight: '700', fontSize: 15 },
+    miniAvatar: { width: 30, height: 30, borderRadius: 15, borderWidth: 1, borderColor: colors.border },
+    badge: {
+      position: 'absolute',
+      top: -4,
+      right: -8,
+      backgroundColor: colors.danger,
+      borderRadius: 999,
+      paddingHorizontal: 4,
+      minWidth: 16,
+      alignItems: 'center',
+    },
+    badgeText: { color: '#fff', fontSize: 10, fontWeight: '800' },
+    packBanner: {
+      position: 'absolute',
+      left: 14,
+      right: 14,
+      backgroundColor: 'rgba(44, 127, 216, 0.92)',
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+    },
+    packText: { color: '#fff', fontWeight: '700', fontSize: 13.5, textAlign: 'center' },
+    hint: { position: 'absolute', alignSelf: 'center' },
+    hintText: { color: 'rgba(255,255,255,0.45)', fontSize: 12 },
+    friendChip: {
+      position: 'absolute',
+      top: 110,
+      left: 16,
+      backgroundColor: 'rgba(10,13,22,0.75)',
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    friendChipText: { color: colors.text, fontSize: 12.5, fontWeight: '600' },
+    info: { padding: 18, paddingBottom: 64, gap: 6, paddingRight: 86 },
+    tierChip: {
+      alignSelf: 'flex-start',
+      borderWidth: 1,
+      borderRadius: 999,
+      paddingHorizontal: 10,
+      paddingVertical: 3,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    tierChipText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.8 },
+    title: { color: colors.text, fontSize: 22, fontWeight: '800' },
+    creator: { color: colors.accent, fontSize: 14.5, fontWeight: '600' },
+    stats: { color: colors.dim, fontSize: 14 },
+    rail: {
+      position: 'absolute',
+      right: 12,
+      bottom: 120,
+      alignItems: 'center',
+      gap: 22,
+    },
+    railBtn: { alignItems: 'center' },
+    railCount: { color: colors.text, fontSize: 12, fontWeight: '700', marginTop: 2 },
+    empty: { alignItems: 'center', justifyContent: 'center', padding: 40 },
+    emptyText: { color: colors.dim, textAlign: 'center', fontSize: 16, lineHeight: 24 },
+  } as const
+}

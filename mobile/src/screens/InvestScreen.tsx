@@ -5,7 +5,6 @@ import {
   Image,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   useWindowDimensions,
@@ -17,7 +16,7 @@ import { MemeMedia } from '../components/MemeMedia'
 import { ValueChart } from '../components/ValueChart'
 import { useAuth } from '../context/AuthContext'
 import { apiFetch, post } from '../lib/api'
-import { colors } from '../lib/theme'
+import { useColors, useThemedStyles, type LegacyColors } from '../lib/theme'
 import type { HistoryPoint, Meme, Position } from '../lib/types'
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Invest'>
@@ -32,6 +31,8 @@ export default function InvestScreen({ route, navigation }: Props) {
   const [binder, setBinder] = useState<(Meme & { myShares?: number })[]>([])
   const [msg, setMsg] = useState<string | null>(null)
   const [err, setErr] = useState<string | null>(null)
+  const colors = useColors()
+  const styles = useThemedStyles(createStyles)
 
   // buy from listing
   const [buyShares, setBuyShares] = useState('1')
@@ -96,7 +97,7 @@ export default function InvestScreen({ route, navigation }: Props) {
         offer: { memes: [], coins: Number(offerCoins) || 0 },
         ask: { memes: [{ memeId: meme.id, shares: Number(offerShares) || 0 }], coins: 0 },
       })
-    }, 'Buy offer sent — they’ll see it in Trades 📨')
+    }, "Buy offer sent — they'll see it in Trades 📨")
 
   const makeTradeOffer = () =>
     act(async () => {
@@ -166,8 +167,8 @@ export default function InvestScreen({ route, navigation }: Props) {
         <Text style={styles.panelTitle}>💰 Make a buy offer</Text>
         <Text style={styles.dim}>Offer coins for shares — goes to the owner as a trade proposal.</Text>
         <View style={styles.row}>
-          <Field label="shares" value={offerShares} onChange={setOfferShares} />
-          <Field label="🧠 coins" value={offerCoins} onChange={setOfferCoins} />
+          <Field label="shares" value={offerShares} onChange={setOfferShares} styles={styles} colors={colors} />
+          <Field label="🧠 coins" value={offerCoins} onChange={setOfferCoins} styles={styles} colors={colors} />
           <Pressable style={styles.btn} onPress={makeBuyOffer}>
             <Text style={styles.btnText}>Send offer</Text>
           </Pressable>
@@ -193,8 +194,8 @@ export default function InvestScreen({ route, navigation }: Props) {
           {binder.length === 0 && <Text style={styles.dim}>You hold no other memes to trade.</Text>}
         </ScrollView>
         <View style={styles.row}>
-          <Field label="give" value={tradeGiveShares} onChange={setTradeGiveShares} />
-          <Field label="want" value={tradeWantShares} onChange={setTradeWantShares} />
+          <Field label="give" value={tradeGiveShares} onChange={setTradeGiveShares} styles={styles} colors={colors} />
+          <Field label="want" value={tradeWantShares} onChange={setTradeWantShares} styles={styles} colors={colors} />
           <Pressable style={styles.btn} onPress={makeTradeOffer}>
             <Text style={styles.btnText}>Propose</Text>
           </Pressable>
@@ -229,10 +230,14 @@ function Field({
   label,
   value,
   onChange,
+  styles,
+  colors,
 }: {
   label: string
   value: string
   onChange: (v: string) => void
+  styles: ReturnType<typeof createStyles>
+  colors: LegacyColors
 }) {
   return (
     <View style={{ alignItems: 'center' }}>
@@ -242,58 +247,60 @@ function Field({
   )
 }
 
-const styles = StyleSheet.create({
-  center: { flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' },
-  cardFrame: { borderWidth: 3, borderRadius: 18, overflow: 'hidden' },
-  tier: { fontSize: 13, fontWeight: '800', letterSpacing: 0.6 },
-  creator: { color: colors.dim, fontSize: 14.5 },
-  panel: {
-    backgroundColor: colors.card,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: 14,
-    padding: 14,
-    gap: 6,
-  },
-  panelTitle: { color: colors.text, fontWeight: '700', fontSize: 15.5 },
-  dim: { color: colors.dim, fontSize: 13 },
-  row: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, marginTop: 8, flexWrap: 'wrap' },
-  input: {
-    backgroundColor: colors.raised,
-    borderColor: colors.border,
-    borderWidth: 1,
-    borderRadius: 10,
-    color: colors.text,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    minWidth: 70,
-    textAlign: 'center',
-  },
-  btn: {
-    backgroundColor: '#2c7fd8',
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  btnText: { color: '#fff', fontWeight: '700' },
-  ok: { color: colors.ok },
-  err: { color: colors.danger },
-  binderPick: {
-    marginRight: 10,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: 10,
-    padding: 4,
-    width: 76,
-  },
-  binderPickText: { color: colors.dim, fontSize: 10, marginTop: 2 },
-  posRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 6 },
-  posBarWrap: {
-    flex: 1,
-    height: 8,
-    backgroundColor: colors.raised,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  posBar: { height: 8, backgroundColor: colors.accent, borderRadius: 4 },
-})
+function createStyles(colors: LegacyColors) {
+  return {
+    center: { flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' },
+    cardFrame: { borderWidth: 3, borderRadius: 18, overflow: 'hidden' },
+    tier: { fontSize: 13, fontWeight: '800', letterSpacing: 0.6 },
+    creator: { color: colors.dim, fontSize: 14.5 },
+    panel: {
+      backgroundColor: colors.card,
+      borderColor: colors.border,
+      borderWidth: 1,
+      borderRadius: 14,
+      padding: 14,
+      gap: 6,
+    },
+    panelTitle: { color: colors.text, fontWeight: '700', fontSize: 15.5 },
+    dim: { color: colors.dim, fontSize: 13 },
+    row: { flexDirection: 'row', alignItems: 'flex-end', gap: 10, marginTop: 8, flexWrap: 'wrap' },
+    input: {
+      backgroundColor: colors.raised,
+      borderColor: colors.border,
+      borderWidth: 1,
+      borderRadius: 10,
+      color: colors.text,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      minWidth: 70,
+      textAlign: 'center',
+    },
+    btn: {
+      backgroundColor: '#2c7fd8',
+      borderRadius: 10,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+    },
+    btnText: { color: '#fff', fontWeight: '700' },
+    ok: { color: colors.ok },
+    err: { color: colors.danger },
+    binderPick: {
+      marginRight: 10,
+      borderWidth: 2,
+      borderColor: colors.border,
+      borderRadius: 10,
+      padding: 4,
+      width: 76,
+    },
+    binderPickText: { color: colors.dim, fontSize: 10, marginTop: 2 },
+    posRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 6 },
+    posBarWrap: {
+      flex: 1,
+      height: 8,
+      backgroundColor: colors.raised,
+      borderRadius: 4,
+      overflow: 'hidden',
+    },
+    posBar: { height: 8, backgroundColor: colors.accent, borderRadius: 4 },
+  } as const
+}
