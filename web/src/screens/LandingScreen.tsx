@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { Alert } from '@/atoms/alert'
 import { Button, buttonVariants } from '@/atoms/button'
 import { tierFrameClasses } from '@/atoms/foil'
-/* the foil sheet, imported directly (not by way of `atoms/MemeCard`'s side effect): this screen
+/* the foil sheet, imported directly (not by way of `atoms/meme-card`'s side effect): this screen
    assembles the hero pile and the tier ladder from its own markup, on the dependency-free half of
    the seam */
 import '@/atoms/foil.css'
