@@ -8,6 +8,7 @@
     "shadcn": {
       "ui": "@/atoms",
       "componentImports": ["(^|/)(molecules|organisms)/"],
+      "ignoreImports": ["react-router-dom"],
       "note": "Tokens: src/index.css @theme. Appearance belongs in the component's variants. Exceptions live in web/.oxlintrc.json."
     }
   },
@@ -24,19 +25,19 @@
     ],
     "shadcn/no-inline-styles": "error",
     "shadcn/no-restyle": [
-      "warn",
+      "error",
       {
         "allow": ["layout"],
         "contracts": [
-          { "pattern": "^(Panel|Card|PageContainer|Empty|EmptyState)$", "allow": ["layout", "spacing"] },
-          { "pattern": "^(Skeleton|SkeletonBlock|SkeletonRow|SkeletonCard)$", "allow": ["layout", "spacing", "h", "size"] },
-          { "pattern": "^Icon$", "allow": ["layout", "color"] },
-          { "pattern": "^(Avatar|Spinner)$", "allow": ["layout", "size-*"] }
+          { "pattern": "^Card$", "allow": ["layout", "gap", "gap-x", "gap-y"] },
+          { "pattern": "^(PageContainer|Empty)$", "allow": ["layout", "spacing"] },
+          { "pattern": "^(Skeleton|SkeletonBlock|SkeletonRow|SkeletonCard)$", "allow": ["layout", "h", "size"] },
+          { "pattern": "^Icon$", "allow": ["layout", "color"] }
         ]
       }
     ],
-    "shadcn/no-arbitrary-values": ["warn", { "allow": ["layout", "pointer-coarse:text-[length:max(16px,1em)]"] }],
-    "shadcn/require-static-classes": "warn"
+    "shadcn/no-arbitrary-values": ["error", { "allow": ["layout", "pointer-coarse:text-[length:max(16px,1em)]"] }],
+    "shadcn/require-static-classes": "error"
   },
   "overrides": [
     { "files": ["src/atoms/**"], "rules": { "shadcn/no-restyle": "off" } },

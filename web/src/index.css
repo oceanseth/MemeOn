@@ -139,7 +139,6 @@
      control · md = field, avatar, segment · lg = card, control, nav row, well, public avatar ·
      xl = shell, band, tab bar, hero avatar · `rounded-full` for pills. */
   --radius-*: initial;
-  --radius: 24px;
   --radius-xs: 8px;
   --radius-sm: 12px;
   --radius-md: 16px;
@@ -165,7 +164,6 @@
      optical-size substitute. No `--tracking-*` role token survives: a step carries its tracking
      and the stock `tracking-wider` / `tracking-normal` are the only escapes. */
   --font-display: 'Unbounded Variable', 'Unbounded', system-ui, sans-serif;
-  --font-heading: var(--font-display);
   --font-sans: 'Onest Variable', 'Onest', system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 

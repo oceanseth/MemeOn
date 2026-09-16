@@ -210,6 +210,12 @@ const TIERS = ["paper", "silver", "holo", "chrome", "gold", "prismatic", "shiny"
 const PAIRS = [
   ...SURFACES.map((surface) => ["--color-foreground", surface]),
   ...SURFACES.map((surface) => ["--color-muted-foreground", surface]),
+  /* the shadcn surface pairs a dropped-in registry file reaches for; each resolves to the ink
+     above, and the pair is audited so the alias can never drift away from it */
+  ["--color-card-foreground", "--color-card"],
+  ["--color-popover-foreground", "--color-popover"],
+  ["--color-accent-foreground", "--color-accent"],
+  ["--color-secondary-foreground", "--color-secondary"],
   ["--color-primary-foreground", "--color-primary"],
   ["--color-brand-foreground", "--color-brand"],
   ["--color-destructive-foreground", "--color-destructive"],
@@ -247,6 +253,18 @@ const NOT_TEXT = [
   { token: "--color-ring", instead: "--color-link", patterns: [/\btext-ring\b/, /(^|[;{\s])color:\s*var\(--color-ring\)/] },
 ]
 
+/**
+ * A `*-foreground` token is an ink: it is audited against its own fill, never as one. Painting it
+ * as a background puts any text that lands on it outside every pair below. Three decorative fills
+ * do it on purpose — they carry no text at all — and each is named here with the shape it draws.
+ * A fourth needs the same decision, not silence.
+ */
+const INK_FILLS_ALLOWED = new Map([
+  ["bg-success-foreground", "the 10px presence dot on a friend row"],
+  ["bg-info-foreground", "the 6px unread dot on an alert row"],
+  ["bg-warning-foreground", "the braincell fill of a Progress meter"],
+])
+
 /** Repo-relative where that reads, absolute where it would be a stack of `..`. */
 const short = relative(process.cwd(), CSS_PATH)
 const display = short && !short.startsWith("..") && !isAbsolute(short) ? short : CSS_PATH
@@ -281,6 +299,47 @@ const painted = NOT_TEXT.flatMap(({ token, instead, patterns }) =>
   }),
 )
 
+/** `*-foreground` painted as a fill, outside the three decorative shapes that may. */
+const inkFills = sources.flatMap((file) => {
+  const text = readFileSync(file, "utf8")
+  return text.split("\n").flatMap((line, index) =>
+    [...line.matchAll(/\bbg-[a-z-]*-foreground\b/g)]
+      .filter((hit) => !INK_FILLS_ALLOWED.has(hit[0]))
+      .map((hit) => ({ className: hit[0], where: `${relative(process.cwd(), file)}:${index + 1}` })),
+  )
+})
+
+/**
+ * Completeness: every `--color-*-foreground` the palette declares has to appear in the table above
+ * as the text of some pair, or be one of the decorative fills. An ink nobody audits is an ink
+ * nobody guarantees.
+ */
+const inks = Object.keys(tokens).filter((token) => /^--color-.*-foreground$/.test(token))
+const audited = new Set(PAIRS.map(([fg]) => fg))
+const unaudited = inks.filter(
+  (ink) => !audited.has(ink) && !INK_FILLS_ALLOWED.has(`bg-${ink.replace("--color-", "")}`),
+)
+
+/**
+ * `index.html`'s two `theme-color` metas paint the browser's own chrome around the app, so they
+ * have to be the two arms of `--color-background` — a drifted hex is a visible seam at the top of
+ * the phone that no stylesheet can explain.
+ */
+const themeColors = (() => {
+  const html = resolve(join(import.meta.dirname, "..", "index.html"))
+  if (!existsSync(html)) return []
+  const text = readFileSync(html, "utf8")
+  return ARMS.flatMap((arm) => {
+    const meta = text.match(new RegExp(`<meta[^>]*name="theme-color"[^>]*prefers-color-scheme:\\s*${arm}[^>]*>`, "i"))
+    if (!meta) return [{ arm, declared: "(absent)", expected: "a meta" }]
+    const content = meta[0].match(/content="([^"]+)"/)
+    const declared = (content?.[1] ?? "").toLowerCase()
+    const background = resolveColor("var(--color-background)", tokens, arm)
+    const expected = `#${background.rgb.map((c) => Math.round(c * 255).toString(16).padStart(2, "0")).join("")}`
+    return declared === expected ? [] : [{ arm, declared, expected }]
+  })
+})()
+
 const width = (pick) => Math.max(...rows.map((row) => pick(row).length))
 const fgWidth = width((row) => row.fg)
 const bgWidth = width((row) => row.bg)
@@ -289,6 +348,32 @@ for (const row of rows) {
   console.log(
     `  ${row.fg.padEnd(fgWidth)}  on  ${row.bg.padEnd(bgWidth)}  ${row.arm.padEnd(5)}  Lc ${lc}  ${row.pass ? "ok" : "BELOW " + FLOOR}`,
   )
+}
+
+if (inkFills.length) {
+  console.error(
+    `\ncheck-contrast: ${inkFills.length} place(s) paint a foreground token as a fill:\n` +
+      inkFills.map((hit) => `  ${hit.where} uses ${hit.className}`).join("\n") +
+      `\n  a *-foreground is an ink: audit the pair it creates, or name the shape in INK_FILLS_ALLOWED.`,
+  )
+  process.exit(1)
+}
+
+if (unaudited.length) {
+  console.error(
+    `\ncheck-contrast: ${unaudited.length} foreground token(s) are declared and never audited:\n` +
+      unaudited.map((ink) => `  ${ink}`).join("\n") +
+      `\n  add the pair it is read on to PAIRS, or drop the token.`,
+  )
+  process.exit(1)
+}
+
+if (themeColors.length) {
+  console.error(
+    `\ncheck-contrast: ${themeColors.length} index.html theme-color meta(s) do not match --color-background:\n` +
+      themeColors.map((hit) => `  ${hit.arm}: ${hit.declared} should be ${hit.expected}`).join("\n"),
+  )
+  process.exit(1)
 }
 
 if (painted.length) {
@@ -312,3 +397,4 @@ if (failed.length) {
 
 console.log(`check-contrast: ${rows.length} pair(s) across ${ARMS.join(" and ")}, all >= APCA Lc ${FLOOR} (${display})`)
 console.log(`check-contrast: ${sources.length} source file(s) scanned, none paint text in ${NOT_TEXT.map((entry) => entry.token).join(", ")}`)
+console.log(`check-contrast: ${inks.length} foreground token(s) all audited or named as a decorative fill; index.html theme-color matches --color-background in both arms`)

@@ -9,11 +9,8 @@ import { Spinner } from '@/atoms/spinner'
 import { cn } from '../lib/cn'
 import type { AuthStatusScreenModel } from '../hooks/useAuthCallbackScreen'
 
-/** Centred auth status card — tighter padding on phone (`Card` allows its own spacing). */
-const CARD = cn(
-  'flex w-full flex-col items-center justify-center text-center',
-  'px-8 py-10 max-md:p-6.5',
-)
+/** Centred auth status card; the inset is `Card size="lg"`. */
+const CARD = 'flex w-full flex-col items-center justify-center text-center'
 
 /* text-balance keeps long titles from breaking mid-phrase on narrow cards. `Heading size="section"`
    would drop this to 24px on the phone, which this one-line card does not want. */
@@ -35,7 +32,7 @@ export function AuthStatusScreen({
       {/* the centred measure lives on the wrapper: `max-w-140` is a `--container-*` name the
           lint's grammar does not read */}
       <div className="mx-auto w-full max-w-140">
-        <Card data-slot="auth-status" data-phase={phase} className={CARD}>
+        <Card size="lg" data-slot="auth-status" data-phase={phase} className={CARD}>
           {phase === 'working' && <Spinner size="lg" data-slot="auth-ring" />}
           <h1 className={cn(TITLE, phase === 'working' && 'mt-4.5')}>{title}</h1>
           {subtitle && <p className={SUBTITLE}>{subtitle}</p>}

@@ -24,6 +24,8 @@ const cardVariants = cva('rounded-lg material-card', {
       default: 'p-6 max-md:p-4.5',
       sm: 'p-5 max-md:p-4.5',
       xs: 'px-5 py-4',
+      /** the one centred card of a route that is nothing but the card */
+      lg: 'px-8 py-10 max-md:p-6.5',
     },
   },
   defaultVariants: { variant: 'default', size: 'default' },

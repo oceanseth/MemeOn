@@ -10,16 +10,19 @@ describe('cn', () => {
     expect(cn('p-2 text-foreground', 'p-4')).toBe('text-foreground p-4')
   })
 
-  /* the @theme namespaces cn cannot infer from the CSS; without the extend block in cn.ts each of
-     these keeps both classes and source-scan order picks the winner */
-  it('merges the container widths against each other and against stock ones', () => {
+  /* the one @theme namespace cn cannot infer from the CSS; without the extend block in cn.ts
+     `max-w-card-narrow` keeps its partner and source-scan order picks the winner */
+  it('merges the one surviving container against the stock widths', () => {
+    expect(cn('max-w-full', 'max-w-card-narrow')).toBe('max-w-card-narrow')
+    expect(cn('max-w-card-narrow', 'max-w-full')).toBe('max-w-full')
+  })
+
+  /* lengths are grid steps now, so cn's own validators own every one of them; these are the
+     regressions that would come back if a length ever grew a role name again */
+  it('merges the lengths as grid steps', () => {
     expect(cn('max-w-140', 'max-w-135')).toBe('max-w-135')
     expect(cn('max-w-[65ch]', 'max-w-140')).toBe('max-w-140')
     expect(cn('max-w-92.5', 'max-w-full')).toBe('max-w-full')
-    expect(cn('max-w-full', 'max-w-card-narrow')).toBe('max-w-card-narrow')
-  })
-
-  it('merges the named spacing roles against the numeric grid and each other', () => {
     expect(cn('h-11.5', 'h-11')).toBe('h-11')
     expect(cn('h-11', 'h-11.5')).toBe('h-11.5')
     expect(cn('min-h-11', 'min-h-11')).toBe('min-h-11')
