@@ -4,12 +4,13 @@ import { cn } from '@/lib/cn'
 
 /**
  * The page title row: title (and its intro) on the left, whatever the screen puts beside it on
- * the right. From the `lg` cut a direct `FilterBar` child absorbs the row's slack instead of
- * clipping its own field.
+ * the right. From the `lg` cut a direct control row — `FilterBar` or the `Toolbar` that replaces
+ * it — absorbs the row's slack instead of clipping its own field.
  */
 const pageHeadVariants = cva([
   'mx-0 mt-5 mb-6 flex flex-wrap items-center justify-between gap-4',
   'lg:*:data-[slot=filter-bar]:flex-auto lg:*:data-[slot=filter-bar]:justify-end',
+  'lg:*:data-[slot=toolbar]:flex-auto lg:*:data-[slot=toolbar]:justify-end',
 ])
 
 /** Unbounded page title: the 5xl step, 4xl under the phone cut; the step carries its tracking. */

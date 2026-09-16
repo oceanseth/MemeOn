@@ -39,30 +39,46 @@ export const itemVariants = cva(
         default: '',
         outline: 'border border-border',
         muted: 'bg-muted',
+        /** a row that is its own card: the podium tiles and the raised person row */
+        raised: 'material-card',
       },
       size: {
         default: 'gap-3 px-3 py-2.5',
         sm: 'gap-2.5 px-2.5 py-2',
       },
+      /** The ring a row wears when it is *you*: the podium's first place, your own rank row. */
+      frame: {
+        none: '',
+        brand: 'border-2 border-brand',
+      },
     },
     defaultVariants: {
       variant: 'default',
       size: 'default',
+      frame: 'none',
     },
   },
 )
 
 export type ItemProps = useRender.ComponentProps<'div'> & VariantProps<typeof itemVariants>
 
-export function Item({ className, variant = 'default', size = 'default', render, ...props }: ItemProps) {
+export function Item({
+  className,
+  variant = 'default',
+  size = 'default',
+  frame = 'none',
+  render,
+  ...props
+}: ItemProps) {
   return useRender({
     defaultTagName: 'div',
-    props: mergeProps<'div'>({ className: cn(itemVariants({ variant, size }), className) }, props),
+    props: mergeProps<'div'>({ className: cn(itemVariants({ variant, size, frame }), className) }, props),
     render,
     state: {
       slot: 'item',
       variant,
       size,
+      frame,
     },
   })
 }
