@@ -508,33 +508,30 @@
 
 /* Materials: the ceramic look, bg + relief in one class; the only way to paint the shadow vars.
    A single-property utility (`bg-primary`) sorts after a multi-property one, so a raised primary
-   pill is `material-raised bg-primary`. */
+   pill is `material-raised bg-primary`. None of them resets `border`: preflight already sets
+   `border: 0 solid` on everything, and a `border: 0` here sorts after `border-2` and silently ate
+   the brand frame a card wears when the row is *you*. */
 @utility material-card {
-  border: 0;
   background-color: var(--color-card);
   box-shadow: var(--shadow-raised);
 }
 
 @utility material-raised {
-  border: 0;
   background-color: var(--color-accent);
   box-shadow: var(--shadow-raised);
 }
 
 @utility material-pressed {
-  border: 0;
   background-color: var(--color-muted);
   box-shadow: var(--shadow-pressed);
 }
 
 @utility material-pop {
-  border: 0;
   background-color: var(--color-popover);
   box-shadow: var(--shadow-pop);
 }
 
 @utility material-modal {
-  border: 0;
   background-color: var(--color-card);
   box-shadow: var(--shadow-modal);
 }
