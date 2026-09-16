@@ -15,9 +15,9 @@ import {
 import { Heading } from '@/atoms/heading'
 import { Input } from '@/atoms/input'
 /* the foil sheet and the chip, not the card atom: this screen paints a card frame out of its own
-   markup, and the mint route is code-split — pulling `MemeCard.tsx` in would put its `react-router`
+   markup, and the mint route is code-split — pulling `meme-card.tsx` in would put its `react-router`
    and model imports on the critical path of a `lazy()` route that renders none of them.
-   `atoms/foil.css` and `atoms/TierChip` are the dependency-free halves of that seam. */
+   `atoms/foil.css` and `atoms/tier-chip` are the dependency-free halves of that seam. */
 import '@/atoms/foil.css'
 import { LiveRegion } from '@/atoms/live-region'
 import { PageContainer } from '@/atoms/page-container'
@@ -105,8 +105,8 @@ function ModeChip({
 }
 
 /* The mint preview's box model, spelled out here because the meme has no id, no link and no
-   `MemeCardModel` until it is minted: the card is `atoms/MemeCard`'s recipe (raised surface, 8px of
-   padding, radius 25) and the frame carries the 3px tier border `atoms/foil.css` paints on
+   `MemeCardModel` until it is minted: the card is `atoms/meme-card`'s recipe (raised surface, 8px of
+   padding, `rounded-lg`) and the frame carries the 3px tier border `atoms/foil.css` paints on
    `.foil-frame` off the variables `cardProps.className` sets. */
 const PREVIEW_CARD = 'group relative isolate rounded-lg material-card p-2 @container'
 const PREVIEW_INNER = 'relative flex h-full flex-col'

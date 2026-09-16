@@ -34,7 +34,7 @@ env:
 # a hang must fail, not sit for GitHub's 6-hour default.
 jobs:
   static:
-    name: lint:ds · tiers · copy · contrast · tokens · layers · unit · typecheck
+    name: lint:ds · docs · tiers · copy · contrast · tokens · layers · unit · typecheck
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -43,10 +43,12 @@ jobs:
       # the design-system gate first, as in `pnpm run check`: every @shadcn/lint rule is an error,
       # so a restyle, a raw colour or an arbitrary value fails here rather than in review
       - run: pnpm --filter web run lint:ds
+      - run: pnpm --filter web run check-docs
       - run: pnpm --filter web run check-tiers
       - run: pnpm --filter web run check-copy
       - run: pnpm --filter web run check-contrast
       - run: pnpm --filter web run check-tokens
+      - run: pnpm --filter web run test:check-docs
       - run: pnpm --filter web run test:check-tiers
       - run: pnpm --filter web run test:check-copy
       - run: pnpm --filter web run test:check-layers
