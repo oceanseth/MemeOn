@@ -137,7 +137,7 @@
   /* ── Radius: one base, five steps. Stock 2/4/6/8/12/16/24/32 are reset so `rounded-lg` can only
      mean this ladder. xs = checkbox box, skeleton line, thumb · sm = chip, badge, the 34px square
      control · md = field, avatar, segment · lg = card, control, nav row, well, public avatar ·
-     xl = shell, band, tab bar, hero avatar · `rounded-full` for pills. */
+     xl = shell, band, hero avatar · `rounded-full` for pills. */
   --radius-*: initial;
   --radius-xs: 8px;
   --radius-sm: 12px;
@@ -211,7 +211,7 @@
   --text-6xl--letter-spacing: -0.03em;
   --text-6xl--font-weight: 500;
 
-  /* ── Layout. Widths are grid steps on the element (`max-w-140`, `max-w-135`, `max-w-92.5`) or
+  /* ── Layout. Widths are grid steps on the element (`max-w-140`, `max-w-135`, `max-w-360`) or
      the measure itself (`max-w-[65ch]`, layout). The one container that survives is a
      container-query cut, which has no class form. */
   --container-card-narrow: 220px; /* a meme card too narrow for its meta row (`@max-card-narrow:`) */
@@ -263,7 +263,7 @@
        `--shadow`: Tailwind's own `shadow` utility reads that name. */
     --relief-highlight: light-dark(oklch(100% 0 0 / 82%), oklch(60% 0.05 285 / 25%));
     --relief-shadow: light-dark(oklch(30% 0.05 285 / 20%), oklch(0% 0 0 / 56%));
-    /* Materials. Raised = cards, pills, buttons, chips, the tab bar, avatars. Pressed = the current
+    /* Materials. Raised = cards, pills, buttons, chips, the tab bar's Mint, avatars. Pressed = the current
        nav row, the active tab, search wells. `pop`/`modal` are the two lifted overlays. Vars, not
        `--shadow-*` tokens: no `shadow-raised` utility exists; the `material-*` utilities are the
        only way to paint them. */
