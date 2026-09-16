@@ -16,9 +16,9 @@
 @layer components {
   /*
    * The bottom half of the sticky-chrome contract (`--topbar-h`, `src/index.css`, is the top
-   * half): the fixed tab bar is 80 tall and floats 10 above the safe area, so the content column
-   * ends 100 *plus* the inset above the viewport's bottom or the page's last row hides under the
-   * bar.
+   * half): the tab bar is an 80 row over the home indicator's inset, flush with the viewport's
+   * bottom, so the content column ends 80 *plus* the inset above the viewport's bottom or the
+   * page's last row hides under the bar.
    *
    * It is a rule rather than a class because the sum has no utility: `pb-safe-<n>` is
    * `max(step, inset)` — the clearance the bar needs is `step + inset` — and an arbitrary
@@ -27,8 +27,17 @@
    */
   :root:has([data-slot='bottom-nav']) [data-slot='content'] {
     @variant max-xl {
-      padding-bottom: calc(var(--spacing) * 25 + env(safe-area-inset-bottom, 0px));
+      padding-bottom: calc(var(--spacing) * 20 + env(safe-area-inset-bottom, 0px));
     }
+  }
+
+  /*
+   * The hairline over the tab bar is a shadow, not a border: a border would add its pixel to the
+   * bar's box and put the clearance above off by one. The header's edge is the scroll-driven
+   * animation below; the tab bar's is always there, because the page is always under it.
+   */
+  [data-slot='bottom-nav'] {
+    box-shadow: 0 -1px 0 var(--color-border);
   }
 
   /*

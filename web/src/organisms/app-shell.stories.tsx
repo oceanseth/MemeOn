@@ -75,7 +75,7 @@ const bottomNav = (
   </>
 )
 
-/** 390×844: the phone chrome — sticky header, fixed tab bar. */
+/** 390×844: the phone chrome — sticky header, the tab bar flush with the bottom edge. */
 const phone = {
   parameters: {
     viewport: {
@@ -148,9 +148,16 @@ export const Phone390: Story = {
     await expect(tabs).toHaveAttribute('data-slot', 'bottom-nav')
     await expect(within(tabs).getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
     await expect(canvas.getByRole('link', { name: 'MemeOn' })).toBeVisible()
-    /* the column clears the fixed bar: 80 tall, 10 up, plus the home indicator (app-shell.css) */
+    /* the bar is the phone's: fixed to the viewport's bottom edge and spanning it, no gap */
+    const box = tabs.getBoundingClientRect()
+    await expect(getComputedStyle(tabs).position).toBe('fixed')
+    await expect(box.bottom).toBe(document.documentElement.clientHeight)
+    await expect(box.left).toBe(0)
+    await expect(box.width).toBe(document.documentElement.clientWidth)
+    await expect(getComputedStyle(tabs).borderRadius).toBe('0px')
+    /* the column clears the bar: the 80 row plus the home indicator (app-shell.css) */
     const content = canvasElement.querySelector('[data-slot="content"]')!
-    await expect(getComputedStyle(content).paddingBottom).toBe('100px')
+    await expect(getComputedStyle(content).paddingBottom).toBe('80px')
   },
 }
 

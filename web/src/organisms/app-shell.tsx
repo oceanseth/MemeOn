@@ -7,9 +7,10 @@ import './app-shell.css'
 /**
  * One chrome at every width: a sticky glass bar (the wordmark, the five links from the shell cut
  * `xl` = 900px up, the header cluster) over a centred 1440 column, a quiet footer, and below the
- * cut the fixed tab bar. The bar is 64 tall everywhere, which is `--topbar-h` (`src/index.css`);
- * `app-shell.css` carries what no utility can — the tab-bar clearance, the hairline that appears
- * once the page has scrolled, and the view-transition names.
+ * cut the tab bar fixed flush to the viewport's bottom. The bar is 64 tall everywhere, which is
+ * `--topbar-h` (`src/index.css`); `app-shell.css` carries what no utility can — the tab-bar
+ * clearance and hairline, the hairline that appears under the bar once the page has scrolled,
+ * and the view-transition names.
  */
 
 /** The shared ring (`lib/focus`), on every control this file paints itself. */
@@ -82,11 +83,17 @@ function Wordmark({ compact }: { compact: boolean }) {
   )
 }
 
-/** 370×80 at 10 from the bottom, fluid to the phone's width, radius 30, raised. */
+/**
+ * The tab bar the way the phone draws its own: fixed to the viewport's bottom edge and spanning
+ * it, no radius, glass with a hairline above (`app-shell.css`). The items sit in an 80 row and the
+ * home indicator's inset is padding under them — `box-content`, so the inset adds to the 80 rather
+ * than eating it, and the content column's clearance is the same sum. From the shell cut the
+ * bar's links take over and it goes.
+ */
 const TAB_BAR = cn(
-  'fixed bottom-[calc(10px+env(safe-area-inset-bottom,0px))] left-1/2 z-(--z-header) -translate-x-1/2',
-  'flex h-20 w-[calc(100%-calc(var(--spacing)*5))] max-w-92.5 items-center justify-around pb-3',
-  'rounded-xl material-card',
+  'fixed inset-x-0 bottom-0 z-(--z-header)',
+  'flex box-content h-20 items-center justify-around pb-safe',
+  'glass',
   'xl:hidden',
 )
 
