@@ -1,21 +1,19 @@
-import { Button, buttonClasses } from '@/atoms/button'
-import { EmptyActions, EmptyState } from '@/atoms/empty-state'
+import { Alert, AlertTitle } from '@/atoms/alert'
+import { Button, buttonVariants } from '@/atoms/button'
+import { Card, CardTitle } from '@/atoms/card'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader } from '@/atoms/empty'
 import { Hint } from '@/atoms/field'
+import { InlineLink } from '@/atoms/inline-link'
 import { Input } from '@/atoms/input'
-import { Notice } from '@/atoms/notice'
+import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/atoms/item'
+import { LiveRegion } from '@/atoms/live-region'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
-import { Panel, PanelHeading } from '@/atoms/panel'
 import { Spinner } from '@/atoms/spinner'
 import type { DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { ConfirmDialog } from '@/molecules/confirm-dialog'
 
 const EXPLAINER = 'mt-0 mb-0 max-w-measure text-base text-muted-foreground'
-const FORM_CARD = 'mt-5 p-gutter max-md:p-gutter'
-/** Fresh key state: inset action ring marks the one-time reveal. */
-const FRESH_CARD = 'mt-5 p-5 max-md:p-5 inset-ring-2 inset-ring-primary'
-const INVENTORY_CARD = 'mt-5 p-5.5 max-md:p-gutter'
-const KEY_ROW = 'flex flex-wrap items-center justify-between gap-4 gap-y-2.5 py-3'
 
 /** Developers API-key page as a function of its model. Every engine state is one set of args. */
 export function DevelopersScreen({
@@ -58,7 +56,7 @@ export function DevelopersScreen({
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
       <PageHead level="h1" title="🔧 Developers" className="mb-5">
-        <a className={buttonClasses()} href="/skill.md" target="_blank" rel="noreferrer">
+        <a className={buttonVariants()} href="/skill.md" target="_blank" rel="noreferrer">
           📜 API skill.md
         </a>
       </PageHead>
@@ -66,18 +64,13 @@ export function DevelopersScreen({
         API keys act as <strong className="font-semibold text-foreground">your account</strong>: they can mint
         memes, gift shares (including to users your own site knows only by Masky avatar id), trade,
         and read everything you can. Full endpoint reference lives in{' '}
-        <a
-          className="text-link underline underline-offset-3 decoration-1"
-          href="/skill.md"
-          target="_blank"
-          rel="noreferrer"
-        >
+        <InlineLink href="/skill.md" target="_blank" rel="noreferrer">
           skill.md
-        </a>{' '}
+        </InlineLink>{' '}
         (also at <code>/.well-known/skill.md</code> for agents). Treat keys like passwords.
       </p>
 
-      <Panel className={FORM_CARD}>
+      <Card size="sm" className="mt-5">
         <form
           className="flex flex-wrap items-center gap-3 max-md:flex-col max-md:items-start"
           {...createFormProps}
@@ -93,23 +86,18 @@ export function DevelopersScreen({
           </Button>
         </form>
         {quotaNote && <Hint>{quotaNote}</Hint>}
-      </Panel>
+      </Card>
 
       {showErr && (
-        <Notice
-          tone="error"
-          compact
-          className="mt-4 block max-w-none font-semibold"
-          {...errorNoticeProps}
-        >
-          {err}
-        </Notice>
+        <Alert variant="error" size="compact" className="mt-4 block max-w-none" {...errorNoticeProps}>
+          <AlertTitle>{err}</AlertTitle>
+        </Alert>
       )}
 
       {/* persistent wrapper, mounted before its text arrives, so the key itself is announced */}
-      <div {...freshKeyRegionProps}>
+      <LiveRegion variant="visible" {...freshKeyRegionProps}>
         {showFreshKey && (
-          <Panel className={FRESH_CARD}>
+          <Card size="sm" variant="highlighted" className="mt-5">
             <p className="m-0 text-lg font-semibold text-foreground">{freshKeyHeading}</p>
             <div
               className="mt-2.5 font-mono text-base font-semibold text-foreground wrap-anywhere select-all"
@@ -123,22 +111,22 @@ export function DevelopersScreen({
                 <span className="text-sm font-semibold text-success-foreground">{copiedCaption}</span>
               )}
             </div>
-          </Panel>
+          </Card>
         )}
-      </div>
+      </LiveRegion>
 
-      <Panel className={INVENTORY_CARD}>
+      <Card size="sm" className="mt-5">
         <div className="flex items-center justify-between gap-4">
-          <PanelHeading size="section" className="mb-0">{keysHeading}</PanelHeading>
+          <CardTitle render={<h2 />}>{keysHeading}</CardTitle>
           {quotaLabel && (
             <span className="shrink-0 text-sm font-medium text-muted-foreground tabular-nums">
               {quotaLabel}
             </span>
           )}
         </div>
-        <div {...statusRegionProps}>
-          {showOk && <Notice tone="ok">{okMsg}</Notice>}
-        </div>
+        <LiveRegion variant="visible" {...statusRegionProps}>
+          {showOk && <Alert variant="success" className="mt-3">{okMsg}</Alert>}
+        </LiveRegion>
         {showSpinner && (
           /* a labelled spinner row, never a bare spinner */
           <div
@@ -151,45 +139,47 @@ export function DevelopersScreen({
           </div>
         )}
         {showLoadError && (
-          <EmptyState tone="error" className="mt-2" {...loadErrorProps}>
-            <p>
+          <Empty variant="error" className="mt-2" {...loadErrorProps}>
+            <EmptyDescription>
               <strong>{loadErrorMessage}</strong>
-            </p>
-            <EmptyActions>
+            </EmptyDescription>
+            <EmptyContent>
               <Button variant="primary" {...retryButtonProps}>
                 Try again
               </Button>
-            </EmptyActions>
-          </EmptyState>
+            </EmptyContent>
+          </Empty>
         )}
         {showEmpty && (
-          <EmptyState className="mt-2">
-            <p>{emptyCopy}</p>
-            <p>{emptyHint}</p>
-          </EmptyState>
+          <Empty className="mt-2">
+            <EmptyHeader>
+              <EmptyDescription>{emptyCopy}</EmptyDescription>
+              <EmptyDescription>{emptyHint}</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         )}
         {showKeys && keys && (
           <ul className="m-0 mt-2 list-none p-0 divide-y divide-border">
             {keys.map((k) => (
-              <li key={k.prefix} className={KEY_ROW}>
-                <div className="flex min-w-0 flex-col gap-1">
+              <Item key={k.prefix} render={<li />} data-slot="api-key-row">
+                <ItemContent>
                   {/* `overflow-wrap:anywhere` keeps a 60-character label inside the row */}
-                  <span className="text-base font-semibold text-foreground wrap-anywhere">
-                    {k.label}
-                  </span>
-                  <span className="text-sm font-medium text-muted-foreground tabular-nums">
+                  <ItemTitle>{k.label}</ItemTitle>
+                  <ItemDescription>
                     {k.prefix}… · <time dateTime={k.createdAt}>{k.createdLabel}</time>
-                  </span>
-                </div>
-                {/* the destructive act on a neutral pill: the page's one primary is "Create key" */}
-                <Button className="shrink-0 text-error-foreground" {...k.revokeButtonProps}>
-                  Revoke
-                </Button>
-              </li>
+                  </ItemDescription>
+                </ItemContent>
+                {/* the destructive act is tinted, never the page's primary plate */}
+                <ItemActions>
+                  <Button variant="destructive" className="shrink-0" {...k.revokeButtonProps}>
+                    Revoke
+                  </Button>
+                </ItemActions>
+              </Item>
             ))}
           </ul>
         )}
-      </Panel>
+      </Card>
 
       <ConfirmDialog model={confirmDialog} />
     </PageContainer>
