@@ -1,5 +1,6 @@
-import { Toggle } from '@base-ui/react/toggle'
-import { ToggleGroup } from '@base-ui/react/toggle-group'
+import { cva, type VariantProps } from 'class-variance-authority'
+import { buttonVariants } from '@/atoms/button'
+import { ToggleGroup, ToggleGroupItem } from '@/atoms/toggle-group'
 import { cn } from '../lib/cn'
 import type { ThemePreference } from '../stores/themeStore'
 
@@ -24,50 +25,42 @@ const optionFor = (value: ThemePreference) => OPTIONS.find((o) => o.value === va
 const nextAfter = (value: ThemePreference) =>
   OPTIONS[(OPTIONS.findIndex((o) => o.value === value) + 1) % OPTIONS.length]!
 
-/** Segmented well: 184×40, pressed surface. */
-const WELL = 'inline-flex h-10 w-46 shrink-0 items-center gap-0.5 rounded-full material-pressed p-0.75'
+/**
+ * The header square wears the Button's own icon recipe (34px, raised, the coarse-pointer halo) and
+ * owns the two things the atom has no axis for: the emoji's glyph step, and the growth to 40 past
+ * the shell cut on a page with no sidebar to balance it. The classes go on a plain `<button>`
+ * rather than through `<Button className>`, which is the restyle this variant replaces.
+ */
+const themeButtonVariants = cva('text-base leading-none', {
+  variants: {
+    size: {
+      /** beside a sidebar or in the phone cluster: the 34px square, at every width */
+      sm: '',
+      /** the public desktop header: 40px once the page is wide enough to have no sidebar */
+      lg: 'xl:size-10 xl:rounded-md xl:text-xl',
+    },
+  },
+  defaultVariants: { size: 'sm' },
+})
+
+export interface ThemeControlProps extends VariantProps<typeof themeButtonVariants> {
+  model: ThemeControlModel
+  className?: string | undefined
+}
 
 /**
- * Three equal segments, 34 tall, radius 17; the current one is raised and bold. On a coarse pointer
- * each takes the header button's transparent halo — but only vertically (34 + 2×5 = 44), because a
- * horizontal one would overlap its neighbour across the well's 2px gap and steal its taps. The
- * segment is already ~58 wide, so the target clears 44 in both axes and the well stays 40.
+ * Auto · Light · Dark. Segmented is the `ToggleGroup` atom in its segment well (single-select);
+ * the button cycles auto → light → dark and names both where it is and where it goes. Pure: the
+ * value and the change handler come from the model.
  */
-const SEGMENT = cn(
-  'relative inline-flex h-control-sm min-w-0 flex-1 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent px-1',
-  'hit-44',
-  'text-xs font-semibold whitespace-nowrap text-muted-foreground',
-  'transition-press',
-  'hover:text-foreground',
-  'aria-pressed:material-raised aria-pressed:font-semibold aria-pressed:text-foreground',
-  'focus-ring',
-)
-
-/**
- * The header button: 34×34 radius 13, raised, the emoji of the current state. The public desktop
- * header grows it to 40 through `className`. On coarse pointers a transparent 5px halo brings the
- * hit target to 44 without changing the drawn size.
- */
-const BUTTON = cn(
-  'relative inline-flex size-control-sm shrink-0 cursor-pointer items-center justify-center rounded-sm border-0 p-0',
-  'material-raised text-base leading-none text-foreground',
-  'hit-44',
-  'focus-ring',
-)
-
-/**
- * Auto · Light · Dark. Segmented is a Base UI ToggleGroup in single-select mode; the button cycles
- * auto → light → dark and names both where it is and where it goes. Pure: the value and the change
- * handler come from the model.
- */
-export function ThemeControl({ model, className }: { model: ThemeControlModel; className?: string }) {
+export function ThemeControl({ model, size, className }: ThemeControlProps) {
   if (model.variant === 'button') {
     const current = optionFor(model.value)
     const next = nextAfter(model.value)
     return (
       <button
         type="button"
-        className={cn(BUTTON, className)}
+        className={cn(buttonVariants({ size: 'icon-sm' }), themeButtonVariants({ size }), className)}
         aria-label={`Theme: ${current.label}. Switch to ${next.label}`}
         onClick={() => model.onChange(next.value)}
         data-slot="theme-button"
@@ -87,15 +80,18 @@ export function ThemeControl({ model, className }: { model: ThemeControlModel; c
         if (value) model.onChange(value)
       }}
       aria-label="Theme"
-      className={cn(WELL, className)}
+      variant="segment"
+      size="sm"
+      /* 184: three ~58px segments plus the well's 3px inset, which is why `p-0.75` stays */
+      className={cn('w-46', className)}
       data-slot="theme-segmented"
     >
       {OPTIONS.map((option) => (
-        <Toggle<ThemePreference> key={option.value} value={option.value} className={SEGMENT} data-slot="theme-segment">
+        <ToggleGroupItem<ThemePreference> key={option.value} value={option.value} data-slot="theme-segment">
           {option.emoji}
-          {' '}
+          {' '}
           {option.label}
-        </Toggle>
+        </ToggleGroupItem>
       ))}
     </ToggleGroup>
   )

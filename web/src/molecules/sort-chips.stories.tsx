@@ -25,7 +25,12 @@ export const NewestDesc: Story = {
       name: copy.chipA11y(copy.chips.new, copy.direction.descending),
     })
     await expect(newest).toHaveAttribute('aria-pressed', 'true')
-    await expect(canvas.getByRole('group', { name: copy.group })).toBeInTheDocument()
+    await expect(newest).toHaveAttribute('data-slot', 'sort-chip')
+    const group = canvas.getByRole('group', { name: copy.group })
+    /* BinderScreen's own story selects the row by this slot */
+    await expect(group).toHaveAttribute('data-slot', 'sort-chips')
+    /* the chip size: a 46px pill, the pressed one a well rather than a colour */
+    await expect(getComputedStyle(newest).height).toBe('46px')
     await userEvent.click(newest)
     await expect(onNewestChange).toHaveBeenCalledWith('new', 'asc')
   },

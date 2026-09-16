@@ -1,39 +1,22 @@
-import { Toggle } from '@base-ui/react/toggle'
-import { ToggleGroup } from '@base-ui/react/toggle-group'
 import { Hint } from '@/atoms/field'
-import { cn } from '../lib/cn'
+import { ToggleGroup, ToggleGroupItem } from '@/atoms/toggle-group'
 import type { SortChipsModel } from '../lib/sortChipsModel'
 import type { SortKey } from '../lib/sorting'
-
-/* Tabs, not buttons: selected = pressed well; material change only, never accent colour. */
-const chipChrome = cn(
-  'inline-flex h-control items-center justify-center whitespace-nowrap max-sm:h-10',
-  /* 40px drawn height; coarse pointer still needs 44 */
-  'pointer-coarse:min-h-hit',
-  'rounded-lg material-raised px-4 text-base font-semibold text-foreground',
-  'cursor-pointer',
-  'transition-press lift press',
-  'focus-ring',
-  'disabled-look',
-  /* selected = pressed well; label weight stays 600 on every tab */
-  'data-pressed:material-pressed',
-  'data-pressed:translate-y-0!',
-  'forced-colors:data-pressed:border forced-colors:data-pressed:border-fc-highlight',
-)
 
 /**
  * Click a stat to sort by it; click it again to flip direction (↓/↑ indicator).
  *
- * Single-select `ToggleGroup`, so re-pressing the selected chip empties the group value — which is
- * exactly the "same key, other way" gesture the model spends as `flip()`.
+ * The row is the `ToggleGroup` atom at its chip size: tabs, not buttons, so the selected chip is a
+ * pressed well and never an accent colour. Single-select, so re-pressing the selected chip empties
+ * the group value — which is exactly the "same key, other way" gesture the model spends as `flip()`.
  */
 export function SortChips({ model }: { model: SortChipsModel }) {
   return (
     <div>
-      <ToggleGroup
+      <ToggleGroup<SortKey>
         {...model.groupProps}
-        className="flex flex-wrap gap-2"
         data-slot="sort-chips"
+        size="chip"
         disabled={model.disabled}
         value={[model.selected]}
         onValueChange={(next: SortKey[]) => {
@@ -43,22 +26,22 @@ export function SortChips({ model }: { model: SortChipsModel }) {
         }}
       >
         {model.chips.map((chip) => (
-          <Toggle
+          <ToggleGroupItem<SortKey>
             key={chip.key}
             value={chip.key}
-            className={chipChrome}
             data-slot="sort-chip"
             {...chip.buttonProps}
           >
             {chip.label}
             {chip.arrow && (
-              <span aria-hidden="true" className="ml-1 font-semibold text-foreground">
+              <span aria-hidden="true" className="font-semibold">
                 {chip.arrow}
               </span>
             )}
-          </Toggle>
+          </ToggleGroupItem>
         ))}
       </ToggleGroup>
+      {/* the standalone description (no `<Field>` here): the group names it through `aria-describedby` */}
       {model.reason && <Hint {...model.reasonProps}>{model.reason}</Hint>}
     </div>
   )
