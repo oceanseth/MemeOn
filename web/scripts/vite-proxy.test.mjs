@@ -94,7 +94,10 @@ async function withDevServer(proxy, run) {
     root: webRoot,
     mode: 'development',
     logLevel: 'silent',
-    server: { ...loaded.config.server, host: '127.0.0.1', port: 0, strictPort: true, proxy, watch: null }
+    // Vite 7 coerces a dev-server `port: 0` back to its default (5173) instead of asking the OS for
+    // an ephemeral one, so `strictPort` has to stay off: any other project's dev server on 5173
+    // would otherwise fail this test. The assertions read the port the server actually got.
+    server: { ...loaded.config.server, host: '127.0.0.1', port: 0, strictPort: false, proxy, watch: null }
   });
   try {
     await server.listen();
