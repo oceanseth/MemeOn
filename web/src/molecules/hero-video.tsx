@@ -1,3 +1,4 @@
+import { cva } from 'class-variance-authority'
 import { cn } from '../lib/cn'
 import type { HeroVideoModel } from '../lib/heroVideoModel'
 
@@ -8,14 +9,35 @@ const FRAME = cn(
   'max-md:-mx-page-x max-md:rounded-none',
 )
 
-/* the shared pill chrome: font/line-height are reset so each pill can size its own text */
-const PILL = cn(
-  'absolute cursor-pointer rounded-full font-[inherit] leading-none text-foreground',
-  /* glass sorts after the material, so the plate is glass and the relief is raised */
-  'material-raised glass',
-  'transition-press',
-  'hover:bg-accent',
-  'focus-ring',
+/**
+ * The film's own controls. A glass plate over moving pictures is the one place a button pill is
+ * translucent, and the `Button` atom has no `glass` variant (`MO2/requests.md` asks for one), so
+ * the pair is a local cva over the two buttons: one recipe, two placements. Each placement names
+ * its type step and nothing else — the step carries its own line-height.
+ */
+const pillVariants = cva(
+  cn(
+    'absolute cursor-pointer rounded-full text-foreground',
+    /* glass sorts after the material, so the plate is glass and the relief is raised */
+    'material-raised glass',
+    'transition-press',
+    'hover:bg-accent',
+    'focus-ring',
+  ),
+  {
+    variants: {
+      placement: {
+        /** the poster's one call to action, centred on the frame */
+        play: 'top-1/2 left-1/2 min-h-hit -translate-x-1/2 -translate-y-1/2 px-5 py-3 text-base font-semibold',
+        /** the sound toggle rides the corner; the phone moves it clear of the caption */
+        sound: cn(
+          'right-3 bottom-3 px-3.5 py-2 text-sm',
+          'max-md:top-2 max-md:right-2 max-md:bottom-auto max-md:px-3 max-md:py-2 max-md:text-xs',
+        ),
+      },
+    },
+    defaultVariants: { placement: 'sound' },
+  },
 )
 
 /**
@@ -37,10 +59,7 @@ export function HeroVideo({ model, className }: { model: HeroVideoModel; classNa
         <button
           type="button"
           data-slot="hero-video-play"
-          className={cn(
-            PILL,
-            'top-1/2 left-1/2 min-h-hit -translate-x-1/2 -translate-y-1/2 px-5 py-3 text-base font-semibold',
-          )}
+          className={pillVariants({ placement: 'play' })}
           {...model.playButtonProps}
         >
           <span aria-hidden="true">▶</span> {model.playLabel}
@@ -50,11 +69,7 @@ export function HeroVideo({ model, className }: { model: HeroVideoModel; classNa
         <button
           type="button"
           data-slot="hero-video-sound"
-          className={cn(
-            PILL,
-            'right-3 bottom-3 px-3.5 py-2 text-sm',
-            'max-md:top-2 max-md:right-2 max-md:bottom-auto max-md:px-3 max-md:py-2 max-md:text-xs',
-          )}
+          className={pillVariants({ placement: 'sound' })}
           {...model.soundButtonProps}
         >
           {model.soundLabel}
