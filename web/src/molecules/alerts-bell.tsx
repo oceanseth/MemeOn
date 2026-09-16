@@ -1,9 +1,12 @@
-import { Popover } from '@base-ui/react/popover'
+import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
 import { Link } from 'react-router-dom'
-import { cn } from '../lib/cn'
+import { buttonVariants } from '@/atoms/button'
+import { Item, ItemContent, ItemDescription } from '@/atoms/item'
+import { Popover, PopoverContent } from '@/atoms/popover'
+import { PortalAnchor } from '@/atoms/portal-anchor'
+import { cn } from '@/lib/cn'
 import type { AlertsBellModel } from '../lib/alertsBellModel'
-
-const FOCUS = 'focus-ring'
+import { portalAnchor } from '../lib/portalAnchor'
 
 /**
  * There is one bell on a page — it lives in the shell's header — so one id is enough. The portal
@@ -14,28 +17,15 @@ const FOCUS = 'focus-ring'
  */
 const ANCHOR_ID = 'alerts-pop-anchor'
 
+/** The bell glyph on the ghost icon button; the unread bubble sits on its corner. */
+const GLYPH = 'text-xl leading-none xl:text-2xl'
+
 /**
- * A ref-shaped container for `Popover.Portal`. Base UI reads `.current` in a layout effect, after
- * the anchor `<span>` is in the DOM, so a getter needs no ref — and no hook, which a molecule is
- * not allowed to call.
+ * The unread count, 16px on the strong destructive pair (the one `check-contrast` guards). It is
+ * the molecule's own bubble until `Badge` grows a count size and the strong variant (requested):
+ * the default Badge would cover a third of the 34px trigger.
  */
-const anchorContainer = {
-  get current(): HTMLElement | null {
-    return document.getElementById(ANCHOR_ID)
-  },
-}
-
-/** Bare emoji trigger — no raised chrome. Pseudo-element carries the 44px hit target. */
-const TRIGGER = cn(
-  'relative inline-flex shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0',
-  'text-xl leading-none text-foreground',
-  'xl:text-2xl',
-  'hit-44',
-  FOCUS,
-)
-
-/** Canvas on the error text colour: the pair `check-contrast` guards (WP1 deviation 2), 10px bold. */
-const BADGE = cn(
+const BUBBLE = cn(
   'absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center px-1',
   'rounded-full bg-destructive text-xs leading-none font-semibold text-destructive-foreground tabular-nums',
 )
@@ -51,117 +41,98 @@ const POSITIONER = cn(
   'max-xs:w-auto! max-xs:transform-none!',
 )
 
-/** A raised card of rows. */
+/** The card of rows: 340 wide, scrolling past 420 tall; ≤480 it fills the header's width. */
 const POPUP = cn(
-  'w-[min(340px,calc(100vw-24px))] max-h-[min(420px,60dvh)] overflow-y-auto scrollbar-thin',
-  'rounded-lg material-pop p-2',
+  'w-[min(340px,calc(100vw-24px))] max-h-[min(420px,60dvh)] overflow-y-auto',
   'max-xs:w-auto max-xs:max-h-[calc(100dvh-var(--topbar-h)-24px)]',
-  FOCUS,
 )
-
-const ROW = cn(
-  'block min-h-hit rounded-md px-3 py-2.5 text-sm text-foreground',
-  'transition-tint',
-)
-
-/** Unread is the info tint plus weight; the dot in the same family is the shape cue. */
-const UNREAD = 'bg-info font-semibold'
 
 /**
- * Alerts popover, on Base UI's Popover. Base UI owns the disclosure wiring — `aria-expanded`,
- * `aria-controls`, Escape, the outside press and returning focus to the bell; this file owns the
+ * Alerts popover, on the `popover` atom. Base UI owns the disclosure wiring — `aria-expanded`,
+ * `aria-controls`, Escape, the outside press and returning focus to the bell; the atom owns the
  * paint. The parent still owns the list, the open state and mark-as-read, and every dismissal
  * arrives back through `model.onOpenChange(false)`.
+ *
+ * A row is an `Item`, rendered as the link where the alert has somewhere to go: the painted row is
+ * the promise, so the whole card taps. Unread is weight, the dot and the announced cue; the sky
+ * tint returns when `Item` grows a tone (requested).
  */
 export function AlertsBell({ model }: { model: AlertsBellModel }) {
   return (
     <div className="relative" data-slot="alerts-bell">
-      <Popover.Root open={model.open} onOpenChange={(open) => model.onOpenChange(open)}>
-        <Popover.Trigger className={TRIGGER} data-slot="alerts-trigger" {...model.triggerProps}>
-          🔔
+      <Popover open={model.open} onOpenChange={(open) => model.onOpenChange(open)}>
+        {/* the primitive trigger in the ghost icon button's classes, not `<PopoverTrigger
+            render={<Button />}>`: Button does not forward its ref under React 18 (requested) and
+            Base UI needs the trigger element to anchor and to mark `aria-expanded`; the lint cannot
+            read a cva call on an atom */}
+        <PopoverPrimitive.Trigger
+          className={buttonVariants({ variant: 'ghost', size: 'icon-sm' })}
+          data-slot="alerts-trigger"
+          {...model.triggerProps}
+        >
+          <span className={GLYPH}>🔔</span>
           {model.unreadLabel && (
-            <span className={BADGE} data-slot="bell-badge" {...model.badgeProps}>
+            <span className={BUBBLE} data-slot="bell-badge" {...model.badgeProps}>
               {model.unreadLabel}
             </span>
           )}
-        </Popover.Trigger>
-        {/* display:contents, so an idle popover costs the header no box and no flex gap */}
-        <span id={ANCHOR_ID} className="contents" data-slot="alerts-anchor" />
-        <Popover.Portal container={anchorContainer} className="contents">
-          <Popover.Positioner
-            side="bottom"
-            align="end"
-            sideOffset={8}
-            collisionPadding={12}
-            /* a panel that flipped above a header would leave the viewport, so it never flips */
-            collisionAvoidance={{ side: 'none', align: 'shift' }}
-            className={POSITIONER}
-          >
-            <Popover.Popup
-              /* opening a notification list must not move the caret: the popup is the next tab
-                 stop after the bell, exactly as the legacy panel was */
-              initialFocus={false}
-              className={POPUP}
-              data-slot="alerts-pop"
-              {...model.popupProps}
+        </PopoverPrimitive.Trigger>
+        <PortalAnchor id={ANCHOR_ID} />
+        <PopoverContent
+          container={portalAnchor(ANCHOR_ID)}
+          align="end"
+          /* a panel that flipped above a header would leave the viewport, so it never flips */
+          collisionAvoidance={{ side: 'none', align: 'shift' }}
+          /* opening a notification list must not move the caret: the popup is the next tab stop
+             after the bell, exactly as the legacy panel was */
+          initialFocus={false}
+          positionerClassName={POSITIONER}
+          className={POPUP}
+          data-slot="alerts-pop"
+          {...model.popupProps}
+        >
+          {model.empty && (
+            <Item data-slot="alert-row">
+              <ItemDescription>{model.emptyLabel}</ItemDescription>
+            </Item>
+          )}
+          {model.rows.map((row) => (
+            <Item
+              key={row.id}
+              render={row.linkProps ? <Link {...row.linkProps} /> : undefined}
+              data-slot="alert-row"
+              data-unread={row.unread || undefined}
             >
-              {model.empty && (
-                <div className={cn(ROW, 'text-muted-foreground')} data-slot="alert-row">
-                  {model.emptyLabel}
-                </div>
-              )}
-              {model.rows.map((row) => {
-                // the painted row is the promise, so the row itself is the link: the whole card taps
-                const body = (
-                  <>
-                    {row.statusLabel && (
-                      <>
-                        <span
-                          className="mr-2 inline-block size-1.5 rounded-full bg-info-foreground align-middle"
-                          data-slot="alert-dot"
-                          aria-hidden="true"
-                        />
-                        <span className="sr-only">{row.statusLabel} </span>
-                      </>
-                    )}
-                    <span className="group-hover:underline" data-slot="alert-message">
-                      {row.message}
-                    </span>
-                    <time className="mt-1 block text-xs font-normal text-muted-foreground" {...row.timeProps}>
-                      {row.timeLabel}
-                    </time>
-                  </>
-                )
-                return row.linkProps ? (
-                  <Link
-                    key={row.id}
-                    className={cn(ROW, row.unread && UNREAD, 'group no-underline hover:bg-accent', FOCUS)}
-                    data-slot="alert-row"
-                    data-unread={row.unread || undefined}
-                    {...row.linkProps}
-                  >
-                    {body}
-                  </Link>
-                ) : (
-                  <div
-                    key={row.id}
-                    className={cn(ROW, row.unread && UNREAD)}
-                    data-slot="alert-row"
-                    data-unread={row.unread || undefined}
-                  >
-                    {body}
-                  </div>
-                )
-              })}
-              {model.overflowLabel && (
-                <div className={cn(ROW, 'text-muted-foreground')} data-slot="alert-row">
-                  {model.overflowLabel}
-                </div>
-              )}
-            </Popover.Popup>
-          </Popover.Positioner>
-        </Popover.Portal>
-      </Popover.Root>
+              <ItemContent>
+                <span
+                  className={cn(row.linkProps && 'group-hover/item:underline', row.unread && 'font-semibold')}
+                  data-slot="alert-message"
+                >
+                  {row.statusLabel && (
+                    <>
+                      <span
+                        className="mr-2 inline-block size-1.5 rounded-full bg-info-foreground align-middle"
+                        data-slot="alert-dot"
+                        aria-hidden="true"
+                      />
+                      <span className="sr-only">{row.statusLabel} </span>
+                    </>
+                  )}
+                  {row.message}
+                </span>
+                <time className="text-xs font-normal text-muted-foreground" {...row.timeProps}>
+                  {row.timeLabel}
+                </time>
+              </ItemContent>
+            </Item>
+          ))}
+          {model.overflowLabel && (
+            <Item data-slot="alert-row">
+              <ItemDescription>{model.overflowLabel}</ItemDescription>
+            </Item>
+          )}
+        </PopoverContent>
+      </Popover>
     </div>
   )
 }

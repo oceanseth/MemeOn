@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, fn, within } from 'storybook/test'
+import { expect, fn, waitFor, within } from 'storybook/test'
 import { friendAccepted, giftablePaper, giftableSilver, holoMeme, listedHolo } from '../../.storybook/fixtures'
 import type { Meme } from '../lib/types'
 import { buildGiftDialogModel, type BuildGiftDialogModelInput } from '../lib/giftDialogModel'
@@ -31,6 +31,9 @@ const model = (overrides: Partial<BuildGiftDialogModelInput> = {}) =>
     ...overrides,
   })
 
+const rows = (canvasElement: HTMLElement) =>
+  canvasElement.querySelectorAll<HTMLElement>('[data-slot="gift-list"] [data-slot="item"]')
+
 const meta = {
   title: 'Molecules/GiftDialog',
   component: GiftDialog,
@@ -40,11 +43,61 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const Search: Story = {}
-export const EmptyBinder: Story = { args: { model: model({ memes: [] }) } }
+/** The picker: focus lands in the search, every holding is a row that is its own button. */
+export const Search: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const dialog = canvas.getByRole('dialog', { name: /Gift to/ })
+    await expect(dialog).toHaveAccessibleDescription(/Pick a meme you hold shares in/)
+    // Base UI would park focus on the first tab stop (the ✕); the binder search is the task
+    await waitFor(() => expect(canvas.getByRole('searchbox', { name: 'Search your binder' })).toHaveFocus())
+    await expect(rows(canvasElement)).toHaveLength(4)
+    for (const row of rows(canvasElement)) {
+      await expect(row.tagName).toBe('BUTTON')
+      await expect(row).toHaveAttribute('aria-pressed', 'false')
+      await expect(row.offsetHeight).toBeGreaterThanOrEqual(44)
+      for (const slot of ['item-media', 'item-title', 'item-description', 'item-actions', 'tier-chip']) {
+        await expect(row.querySelector(`[data-slot="${slot}"]`)).not.toBeNull()
+      }
+    }
+    await expect(canvas.getByRole('button', { name: new RegExp(giftablePaper.title) })).toBeInTheDocument()
+    await expect(canvas.getByText('Listed')).toHaveAttribute('data-slot', 'badge')
+    // nothing picked yet: the shares field and the submit wait
+    await expect(canvas.queryByRole('spinbutton')).toBeNull()
+    await expect(canvas.getByRole('button', { name: 'Cancel' })).toBeEnabled()
+  },
+}
+export const EmptyBinder: Story = {
+  args: { model: model({ memes: [] }) },
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByText(/Nothing to gift here/)).toBeInTheDocument()
+    await expect(rows(canvasElement)).toHaveLength(0)
+  },
+}
 export const Filtered: Story = { args: { model: model({ query: 'silver' }) } }
 export const NoMatch: Story = { args: { model: model({ query: 'zzz' }) } }
-export const Picked: Story = { args: { model: model({ pick: giftablePaper, shares: 3 }) } }
+/** A pick: the row wears the muted well and says so, and the shares field appears in the footer. */
+export const Picked: Story = {
+  args: { model: model({ pick: giftablePaper, shares: 3 }) },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // the submit names the pick too, so the row is found by its state, not its name
+    const picked = [...rows(canvasElement)].find((row) => row.getAttribute('aria-pressed') === 'true')!
+    await expect(picked).toHaveTextContent(giftablePaper.title)
+    await expect(picked).toHaveAttribute('data-variant', 'muted')
+    const others = [...rows(canvasElement)].filter((row) => row !== picked)
+    await expect(others).toHaveLength(3)
+    for (const row of others) {
+      await expect(row).toHaveAttribute('data-variant', 'default')
+    }
+    const shares = canvas.getByRole('spinbutton', { name: /Shares to gift/ })
+    await expect(shares).toHaveValue(3)
+    await expect(shares).toHaveAttribute('max', String(giftablePaper.myShares))
+    await expect(canvas.getByText('shares')).toHaveAttribute('for', shares.id)
+    await expect(canvas.getByText(`of ${giftablePaper.myShares}`)).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: /^Gift 3 of/ })).toBeEnabled()
+  },
+}
 export const SharesFieldCleared: Story = {
   args: { model: model({ pick: giftablePaper, shares: 3, sharesInput: '' }) },
 }
@@ -58,17 +111,29 @@ export const Busy: Story = {
     await expect(canvas.getByRole('searchbox', { name: 'Search your binder' })).toBeDisabled()
     await expect(canvas.getByRole('spinbutton', { name: /Shares to gift/ })).toBeDisabled()
     await expect(canvas.getByRole('button', { name: /Gifting/ })).toBeDisabled()
-    const rows = canvasElement.querySelectorAll('[data-slot="gift-list"] [data-slot="button"]')
-    await expect(rows).toHaveLength(4)
-    for (const row of rows) {
+    await expect(rows(canvasElement)).toHaveLength(4)
+    for (const row of rows(canvasElement)) {
       await expect(row).toBeDisabled()
     }
+    // the list itself dims and stops answering the pointer
+    const list = canvasElement.querySelector<HTMLElement>('[data-slot="gift-list"]')!
+    await expect(getComputedStyle(list).pointerEvents).toBe('none')
+    await expect(parseFloat(getComputedStyle(list).opacity)).toBeLessThan(1)
   },
 }
+/** The failure lands in a live region that was mounted before it, so it is announced. */
 export const Error: Story = {
   args: { model: model({ pick: giftablePaper, shares: 3, error: 'not enough shares' }) },
+  play: async ({ canvasElement }) => {
+    const region = canvasElement.querySelector<HTMLElement>('[data-slot="gift-error"]')!
+    await expect(region).toHaveAttribute('role', 'alert')
+    // the band is still the transitional Notice (a hooks runtime test reads its slot, L13)
+    const band = region.querySelector('[data-slot="notice"]')
+    await expect(band).toHaveAttribute('data-variant', 'error')
+    await expect(band).toHaveTextContent('not enough shares')
+  },
 }
 export const Closed: Story = { args: { model: model({ open: false, memes: [] }) } }
 
-/** The dark arm of the picker: pressed row, tier seals and the one bubblegum→sky submit. */
+/** The dark arm of the picker: muted row, tier seals and the one bubblegum→sky submit. */
 export const Dark: Story = { ...Picked, globals: { theme: 'dark' } }

@@ -33,6 +33,12 @@ export const Open: Story = {
     onCancel.mockClear()
     const canvas = within(canvasElement)
     const dialog = canvas.getByRole('alertdialog', { name: 'Delete forever?' })
+    await expect(dialog).toHaveAttribute('data-size', 'sm')
+    await expect(dialog).toHaveAttribute('data-variant', 'default')
+    await expect(dialog).toHaveAccessibleDescription("This can't be undone.")
+    // the two buttons sit in the atom's action row; no ✕ — the row is the way out
+    await expect(canvasElement.querySelector('[data-slot="dialog-footer"]')).not.toBeNull()
+    await expect(canvasElement.querySelector('[data-slot="dialog-close"]')).toBeNull()
     // Base UI supplies containment and initial focus: the first control inside the dialog
     await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true))
     await userEvent.click(canvas.getByRole('heading', { name: 'Delete forever?' }))
@@ -51,8 +57,16 @@ export const Closed: Story = {
     await expect(within(canvasElement).queryByRole('alertdialog')).toBeNull()
   },
 }
+/** The danger frame: the ring inside the card, the ⚠️ in the name, the tinted destructive commit. */
 export const Danger: Story = {
   args: { model: buildConfirmDialogModel({ ...baseInput, danger: true }) },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const dialog = canvas.getByRole('alertdialog', { name: '⚠️ Delete forever?' })
+    await expect(dialog).toHaveAttribute('data-variant', 'danger')
+    await expect(getComputedStyle(dialog).boxShadow).toContain('inset')
+    await expect(canvas.getByRole('button', { name: 'Delete it' })).toHaveAttribute('data-slot', 'button')
+  },
 }
 export const Busy: Story = {
   args: { model: buildConfirmDialogModel({ ...baseInput, danger: true, busy: true }) },
@@ -97,9 +111,9 @@ export const RestoresFocusToItsOpener: Story = {
     const opener = canvas.getByRole('button', { name: 'Remove Pal' })
     const dismissals = {
       scrim: async () => {
-        const backdrop = canvasElement.querySelector('[data-slot="dialog-backdrop"]')
-        await expect(backdrop).not.toBeNull()
-        await userEvent.click(backdrop as HTMLElement)
+        const overlay = canvasElement.querySelector('[data-slot="dialog-overlay"]')
+        await expect(overlay).not.toBeNull()
+        await userEvent.click(overlay as HTMLElement)
       },
       escape: () => userEvent.keyboard('{Escape}'),
       cancel: () => userEvent.click(canvas.getByRole('button', { name: 'Cancel' })),
@@ -107,13 +121,15 @@ export const RestoresFocusToItsOpener: Story = {
 
     for (const dismiss of Object.values(dismissals)) {
       await userEvent.click(opener)
-      await expect(canvas.getByRole('alertdialog', { name: 'Delete forever?' })).toBeVisible()
+      // the atom fades in, so visibility is a wait, not a read
+      await waitFor(() => expect(canvas.getByRole('alertdialog', { name: 'Delete forever?' })).toBeVisible())
       await dismiss()
       await waitFor(() => expect(canvas.queryByRole('alertdialog')).toBeNull())
       await waitFor(() => expect(document.activeElement).toBe(opener))
     }
   },
 }
+/** The prompt: a Field with its label, the textarea, the hint under it and the counter beside. */
 export const Prompt: Story = {
   args: {
     model: buildConfirmDialogModel({
@@ -134,7 +150,13 @@ export const Prompt: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('textbox', { name: /Why is this meme yours/ })).toHaveAttribute('maxlength', '400')
+    const textbox = canvas.getByRole('textbox', { name: /Why is this meme yours/ })
+    await expect(textbox).toHaveAttribute('maxlength', '400')
+    await expect(textbox).toHaveAccessibleDescription(/Links help your case/)
+    for (const slot of ['field', 'field-label', 'field-description', 'field-counter']) {
+      await expect(canvasElement.querySelector(`[data-slot="${slot}"]`)).not.toBeNull()
+    }
+    await expect(canvas.getByText('0/400')).toHaveAttribute('data-slot', 'field-counter')
   },
 }
 

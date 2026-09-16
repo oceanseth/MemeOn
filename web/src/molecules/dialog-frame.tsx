@@ -1,53 +1,11 @@
-import { Dialog } from '@base-ui/react/dialog'
+import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import type { DialogPopupProps } from '@base-ui/react/dialog'
 import type { ReactNode } from 'react'
-import { cn } from '../lib/cn'
-
-/**
- * A ref-shaped container for `Dialog.Portal`. Base UI reads `.current` in a layout effect, after the
- * anchor `<span>` is in the DOM, so a getter over `getElementById` needs no ref — and no hook, which
- * a molecule is not allowed to call.
- */
-const anchorContainer = (anchorId: string) => ({
-  get current(): HTMLElement | null {
-    return document.getElementById(anchorId)
-  },
-})
-
-/** `margin: auto` + `inset: 0` is how a native modal `<dialog>` centres itself; `mb-0` drops it to the floor. */
-const POPUP = cn(
-  'fixed inset-0 z-(--z-modal) m-auto h-fit box-border overflow-y-auto scrollbar-thin',
-  'max-h-[min(86dvh,86vh)] max-w-[calc(100vw-24px)]',
-  // the modal card: radius 25, 24 of padding, the surface colour, no border — the shadow is the edge
-  'rounded-lg material-modal p-card-inset text-foreground',
-  'focus-ring',
-  // ≤720px: a bottom sheet, so an on-screen keyboard pushes the dialog instead of burying it
-  'max-lg:mb-0 max-lg:w-full max-lg:max-w-none max-lg:rounded-b-none',
-  'max-lg:pb-safe-6',
-)
-
-const SIZE = {
-  /** the confirm frame */
-  sm: 'w-[min(440px,calc(100vw-24px))]',
-  /** every other modal */
-  md: 'w-[min(640px,calc(100vw-24px))]',
-}
-
-/**
- * The danger frame: a 2px ring drawn inside the card, so the box never grows and the modal shadow
- * underneath it is untouched (Tailwind composes `inset-ring` and `shadow` into the one property).
- */
-const DANGER = 'inset-ring-2 inset-ring-destructive'
-
-/** The ✕ is a 40px neutral raised square — the design has no drawn x, and the glyph is the button. */
-const CLOSE = cn(
-  'absolute top-6 right-6 inline-flex size-10 pointer-coarse:size-hit cursor-pointer items-center justify-center',
-  'rounded-sm material-raised p-0 text-base text-foreground',
-  'transition-press',
-  'press',
-  'focus-ring',
-  'disabled-look',
-)
+import { buttonVariants } from '@/atoms/button'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/atoms/dialog'
+import { PortalAnchor } from '@/atoms/portal-anchor'
+import { cn } from '@/lib/cn'
+import { portalAnchor } from '../lib/portalAnchor'
 
 export interface DialogFrameCloseModel {
   /** accessible name for the ✕; it is the only exit some dialogs offer a screen reader */
@@ -72,7 +30,6 @@ export interface DialogFrameProps {
   descriptionId?: string | undefined
   /** `div` for a description that carries block content — a `<p>` inside a `<p>` is not markup */
   descriptionAs?: 'p' | 'div' | undefined
-  descriptionClassName?: string | undefined
   /** `alertdialog` for a decision the user cannot walk away from */
   role?: 'dialog' | 'alertdialog' | undefined
   size?: 'sm' | 'md' | undefined
@@ -93,27 +50,34 @@ export interface DialogFrameProps {
 }
 
 /**
- * The app's one modal frame, on Base UI's Dialog. Base UI owns modality, the focus trap, Escape,
- * focus restoration to the opener and the scroll lock; this file owns the paint — the legacy
- * modal box, its scrim, its title/close row and the ≤720px bottom sheet.
+ * The app's one modal frame, composed from the `dialog` atom. Base UI owns modality, the focus
+ * trap, Escape, focus restoration and the scroll lock; the atom owns the paint (the modal card,
+ * its scrim, the ≤720px bottom sheet); this file owns the app's contract — one `id`, model-driven
+ * `open`, a title/description header, an optional ✕ that can be locked, and the two departures
+ * from the atom's defaults below.
  *
  * Render it always and drive it from `open`; every dismissal (Escape, a press on the scrim, the ✕)
  * arrives as `onOpenChange(false)`, so a caller that is mid-request can simply refuse it.
  *
  *   <DialogFrame id="gift" open={open} onOpenChange={setOpen} title="Gift" close={{ label: 'Close' }}>
- *     …body and action row…
+ *     …body, then a <DialogFooter> of actions…
  *   </DialogFrame>
  *
- * Two departures from the Base UI defaults, both deliberate:
- *
- * 1. The popup is portalled into an anchor at this component's own place in the tree rather than
- *    into `<body>`, so the dialog stays inside the screen it belongs to and a consumer's
+ * 1. The popup is portalled into a `PortalAnchor` at this component's own place in the tree rather
+ *    than into `<body>`, so the dialog stays inside the screen it belongs to and a consumer's
  *    `within(canvasElement)` query still finds it.
- * 2. The portal is gated on `open` instead of being left to Base UI's own unmount. Base UI keeps a
- *    closed popup in the DOM for the frame an exit animation would have used, and this frame has
- *    none — `open` is the whole truth, so a dismissal is gone in the same commit that reports it,
- *    exactly as `<dialog>.close()` was. Focus returns to whoever `finalFocus` names; without one,
- *    a same-commit removal beats Base UI's own restore and focus is left on the `<main>` landmark.
+ * 2. The content is mounted only while `open`, instead of being left to Base UI's own unmount.
+ *    Base UI keeps a closed popup in the DOM for its exit animation, and this frame wants none —
+ *    `open` is the whole truth, so a dismissal is gone in the same commit that reports it, exactly
+ *    as `<dialog>.close()` was. Focus returns to whoever `finalFocus` names (`lib/dialogOpener`);
+ *    without one, a same-commit removal beats Base UI's own restore and focus is left on `<main>`.
+ *
+ * The ✕ is this frame's own `Close` wearing the icon Button's classes rather than the atom's
+ * `showCloseButton`: a locked dialog (a gift in flight) disables its exit, and the atom's ✕ has no
+ * `disabled`. It is the Base UI primitive with `buttonVariants()` rather than
+ * `<DialogClose render={<Button />}>`: `Button` does not forward its ref under React 18 (requested),
+ * and the lint cannot read a cva call on an atom. `data-close-button` is set by hand so
+ * `DialogHeader` still reserves the ✕'s lane.
  */
 export function DialogFrame({
   open,
@@ -124,7 +88,6 @@ export function DialogFrame({
   description,
   descriptionId,
   descriptionAs = 'p',
-  descriptionClassName,
   role = 'dialog',
   size = 'md',
   danger = false,
@@ -135,66 +98,54 @@ export function DialogFrame({
   children,
 }: DialogFrameProps) {
   const anchorId = `${id}-dialog-anchor`
-  const heading = (
-    <Dialog.Title
-      id={titleId ?? `${id}-title`}
-      render={<h3 />}
-      className="m-0 mb-1.5 text-3xl"
-      data-slot="dialog-title"
-    >
-      {title}
-    </Dialog.Title>
-  )
 
   return (
-    <Dialog.Root open={open} onOpenChange={(nextOpen) => onOpenChange(nextOpen)}>
-      {/* display:contents, so an idle frame costs its screen no box and no flex gap */}
-      <span id={anchorId} className="contents" data-slot="dialog-anchor" />
+    <Dialog open={open} onOpenChange={(nextOpen) => onOpenChange(nextOpen)}>
+      <PortalAnchor id={anchorId} />
       {open && (
-        <Dialog.Portal container={anchorContainer(anchorId)} className="contents">
-          <Dialog.Backdrop
-            className="fixed inset-0 z-(--z-modal) bg-overlay backdrop-blur-[6px]"
-            data-slot="dialog-backdrop"
-          />
-          <Dialog.Popup
-            role={role}
-            // Base UI leaves it off, and a screen reader that honours it needs it on both roles
-            aria-modal="true"
-            initialFocus={initialFocus}
-            finalFocus={finalFocus}
-            className={cn(POPUP, SIZE[size], danger && DANGER, className)}
-            data-slot="dialog"
-          >
-            {close ? (
-              <div className="flex items-center justify-between gap-3 pr-12" data-slot="dialog-head">
-                {heading}
-                <Dialog.Close
-                  aria-label={close.label}
-                  disabled={close.disabled}
-                  className={CLOSE}
-                  data-slot="dialog-close"
-                >
-                  <span aria-hidden="true">✕</span>
-                </Dialog.Close>
-              </div>
-            ) : (
-              heading
-            )}
+        <DialogContent
+          container={portalAnchor(anchorId)}
+          role={role}
+          size={size}
+          variant={danger ? 'danger' : 'default'}
+          // every modal in the app drops to the floor under the 720px cut, so an on-screen keyboard
+          // pushes the box instead of burying it
+          sheet
+          initialFocus={initialFocus}
+          finalFocus={finalFocus}
+          showCloseButton={false}
+          data-close-button={close ? true : undefined}
+          // transitional: `hooks/social-regressions.runtime.test.tsx` reads the popup as `dialog`;
+          // it becomes the atom's `dialog-content` once that probe moves (LEDGER)
+          data-slot="dialog"
+          className={className}
+        >
+          <DialogHeader>
+            <DialogTitle id={titleId ?? `${id}-title`} render={<h3 />}>
+              {title}
+            </DialogTitle>
             {description !== undefined && description !== null && (
-              <Dialog.Description
+              <DialogDescription
                 id={descriptionId ?? `${id}-description`}
                 render={descriptionAs === 'div' ? <div /> : <p />}
-                // label scale, not body — matches every modal description in the app
-                className={cn('m-0 text-base text-muted-foreground', descriptionClassName)}
-                data-slot="dialog-description"
               >
                 {description}
-              </Dialog.Description>
+              </DialogDescription>
             )}
-            {children}
-          </Dialog.Popup>
-        </Dialog.Portal>
+          </DialogHeader>
+          {children}
+          {close && (
+            <DialogPrimitive.Close
+              data-slot="dialog-close"
+              aria-label={close.label}
+              disabled={close.disabled}
+              className={cn(buttonVariants({ variant: 'default', size: 'icon-sm' }), 'absolute top-6 right-6')}
+            >
+              <span aria-hidden="true">✕</span>
+            </DialogPrimitive.Close>
+          )}
+        </DialogContent>
       )}
-    </Dialog.Root>
+    </Dialog>
   )
 }

@@ -51,10 +51,16 @@ export const Closed: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const trigger = canvas.getByRole('button', { name: 'Account menu' })
+    await expect(trigger).toHaveAttribute('data-slot', 'avatar-menu-trigger')
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    // the 34px header avatar is the whole trigger; the halo utility makes the coarse target
+    const avatar = trigger.querySelector<HTMLElement>('[data-slot="avatar"]')!
+    await expect(avatar).toHaveAttribute('data-size', 'header')
+    await expect(trigger.offsetHeight).toBe(avatar.offsetHeight)
     await expect(canvas.queryByRole('menu')).toBeNull()
     await userEvent.click(trigger)
-    await expect(await canvas.findByRole('menu')).toBeInTheDocument()
+    const menu = await canvas.findByRole('menu')
+    await expect(canvasElement.contains(menu)).toBe(true)
     await waitFor(() => expect(trigger).toHaveAttribute('aria-expanded', 'true'))
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull())
@@ -70,11 +76,17 @@ export const Open: Story = {
     const canvas = within(canvasElement)
     onLogout.mockClear()
     const menu = await canvas.findByRole('menu')
-    await expect(within(menu).getByRole('menuitem', { name: 'Profile' })).toHaveAttribute('href', `/u/${encodeURIComponent(meLou.sub)}`)
+    await expect(menu).toHaveAttribute('data-slot', 'avatar-menu')
+    const profile = within(menu).getByRole('menuitem', { name: 'Profile' })
+    await expect(profile).toHaveAttribute('href', `/u/${encodeURIComponent(meLou.sub)}`)
+    await expect(profile).toHaveAttribute('data-slot', 'avatar-menu-item')
+    await expect(profile.offsetHeight).toBeGreaterThanOrEqual(44)
     await expect(within(menu).getByRole('menuitem', { name: '🏆 Top Brains' })).toHaveAttribute('href', '/leaderboard')
     await expect(within(menu).getByRole('menuitem', { name: 'Settings' })).toHaveAttribute('href', '/settings')
     await expect(within(menu).getByRole('menuitem', { name: '🔧 Developers' })).toHaveAttribute('href', '/developers')
-    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Log out' }))
+    const logout = within(menu).getByRole('menuitem', { name: 'Log out' })
+    await expect(logout).not.toHaveAttribute('href')
+    await userEvent.click(logout)
     await expect(onLogout).toHaveBeenCalledTimes(1)
   },
 }
