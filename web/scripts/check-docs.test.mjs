@@ -145,6 +145,27 @@ test("the allowlist excuses a name, but only in the document it is scoped to", (
   )
 })
 
+// The CI bug this rule exists for: `AGENTS.md` links to `docs/*.md`, `scripts/bd` and
+// `.codex/config.toml`, all of which live in `.git/info/exclude` — so a fresh clone has no `docs/`
+// at all. A head that resolves nowhere on the way out to the repo root is not a claim this
+// checkout can check; a head that does resolve is checked all the way down.
+test("a path into a tree this checkout does not carry is not a claim", () => {
+  const doc = "See [the runbook](docs/RUNBOOK.md) and `scripts/bd`.\n"
+  withRepo({ "AGENTS.md": doc }, ({ status, output }) => assert.equal(status, 0, output))
+  withRepo({ "AGENTS.md": doc, "docs/OTHER.md": "x\n", "scripts/other.sh": "x\n" }, ({ status, output }) => {
+    assert.equal(status, 1, output)
+    assert.match(output, /link target `docs\/RUNBOOK\.md` does not exist/)
+    assert.match(output, /path `scripts\/bd` does not exist/)
+  })
+})
+
+test("a relative path resolves from the document outward", () => {
+  withRepo(
+    { "web/src/Anatomy.mdx": "`atoms/button.tsx` · `scripts/docs-allowlist.json` · `web/src/index.css`\n" },
+    ({ status, output }) => assert.equal(status, 0, output),
+  )
+})
+
 test("an allowlist entry without a reason is itself an error", () => {
   withRepo(
     { "web/scripts/docs-allowlist.json": JSON.stringify({ allow: [{ name: "anything" }] }) },

@@ -148,24 +148,42 @@ for (const entry of allowed) {
 const allows = (file, name) => allowed.some((entry) => entry.name === name && (!entry.file || entry.file === file))
 
 /**
- * A path claim is a span whose first segment is a real entry of the repo root, of `web/`, or of
- * `web/src/` — or a bare file name with a source extension. Everything else that happens to carry a
- * slash (`origin/dev`, `memeon.ai/m/{id}`, `presence/{uid}`, `oceanseth/MemeOn`) names something
- * that is not a file in this tree, and is not this script's business.
+ * A path in a document is read the way a reader reads it: from the document's own directory
+ * outward, one parent at a time, to the repo root. `Anatomy.mdx` (in `web/src/`) writes
+ * `atoms/button.tsx`, `scripts/copy-baseline.json` and `web/src/index.css`, and all three resolve;
+ * `AGENTS.md` (at the root) writes `docs/WORKTREES.md`.
+ *
+ * A span is a *claim* only when its first segment is a real entry of one of those directories, or
+ * it is a bare file name with a source extension. This is what makes the same command pass in a
+ * fresh clone and on Lou's: `docs/`, `scripts/`, `.codex/` and friends live in `.git/info/exclude`
+ * (which is not itself cloned), so on CI their head resolves nowhere and the span is not a claim —
+ * while on a checkout that has them, every path under them is checked.
  */
-const ROOTS = [ROOT, WEB, join(WEB, "src")]
-const heads = new Set(ROOTS.flatMap((base) => (existsSync(base) ? readdirSync(base) : [])))
 const basenames = new Set(walk(ROOT, () => true).map((path) => path.slice(path.lastIndexOf("/") + 1)))
 const SOURCE_EXT = /^[\w.@-]*[\w@-]\.(tsx?|mjs|json|css|mdx?|ya?ml|html|rhai|sh|toml)$/
 /** A module specifier written without its extension (`lib/cn`, `stores/themeStore`). */
 const EXTENSIONS = ["", ".ts", ".tsx", ".css", "/index.ts", "/index.tsx"]
 
-const pathish = (text) => {
+const entries = new Map()
+const basesOf = (file) => {
+  const bases = []
+  for (let dir = file.slice(0, file.lastIndexOf("/")); ; dir = dir.slice(0, dir.lastIndexOf("/"))) {
+    bases.push(join(ROOT, dir))
+    if (!dir.includes("/")) break
+  }
+  if (bases[bases.length - 1] !== ROOT) bases.push(ROOT)
+  for (const base of bases)
+    if (!entries.has(base)) entries.set(base, new Set(existsSync(base) ? readdirSync(base) : []))
+  return bases
+}
+
+const pathish = (text, bases) => {
   // `useXScreen()`, `cn()`, `retain()`: a call, not a file.
   if (/^(https?:|#|mailto:|--)/.test(text) || /[\s`'"]/.test(text) || text.endsWith("()")) return false
   const head = text.split("/")[0]
   if (head === ".git") return false
-  return (text.includes("/") && heads.has(head)) || (!text.includes("/") && SOURCE_EXT.test(text))
+  if (!text.includes("/")) return SOURCE_EXT.test(text)
+  return bases.some((base) => entries.get(base).has(head))
 }
 
 const TEMPLATE = /[<>{}$*]|…/
@@ -176,19 +194,17 @@ const TEMPLATE = /[<>{}$*]|…/
  */
 const GENERATED = /(^|\/)(dist|storybook-static|node_modules|coverage|\.beads)(\/|$)|\.zip$/
 
-const exists = (candidate, from = "") => {
+const exists = (candidate, bases) => {
   const cleaned = candidate.replace(/[.,;:)]+$/, "")
   if (GENERATED.test(cleaned)) return true
-  // a link target is relative to the document that writes it
-  if (from && existsSync(join(ROOT, from.slice(0, from.lastIndexOf("/")), cleaned))) return true
   // `copy/<surface>.ts`, `lib/*Model.ts`, `docs/…`: a placeholder segment means "a file of this
   // shape", so the deepest literal directory above it is what has to exist.
   if (TEMPLATE.test(cleaned)) {
     const parts = cleaned.split("/")
     const dir = parts.slice(0, parts.findIndex((part) => TEMPLATE.test(part))).join("/")
-    return dir === "" || ROOTS.some((base) => existsSync(join(base, dir)))
+    return dir === "" || bases.some((base) => existsSync(join(base, dir)))
   }
-  for (const base of ROOTS) for (const ext of EXTENSIONS) if (existsSync(join(base, cleaned + ext))) return true
+  for (const base of bases) for (const ext of EXTENSIONS) if (existsSync(join(base, cleaned + ext))) return true
   return !cleaned.includes("/") && basenames.has(cleaned)
 }
 
@@ -233,6 +249,7 @@ const report = (file, line, message) => findings.push(`  ${file}:${line}  ${mess
 for (const pattern of DOCUMENTS) {
   for (const file of expand(pattern)) {
     const lines = read(join(ROOT, file)).split("\n")
+    const bases = basesOf(file)
     let fenced = false
     lines.forEach((line, index) => {
       if (/^\s*```/.test(line)) fenced = !fenced
@@ -244,8 +261,10 @@ for (const pattern of DOCUMENTS) {
       const ticked = [...line.matchAll(/`([^`]+)`/g)].map(([, text]) => text)
 
       for (const target of linked) {
-        if (/^(https?:|#|mailto:)/.test(target) || allows(file, target)) continue
-        if (!exists(target, file)) say(`link target \`${target}\` does not exist`)
+        // Same "is this a claim" gate as a backticked path: a head that resolves nowhere on the
+        // way out to the repo root is a tree this checkout does not carry.
+        if (/^(https?:|#|mailto:)/.test(target) || allows(file, target) || !pathish(target, bases)) continue
+        if (!exists(target, bases)) say(`link target \`${target}\` does not exist`)
       }
 
       for (const text of ticked) {
@@ -258,7 +277,7 @@ for (const pattern of DOCUMENTS) {
           continue
         }
 
-        if (pathish(text) && !exists(text)) {
+        if (pathish(text, bases) && !exists(text, bases)) {
           say(`path \`${text}\` does not exist`)
           continue
         }
