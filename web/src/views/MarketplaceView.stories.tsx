@@ -78,7 +78,8 @@ export const FiltersSortAndStyles: Story = {
     await expect(canvas.getByRole('button', { name: /Value/ })).toBeDisabled()
     await expect(canvas.getByRole('group', { name: 'Sort by' })).toHaveAccessibleDescription(copy.sortDisabledReason)
     await expect(canvas.getByRole('status')).toHaveTextContent(copy.results.line([copy.filters.media.images, 'Holo', copy.results.activeListed]))
-    await expect(getComputedStyle(canvas.getByRole('link', { name: /Mint a meme/ })).fontWeight).toBe('600')
+    // a link that wears the button's look wears its weight too: button labels are 500
+    await expect(getComputedStyle(canvas.getByRole('link', { name: /Mint a meme/ })).fontWeight).toBe('500')
     await expect(loaded.scenario.unexpected).toEqual([])
   },
 }

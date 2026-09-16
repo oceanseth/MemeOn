@@ -98,7 +98,7 @@ export function DropdownMenuLabel({
     <MenuPrimitive.GroupLabel
       data-slot="dropdown-menu-label"
       data-inset={inset || undefined}
-      className={cn('px-3 py-1.5 text-caption font-semibold text-muted-foreground', inset && 'pl-10', className)}
+      className={cn('px-3 py-1.5 text-sm font-semibold text-muted-foreground', inset && 'pl-10', className)}
       {...props}
     />
   )
@@ -112,7 +112,7 @@ export function DropdownMenuLabel({
 export const dropdownMenuItemVariants = cva(
   cn(
     'group/dropdown-menu-item relative flex min-h-hit w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2',
-    'text-label font-medium text-foreground no-underline select-none outline-none',
+    'text-base font-medium text-foreground no-underline select-none outline-none',
     'transition-tint focus-ring-inset disabled-look data-disabled:pointer-events-none',
     'data-highlighted:bg-accent',
   ),
@@ -266,7 +266,7 @@ export function DropdownMenuShortcut({ className, ...props }: ComponentProps<'sp
   return (
     <span
       data-slot="dropdown-menu-shortcut"
-      className={cn('ml-auto text-caption tracking-widest text-muted-foreground', className)}
+      className={cn('ml-auto text-sm tracking-widest text-muted-foreground', className)}
       {...props}
     />
   )

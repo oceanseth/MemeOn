@@ -36,10 +36,10 @@ const WELL = 'inline-flex h-10 w-46 shrink-0 items-center gap-0.5 rounded-full m
 const SEGMENT = cn(
   'relative inline-flex h-control-sm min-w-0 flex-1 cursor-pointer items-center justify-center rounded-md border-0 bg-transparent px-1',
   'hit-44',
-  'text-micro font-semibold whitespace-nowrap text-muted-foreground',
+  'text-xs font-semibold whitespace-nowrap text-muted-foreground',
   'transition-press',
   'hover:text-foreground',
-  'aria-pressed:material-raised aria-pressed:font-bold aria-pressed:text-foreground',
+  'aria-pressed:material-raised aria-pressed:font-semibold aria-pressed:text-foreground',
   'focus-ring',
 )
 
@@ -50,7 +50,7 @@ const SEGMENT = cn(
  */
 const BUTTON = cn(
   'relative inline-flex size-control-sm shrink-0 cursor-pointer items-center justify-center rounded-sm border-0 p-0',
-  'material-raised text-glyph-sm text-foreground',
+  'material-raised text-base leading-none text-foreground',
   'hit-44',
   'focus-ring',
 )

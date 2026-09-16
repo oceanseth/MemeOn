@@ -78,7 +78,7 @@ export const dialogContentVariants = cva(
 /** The ✕ is a 40px neutral raised square in the card's corner — the glyph is the button. */
 const CLOSE_BUTTON = cn(
   'absolute top-card-inset right-card-inset inline-flex size-10 cursor-pointer items-center justify-center pointer-coarse:size-hit',
-  'rounded-sm material-raised p-0 text-label text-foreground',
+  'rounded-sm material-raised p-0 text-base text-foreground',
   'transition-press press',
   'focus-ring disabled-look',
 )
@@ -158,7 +158,7 @@ export function DialogTitle({ className, ...props }: Styled<DialogPrimitive.Titl
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn('m-0 font-display text-title font-medium tracking-title text-foreground text-pretty', className)}
+      className={cn('m-0 font-display text-3xl font-normal text-foreground text-pretty', className)}
       {...props}
     />
   )
@@ -169,7 +169,7 @@ export function DialogDescription({ className, ...props }: Styled<DialogPrimitiv
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn('m-0 text-label text-muted-foreground', className)}
+      className={cn('m-0 text-base text-muted-foreground', className)}
       {...props}
     />
   )

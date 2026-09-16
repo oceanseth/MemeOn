@@ -66,7 +66,7 @@ export const AlignBetween: Story = {
   args: { align: 'between' },
   render: (args) => (
     <Toolbar {...args}>
-      <span className="text-label text-muted-foreground">12 cards</span>
+      <span className="text-base text-muted-foreground">12 cards</span>
       <Button>Sort</Button>
     </Toolbar>
   ),

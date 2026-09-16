@@ -152,8 +152,8 @@ export const TitleSizes: Story = {
     await expect(canvas.getAllByRole('heading', { level: 2 })).toHaveLength(3)
     const h3 = canvas.getByRole('heading', { level: 3 })
     await expect(h3).toHaveAttribute('data-slot', 'card-title')
-    await expect(getComputedStyle(h3).fontSize).toBe(token('--text-intro'))
-    await expect(getComputedStyle(canvas.getByText(/^Title — /)).fontSize).toBe(token('--text-title'))
+    await expect(getComputedStyle(h3).fontSize).toBe(token('--text-lg'))
+    await expect(getComputedStyle(canvas.getByText(/^Title — /)).fontSize).toBe(token('--text-3xl'))
   },
 }
 

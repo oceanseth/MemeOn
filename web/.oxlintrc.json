@@ -12,20 +12,7 @@
     }
   },
   "rules": {
-    "shadcn/no-raw-colors": [
-      "error",
-      {
-        "allow": [
-          "text-display", "text-display-phone", "text-section", "text-section-phone", "text-title",
-          "text-card-title", "text-card-title-phone", "text-intro", "text-body", "text-label", "text-small",
-          "text-caption", "text-micro", "text-glyph-sm", "text-glyph", "text-glyph-lg", "text-glyph-hero",
-          "text-display/*", "text-display-phone/*", "text-section/*", "text-section-phone/*", "text-title/*",
-          "text-card-title/*", "text-card-title-phone/*", "text-intro/*", "text-body/*", "text-label/*",
-          "text-small/*", "text-caption/*", "text-micro/*", "text-glyph-sm/*", "text-glyph/*", "text-glyph-lg/*",
-          "text-glyph-hero/*"
-        ]
-      }
-    ],
+    "shadcn/no-raw-colors": "error",
     "shadcn/no-unknown-classes": [
       "error",
       {

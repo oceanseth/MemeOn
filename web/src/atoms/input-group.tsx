@@ -16,8 +16,7 @@ export function InputGroup({ className, ...props }: ComponentPropsWithoutRef<'di
       className={cn(
         'group/input-group relative flex h-12.5 w-full min-w-0 items-center rounded-md material-pressed',
         'has-disabled:cursor-not-allowed has-disabled:opacity-(--opacity-disabled)',
-        'has-focus-visible:outline-3 has-focus-visible:outline-ring has-focus-visible:outline-offset-2',
-        'contrast-more:has-focus-visible:outline-4 forced-colors:has-focus-visible:outline-fc-highlight',
+        'focus-ring-within',
         'has-aria-invalid:inset-ring-2 has-aria-invalid:inset-ring-destructive',
         'has-data-invalid:inset-ring-2 has-data-invalid:inset-ring-destructive',
         className,
@@ -28,7 +27,7 @@ export function InputGroup({ className, ...props }: ComponentPropsWithoutRef<'di
 }
 
 export const inputGroupAddonVariants = cva(
-  'flex h-auto shrink-0 cursor-text items-center justify-center gap-2 text-label text-muted-foreground select-none',
+  'flex h-auto shrink-0 cursor-text items-center justify-center gap-2 text-base text-muted-foreground select-none',
   {
     variants: {
       align: {
@@ -67,7 +66,7 @@ export function InputGroupText({ className, ...props }: ComponentPropsWithoutRef
   return (
     <span
       data-slot="input-group-text"
-      className={cn('flex items-center gap-2 text-label text-muted-foreground', className)}
+      className={cn('flex items-center gap-2 text-base text-muted-foreground', className)}
       {...props}
     />
   )

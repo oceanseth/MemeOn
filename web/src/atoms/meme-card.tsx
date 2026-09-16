@@ -49,11 +49,11 @@ const memeMetaVariants = cva('flex flex-col', {
   defaultVariants: { size: 'default' },
 })
 
-const memeTitleVariants = cva('font-display font-medium text-foreground', {
+const memeTitleVariants = cva('font-display font-normal text-foreground', {
   variants: {
     size: {
-      default: 'line-clamp-2 text-card-title tracking-card-title @max-card-narrow:text-card-title-phone',
-      lg: 'text-title tracking-title',
+      default: 'line-clamp-2 text-xl @max-card-narrow:font-sans @max-card-narrow:text-lg @max-card-narrow:font-semibold',
+      lg: 'text-3xl',
     },
   },
   defaultVariants: { size: 'default' },
@@ -72,7 +72,7 @@ const ART = 'block aspect-square w-full bg-muted object-contain'
 const TOGGLE = cn(
   'absolute right-2 bottom-2 z-2 inline-flex items-center justify-center',
   'size-8 p-0 pointer-coarse:size-hit',
-  'cursor-pointer whitespace-nowrap text-label leading-none text-foreground',
+  'cursor-pointer whitespace-nowrap text-base leading-none text-foreground',
   'rounded-sm material-raised',
   'transition-press',
   'lift press',
@@ -81,14 +81,14 @@ const TOGGLE = cn(
 
 const CHIP_POS = 'absolute bottom-4 left-4 z-2'
 
-const STATS = 'flex items-center text-micro/normal text-muted-foreground tabular-nums'
+const STATS = 'flex items-center text-xs text-muted-foreground tabular-nums'
 
 const SUB = cn(
-  'flex items-start justify-between gap-2 text-micro/tight font-medium text-foreground tabular-nums',
+  'flex items-start justify-between gap-2 text-xs font-medium text-foreground tabular-nums',
   '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
 )
 
-const VALUE = 'text-small font-bold text-foreground'
+const VALUE = 'text-sm font-semibold text-foreground'
 
 const RIGHT_SLOT = 'min-w-16 shrink-0 text-right *:whitespace-nowrap' // floor keeps footer lanes aligned
 

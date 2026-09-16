@@ -132,8 +132,10 @@ export const Inline: Story = {
     const card = canvasElement.querySelector<HTMLElement>('[data-slot="empty"]')!
     await expect(card).toHaveAttribute('data-size', 'inline')
     await expect(getComputedStyle(card).textAlign).toBe('left')
-    // the title takes the phone step (17px) inside the inline card
-    await expect(getComputedStyle(canvas.getByText(/Edit applied/)).fontSize).toBe('17px')
+    // inside the inline card the title steps down to the display face's floor
+    await expect(getComputedStyle(canvas.getByText(/Edit applied/)).fontSize).toBe(
+      getComputedStyle(document.documentElement).getPropertyValue('--text-xl').trim(),
+    )
   },
 }
 

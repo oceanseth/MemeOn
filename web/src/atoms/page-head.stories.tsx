@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 import { Button } from '@/atoms/button'
 import { FilterBar, PageHead } from '@/atoms/page-head'
+import { Toolbar } from '@/atoms/toolbar'
 
 const meta = {
   title: 'Atoms/PageHead',
@@ -39,6 +40,24 @@ export const WithFilterBar: Story = {
         <Button variant="primary">Save</Button>
       </FilterBar>
     ),
+  },
+}
+
+/** `Toolbar` is what the FilterBar sites become; the head gives it the same slack. */
+export const WithToolbar: Story = {
+  args: {
+    children: (
+      <Toolbar>
+        <Button>Cancel</Button>
+        <Button variant="primary">Save</Button>
+      </Toolbar>
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    const head = canvasElement.querySelector<HTMLElement>('[data-slot="page-head"]')!
+    const toolbar = head.querySelector<HTMLElement>(':scope > [data-slot="toolbar"]')
+    /* the slack rule keys off a *direct* child slot; the `lg:` arm is a viewport question */
+    await expect(toolbar).not.toBeNull()
   },
 }
 

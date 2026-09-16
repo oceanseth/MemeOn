@@ -77,7 +77,7 @@ export function ProgressLabel({ className, ...props }: Styled<ProgressPrimitive.
   return (
     <ProgressPrimitive.Label
       data-slot="progress-label"
-      className={cn('text-small font-semibold text-foreground', className)}
+      className={cn('text-sm font-semibold text-foreground', className)}
       {...props}
     />
   )
@@ -87,7 +87,7 @@ export function ProgressValue({ className, ...props }: Styled<ProgressPrimitive.
   return (
     <ProgressPrimitive.Value
       data-slot="progress-value"
-      className={cn('ml-auto text-small text-muted-foreground tabular-nums', className)}
+      className={cn('ml-auto text-sm text-muted-foreground tabular-nums', className)}
       {...props}
     />
   )

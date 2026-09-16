@@ -6,7 +6,7 @@ import { cn } from '@/lib/cn'
  * `tier-*-chip` colours; each skin is a literal so Tailwind's scanner sees it.
  */
 const tierChipVariants = cva(
-  'inline-flex max-w-full items-center justify-center rounded-sm font-sans font-bold whitespace-nowrap wrap-anywhere',
+  'inline-flex max-w-full items-center justify-center rounded-sm font-sans font-semibold whitespace-nowrap wrap-anywhere',
   {
     variants: {
       tier: {
@@ -21,9 +21,9 @@ const tierChipVariants = cva(
       },
       size: {
         /** grid thumb */
-        sm: 'px-2 py-1 text-micro',
+        sm: 'px-2 py-1 text-xs',
         /** detail hero */
-        md: 'px-3 py-1 text-caption',
+        md: 'px-3 py-1 text-sm',
       },
     },
     defaultVariants: { tier: 'paper', size: 'sm' },

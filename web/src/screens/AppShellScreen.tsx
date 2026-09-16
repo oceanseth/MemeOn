@@ -26,9 +26,12 @@ const AVATAR_LINK = cn('inline-flex shrink-0 rounded-md no-underline', 'focus-ri
 /** "🧠 2,480": a neutral raised pill at 900+; bare bold text in the phone cluster (the design's, and the only way it fits 350). */
 const COINS = cn(
   'inline-flex h-control shrink-0 items-center rounded-lg material-raised px-4.5',
-  'text-label font-semibold whitespace-nowrap text-foreground tabular-nums',
-  'max-xl:h-auto max-xl:rounded-none max-xl:bg-transparent max-xl:px-0 max-xl:font-bold max-xl:shadow-none',
+  'text-base font-semibold whitespace-nowrap text-foreground tabular-nums',
+  'max-xl:h-auto max-xl:rounded-none max-xl:bg-transparent max-xl:px-0 max-xl:font-semibold max-xl:shadow-none',
 )
+
+/* an emoji in the icon lane sits on the `xl` step with the glyph's own leading */
+const NAV_EMOJI = cn('text-xl', 'leading-none')
 
 const GEAR_LINK = cn(
   'inline-flex size-icon shrink-0 items-center justify-center rounded-xs text-foreground no-underline',
@@ -39,7 +42,7 @@ const GEAR_LINK = cn(
 
 const LOGOUT_LINK = cn(
   '-ml-3 inline-flex h-9 cursor-pointer items-center rounded-md border-0 bg-transparent px-3',
-  'text-small font-medium text-muted-foreground',
+  'text-sm font-medium text-muted-foreground',
   'transition-tint',
   'hover:text-foreground',
   'pointer-coarse:min-h-hit',
@@ -73,7 +76,7 @@ export function AppShellScreen({
             <span className={ICON_LANE} aria-hidden="true" data-slot="nav-icon">
               {/* an emoji stays an emoji: it takes the icon lane instead of a drawn twin */}
               {item.emoji ? (
-                <span className="text-glyph">{item.emoji}</span>
+                <span className={NAV_EMOJI}>{item.emoji}</span>
               ) : (
                 <Icon name={item.icon} size={22} />
               )}
@@ -99,7 +102,7 @@ export function AppShellScreen({
         {identity && (
           <div className="mx-1 mt-3 flex min-h-14 items-center gap-3" data-slot="identity">
             <Avatar name={identity.name} src={identity.src} size="md" className="rounded-md material-raised" />
-            <span className="min-w-0 flex-1 truncate text-label font-semibold text-foreground" data-slot="identity-name">
+            <span className="min-w-0 flex-1 truncate text-base font-semibold text-foreground" data-slot="identity-name">
               {identity.name}
             </span>
             <Link {...identity.settingsLinkProps} className={GEAR_LINK} data-slot="identity-settings">
@@ -119,7 +122,7 @@ export function AppShellScreen({
       {/* the sidebar carries the segmented control at 900+; the header button is the phone's and the public pages' */}
       <ThemeControl
         model={{ ...theme, variant: 'button' }}
-        className={showNav ? 'xl:hidden' : 'xl:size-10 xl:rounded-md xl:text-glyph'}
+        className={showNav ? 'xl:hidden' : 'xl:size-10 xl:rounded-md xl:text-xl'}
       />
       {showToolbar && coins && (
         <span className={COINS} data-slot="coins">

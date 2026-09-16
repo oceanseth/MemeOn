@@ -27,7 +27,7 @@ export const Default: Story = {
     await expect(panel).toHaveAttribute('data-size', 'default')
     const heading = canvas.getByRole('heading', { level: 3 })
     await expect(getComputedStyle(heading).fontSize).toBe(
-      getComputedStyle(document.documentElement).getPropertyValue('--text-intro').trim(),
+      getComputedStyle(document.documentElement).getPropertyValue('--text-lg').trim(),
     )
   },
 }

@@ -5,7 +5,7 @@ import { cn } from '@/lib/cn'
 /** A tinted band that shrink-wraps its message; the status pair is the whole look. */
 export const alertVariants = cva(
   [
-    'inline-block max-w-[60ch] text-left px-gutter py-4 text-label',
+    'inline-block max-w-[60ch] text-left px-gutter py-4 text-base',
     'contrast-more:inset-ring-1 contrast-more:inset-ring-current',
   ],
   {
@@ -49,7 +49,7 @@ export function AlertTitle({ className, ...props }: ComponentPropsWithoutRef<'di
 
 export function AlertDescription({ className, ...props }: ComponentPropsWithoutRef<'div'>) {
   return (
-    <div data-slot="alert-description" className={cn('block text-label text-pretty', className)} {...props} />
+    <div data-slot="alert-description" className={cn('block text-base text-pretty', className)} {...props} />
   )
 }
 

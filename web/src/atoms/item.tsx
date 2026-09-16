@@ -29,7 +29,7 @@ export function ItemSeparator({ className, ...props }: ComponentProps<typeof Sep
  */
 export const itemVariants = cva(
   cn(
-    'group/item flex w-full min-h-hit flex-wrap items-center rounded-md text-label text-foreground',
+    'group/item flex w-full min-h-hit flex-wrap items-center rounded-md text-base text-foreground',
     'transition-tint outline-none focus-ring',
     '[a]:cursor-pointer [a]:no-underline [a]:hover:bg-accent [button]:cursor-pointer [button]:hover:bg-accent',
   ),
@@ -39,30 +39,46 @@ export const itemVariants = cva(
         default: '',
         outline: 'border border-border',
         muted: 'bg-muted',
+        /** a row that is its own card: the podium tiles and the raised person row */
+        raised: 'material-card',
       },
       size: {
         default: 'gap-3 px-3 py-2.5',
         sm: 'gap-2.5 px-2.5 py-2',
       },
+      /** The ring a row wears when it is *you*: the podium's first place, your own rank row. */
+      frame: {
+        none: '',
+        brand: 'border-2 border-brand',
+      },
     },
     defaultVariants: {
       variant: 'default',
       size: 'default',
+      frame: 'none',
     },
   },
 )
 
 export type ItemProps = useRender.ComponentProps<'div'> & VariantProps<typeof itemVariants>
 
-export function Item({ className, variant = 'default', size = 'default', render, ...props }: ItemProps) {
+export function Item({
+  className,
+  variant = 'default',
+  size = 'default',
+  frame = 'none',
+  render,
+  ...props
+}: ItemProps) {
   return useRender({
     defaultTagName: 'div',
-    props: mergeProps<'div'>({ className: cn(itemVariants({ variant, size }), className) }, props),
+    props: mergeProps<'div'>({ className: cn(itemVariants({ variant, size, frame }), className) }, props),
     render,
     state: {
       slot: 'item',
       variant,
       size,
+      frame,
     },
   })
 }
@@ -77,7 +93,7 @@ export const itemMediaVariants = cva(
     variants: {
       variant: {
         default: 'bg-transparent',
-        icon: 'text-glyph',
+        icon: 'text-xl leading-none',
         image: 'size-10 overflow-hidden rounded-sm group-data-[size=sm]/item:size-8 *:size-full *:object-cover',
       },
     },
@@ -106,7 +122,7 @@ export function ItemContent({ className, ...props }: ComponentProps<'div'>) {
   return <div data-slot="item-content" className={cn('flex min-w-0 flex-1 flex-col gap-0.5', className)} {...props} />
 }
 
-const itemTitleVariants = cva('flex w-fit max-w-full items-center gap-2 text-label font-semibold leading-snug text-foreground', {
+const itemTitleVariants = cva('flex w-fit max-w-full items-center gap-2 text-base font-semibold text-foreground', {
   variants: {
     /** one line, ellipsis — a name in a fixed-width row; off, a message wraps */
     truncate: {
@@ -131,7 +147,7 @@ export function ItemDescription({ className, ...props }: ComponentProps<'p'>) {
   return (
     <p
       data-slot="item-description"
-      className={cn('m-0 text-left text-small font-normal text-muted-foreground text-pretty', className)}
+      className={cn('m-0 text-left text-sm font-normal text-muted-foreground text-pretty', className)}
       {...props}
     />
   )

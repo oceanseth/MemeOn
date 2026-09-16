@@ -10,7 +10,7 @@ const chipChrome = cn(
   'inline-flex h-control items-center justify-center whitespace-nowrap max-sm:h-10',
   /* 40px drawn height; coarse pointer still needs 44 */
   'pointer-coarse:min-h-hit',
-  'rounded-lg material-raised px-4 text-label/4.5 font-semibold text-foreground',
+  'rounded-lg material-raised px-4 text-base font-semibold text-foreground',
   'cursor-pointer',
   'transition-press lift press',
   'focus-ring',
@@ -52,7 +52,7 @@ export function SortChips({ model }: { model: SortChipsModel }) {
           >
             {chip.label}
             {chip.arrow && (
-              <span aria-hidden="true" className="ml-1 font-bold text-foreground">
+              <span aria-hidden="true" className="ml-1 font-semibold text-foreground">
                 {chip.arrow}
               </span>
             )}

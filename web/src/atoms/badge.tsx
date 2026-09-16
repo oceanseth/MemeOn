@@ -5,7 +5,7 @@ import { cn } from '@/lib/cn'
 
 /** The status pill: a tinted fill and the text that reads on it. */
 const badgeVariants = cva(
-  'inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-sm px-2 py-1 text-micro font-bold focus-ring',
+  'inline-flex w-fit shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-sm px-2 py-1 text-xs font-semibold focus-ring',
   {
     variants: {
       variant: {

@@ -196,7 +196,7 @@ export const Focused: Story = {
 
 /**
  * The detail-page hero, the one `size="lg"` caller: the same square contain plate as the grid,
- * a 27/34 wrapping title, roomier meta, no hover lift.
+ * a wrapping title at the `3xl` step, roomier meta, no hover lift.
  */
 export const Large: Story = {
   args: { model: buildMemeCardModel(longTitleMeme), size: 'lg' },
@@ -209,7 +209,11 @@ export const Large: Story = {
     // the hero title wraps rather than ellipsizing: nothing about the meme is cropped away
     await expect(card.querySelector('[data-slot="meme-art"]')).toHaveStyle({ objectFit: 'contain' })
     await expect(title).toHaveStyle({ whiteSpace: 'normal' })
-    await expect(title).toHaveStyle({ fontSize: '27px', lineHeight: '34px' })
+    const root = getComputedStyle(document.documentElement)
+    await expect(title).toHaveStyle({
+      fontSize: root.getPropertyValue('--text-3xl').trim(),
+      lineHeight: root.getPropertyValue('--text-3xl--line-height').trim(),
+    })
   },
 }
 

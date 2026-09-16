@@ -23,13 +23,13 @@ const RING = cn(
 )
 
 /* text-balance keeps long titles from breaking mid-phrase on narrow cards */
-const TITLE = 'mb-0 text-balance font-display text-display-phone font-medium tracking-display text-foreground'
+const TITLE = 'mb-0 text-balance font-display text-4xl font-normal text-foreground'
 
-const SUBTITLE = 'mt-3 mb-0 max-w-105 text-label text-muted-foreground'
+const SUBTITLE = 'mt-3 mb-0 max-w-105 text-base text-muted-foreground'
 
 /** Quiet way out beside the primary control. */
 const TEXT_LINK = cn(
-  'inline-flex h-control items-center text-label font-semibold text-foreground underline underline-offset-3',
+  'inline-flex h-control items-center text-base font-semibold text-foreground underline underline-offset-3',
 )
 
 /** Inline fallback link — ultraviolet, underlined, no box. */
@@ -63,7 +63,7 @@ export function AuthStatusScreen({
         )}
         {fallback.retry ? (
           <div data-slot="auth-timeout" className="mt-6 flex flex-col items-center gap-3">
-            {fallback.prompt && <p className="m-0 text-label text-muted-foreground">{fallback.prompt}</p>}
+            {fallback.prompt && <p className="m-0 text-base text-muted-foreground">{fallback.prompt}</p>}
             <div className="flex flex-wrap items-center justify-center gap-4">
               {/* ultraviolet, not bubblegum: a retry is the companion action, never the page's primary */}
               <Button variant="secondary" onClick={fallback.retry.onClick}>
@@ -76,7 +76,7 @@ export function AuthStatusScreen({
           </div>
         ) : (
           /* no retry beside it: prompt and fallback read as one sentence */
-          <p data-slot="auth-timeout" className="mt-4 mb-0 text-label text-muted-foreground">
+          <p data-slot="auth-timeout" className="mt-4 mb-0 text-base text-muted-foreground">
             {fallback.prompt && <>{fallback.prompt} </>}
             <Link data-slot="auth-web-fallback" to={fallback.home.to} className={INLINE_LINK}>
               {fallback.home.label}

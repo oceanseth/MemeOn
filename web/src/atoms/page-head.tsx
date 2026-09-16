@@ -4,18 +4,19 @@ import { cn } from '@/lib/cn'
 
 /**
  * The page title row: title (and its intro) on the left, whatever the screen puts beside it on
- * the right. From the `lg` cut a direct `FilterBar` child absorbs the row's slack instead of
- * clipping its own field.
+ * the right. From the `lg` cut a direct control row — `FilterBar` or the `Toolbar` that replaces
+ * it — absorbs the row's slack instead of clipping its own field.
  */
 const pageHeadVariants = cva([
   'mx-0 mt-5 mb-6 flex flex-wrap items-center justify-between gap-4',
   'lg:*:data-[slot=filter-bar]:flex-auto lg:*:data-[slot=filter-bar]:justify-end',
+  'lg:*:data-[slot=toolbar]:flex-auto lg:*:data-[slot=toolbar]:justify-end',
 ])
 
-/** Unbounded display (the phone step under the cut), tracking −0.04em. */
+/** Unbounded page title: the 5xl step, 4xl under the phone cut; the step carries its tracking. */
 const HEADING = cn(
-  'm-0 font-display text-display font-medium tracking-display text-foreground',
-  'max-md:text-display-phone',
+  'm-0 font-display text-5xl font-normal text-foreground text-balance',
+  'max-md:text-4xl',
 )
 
 export interface PageHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
@@ -33,7 +34,7 @@ export function PageHead({ title, subtitle, level = 'h2', className, children, .
       {subtitle ? (
         <div className="min-w-0">
           {heading}
-          <p data-slot="page-subtitle" className="mt-1.5 text-intro text-muted-foreground">
+          <p data-slot="page-subtitle" className="mt-1.5 text-lg text-muted-foreground">
             {subtitle}
           </p>
         </div>

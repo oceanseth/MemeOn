@@ -13,7 +13,7 @@ type Story = StoryObj<typeof meta>
 /** A hairline between two blocks. */
 export const Horizontal: Story = {
   render: (args) => (
-    <div className="flex w-80 flex-col gap-3 p-4 text-label text-foreground">
+    <div className="flex w-80 flex-col gap-3 p-4 text-base text-foreground">
       <span>Above</span>
       <Separator {...args} />
       <span>Below</span>
@@ -32,7 +32,7 @@ export const Horizontal: Story = {
 export const Vertical: Story = {
   args: { orientation: 'vertical' },
   render: (args) => (
-    <div className="flex h-12 items-center gap-3 p-4 text-label text-foreground">
+    <div className="flex h-12 items-center gap-3 p-4 text-base text-foreground">
       <span>Left</span>
       <Separator {...args} />
       <span>Right</span>

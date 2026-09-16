@@ -9,8 +9,8 @@ import type { DiscordLinkScreenModel } from '../hooks/useDiscordLinkScreen'
 const COLUMN = 'mx-auto max-w-255 text-center'
 
 const TITLE = cn(
-  'm-0 font-display text-display font-medium tracking-display text-foreground',
-  'max-md:text-section-phone',
+  'm-0 font-display text-5xl font-normal text-foreground',
+  'max-md:text-2xl',
 )
 
 const ROW = cn(
@@ -19,7 +19,7 @@ const ROW = cn(
 )
 
 /** Row label inherits tone colour — command is plain text, not a code chip. */
-const ROW_LABEL = 'm-0 text-small font-semibold [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-inherit'
+const ROW_LABEL = 'm-0 text-sm font-semibold [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-inherit'
 
 /**
  * The row's own action is 40 tall, not the page's 46: it answers the row, not the page. A finger
@@ -45,13 +45,13 @@ export function DiscordLinkScreen({
     <PageContainer as="main" id="main" tabIndex={-1}>
       <div className={cn(COLUMN, 'pt-14 max-md:pt-6')}>
         {/* the brain mark is the page's one ornament and stays an emoji */}
-        <p aria-hidden="true" className="m-0 text-glyph-hero">
+        <p aria-hidden="true" className="m-0 text-6xl leading-none">
           🧠
         </p>
         <h1 className={cn(TITLE, 'mt-2.5')}>{heading ?? errTitle}</h1>
         {showConfirm && (
           <>
-            <p className="mx-auto mt-4 mb-0 max-w-measure text-body text-muted-foreground">
+            <p className="mx-auto mt-4 mb-0 max-w-measure text-base text-muted-foreground">
               Your Discord name is never shown to other MemeOn users — <code>/memeon</code> just
               ranks your own binder 💼 and your friends' memes 🤝 first.
             </p>
@@ -76,12 +76,12 @@ export function DiscordLinkScreen({
       >
         {(showBusy || showDone) && (
           <Panel className="p-5.5 max-md:p-gutter">
-            <p className="m-0 mb-3 text-label font-semibold text-muted-foreground">What happens next</p>
+            <p className="m-0 mb-3 text-base font-semibold text-muted-foreground">What happens next</p>
             {showBusy && (
               <div className={cn(ROW, 'bg-muted max-md:flex-row max-md:items-center')}>
                 <span className="flex items-center gap-3">
                   <Spinner className="size-6 border-3" />
-                  <span className="text-label font-semibold text-foreground">{busyMessage}</span>
+                  <span className="text-base font-semibold text-foreground">{busyMessage}</span>
                 </span>
               </div>
             )}
@@ -103,7 +103,7 @@ export function DiscordLinkScreen({
       {showError && (
         <div className={cn(COLUMN, 'mt-8 text-left')}>
           <Panel className="p-5.5 max-md:p-gutter">
-            <p className="m-0 mb-3 text-label font-semibold text-muted-foreground">What happens next</p>
+            <p className="m-0 mb-3 text-base font-semibold text-muted-foreground">What happens next</p>
             <div className={cn(ROW, 'bg-error')} role="alert">
               <p className={cn(ROW_LABEL, 'text-error-foreground')}>{errBody}</p>
               <span className="flex shrink-0 flex-wrap items-center gap-2.5">

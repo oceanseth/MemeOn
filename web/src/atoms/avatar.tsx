@@ -33,14 +33,14 @@ const avatarVariants = cva(
 const avatarFallbackVariants = cva('flex size-full items-center justify-center font-semibold text-brand-foreground', {
   variants: {
     size: {
-      sm: 'text-label',
-      header: 'text-caption',
-      rank: 'text-caption',
-      md: 'text-label',
-      podium: 'text-card-title leading-none max-md:text-caption',
-      lg: 'text-card-title leading-none',
-      public: 'text-card-title leading-none',
-      hero: 'text-title leading-none max-sm:text-card-title',
+      sm: 'text-base',
+      header: 'text-sm',
+      rank: 'text-sm',
+      md: 'text-base',
+      podium: 'text-2xl leading-none max-md:text-sm',
+      lg: 'text-2xl leading-none',
+      public: 'text-2xl leading-none',
+      hero: 'text-3xl leading-none max-sm:text-2xl',
     },
   },
   defaultVariants: { size: 'sm' },

@@ -11,10 +11,10 @@ import { cn } from '@/lib/cn'
  */
 export const inputVariants = cva([
   'h-12.5 min-w-0 rounded-md material-pressed px-4.5',
-  'text-label font-normal text-foreground pointer-coarse:text-[length:max(16px,1em)]',
+  'text-base font-normal text-foreground pointer-coarse:text-[length:max(16px,1em)]',
   'placeholder:font-normal placeholder:text-muted-foreground placeholder:opacity-100',
   'file:mr-2.5 file:cursor-pointer file:rounded-lg file:material-raised',
-  'file:px-3 file:py-1.5 file:text-small file:font-semibold file:text-foreground',
+  'file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-foreground',
   'focus-ring disabled-look',
   'data-invalid:inset-ring-2 data-invalid:inset-ring-destructive',
   'aria-invalid:inset-ring-2 aria-invalid:inset-ring-destructive',

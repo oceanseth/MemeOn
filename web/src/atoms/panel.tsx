@@ -35,8 +35,9 @@ export function PanelHeading({ size = 'intro', as, className, ...rest }: PanelHe
 const LEGACY_HEADINGS = cn(
   '[&_:where(h3,h4):not([data-slot=card-title])]:mt-0',
   '[&_:where(h3,h4):not([data-slot=card-title])]:mb-1.5',
-  '[&_:where(h3,h4):not([data-slot=card-title])]:text-intro',
-  '[&_:where(h3,h4):not([data-slot=card-title])]:tracking-normal',
+  '[&_:where(h3,h4):not([data-slot=card-title])]:font-sans',
+  '[&_:where(h3,h4):not([data-slot=card-title])]:text-lg',
+  '[&_:where(h3,h4):not([data-slot=card-title])]:font-semibold',
   '[&_:where(h3,h4):not([data-slot=card-title])]:text-foreground',
 )
 

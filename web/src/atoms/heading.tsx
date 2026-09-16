@@ -8,14 +8,14 @@ import { cn } from '@/lib/cn'
  * fixed. The element (`as`) is the outline level; the size is the look — the two are independent,
  * so a screen can promote a title to `<h1>` without changing its type.
  */
-export const headingVariants = cva('m-0 font-display font-medium text-foreground text-pretty', {
+export const headingVariants = cva('m-0 font-display font-normal text-foreground text-balance', {
   variants: {
     size: {
-      display: 'text-display tracking-display max-md:text-display-phone',
-      section: 'text-section tracking-title max-md:text-section-phone',
-      title: 'text-title tracking-title',
-      'card-title': 'text-card-title tracking-card-title',
-      'card-title-phone': 'text-card-title-phone tracking-card-title',
+      display: 'text-5xl max-md:text-4xl',
+      section: 'text-4xl max-md:text-2xl',
+      title: 'text-3xl',
+      'card-title': 'text-2xl',
+      'card-title-phone': 'font-sans text-lg font-semibold',
     },
   },
   defaultVariants: {

@@ -64,7 +64,7 @@ export const Default: Story = {
   },
 }
 
-/** The three fills and the compact size. */
+/** The four fills and the compact size. */
 export const Variants: Story = {
   render: () => (
     <div className="flex flex-col gap-3">
@@ -80,6 +80,12 @@ export const Variants: Story = {
           <ItemDescription>The flat well a person row sits in on the detail page.</ItemDescription>
         </ItemContent>
       </Item>
+      <Item variant="raised">
+        <ItemContent>
+          <ItemTitle>Raised</ItemTitle>
+          <ItemDescription>A row that is its own card: podium tiles, the raised person row.</ItemDescription>
+        </ItemContent>
+      </Item>
       <Item size="sm">
         <ItemMedia variant="icon" aria-hidden="true">
           🔔
@@ -92,12 +98,47 @@ export const Variants: Story = {
   ),
   play: async ({ canvasElement }) => {
     const items = canvasElement.querySelectorAll<HTMLElement>('[data-slot="item"]')
-    await expect(items).toHaveLength(3)
+    await expect(items).toHaveLength(4)
     await expect(items[0]).toHaveAttribute('data-variant', 'outline')
     await expect(getComputedStyle(items[0]!).borderTopWidth).toBe('1px')
     await expect(items[1]).toHaveAttribute('data-variant', 'muted')
     await expect(getComputedStyle(items[1]!).backgroundColor).not.toBe('rgba(0, 0, 0, 0)')
-    await expect(items[2]).toHaveAttribute('data-size', 'sm')
+    await expect(items[2]).toHaveAttribute('data-variant', 'raised')
+    await expect(getComputedStyle(items[2]!).boxShadow).not.toBe('none')
+    await expect(items[3]).toHaveAttribute('data-size', 'sm')
+  },
+}
+
+/** `frame="brand"` is the ring a row wears when it is *you*: podium first, your own rank row. */
+export const Framed: Story = {
+  render: () => (
+    <div className="flex flex-col gap-3">
+      <Item variant="raised" frame="brand">
+        <ItemMedia variant="image">
+          <Avatar name="Lou" size="md" />
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle>Lou — you</ItemTitle>
+          <ItemDescription>240 braincells</ItemDescription>
+        </ItemContent>
+      </Item>
+      <Item variant="raised">
+        <ItemMedia variant="image">
+          <Avatar name="Ada" size="md" />
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle>Ada</ItemTitle>
+          <ItemDescription>188 braincells</ItemDescription>
+        </ItemContent>
+      </Item>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const items = canvasElement.querySelectorAll<HTMLElement>('[data-slot="item"]')
+    await expect(items[0]).toHaveAttribute('data-frame', 'brand')
+    await expect(getComputedStyle(items[0]!).borderTopWidth).toBe('2px')
+    await expect(items[1]).toHaveAttribute('data-frame', 'none')
+    await expect(getComputedStyle(items[1]!).borderTopWidth).toBe('0px')
   },
 }
 
@@ -176,8 +217,8 @@ export const WithHeaderAndFooter: Story = {
   render: () => (
     <Item variant="outline">
       <ItemHeader>
-        <span className="text-caption text-muted-foreground">Trade #42</span>
-        <span className="text-caption text-muted-foreground">2 days ago</span>
+        <span className="text-sm text-muted-foreground">Trade #42</span>
+        <span className="text-sm text-muted-foreground">2 days ago</span>
       </ItemHeader>
       <ItemContent>
         <ItemTitle>Lou offers 3 shares</ItemTitle>

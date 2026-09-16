@@ -64,11 +64,11 @@ const CAPTION_OFFSET = '-mt-0.5'
 
 /** The page's own title face, restated where the outcome heading is written by hand. */
 const OUTCOME_HEADING = cn(
-  'm-0 font-display text-display font-medium tracking-display text-foreground',
-  'max-md:text-display-phone',
+  'm-0 font-display text-5xl font-normal text-foreground',
+  'max-md:text-4xl',
 )
 
-const CARD_SUB = 'm-0 mt-1 text-small font-normal text-muted-foreground'
+const CARD_SUB = 'm-0 mt-1 text-sm font-normal text-muted-foreground'
 
 /**
  * The source row: 34px raised pills (44 on a phone, where they are the primary control row), radius
@@ -76,20 +76,20 @@ const CARD_SUB = 'm-0 mt-1 text-small font-normal text-muted-foreground'
  * paints off `aria-pressed`, so this is geometry only — no second "selected" look.
  */
 const CHIP = cn(
-  'h-control-sm rounded-md px-3 text-caption font-medium',
-  'max-md:h-hit max-md:rounded-full max-md:text-label pointer-coarse:h-hit pointer-coarse:rounded-full',
+  'h-control-sm rounded-md px-3 text-sm font-medium',
+  'max-md:h-hit max-md:rounded-full max-md:text-base pointer-coarse:h-hit pointer-coarse:rounded-full',
 )
 const MODE_ROW = 'mb-5 flex flex-wrap items-center gap-2'
 
 /** Cost caption beside a render action. */
-const COST_NOTE = 'text-caption font-semibold text-muted-foreground'
-const FORM_NOTE = 'mt-1 text-micro font-medium text-muted-foreground'
+const COST_NOTE = 'text-sm font-semibold text-muted-foreground'
+const FORM_NOTE = 'mt-1 text-xs font-medium text-muted-foreground'
 
 /** Mint state cards: left-aligned, tone-coloured titles override the form Panel's h3 step. */
 const STATE_CARD = cn(
   'rounded-md p-4 text-left',
-  '[&_h3]:m-0 [&_h3]:font-display [&_h3]:text-card-title-phone [&_h3]:font-medium [&_h3]:tracking-card-title',
-  '[&_p]:m-0 [&_p]:mt-2 [&_p]:text-small [&_p]:font-medium [&_p]:text-muted-foreground',
+  '[&_h3]:m-0 [&_h3]:font-sans [&_h3]:text-lg [&_h3]:font-semibold',
+  '[&_p]:m-0 [&_p]:mt-2 [&_p]:text-sm [&_p]:font-medium [&_p]:text-muted-foreground',
 )
 /* busy uses raised fill so it reads inside the surface-toned form panel */
 const STATE_CARD_BUSY = cn(STATE_CARD, 'material-raised', '[&_h3]:text-muted-foreground')
@@ -106,12 +106,12 @@ const GIPHY_CELL = cn(
 )
 /* the picked cell keeps its ring on hover: the state is a ring, never a border colour */
 const GIPHY_CELL_PICKED = 'inset-ring-2 inset-ring-primary'
-const GIPHY_MARK = 'text-micro font-bold tracking-wider whitespace-nowrap text-muted-foreground uppercase'
-const LOADING_STATE = 'flex items-center justify-center gap-2.5 px-5 py-15 text-small text-muted-foreground'
+const GIPHY_MARK = 'text-xs font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase'
+const LOADING_STATE = 'flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-muted-foreground'
 /** Preflight strips the file-selector button bare; this gives it the app's own neutral pill. */
 const FILE_INPUT = cn(
   'file:mr-2.5 file:cursor-pointer file:rounded-lg file:material-raised',
-  'file:px-3 file:py-1.5 file:text-small file:font-semibold file:text-foreground',
+  'file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-foreground',
 )
 
 /** The form card's own headline per source — the copy deck's "Make a fresh image" and its siblings. */
@@ -152,18 +152,18 @@ const PREVIEW_META = 'flex flex-col px-1.5 pt-3.5 pb-1.5'
 /** Preview title one step above the grid card size. */
 const PREVIEW_TITLE = cn(
   'overflow-hidden text-ellipsis whitespace-nowrap',
-  'font-display text-title font-medium tracking-title text-foreground',
-  'max-md:text-card-title-phone',
+  'font-display text-3xl font-normal text-foreground',
+  'max-md:text-xl',
 )
 const PREVIEW_TIER_ROW = 'mt-1.5 flex items-center gap-2'
-const PREVIEW_TIER_NOTE = 'text-caption font-bold text-muted-foreground'
+const PREVIEW_TIER_NOTE = 'text-sm font-semibold text-muted-foreground'
 /** The plate the card will land on, at the card's own frame geometry. */
 const PREVIEW_PLACEHOLDER = cn(
   'flex aspect-square items-center justify-center rounded-lg material-pressed',
-  'text-small font-medium text-muted-foreground',
+  'text-sm font-medium text-muted-foreground',
 )
 const PREVIEW_SUB = cn(
-  'mt-3 flex items-center justify-between gap-2 text-small font-semibold text-muted-foreground tabular-nums',
+  'mt-3 flex items-center justify-between gap-2 text-sm font-semibold text-muted-foreground tabular-nums',
   '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
 )
 
@@ -655,7 +655,7 @@ export function CreateMemeScreen({
             </div>
             {/* phone: shares line above a full-width Mint pill */}
             <div className="mt-4 flex items-center justify-between gap-3 max-md:flex-col max-md:items-stretch max-md:gap-2">
-              <span className="text-small font-bold text-foreground max-md:text-caption max-md:font-medium max-md:text-muted-foreground">
+              <span className="text-sm font-semibold text-foreground max-md:font-medium max-md:text-muted-foreground">
                 100 shares to you
               </span>
               <Button variant="primary" className="max-md:w-full" {...mintButtonProps}>

@@ -28,8 +28,8 @@ const anchorContainer = {
 /** Bare emoji trigger — no raised chrome. Pseudo-element carries the 44px hit target. */
 const TRIGGER = cn(
   'relative inline-flex shrink-0 cursor-pointer items-center justify-center border-0 bg-transparent p-0',
-  'text-glyph text-foreground',
-  'xl:text-glyph-lg',
+  'text-xl leading-none text-foreground',
+  'xl:text-2xl',
   'hit-44',
   FOCUS,
 )
@@ -37,7 +37,7 @@ const TRIGGER = cn(
 /** Canvas on the error text colour: the pair `check-contrast` guards (WP1 deviation 2), 10px bold. */
 const BADGE = cn(
   'absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center px-1',
-  'rounded-full bg-destructive text-micro leading-none font-bold text-destructive-foreground tabular-nums',
+  'rounded-full bg-destructive text-xs leading-none font-semibold text-destructive-foreground tabular-nums',
 )
 
 /**
@@ -60,7 +60,7 @@ const POPUP = cn(
 )
 
 const ROW = cn(
-  'block min-h-hit rounded-md px-3 py-2.5 text-small text-foreground',
+  'block min-h-hit rounded-md px-3 py-2.5 text-sm text-foreground',
   'transition-tint',
 )
 
@@ -127,7 +127,7 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
                     <span className="group-hover:underline" data-slot="alert-message">
                       {row.message}
                     </span>
-                    <time className="mt-1 block text-micro font-normal text-muted-foreground" {...row.timeProps}>
+                    <time className="mt-1 block text-xs font-normal text-muted-foreground" {...row.timeProps}>
                       {row.timeLabel}
                     </time>
                   </>

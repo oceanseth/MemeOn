@@ -35,15 +35,15 @@ export function FaqItem({ question, children, defaultOpen = false, className }: 
         {/* no caret icon — ▾ glyph rotates when open */}
         <span
           aria-hidden="true"
-          className="shrink-0 text-label text-muted-foreground transition-lift group-data-panel-open:rotate-180"
+          className="shrink-0 text-base text-muted-foreground transition-lift group-data-panel-open:rotate-180"
         >
           ▾
         </span>
         {/* Onest, not the display face a bare `<h3>` inherits: a question is a row label, and the
             row's height is its own line box */}
-        <h3 className="m-0 font-sans text-intro font-semibold tracking-normal text-foreground">{question}</h3>
+        <h3 className="m-0 font-sans text-lg font-semibold text-foreground">{question}</h3>
       </Collapsible.Trigger>
-      <Collapsible.Panel data-slot="faq-panel" className="px-gutter pb-4 text-body text-muted-foreground">
+      <Collapsible.Panel data-slot="faq-panel" className="px-gutter pb-4 text-base text-muted-foreground">
         {children}
       </Collapsible.Panel>
     </Collapsible.Root>

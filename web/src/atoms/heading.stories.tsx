@@ -20,7 +20,7 @@ export const Default: Story = {
     const heading = within(canvasElement).getByRole('heading', { level: 2, name: 'Top Brains' })
     await expect(heading).toHaveAttribute('data-slot', 'heading')
     await expect(heading).toHaveAttribute('data-size', 'title')
-    await expect(getComputedStyle(heading).fontSize).toBe(token('--text-title'))
+    await expect(getComputedStyle(heading).fontSize).toBe(token('--text-3xl'))
     await expect(getComputedStyle(heading).fontFamily).toContain('Unbounded')
     await expect(getComputedStyle(heading).marginBottom).toBe('0px')
   },
@@ -40,11 +40,11 @@ export const Sizes: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const steps = [
-      ['Display', '--text-display'],
-      ['Section', '--text-section'],
-      ['Title', '--text-title'],
-      ['Card title', '--text-card-title'],
-      ['Card title, phone', '--text-card-title-phone'],
+      ['Display', '--text-5xl'],
+      ['Section', '--text-4xl'],
+      ['Title', '--text-3xl'],
+      ['Card title', '--text-2xl'],
+      ['Card title, phone', '--text-lg'],
     ] as const
     for (const [name, step] of steps) {
       const heading = canvas.getByRole('heading', { name })
@@ -72,9 +72,9 @@ export const Levels: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const h1 = canvas.getByRole('heading', { level: 1 })
-    await expect(getComputedStyle(h1).fontSize).toBe(token('--text-title'))
+    await expect(getComputedStyle(h1).fontSize).toBe(token('--text-3xl'))
     const h2 = canvas.getByRole('heading', { level: 2 })
-    await expect(getComputedStyle(h2).fontSize).toBe(token('--text-display'))
+    await expect(getComputedStyle(h2).fontSize).toBe(token('--text-5xl'))
     await expect(canvas.getByRole('heading', { level: 3 })).toHaveAttribute('data-size', 'card-title-phone')
   },
 }

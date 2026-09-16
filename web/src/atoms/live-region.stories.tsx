@@ -53,7 +53,7 @@ export const Visible: Story = {
         <Notice tone="ok">Trade accepted.</Notice>
       </LiveRegion>
       <LiveRegion variant={variant} data-testid="empty" />
-      <span className="text-label text-muted-foreground">below both regions</span>
+      <span className="text-base text-muted-foreground">below both regions</span>
     </div>
   ),
   play: async ({ canvasElement }) => {

@@ -27,7 +27,7 @@ const sidebar = (
         <Icon name="arrows-left-right" /> Trade
       </Link>
       <Link to="/leaderboard" className={NAV_ROW}>
-        <span className="inline-flex size-icon items-center justify-center text-glyph" aria-hidden="true">🏆</span> Top Brains
+        <span className="inline-flex size-icon items-center justify-center text-xl leading-none" aria-hidden="true">🏆</span> Top Brains
       </Link>
     </nav>
     <Link to="/binder/new" className={`${PRIMARY_PILL} mx-1 mt-11`}>
@@ -47,7 +47,7 @@ const sidebar = (
 const headerEnd = (
   <>
     <ThemeControl model={{ value: 'auto', onChange: fn(), variant: 'button' }} className="xl:hidden" />
-    <span className="text-label font-semibold tabular-nums" data-slot="coins">
+    <span className="text-base font-semibold tabular-nums" data-slot="coins">
       <span aria-hidden="true">🧠 {meLou.coins.toLocaleString()}</span>
       <span className="sr-only">{meLou.coins.toLocaleString()} braincells</span>
     </span>
@@ -92,7 +92,7 @@ type Story = StoryObj<typeof meta>
 /** The public frame: wordmark, the theme button, the page, the footer. */
 export const LoggedOut: Story = {
   args: {
-    headerEnd: <ThemeControl model={{ value: 'auto', onChange: fn(), variant: 'button' }} className="xl:size-10 xl:rounded-md xl:text-glyph" />,
+    headerEnd: <ThemeControl model={{ value: 'auto', onChange: fn(), variant: 'button' }} className="xl:size-10 xl:rounded-md xl:text-xl" />,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
