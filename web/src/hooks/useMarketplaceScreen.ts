@@ -22,26 +22,35 @@ const SKELETON_COUNT = 8
 const FILTERS_PANEL_ID = 'market-filters'
 const copy = marketplaceCopy
 
-/** One pressed tab in the filter row. */
+/** One item of the media `ToggleGroup`; `all` stands for the empty filter. */
 export interface MarketFilterTabModel {
-  /** the filter value the tab stands for; `''` is the "All memes" / "everything" tab */
   key: string
   label: string
   pressed: boolean
-  buttonProps: { onClick: () => void; 'aria-pressed': boolean }
 }
 
-/** Media type + "For sale" as pressed tabs; eight tiers stay a Select. */
+/** Base UI needs a non-empty item value, so "everything" travels as `all`. */
+const ALL_MEDIA = 'all'
+
+/** Media type is a single-choice `ToggleGroup`; "For sale" is one `Toggle`; tiers stay a Select. */
 export interface MarketFilterTabsModel {
   media: readonly MarketFilterTabModel[]
-  mediaGroupProps: { role: 'group'; 'aria-label': string }
-  listed: MarketFilterTabModel
+  mediaGroupProps: {
+    'aria-label': string
+    value: readonly string[]
+    onValueChange: (value: string[]) => void
+  }
+  listed: {
+    label: string
+    pressed: boolean
+    onPressedChange: (pressed: boolean) => void
+  }
 }
 
-const MEDIA_TABS: readonly { key: string; label: string }[] = [
-  { key: '', label: copy.filters.media.all },
-  { key: 'image', label: copy.filters.media.images },
-  { key: 'video', label: copy.filters.media.videos },
+const MEDIA_TABS: readonly { key: string; value: string; label: string }[] = [
+  { key: ALL_MEDIA, value: '', label: copy.filters.media.all },
+  { key: 'image', value: 'image', label: copy.filters.media.images },
+  { key: 'video', value: 'video', label: copy.filters.media.videos },
 ]
 
 export interface BuildMarketFilterTabsInput {
@@ -56,18 +65,17 @@ export function buildMarketFilterTabs({
   type, listed, onTypeChange, onListedChange,
 }: BuildMarketFilterTabsInput): MarketFilterTabsModel {
   return {
-    media: MEDIA_TABS.map((tab) => ({
-      key: tab.key,
-      label: tab.label,
-      pressed: tab.key === type,
-      buttonProps: { onClick: () => onTypeChange(tab.key), 'aria-pressed': tab.key === type },
-    })),
-    mediaGroupProps: { role: 'group', 'aria-label': copy.filters.media.groupLabel },
+    media: MEDIA_TABS.map((tab) => ({ key: tab.key, label: tab.label, pressed: tab.value === type })),
+    mediaGroupProps: {
+      'aria-label': copy.filters.media.groupLabel,
+      value: [type || ALL_MEDIA],
+      // deselecting the pressed item is "show everything", which is the `all` item
+      onValueChange: (value) => onTypeChange(!value[0] || value[0] === ALL_MEDIA ? '' : value[0]),
+    },
     listed: {
-      key: 'listed',
       label: copy.filters.listed,
       pressed: listed,
-      buttonProps: { onClick: () => onListedChange(!listed), 'aria-pressed': listed },
+      onPressedChange: (pressed) => onListedChange(pressed),
     },
   }
 }

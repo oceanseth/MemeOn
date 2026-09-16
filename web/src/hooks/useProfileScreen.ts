@@ -81,15 +81,18 @@ export interface ProfileScreenModel {
   emptyLinkLabel: string
   emptyLinkProps: Pick<LinkProps, 'to'>
   showGrid: boolean
-  createdTabButtonProps: ProfileTabButtonProps
-  binderTabButtonProps: ProfileTabButtonProps
+  tabsProps: ProfileTabsProps
   gridProps: ProfileGridProps
 }
 
-type ProfileTabButtonProps = Pick<
-  ButtonHTMLAttributes<HTMLButtonElement>,
-  'onClick' | 'aria-pressed' | 'aria-controls'
->
+/** Tab-shaped, not button-shaped: `Tabs` owns `role="tab"`, `aria-selected` and the roving focus. */
+interface ProfileTabsProps {
+  value: ProfileTab
+  onValueChange: (value: unknown) => void
+}
+
+/** The id both tabs control and the grid carries. */
+export const PROFILE_CARDS_ID = 'profile-cards'
 
 interface ProfileGridProps {
   id: string
@@ -117,31 +120,20 @@ interface ProfileViewModel {
   stats: readonly ProfileStat[]
 }
 
-const CARDS_ID = 'profile-cards'
-
 const copy = profileCopy
 
 export function buildProfileTabProps(
   tab: ProfileTab,
   itemCount: number,
   onTabChange: (tab: ProfileTab) => void,
-): Pick<
-  ProfileScreenModel,
-  'createdTabButtonProps' | 'binderTabButtonProps' | 'gridProps'
-> {
+): Pick<ProfileScreenModel, 'tabsProps' | 'gridProps'> {
   return {
-    createdTabButtonProps: {
-      'aria-pressed': tab === 'created',
-      'aria-controls': CARDS_ID,
-      onClick: () => onTabChange('created'),
-    },
-    binderTabButtonProps: {
-      'aria-pressed': tab === 'binder',
-      'aria-controls': CARDS_ID,
-      onClick: () => onTabChange('binder'),
+    tabsProps: {
+      value: tab,
+      onValueChange: (value) => onTabChange(value as ProfileTab),
     },
     gridProps: {
-      id: CARDS_ID,
+      id: PROFILE_CARDS_ID,
       'aria-live': 'polite',
       'aria-label': copy.grid.label(tab === 'created' ? copy.tabs.created : copy.tabs.binder, itemCount),
     },

@@ -17,6 +17,8 @@ import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Select } from '@/atoms/select'
 import { SkeletonCard } from '@/atoms/skeleton'
+import { Toggle } from '@/atoms/toggle'
+import { ToggleGroup, ToggleGroupItem } from '@/atoms/toggle-group'
 import { Toolbar, ToolbarStart } from '@/atoms/toolbar'
 import type { MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
 import { cn } from '../lib/cn'
@@ -132,14 +134,20 @@ export function MarketplaceScreen({
           className={marketFilters}
           {...filtersPanelProps}
         >
-          {/* media, listed, and tier filters — pressed tab for the active filter */}
+          {/* media, listed, and tier filters — the pressed item is the active filter */}
           <Toolbar>
-            <ToolbarStart {...filterTabs.mediaGroupProps}>
-              {filterTabs.media.map((tab) => (
-                <Button key={tab.key} {...tab.buttonProps}>{tab.label}</Button>
-              ))}
+            <ToolbarStart>
+              <ToggleGroup {...filterTabs.mediaGroupProps}>
+                {filterTabs.media.map((tab) => (
+                  <ToggleGroupItem key={tab.key} value={tab.key}>
+                    {tab.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
             </ToolbarStart>
-            <Button {...filterTabs.listed.buttonProps}>{filterTabs.listed.label}</Button>
+            <Toggle pressed={filterTabs.listed.pressed} onPressedChange={filterTabs.listed.onPressedChange}>
+              {filterTabs.listed.label}
+            </Toggle>
             <Select items={tierSelectItems} variant="pill" {...tierSelectProps} />
           </Toolbar>
           <SortChips model={sortChips} />
