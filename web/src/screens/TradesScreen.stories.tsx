@@ -101,8 +101,13 @@ export const LoadError: Story = { args: { phase: 'error', err: copy.errors.load,
 export const Ready: Story = {
   args: { phase: 'ready', open: [openTrade], openCountLabel: copy.openCount(1), history: [pastTrade] },
   play: async ({ canvasElement }) => {
-    // the region is mounted and silent before there is anything to announce
-    await expect(within(canvasElement).getByRole('status')).toBeEmptyDOMElement()
+    // the region is mounted and silent before there is anything to announce (`empty:hidden`
+    // keeps a silent region out of the a11y tree, so it is read by slot, not by role)
+    await expect(canvasElement.querySelector('[data-slot="live-region"]')).toBeEmptyDOMElement()
+    // each list is a Heading over a Toolbar row, and an empty list is the Empty card
+    const heading = canvasElement.querySelector('[data-slot="heading"]')!
+    await expect(heading.closest('[data-slot="toolbar"]')).not.toBeNull()
+    await expect(heading).toHaveAttribute('data-size', 'title')
   },
 }
 /** the outcome of the app's most irreversible action, announced by a region that was already there */
@@ -114,7 +119,7 @@ export const Proposed: Story = {
 }
 export const Composing: Story = {
   args: { phase: 'composing', newTradeButtonLabel: copy.closeComposer, newTradeButtonProps: { onClick: noop, 'aria-expanded': true, 'aria-controls': 'trade-composer' }, compose },
-  play: async ({ canvasElement }) => { const canvas = within(canvasElement); const selects = canvas.getAllByRole('combobox'); await pickOption(selects[0]!, friendAccepted.name); await pickOption(selects[1]!, copy.composer.binderOption(giftablePaper.title, giftablePaper.myShares ?? 0)); await pickOption(selects[2]!, silverMeme.title); const inputs = canvas.getAllByRole('spinbutton'); for (const [input, value] of [[inputs[0], '7'], [inputs[1], '12'], [inputs[2], '6'], [inputs[3], '8']] as const) await fireEvent.change(input!, { target: { value } }); await userEvent.click(canvas.getByRole('button', { name: copy.newTrade })); await expect(composerActions.friend).toHaveBeenCalledWith(friendAccepted.sub); await expect(composerActions.offerMeme).toHaveBeenCalledWith(giftablePaper.id); await expect(composerActions.askMeme).toHaveBeenCalledWith(silverMeme.id); await expect(composerActions.offerShares).toHaveBeenLastCalledWith(7); await expect(composerActions.offerCoins).toHaveBeenLastCalledWith(12); await expect(composerActions.askShares).toHaveBeenLastCalledWith(6); await expect(composerActions.askCoins).toHaveBeenLastCalledWith(8); await expect(composerActions.submit).toHaveBeenCalledOnce() },
+  play: async ({ canvasElement }) => { const canvas = within(canvasElement); /* the composer's two sides are field sets, the grid keeps them side by side by that slot */ await expect(canvasElement.querySelectorAll('[data-slot="field-set"]')).toHaveLength(2); await expect(canvasElement.querySelector('[data-slot="field-legend"]')).toHaveAttribute('data-variant', 'legend'); const selects = canvas.getAllByRole('combobox'); await pickOption(selects[0]!, friendAccepted.name); await pickOption(selects[1]!, copy.composer.binderOption(giftablePaper.title, giftablePaper.myShares ?? 0)); await pickOption(selects[2]!, silverMeme.title); const inputs = canvas.getAllByRole('spinbutton'); for (const [input, value] of [[inputs[0], '7'], [inputs[1], '12'], [inputs[2], '6'], [inputs[3], '8']] as const) await fireEvent.change(input!, { target: { value } }); await userEvent.click(canvas.getByRole('button', { name: copy.newTrade })); await expect(composerActions.friend).toHaveBeenCalledWith(friendAccepted.sub); await expect(composerActions.offerMeme).toHaveBeenCalledWith(giftablePaper.id); await expect(composerActions.askMeme).toHaveBeenCalledWith(silverMeme.id); await expect(composerActions.offerShares).toHaveBeenLastCalledWith(7); await expect(composerActions.offerCoins).toHaveBeenLastCalledWith(12); await expect(composerActions.askShares).toHaveBeenLastCalledWith(6); await expect(composerActions.askCoins).toHaveBeenLastCalledWith(8); await expect(composerActions.submit).toHaveBeenCalledOnce() },
 }
 /** nothing on either side: the button cannot post a nothing-for-nothing proposal */
 export const ComposingEmptyProposal: Story = {

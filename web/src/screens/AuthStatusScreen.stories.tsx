@@ -50,6 +50,9 @@ export const LoginFailed: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('alert')).toHaveTextContent('OAuth state mismatch — try again')
+    // the band is the compact Alert size, and the card is the Card atom
+    await expect(canvas.getByRole('alert')).toHaveAttribute('data-variant', 'error')
+    await expect(canvasElement.querySelector('[data-slot="auth-status"]')).toHaveAttribute('data-size', 'default')
     await expect(canvasElement.querySelector('[data-slot="auth-ring"]')).toBeNull()
     await expect(canvas.queryByText('Taking longer than usual?')).not.toBeInTheDocument()
   },
@@ -72,5 +75,7 @@ export const ReturningToApp: Story = {
     await expect(canvas.getByRole('link', { name: 'Open MemeOn' })).toHaveAttribute('href', 'memeon://auth?code=abc&state=xyz')
     await expect(canvas.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
     await expect(canvas.getByRole('link', { name: 'Continue on the web' })).toHaveAttribute('href', '/')
+    // the inline way out is the prose link atom (its own slot is the screen's), not a hand-spelled underline
+    await expect(canvasElement.querySelector('[data-slot="auth-web-fallback"]')).toHaveAttribute('data-variant', 'inline')
   },
 }

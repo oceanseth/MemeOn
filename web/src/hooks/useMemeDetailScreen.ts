@@ -21,7 +21,7 @@ const CONFIRM_SPEND_OVER = 25
 const copy = memeDetailCopy
 
 export interface CapRow { userId: string; sharesLabel: string; label: string }
-export interface DetailActionModel { label: string; variant?: 'danger' | undefined; buttonProps: { onClick: () => void } }
+export interface DetailActionModel { label: string; variant?: 'destructive' | undefined; buttonProps: { onClick: () => void } }
 export type DetailLiveRegionProps = Pick<HTMLAttributes<HTMLDivElement>, 'role' | 'aria-live'>
 export interface DetailNotFoundModel {
   message: string
@@ -42,14 +42,10 @@ export interface DetailTierLadderModel {
   /** the meter's left label — the tier this card is wearing right now */
   currentLabel: string
   nextLabel: string
-  /** the meter fill as a CSS length, read into a custom property by the screen */
-  fillWidth: string
+  /** the meter fill as a percentage; `Progress` owns the role and the `aria-value*` wiring */
+  value: number
   meterProps: {
-    role: 'progressbar'
     'aria-label': string
-    'aria-valuemin': number
-    'aria-valuemax': number
-    'aria-valuenow': number
     'aria-valuetext': string
   }
 }
@@ -156,10 +152,9 @@ export function buildTierLadderModel(tierKey: string, views: number): DetailTier
     return {
       currentLabel: copy.ladder.current(tier.name),
       nextLabel: copy.ladder.top(tier.name),
-      fillWidth: '100%',
+      value: 100,
       meterProps: {
-        role: 'progressbar', 'aria-label': copy.ladder.meterLabel,
-        'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': 100,
+        'aria-label': copy.ladder.meterLabel,
         'aria-valuetext': copy.ladder.topValueText(tier.name),
       },
     }
@@ -171,10 +166,9 @@ export function buildTierLadderModel(tierKey: string, views: number): DetailTier
   return {
     currentLabel: copy.ladder.current(tier.name),
     nextLabel,
-    fillWidth: `${progress}%`,
+    value: progress,
     meterProps: {
-      role: 'progressbar', 'aria-label': copy.ladder.meterLabel,
-      'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': progress,
+      'aria-label': copy.ladder.meterLabel,
       'aria-valuetext': nextLabel,
     },
   }
@@ -336,7 +330,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
   if (user) actions.push({ label: copy.actions.remix, buttonProps: { onClick: () => navigate(`/binder/new?remix=${meme.id}`) } })
   if (user && meme.creatorId === ARCHIVE_SUB) actions.push({ label: copy.actions.claim, buttonProps: { onClick: () => send({ type: 'SET_CONFIRMING_CLAIM', confirming: true }) } })
   if (myShares === 100) actions.push({ label: meme.private ? copy.actions.makePublic : copy.actions.makePrivate, buttonProps: { onClick: () => void act(() => post(`/api/memes/${meme.id}/visibility`, { private: !meme.private }), meme.private ? copy.toasts.madePublic : copy.toasts.madePrivate) } })
-  if (myShares === 100 && meme.private) actions.push({ label: copy.actions.delete, variant: 'danger', buttonProps: { onClick: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: true }) } })
+  if (myShares === 100 && meme.private) actions.push({ label: copy.actions.delete, variant: 'destructive', buttonProps: { onClick: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: true }) } })
 
   /* Seller is a holder — resolve the name like cap-table rows. */
   const capTableNote: string | null = meme.listing && meme.listing.shares > 0

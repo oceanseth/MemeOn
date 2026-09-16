@@ -231,7 +231,7 @@ export const Owner: Story = {
       actions: [
         { label: '🧬 Create a meme from this', buttonProps: { onClick: noop } },
         { label: '🙈 Make private', buttonProps: { onClick: noop } },
-        { label: '🗑️ Delete forever', variant: 'danger', buttonProps: { onClick: noop } },
+        { label: '🗑️ Delete forever', variant: 'destructive', buttonProps: { onClick: noop } },
       ],
     },
   },
@@ -247,6 +247,12 @@ export const Owner: Story = {
     await expect(line).toHaveTextContent(`${paperMeme.tier.name} ·`)
     await expect(line).toHaveTextContent(/reshare/)
     await expect(card.querySelector('[data-slot="tier-progression"]')).not.toBeNull()
+    // the ladder meter is the Progress atom wearing the gradient fill, not an inline width
+    const meter = card.querySelector('[data-slot="progress"]')!
+    await expect(meter).toHaveAttribute('role', 'progressbar')
+    await expect(meter.querySelector('[data-slot="progress-indicator"]')).toHaveAttribute('data-variant', 'ladder')
+    // every rail panel is a Card with a CardTitle, and the delete action is the destructive pill
+    await expect(canvasElement.querySelectorAll('[data-slot="card-title"]').length).toBeGreaterThan(3)
     await expect(hero.querySelectorAll('[data-slot="meme-card"]')).toHaveLength(1)
   },
 }

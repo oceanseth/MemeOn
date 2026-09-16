@@ -148,10 +148,17 @@ export const Ready: Story = {
     const how = within(canvasElement.querySelector<HTMLElement>('[data-slot="landing-how"]')!)
     await expect(how.getAllByRole('listitem')).toHaveLength(3)
     await expect(how.getByRole('heading', { level: 3, name: 'Mint a moment' })).toBeInTheDocument()
+    // section titles are the Heading atom at its section step; the step owns the phone swap
+    await expect(canvasElement.querySelector('[data-slot="heading"]')).toHaveAttribute('data-size', 'section')
+    await expect(how.getByRole('heading', { level: 3, name: 'Mint a moment' })).toHaveAttribute('data-size', 'card-title')
     // the hero pile is three tilted specimens with their own tier seals
     const pile = canvasElement.querySelector<HTMLElement>('[data-slot="hero-pile"]')!
     await expect(pile.querySelectorAll('[data-slot="hero-card"]')).toHaveLength(3)
     await expect(within(pile).getByText('Prismatic')).toBeInTheDocument()
+    // the pile seal is the chip's own small size, not a restyle of it
+    const seal = getComputedStyle(within(pile).getByText('Prismatic'))
+    await expect(seal.fontSize).toBe('12px')
+    await expect(seal.paddingLeft).toBe('8px')
     // the film sits after the ladder and right before the FAQ, in its own headed section
     const film = canvasElement.querySelector<HTMLElement>('[data-slot="landing-film"]')!
     await expect(within(film).getByRole('heading', { level: 2, name: 'MemeOn in 50 seconds' })).toBeInTheDocument()

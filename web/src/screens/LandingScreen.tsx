@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom'
-import { Button, buttonClasses } from '@/atoms/button'
+import { Alert } from '@/atoms/alert'
+import { Button, buttonVariants } from '@/atoms/button'
 import { tierFrameClasses } from '@/atoms/foil'
 /* the foil sheet, imported directly (not by way of `atoms/MemeCard`'s side effect): this screen
    assembles the hero pile and the tier ladder from its own markup, on the dependency-free half of
    the seam */
 import '@/atoms/foil.css'
-import { Notice } from '@/atoms/notice'
+import { Heading } from '@/atoms/heading'
 import { PageContainer } from '@/atoms/page-container'
 import { TierChip } from '@/atoms/tier-chip'
 import { cn } from '../lib/cn'
@@ -14,8 +15,6 @@ import { FaqItem } from '@/molecules/faq-item'
 import { HeroVideo } from '@/molecules/hero-video'
 import './LandingScreen.css'
 
-const FACE = 'font-display font-normal text-foreground'
-const SECTION_TITLE = cn(FACE, 'm-0 text-2xl md:text-4xl')
 const SECTION = 'mt-14 max-md:mt-10'
 
 const CARD = 'rounded-lg material-card p-gutter'
@@ -55,7 +54,7 @@ export function LandingScreen({
   errorNoticeProps,
 }: LandingScreenModel) {
   const marketplaceCta = (
-    <Link className={buttonClasses('login')} to="/marketplace">
+    <Link className={buttonVariants({ variant: 'primary', size: 'login' })} to="/marketplace">
       🃏 Enter the marketplace
     </Link>
   )
@@ -85,7 +84,7 @@ export function LandingScreen({
               <div className="mt-7">{marketplaceCta}</div>
             ) : showLoginButton ? (
               <div className="mt-7 flex flex-wrap items-center gap-3.5">
-                <Button variant="login" {...loginButtonProps}>
+                <Button variant="primary" size="login" {...loginButtonProps}>
                   {loginLabel}
                 </Button>
                 <p className="m-0 max-w-[24ch] text-sm text-muted-foreground">
@@ -94,9 +93,9 @@ export function LandingScreen({
               </div>
             ) : null}
             {showErr && (
-              <Notice tone="error" {...errorNoticeProps}>
+              <Alert variant="error" className="mt-3" {...errorNoticeProps}>
                 {err}
-              </Notice>
+              </Alert>
             )}
           </div>
 
@@ -143,8 +142,8 @@ export function LandingScreen({
                   <TierChip
                     tierKey={card.tierKey}
                     label={card.tierName}
-                    /* pile seal one step smaller than grid thumb so it never crowds the title */
-                    className="absolute right-2.5 bottom-2.5 px-2 py-1 text-xs"
+                    /* pile seal at the grid thumb's own step (`size="sm"`), pinned to the corner */
+                    className="absolute right-2.5 bottom-2.5"
                   />
                 </li>
               )
@@ -155,7 +154,7 @@ export function LandingScreen({
 
       {/* how it works */}
       <section data-slot="landing-how" className={SECTION}>
-        <h2 className={SECTION_TITLE}>A card gets better when it gets around.</h2>
+        <Heading size="section">A card gets better when it gets around.</Heading>
         <ol className="mt-6 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-3">
           {HOW_IT_WORKS.map((step) => (
             <li key={step.step} className={CARD}>
@@ -163,7 +162,7 @@ export function LandingScreen({
               <span className="block text-sm font-semibold text-link tabular-nums">
                 {step.step}
               </span>
-              <h3 className={cn(FACE, 'mt-3 mb-0 text-2xl')}>{step.title}</h3>
+              <Heading as="h3" size="card-title" className="mt-3">{step.title}</Heading>
               <p className="mt-2 mb-0 text-sm text-muted-foreground">{step.body}</p>
             </li>
           ))}
@@ -172,9 +171,9 @@ export function LandingScreen({
 
       {/* tier ladder */}
       <section data-slot="landing-tiers" className={SECTION}>
-        <h2 className={SECTION_TITLE} id="tiers">
+        <Heading size="section" id="tiers">
           The Virality Tiers
-        </h2>
+        </Heading>
         {/* an ordered climb, so the ladder is an <ol>: the sequence is the section's argument */}
         <ol className="mt-6 grid list-none grid-cols-[repeat(auto-fill,minmax(136px,1fr))] gap-3 p-0 max-sm:grid-cols-2 2xl:grid-cols-7">
           {tiers.map((t) => (
@@ -205,9 +204,9 @@ export function LandingScreen({
                   ) : null}
                 </span>
               </span>
-              <h3 className={cn(FACE, 'mt-3 mb-0 font-sans text-lg font-semibold')}>
+              <Heading as="h3" size="card-title-phone" className="mt-3">
                 {t.name}
-              </h3>
+              </Heading>
               <span className="mt-2.5 text-sm font-semibold text-link tabular-nums">
                 {t.resharesLabel}
               </span>
@@ -220,13 +219,13 @@ export function LandingScreen({
       {/* The promo film: the whole loop in 50 seconds, framed like the cards above it, right
           before the FAQ answers the questions it raises. */}
       <section data-slot="landing-film" className={SECTION}>
-        <h2 className={SECTION_TITLE}>MemeOn in 50 seconds</h2>
+        <Heading size="section">MemeOn in 50 seconds</Heading>
         <HeroVideo model={heroVideo} className="mt-6 max-w-220" />
       </section>
 
       {/* FAQ */}
       <section data-slot="landing-faq" className={SECTION}>
-        <h2 className={cn(FACE, 'm-0 mb-6 text-2xl md:text-4xl')}>FAQ</h2>
+        <Heading size="section" className="mb-6">FAQ</Heading>
         <div className="max-w-measure">
           <FaqItem question="How does a card level up?" defaultOpen>
             <p>
@@ -306,7 +305,7 @@ export function LandingScreen({
           {showMarketplaceCta ? (
             marketplaceCta
           ) : (
-            <Button variant="login" {...closingLoginButtonProps}>
+            <Button variant="primary" size="login" {...closingLoginButtonProps}>
               {closingLoginLabel}
             </Button>
           )}

@@ -83,11 +83,19 @@ export const Error: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('alert')).toHaveTextContent(copy.loadError)
+    // the error state is the Empty card's own error variant, title and description included
+    const state = canvasElement.querySelector('[data-slot="empty"]')!
+    await expect(state).toHaveAttribute('data-variant', 'error')
+    await expect(state.querySelector('[data-slot="empty-title"]')?.tagName).toBe('H2')
     await expect(canvas.getByRole('button', { name: copy.retry })).toBeInTheDocument()
   },
 }
 export const Ready: Story = {
   args: { ...ready, endOfListLabel: copy.endOfList },
+  play: async ({ canvasElement }) => {
+    // the end-of-list note is the compact page state, not a restyled full-height one
+    await expect(canvasElement.querySelector('[data-slot="page-state"]')).toHaveAttribute('data-size', 'compact')
+  },
 }
 export const ReadyWithMore: Story = { args: { ...ready, showMore: true } }
 export const LoadMoreFailed: Story = {
@@ -121,7 +129,17 @@ export const FiltersNarrowed: Story = {
     await expect(media.getByRole('button', { name: copy.filters.media.images })).toHaveAttribute('aria-pressed', 'true')
     await expect(media.getByRole('button', { name: copy.filters.media.all })).toHaveAttribute('aria-pressed', 'false')
     await expect(canvas.getByRole('button', { name: copy.filters.listed })).toHaveAttribute('aria-pressed', 'true')
-    await userEvent.click(canvas.getByRole('button', { name: copy.clearFilters }))
+    // the tier filter is the raised toolbar pill, not a recessed form well
+    const tier = canvasElement.querySelector('[data-slot="select"]')!
+    await expect(tier).toHaveAttribute('data-variant', 'pill')
+    // the search well is one InputGroup: glyph addon inside the recess, chromeless control
+    const well = canvasElement.querySelector('[data-slot="input-group"]')!
+    await expect(well.querySelector('[data-slot="input-group-addon"]')).not.toBeNull()
+    await expect(well.querySelector('[data-slot="input-group-control"]')).toHaveAttribute('type', 'search')
+    // clearing filters is the 34px chip beside the count, not another 46px pill
+    const clear = canvas.getByRole('button', { name: copy.clearFilters })
+    await expect(clear.getBoundingClientRect().height).toBe(34)
+    await userEvent.click(clear)
     await expect(args.clearFiltersProps?.onClick).toHaveBeenCalled()
   },
 }
