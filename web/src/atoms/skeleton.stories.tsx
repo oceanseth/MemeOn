@@ -19,13 +19,13 @@ export const Basic: Story = {
   },
 }
 
-/** Reserves the same 340px a card slot reserves at any track width. */
+/** Reserves a grid card's exact box at any track width: the square art plus the 124px of inset and meta. */
 export const Card: Story = {
   render: () => <SkeletonCard style={{ width: 170 }} />,
   play: async ({ canvasElement }) => {
     const card = canvasElement.querySelector<HTMLElement>('[data-slot="skeleton-card"]')!
     await expect(card).toHaveAttribute('data-variant', 'card')
-    await expect(card.offsetHeight).toBe(240)
+    await expect(card.offsetHeight).toBe(170 + 124)
   },
 }
 

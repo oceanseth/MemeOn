@@ -10,10 +10,14 @@ import './foil.css'
 
 /* The card is a container for its own meta row (`@max-card-narrow:` fires under 220px). The ring
    is the card's, for the link inside it: `has-[a:focus-visible]` rather than `focus-ring`, because
-   the focused element is the art link and the toggle keeps its own ring. */
+   the focused element is the art link and the toggle keeps its own ring.
+   Every card in a grid is the same size: the track sets the width, and the height is the same by
+   construction — the title reserves its two lines and the value row reserves the two-line listing
+   slot — so the card is left free to stretch to its track (no `self-start`) and a screen's own
+   per-card footer cannot make a row ragged either. */
 const memeCardVariants = cva(
   [
-    'group relative isolate self-start rounded-lg material-card p-2',
+    'group relative isolate rounded-lg material-card p-2',
     '@container',
     'transition-lift',
     'pointer-coarse:active:scale-99',
@@ -39,7 +43,8 @@ const memeCardVariants = cva(
   },
 )
 
-const memeMetaVariants = cva('flex flex-col', {
+/* `flex-1`: the meta fills a stretched card, so a footer can pin itself to the bottom with `mt-auto` */
+const memeMetaVariants = cva('flex flex-1 flex-col', {
   variants: {
     size: {
       default: 'gap-1 px-1.5 pt-3.5 pb-1.5 @max-card-narrow:pt-2.5',
@@ -52,7 +57,12 @@ const memeMetaVariants = cva('flex flex-col', {
 const memeTitleVariants = cva('font-display font-normal text-foreground', {
   variants: {
     size: {
-      default: 'line-clamp-2 text-xl @max-card-narrow:font-sans @max-card-narrow:text-lg @max-card-narrow:font-semibold',
+      /** two lines are reserved (2 × 24, or 2 × 26 in the narrow text face), so a one-line title
+       *  leaves the stats and the value row where every neighbour has them */
+      default: [
+        'line-clamp-2 min-h-12 text-xl',
+        '@max-card-narrow:min-h-13 @max-card-narrow:font-sans @max-card-narrow:text-lg @max-card-narrow:font-semibold',
+      ],
       lg: 'text-3xl',
     },
   },
@@ -83,9 +93,22 @@ const CHIP_POS = 'absolute bottom-4 left-4 z-2'
 
 const STATS = 'flex items-center text-xs text-muted-foreground tabular-nums'
 
-const SUB = cn(
-  'flex items-start justify-between gap-2 text-xs font-medium text-foreground tabular-nums',
-  '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
+/* the grid thumb reserves the two-line listing slot (2 × 16) whether or not it is for sale; the
+   narrow form may wrap its right lane under the value (20 + 2 + 16), and reserves that instead */
+const memeSubVariants = cva(
+  [
+    'flex items-start justify-between gap-2 text-xs font-medium text-foreground tabular-nums',
+    '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
+  ],
+  {
+    variants: {
+      size: {
+        default: 'min-h-8 @max-card-narrow:min-h-9.5',
+        lg: '',
+      },
+    },
+    defaultVariants: { size: 'default' },
+  },
 )
 
 const VALUE = 'text-sm font-semibold text-foreground'
@@ -150,7 +173,7 @@ export function MemeCard({ model, subTitle, footer, footerRight, size }: MemeCar
             </span>
             <span className="sr-only">{model.statsA11yLabel}</span>
           </span>
-          <span data-slot="meme-sub" className={SUB}>
+          <span data-slot="meme-sub" className={cn(memeSubVariants({ size: scale }))}>
             <span className={VALUE}>
               <span aria-hidden="true">🧠 {model.valueLabel}</span>
               <span className="sr-only">{model.valueA11yLabel}</span>
