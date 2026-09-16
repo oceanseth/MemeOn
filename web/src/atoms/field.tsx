@@ -118,14 +118,4 @@ export function FieldLegend({
   )
 }
 
-/* Transitional names for the screens still on `atoms/fieldset` (TradesScreen reads
-   `data-slot="fieldset"` in its grid). The screen wave switches them; E1 deletes these. */
-export function Fieldset({ className, ...props }: Styled<FieldsetRootProps>) {
-  return <FieldSet className={className} {...props} data-slot="fieldset" />
-}
 
-export function FieldsetLegend({ className, ...props }: Styled<FieldsetLegendProps>) {
-  return <FieldLegend variant="label" className={className} {...props} data-slot="fieldset-legend" />
-}
-
-export { FieldDescription as FieldHint }

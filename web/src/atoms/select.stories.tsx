@@ -72,7 +72,7 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const trigger = canvas.getByRole('combobox', { name: 'Tier' })
-    await expect(trigger).toHaveAttribute('data-slot', 'select')
+    await expect(trigger).toHaveAttribute('data-slot', 'select-trigger')
     await expect(trigger).toHaveAttribute('data-variant', 'default')
     await expect(trigger).toHaveTextContent('Holo')
   },

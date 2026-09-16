@@ -37,7 +37,7 @@ export const Default: Story = {
     const dialog = canvas.getByRole('dialog', { name: 'A modal frame' })
     // the popup stays inside the tree it was written in, so a screen's own canvas query finds it
     await expect(canvasElement.contains(dialog)).toBe(true)
-    await expect(dialog).toHaveAttribute('data-slot', 'dialog')
+    await expect(dialog).toHaveAttribute('data-slot', 'dialog-content')
     await expect(dialog).toHaveAttribute('data-size', 'md')
     await expect(dialog).toHaveAttribute('data-variant', 'default')
     await expect(dialog).toHaveAttribute('aria-describedby', 'frame-story-description')

@@ -239,8 +239,6 @@ export interface SelectProps extends VariantProps<typeof selectTriggerVariants> 
 
 /**
  * The one-liner the screens use: a labelled trigger sized to its widest option, and the list.
- * Its trigger is the component's own slot (`data-slot="select"`); a trigger composed from the
- * parts is `select-trigger`.
  */
 export function Select({
   items,
@@ -263,7 +261,7 @@ export function Select({
       name={name}
       id={id}
     >
-      <SelectTrigger aria-label={ariaLabel} variant={variant} className={className} data-slot="select">
+      <SelectTrigger aria-label={ariaLabel} variant={variant} className={className}>
         <span className="grid min-w-0">
           <SelectValue placeholder={placeholder} className="col-start-1 row-start-1" />
           <SelectSizer items={items} placeholder={placeholder} className="col-start-1 row-start-1" />

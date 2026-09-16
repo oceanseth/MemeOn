@@ -108,9 +108,6 @@ export function DialogFrame({
           finalFocus={finalFocus}
           showCloseButton={Boolean(close)}
           {...(close ? { closeLabel: close.label, closeDisabled: close.disabled } : {})}
-          // transitional: `hooks/social-regressions.runtime.test.tsx` reads the popup as `dialog`;
-          // it becomes the atom's `dialog-content` once that probe moves (LEDGER)
-          data-slot="dialog"
           className={className}
         >
           <DialogHeader>

@@ -140,28 +140,6 @@ export const GlassCellAndSegment: Story = {
 export const Dark: Story = { ...Variants, globals: { theme: 'dark' } }
 
 /**
- * The names the screens still pass (`secondary`, `danger`, `login`) resolve to the registry axes:
- * brand, destructive, and primary at the login size.
- */
-export const LegacyNames: Story = {
-  render: () => (
-    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: 16 }}>
-      <Button variant="secondary">Secondary</Button>
-      <Button variant="danger">Danger</Button>
-      <Button variant="login">Login</Button>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Secondary' })).toHaveClass('bg-brand')
-    await expect(canvas.getByRole('button', { name: 'Danger' })).toHaveClass('bg-error')
-    const login = canvas.getByRole('button', { name: 'Login' })
-    await expect(login).toHaveClass('bg-primary')
-    await expect(login).toHaveClass('min-h-control')
-  },
-}
-
-/**
  * The pill on a link: Base UI's `render` swaps the element, `nativeButton={false}` tells it the
  * element is not a `<button>`. The anchor is announced as a button, which is Base UI's contract.
  */

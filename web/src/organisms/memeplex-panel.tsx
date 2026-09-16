@@ -23,10 +23,8 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
 
   return (
     /* The raised section card every panel on the page wears: `bg-card`, `rounded-lg`,
-       `material-card`, the card inset, with its head at the shared intro step.
-       `data-slot="panel"` stays until MemeDetailScreen's `[&>[data-slot=panel]]:mt-0` moves to
-       the card slot (LEDGER L47). */
-    <Card className="mt-4" data-slot="panel">
+       `material-card`, the card inset, with its head at the shared intro step. */
+    <Card className="mt-4">
       <CardTitle size="intro" render={<h3 />} className="mb-1.5">🕸️ Memeplex</CardTitle>
       {model.ancestors.length > 0 && (
         <p className={cn('my-2', LINE)}>

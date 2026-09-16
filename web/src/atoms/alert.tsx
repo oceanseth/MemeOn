@@ -63,34 +63,3 @@ export function AlertAction({ className, ...props }: ComponentPropsWithoutRef<'d
     />
   )
 }
-
-/* Transitional: the `Notice` the screens still render. `ok` and `busy` were the legacy names of
-   the success and info pairs; `compact` is the compact size; the 12px top margin the old band
-   carried stays here so nothing shifts until the screen waves place Alerts themselves. E1 deletes. */
-export type NoticeTone = 'error' | 'ok' | 'warning' | 'busy' | 'info'
-
-const NOTICE_VARIANT: Record<NoticeTone, AlertVariant> = {
-  error: 'error',
-  ok: 'success',
-  warning: 'warning',
-  busy: 'info',
-  info: 'info',
-}
-
-export interface NoticeProps extends Omit<AlertProps, 'variant' | 'size'> {
-  tone: NoticeTone
-  compact?: boolean
-}
-
-export function Notice({ tone, compact = false, className, ...props }: NoticeProps) {
-  return (
-    <Alert
-      variant={NOTICE_VARIANT[tone]}
-      size={compact ? 'compact' : 'default'}
-      className={cn('mt-3', className)}
-      {...props}
-      data-slot="notice"
-      data-tone={tone}
-    />
-  )
-}

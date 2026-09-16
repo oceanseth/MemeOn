@@ -6,7 +6,7 @@ import { Card } from '@/atoms/card'
 import { Checkbox } from '@/atoms/checkbox'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader } from '@/atoms/empty'
 import { Heading } from '@/atoms/heading'
-import { MemeCard, memeCardSubClasses } from '@/atoms/meme-card'
+import { MemeCard } from '@/atoms/meme-card'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Progress } from '@/atoms/progress'
@@ -39,7 +39,10 @@ export const binderCardSlotClasses = cn(
 )
 
 /** The creator/private row under a binder card: the atom's own footer rhythm, one line lower. */
-const binderCardFooterClasses = cn(memeCardSubClasses, 'mt-0.5')
+const binderCardFooterClasses = cn(
+  'mt-0.5 flex items-start justify-between gap-2 text-xs font-medium text-foreground tabular-nums',
+  '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
+)
 
 /* reward rail lives in AppShell QuestBar — claim is a one-shot shell mutation, not duplicated here */
 

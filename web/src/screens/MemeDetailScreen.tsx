@@ -9,9 +9,6 @@ import { Heading } from '@/atoms/heading'
 import { InlineLink } from '@/atoms/inline-link'
 import { Input } from '@/atoms/input'
 import { MemeCard } from '@/atoms/meme-card'
-/* the one `Notice` left in the tree: `hooks/market-regressions.runtime.test.tsx:255` reads this
-   region as `[data-slot="notice"]`. LEDGER L13 hands the probe to E1; the site switches with it. */
-import { Notice } from '@/atoms/notice'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Progress } from '@/atoms/progress'
@@ -143,7 +140,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           {/* the page's two live regions: inside this ungapped column an empty one costs nothing,
              so the rail keeps its 18px rhythm whether a message is showing or not */}
           <div {...detail.noticeProps}>{detail.notice && <Alert variant="success" role="none" className="mt-3">{detail.notice}</Alert>}</div>
-          <div {...detail.errorProps}>{detail.error && <Notice tone="error" role="none">{detail.error}</Notice>}</div>
+          <div {...detail.errorProps}>{detail.error && <Alert variant="error" role="none" className="mt-3">{detail.error}</Alert>}</div>
         </div>
 
         <div data-slot="detail-hero" className={cn('self-start', heroPlacement)}>

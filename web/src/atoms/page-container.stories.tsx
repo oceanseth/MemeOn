@@ -12,7 +12,7 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Default: Story = {}
-export const Narrow: Story = { args: { narrow: true } }
+export const Narrow: Story = { args: { width: 'narrow' } }
 
 /** Every real screen wants the `<main id="main" tabIndex={-1}>` landmark to be this element itself. */
 export const AsMain: Story = {

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
-import { Alert, AlertAction, AlertDescription, AlertTitle, Notice } from '@/atoms/alert'
+import { Alert, AlertAction, AlertDescription, AlertTitle } from '@/atoms/alert'
 import { Button } from '@/atoms/button'
 import { Spinner } from '@/atoms/spinner'
 
@@ -88,25 +88,3 @@ export const RoleOverride: Story = {
   },
 }
 
-/** The legacy `Notice` the screens still render: tone names, `compact`, and the old top margin. */
-export const LegacyNotice: Story = {
-  render: () => (
-    <div style={{ display: 'grid', justifyItems: 'start', gap: 4 }}>
-      <Notice tone="ok">Copied!</Notice>
-      <Notice tone="busy">Working…</Notice>
-      <Notice tone="error" compact>
-        Could not save.
-      </Notice>
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const ok = canvas.getByText('Copied!')
-    await expect(ok).toHaveAttribute('data-slot', 'notice')
-    await expect(ok).toHaveAttribute('data-tone', 'ok')
-    await expect(ok).toHaveAttribute('data-variant', 'success')
-    await expect(ok).toHaveAttribute('role', 'status')
-    await expect(canvas.getByText('Working…')).toHaveAttribute('data-variant', 'info')
-    await expect(canvas.getByText('Could not save.')).toHaveAttribute('role', 'alert')
-  },
-}

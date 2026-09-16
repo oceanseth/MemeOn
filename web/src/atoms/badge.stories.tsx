@@ -21,15 +21,6 @@ export const Default: Story = {
 
 export const Info: Story = { args: { variant: 'info', children: 'Friends' } }
 
-/** `tone` is the pre-registry spelling the screens still pass; it resolves to `variant`. */
-export const LegacyTone: Story = {
-  args: { tone: 'info', children: 'Friends' },
-  play: async ({ canvasElement }) => {
-    const badge = canvasElement.querySelector('[data-slot="badge"]')
-    await expect(badge).toHaveAttribute('data-variant', 'info')
-  },
-}
-
 /** The six variants, in the order a screen reaches for them. */
 export const Variants: Story = {
   render: () => (

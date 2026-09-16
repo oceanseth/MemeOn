@@ -1,4 +1,4 @@
-import { Notice } from '@/atoms/alert'
+import { Alert } from '@/atoms/alert'
 import { Badge } from '@/atoms/badge'
 import { Button } from '@/atoms/button'
 import { DialogFooter } from '@/atoms/dialog'
@@ -96,14 +96,12 @@ export function GiftDialog({ model }: { model: GiftDialogModel }) {
           </Button>
         )}
       </DialogFooter>
-      {/* mounted before the copy arrives, so the failure is announced rather than merely displayed.
-          Still the transitional `Notice`, not `Alert`: `hooks/social-regressions.runtime.test.tsx`
-          reads the band as `[data-slot="notice"]` (LEDGER L13); E1 moves the probe and the band together */}
+      {/* mounted before the copy arrives, so the failure is announced rather than merely displayed */}
       <LiveRegion politeness="assertive" variant="visible" data-slot="gift-error">
         {model.error && (
-          <Notice tone="error" role="none">
+          <Alert variant="error" role="none" className="mt-3">
             {model.error}
-          </Notice>
+          </Alert>
         )}
       </LiveRegion>
     </DialogFrame>

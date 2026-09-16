@@ -126,8 +126,7 @@ export const Error: Story = {
   play: async ({ canvasElement }) => {
     const region = canvasElement.querySelector<HTMLElement>('[data-slot="gift-error"]')!
     await expect(region).toHaveAttribute('role', 'alert')
-    // the band is still the transitional Notice (a hooks runtime test reads its slot, L13)
-    const band = region.querySelector('[data-slot="notice"]')
+    const band = region.querySelector('[data-slot="alert"]')
     await expect(band).toHaveAttribute('data-variant', 'error')
     await expect(band).toHaveTextContent('not enough shares')
   },

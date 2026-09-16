@@ -3,7 +3,7 @@ import type { ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
 
 /**
- * A row of controls, the FilterBar's successor: `gap-gutter` between its slots, `align` for where
+ * A row of controls: `gap-gutter` between its slots, `align` for where
  * a single slot sits, `stack` to put the slots one above the other under the 720px cut. Layout
  * only — a filter row is not an ARIA toolbar, so Base UI's roving-focus Toolbar is not used.
  */

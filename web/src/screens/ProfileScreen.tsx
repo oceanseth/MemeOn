@@ -10,7 +10,7 @@ import { PageHead } from '@/atoms/page-head'
 import { Skeleton, SkeletonBlock, SkeletonCard } from '@/atoms/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/atoms/tabs'
 import { cn } from '../lib/cn'
-import { PROFILE_CARDS_ID, type ProfileScreenModel } from '../hooks/useProfileScreen'
+import type { ProfileScreenModel } from '../hooks/useProfileScreen'
 import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
 
 const SKELETON_CARDS = ['a', 'b', 'c', 'd']
@@ -244,10 +244,10 @@ export function ProfileScreen({
       <div className={TABS}>
         <Tabs {...tabsProps}>
           <TabsList variant="pills" aria-label="Profile section">
-            <TabsTrigger value="created" aria-controls={PROFILE_CARDS_ID}>
+            <TabsTrigger value="created" aria-controls={gridProps.id}>
               Created ({createdCount})
             </TabsTrigger>
-            <TabsTrigger value="binder" aria-controls={PROFILE_CARDS_ID}>
+            <TabsTrigger value="binder" aria-controls={gridProps.id}>
               Binder ({binderCount})
             </TabsTrigger>
           </TabsList>

@@ -138,7 +138,7 @@ function link(label: string): HTMLAnchorElement {
 function selectTrigger(label: string): HTMLElement {
   const trigger = [...host.querySelectorAll<HTMLElement>('[data-slot="field"]')]
     .find((field) => field.querySelector('[data-slot="field-label"]')?.textContent === label)
-    ?.querySelector<HTMLElement>('[data-slot="select"]')
+    ?.querySelector<HTMLElement>('[data-slot="select-trigger"]')
   if (!trigger) throw new Error(`Missing select: ${label}`)
   return trigger
 }

@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn'
 
 /**
  * `hidden` is the announce-only region a screen reader hears and nobody sees; `visible` is the
- * wrapper a Notice lands in, collapsing while it has nothing to say (`:empty`). Callers add the
+ * wrapper an Alert lands in, collapsing while it has nothing to say (`:empty`). Callers add the
  * layout around it (`not-empty:mb-4`).
  */
 export const liveRegionVariants = cva('', {

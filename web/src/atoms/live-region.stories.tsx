@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
-import { Notice } from '@/atoms/alert'
+import { Alert } from '@/atoms/alert'
 import { LiveRegion } from '@/atoms/live-region'
 
 const meta = {
@@ -44,13 +44,13 @@ export const ExplicitRole: Story = {
   },
 }
 
-/** The wrapper a Notice lands in: visible while it has content, collapsed while it has none. */
+/** The wrapper an Alert lands in: visible while it has content, collapsed while it has none. */
 export const Visible: Story = {
   args: { variant: 'visible' },
   render: ({ variant }) => (
     <div className="flex flex-col gap-4 p-4">
       <LiveRegion variant={variant} data-testid="filled">
-        <Notice tone="ok">Trade accepted.</Notice>
+        <Alert variant="success">Trade accepted.</Alert>
       </LiveRegion>
       <LiveRegion variant={variant} data-testid="empty" />
       <span className="text-base text-muted-foreground">below both regions</span>

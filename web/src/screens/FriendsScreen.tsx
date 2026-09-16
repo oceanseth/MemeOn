@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link, type LinkProps } from 'react-router-dom'
+import { Alert } from '@/atoms/alert'
 import { Avatar } from '@/atoms/avatar'
 import { Button, buttonVariants } from '@/atoms/button'
 import { Card, CardTitle } from '@/atoms/card'
@@ -8,7 +9,6 @@ import { Heading } from '@/atoms/heading'
 import { Icon } from '@/atoms/icon'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/atoms/input-group'
 import { Item, ItemActions, ItemContent, ItemTitle } from '@/atoms/item'
-import { Notice } from '@/atoms/notice'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Spinner } from '@/atoms/spinner'
@@ -165,10 +165,8 @@ export function FriendsScreen({
         </Toolbar>
       </PageHead>
 
-      {/* `Notice` until `hooks/social-regressions.runtime.test.tsx` stops reading
-          `[data-slot="notice"]` here — see SC1/requests.md and LEDGER L13. */}
-      {showMsg && <Notice tone="ok">{msg}</Notice>}
-      {showErr && <Notice tone="error">{err}</Notice>}
+      {showMsg && <Alert variant="success" className="mt-3">{msg}</Alert>}
+      {showErr && <Alert variant="error" className="mt-3">{err}</Alert>}
 
       {showSearchPanel && (
         <Card className="mb-5">

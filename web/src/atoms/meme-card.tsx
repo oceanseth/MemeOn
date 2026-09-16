@@ -93,7 +93,6 @@ const VALUE = 'text-sm font-semibold text-foreground'
 const RIGHT_SLOT = 'min-w-16 shrink-0 text-right *:whitespace-nowrap' // floor keeps footer lanes aligned
 
 /** Footer row classes screens align extra stats under. */
-export const memeCardSubClasses = SUB
 
 export interface MemeCardProps {
   model: MemeCardModel

@@ -14,7 +14,7 @@ const copy = authStatusCopy.callback
 
 /** Shared auth status card for OAuth callback and mobile forward. */
 export interface AuthStatusScreenModel {
-  /** `working` draws the ring; `error` swaps it for the failure title and a `Notice`. */
+  /** `working` draws the ring; `error` swaps it for the failure title and an `Alert`. */
   phase: 'working' | 'error'
   title: string
   /** the line under the title while working; `null` hides it */

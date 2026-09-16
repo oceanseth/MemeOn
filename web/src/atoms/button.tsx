@@ -66,46 +66,8 @@ const buttonVariants = cva(
   },
 )
 
-type RegistryVariant = NonNullable<VariantProps<typeof buttonVariants>['variant']>
+export type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>['variant']>
 export type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>['size']>
-
-/** The three names the screens and models still pass; each resolves to a registry axis below. */
-type LegacyButtonVariant = 'secondary' | 'danger' | 'login'
-
-export type ButtonVariant = RegistryVariant | LegacyButtonVariant
-
-const LEGACY: Record<LegacyButtonVariant, { variant: RegistryVariant; size?: ButtonSize }> = {
-  secondary: { variant: 'brand' },
-  danger: { variant: 'destructive' },
-  login: { variant: 'primary', size: 'login' },
-}
-
-const isLegacy = (variant: ButtonVariant): variant is LegacyButtonVariant => variant in LEGACY
-
-interface ResolvedVariants {
-  variant: RegistryVariant
-  size: ButtonSize | null | undefined
-}
-
-/** Legacy names map onto the axes; a size the caller passes beats the legacy default. */
-function resolveVariants(
-  variant: ButtonVariant | null | undefined,
-  size: ButtonSize | null | undefined,
-): ResolvedVariants {
-  const named = variant ?? 'default'
-  if (!isLegacy(named)) return { variant: named, size }
-  const legacy = LEGACY[named]
-  return { variant: legacy.variant, size: size ?? legacy.size }
-}
-
-/**
- * The classes alone, for a `<Link>`/`<a>` that wears the pill: `<Button render={<Link />}>` is
- * the registry form and replaces this at every site; combine with `aria-disabled` for a locked
- * link meanwhile.
- */
-export function buttonClasses(variant: ButtonVariant = 'default', size?: ButtonSize): string {
-  return cn(buttonVariants(resolveVariants(variant, size)))
-}
 
 export interface ButtonProps extends Omit<ButtonPrimitive.Props, 'className'> {
   variant?: ButtonVariant | null | undefined
@@ -136,7 +98,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       aria-busy={isBusy || undefined}
       aria-pressed={pressed ?? rest['aria-pressed']}
       className={cn(
-        buttonVariants(resolveVariants(variant, size)),
+        buttonVariants({ variant, size }),
         isBusy && 'opacity-100! cursor-progress', // beats the attribute-selector specificity of disabled-look
         className,
       )}

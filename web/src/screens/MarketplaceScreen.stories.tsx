@@ -130,7 +130,7 @@ export const FiltersNarrowed: Story = {
     await expect(media.getByRole('button', { name: copy.filters.media.all })).toHaveAttribute('aria-pressed', 'false')
     await expect(canvas.getByRole('button', { name: copy.filters.listed })).toHaveAttribute('aria-pressed', 'true')
     // the tier filter is the raised toolbar pill, not a recessed form well
-    const tier = canvasElement.querySelector('[data-slot="select"]')!
+    const tier = canvasElement.querySelector('[data-slot="select-trigger"]')!
     await expect(tier).toHaveAttribute('data-variant', 'pill')
     // the search well is one InputGroup: glyph addon inside the recess, chromeless control
     const well = canvasElement.querySelector('[data-slot="input-group"]')!
