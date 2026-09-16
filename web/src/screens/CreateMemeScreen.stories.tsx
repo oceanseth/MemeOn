@@ -209,10 +209,16 @@ export const GiphyEmpty: Story = {
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    /* an empty search is an empty state, never a red alert: the alert region is mounted and silent */
-    await expect(canvas.getByRole('alert')).toBeEmptyDOMElement()
-    /* the mint's own live region is always mounted, so name the panel's status by its text */
-    await expect(canvas.getByText(/Nothing for "zzzzzz"/)).toHaveAttribute('role', 'status')
+    /* an empty search is an empty state, never a red alert: the alert region is mounted and
+       silent (`LiveRegion variant="visible"` keeps a silent region out of the a11y tree, so it
+       is read by slot rather than by role) */
+    const regions = canvasElement.querySelectorAll('[data-slot="live-region"]')
+    await expect(regions[regions.length - 1]).toBeEmptyDOMElement()
+    /* the mint's own live region is always mounted, so name the panel's status by its text:
+       the card is the region, its description the line that swaps */
+    await expect(
+      canvas.getByText(/Nothing for "zzzzzz"/).closest('[data-slot="empty"]'),
+    ).toHaveAttribute('role', 'status')
   },
 }
 
