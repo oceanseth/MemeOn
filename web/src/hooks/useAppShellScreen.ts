@@ -1,5 +1,6 @@
 import { useProjectedActor } from './useProjectedActor'
-import { useCallback, type AnchorHTMLAttributes, type ButtonHTMLAttributes } from 'react'
+import { useCallback, type MouseEventHandler } from 'react'
+import { flushSync } from 'react-dom'
 import { useLocation, useNavigate, type LinkProps } from 'react-router-dom'
 import type { IconName } from '@/atoms/icon'
 import { appShellCopy } from '../copy/appShell'
@@ -7,6 +8,7 @@ import { buildAlertsBellModel, type AlertsBellModel } from '../lib/alertsBellMod
 import { apiFetch, post } from '../lib/api'
 import { buildQuestBarModel, type QuestBarModel } from '../lib/questBarModel'
 import type { Alert, Meme, Me, QuestKey, QuestStep } from '../lib/types'
+import { withViewTransition } from '../lib/viewTransition'
 import type { AvatarMenuModel } from '@/molecules/avatar-menu'
 import type { ThemeControlModel } from '@/molecules/theme-control'
 import { appShellMachine, type AppShellContext, type AppShellPhase } from '../stores/appShellMachine'
@@ -45,20 +47,20 @@ export function routeFamily(pathname: string, sub: string | null): RouteFamily |
   return null
 }
 
+/**
+ * What a chrome link spreads onto its `<Link>`: the route, and — from the live hook — the click
+ * handler that runs the navigation inside a View Transition (`lib/viewTransition`). The pure
+ * builder leaves `onClick` out, so a story's link is a plain router link.
+ */
+export type ShellLinkProps = Pick<LinkProps, 'to' | 'onClick'>
+
 export interface ShellNavItem {
   to: string
   label: string
-  /** An emoji that is the row's glyph. It stays an emoji: it takes the icon lane, never a drawn twin. */
-  emoji: string | null
-  icon: IconName
-  current: boolean
-}
-
-export interface ShellUtilityLink {
-  to: string
-  label: string
+  /** An emoji that is the link's glyph. It stays an emoji, ahead of the label, never a drawn twin. */
   emoji: string | null
   current: boolean
+  linkProps: ShellLinkProps
 }
 
 export interface ShellTabItem {
@@ -68,33 +70,24 @@ export interface ShellTabItem {
   current: boolean
   /** The centre Mint tab: the bar's single primary. */
   primary: boolean
+  linkProps: ShellLinkProps
 }
 
-export interface ShellIdentity {
-  name: string
-  src: string | null
-  settingsLinkProps: Pick<LinkProps, 'to'> & Pick<AnchorHTMLAttributes<HTMLAnchorElement>, 'aria-label'>
-}
-
-const NAV_ITEMS: { families: RouteFamily[]; to: string; label: string; emoji: string | null; icon: IconName }[] = [
-  { families: ['marketplace'], to: '/marketplace', label: copy.nav.marketplace, emoji: null, icon: 'storefront' },
-  { families: ['binder', 'mint'], to: '/binder', label: copy.nav.binder, emoji: null, icon: 'book' },
-  { families: ['friends'], to: '/friends', label: copy.nav.friends, emoji: null, icon: 'users' },
-  { families: ['trade'], to: '/trade', label: copy.nav.trade, emoji: null, icon: 'arrows-left-right' },
-  { families: ['leaderboard'], to: '/leaderboard', label: copy.nav.leaderboard, emoji: copy.nav.leaderboardEmoji, icon: 'trophy' },
+const NAV_ITEMS: { families: RouteFamily[]; to: string; label: string; emoji: string | null }[] = [
+  { families: ['marketplace'], to: '/marketplace', label: copy.nav.marketplace, emoji: null },
+  { families: ['binder', 'mint'], to: '/binder', label: copy.nav.binder, emoji: null },
+  { families: ['friends'], to: '/friends', label: copy.nav.friends, emoji: null },
+  { families: ['trade'], to: '/trade', label: copy.nav.trade, emoji: null },
+  { families: ['leaderboard'], to: '/leaderboard', label: copy.nav.leaderboard, emoji: copy.nav.leaderboardEmoji },
 ]
 
-const UTILITY_LINKS: { family: RouteFamily; to: string; label: string; emoji: string | null }[] = [
-  { family: 'discord', to: '/discord', label: copy.utility.discord, emoji: null },
-  { family: 'developers', to: '/developers', label: copy.utility.developers, emoji: copy.utility.developersEmoji },
-  { family: 'settings', to: '/settings', label: copy.utility.settings, emoji: null },
-]
+const MINT_TO = '/binder/new'
 
 /** Phone tab bar; the labels are the 62px abbreviations. */
 const TAB_ITEMS: { family: RouteFamily; to: string; label: string; icon: IconName; primary: boolean }[] = [
   { family: 'marketplace', to: '/marketplace', label: copy.tabs.market, icon: 'storefront', primary: false },
   { family: 'binder', to: '/binder', label: copy.tabs.binder, icon: 'book', primary: false },
-  { family: 'mint', to: '/binder/new', label: copy.tabs.mint, icon: 'circle-plus', primary: true },
+  { family: 'mint', to: MINT_TO, label: copy.tabs.mint, icon: 'circle-plus', primary: true },
   { family: 'friends', to: '/friends', label: copy.tabs.friends, icon: 'users', primary: false },
   { family: 'trade', to: '/trade', label: copy.tabs.trade, icon: 'arrows-left-right', primary: false },
 ]
@@ -107,31 +100,26 @@ export interface AppShellScreenModel {
   phase: AppShellPhase
   showNav: boolean
   showToolbar: boolean
+  /** The top bar's links, from the shell cut up; the tab bar carries the phone. */
   navItems: ShellNavItem[]
-  /** The sidebar's Mint pill: the chrome's one primary. */
-  mintLinkProps: Pick<LinkProps, 'to'>
-  utilityLinks: ShellUtilityLink[]
-  /** Built off `useTheme()`; the screen re-variants it for the header button. */
+  /** The header's Mint: the chrome's one primary, a link wearing the pill. */
+  mint: { label: string; linkProps: ShellLinkProps }
+  /** Built off `useTheme()`: the public header's one-glyph button, and the account menu's radio. */
   theme: ThemeControlModel
-  /** Desktop header, left. Empty renders nothing. */
-  contextLine: string
-  /** The balance figure and the name it announces: a span takes no name from a title. */
+  /**
+   * The balance figure and the name it announces: a span takes no name from a title. While the
+   * quest ladder is live the pill is `QuestBar`'s trigger and wears its ring.
+   */
   coins: { text: string; label: string } | null
-  avatar: {
-    linkProps: Pick<LinkProps, 'to'> & Pick<AnchorHTMLAttributes<HTMLAnchorElement>, 'aria-label'>
-    /* third-party avatar hosts 404: the slot keeps its shape and stays *your* monogram,
-       never the MemeOn mark, which is a different identity in the same disc */
-    name: string
-    src: string | null
-  } | null
-  /** The sidebar's identity row: avatar, name, the gear to Settings. */
-  identity: ShellIdentity | null
   bottomNav: ShellTabItem[]
-  /** The phone header's account menu (Profile, Top Brains, Settings, Developers, Log out). */
+  /**
+   * The account menu behind the header avatar at every width: Profile · 🏆 Top Brains · Settings
+   * · 🔧 Developers · Discord, the theme radio, Log out. Third-party avatar hosts 404, so the
+   * trigger keeps its shape and stays *your* monogram, never the MemeOn mark.
+   */
   avatarMenu: AvatarMenuModel | null
   alertsBell: AlertsBellModel
   questBar: QuestBarModel | null
-  logoutButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-label'>
 }
 
 export function buildAppShellScreenModel({
@@ -140,12 +128,12 @@ export function buildAppShellScreenModel({
   context,
   pathname = '/',
   theme = { value: 'auto', onChange: () => {} },
-  contextLine = copy.tagline,
   onLogout,
   onClaimPack,
   onDismissPack,
   onOpenAlerts,
   onDismissQuests = () => {},
+  onNavigate,
 }: {
   phase: AppShellPhase
   user: Me | null
@@ -153,17 +141,19 @@ export function buildAppShellScreenModel({
   /** The current route, for the chrome's `aria-current` marks. */
   pathname?: string
   theme?: Pick<ThemeControlModel, 'value' | 'onChange'>
-  contextLine?: string
   onLogout: () => void
   onClaimPack: () => void
   onDismissPack: () => void
   onOpenAlerts: (open: boolean) => void
   onDismissQuests?: () => void
+  /** The live hook's click handler per route; absent, a chrome link is a plain router link. */
+  onNavigate?: ((to: string) => MouseEventHandler<HTMLAnchorElement>) | undefined
 }): AppShellScreenModel {
   const steps = context.questDismissed ? [] : context.steps ?? []
   const showQuest = (!!user && !allDone(user) && steps.length > 0) || !!context.packMemes
   const family = routeFamily(pathname, user?.sub ?? null)
   const profileTo = user ? `/u/${encodeURIComponent(user.sub)}` : '/'
+  const link = (to: string): ShellLinkProps => (onNavigate ? { to, onClick: onNavigate(to) } : { to })
 
   return {
     phase,
@@ -172,32 +162,21 @@ export function buildAppShellScreenModel({
     navItems: NAV_ITEMS.map(({ families, ...item }) => ({
       ...item,
       current: family !== null && families.includes(family),
+      linkProps: link(item.to),
     })),
-    mintLinkProps: { to: '/binder/new' },
-    utilityLinks: UTILITY_LINKS.map(({ family: own, ...link }) => ({ ...link, current: family === own })),
-    theme: { value: theme.value, onChange: theme.onChange, variant: 'segmented' },
-    contextLine,
+    mint: { label: copy.mint, linkProps: link(MINT_TO) },
+    theme: { value: theme.value, onChange: theme.onChange, variant: 'button' },
     coins: user
       ? {
           text: copy.coins.text(user.coins),
           label: copy.coins.label(user.coins),
         }
       : null,
-    avatar: user
-      ? {
-          linkProps: { to: profileTo, 'aria-label': copy.avatar.profile },
-          name: user.name,
-          src: user.picture,
-        }
-      : null,
-    identity: user
-      ? {
-          name: user.name,
-          src: user.picture,
-          settingsLinkProps: { to: '/settings', 'aria-label': copy.identity.settings },
-        }
-      : null,
-    bottomNav: TAB_ITEMS.map(({ family: own, ...item }) => ({ ...item, current: family === own })),
+    bottomNav: TAB_ITEMS.map(({ family: own, ...item }) => ({
+      ...item,
+      current: family === own,
+      linkProps: link(item.to),
+    })),
     avatarMenu: user
       ? {
           name: user.name,
@@ -208,8 +187,10 @@ export function buildAppShellScreenModel({
             { key: 'leaderboard', label: copy.accountMenu.leaderboard, to: '/leaderboard' },
             { key: 'settings', label: copy.accountMenu.settings, to: '/settings' },
             { key: 'developers', label: copy.accountMenu.developers, to: '/developers' },
-            { key: 'logout', label: copy.accountMenu.logOut, onSelect: onLogout },
+            { key: 'discord', label: copy.accountMenu.discord, to: '/discord' },
           ],
+          theme: { label: copy.accountMenu.theme, value: theme.value, onChange: theme.onChange },
+          logOut: { label: copy.accountMenu.logOut, onSelect: onLogout },
         }
       : null,
     alertsBell: buildAlertsBellModel({
@@ -229,7 +210,6 @@ export function buildAppShellScreenModel({
       onDismissPack,
       onDismissSteps: onDismissQuests,
     }) : null,
-    logoutButtonProps: { onClick: onLogout, 'aria-label': copy.logOut },
   }
 }
 
@@ -334,6 +314,31 @@ export function useAppShellScreen(): AppShellScreenModel {
     navigate('/')
   }, [logout, navigate])
 
+  /*
+   * A chrome link navigates inside a View Transition: the old frame is captured, the route swaps
+   * synchronously, and the browser tweens between them (`organisms/app-shell.css` names what holds
+   * still and what glides). A modified click or a non-primary button is the browser's — a new tab,
+   * a context menu — so those fall through to the plain anchor. `BrowserRouter` has no data-router
+   * `viewTransition` prop, which is why the hook wraps `navigate` itself.
+   */
+  const onNavigate = useCallback(
+    (to: string): MouseEventHandler<HTMLAnchorElement> =>
+      (event) => {
+        if (
+          event.defaultPrevented ||
+          event.button !== 0 ||
+          event.metaKey ||
+          event.altKey ||
+          event.ctrlKey ||
+          event.shiftKey
+        )
+          return
+        event.preventDefault()
+        withViewTransition(() => flushSync(() => navigate(to, { replace: to === pathname })))
+      },
+    [navigate, pathname],
+  )
+
   return buildAppShellScreenModel({
     phase,
     user,
@@ -345,5 +350,6 @@ export function useAppShellScreen(): AppShellScreenModel {
     onDismissPack: () => send({ type: 'DISMISS_PACK' }),
     onOpenAlerts: (open) => void onOpenAlerts(open),
     onDismissQuests: () => send({ type: 'DISMISS_QUESTS' }),
+    onNavigate,
   })
 }

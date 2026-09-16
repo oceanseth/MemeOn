@@ -1,29 +1,19 @@
 import { sharedCopy } from './shared'
 
-/** Settings is named three times in the chrome (utility link, identity gear, account menu): one spelling. */
-const settings = 'Settings'
-
 /** Every string the signed-in chrome shows. Keys name the role of the string, not its content. */
 export const appShellCopy = {
-  /** Header tagline on signed-in routes. */
-  tagline: 'the meme trading card market',
-  /** Sidebar rows. */
+  /** The top bar's five links. */
   nav: {
     marketplace: 'Marketplace',
     binder: 'My Binder',
     friends: 'Friends',
     trade: 'Trade',
     leaderboard: 'Top Brains',
-    /** The row's glyph: an emoji that stays an emoji, in the icon lane. */
+    /** The link's glyph: an emoji that stays an emoji, ahead of the label. */
     leaderboardEmoji: '🏆',
   },
-  /** Sidebar utility links, under the theme control. */
-  utility: {
-    discord: 'Discord',
-    developers: 'Developers',
-    developersEmoji: '🔧',
-    settings,
-  },
+  /** The header's one primary, beside the braincell pill. */
+  mint: 'Mint',
   /** Phone tab bar; 'Market' is the 62px abbreviation of Marketplace. */
   tabs: {
     market: 'Market',
@@ -37,20 +27,15 @@ export const appShellCopy = {
     text: (coins: number) => `🧠 ${coins.toLocaleString()}`,
     label: (coins: number) => `${coins.toLocaleString()} braincells`,
   },
-  avatar: {
-    profile: 'Your profile',
-  },
-  identity: {
-    settings,
-  },
-  /** The phone header's account menu. */
+  /** The account menu behind the header avatar, at every width. */
   accountMenu: {
     trigger: 'Account menu',
     profile: 'Profile',
     leaderboard: '🏆 Top Brains',
-    settings,
+    settings: 'Settings',
     developers: '🔧 Developers',
+    discord: 'Discord',
+    theme: 'Theme',
     logOut: sharedCopy.logOut,
   },
-  logOut: sharedCopy.logOut,
 } as const

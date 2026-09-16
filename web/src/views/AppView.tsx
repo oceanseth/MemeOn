@@ -169,7 +169,7 @@ export const AppView = observer(function AppView() {
             </RequireAuth>
           }
         />
-        {/* the sidebar's Settings link, the identity gear and the phone account menu all land here */}
+        {/* the account menu's Settings row lands here at every width */}
         <Route
           path="/settings"
           element={

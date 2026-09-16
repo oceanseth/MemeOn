@@ -42,7 +42,7 @@ const loggedIn = buildAppShellScreenModel({
   ...actions,
 })
 
-/** 390×844: the phone chrome — sticky blur header with the theme button and the account menu, the fixed tab bar. */
+/** 390×844: the phone chrome — sticky blur header with the braincell pill, bell and account menu; the fixed tab bar. */
 const phone = {
   parameters: {
     viewport: {
@@ -79,25 +79,32 @@ export const LoggedOut: Story = {
   },
 }
 
+/** The bar: five links, Mint, the plain braincell pill (no ladder), the bell, the account menu. */
 export const LoggedIn: Story = {
   args: loggedIn,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     onThemeChange.mockClear()
     const nav = canvas.getByRole('navigation', { name: 'Main' })
+    await expect(nav).toHaveAttribute('data-slot', 'top-nav')
     await expect(within(nav).getByRole('link', { name: 'Marketplace' })).toHaveAttribute('aria-current', 'page')
     await expect(within(nav).getByRole('link', { name: 'My Binder' })).not.toHaveAttribute('aria-current')
-    await expect(canvas.getByRole('link', { name: 'Mint a meme' })).toHaveAttribute('href', '/binder/new')
-    await expect(canvas.getByText('the meme trading card market')).toBeVisible()
-    // the sidebar's segmented control marks the current arm and reports a change
-    const theme = canvas.getByRole('group', { name: 'Theme' })
-    await expect(within(theme).getByRole('button', { name: /Light/ })).toHaveAttribute('aria-pressed', 'true')
-    await userEvent.click(within(theme).getByRole('button', { name: /Dark/ }))
+    await expect(within(nav).getByRole('link', { name: 'Top Brains' })).toHaveAttribute('href', '/leaderboard')
+    await expect(canvas.getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
+    // the ladder is not live, so the pill is a plain balance: no ring, no button
+    await expect(canvas.getByText(`${meLou.coins.toLocaleString()} braincells`)).toBeInTheDocument()
+    await expect(canvas.queryByRole('button', { name: /quests/ })).toBeNull()
+    // no theme button in the signed-in bar: the account menu's radio marks the arm and reports a change
+    await expect(canvas.queryByRole('button', { name: /^Theme:/ })).toBeNull()
+    await userEvent.click(canvas.getByRole('button', { name: 'Account menu' }))
+    const menu = await canvas.findByRole('menu')
+    await expect(within(menu).getByRole('menuitem', { name: 'Settings' })).toHaveAttribute('href', '/settings')
+    await expect(within(menu).getByRole('menuitem', { name: 'Discord' })).toHaveAttribute('href', '/discord')
+    await expect(within(menu).getByRole('menuitemradio', { name: /Light/ })).toHaveAttribute('aria-checked', 'true')
+    await userEvent.click(within(menu).getByRole('menuitemradio', { name: /Dark/ }))
     await expect(onThemeChange).toHaveBeenCalledWith('dark')
-    // the utility link and the identity gear both name Settings and both lead there
-    const more = canvas.getByRole('navigation', { name: 'More' })
-    await expect(within(more).getByRole('link', { name: 'Settings' })).toHaveAttribute('href', '/settings')
-    await expect(canvas.getAllByRole('link', { name: 'Settings' })).toHaveLength(2)
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull())
   },
 }
 
@@ -109,20 +116,24 @@ export const WithAvatar: Story = {
     theme: light,
     ...actions,
   }),
-  play: async ({ canvasElement, args }) => {
+  play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const profile = canvas.getByRole('link', { name: 'Your profile' })
-    await expect(profile).toHaveAttribute('href', '/u/mask%2Favatar%20%2B%20one')
+    actions.onLogout.mockClear()
+    const trigger = canvas.getByRole('button', { name: 'Account menu' })
     // the Avatar atom paints the monogram until the picture has actually loaded
     await waitFor(() =>
-      expect(profile.querySelector('img')).toHaveAttribute('src', '/brand/memeon-logo-circle-64.png'),
+      expect(trigger.querySelector('img')).toHaveAttribute('src', '/brand/memeon-logo-circle-64.png'),
     )
     await expect(canvas.getByText(`${meLou.coins.toLocaleString()} braincells`)).toBeInTheDocument()
-    await userEvent.click(canvas.getByRole('button', { name: 'Log out' }))
-    await expect(args.logoutButtonProps.onClick).toHaveBeenCalledTimes(1)
+    await userEvent.click(trigger)
+    const menu = await canvas.findByRole('menu')
+    await expect(within(menu).getByRole('menuitem', { name: 'Profile' })).toHaveAttribute('href', '/u/mask%2Favatar%20%2B%20one')
+    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Log out' }))
+    await expect(actions.onLogout).toHaveBeenCalledTimes(1)
   },
 }
 
+/** The ladder is live: the pill wears the ring and the claim dot, and a press opens the whole rail. */
 export const WithQuests: Story = {
   args: buildAppShellScreenModel({
     phase: 'loggedIn', user: meLou,
@@ -130,6 +141,20 @@ export const WithQuests: Story = {
     pathname: '/binder', theme: light,
     ...actions,
   }),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const trigger = canvas.getByRole('button', { name: /quests 0 of 5/ })
+    await expect(trigger).toHaveAttribute('data-slot', 'quest-trigger')
+    await expect(trigger).toHaveAttribute('data-progress', '0')
+    await expect(trigger.querySelector('[data-slot="quest-claim-dot"]')).not.toBeNull()
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    await userEvent.click(trigger)
+    await expect(await canvas.findByText('Earn your braincells')).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: /claim your starter pack/i })).toBeInTheDocument()
+    await expect(canvas.getByRole('link', { name: /Mint your first meme/ })).toHaveAttribute('href', '/binder/new')
+    await userEvent.keyboard('{Escape}')
+    await waitFor(() => expect(canvas.queryByText('Earn your braincells')).toBeNull())
+  },
 }
 
 /** Same shell as WithQuests — kept for the second quest inventory row. */
@@ -142,7 +167,7 @@ export const WithQuestsExpanded: Story = {
   }),
 }
 
-/** 'Later' hides the strip until the next completion; the chrome is the route's again. */
+/** 'Later' hides the ladder until the next completion; the pill is the plain balance again. */
 export const QuestsDismissed: Story = {
   args: buildAppShellScreenModel({
     phase: 'loggedIn', user: meLou,
@@ -151,8 +176,10 @@ export const QuestsDismissed: Story = {
     ...actions,
   }),
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).queryByText('0/5')).toBeNull()
-    await expect(within(canvasElement).queryByRole('button', { name: 'Later — hide quests for now' })).toBeNull()
+    const canvas = within(canvasElement)
+    await expect(canvas.queryByRole('button', { name: /quests/ })).toBeNull()
+    await expect(canvas.queryByText('0/5')).toBeNull()
+    await expect(canvas.queryByRole('button', { name: 'Later — hide quests for now' })).toBeNull()
   },
 }
 
@@ -174,6 +201,12 @@ export const PackOpened: Story = {
     pathname: '/binder', theme: light,
     ...actions,
   }),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // one step in: the ring reads a fifth (probed by slot — the modal pack dialog makes the bar inert), and the dialog is up
+    await expect(canvasElement.querySelector('[data-slot="quest-trigger"]')).toHaveAttribute('data-progress', '20')
+    await expect(await canvas.findByRole('dialog', { name: /Starter pack opened/ })).toBeInTheDocument()
+  },
 }
 
 /** A dozen chrome controls precede the page: the first Tab must offer a way past them. */
@@ -199,16 +232,20 @@ export const Phone390: Story = {
   ...phone,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    // the sidebar is display:none on the phone: the tab bar is the one main navigation
+    // the bar's links are display:none on the phone: the tab bar is the one main navigation
     const tabs = canvas.getByRole('navigation', { name: 'Main' })
+    await expect(tabs).toHaveAttribute('data-slot', 'bottom-nav')
     await expect(within(tabs).getByRole('link', { name: 'Market' })).toHaveAttribute('aria-current', 'page')
     await expect(within(tabs).getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
-    await expect(canvas.queryByRole('link', { name: 'Your profile' })).toBeNull()
-    await expect(canvas.getByRole('button', { name: 'Theme: Light. Switch to Dark' })).toBeVisible()
-    // the avatar opens the account menu that carries the routes the tab bar cannot
+    // the phone cluster is the pill, the bell and the avatar: no theme button, no header Mint
+    await expect(canvas.queryByRole('button', { name: /^Theme:/ })).toBeNull()
+    await expect(canvas.getAllByRole('link', { name: 'Mint' })).toHaveLength(1)
+    await expect(canvas.getByRole('button', { name: /quests 0 of 5/ })).toBeVisible()
+    // the avatar opens the account menu that carries the routes the tab bar cannot, and the theme
     await userEvent.click(canvas.getByRole('button', { name: 'Account menu' }))
     const menu = await canvas.findByRole('menu')
     await expect(within(menu).getByRole('menuitem', { name: '🏆 Top Brains' })).toHaveAttribute('href', '/leaderboard')
+    await expect(within(menu).getByRole('menuitemradio', { name: /Dark/ })).toBeInTheDocument()
     await expect(within(menu).getByRole('menuitem', { name: 'Log out' })).toBeInTheDocument()
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull())

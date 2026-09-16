@@ -69,6 +69,10 @@ export interface QuestBarModel {
   visible: boolean
   showSteps: boolean
   completionLabel: string
+  /** The ladder in tens, 0–100: the braincell pill's ring reads it as `data-progress`. */
+  progressPercent: number
+  /** "quests 1 of 5" — the pill's sr-only suffix while the ladder is live. */
+  progressLabel: string
   chips: QuestChipModel[]
   /** Next step instructions for assistive tech — the rail has no hover title. */
   hint: string | null
@@ -78,6 +82,8 @@ export interface QuestBarModel {
   errorProps: Pick<HTMLAttributes<HTMLSpanElement>, 'role'>
   /** Always present, never conditional: the frame owns focus restoration and needs to outlive a dismissal. */
   pack: QuestPackModel
+  /** stories only: mount the ladder's popover open. The app leaves Base UI to own the open state. */
+  defaultOpen?: boolean | undefined
 }
 
 export function buildQuestBarModel({
@@ -102,11 +108,14 @@ export function buildQuestBarModel({
   const nextIndex = steps.findIndex((step) => !step.done)
   const nextStep = nextIndex < 0 ? null : steps[nextIndex]!
   const packOpen = packMemes !== null
+  const done = steps.filter((step) => step.done).length
 
   return {
     visible: steps.length > 0 || packOpen,
     showSteps: steps.length > 0,
-    completionLabel: `${steps.filter((step) => step.done).length}/${steps.length}`,
+    completionLabel: `${done}/${steps.length}`,
+    progressPercent: steps.length > 0 ? Math.round((done / steps.length) * 10) * 10 : 0,
+    progressLabel: copy.progress(done, steps.length),
     /* All five quests always visible — no disclosure step. */
     chips: steps.map((step): QuestChipModel => {
       if (step.key === 'pack' && !step.done) {

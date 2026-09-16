@@ -5,9 +5,11 @@ import { cn } from '../lib/cn'
 import './app-shell.css'
 
 /**
- * The shell's breakpoint is `2xl` (900px, `src/index.css`): at and above it the chrome is the
- * sticky sidebar; below it, the sticky phone header and the fixed tab bar. `AppShell.css` keys
- * `--topbar-h` off the same width.
+ * One chrome at every width: a sticky glass bar (the wordmark, the five links from the shell cut
+ * `xl` = 900px up, the header cluster) over a centred 1440 column, a quiet footer, and below the
+ * cut the fixed tab bar. The bar is 64 tall everywhere, which is `--topbar-h` (`src/index.css`);
+ * `app-shell.css` carries what no utility can — the tab-bar clearance, the hairline that appears
+ * once the page has scrolled, and the view-transition names.
  */
 
 /** The shared ring (`lib/focus`), on every control this file paints itself. */
@@ -26,71 +28,56 @@ const SKIP_LINK = cn(
   FOCUS,
 )
 
-/** The design's frame: 1440 centred, the sidebar column 20 in, the content column from x 276. */
-const FRAME = 'relative mx-auto flex w-full max-w-360 grow'
-
-/** 20 gutter + 216 shell; the column stretches the frame's height so the shell can stick inside it. */
-const SIDEBAR_COLUMN = 'hidden w-59 shrink-0 py-5 pl-5 xl:block'
-
 /**
- * The ceramic shell: sticky 20 from the top, viewport-tall, scrolling inside when short. It wears
- * the chrome's z-index so a page's own sticky band (`--z-sticky`, the marketplace controls) can
- * never paint over the navigation.
+ * The bar: sticky on glass, the chrome's z-index, so a page's own docked band (`--z-sticky`, the
+ * marketplace controls) slides under it, never over. The row inside is the same 1440 column the
+ * page uses, with the page's gutter, so the wordmark sits on the page title's left edge.
  */
-const SIDEBAR = cn(
-  'sticky top-5 z-(--z-header) flex h-[calc(100dvh-40px)] w-54 flex-col overflow-y-auto scrollbar-thin',
-  'rounded-xl material-card',
+const HEADER = cn('sticky top-0 z-(--z-header) glass')
+const HEADER_ROW = cn(
+  'mx-auto flex h-16 w-full max-w-360 items-center gap-3',
+  'px-page-safe xl:gap-4 xl:px-8 2xl:px-13',
 )
 
 /**
- * The content column. `<main>` is a screen's element, so the flex rules `#root > main` used to
+ * The links, centred in the slack between the wordmark and the cluster; the phone has the tab bar.
+ * Between 900 and 1100 the row is tight — the wordmark is its mark alone and Mint its glyph
+ * alone — so the pills sit close; from 1100 the words come back.
+ */
+const NAV = 'mx-auto hidden min-w-0 items-center gap-0.5 xl:flex 2xl:gap-1'
+
+const HEADER_END = 'ml-auto flex shrink-0 items-center gap-2.5 xl:gap-3'
+
+/** The page: a centred 1440 column that grows, so a short route still puts the footer on the fold. */
+const FRAME = 'relative mx-auto flex w-full max-w-360 grow flex-col'
+
+/**
+ * The route column. `<main>` is a screen's element, so the flex rules `#root > main` used to
  * carry (grow to push the footer down, full width against `PageContainer`'s auto margins) are
- * restated here for a nested main.
+ * restated here for a nested main. The gutter steps with the header row's.
  */
-const CONTENT = cn('flex min-w-0 flex-1 flex-col', '[&>main]:w-full [&>main]:grow')
-/** App content inset: 276 = frame gutter + sidebar + column padding. */
-const CONTENT_APP = 'xl:pr-9 xl:pl-5'
-/** Public pages: 72px from the frame edge. */
-const CONTENT_PUBLIC = 'xl:px-13'
-
-/**
- * One header for every state. Below 900 it is the sticky blur plate the page scrolls under
- * (`--topbar-h`, AppShell.css, is its 64px); at 900+ it is a static row — the sidebar is the
- * persistent chrome, so nothing needs to stick.
- */
-const HEADER = cn(
-  'flex items-center gap-2.5',
-  'max-xl:sticky max-xl:top-0 max-xl:z-(--z-header) max-xl:min-h-16 max-xl:py-1',
-  'max-xl:px-page-safe max-xl:glass',
-  'xl:gap-4.5',
-)
-const HEADER_APP = 'xl:mt-7 xl:min-h-14 xl:px-5'
-/** Public header: 52px column inset + PageContainer padding. */
-const HEADER_PUBLIC = 'xl:px-5 xl:py-8'
+const CONTENT = cn('flex min-w-0 grow flex-col', '[&>main]:w-full [&>main]:grow', 'xl:px-3 2xl:px-8')
 
 /** The wordmark: Unbounded 500 — with the landing hero, the typeset's two poster moments. */
 const WORDMARK = cn(
   'inline-flex shrink-0 items-center gap-2 whitespace-nowrap',
-  'font-display font-medium text-foreground no-underline',
+  'font-display text-3xl font-medium text-foreground no-underline max-md:text-2xl',
   FOCUS,
 )
-const WORDMARK_SIZE = {
-  sidebar: 'text-3xl',
-  header: 'text-3xl max-md:text-2xl xl:text-4xl',
-} as const
 
-function Wordmark({ size, className }: { size: keyof typeof WORDMARK_SIZE; className?: string | undefined }) {
+function Wordmark({ compact }: { compact: boolean }) {
   return (
-    <Link to="/" className={cn(WORDMARK, WORDMARK_SIZE[size], className)} data-slot="logo">
-      {/* hide circle mark on phone — 350px header fits wordmark + cluster only */}
+    /* the name is on the link itself: the mark alone is what the app bar shows between 900 and 1100 */
+    <Link to="/" className={WORDMARK} aria-label="MemeOn" data-slot="logo">
+      {/* the circle mark: hidden on the phone, where the 350px header fits wordmark + cluster only */}
       <img
         src="/brand/memeon-logo-circle-64.png"
         alt=""
-        className={cn('size-7.5', size === 'header' && 'max-xl:hidden')}
+        className="size-7.5 max-xl:hidden"
         width={30}
         height={30}
       />
-      MemeOn
+      <span className={compact ? 'xl:max-2xl:hidden' : undefined}>MemeOn</span>
     </Link>
   )
 }
@@ -103,74 +90,53 @@ const TAB_BAR = cn(
   'xl:hidden',
 )
 
+/** One quiet line: the name at the text step, the five links; a hairline above, the safe area below. */
 const FOOTER = cn(
-  'mt-12 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-border',
-  'px-5 pt-5.5 pb-safe-8.5',
+  'mt-12 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border',
+  'px-5 pt-5 pb-safe-8',
   'text-sm text-muted-foreground',
   'max-xl:flex-col max-xl:items-center',
 )
-const FOOTER_APP = 'xl:px-5'
-const FOOTER_PUBLIC = 'xl:px-5'
 
 export interface AppShellProps {
-  /** The signed-in sidebar's content, under the wordmark. Its presence selects the app layout. */
-  sidebar?: ReactNode | undefined
-  /** Desktop header, left: Onest 15/19 ink-muted. Empty renders nothing. */
-  contextLine?: ReactNode | undefined
-  /** The header's right cluster: theme button, balance, bell, avatar. */
+  /** The signed-in bar's links (`NavPill`s). Their presence selects the app layout. */
+  nav?: ReactNode | undefined
+  /** The header's right cluster: Mint, the braincell pill, the bell, the avatar menu — or the public theme button. */
   headerEnd?: ReactNode | undefined
-  quest?: ReactNode | undefined
   /** The phone tab bar's items; the bar itself is this organism's. */
   bottomNav?: ReactNode | undefined
   children: ReactNode
 }
 
 /**
- * App chrome: skip link, the frame (sidebar column + content column with header, quest rail, the
- * route's `<main>` and the footer), the phone tab bar. Parent fills slots — this organism does
- * not read auth.
+ * App chrome: skip link, the sticky bar, the column with the route's `<main>` and the footer, the
+ * phone tab bar. Parent fills slots — this organism does not read auth.
  */
-export function AppShell({ sidebar, contextLine, headerEnd, quest, bottomNav, children }: AppShellProps) {
-  const app = sidebar !== undefined && sidebar !== null && sidebar !== false
+export function AppShell({ nav, headerEnd, bottomNav, children }: AppShellProps) {
+  const app = nav !== undefined && nav !== null && nav !== false
   return (
     <>
       <a className={SKIP_LINK} href="#main" data-slot="skip-link">
         Skip to content
       </a>
-      <div className={FRAME} data-slot="app-frame" data-layout={app ? 'app' : 'public'}>
-        {app && (
-          <div className={SIDEBAR_COLUMN} data-slot="sidebar-column">
-            <aside className={SIDEBAR} data-slot="sidebar">
-              <div className="flex min-h-full flex-col px-3 pt-7 pb-4">
-                <Wordmark size="sidebar" className="mx-3" />
-                {sidebar}
-              </div>
-            </aside>
+      <header className={HEADER} data-slot="header">
+        <div className={HEADER_ROW} data-slot="header-row">
+          <Wordmark compact={app} />
+          {app && (
+            <nav className={NAV} aria-label="Main" data-slot="top-nav">
+              {nav}
+            </nav>
+          )}
+          <div className={HEADER_END} data-slot="header-end">
+            {headerEnd}
           </div>
-        )}
-        <div
-          className={cn(CONTENT, app ? CONTENT_APP : CONTENT_PUBLIC)}
-          data-slot="content"
-        >
-          <header className={cn(HEADER, app ? HEADER_APP : HEADER_PUBLIC)} data-slot="header">
-            {/* the sidebar carries the app's wordmark at 900+; the header keeps it for the phone and the public pages */}
-            <Wordmark size="header" className={app ? 'xl:hidden' : undefined} />
-            {app && contextLine ? (
-              <p
-                className="m-0 hidden min-w-0 truncate text-base font-medium text-muted-foreground xl:block"
-                data-slot="context-line"
-              >
-                {contextLine}
-              </p>
-            ) : null}
-            <div className="ml-auto flex shrink-0 items-center gap-2.5 xl:gap-4.5" data-slot="header-end">
-              {headerEnd}
-            </div>
-          </header>
-          {quest}
+        </div>
+      </header>
+      <div className={FRAME} data-slot="app-frame" data-layout={app ? 'app' : 'public'}>
+        <div className={CONTENT} data-slot="content">
           {children}
-          <footer className={cn(FOOTER, app ? FOOTER_APP : FOOTER_PUBLIC)} data-slot="site-footer">
-            <span className="font-display text-2xl font-medium text-foreground">MemeOn</span>
+          <footer className={FOOTER} data-slot="site-footer">
+            <span className="font-semibold text-foreground">MemeOn</span>
             <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 xl:ml-auto" aria-label="Footer">
               <FooterLink render={<NavLink to="/privacy" />}>Privacy</FooterLink>
               <FooterLink render={<NavLink to="/terms" />}>Terms</FooterLink>

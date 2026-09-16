@@ -18,7 +18,7 @@ or moving a component. `pnpm --filter web run check-tiers` runs recursively and 
 |---|---|---|---|
 | **Atoms** | `src/atoms/` | `Alert`, `AlertDialog`, `Avatar`, `Badge`, `Button`, `Card`, `Checkbox`, `Collapsible`, `Dialog`, `DropdownMenu`, `Empty` (+ `PageState`), `Field`, `Heading`, `Icon`, `InlineLink`, `Input`, `InputGroup`, `Item`, `Label`, `LiveRegion`, `MemeCard`, `PageContainer`, `PageHead`, `Popover`, `PortalAnchor`, `Progress`, `Select`, `Separator`, `Skeleton`, `Spinner`, `Tabs`, `Textarea`, `TierChip`, `Toggle`, `ToggleGroup`, `Toolbar` | No |
 | **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `HeroVideo`, `LegalDocument`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `TradeCard` (`give`/`get`, not `offer`/`ask`) | No |
-| **Organisms** | `src/organisms/` | `AppShell` (slots `sidebar` / `contextLine` / `headerEnd` / `quest` / `bottomNav`), `MemeplexPanel`, the `nav-item.tsx` rows `NavRow` / `NavIcon` / `UtilityLink` / `TabItem` | No |
+| **Organisms** | `src/organisms/` | `AppShell` (slots `nav` / `headerEnd` / `bottomNav`), `MemeplexPanel`, the `nav-item.tsx` links `NavPill` / `TabItem` / `FooterLink` | No |
 | **Screens** | `src/screens/` | One model object per route/chrome surface | No |
 | **Views** | `src/views/` | Engine wired to screen; `observer` wrap; `AppView` is the route switch | Via hooks |
 
@@ -67,7 +67,8 @@ main.tsx ── StoresProvider + AuthRuntime + BrowserRouter
    └─ AppShellView ── useAppShellScreen → AppShellScreen
       ├─ AppShell
       │   ├─ QuestBar
-      │   └─ AlertsBell
+      │   ├─ AlertsBell
+      │   └─ AvatarMenu
       └─ Routes
          ├─ LandingView ── useLandingScreen (+ useHeroVideo) → LandingScreen ── HeroVideo · FaqItem
          ├─ AuthCallbackView ── useAuthCallbackScreen → AuthStatusScreen
@@ -95,7 +96,7 @@ signed-in player can reach is a `lazy()` chunk behind `RequireAuth`.
 |---|---|---|
 | `stores/authMachine` + `AuthStore` | session: `idle → loading → ready \| unauthenticated \| error`; refresh retains the current user on transient failure | `useAuth`, `useAuthRuntime`, screen hooks |
 | `stores/createStores` + `StoresContext` | inert app store bag; committed or imperative owners retain/dispose it | views via hooks |
-| `stores/themeStore` + `hooks/useTheme` | preference `auto`/`light`/`dark`, resolved arm, per-avatar persistence; paints `data-theme` on `<html>` | observer views, `ThemeControl` (sidebar segmented + header button), `SettingsScreen` |
+| `stores/themeStore` + `hooks/useTheme` | preference `auto`/`light`/`dark`, resolved arm, per-avatar persistence; paints `data-theme` on `<html>` | observer views, `ThemeControl` (the public header button, the Settings well), the `AvatarMenu` radio, `SettingsScreen` |
 | `stores/*Machine.ts` (one per flow) | XState source of truth for that screen | matching `useXScreen()` |
 | `stores/ActorSnapshotProjection` + `hooks/useProjectedActor` | route-local snapshot reference; action-safe MobX updates; XState actor mount lifetime | all stateful screen hooks within `observer` views |
 | `hooks/useXScreen.ts` | view-model: projected snapshot + callbacks + derived flags; picks the screen's strings out of `copy/<surface>.ts` (never spells them, never leaves that to the screen) | matching `XView` → `XScreen` |
@@ -156,11 +157,15 @@ it refuses to raise anything). `pnpm run storybook` (port 6006, MSW-backed) is w
 
 Layered onto the tiers and rules above, not a replacement for them:
 
-- `AppShellScreenModel` (the shell's own engine, `hooks/useAppShellScreen.ts`) grew `theme` (a
-  `ThemeControlModel`), `avatar` / `identity` / `avatarMenu` (a Base UI `Menu` model behind the
-  phone header's account menu: Profile · 🏆 Top Brains · Settings · 🔧 Developers · Log out),
-  `alertsBell`, and `questBar`; `navItems` and `bottomNav` each carry an `Icon` name beside the
-  legacy emoji slot.
+- `AppShellScreenModel` (the shell's own engine, `hooks/useAppShellScreen.ts`) carries `theme` (a
+  `ThemeControlModel`: the public header's button, and the arm the account menu's radio marks),
+  `avatarMenu` (a Base UI `Menu` model behind the header avatar at every width: Profile · 🏆 Top
+  Brains · Settings · 🔧 Developers · Discord, the theme radio, Log out), `alertsBell`, `questBar`
+  and `mint`; `navItems` are the bar's five text links (an emoji leads a label where the copy has
+  one) and `bottomNav` the phone's five icon tabs. Every chrome link carries `linkProps` — the
+  route plus, from the live hook, the click handler that runs the navigation inside a View
+  Transition (`lib/viewTransition.ts`; `organisms/app-shell.css` names what holds still and what
+  glides).
 - `TradeCardModel` (`lib/tradeCardModel.ts`) exposes `give` / `get`, not `offer` / `ask` — the
   wells are keyed to the reading ("You give" is always what leaves your binder), never to who
   proposed the trade; `actions` orders `decline` before `accept`.
@@ -170,16 +175,19 @@ Layered onto the tiers and rules above, not a replacement for them:
   `binderCardSlotClasses`, `binderCardFooterClasses`; `stores/binderMachine.ts` exports
   `BINDER_PAGE_SIZE` (12, the `SHOW_MORE` step); `stores/leaderboardMachine.ts` exports
   `LEADERBOARD_PAGE_SIZE` (8) the same way.
-- `organisms/app-shell.css` keys `--topbar-h` off `:root:has([data-slot='header'])` rather than a
-  fixed value: 64px below the shell breakpoint (`xl`, 900px), 0px at or above it. Shell-wrapping
-  stories render with `layout: 'fullscreen'`.
+- The chrome is one sticky 64px bar at every width (`organisms/app-shell.tsx`), so `--topbar-h`
+  is the one `:root` value in `src/index.css`; `organisms/app-shell.css` carries the tab-bar
+  clearance, the scroll-driven hairline and the view-transition names. Shell-wrapping stories
+  render with `layout: 'fullscreen'`.
 - `focus-ring` (an `@utility` in `index.css`) is the one focus contract every interactive atom,
   row and menu item composes; `focus-ring-within` is its `:has(:focus-visible)` sibling.
 - `hooks/useDocumentTitle.ts` sets `document.title` per route from the view (the hook layer, not the
   screen); `lib/braincells.ts` formats braincell counts (thousands separators, the 🧠 spacing) so
   every screen prints them the same way.
-- `QuestBar` lists every quest inline at both widths, as the boards draw the rail; the old
-  "N more ▾" disclosure is gone from the model, the hook and the stories.
+- `QuestBar` is the braincell pill: plain while no ladder is live, and while one is, the popover's
+  trigger wearing a progress ring (`molecules/quest-bar.css`, a registered `--quest-angle` the
+  model feeds in tens as `data-progress`). The panel lists every quest, the meter, the claim pill
+  and Later; nothing waits behind a further disclosure.
 - The token sheet lives outside the tiers, at `src/Tokens.stories.tsx` (titled `Anatomy/Tokens`):
   every semantic colour, both static ramps, the seven tier chips, the materials, the radius steps
   and the type scale, painted from nothing but the utilities `index.css` emits, each specimen
@@ -205,7 +213,7 @@ Probe these instead of a class name or copy string:
 | Landing | `landing-hero`, `hero-pile`, `hero-card`, `hero-card-slot`, `hero-card-art`, `landing-how`, `landing-tiers`, `tier-card`, `tier-frame-slot`, `tier-frame-img`, `landing-faq`, `landing-closing` |
 | Legal (Privacy, Terms) | `legal-toc`, `legal-section` |
 | Auth (`screens/AuthStatusScreen.tsx`) | `auth-status` (`data-phase`), `auth-ring`, `auth-timeout`, `auth-web-fallback` |
-| Shell | `nav-icon`, `mint-link`, `sidebar-nav`, `sidebar-foot`, `utility-links`, `identity`, `identity-name`, `identity-settings`, `logout`, `tab-item`, `avatar-menu-slot`, `coins` |
+| Shell | `header`, `header-row`, `top-nav`, `nav-pill`, `header-end`, `mint-link`, `coins`, `quest-trigger` (`data-progress`), `quest-claim-dot`, `quest-panel`, `tab-item`, `bottom-nav`, `site-footer`, `avatar-menu-identity`, `avatar-menu-name`, `avatar-menu-theme`, `avatar-menu-theme-option`, `avatar-menu-logout` |
 
 ## Rules
 

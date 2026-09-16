@@ -8,52 +8,60 @@ import { PageContainer } from '@/atoms/page-container'
 import { buildAlertsBellModel } from '../lib/alertsBellModel'
 import { buildQuestBarModel } from '../lib/questBarModel'
 import { AlertsBell } from '@/molecules/alerts-bell'
+import { AvatarMenu } from '@/molecules/avatar-menu'
 import { QuestBar } from '@/molecules/quest-bar'
 import { ThemeControl } from '@/molecules/theme-control'
 import { AppShell } from '@/organisms/app-shell'
-import { NavIcon, NavRow, TabItem, UtilityLink } from '@/organisms/nav-item'
+import { NavPill, TabItem } from '@/organisms/nav-item'
 
-const sidebar = (
+const nav = (
   <>
-    <nav className="mt-10 flex flex-col gap-3" aria-label="Main">
-      <NavRow current render={<Link to="/marketplace" />}>
-        <NavIcon><Icon name="storefront" /></NavIcon> Marketplace
-      </NavRow>
-      <NavRow render={<Link to="/binder" />}>
-        <NavIcon><Icon name="book" /></NavIcon> My Binder
-      </NavRow>
-      <NavRow render={<Link to="/friends" />}>
-        <NavIcon><Icon name="users" /></NavIcon> Friends
-      </NavRow>
-      <NavRow render={<Link to="/trade" />}>
-        <NavIcon><Icon name="arrows-left-right" /></NavIcon> Trade
-      </NavRow>
-      <NavRow render={<Link to="/leaderboard" />}>
-        <NavIcon>🏆</NavIcon> Top Brains
-      </NavRow>
-    </nav>
-    <Link to="/binder/new" className={`${buttonVariants({ variant: 'primary' })} mx-1 mt-11`}>
-      <span aria-hidden="true">＋</span> Mint a meme
-    </Link>
-    <div className="mt-auto flex flex-col pt-6">
-      <ThemeControl model={{ value: 'light', onChange: fn(), variant: 'segmented' }} className="mx-1" />
-      <nav className="mx-3 mt-4 flex flex-col items-start gap-1" aria-label="More">
-        <UtilityLink render={<Link to="/discord" />}>Discord</UtilityLink>
-        <UtilityLink render={<Link to="/developers" />}>🔧  Developers</UtilityLink>
-        <UtilityLink current render={<Link to="/settings" />}>Settings</UtilityLink>
-      </nav>
-    </div>
+    <NavPill current render={<Link to="/marketplace" />}>Marketplace</NavPill>
+    <NavPill render={<Link to="/binder" />}>My Binder</NavPill>
+    <NavPill render={<Link to="/friends" />}>Friends</NavPill>
+    <NavPill render={<Link to="/trade" />}>Trade</NavPill>
+    <NavPill render={<Link to="/leaderboard" />}>
+      <span aria-hidden="true">🏆</span> Top Brains
+    </NavPill>
   </>
 )
 
-const headerEnd = (
+const balance = { text: `🧠 ${meLou.coins.toLocaleString()}`, label: `${meLou.coins.toLocaleString()} braincells` }
+
+const avatarMenu = (
+  <AvatarMenu
+    model={{
+      name: meLou.name,
+      src: null,
+      triggerProps: { 'aria-label': 'Account menu' },
+      items: [
+        { key: 'profile', label: 'Profile', to: `/u/${meLou.sub}` },
+        { key: 'settings', label: 'Settings', to: '/settings' },
+      ],
+      theme: { label: 'Theme', value: 'light', onChange: fn() },
+      logOut: { label: 'Log out', onSelect: fn() },
+    }}
+  />
+)
+
+const headerEnd = (quest: boolean) => (
   <>
-    <ThemeControl model={{ value: 'auto', onChange: fn(), variant: 'button' }} className="xl:hidden" />
-    <span className="text-base font-semibold tabular-nums" data-slot="coins">
-      <span aria-hidden="true">🧠 {meLou.coins.toLocaleString()}</span>
-      <span className="sr-only">{meLou.coins.toLocaleString()} braincells</span>
-    </span>
+    <Link to="/binder/new" className={`${buttonVariants({ variant: 'primary', size: 'sm' })} max-xl:hidden`}>
+      <span aria-hidden="true">＋</span> Mint
+    </Link>
+    <QuestBar
+      model={quest ? buildQuestBarModel({
+        steps: questStepsFresh,
+        packMemes: null,
+        packReward: 0,
+        busy: false,
+        onClaimPack: fn(),
+        onDismissPack: fn(),
+      }) : null}
+      balance={balance}
+    />
     <AlertsBell model={buildAlertsBellModel({ alerts: [unreadSale], open: false, onOpenChange: fn() })} />
+    {avatarMenu}
   </>
 )
 
@@ -99,40 +107,34 @@ export const LoggedOut: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('link', { name: 'MemeOn' })).toHaveAttribute('href', '/')
-    await expect(canvas.queryByRole('complementary')).toBeNull()
+    await expect(canvas.queryByRole('navigation', { name: 'Main' })).toBeNull()
+    await expect(canvasElement.querySelector('[data-slot="app-frame"]')).toHaveAttribute('data-layout', 'public')
     await expect(canvas.getByRole('navigation', { name: 'Footer' })).toBeInTheDocument()
   },
 }
 
+/** The signed-in frame: the bar with its links and cluster, the page, the footer; the tab bar hidden. */
 export const LoggedIn: Story = {
-  args: { sidebar, contextLine: 'the meme trading card market', headerEnd, bottomNav },
+  args: { nav, headerEnd: headerEnd(false), bottomNav },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('complementary')).toBeInTheDocument()
+    await expect(canvasElement.querySelector('[data-slot="app-frame"]')).toHaveAttribute('data-layout', 'app')
+    const bar = canvas.getByRole('banner')
+    await expect(bar).toHaveAttribute('data-slot', 'header')
+    /* the bar is the sticky-chrome contract's 64 (`--topbar-h`) at every width */
+    await expect(getComputedStyle(bar.querySelector('[data-slot="header-row"]')!).height).toBe('64px')
+    await expect(getComputedStyle(bar).position).toBe('sticky')
     await expect(canvas.getByRole('link', { name: 'Marketplace' })).toHaveAttribute('aria-current', 'page')
-    await expect(canvas.getByRole('link', { name: 'Mint a meme' })).toHaveAttribute('href', '/binder/new')
-    await expect(canvas.getByText('the meme trading card market')).toBeVisible()
+    await expect(canvas.getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
+    await expect(canvas.getByText(`${meLou.coins.toLocaleString()} braincells`)).toBeInTheDocument()
   },
 }
 
 export const WithQuests: Story = {
-  args: {
-    sidebar,
-    contextLine: 'the meme trading card market',
-    headerEnd,
-    bottomNav,
-    quest: (
-      <QuestBar
-        model={buildQuestBarModel({
-          steps: questStepsFresh,
-          packMemes: null,
-          packReward: 0,
-          busy: false,
-          onClaimPack: fn(),
-          onDismissPack: fn(),
-        })}
-      />
-    ),
+  args: { nav, headerEnd: headerEnd(true), bottomNav },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: /quests 0 of 5/ })).toHaveAttribute('data-progress', '0')
   },
 }
 
@@ -141,9 +143,9 @@ export const Phone390: Story = {
   ...phone,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    // the sidebar is display:none on the phone; the tab bar is the one main navigation
-    await expect(canvas.queryByRole('complementary')).toBeNull()
+    // the bar's links are display:none on the phone; the tab bar is the one main navigation
     const tabs = canvas.getByRole('navigation', { name: 'Main' })
+    await expect(tabs).toHaveAttribute('data-slot', 'bottom-nav')
     await expect(within(tabs).getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
     await expect(canvas.getByRole('link', { name: 'MemeOn' })).toBeVisible()
     /* the column clears the fixed bar: 80 tall, 10 up, plus the home indicator (app-shell.css) */

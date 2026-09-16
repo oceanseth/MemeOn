@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
-import { paperMeme, questStepsFresh, questStepsPackDone, silverMeme } from '../../.storybook/fixtures'
+import { meLou, paperMeme, questStepsFresh, questStepsPackDone, silverMeme } from '../../.storybook/fixtures'
 import { buildQuestBarModel } from '../lib/questBarModel'
 import { QuestBar } from '@/molecules/quest-bar'
 
@@ -19,24 +19,49 @@ const fresh = {
   onDismissSteps,
 }
 
+const balance = { text: `🧠 ${meLou.coins.toLocaleString()}`, label: `${meLou.coins.toLocaleString()} braincells` }
+
+/** The ladder mounted open, as the shell shows it after a press on the pill. */
+const open = (model: ReturnType<typeof buildQuestBarModel>) => ({ ...model, defaultOpen: true })
+
 const meta = {
   title: 'Molecules/QuestBar',
   component: QuestBar,
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
-  args: { model: buildQuestBarModel(fresh) },
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <div className="flex min-h-140 items-start justify-end p-6">
+          <Story />
+        </div>
+      </MemoryRouter>
+    ),
+  ],
+  args: { model: buildQuestBarModel(fresh), balance },
 } satisfies Meta<typeof QuestBar>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** Whole ladder in one lane, the meter under the title, claim pill beside it. */
+/**
+ * The pill wears the ring at nothing and the claim dot; a press opens the whole ladder — title
+ * and count, the meter, every quest with its reward, the claim pill, Later.
+ */
 export const Fresh: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     onDismissSteps.mockClear()
-    await expect(canvas.getByText(/Earn your braincells/)).toBeInTheDocument()
+    onClaimPack.mockClear()
+    const trigger = canvas.getByRole('button', { name: /braincells, quests 0 of 5/ })
+    await expect(trigger).toHaveAttribute('data-slot', 'quest-trigger')
+    await expect(trigger).toHaveAttribute('data-progress', '0')
+    await expect(trigger).toHaveTextContent('🧠 120')
+    await expect(trigger.querySelector('[data-slot="quest-claim-dot"]')).not.toBeNull()
+    /* the pill is a true pill, so the ring's `border-radius: inherit` hugs it */
+    await expect(getComputedStyle(trigger).borderRadius).toBe('3.35544e+07px')
+    await userEvent.click(trigger)
+    await expect(await canvas.findByText('Earn your braincells')).toBeInTheDocument()
     await expect(canvas.getByText('0/5')).toBeInTheDocument()
-    /* the meter is named by the title beside it and counts the same ladder the chips list */
+    /* the meter is named by the title beside it and counts the same ladder the rows list */
     const meter = canvas.getByRole('progressbar', { name: /Earn your braincells/ })
     await expect(meter).toHaveAttribute('data-slot', 'questbar-progress')
     await expect(meter).toHaveAttribute('aria-valuenow', '0')
@@ -44,7 +69,7 @@ export const Fresh: Story = {
     await expect(meter.querySelector('[data-slot="progress-track"]')).not.toBeNull()
     /* hint is sr-only — visible quests leave nothing to hover for instructions */
     await expect(canvas.getByText(questStepsFresh[0]!.hint)).toBeInTheDocument()
-    /* every quest is on the rail from the first render — nothing waits behind a disclosure */
+    /* every quest is in the panel from the first render — nothing waits behind a disclosure */
     await expect(canvas.getByRole('link', { name: /Mint/ })).toHaveAttribute('href', '/binder/new')
     await expect(canvas.getByRole('link', { name: /trade/i })).toBeInTheDocument()
     const claim = canvas.getByRole('button', { name: /starter pack/i })
@@ -59,11 +84,15 @@ export const Fresh: Story = {
   },
 }
 
-/** The ladder once the pack is claimed: one chip per step, each with its own state and reward. */
+/** The ladder once the pack is claimed: the ring reads a fifth, one row per step, each with its own state and reward. */
 export const Expanded: Story = {
-  args: { model: buildQuestBarModel({ ...fresh, steps: questStepsPackDone }) },
+  args: { model: open(buildQuestBarModel({ ...fresh, steps: questStepsPackDone })) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    const trigger = canvas.getByRole('button', { name: /quests 1 of 5/ })
+    await expect(trigger).toHaveAttribute('data-progress', '20')
+    /* the pack is claimed: no dot */
+    await expect(trigger.querySelector('[data-slot="quest-claim-dot"]')).toBeNull()
     await expect(canvas.getByRole('link', { name: /Mint/ })).toHaveAttribute('href', '/binder/new')
     await expect(canvas.getByText('Done.')).toBeInTheDocument()
     await expect(canvas.queryByRole('button', { name: /show all quests/i })).toBeNull()
@@ -74,7 +103,7 @@ export const Expanded: Story = {
 
 /** The one-shot claim in flight: disabled and busy, so a second press does nothing. */
 export const Opening: Story = {
-  args: { model: buildQuestBarModel({ ...fresh, busy: true }) },
+  args: { model: open(buildQuestBarModel({ ...fresh, busy: true })) },
   play: async ({ canvasElement }) => {
     onClaimPack.mockClear()
     const trigger = within(canvasElement).getByRole('button', { name: /Opening/ })
@@ -86,10 +115,10 @@ export const Opening: Story = {
   },
 }
 
-/** A one-shot claim that fails silently is the worst state this strip can be in. */
+/** A one-shot claim that fails silently is the worst state this panel can be in. */
 export const ClaimFailed: Story = {
   args: {
-    model: buildQuestBarModel({ ...fresh, claimError: "Pack didn't open — tap to try again." }),
+    model: open(buildQuestBarModel({ ...fresh, claimError: "Pack didn't open — tap to try again." })),
   },
   play: async ({ canvasElement }) => {
     const alert = within(canvasElement).getByRole('alert')
@@ -101,7 +130,7 @@ export const ClaimFailed: Story = {
 
 /** The inventory's name for the same state `Expanded` asserts against. */
 export const PackDone: Story = {
-  args: { model: buildQuestBarModel({ ...fresh, steps: questStepsPackDone }) },
+  args: { model: open(buildQuestBarModel({ ...fresh, steps: questStepsPackDone })) },
 }
 
 export const PackOpened: Story = {
@@ -153,6 +182,7 @@ function StatefulPack() {
           setPackMemes(null)
         },
       })}
+      balance={balance}
     />
   )
 }
@@ -179,8 +209,21 @@ export const EmptyVault: Story = {
   },
 }
 
+/** No ladder: the pill is the plain balance — a raised span, no ring, no button. */
 export const Hidden: Story = {
   args: { model: buildQuestBarModel({ ...fresh, steps: [] }) },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.queryByRole('button')).toBeNull()
+    const pill = canvas.getByText(`${meLou.coins.toLocaleString()} braincells`).parentElement!
+    await expect(pill).toHaveAttribute('data-slot', 'coins')
+    await expect(pill.tagName).toBe('SPAN')
+  },
 }
 
-export const Dark: Story = { ...Fresh, globals: { theme: 'dark' } }
+/** The same plain pill the shell renders once every quest is done, or before the ladder loads. */
+export const Balance: Story = {
+  args: { model: null },
+}
+
+export const Dark: Story = { ...Expanded, globals: { theme: 'dark' } }
