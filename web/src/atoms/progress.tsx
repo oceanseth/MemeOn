@@ -11,7 +11,7 @@ import type { Styled } from '@/atoms/field'
 export const progressIndicatorVariants = cva(
   cn(
     'h-full rounded-full transition-all',
-    'data-indeterminate:w-1/3 data-indeterminate:animate-pulse motion-reduce:transition-none motion-reduce:animate-none',
+    'data-indeterminate:w-1/3 data-indeterminate:animate-pulse motion-reduce:transition-none motion-reduce:animate-none!',
   ),
   {
     variants: {

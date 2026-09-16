@@ -28,7 +28,7 @@ export function DialogOverlay({ className, ...props }: Styled<DialogPrimitive.Ba
       data-slot="dialog-overlay"
       className={cn(
         'fixed inset-0 isolate z-(--z-modal) bg-overlay backdrop-blur-sm',
-        'data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 motion-reduce:animate-none',
+        'data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 motion-reduce:animate-none!',
         className,
       )}
       {...props}
@@ -48,7 +48,7 @@ export const dialogContentVariants = cva(
     'max-h-[min(86dvh,86vh)]',
     'rounded-lg material-modal p-card-inset text-foreground',
     'outline-none focus-ring',
-    'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 motion-reduce:animate-none',
+    'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 motion-reduce:animate-none!',
   ),
   {
     variants: {
