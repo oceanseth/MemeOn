@@ -1,10 +1,7 @@
-import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import type { DialogPopupProps } from '@base-ui/react/dialog'
 import type { ReactNode } from 'react'
-import { buttonVariants } from '@/atoms/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/atoms/dialog'
 import { PortalAnchor } from '@/atoms/portal-anchor'
-import { cn } from '@/lib/cn'
 import { portalAnchor } from '../lib/portalAnchor'
 
 export interface DialogFrameCloseModel {
@@ -72,12 +69,8 @@ export interface DialogFrameProps {
  *    as `<dialog>.close()` was. Focus returns to whoever `finalFocus` names (`lib/dialogOpener`);
  *    without one, a same-commit removal beats Base UI's own restore and focus is left on `<main>`.
  *
- * The ✕ is this frame's own `Close` wearing the icon Button's classes rather than the atom's
- * `showCloseButton`: a locked dialog (a gift in flight) disables its exit, and the atom's ✕ has no
- * `disabled`. It is the Base UI primitive with `buttonVariants()` rather than
- * `<DialogClose render={<Button />}>`: `Button` does not forward its ref under React 18 (requested),
- * and the lint cannot read a cva call on an atom. `data-close-button` is set by hand so
- * `DialogHeader` still reserves the ✕'s lane.
+ * The ✕ is the atom's: `close.disabled` reaches it as `closeDisabled`, so a locked dialog (a gift
+ * in flight) keeps its exit greyed without the frame drawing its own button.
  */
 export function DialogFrame({
   open,
@@ -113,8 +106,8 @@ export function DialogFrame({
           sheet
           initialFocus={initialFocus}
           finalFocus={finalFocus}
-          showCloseButton={false}
-          data-close-button={close ? true : undefined}
+          showCloseButton={Boolean(close)}
+          {...(close ? { closeLabel: close.label, closeDisabled: close.disabled } : {})}
           // transitional: `hooks/social-regressions.runtime.test.tsx` reads the popup as `dialog`;
           // it becomes the atom's `dialog-content` once that probe moves (LEDGER)
           data-slot="dialog"
@@ -134,16 +127,6 @@ export function DialogFrame({
             )}
           </DialogHeader>
           {children}
-          {close && (
-            <DialogPrimitive.Close
-              data-slot="dialog-close"
-              aria-label={close.label}
-              disabled={close.disabled}
-              className={cn(buttonVariants({ variant: 'default', size: 'icon-sm' }), 'absolute top-6 right-6')}
-            >
-              <span aria-hidden="true">✕</span>
-            </DialogPrimitive.Close>
-          )}
         </DialogContent>
       )}
     </Dialog>

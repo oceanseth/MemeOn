@@ -1,8 +1,7 @@
-import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
 import { Link } from 'react-router-dom'
-import { buttonVariants } from '@/atoms/button'
+import { Button } from '@/atoms/button'
 import { Item, ItemContent, ItemDescription } from '@/atoms/item'
-import { Popover, PopoverContent } from '@/atoms/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/atoms/popover'
 import { PortalAnchor } from '@/atoms/portal-anchor'
 import { cn } from '@/lib/cn'
 import type { AlertsBellModel } from '../lib/alertsBellModel'
@@ -61,12 +60,8 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
   return (
     <div className="relative" data-slot="alerts-bell">
       <Popover open={model.open} onOpenChange={(open) => model.onOpenChange(open)}>
-        {/* the primitive trigger in the ghost icon button's classes, not `<PopoverTrigger
-            render={<Button />}>`: Button does not forward its ref under React 18 (requested) and
-            Base UI needs the trigger element to anchor and to mark `aria-expanded`; the lint cannot
-            read a cva call on an atom */}
-        <PopoverPrimitive.Trigger
-          className={buttonVariants({ variant: 'ghost', size: 'icon-sm' })}
+        <PopoverTrigger
+          render={<Button variant="ghost" size="icon-sm" />}
           data-slot="alerts-trigger"
           {...model.triggerProps}
         >
@@ -76,7 +71,7 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
               {model.unreadLabel}
             </span>
           )}
-        </PopoverPrimitive.Trigger>
+        </PopoverTrigger>
         <PortalAnchor id={ANCHOR_ID} />
         <PopoverContent
           container={portalAnchor(ANCHOR_ID)}

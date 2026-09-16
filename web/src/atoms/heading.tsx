@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
-import type { ComponentProps } from 'react'
+import { forwardRef, type ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
 
 /**
@@ -30,13 +30,18 @@ export interface HeadingProps extends ComponentProps<'h2'>, VariantProps<typeof 
   as?: HeadingLevel | undefined
 }
 
-export function Heading({ as: Tag = 'h2', size, className, ...props }: HeadingProps) {
+/** The ref reaches the element: a screen that focuses its outcome heading passes one. */
+export const Heading = forwardRef<HTMLHeadingElement, HeadingProps>(function Heading(
+  { as: Tag = 'h2', size, className, ...props },
+  ref,
+) {
   return (
     <Tag
+      ref={ref}
       data-slot="heading"
       data-size={size ?? 'title'}
       className={cn(headingVariants({ size }), className)}
       {...props}
     />
   )
-}
+})

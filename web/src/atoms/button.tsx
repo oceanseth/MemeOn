@@ -1,5 +1,6 @@
 import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import { cva, type VariantProps } from 'class-variance-authority'
+import { forwardRef } from 'react'
 import { cn } from '@/lib/cn'
 import { Spinner } from '@/atoms/spinner'
 
@@ -104,12 +105,17 @@ export interface ButtonProps extends Omit<ButtonPrimitive.Props, 'className'> {
 /**
  * `busy` wins over disabled dimming; a spread `aria-busy` (boolean or string) is honoured when
  * `busy` is omitted, because every screen model spreads a prop bag rather than passing `busy`.
- * Base UI supplies `type="button"` for a native button and `render` for a link or span.
+ * Base UI supplies `type="button"` for a native button and `render` for a link or span. The ref is
+ * forwarded, so `<PopoverTrigger render={<Button />}>` registers the element Base UI anchors to.
  */
-export function Button({ variant, size, busy, pressed, className, children, ...rest }: ButtonProps) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant, size, busy, pressed, className, children, ...rest },
+  ref,
+) {
   const isBusy = busy ?? (rest['aria-busy'] === true || rest['aria-busy'] === 'true')
   return (
     <ButtonPrimitive
+      ref={ref}
       data-slot="button"
       {...rest}
       aria-busy={isBusy || undefined}
@@ -124,6 +130,6 @@ export function Button({ variant, size, busy, pressed, className, children, ...r
       {children}
     </ButtonPrimitive>
   )
-}
+})
 
 export { buttonVariants }

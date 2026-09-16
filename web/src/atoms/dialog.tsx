@@ -89,6 +89,8 @@ export interface DialogContentProps
   /** the ✕ in the corner; `closeLabel` is its accessible name */
   showCloseButton?: boolean | undefined
   closeLabel?: string | undefined
+  /** locks the ✕ while the dialog's work is in flight (a gift transfer, a mint) */
+  closeDisabled?: boolean | undefined
   /** where the portal renders; pair `PortalAnchor` with `portalAnchor(id)` to stay inside the screen */
   container?: DialogPrimitive.Portal.Props['container']
 }
@@ -106,6 +108,7 @@ export function DialogContent({
   sheet,
   showCloseButton = true,
   closeLabel = 'Close',
+  closeDisabled,
   container,
   ...props
 }: DialogContentProps) {
@@ -123,7 +126,12 @@ export function DialogContent({
       >
         {children}
         {showCloseButton && (
-          <DialogPrimitive.Close data-slot="dialog-close" aria-label={closeLabel} className={CLOSE_BUTTON}>
+          <DialogPrimitive.Close
+            data-slot="dialog-close"
+            aria-label={closeLabel}
+            disabled={closeDisabled}
+            className={CLOSE_BUTTON}
+          >
             <span aria-hidden="true">✕</span>
           </DialogPrimitive.Close>
         )}
