@@ -3,11 +3,11 @@ import type { ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
 
 /**
- * A row of controls: `gap-gutter` between its slots, `align` for where
+ * A row of controls: `gap-4.5` between its slots, `align` for where
  * a single slot sits, `stack` to put the slots one above the other under the 720px cut. Layout
  * only — a filter row is not an ARIA toolbar, so Base UI's roving-focus Toolbar is not used.
  */
-export const toolbarVariants = cva('flex flex-wrap items-center gap-gutter', {
+export const toolbarVariants = cva('flex flex-wrap items-center gap-4.5', {
   variants: {
     align: {
       start: 'justify-start',

@@ -46,7 +46,7 @@ export const dialogContentVariants = cva(
   cn(
     'group/dialog-content fixed inset-0 z-(--z-modal) m-auto box-border flex h-fit w-full flex-col gap-4 overflow-y-auto scrollbar-thin',
     'max-h-[min(86dvh,86vh)]',
-    'rounded-lg material-modal p-card-inset text-foreground',
+    'rounded-lg material-modal p-6 text-foreground',
     'outline-none focus-ring',
     'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 motion-reduce:animate-none!',
   ),
@@ -77,7 +77,7 @@ export const dialogContentVariants = cva(
 
 /** The ✕ is a 40px neutral raised square in the card's corner — the glyph is the button. */
 const CLOSE_BUTTON = cn(
-  'absolute top-card-inset right-card-inset inline-flex size-10 cursor-pointer items-center justify-center pointer-coarse:size-hit',
+  'absolute top-6 right-6 inline-flex size-10 cursor-pointer items-center justify-center pointer-coarse:size-11',
   'rounded-sm material-raised p-0 text-base text-foreground',
   'transition-press press',
   'focus-ring disabled-look',

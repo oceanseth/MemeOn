@@ -5,10 +5,10 @@ import '@/atoms/foil.css'
 
 /**
  * The token sheet: every colour role, the tier chips and frames, the materials, the radius steps,
- * the spacing roles, the container widths, the breakpoints and the type scale, painted with
+ * the one container, the breakpoints and the type scale, painted with
  * nothing but what `index.css` emits. It is the visual reference — if a token looks wrong here it
  * is wrong everywhere — and a probe: each specimen carries a `data-slot` (`swatch-<token>`,
- * `radius-<step>`, `spacing-<role>`, `container-<name>`, `breakpoint-<name>`, `ladder-<step>`,
+ * `radius-<step>`, `container-<name>`, `breakpoint-<name>`, `ladder-<step>`,
  * `glyph-<step>`, `heading-<level>`, `material-<name>`) and the play functions compare its
  * computed style with the token read back from `:root`, never with a literal. The spec beside a
  * type specimen is read from the same tokens, so the sheet cannot describe a scale it is not
@@ -84,27 +84,9 @@ const RADII: ReadonlyArray<{ step: string; className: string }> = [
   { step: 'full', className: 'rounded-full' },
 ]
 
-/* `--spacing-*` roles, each drawn as a bar exactly that long; the `w-*` utility is the probe. */
-const SPACING: ReadonlyArray<{ token: string; role: string; className: string }> = [
-  { token: 'halo', role: 'the coarse-pointer halo around a 34px control', className: 'w-halo' },
-  { token: 'track', role: 'a meter track', className: 'w-track' },
-  { token: 'gutter', role: 'phone card inset, phone grid gap, toolbar ↔ grid', className: 'w-gutter' },
-  { token: 'page-x', role: 'the page and shell gutter', className: 'w-page-x' },
-  { token: 'icon', role: 'the icon lane', className: 'w-icon' },
-  { token: 'card-inset', role: 'a card or panel inset', className: 'w-card-inset' },
-  { token: 'bloom', role: 'the foil bloom guard around a card slot', className: 'w-bloom' },
-  { token: 'control-sm', role: 'small square control, header avatar, segment', className: 'w-control-sm' },
-  { token: 'hit', role: 'the pointer target', className: 'w-hit' },
-  { token: 'control', role: 'button, pill, disclosure height', className: 'w-control' },
-]
-
-/* `--container-*` widths, drawn to scale; `measure` is in ch. */
+/* The one container left in `@theme`: a container-query cut with no class of its own. */
 const CONTAINERS: ReadonlyArray<{ token: string; spec: string; className: string }> = [
   { token: 'card-narrow', spec: '220px · a meme card too narrow for its meta row', className: 'max-w-card-narrow' },
-  { token: 'tabbar', spec: '370px · the phone tab bar', className: 'max-w-tabbar' },
-  { token: 'search', spec: '540px · the search well', className: 'max-w-search' },
-  { token: 'card', spec: '560px · the auth and invite card', className: 'max-w-card' },
-  { token: 'measure', spec: '65ch · body prose', className: 'max-w-measure' },
 ]
 
 /* The scale. `text-<step>` is a complete setting — size, line-height, letter-spacing and default
@@ -196,7 +178,7 @@ export function TokenSheet() {
   return (
     <div className="mx-auto max-w-360 bg-background p-6 text-foreground" data-slot="token-sheet">
       <h1 className="text-5xl">Tokens</h1>
-      <p className="max-w-measure text-lg text-muted-foreground">
+      <p className="max-w-[65ch] text-lg text-muted-foreground">
         Every colour below is a <code>light-dark()</code> pair; the theme toolbar flips <code>data-theme</code> on{' '}
         <code>&lt;html&gt;</code> and the browser picks the arm. Same markup, both arms.
       </p>
@@ -230,7 +212,7 @@ export function TokenSheet() {
           <span
             key={name}
             data-slot={`material-${name}`}
-            className={cn('inline-flex h-control items-center rounded-lg px-4.5 text-base font-semibold', className)}
+            className={cn('inline-flex h-11.5 items-center rounded-lg px-4.5 text-base font-semibold', className)}
           >
             {label}
           </span>
@@ -239,7 +221,7 @@ export function TokenSheet() {
           type="button"
           disabled
           data-slot="material-disabled"
-          className="disabled-look inline-flex h-control items-center rounded-lg material-raised px-4.5 text-base font-semibold"
+          className="disabled-look inline-flex h-11.5 items-center rounded-lg material-raised px-4.5 text-base font-semibold"
         >
           disabled-look
         </button>
@@ -261,17 +243,12 @@ export function TokenSheet() {
         ))}
       </ul>
 
-      <Heading>Spacing roles</Heading>
-      <ul className="flex flex-col gap-2">
-        {SPACING.map(({ token, role, className }) => (
-          <li key={token} className="grid items-center gap-x-4 md:grid-cols-[280px_1fr]">
-            <code className="w-fit text-xs whitespace-normal">
-              {token} · {role}
-            </code>
-            <div data-slot={`spacing-${token}`} className={cn('h-3 rounded-full bg-primary', className)} />
-          </li>
-        ))}
-      </ul>
+      <Heading>Lengths</Heading>
+      <p className="m-0 text-base text-muted-foreground">
+        Lengths are grid steps — <code className="text-xs">p-4.5</code>,{' '}
+        <code className="text-xs">h-11.5</code>, <code className="text-xs">max-w-140</code>. There are no
+        role names.
+      </p>
 
       <Heading>Containers</Heading>
       <ul className="flex flex-col gap-2 overflow-hidden">
@@ -341,7 +318,7 @@ export function TokenSheet() {
       </ul>
 
       <Heading>Numerals</Heading>
-      <div className="rounded-lg material-card p-card-inset" data-slot="numerals">
+      <div className="rounded-lg material-card p-6" data-slot="numerals">
         <p className="m-0 text-lg" data-slot="numerals-a">
           1,111,111 · 0123456789
         </p>
@@ -356,7 +333,7 @@ export function TokenSheet() {
       </div>
 
       <Heading>Headings from the base layer</Heading>
-      <div className="rounded-lg material-card p-card-inset">
+      <div className="rounded-lg material-card p-6">
         <h1 data-slot="heading-h1">h1 is the 5xl step (4xl on a phone)</h1>
         <h2 data-slot="heading-h2">h2 is the 3xl step</h2>
         <h3 data-slot="heading-h3">h3 is the 2xl step (xl on a phone)</h3>
@@ -435,10 +412,7 @@ async function assertTokensPainted(which: 'light' | 'dark') {
   for (const step of ['xs', 'sm', 'md', 'lg', 'xl']) {
     await expect(getComputedStyle(slot(`radius-${step}`)).borderRadius).toBe(token(`--radius-${step}`))
   }
-  for (const role of ['halo', 'track', 'gutter', 'page-x', 'icon', 'card-inset', 'bloom', 'control-sm', 'hit', 'control']) {
-    await expect(getComputedStyle(slot(`spacing-${role}`)).width).toBe(token(`--spacing-${role}`))
-  }
-  for (const name of ['card-narrow', 'tabbar', 'search', 'card']) {
+  for (const name of ['card-narrow']) {
     await expect(getComputedStyle(slot(`container-${name}`)).maxWidth).toBe(token(`--container-${name}`))
   }
 

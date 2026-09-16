@@ -17,15 +17,15 @@ const AVATAR_LINK = cn('inline-flex shrink-0 rounded-md', 'focus-ring')
 
 /** "🧠 2,480": a neutral raised pill at 900+; bare bold text in the phone cluster (the design's, and the only way it fits 350). */
 const COINS = cn(
-  'inline-flex h-control shrink-0 items-center rounded-lg material-raised px-4.5',
+  'inline-flex h-11.5 shrink-0 items-center rounded-lg material-raised px-4.5',
   'text-base font-semibold whitespace-nowrap text-foreground tabular-nums',
   'max-xl:h-auto max-xl:rounded-none max-xl:bg-transparent max-xl:px-0 max-xl:font-semibold max-xl:shadow-none',
 )
 
 const GEAR_LINK = cn(
-  'inline-flex size-icon shrink-0 items-center justify-center rounded-xs text-foreground',
+  'inline-flex size-5.5 shrink-0 items-center justify-center rounded-xs text-foreground',
   'hover:text-muted-foreground',
-  'pointer-coarse:size-hit',
+  'pointer-coarse:size-11',
   'focus-ring',
 )
 
@@ -34,7 +34,7 @@ const LOGOUT_LINK = cn(
   'text-sm font-medium text-muted-foreground',
   'transition-tint',
   'hover:text-foreground',
-  'pointer-coarse:min-h-hit',
+  'pointer-coarse:min-h-11',
   'focus-ring',
 )
 

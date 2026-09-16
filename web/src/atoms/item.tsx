@@ -45,10 +45,10 @@ export const itemVariants = cva(
         raised: 'material-card',
       },
       size: {
-        default: 'min-h-hit gap-3 px-3 py-2.5',
-        sm: 'min-h-hit gap-2.5 px-2.5 py-2',
+        default: 'min-h-11 gap-3 px-3 py-2.5',
+        sm: 'min-h-11 gap-2.5 px-2.5 py-2',
         /** the card-shaped row: a person, a rank, an API key, a settings line */
-        row: 'min-h-hit gap-3 rounded-lg px-5 py-3.5',
+        row: 'min-h-11 gap-3 rounded-lg px-5 py-3.5',
         /** a static line inside a well: no target floor, no inset, no hover */
         flush: 'min-h-0 gap-3 px-0 py-0',
       },

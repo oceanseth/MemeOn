@@ -9,7 +9,7 @@ export function Tabs({ className, orientation = 'horizontal', ...props }: Styled
     <TabsPrimitive.Root
       data-slot="tabs"
       orientation={orientation}
-      className={cn('group/tabs flex gap-gutter', orientation === 'horizontal' ? 'flex-col' : 'flex-row', className)}
+      className={cn('group/tabs flex gap-4.5', orientation === 'horizontal' ? 'flex-col' : 'flex-row', className)}
       {...props}
     />
   )
@@ -43,12 +43,12 @@ const tabsTriggerVariants = cva(
     variants: {
       variant: {
         default: cn(
-          'h-control-sm min-w-0 flex-1 rounded-md bg-transparent px-3 text-sm font-semibold text-muted-foreground',
+          'h-8.5 min-w-0 flex-1 rounded-md bg-transparent px-3 text-sm font-semibold text-muted-foreground',
           'hover:text-foreground',
           'data-active:material-raised data-active:font-semibold data-active:text-foreground',
         ),
         pills: cn(
-          'h-control rounded-lg material-raised px-4.5 text-base font-semibold text-foreground',
+          'h-11.5 rounded-lg material-raised px-4.5 text-base font-semibold text-foreground',
           'press',
           'data-active:material-pressed',
         ),

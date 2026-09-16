@@ -43,7 +43,7 @@ const CHIP = cn(
 
 const CHIP_LINK = cn(
   'no-underline',
-  'pointer-coarse:inline-flex pointer-coarse:min-h-hit pointer-coarse:items-center',
+  'pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center',
   'focus-ring',
 )
 

@@ -28,11 +28,11 @@ const SHARE_CAPTION = 'Every load counts a view; every new place it travels coun
  * than the card it sits beside, so the page is one column.
  */
 const detailGrid = cn(
-  'grid grid-cols-1 gap-gutter',
+  'grid grid-cols-1 gap-4.5',
   '2xl:grid-cols-[minmax(0,410px)_minmax(0,1fr)] 2xl:gap-8',
 )
 
-const rail = 'flex min-w-0 flex-col gap-gutter'
+const rail = 'flex min-w-0 flex-col gap-4.5'
 
 /* one DOM order for both layouts: stacked = title → hero → rail; split = hero left, meta top-right */
 const heroPlacement = '2xl:col-start-1 2xl:row-start-1 2xl:row-span-2'
@@ -259,7 +259,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           {/* spread sources and cap table side by side under the market card */}
           <div
             data-slot="detail-spread"
-            className="flex flex-wrap items-start gap-gutter *:min-w-70 *:flex-1 [&>[data-slot=card]]:mt-0"
+            className="flex flex-wrap items-start gap-4.5 *:min-w-70 *:flex-1 [&>[data-slot=card]]:mt-0"
           >
             {detail.sources.length > 0 && (
               <Card>

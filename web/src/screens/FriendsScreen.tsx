@@ -19,12 +19,12 @@ import { ConfirmDialog } from '@/molecules/confirm-dialog'
 import { GiftDialog } from '@/molecules/gift-dialog'
 
 /** The search well keeps its own width lane; the group inside owns the recess and the ring. */
-const SEARCH_LANE = 'flex w-full min-w-0 flex-1 md:max-w-search'
+const SEARCH_LANE = 'flex w-full min-w-0 flex-1 md:max-w-135'
 
 /** Online strip is recessed so raised friend cards below read as actionable. */
 const ONLINE_STRIP = cn(
   'mb-5 flex flex-wrap items-center gap-5 rounded-xl material-pressed px-5 py-4',
-  'max-sm:gap-3.5 max-sm:rounded-lg max-sm:px-gutter',
+  'max-sm:gap-3.5 max-sm:rounded-lg max-sm:px-4.5',
 )
 
 /** Fixed title width so avatar lanes align across strips. */
@@ -49,7 +49,7 @@ const ROW_PILL = 'max-sm:flex-1'
 
 /** Pending is a pressed pill with no action behind it. */
 const PENDING_PILL = cn(
-  'inline-flex h-control shrink-0 items-center justify-center rounded-lg px-4.5',
+  'inline-flex h-11.5 shrink-0 items-center justify-center rounded-lg px-4.5',
   'material-pressed text-base font-semibold text-muted-foreground',
 )
 

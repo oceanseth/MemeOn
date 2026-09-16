@@ -47,7 +47,7 @@ export const Default: Story = {
     const card = canvasElement.querySelector<HTMLElement>('[data-slot="card"]')!
     await expect(card).toHaveAttribute('data-size', 'default')
     await expect(getComputedStyle(card).borderRadius).toBe(token('--radius-lg'))
-    await expect(getComputedStyle(card).paddingTop).toBe(token('--spacing-card-inset'))
+    await expect(getComputedStyle(card).paddingTop).toBe('24px')
     const title = canvas.getByRole('heading', { level: 2, name: 'Trade details' })
     await expect(title).toHaveAttribute('data-slot', 'card-title')
     await expect(title).toHaveAttribute('data-size', 'intro')

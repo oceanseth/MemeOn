@@ -25,7 +25,7 @@ export const collapsibleTriggerVariants = cva('', {
     variant: {
       plain: '',
       card: cn(
-        'group flex w-full min-h-hit cursor-pointer items-center gap-3 rounded-lg px-4.5 py-3.5 text-left',
+        'group flex w-full min-h-11 cursor-pointer items-center gap-3 rounded-lg px-4.5 py-3.5 text-left',
         'focus-ring',
       ),
     },

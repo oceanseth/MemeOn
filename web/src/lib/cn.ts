@@ -4,7 +4,7 @@ import { createCn } from 'cn/config'
    already accept is registered here, or two conflicting classes both survive a merge. `--color-*`
    (any name), `--breakpoint-*` and `--font-*` validate on their own, and so do the type steps and
    the trackings now that both are stock t-shirt names. The named `--spacing-*` roles and
-   `--container-*` do not — an unregistered `h-control` survives beside `h-11`. Radii are stock
+   `--container-*` do not — an unregistered `h-11.5` survives beside `h-11`. Radii are stock
    names too and the materials are `:root` vars that only the `material-*` utilities paint, so
    neither namespace needs an entry. Add a group here whenever `@theme` grows. */
 export const cn = createCn({

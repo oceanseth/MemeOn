@@ -146,20 +146,12 @@
   --radius-lg: 24px;
   --radius-xl: 32px;
 
-  /* ── Spacing, by role. Tailwind's numeric steps (`p-4` = 16px, `p-4.5` = 18px) are the 4px grid
-     and the default for rhythm; a role exists only where the same length is written in three or
-     more files. A component owns its own heights and paddings (`h-12.5` in the input, `w-15.5` in
-     the tab bar). `lib/cn.ts` registers each name for the merge. */
-  --spacing-control: 46px; /* button, pill, disclosure height */
-  --spacing-control-sm: 34px; /* the small square control, the header avatar, a well's segment */
-  --spacing-icon: 22px; /* the 22×22 icon lane in nav rows and checkboxes */
-  --spacing-gutter: 18px; /* phone card/panel inset, phone grid gap, toolbar ↔ grid stack */
-  --spacing-hit: 44px; /* the pointer target: `min-h-hit`, `size-hit`, the `hit-44` halo */
-  --spacing-page-x: 20px; /* the page and shell gutter: `px-page-x`, `-mx-page-x` bleeds, `px-page-safe` */
-  --spacing-card-inset: 24px; /* a card or panel's inset; the phone takes `gutter` */
-  --spacing-bloom: 30px; /* the foil bloom guard around a card slot: `p-bloom -m-bloom` */
-  --spacing-track: 6px; /* a meter's track height */
-  --spacing-halo: 5px; /* the coarse-pointer halo around a 34px control: (44 − 34) / 2 */
+  /* ── Lengths are grid steps. Tailwind's numeric scale (`p-4` = 16px, `p-4.5` = 18px) is the
+     4px grid and the only spacing vocabulary: a component owns its heights and paddings
+     (`h-11.5` in the button, `w-15.5` in the tab bar) and a caller passes layout. No
+     `--spacing-*` role names — the linter's grammar cannot read them, and with components owning
+     their numbers they buy nothing. The two lengths a CSS rule still needs are written below as
+     `calc(var(--spacing) * n)`. */
 
   /* ── Type. Two faces: Unbounded (display, variable 200–900) and Onest (UI/body, variable 100–900).
      One ten-step stock scale; every step carries its size, line-height, letter-spacing and default
@@ -221,13 +213,10 @@
   --text-6xl--letter-spacing: -0.03em;
   --text-6xl--font-weight: 500;
 
-  /* ── Layout. The widths routes and prose stop at; single-use widths are a grid step on the
-     element instead. `card-narrow` is a container-query cut (`@max-card-narrow:`). */
-  --container-card: 560px; /* the one centred card of the auth and invite routes */
-  --container-measure: 65ch; /* body prose */
-  --container-search: 540px; /* the search well */
-  --container-tabbar: 370px; /* the phone tab bar */
-  --container-card-narrow: 220px; /* a meme card too narrow for its meta row */
+  /* ── Layout. Widths are grid steps on the element (`max-w-140`, `max-w-135`, `max-w-92.5`) or
+     the measure itself (`max-w-[65ch]`, layout). The one container that survives is a
+     container-query cut, which has no class form. */
+  --container-card-narrow: 220px; /* a meme card too narrow for its meta row (`@max-card-narrow:`) */
 
   /* The widths this app branches on: six named cuts, no literals. Tailwind writes `bp:` as
      (width >= N) and `max-bp:` as (width < N), so a `max-width: N` breakpoint is exact at N + 1
@@ -609,7 +598,7 @@
 }
 
 /* A 34px control's transparent halo to the 44px pointer target on a coarse pointer, centred and
-   never smaller than the control itself. Rows use `min-h-hit` instead. */
+   never smaller than the control itself. Rows use `min-h-11` instead. */
 @utility hit-44 {
   position: relative;
   @media (pointer: coarse) {
@@ -618,8 +607,8 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: max(100%, var(--spacing-hit));
-      height: max(100%, var(--spacing-hit));
+      width: max(100%, calc(var(--spacing) * 11));
+      height: max(100%, calc(var(--spacing) * 11));
       translate: -50% -50%;
     }
   }
@@ -706,7 +695,8 @@
 
 /* The page gutter, never under a notch. */
 @utility px-page-safe {
-  padding-inline: max(var(--spacing-page-x), env(safe-area-inset-left)) max(var(--spacing-page-x), env(safe-area-inset-right));
+  padding-inline: max(calc(var(--spacing) * 5), env(safe-area-inset-left))
+    max(calc(var(--spacing) * 5), env(safe-area-inset-right));
 }
 
 /* Bottom padding that clears the home indicator: `pb-safe` is the inset alone, `pb-safe-<n>` a

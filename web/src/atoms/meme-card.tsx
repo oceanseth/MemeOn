@@ -71,7 +71,7 @@ const ART = 'block aspect-square w-full bg-muted object-contain'
 /* 32px raised square over the art's corner; the coarse-pointer form is the full 44px target */
 const TOGGLE = cn(
   'absolute right-2 bottom-2 z-2 inline-flex items-center justify-center',
-  'size-8 p-0 pointer-coarse:size-hit',
+  'size-8 p-0 pointer-coarse:size-11',
   'cursor-pointer whitespace-nowrap text-base leading-none text-foreground',
   'rounded-sm material-raised',
   'transition-press',

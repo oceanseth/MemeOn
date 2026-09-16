@@ -21,8 +21,8 @@ const cardVariants = cva('rounded-lg material-card', {
       pressed: 'material-pressed',
     },
     size: {
-      default: 'p-card-inset max-md:p-gutter',
-      sm: 'p-5 max-md:p-gutter',
+      default: 'p-6 max-md:p-4.5',
+      sm: 'p-5 max-md:p-4.5',
       xs: 'px-5 py-4',
     },
   },

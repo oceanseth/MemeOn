@@ -51,7 +51,7 @@ export function NavIcon({ className, ...props }: ComponentProps<'span'>) {
       aria-hidden="true"
       data-slot="nav-icon"
       /* an emoji in the lane sits on the `xl` step with the glyph's own leading */
-      className={cn('inline-flex size-icon shrink-0 items-center justify-center text-xl leading-none', className)}
+      className={cn('inline-flex size-5.5 shrink-0 items-center justify-center text-xl leading-none', className)}
       {...props}
     />
   )
@@ -65,7 +65,7 @@ export const utilityLinkVariants = cva(
     'transition-tint',
     'hover:bg-accent',
     'aria-[current=page]:material-pressed aria-[current=page]:font-semibold',
-    'pointer-coarse:min-h-hit',
+    'pointer-coarse:min-h-11',
     'focus-ring',
   ),
 )
@@ -89,7 +89,7 @@ export function UtilityLink({ className, current, render, ...props }: NavItemPro
  */
 export const tabItemVariants = cva(
   cn(
-    'flex h-hit w-15.5 shrink-0 flex-col items-center justify-center gap-1 rounded-full',
+    'flex h-11 w-15.5 shrink-0 flex-col items-center justify-center gap-1 rounded-full',
     'text-xs leading-tight font-medium text-foreground',
     'aria-[current=page]:material-pressed aria-[current=page]:font-semibold',
     'focus-ring',
@@ -130,7 +130,7 @@ export const footerLinkVariants = cva(
     'transition-tint',
     'hover:text-foreground',
     'aria-[current=page]:font-semibold aria-[current=page]:text-foreground',
-    'pointer-coarse:inline-flex pointer-coarse:min-h-hit pointer-coarse:items-center',
+    'pointer-coarse:inline-flex pointer-coarse:min-h-11 pointer-coarse:items-center',
     'focus-ring',
   ),
 )

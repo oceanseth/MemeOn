@@ -6,7 +6,7 @@ import type { HeroVideoModel } from '../lib/heroVideoModel'
    hairline box. On phones it bleeds to the container's own gutter and drops its radius. */
 const FRAME = cn(
   'relative aspect-video overflow-hidden rounded-lg material-card',
-  'max-md:-mx-page-x max-md:rounded-none',
+  'max-md:-mx-5 max-md:rounded-none',
 )
 
 /** Where each control sits on the frame; the pill itself is `Button variant="glass"`. */

@@ -32,12 +32,12 @@ export function AuthStatusScreen({
 }: AuthStatusScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1} className="pt-12 max-md:pt-8">
-      {/* the centred measure lives on the wrapper: `max-w-card` is a `--container-*` name the
+      {/* the centred measure lives on the wrapper: `max-w-140` is a `--container-*` name the
           lint's grammar does not read */}
-      <div className="mx-auto w-full max-w-card">
+      <div className="mx-auto w-full max-w-140">
         <Card data-slot="auth-status" data-phase={phase} className={CARD}>
           {phase === 'working' && <Spinner size="lg" data-slot="auth-ring" />}
-          <h1 className={cn(TITLE, phase === 'working' && 'mt-gutter')}>{title}</h1>
+          <h1 className={cn(TITLE, phase === 'working' && 'mt-4.5')}>{title}</h1>
           {subtitle && <p className={SUBTITLE}>{subtitle}</p>}
           {error && (
             <Alert variant="error" size="compact" className="mt-3">

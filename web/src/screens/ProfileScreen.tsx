@@ -28,7 +28,7 @@ const FRIEND_CAPTION = 'm-0 mt-1.5 text-base font-semibold text-muted-foreground
 
 const ACTIONS = 'flex flex-wrap items-center gap-3 max-sm:w-full max-sm:*:flex-1'
 
-const TABS = 'mb-gutter max-sm:*:*:flex-1'
+const TABS = 'mb-4.5 max-sm:*:*:flex-1'
 
 /** Public binder hero: bare row, intro below the avatar row at page edge. */
 const BINDER_HERO = 'flex items-center gap-4 max-sm:items-start'

@@ -29,25 +29,25 @@ import { SortChips } from '@/molecules/sort-chips'
 
 /**
  * The control plate docks under the topbar while the grid scrolls. It bleeds only into the page
- * container's own gutter (`-mx-page-x px-page-x`). A phone has no vertical budget to pin filters,
+ * container's own gutter (`-mx-5 px-5`). A phone has no vertical budget to pin filters,
  * so ≤720 the whole treatment is absent.
  */
 const marketControls = cn(
   'flex', 'flex-col', 'gap-3.5', 'pt-0', 'pb-3.5',
   /* it docks under the phone header (`--topbar-h`); at the shell breakpoint that height is 0, so
      the plate takes the sidebar's own `page-x` inset instead of the viewport edge */
-  'lg:docked', 'lg:-mx-page-x', 'lg:px-page-x',
+  'lg:docked', 'lg:-mx-5', 'lg:px-5',
   'xl:top-5',
 )
 
 /** The search well grows into the toolbar's slack and stops at the reading width. */
-const searchWell = cn('min-w-0', 'flex-1', 'lg:max-w-search')
+const searchWell = cn('min-w-0', 'flex-1', 'lg:max-w-135')
 
 /** The pre-ox/ui grid: 4-up ~262 at the 1108 column (`minmax(230px, 1fr)`), 2-up 166 on the phone. */
 const cardGrid = cn(
   'm-0', 'grid', 'list-none', 'items-start', 'gap-5', 'p-0',
   'grid-cols-[repeat(auto-fill,minmax(230px,1fr))]',
-  'max-sm:grid-cols-2', 'max-sm:gap-gutter',
+  'max-sm:grid-cols-2', 'max-sm:gap-4.5',
 )
 
 /**
@@ -57,13 +57,13 @@ const cardGrid = cn(
  */
 const cardSlot = cn(
   'skip-render',
-  'pointer-events-none', 'p-bloom', '-m-bloom', '*:pointer-events-auto',
-  'max-sm:p-page-x', 'max-sm:-m-page-x',
+  'pointer-events-none', 'p-7.5', '-m-7.5', '*:pointer-events-auto',
+  'max-sm:p-5', 'max-sm:-m-5',
 )
 
 /** Results / Count: the section heading left, the live count right, on one baseline. */
 const resultsRow = cn(
-  'mt-1', 'mb-gutter', 'flex', 'flex-wrap', 'items-baseline', 'justify-between', 'gap-x-4', 'gap-y-2',
+  'mt-1', 'mb-4.5', 'flex', 'flex-wrap', 'items-baseline', 'justify-between', 'gap-x-4', 'gap-y-2',
 )
 const summaryRow = cn(
   'flex', 'flex-wrap', 'items-center', 'gap-2.5', 'text-sm', 'text-muted-foreground',
@@ -99,7 +99,7 @@ export function MarketplaceScreen({
       <PageHead level="h1" title={pageTitle} subtitle={intro} className="mb-3.5" />
       <div data-slot="market-controls" className={marketControls}>
         <Toolbar data-slot="market-toolbar">
-          {/* the well's own width lives on the wrapper: `max-w-search` is a `--container-*` name
+          {/* the well's own width lives on the wrapper: `max-w-135` is a `--container-*` name
               the lint's grammar does not read, and widths are the toolbar's business anyway */}
           <div className={searchWell}>
             <InputGroup>
@@ -200,7 +200,7 @@ export function MarketplaceScreen({
           ))}
         </div>
         {showMore && (
-          <div ref={sentinelRef} data-slot="load-more" className="mt-gutter">
+          <div ref={sentinelRef} data-slot="load-more" className="mt-4.5">
             <EmptyContent>
               {loadMoreError && <Alert variant="error">{loadMoreError}</Alert>}
               <Button className="max-sm:w-full" {...loadMoreProps}>{loadMoreLabel}</Button>

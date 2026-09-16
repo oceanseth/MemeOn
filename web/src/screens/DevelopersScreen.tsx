@@ -13,7 +13,7 @@ import { Spinner } from '@/atoms/spinner'
 import type { DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { ConfirmDialog } from '@/molecules/confirm-dialog'
 
-const EXPLAINER = 'mt-0 mb-0 max-w-measure text-base text-muted-foreground'
+const EXPLAINER = 'mt-0 mb-0 max-w-[65ch] text-base text-muted-foreground'
 
 /** Developers API-key page as a function of its model. Every engine state is one set of args. */
 export function DevelopersScreen({

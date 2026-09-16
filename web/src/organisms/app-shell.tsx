@@ -30,7 +30,7 @@ const SKIP_LINK = cn(
 const FRAME = 'relative mx-auto flex w-full max-w-360 grow'
 
 /** 20 gutter + 216 shell; the column stretches the frame's height so the shell can stick inside it. */
-const SIDEBAR_COLUMN = 'hidden w-59 shrink-0 py-5 pl-page-x xl:block'
+const SIDEBAR_COLUMN = 'hidden w-59 shrink-0 py-5 pl-5 xl:block'
 
 /**
  * The ceramic shell: sticky 20 from the top, viewport-tall, scrolling inside when short. It wears
@@ -49,7 +49,7 @@ const SIDEBAR = cn(
  */
 const CONTENT = cn('flex min-w-0 flex-1 flex-col', '[&>main]:w-full [&>main]:grow')
 /** App content inset: 276 = frame gutter + sidebar + column padding. */
-const CONTENT_APP = 'xl:pr-9 xl:pl-page-x'
+const CONTENT_APP = 'xl:pr-9 xl:pl-5'
 /** Public pages: 72px from the frame edge. */
 const CONTENT_PUBLIC = 'xl:px-13'
 
@@ -62,11 +62,11 @@ const HEADER = cn(
   'flex items-center gap-2.5',
   'max-xl:sticky max-xl:top-0 max-xl:z-(--z-header) max-xl:min-h-16 max-xl:py-1',
   'max-xl:px-page-safe max-xl:glass',
-  'xl:gap-gutter',
+  'xl:gap-4.5',
 )
-const HEADER_APP = 'xl:mt-7 xl:min-h-14 xl:px-page-x'
+const HEADER_APP = 'xl:mt-7 xl:min-h-14 xl:px-5'
 /** Public header: 52px column inset + PageContainer padding. */
-const HEADER_PUBLIC = 'xl:px-page-x xl:py-8'
+const HEADER_PUBLIC = 'xl:px-5 xl:py-8'
 
 /** The wordmark: Unbounded 500 — with the landing hero, the typeset's two poster moments. */
 const WORDMARK = cn(
@@ -98,19 +98,19 @@ function Wordmark({ size, className }: { size: keyof typeof WORDMARK_SIZE; class
 /** 370×80 at 10 from the bottom, fluid to the phone's width, radius 30, raised. */
 const TAB_BAR = cn(
   'fixed bottom-[calc(10px+env(safe-area-inset-bottom,0px))] left-1/2 z-(--z-header) -translate-x-1/2',
-  'flex h-20 w-[calc(100%-var(--spacing-page-x))] max-w-tabbar items-center justify-around pb-3',
+  'flex h-20 w-[calc(100%-calc(var(--spacing)*5))] max-w-92.5 items-center justify-around pb-3',
   'rounded-xl material-card',
   'xl:hidden',
 )
 
 const FOOTER = cn(
   'mt-12 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-border',
-  'px-page-x pt-5.5 pb-safe-8.5',
+  'px-5 pt-5.5 pb-safe-8.5',
   'text-sm text-muted-foreground',
   'max-xl:flex-col max-xl:items-center',
 )
-const FOOTER_APP = 'xl:px-page-x'
-const FOOTER_PUBLIC = 'xl:px-page-x'
+const FOOTER_APP = 'xl:px-5'
+const FOOTER_PUBLIC = 'xl:px-5'
 
 export interface AppShellProps {
   /** The signed-in sidebar's content, under the wordmark. Its presence selects the app layout. */
@@ -163,7 +163,7 @@ export function AppShell({ sidebar, contextLine, headerEnd, quest, bottomNav, ch
                 {contextLine}
               </p>
             ) : null}
-            <div className="ml-auto flex shrink-0 items-center gap-2.5 xl:gap-gutter" data-slot="header-end">
+            <div className="ml-auto flex shrink-0 items-center gap-2.5 xl:gap-4.5" data-slot="header-end">
               {headerEnd}
             </div>
           </header>

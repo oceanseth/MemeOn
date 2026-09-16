@@ -26,7 +26,7 @@ export const emptyVariants = cva(
         info: 'bg-info text-info-foreground',
       },
       size: {
-        default: 'gap-gutter p-card-inset',
+        default: 'gap-4.5 p-6',
         inline: 'items-start gap-3 rounded-md p-4 text-left',
       },
     },

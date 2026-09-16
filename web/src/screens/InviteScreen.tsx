@@ -25,9 +25,9 @@ const HERO_VERB = cn(
 
 const HERO_STATS = 'm-0 mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-base font-semibold text-muted-foreground'
 
-const HERO_BODY = 'm-0 mt-4 max-w-card text-lg text-muted-foreground text-pretty'
+const HERO_BODY = 'm-0 mt-4 max-w-140 text-lg text-muted-foreground text-pretty'
 
-const HERO_NOTE = 'm-0 mt-3 max-w-measure text-base font-medium text-muted-foreground text-pretty'
+const HERO_NOTE = 'm-0 mt-3 max-w-[65ch] text-base font-medium text-muted-foreground text-pretty'
 
 /** The hero's own action row: the invite's one primary and its quiet companion. */
 const HERO_ACTIONS = 'mt-4.5 flex flex-wrap items-center justify-center gap-2.5'

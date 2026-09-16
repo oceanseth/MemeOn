@@ -26,7 +26,7 @@ export const selectTriggerVariants = cva(
     variants: {
       variant: {
         default: '',
-        pill: 'h-control rounded-lg material-raised font-semibold transition-press lift',
+        pill: 'h-11.5 rounded-lg material-raised font-semibold transition-press lift',
       },
     },
     defaultVariants: { variant: 'default' },
@@ -173,7 +173,7 @@ export function SelectItem({ className, children, ...props }: Styled<BaseSelect.
     <BaseSelect.Item
       data-slot="select-item"
       className={cn(
-        'flex min-h-hit w-full cursor-default items-center gap-2 rounded-md px-3 text-base',
+        'flex min-h-11 w-full cursor-default items-center gap-2 rounded-md px-3 text-base',
         'select-none outline-none',
         'data-highlighted:bg-muted data-selected:font-semibold',
         'disabled-look',

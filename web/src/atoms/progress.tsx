@@ -54,7 +54,7 @@ export function ProgressTrack({ className, ...props }: Styled<ProgressPrimitive.
   return (
     <ProgressPrimitive.Track
       data-slot="progress-track"
-      className={cn('relative flex h-track w-full items-center overflow-hidden rounded-full bg-muted', className)}
+      className={cn('relative flex h-1.5 w-full items-center overflow-hidden rounded-full bg-muted', className)}
       {...props}
     />
   )
