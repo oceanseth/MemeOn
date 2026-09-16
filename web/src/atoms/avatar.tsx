@@ -16,7 +16,7 @@ const avatarVariants = cva(
     variants: {
       size: {
         sm: 'size-8',
-        header: 'size-control-sm rounded-sm',
+        header: 'size-8.5 rounded-sm',
         rank: 'size-9 rounded-sm',
         md: 'size-10',
         podium: 'size-12.5 max-md:size-9 max-md:rounded-sm',

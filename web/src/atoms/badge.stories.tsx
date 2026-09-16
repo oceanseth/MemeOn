@@ -21,15 +21,6 @@ export const Default: Story = {
 
 export const Info: Story = { args: { variant: 'info', children: 'Friends' } }
 
-/** `tone` is the pre-registry spelling the screens still pass; it resolves to `variant`. */
-export const LegacyTone: Story = {
-  args: { tone: 'info', children: 'Friends' },
-  play: async ({ canvasElement }) => {
-    const badge = canvasElement.querySelector('[data-slot="badge"]')
-    await expect(badge).toHaveAttribute('data-variant', 'info')
-  },
-}
-
 /** The six variants, in the order a screen reaches for them. */
 export const Variants: Story = {
   render: () => (
@@ -60,6 +51,20 @@ export const AsLink: Story = {
     const link = canvas.getByRole('link', { name: 'For sale' })
     await expect(link).toHaveAttribute('data-slot', 'badge')
     await expect(link).toHaveAttribute('data-variant', 'primary')
+  },
+}
+
+/** The unread bubble: the strong destructive pair on a 16px disc. */
+export const Count: Story = {
+  render: () => (
+    <Badge variant="destructive" size="count">
+      7
+    </Badge>
+  ),
+  play: async ({ canvasElement }) => {
+    const badge = canvasElement.querySelector<HTMLElement>('[data-slot="badge"]')!
+    await expect(badge).toHaveAttribute('data-variant', 'destructive')
+    await expect(badge.offsetHeight).toBe(16)
   },
 }
 

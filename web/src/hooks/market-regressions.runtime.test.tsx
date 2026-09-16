@@ -252,7 +252,7 @@ describe('MemeDetailView mutation overlap', () => {
       await settle()
     })
 
-    await eventually(() => expect(host.querySelector('[data-slot="notice"]')?.textContent).toContain('delete conflicted'))
+    await eventually(() => expect(host.querySelector('[data-slot="alert"]')?.textContent).toContain('delete conflicted'))
     expect(host.querySelector('[role="alertdialog"]')).toBeNull()
     // the failure ends the request: nothing on the page is still presented as in flight
     expect(host.querySelector('[aria-busy="true"]')).toBeNull()

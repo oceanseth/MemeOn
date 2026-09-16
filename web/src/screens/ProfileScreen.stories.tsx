@@ -38,8 +38,7 @@ const statsFor = (profile: typeof palProfile) => [
 ]
 
 const handlers = {
-  createdTabButtonProps: { 'aria-pressed': true, 'aria-controls': 'profile-cards', onClick: fn() },
-  binderTabButtonProps: { 'aria-pressed': false, 'aria-controls': 'profile-cards', onClick: fn() },
+  tabsProps: { value: 'created', onValueChange: fn() },
   followButtonProps: { 'aria-pressed': false, 'aria-busy': false, disabled: false, onClick: fn() },
   friendButtonProps: { 'aria-busy': false, disabled: false, onClick: fn() },
   retryButtonProps: { onClick: fn() },
@@ -177,8 +176,7 @@ export const WithAvatar: Story = {
 
 export const BinderTab: Story = {
   args: {
-    createdTabButtonProps: { 'aria-pressed': false, 'aria-controls': 'profile-cards', onClick: fn() },
-    binderTabButtonProps: { 'aria-pressed': true, 'aria-controls': 'profile-cards', onClick: fn() },
+    tabsProps: { value: 'binder', onValueChange: fn() },
     showEmpty: false,
     showGrid: true,
     binderCount: 1,
@@ -212,8 +210,7 @@ export const SelfEmptyBinder: Story = {
       stats: statsFor(louProfile),
     },
     showActions: false,
-    createdTabButtonProps: { 'aria-pressed': false, 'aria-controls': 'profile-cards', onClick: fn() },
-    binderTabButtonProps: { 'aria-pressed': true, 'aria-controls': 'profile-cards', onClick: fn() },
+    tabsProps: { value: 'binder', onValueChange: fn() },
     emptyTitle: "You don't hold shares in any memes yet.",
     emptyBody: "Buy into someone else's card and your shares show up here.",
     showEmptyLink: true,
@@ -243,8 +240,7 @@ export const SelfEmptyCreated: Story = {
 /** someone else's empty binder tab */
 export const EmptyBinder: Story = {
   args: {
-    createdTabButtonProps: { 'aria-pressed': false, 'aria-controls': 'profile-cards', onClick: fn() },
-    binderTabButtonProps: { 'aria-pressed': true, 'aria-controls': 'profile-cards', onClick: fn() },
+    tabsProps: { value: 'binder', onValueChange: fn() },
     emptyTitle: "pal doesn't hold shares in any memes yet.",
     emptyBody: 'Shares they buy, win or get gifted show up here.',
     gridProps: { id: 'profile-cards', 'aria-live': 'polite', 'aria-label': 'Binder memes, 0 cards' },
@@ -278,8 +274,7 @@ export const PublicBinder: Story = {
     identityLine: null,
     showBinderHero: true,
     joinLabel: `Log in to trade with ${palProfile.name}`,
-    createdTabButtonProps: { 'aria-pressed': false, 'aria-controls': 'profile-cards', onClick: fn() },
-    binderTabButtonProps: { 'aria-pressed': true, 'aria-controls': 'profile-cards', onClick: fn() },
+    tabsProps: { value: 'binder', onValueChange: fn() },
     binderCount: 1,
     profile: {
       name: palProfile.name,

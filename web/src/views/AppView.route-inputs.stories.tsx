@@ -108,7 +108,9 @@ export const RemixRouteUsesCurrentSource: Story = {
       };
     },
   ],
-  beforeEach: ({ loaded }) => {
+  beforeEach: async ({ loaded }) => {
+    // the mint desk is code-split: warm its chunk so the play function never waits on a download
+    await import("./CreateMemeView");
     const originalFetch = window.fetch;
     window.fetch = async (input, init) => {
       const path = pathOf(input);
@@ -141,9 +143,8 @@ export const RemixRouteUsesCurrentSource: Story = {
         },
       }),
     );
-    // the mint desk is a lazy chunk: on a cold shard its first load outruns the 1 s default
     await expect(
-      await canvas.findByRole("img", { name: "source B" }, { timeout: 8000 }),
+      await canvas.findByRole("img", { name: "source B" }),
     ).toBeInTheDocument();
 
     loaded.resolveA(
@@ -156,6 +157,8 @@ export const RemixRouteUsesCurrentSource: Story = {
         },
       }),
     );
+    // the late source has to have been handled before "it did not win" means anything
+    await loaded.sourceA;
     await expect(
       canvas.getByRole("img", { name: "source B" }),
     ).toBeInTheDocument();
@@ -224,9 +227,8 @@ export const PendingVideoStaysWithItsRemixRoute: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    // the mint desk is a lazy chunk: on a cold shard its first load outruns the 1 s default
     await expect(
-      await canvas.findByRole("img", { name: "source B" }, { timeout: 8000 }),
+      await canvas.findByRole("img", { name: "source B" }),
     ).toBeInTheDocument();
     await expect(
       canvas.queryByRole("img", { name: /^Preview of/ }),

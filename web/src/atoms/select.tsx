@@ -26,7 +26,7 @@ export const selectTriggerVariants = cva(
     variants: {
       variant: {
         default: '',
-        pill: 'h-control rounded-lg material-raised font-semibold transition-press lift',
+        pill: 'h-11.5 rounded-lg material-raised font-semibold transition-press lift',
       },
     },
     defaultVariants: { variant: 'default' },
@@ -173,7 +173,7 @@ export function SelectItem({ className, children, ...props }: Styled<BaseSelect.
     <BaseSelect.Item
       data-slot="select-item"
       className={cn(
-        'flex min-h-hit w-full cursor-default items-center gap-2 rounded-md px-3 text-base',
+        'flex min-h-11 w-full cursor-default items-center gap-2 rounded-md px-3 text-base',
         'select-none outline-none',
         'data-highlighted:bg-muted data-selected:font-semibold',
         'disabled-look',
@@ -239,8 +239,6 @@ export interface SelectProps extends VariantProps<typeof selectTriggerVariants> 
 
 /**
  * The one-liner the screens use: a labelled trigger sized to its widest option, and the list.
- * Its trigger is the component's own slot (`data-slot="select"`); a trigger composed from the
- * parts is `select-trigger`.
  */
 export function Select({
   items,
@@ -263,7 +261,7 @@ export function Select({
       name={name}
       id={id}
     >
-      <SelectTrigger aria-label={ariaLabel} variant={variant} className={className} data-slot="select">
+      <SelectTrigger aria-label={ariaLabel} variant={variant} className={className}>
         <span className="grid min-w-0">
           <SelectValue placeholder={placeholder} className="col-start-1 row-start-1" />
           <SelectSizer items={items} placeholder={placeholder} className="col-start-1 row-start-1" />

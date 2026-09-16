@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 import { Button } from '@/atoms/button'
-import { FilterBar, PageHead } from '@/atoms/page-head'
+import { PageHead } from '@/atoms/page-head'
 import { Toolbar } from '@/atoms/toolbar'
 
 const meta = {
@@ -32,18 +32,7 @@ export const AsH1: Story = {
   },
 }
 
-export const WithFilterBar: Story = {
-  args: {
-    children: (
-      <FilterBar>
-        <Button>Cancel</Button>
-        <Button variant="primary">Save</Button>
-      </FilterBar>
-    ),
-  },
-}
-
-/** `Toolbar` is what the FilterBar sites become; the head gives it the same slack. */
+/** A direct `Toolbar` absorbs the head's slack from the `lg` cut. */
 export const WithToolbar: Story = {
   args: {
     children: (

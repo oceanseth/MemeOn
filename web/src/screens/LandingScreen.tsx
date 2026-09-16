@@ -17,7 +17,7 @@ import './LandingScreen.css'
 
 const SECTION = 'mt-14 max-md:mt-10'
 
-const CARD = 'rounded-lg material-card p-gutter'
+const CARD = 'rounded-lg material-card p-4.5'
 
 /** Hero pile card: percentage positions scale with the column, no phone transform. */
 const PILE_CARD = 'absolute origin-top-left rounded-lg material-card p-2'
@@ -64,7 +64,7 @@ export function LandingScreen({
       {/* hero band bleeds into the page gutter, not the shell sidebar gap */}
       <section
         data-slot="landing-hero"
-        className="-mx-page-x border-b border-border bg-accent px-page-x pt-12 pb-14 max-md:pt-8 max-md:pb-10"
+        className="-mx-5 border-b border-border bg-accent px-5 pt-12 pb-14 max-md:pt-8 max-md:pb-10"
       >
         <div className="grid items-center gap-12 max-md:gap-8 lg:grid-cols-[minmax(0,570px)_minmax(0,405px)] lg:justify-between">
           <div className="min-w-0">
@@ -76,7 +76,7 @@ export function LandingScreen({
             >
               Memes are the new trading cards
             </h1>
-            <p className="mt-5 mb-0 max-w-measure text-pretty text-lg text-muted-foreground">
+            <p className="mt-5 mb-0 max-w-[65ch] text-pretty text-lg text-muted-foreground">
               Mint the moment. Watch it spread. Trade the cards everyone sends each other anyway —
               every meme gets a share link whose foil frame levels up as it travels.
             </p>
@@ -226,7 +226,7 @@ export function LandingScreen({
       {/* FAQ */}
       <section data-slot="landing-faq" className={SECTION}>
         <Heading size="section" className="mb-6">FAQ</Heading>
-        <div className="max-w-measure">
+        <div className="max-w-[65ch]">
           <FaqItem question="How does a card level up?" defaultOpen>
             <p>
               Each unique share link and card unfurl counts as a reshare. Cross a threshold and the

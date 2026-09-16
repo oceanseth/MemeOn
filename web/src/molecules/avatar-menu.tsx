@@ -1,8 +1,7 @@
-import { Menu as MenuPrimitive } from '@base-ui/react/menu'
 import { Link } from 'react-router-dom'
 import { Avatar } from '@/atoms/avatar'
-import { buttonVariants } from '@/atoms/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem } from '@/atoms/dropdown-menu'
+import { Button } from '@/atoms/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/atoms/dropdown-menu'
 import { PortalAnchor } from '@/atoms/portal-anchor'
 import { portalAnchor } from '../lib/portalAnchor'
 
@@ -37,16 +36,13 @@ const ANCHOR_ID = 'avatar-menu-anchor'
 export function AvatarMenu({ model }: { model: AvatarMenuModel }) {
   return (
     <DropdownMenu modal={false} defaultOpen={model.defaultOpen}>
-      {/* the primitive trigger in the ghost icon button's classes, not `<DropdownMenuTrigger
-          render={<Button />}>`: Button does not forward its ref under React 18 (requested) and
-          Base UI needs the trigger element; the lint cannot read a cva call on an atom */}
-      <MenuPrimitive.Trigger
-        className={buttonVariants({ variant: 'ghost', size: 'icon-sm' })}
+      <DropdownMenuTrigger
+        render={<Button variant="ghost" size="icon-sm" />}
         data-slot="avatar-menu-trigger"
         {...model.triggerProps}
       >
         <Avatar name={model.name} src={model.src} size="header" />
-      </MenuPrimitive.Trigger>
+      </DropdownMenuTrigger>
       <PortalAnchor id={ANCHOR_ID} />
       <DropdownMenuContent container={portalAnchor(ANCHOR_ID)} align="end" data-slot="avatar-menu">
         {model.items.map((item) =>

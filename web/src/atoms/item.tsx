@@ -29,9 +29,11 @@ export function ItemSeparator({ className, ...props }: ComponentProps<typeof Sep
  */
 export const itemVariants = cva(
   cn(
-    'group/item flex w-full min-h-hit flex-wrap items-center rounded-md text-base text-foreground',
+    'group/item flex w-full flex-wrap items-center rounded-md text-base text-foreground',
     'transition-tint outline-none focus-ring',
-    '[a]:cursor-pointer [a]:no-underline [a]:hover:bg-accent [button]:cursor-pointer [button]:hover:bg-accent',
+    '[a]:cursor-pointer [a]:no-underline [a]:hover:bg-accent',
+    '[button]:cursor-pointer [button]:not-disabled:hover:bg-accent [button]:disabled:disabled-look',
+    'aria-pressed:material-pressed',
   ),
   {
     variants: {
@@ -43,19 +45,30 @@ export const itemVariants = cva(
         raised: 'material-card',
       },
       size: {
-        default: 'gap-3 px-3 py-2.5',
-        sm: 'gap-2.5 px-2.5 py-2',
+        default: 'min-h-11 gap-3 px-3 py-2.5',
+        sm: 'min-h-11 gap-2.5 px-2.5 py-2',
+        /** the card-shaped row: a person, a rank, an API key, a settings line */
+        row: 'min-h-11 gap-3 rounded-lg px-5 py-3.5',
+        /** a static line inside a well: no target floor, no inset, no hover */
+        flush: 'min-h-0 gap-3 px-0 py-0',
       },
-      /** The ring a row wears when it is *you*: the podium's first place, your own rank row. */
+      /** The ring a row wears when it is *you* or first: podium #1 (`primary`), your row (`brand`). */
       frame: {
         none: '',
-        brand: 'border-2 border-brand',
+        brand: 'border-2 border-brand bg-accent',
+        primary: 'border-2 border-primary bg-accent',
+      },
+      /** A row that carries a status: the unread alert's tint. */
+      tone: {
+        none: '',
+        info: 'bg-info text-info-foreground',
       },
     },
     defaultVariants: {
       variant: 'default',
       size: 'default',
       frame: 'none',
+      tone: 'none',
     },
   },
 )
@@ -67,18 +80,20 @@ export function Item({
   variant = 'default',
   size = 'default',
   frame = 'none',
+  tone = 'none',
   render,
   ...props
 }: ItemProps) {
   return useRender({
     defaultTagName: 'div',
-    props: mergeProps<'div'>({ className: cn(itemVariants({ variant, size, frame }), className) }, props),
+    props: mergeProps<'div'>({ className: cn(itemVariants({ variant, size, frame, tone }), className) }, props),
     render,
     state: {
       slot: 'item',
       variant,
       size,
       frame,
+      tone,
     },
   })
 }
@@ -122,8 +137,13 @@ export function ItemContent({ className, ...props }: ComponentProps<'div'>) {
   return <div data-slot="item-content" className={cn('flex min-w-0 flex-1 flex-col gap-0.5', className)} {...props} />
 }
 
-const itemTitleVariants = cva('flex w-fit max-w-full items-center gap-2 text-base font-semibold text-foreground', {
+const itemTitleVariants = cva('flex w-fit max-w-full items-center gap-2 font-semibold text-foreground', {
   variants: {
+    /** the row's own step; `lg` is the name a person / rank / card row carries */
+    size: {
+      default: 'text-base',
+      lg: 'text-lg',
+    },
     /** one line, ellipsis — a name in a fixed-width row; off, a message wraps */
     truncate: {
       true: 'truncate',
@@ -131,16 +151,25 @@ const itemTitleVariants = cva('flex w-fit max-w-full items-center gap-2 text-bas
     },
   },
   defaultVariants: {
+    size: 'default',
     truncate: false,
   },
 })
 
 export function ItemTitle({
   className,
+  size,
   truncate,
   ...props
 }: ComponentProps<'div'> & VariantProps<typeof itemTitleVariants>) {
-  return <div data-slot="item-title" className={cn(itemTitleVariants({ truncate }), className)} {...props} />
+  return (
+    <div
+      data-slot="item-title"
+      data-size={size ?? 'default'}
+      className={cn(itemTitleVariants({ size, truncate }), className)}
+      {...props}
+    />
+  )
 }
 
 export function ItemDescription({ className, ...props }: ComponentProps<'p'>) {

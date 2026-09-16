@@ -32,6 +32,7 @@ export function PopoverPositioner({ className, ...props }: Styled<PopoverPrimiti
 /** The popup is a raised card of the pop material; it enters from the side it is placed on. */
 const POPUP = cn(
   'flex w-72 origin-(--transform-origin) flex-col gap-2 rounded-lg material-pop p-2.5 text-base text-foreground',
+  'max-h-(--available-height) overflow-y-auto scrollbar-thin',
   'outline-none focus-ring',
   'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 motion-reduce:animate-none!',
   'data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2',

@@ -8,7 +8,7 @@ import { cn } from '@/lib/cn'
 
 /** The 22px raised box; checked fills it with the action colour. `hit-44` halos it on a coarse pointer. */
 const boxChrome = cn(
-  'peer inline-flex size-icon shrink-0 items-center justify-center rounded-xs material-raised',
+  'peer inline-flex size-5.5 shrink-0 items-center justify-center rounded-xs material-raised',
   'text-primary-foreground hit-44',
   'data-checked:bg-primary data-indeterminate:bg-primary',
   'data-invalid:inset-ring-2 data-invalid:inset-ring-destructive',
@@ -19,7 +19,7 @@ const boxChrome = cn(
 /** The labelled row: a 44px target around box + words. `pill` is the binder's private toggle. */
 export const checkboxLabelVariants = cva(
   [
-    'inline-flex min-h-hit cursor-pointer items-center gap-2.5 text-base text-foreground',
+    'inline-flex min-h-11 cursor-pointer items-center gap-2.5 text-base text-foreground',
     'has-data-disabled:cursor-not-allowed has-data-disabled:opacity-(--opacity-disabled)',
   ],
   {
@@ -27,7 +27,7 @@ export const checkboxLabelVariants = cva(
       variant: {
         default: '-ms-2 px-2 py-1',
         pill: [
-          'h-control rounded-lg material-raised px-4.5 font-semibold transition-press',
+          'h-11.5 rounded-lg material-raised px-4.5 font-semibold transition-press',
           'has-data-checked:material-pressed',
         ],
       },

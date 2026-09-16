@@ -47,7 +47,7 @@ export const Default: Story = {
     const card = canvasElement.querySelector<HTMLElement>('[data-slot="card"]')!
     await expect(card).toHaveAttribute('data-size', 'default')
     await expect(getComputedStyle(card).borderRadius).toBe(token('--radius-lg'))
-    await expect(getComputedStyle(card).paddingTop).toBe(token('--spacing-card-inset'))
+    await expect(getComputedStyle(card).paddingTop).toBe('24px')
     const title = canvas.getByRole('heading', { level: 2, name: 'Trade details' })
     await expect(title).toHaveAttribute('data-slot', 'card-title')
     await expect(title).toHaveAttribute('data-size', 'intro')
@@ -154,6 +154,18 @@ export const TitleSizes: Story = {
     await expect(h3).toHaveAttribute('data-slot', 'card-title')
     await expect(getComputedStyle(h3).fontSize).toBe(token('--text-lg'))
     await expect(getComputedStyle(canvas.getByText(/^Title — /)).fontSize).toBe(token('--text-3xl'))
+  },
+}
+
+/** A well rather than a plate: the rail a quest bar sits in. */
+export const Pressed: Story = {
+  render: () => (
+    <Card variant="pressed" size="sm">
+      <CardTitle>Earn your braincells</CardTitle>
+    </Card>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector('[data-slot="card"]')).toHaveAttribute('data-size', 'sm')
   },
 }
 

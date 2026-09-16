@@ -15,7 +15,7 @@ export type { LegalDocumentModel, LegalDocumentSection } from '../lib/legalDocum
 const SECTION = 'mt-6 pb-5.5'
 /** The heading a TOC chip jumps to docks under the phone's sticky header. */
 const H2_SCROLL = '[scroll-margin-top:calc(var(--topbar-h)+16px)]'
-const P = 'mt-4 mb-0 max-w-measure text-base text-foreground'
+const P = 'mt-4 mb-0 max-w-[65ch] text-base text-foreground'
 const LIST = 'mt-2.5 mb-0 list-disc pl-6'
 const LIST_ITEM_FIRST = cn(P, 'mt-0')
 const LIST_ITEM = cn(P, 'mt-2.5')

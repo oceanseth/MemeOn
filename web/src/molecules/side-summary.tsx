@@ -27,7 +27,7 @@ export function SideSummary({ model }: { model: TradeSideSummaryModel }) {
       {model.empty && <div className="text-muted-foreground">nothing 😶</div>}
       <ItemGroup>
         {model.memeLines.map((meme) => (
-          <Item key={meme.id} size="sm">
+          <Item key={meme.id} size="flush">
             <ItemMedia>
               {meme.thumbUrl ? (
                 <img className={THUMB} src={meme.thumbUrl} alt="" loading="lazy" />

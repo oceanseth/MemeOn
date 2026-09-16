@@ -18,6 +18,8 @@ export const progressIndicatorVariants = cva(
       variant: {
         default: 'bg-primary',
         ladder: 'bg-linear-to-r from-brand via-primary to-brand',
+        /** the braincell gold a binder's ownership groove fills with */
+        braincell: 'bg-warning-foreground',
       },
     },
     defaultVariants: {
@@ -52,7 +54,7 @@ export function ProgressTrack({ className, ...props }: Styled<ProgressPrimitive.
   return (
     <ProgressPrimitive.Track
       data-slot="progress-track"
-      className={cn('relative flex h-track w-full items-center overflow-hidden rounded-full bg-muted', className)}
+      className={cn('relative flex h-1.5 w-full items-center overflow-hidden rounded-full bg-muted', className)}
       {...props}
     />
   )

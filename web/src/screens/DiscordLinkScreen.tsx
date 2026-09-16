@@ -45,7 +45,7 @@ export function DiscordLinkScreen({
         <h1 className={cn(TITLE, 'mt-2.5')}>{heading ?? errTitle}</h1>
         {showConfirm && (
           <>
-            <p className="mx-auto mt-4 mb-0 max-w-measure text-base text-muted-foreground">
+            <p className="mx-auto mt-4 mb-0 max-w-[65ch] text-base text-muted-foreground">
               Your Discord name is never shown to other MemeOn users — <code>/memeon</code> just
               ranks your own binder 💼 and your friends' memes 🤝 first.
             </p>

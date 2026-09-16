@@ -4,12 +4,10 @@ import { Alert } from '@/atoms/alert'
 import { Button } from '@/atoms/button'
 import {
   Empty,
-  EmptyActions,
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
-  EmptyState,
   EmptyTitle,
   PageState,
 } from '@/atoms/empty'
@@ -234,42 +232,21 @@ export const PageStateCompact: Story = {
   },
 }
 
-/** The legacy `EmptyState` the ten screens still render: raw headings, tone names, `error` flag. */
-export const LegacyEmptyState: Story = {
+/** Work in flight inside a form panel: the raised fill, the title muted with the body. */
+export const Busy: Story = {
   render: () => (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <EmptyState role="none">
-        <h3>No memes yet</h3>
-        <p>Be the change — mint one!</p>
-        <EmptyActions>
-          <Button variant="primary">Mint a meme</Button>
-        </EmptyActions>
-      </EmptyState>
-      <EmptyState error>
-        <p>
-          <strong>Could not load</strong>
-        </p>
-        <EmptyActions>
-          <Button>Try again</Button>
-        </EmptyActions>
-      </EmptyState>
-      <EmptyState tone="ok">
-        <h3>🎁 Starter pack opened!</h3>
-        <p>Your first cards are waiting in My Binder.</p>
-      </EmptyState>
-    </div>
+    <Empty variant="busy" size="inline" role="none">
+      <EmptyHeader>
+        <EmptyTitle>Cooking your frame…</EmptyTitle>
+      </EmptyHeader>
+      <EmptyDescription>The card stays here while the frame cooks.</EmptyDescription>
+    </Empty>
   ),
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const cards = canvasElement.querySelectorAll('[data-slot="empty-state"]')
-    await expect(cards).toHaveLength(3)
-    await expect([...cards].map((card) => (card as HTMLElement).dataset.tone)).toEqual([
-      'neutral',
-      'error',
-      'ok',
-    ])
-    await expect(canvas.getByRole('alert')).toHaveAttribute('data-tone', 'error')
-    await expect(canvasElement.querySelectorAll('[data-slot="empty-actions"]')).toHaveLength(2)
+    const empty = canvasElement.querySelector<HTMLElement>('[data-slot="empty"]')!
+    await expect(empty).toHaveAttribute('data-variant', 'busy')
+    const title = empty.querySelector<HTMLElement>('[data-slot="empty-title"]')!
+    await expect(getComputedStyle(title).color).toBe(getComputedStyle(empty).color)
   },
 }
 

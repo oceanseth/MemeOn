@@ -150,7 +150,7 @@ export const Ready: Story = {
     await expect(canvas.getByRole('status')).toHaveTextContent('3 cards shown')
     // the ownership groove is a Progress, not a hand-spelled track with an inline width
     await expect(canvasElement.querySelectorAll('[data-slot="progress"]')).toHaveLength(3)
-    await expect(canvasElement.querySelector('[data-slot="progress-indicator"]')).toHaveAttribute('data-variant', 'default')
+    await expect(canvasElement.querySelector('[data-slot="progress-indicator"]')).toHaveAttribute('data-variant', 'braincell')
   },
 }
 

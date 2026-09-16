@@ -31,7 +31,8 @@ function CurrentSearch() {
 async function pickOption(trigger: HTMLElement, optionName: string): Promise<void> {
   await userEvent.click(trigger)
   const listbox = await screen.findByRole('listbox')
-  await userEvent.click(within(listbox).getByRole('option', { name: optionName }))
+  // the popup mounts before its options paint, so the option is awaited too, never sampled
+  await userEvent.click(await within(listbox).findByRole('option', { name: optionName }))
 }
 
 const marketCalls = (scenario: ConnectedScenario, match = ''): number =>
@@ -77,7 +78,12 @@ export const FiltersSortAndStyles: Story = {
     // ranking a loaded sample would be a wrong answer, so the chips say what the market can do
     await expect(canvas.getByRole('button', { name: /Value/ })).toBeDisabled()
     await expect(canvas.getByRole('group', { name: 'Sort by' })).toHaveAccessibleDescription(copy.sortDisabledReason)
-    await expect(canvas.getByRole('status')).toHaveTextContent(copy.results.line([copy.filters.media.images, 'Holo', copy.results.activeListed]))
+    // the status line is written from the settled response, so it is awaited, never sampled
+    await waitFor(() =>
+      expect(canvas.getByRole('status')).toHaveTextContent(
+        copy.results.line([copy.filters.media.images, 'Holo', copy.results.activeListed]),
+      ),
+    )
     // a link that wears the button's look wears its weight too: button labels are 500
     await expect(getComputedStyle(canvas.getByRole('link', { name: /Mint a meme/ })).fontWeight).toBe('500')
     await expect(loaded.scenario.unexpected).toEqual([])

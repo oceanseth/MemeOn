@@ -6,7 +6,7 @@ import type {
   HTMLAttributes,
   InputHTMLAttributes,
 } from 'react'
-import { Notice } from '@/atoms/notice'
+import { Alert } from '@/atoms/alert'
 import { developersCopy } from '../copy/developers'
 import { apiFetch, post } from '../lib/api'
 import {
@@ -199,7 +199,7 @@ export function useDevelopersScreen(): DevelopersScreenModel {
       createElement('code', null, copy.revokeDialog.prefix(String(ctx.revoking?.prefix))),
       copy.revokeDialog.body(String(ctx.revoking?.label)),
       // the page behind an open modal is inert, so the failure has to land inside the dialog
-      ctx.revokeErr ? createElement(Notice, { tone: 'error' }, ctx.revokeErr) : null,
+      ctx.revokeErr ? createElement(Alert, { variant: 'error', className: 'mt-3' }, ctx.revokeErr) : null,
     ),
     confirmLabel: copy.revokeDialog.confirm,
     onCancel: onRevokeCancel,

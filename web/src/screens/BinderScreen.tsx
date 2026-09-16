@@ -6,7 +6,7 @@ import { Card } from '@/atoms/card'
 import { Checkbox } from '@/atoms/checkbox'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader } from '@/atoms/empty'
 import { Heading } from '@/atoms/heading'
-import { MemeCard, memeCardSubClasses } from '@/atoms/meme-card'
+import { MemeCard } from '@/atoms/meme-card'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Progress } from '@/atoms/progress'
@@ -24,7 +24,7 @@ const SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6'] as const
 /** Same `minmax(230px, 1fr)` the production `.card-grid` used; 2 × 166 + 18 = 350 at the phone margin. */
 export const binderGridClasses = cn(
   'm-0 grid list-none items-start grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5 p-0',
-  'max-sm:grid-cols-2 max-sm:gap-gutter',
+  'max-sm:grid-cols-2 max-sm:gap-4.5',
 )
 
 /**
@@ -34,12 +34,15 @@ export const binderGridClasses = cn(
  */
 export const binderCardSlotClasses = cn(
   'skip-render',
-  'pointer-events-none p-bloom -m-bloom *:pointer-events-auto',
-  'max-sm:p-page-x max-sm:-m-page-x',
+  'pointer-events-none p-7.5 -m-7.5 *:pointer-events-auto',
+  'max-sm:p-5 max-sm:-m-5',
 )
 
 /** The creator/private row under a binder card: the atom's own footer rhythm, one line lower. */
-const binderCardFooterClasses = cn(memeCardSubClasses, 'mt-0.5')
+const binderCardFooterClasses = cn(
+  'mt-0.5 flex items-start justify-between gap-2 text-xs font-medium text-foreground tabular-nums',
+  '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
+)
 
 /* reward rail lives in AppShell QuestBar — claim is a one-shot shell mutation, not duplicated here */
 
@@ -184,7 +187,7 @@ export function BinderScreen({
                       </span>
                     )}
                     {/* the ownership groove: how much of this meme the binder holds */}
-                    <Progress value={card.sharesPct} aria-hidden="true" className="mt-1" />
+                    <Progress value={card.sharesPct} variant="braincell" aria-hidden="true" className="mt-1" />
                   </>
                 }
               />

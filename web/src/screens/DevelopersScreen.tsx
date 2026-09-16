@@ -13,7 +13,7 @@ import { Spinner } from '@/atoms/spinner'
 import type { DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { ConfirmDialog } from '@/molecules/confirm-dialog'
 
-const EXPLAINER = 'mt-0 mb-0 max-w-measure text-base text-muted-foreground'
+const EXPLAINER = 'mt-0 mb-0 max-w-[65ch] text-base text-muted-foreground'
 
 /** Developers API-key page as a function of its model. Every engine state is one set of args. */
 export function DevelopersScreen({
@@ -159,9 +159,9 @@ export function DevelopersScreen({
           </Empty>
         )}
         {showKeys && keys && (
-          <ul className="m-0 mt-2 list-none p-0 divide-y divide-border">
+          <ul className="m-0 mt-2 list-none divide-y divide-border p-0 *:py-3">
             {keys.map((k) => (
-              <Item key={k.prefix} render={<li />} data-slot="api-key-row">
+              <Item key={k.prefix} size="flush" render={<li />} data-slot="api-key-row">
                 <ItemContent>
                   {/* `overflow-wrap:anywhere` keeps a 60-character label inside the row */}
                   <ItemTitle>{k.label}</ItemTitle>

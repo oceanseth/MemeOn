@@ -16,6 +16,8 @@ export const skeletonVariants = cva(
         default: '',
         card: 'aspect-square box-content pb-17.5',
         row: 'min-h-16',
+        /** stands in for an `Avatar size="hero"`: the same radius, the caller gives the size */
+        avatar: 'rounded-xl',
         block: 'h-3.5 rounded-xs',
       },
     },

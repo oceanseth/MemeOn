@@ -8,6 +8,7 @@ import { MemeCard } from '@/atoms/meme-card'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Skeleton, SkeletonBlock, SkeletonCard } from '@/atoms/skeleton'
+import { Tabs, TabsList, TabsTrigger } from '@/atoms/tabs'
 import { cn } from '../lib/cn'
 import type { ProfileScreenModel } from '../hooks/useProfileScreen'
 import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
@@ -27,7 +28,7 @@ const FRIEND_CAPTION = 'm-0 mt-1.5 text-base font-semibold text-muted-foreground
 
 const ACTIONS = 'flex flex-wrap items-center gap-3 max-sm:w-full max-sm:*:flex-1'
 
-const TABS = 'mb-gutter flex flex-wrap items-center gap-3.5 max-sm:*:flex-1'
+const TABS = 'mb-4.5 max-sm:*:*:flex-1'
 
 /** Public binder hero: bare row, intro below the avatar row at page edge. */
 const BINDER_HERO = 'flex items-center gap-4 max-sm:items-start'
@@ -90,8 +91,7 @@ export function ProfileScreen({
   emptyLinkLabel,
   emptyLinkProps,
   showGrid,
-  createdTabButtonProps,
-  binderTabButtonProps,
+  tabsProps,
   gridProps,
 }: ProfileScreenModel) {
   if (showErr)
@@ -118,7 +118,7 @@ export function ProfileScreen({
       <PageContainer as="main" id="main" tabIndex={-1}>
         <div role="status" aria-live="polite" className="sr-only">{loadingLabel}</div>
         <Card size="sm" className={cn(IDENTITY_CARD, 'mt-5 sm:min-h-34.5')} aria-hidden="true">
-          <Skeleton className="size-21.5" />
+          <Skeleton variant="avatar" className="size-21.5 max-sm:size-18.5" />
           <div className="min-w-0 flex-1">
             <SkeletonBlock className="mb-2.5 h-7.5 w-55 max-w-full" />
             <SkeletonBlock className="w-65 max-w-full" />
@@ -241,9 +241,17 @@ export function ProfileScreen({
 
       {showActionErr && <Alert variant="error" className="mt-3">{actionErr}</Alert>}
 
-      <div className={TABS} role="group" aria-label="Profile section">
-        <Button {...createdTabButtonProps}>Created ({createdCount})</Button>
-        <Button {...binderTabButtonProps}>Binder ({binderCount})</Button>
+      <div className={TABS}>
+        <Tabs {...tabsProps}>
+          <TabsList variant="pills" aria-label="Profile section">
+            <TabsTrigger value="created" aria-controls={gridProps.id}>
+              Created ({createdCount})
+            </TabsTrigger>
+            <TabsTrigger value="binder" aria-controls={gridProps.id}>
+              Binder ({binderCount})
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       {showEmpty ? (

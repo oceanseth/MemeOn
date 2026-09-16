@@ -9,9 +9,6 @@ import { Heading } from '@/atoms/heading'
 import { InlineLink } from '@/atoms/inline-link'
 import { Input } from '@/atoms/input'
 import { MemeCard } from '@/atoms/meme-card'
-/* the one `Notice` left in the tree: `hooks/market-regressions.runtime.test.tsx:255` reads this
-   region as `[data-slot="notice"]`. LEDGER L13 hands the probe to E1; the site switches with it. */
-import { Notice } from '@/atoms/notice'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Progress } from '@/atoms/progress'
@@ -31,11 +28,11 @@ const SHARE_CAPTION = 'Every load counts a view; every new place it travels coun
  * than the card it sits beside, so the page is one column.
  */
 const detailGrid = cn(
-  'grid grid-cols-1 gap-gutter',
+  'grid grid-cols-1 gap-4.5',
   '2xl:grid-cols-[minmax(0,410px)_minmax(0,1fr)] 2xl:gap-8',
 )
 
-const rail = 'flex min-w-0 flex-col gap-gutter'
+const rail = 'flex min-w-0 flex-col gap-4.5'
 
 /* one DOM order for both layouts: stacked = title → hero → rail; split = hero left, meta top-right */
 const heroPlacement = '2xl:col-start-1 2xl:row-start-1 2xl:row-span-2'
@@ -143,7 +140,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           {/* the page's two live regions: inside this ungapped column an empty one costs nothing,
              so the rail keeps its 18px rhythm whether a message is showing or not */}
           <div {...detail.noticeProps}>{detail.notice && <Alert variant="success" role="none" className="mt-3">{detail.notice}</Alert>}</div>
-          <div {...detail.errorProps}>{detail.error && <Notice tone="error" role="none">{detail.error}</Notice>}</div>
+          <div {...detail.errorProps}>{detail.error && <Alert variant="error" role="none" className="mt-3">{detail.error}</Alert>}</div>
         </div>
 
         <div data-slot="detail-hero" className={cn('self-start', heroPlacement)}>
@@ -262,7 +259,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           {/* spread sources and cap table side by side under the market card */}
           <div
             data-slot="detail-spread"
-            className="flex flex-wrap items-start gap-gutter *:min-w-70 *:flex-1 [&>[data-slot=card]]:mt-0"
+            className="flex flex-wrap items-start gap-4.5 *:min-w-70 *:flex-1 [&>[data-slot=card]]:mt-0"
           >
             {detail.sources.length > 0 && (
               <Card>

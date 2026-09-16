@@ -40,7 +40,8 @@ export const GenerateAndMint: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Render the image' }))
     await expect(await canvas.findByRole('img', { name: /^Preview of/ })).toHaveAttribute('src', loaded.scenario.generatedImage)
     const mintButton = canvas.getByRole('button', { name: /Mint/ })
-    await expect(mintButton).toBeEnabled()
+    // the render leaves the form busy for a commit after the image lands: await the state
+    await waitFor(() => expect(mintButton).toBeEnabled())
     await userEvent.click(mintButton)
     await waitFor(() => expect(loaded.scenario.requests.some((request: { method: string; path: string; body: { title?: string } }) => request.method === 'POST' && request.path === '/api/memes' && request.body.title === 'generated story')).toBe(true))
     /* the mint moment: the finished card is held with its share link, and the user opens it */
@@ -66,7 +67,7 @@ export const GiphyKeyboardSearchPickAndMint: Story = {
     await userEvent.clear(title)
     await userEvent.type(title, 'giphy story')
     const mintButton = canvas.getByRole('button', { name: /Mint/ })
-    await expect(mintButton).toBeEnabled()
+    await waitFor(() => expect(mintButton).toBeEnabled())
     await userEvent.click(mintButton)
     await waitFor(() => expect(loaded.scenario.requests.filter((request: { method: string; path: string }) => request.method === 'POST' && request.path === '/api/memes')).toHaveLength(1))
     const mint = loaded.scenario.requests.find((request: { method: string; path: string }) => request.method === 'POST' && request.path === '/api/memes')

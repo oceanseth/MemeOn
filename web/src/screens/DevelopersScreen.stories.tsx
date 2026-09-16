@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, within } from 'storybook/test'
-import { Notice } from '@/atoms/notice'
+import { Alert } from '@/atoms/alert'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
 import type { DeveloperKeyRowModel, DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { DevelopersScreen } from './DevelopersScreen'
@@ -57,7 +57,7 @@ const revokeMessage = (extra?: string) => (
   <>
     <code>mk_3f9a2c…</code>
     {' (my-trading-bot) will stop working immediately. Anything using it breaks.'}
-    {extra && <Notice tone="error">{extra}</Notice>}
+    {extra && <Alert variant="error" className="mt-3">{extra}</Alert>}
   </>
 )
 

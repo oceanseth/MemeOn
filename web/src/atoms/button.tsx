@@ -1,5 +1,6 @@
 import { Button as ButtonPrimitive } from '@base-ui/react/button'
 import { cva, type VariantProps } from 'class-variance-authority'
+import { forwardRef } from 'react'
 import { cn } from '@/lib/cn'
 import { Spinner } from '@/atoms/spinner'
 
@@ -30,66 +31,43 @@ const buttonVariants = cva(
         mint: [RAISED, 'bg-primary text-primary-foreground xl:bg-accent xl:text-foreground'],
         /** no plate; a tint on hover and the pressed well when it is on */
         ghost: 'hover:bg-accent aria-pressed:material-pressed',
+        /** the translucent plate a control wears over moving pictures */
+        glass: [RAISED, 'glass hover:bg-accent'],
+        /** a square picture button: a pressed well, the picture fills it, the ring marks the pick */
+        cell: [
+          'material-pressed overflow-hidden p-0',
+          'aria-pressed:inset-ring-2 aria-pressed:inset-ring-primary',
+        ],
         /** an inline link that shares the button's box */
         link: 'text-link underline underline-offset-3 hover:no-underline',
       },
       size: {
         /** 46px, the control height */
-        default: 'h-control px-4.5 text-base',
+        default: 'h-11.5 px-4.5 text-base',
         /** 40px: a row action beside a line of copy */
         sm: 'h-10 px-3.5 text-sm',
         /** 34px chip: a mode or filter toggle; the halo makes up the pointer target */
-        xs: 'h-control-sm rounded-sm px-3 text-sm',
-        icon: 'size-control',
-        'icon-sm': 'size-control-sm rounded-sm',
+        xs: 'h-8.5 rounded-sm px-3 text-sm',
+        icon: 'size-11.5',
+        'icon-sm': 'size-8.5 rounded-sm',
         /** the sign-in CTA: full width on the phone, wraps, never under the control height */
-        login: 'h-auto min-h-control w-full min-w-64 max-w-full px-4.5 py-3 text-base leading-5 whitespace-normal md:w-auto',
+        login: 'h-auto min-h-11.5 w-full min-w-64 max-w-full px-4.5 py-3 text-base leading-5 whitespace-normal md:w-auto',
+        /** a film's centred call to action: a full-height glass pill */
+        pill: 'h-auto min-h-11 rounded-full px-5 py-3 text-base font-semibold',
+        /** the corner toggle over a video; the phone tucks it in tighter */
+        'pill-sm': 'h-auto rounded-full px-3.5 py-2 text-sm max-md:px-3 max-md:py-2 max-md:text-xs',
+        /** a mode chip: the 34px control that grows into a 44px pill on the phone */
+        segment: 'h-8.5 rounded-sm px-3 text-sm max-md:h-11 max-md:rounded-full max-md:text-base',
+        /** a square picture cell in a grid: the caller gives the track, the cell squares it */
+        cell: 'block h-auto aspect-square w-full rounded-md',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },
   },
 )
 
-type RegistryVariant = NonNullable<VariantProps<typeof buttonVariants>['variant']>
+export type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>['variant']>
 export type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>['size']>
-
-/** The three names the screens and models still pass; each resolves to a registry axis below. */
-type LegacyButtonVariant = 'secondary' | 'danger' | 'login'
-
-export type ButtonVariant = RegistryVariant | LegacyButtonVariant
-
-const LEGACY: Record<LegacyButtonVariant, { variant: RegistryVariant; size?: ButtonSize }> = {
-  secondary: { variant: 'brand' },
-  danger: { variant: 'destructive' },
-  login: { variant: 'primary', size: 'login' },
-}
-
-const isLegacy = (variant: ButtonVariant): variant is LegacyButtonVariant => variant in LEGACY
-
-interface ResolvedVariants {
-  variant: RegistryVariant
-  size: ButtonSize | null | undefined
-}
-
-/** Legacy names map onto the axes; a size the caller passes beats the legacy default. */
-function resolveVariants(
-  variant: ButtonVariant | null | undefined,
-  size: ButtonSize | null | undefined,
-): ResolvedVariants {
-  const named = variant ?? 'default'
-  if (!isLegacy(named)) return { variant: named, size }
-  const legacy = LEGACY[named]
-  return { variant: legacy.variant, size: size ?? legacy.size }
-}
-
-/**
- * The classes alone, for a `<Link>`/`<a>` that wears the pill: `<Button render={<Link />}>` is
- * the registry form and replaces this at every site; combine with `aria-disabled` for a locked
- * link meanwhile.
- */
-export function buttonClasses(variant: ButtonVariant = 'default', size?: ButtonSize): string {
-  return cn(buttonVariants(resolveVariants(variant, size)))
-}
 
 export interface ButtonProps extends Omit<ButtonPrimitive.Props, 'className'> {
   variant?: ButtonVariant | null | undefined
@@ -104,18 +82,23 @@ export interface ButtonProps extends Omit<ButtonPrimitive.Props, 'className'> {
 /**
  * `busy` wins over disabled dimming; a spread `aria-busy` (boolean or string) is honoured when
  * `busy` is omitted, because every screen model spreads a prop bag rather than passing `busy`.
- * Base UI supplies `type="button"` for a native button and `render` for a link or span.
+ * Base UI supplies `type="button"` for a native button and `render` for a link or span. The ref is
+ * forwarded, so `<PopoverTrigger render={<Button />}>` registers the element Base UI anchors to.
  */
-export function Button({ variant, size, busy, pressed, className, children, ...rest }: ButtonProps) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant, size, busy, pressed, className, children, ...rest },
+  ref,
+) {
   const isBusy = busy ?? (rest['aria-busy'] === true || rest['aria-busy'] === 'true')
   return (
     <ButtonPrimitive
+      ref={ref}
       data-slot="button"
       {...rest}
       aria-busy={isBusy || undefined}
       aria-pressed={pressed ?? rest['aria-pressed']}
       className={cn(
-        buttonVariants(resolveVariants(variant, size)),
+        buttonVariants({ variant, size }),
         isBusy && 'opacity-100! cursor-progress', // beats the attribute-selector specificity of disabled-look
         className,
       )}
@@ -124,6 +107,6 @@ export function Button({ variant, size, busy, pressed, className, children, ...r
       {children}
     </ButtonPrimitive>
   )
-}
+})
 
 export { buttonVariants }

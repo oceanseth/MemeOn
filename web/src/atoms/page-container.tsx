@@ -14,17 +14,17 @@ const pageContainerVariants = cva('mx-auto w-full pt-0 pb-16 px-page-safe', {
   defaultVariants: { width: 'full' },
 })
 
-export interface PageContainerProps extends HTMLAttributes<HTMLElement>, VariantProps<typeof pageContainerVariants> {
-  /** `width="narrow"`, as the routes spell it. */
-  narrow?: boolean
+export interface PageContainerProps
+  extends HTMLAttributes<HTMLElement>,
+    VariantProps<typeof pageContainerVariants> {
   as?: 'div' | 'main' | 'section'
 }
 
-export function PageContainer({ as = 'div', narrow = false, width, className, ...rest }: PageContainerProps) {
+export function PageContainer({ as = 'div', width, className, ...rest }: PageContainerProps) {
   return createElement(as, {
     ...rest,
     'data-slot': 'page-container',
-    className: cn(pageContainerVariants({ width: narrow ? 'narrow' : width }), className),
+    className: cn(pageContainerVariants({ width }), className),
   })
 }
 

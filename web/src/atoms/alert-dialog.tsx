@@ -40,7 +40,7 @@ export const alertDialogContentVariants = cva(
   cn(
     'group/alert-dialog-content fixed inset-0 z-(--z-modal) m-auto box-border flex h-fit w-full flex-col gap-4 overflow-y-auto scrollbar-thin',
     'max-h-[min(86dvh,86vh)]',
-    'rounded-lg material-modal p-card-inset text-foreground',
+    'rounded-lg material-modal p-6 text-foreground',
     'outline-none focus-ring',
     'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 motion-reduce:animate-none!',
   ),

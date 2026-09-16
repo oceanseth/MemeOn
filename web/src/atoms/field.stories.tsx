@@ -9,8 +9,6 @@ import {
   FieldLabel,
   FieldLegend,
   FieldSet,
-  Fieldset,
-  FieldsetLegend,
   Hint,
 } from '@/atoms/field'
 import { Input } from '@/atoms/input'
@@ -256,29 +254,6 @@ export const GroupDisabled: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByLabelText('Shares to get')).toBeDisabled()
-  },
-}
-
-/** The legacy pair the Trades screen still renders: the old slot names, the caps legend by default. */
-export const LegacyFieldset: Story = {
-  render: () => (
-    <Fieldset>
-      <FieldsetLegend>You give</FieldsetLegend>
-      <Field>
-        <FieldLabel>Braincells you add</FieldLabel>
-        <Input type="number" defaultValue={12} />
-      </Field>
-    </Fieldset>
-  ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await expect(canvas.getByRole('group', { name: 'You give' })).toHaveAttribute(
-      'data-slot',
-      'fieldset',
-    )
-    const legend = canvas.getByText('You give')
-    await expect(legend).toHaveAttribute('data-slot', 'fieldset-legend')
-    await expect(legend).toHaveAttribute('data-variant', 'label')
   },
 }
 

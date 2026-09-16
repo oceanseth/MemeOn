@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link, type LinkProps } from 'react-router-dom'
+import { Alert } from '@/atoms/alert'
 import { Avatar } from '@/atoms/avatar'
 import { Button, buttonVariants } from '@/atoms/button'
 import { Card, CardTitle } from '@/atoms/card'
@@ -7,8 +8,7 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '
 import { Heading } from '@/atoms/heading'
 import { Icon } from '@/atoms/icon'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/atoms/input-group'
-import { Item, ItemActions } from '@/atoms/item'
-import { Notice } from '@/atoms/notice'
+import { Item, ItemActions, ItemContent, ItemTitle } from '@/atoms/item'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Spinner } from '@/atoms/spinner'
@@ -19,12 +19,12 @@ import { ConfirmDialog } from '@/molecules/confirm-dialog'
 import { GiftDialog } from '@/molecules/gift-dialog'
 
 /** The search well keeps its own width lane; the group inside owns the recess and the ring. */
-const SEARCH_LANE = 'flex w-full min-w-0 flex-1 md:max-w-search'
+const SEARCH_LANE = 'flex w-full min-w-0 flex-1 md:max-w-135'
 
 /** Online strip is recessed so raised friend cards below read as actionable. */
 const ONLINE_STRIP = cn(
   'mb-5 flex flex-wrap items-center gap-5 rounded-xl material-pressed px-5 py-4',
-  'max-sm:gap-3.5 max-sm:rounded-lg max-sm:px-gutter',
+  'max-sm:gap-3.5 max-sm:rounded-lg max-sm:px-4.5',
 )
 
 /** Fixed title width so avatar lanes align across strips. */
@@ -41,12 +41,7 @@ const IDENTITY = cn(
   'focus-ring',
 )
 
-const NAME = cn(
-  'block truncate text-lg font-semibold text-foreground',
-  'wrap-anywhere',
-)
-
-const META = 'mt-0.5 block truncate text-xs font-medium text-muted-foreground'
+const META = 'block truncate text-xs font-medium text-muted-foreground'
 
 /* The action cluster: raised companion first, the row's one bubblegum second, the quiet exit last.
    On a phone the two pills share the 310px row and the text action keeps its own 44px target. */
@@ -54,7 +49,7 @@ const ROW_PILL = 'max-sm:flex-1'
 
 /** Pending is a pressed pill with no action behind it. */
 const PENDING_PILL = cn(
-  'inline-flex h-control shrink-0 items-center justify-center rounded-lg px-4.5',
+  'inline-flex h-11.5 shrink-0 items-center justify-center rounded-lg px-4.5',
   'material-pressed text-base font-semibold text-muted-foreground',
 )
 
@@ -81,16 +76,19 @@ function PersonRow({
   return (
     <Item
       variant="raised"
+      size="row"
       data-slot="person-row"
       className="max-sm:flex-col max-sm:items-stretch"
     >
       <div className="flex min-w-0 flex-1 items-center gap-3.5">
         <Link {...profileLinkProps} className={IDENTITY}>
           <Avatar name={name} src={avatarSrc} size="md" className="size-12" loading="lazy" />
-          <span className="min-w-0 flex-1">
-            <span className={NAME}>{name}</span>
+          <ItemContent>
+            <ItemTitle size="lg" truncate>
+              {name}
+            </ItemTitle>
             {statsLabel ? <span className={META}>{statsLabel}</span> : null}
-          </span>
+          </ItemContent>
         </Link>
         {online ? (
           <>
@@ -167,10 +165,8 @@ export function FriendsScreen({
         </Toolbar>
       </PageHead>
 
-      {/* `Notice` until `hooks/social-regressions.runtime.test.tsx` stops reading
-          `[data-slot="notice"]` here — see SC1/requests.md and LEDGER L13. */}
-      {showMsg && <Notice tone="ok">{msg}</Notice>}
-      {showErr && <Notice tone="error">{err}</Notice>}
+      {showMsg && <Alert variant="success" className="mt-3">{msg}</Alert>}
+      {showErr && <Alert variant="error" className="mt-3">{err}</Alert>}
 
       {showSearchPanel && (
         <Card className="mb-5">

@@ -114,29 +114,30 @@ export const Variants: Story = {
   },
 }
 
-export const Dark: Story = { ...Variants, globals: { theme: 'dark' } }
-
-/**
- * The names the screens still pass (`secondary`, `danger`, `login`) resolve to the registry axes:
- * brand, destructive, and primary at the login size.
- */
-export const LegacyNames: Story = {
+/** The glass pills a film wears, the segment chip that grows on a phone, and the picture cell. */
+export const GlassCellAndSegment: Story = {
   render: () => (
-    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: 16 }}>
-      <Button variant="secondary">Secondary</Button>
-      <Button variant="danger">Danger</Button>
-      <Button variant="login">Login</Button>
+    <div className="flex flex-wrap items-center gap-3">
+      <Button variant="glass" size="pill">
+        ▶ Play
+      </Button>
+      <Button variant="glass" size="pill-sm">
+        Sound on
+      </Button>
+      <Button size="segment">🎨 Generate</Button>
+      <Button variant="cell" size="cell" pressed aria-label="Pick this picture" className="w-20">
+        <span aria-hidden="true">🖼️</span>
+      </Button>
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Secondary' })).toHaveClass('bg-brand')
-    await expect(canvas.getByRole('button', { name: 'Danger' })).toHaveClass('bg-error')
-    const login = canvas.getByRole('button', { name: 'Login' })
-    await expect(login).toHaveClass('bg-primary')
-    await expect(login).toHaveClass('min-h-control')
+    const buttons = canvasElement.querySelectorAll<HTMLElement>('[data-slot="button"]')
+    await expect(buttons).toHaveLength(4)
+    await expect(buttons[3]).toHaveAttribute('aria-pressed', 'true')
   },
 }
+
+export const Dark: Story = { ...Variants, globals: { theme: 'dark' } }
 
 /**
  * The pill on a link: Base UI's `render` swaps the element, `nativeButton={false}` tells it the

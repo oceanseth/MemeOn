@@ -74,7 +74,7 @@ export const Header: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const root = canvas.getByText('L').closest('[data-slot="avatar"]')!
-    await expect(root).toHaveStyle({ width: token('--spacing-control-sm'), height: token('--spacing-control-sm'), borderRadius: token('--radius-sm') })
+    await expect(root).toHaveStyle({ width: '34px', height: '34px', borderRadius: token('--radius-sm') })
   },
 }
 

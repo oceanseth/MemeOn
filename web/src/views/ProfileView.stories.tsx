@@ -26,10 +26,10 @@ export const TabsFollowAndFriend: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('heading', { name: 'pal' })).toBeInTheDocument()
-    const binder = canvas.getByRole('button', { name: /Binder \(1\)/ })
+    const binder = canvas.getByRole('tab', { name: /Binder \(1\)/ })
     await expect(binder).toHaveAttribute('aria-controls', 'profile-cards')
     await userEvent.click(binder)
-    await expect(binder).toHaveAttribute('aria-pressed', 'true')
+    await expect(binder).toHaveAttribute('aria-selected', 'true')
     await expect(canvas.getByRole('link', { name: /group-chat silver/ })).toBeInTheDocument()
     await expect(canvasElement.querySelector('#profile-cards')).toHaveAttribute('aria-label', 'Binder memes, 1 card')
     await userEvent.click(canvas.getByRole('button', { name: 'Follow' }))
@@ -37,7 +37,7 @@ export const TabsFollowAndFriend: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Add friend' }))
     await expect(await canvas.findByText('Request sent')).toBeInTheDocument()
     await expect(canvas.queryByRole('button', { name: /friend/i })).toBeNull()
-    await expect(canvas.getByRole('button', { name: /Binder/ })).toHaveAttribute('aria-pressed', 'true')
+    await expect(canvas.getByRole('tab', { name: /Binder/ })).toHaveAttribute('aria-selected', 'true')
     await expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/users/user-pal/profile').length).toBeGreaterThanOrEqual(3)
   },
 }
@@ -78,7 +78,7 @@ export const FollowFailure: Story = {
 export const BinderTab: Story = {
   args: { initialTab: 'binder' }, loaders: [connectedLoader()], beforeEach: async (context) => connectedBeforeEach(context),
   render: (args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><ProfileView {...args} /></ConnectedStory>,
-  play: async ({ canvasElement }) => { await expect(await within(canvasElement).findByRole('button', { name: /Binder/ })).toHaveAttribute('aria-pressed', 'true') },
+  play: async ({ canvasElement }) => { await expect(await within(canvasElement).findByRole('tab', { name: /Binder/ })).toHaveAttribute('aria-selected', 'true') },
 }
 
 export const LoadingThenReady: Story = {

@@ -140,3 +140,24 @@ test("counts copy-like literals in screens/ and requires --update when a screen 
     })
   })
 })
+
+test("does not count class lists: className, a merge call, or a string that reads as Tailwind", () => {
+  withSrc({
+    "screens/LayoutScreen.tsx": [
+      "import { cn } from '../lib/cn'",
+      "export const title = 'Trade desk'",
+      "const ROW = 'mt-1 flex flex-wrap items-baseline gap-x-4'",
+      "const PLATE = cn('flex flex-col gap-3.5', 'lg:docked lg:-mx-5', 'max-lg:data-[collapsed=true]:hidden')",
+      "export const Screen = () => (",
+      "  <div className=\"grid list-none gap-5 grid-cols-[repeat(auto-fill,minmax(230px,1fr))]\">",
+      "    <p className={cn(ROW, PLATE)}>Build a fair deal.</p>",
+      "  </div>",
+      ")",
+    ].join("\n"),
+  }, ({ check, baseline }) => {
+    writeFileSync(baseline, JSON.stringify({ "screens/LayoutScreen.tsx": 1 }))
+
+    // only the title counts; every class list is skipped by position or by shape
+    assert.equal(check().status, 0, check().output)
+  })
+})

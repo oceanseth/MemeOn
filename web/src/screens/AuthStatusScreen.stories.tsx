@@ -52,7 +52,7 @@ export const LoginFailed: Story = {
     await expect(canvas.getByRole('alert')).toHaveTextContent('OAuth state mismatch — try again')
     // the band is the compact Alert size, and the card is the Card atom
     await expect(canvas.getByRole('alert')).toHaveAttribute('data-variant', 'error')
-    await expect(canvasElement.querySelector('[data-slot="auth-status"]')).toHaveAttribute('data-size', 'default')
+    await expect(canvasElement.querySelector('[data-slot="auth-status"]')).toHaveAttribute('data-size', 'lg')
     await expect(canvasElement.querySelector('[data-slot="auth-ring"]')).toBeNull()
     await expect(canvas.queryByText('Taking longer than usual?')).not.toBeInTheDocument()
   },

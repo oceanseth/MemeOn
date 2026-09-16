@@ -12,7 +12,11 @@
  *
  * "Copy-like" is a heuristic, on purpose: two or more words, or one Capitalised
  * word. Paths, URLs, CSS, media queries, import specifiers, object keys, literal
- * types and `new Error(…)` messages are not counted. It over-counts a little
+ * types and `new Error(…)` messages are not counted. Neither is a class list: a
+ * string inside a `className=` attribute or a class-merge call (`cn`, `cx`,
+ * `clsx`, `cva`, `tv`, `twMerge`, `twJoin`), or one that reads as Tailwind —
+ * all-lowercase tokens, a third of them carrying a `-`, `:`, `/` or `@`. A screen may
+ * therefore hold its own layout in ordinary strings. It over-counts a little
  * rather than missing a caption; the baseline absorbs the noise.
  */
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
@@ -63,6 +67,33 @@ const isDeveloperMessage = (node) => {
   return false
 }
 
+const MERGE_FUNCTIONS = new Set(['cn', 'cx', 'clsx', 'cva', 'tv', 'twMerge', 'twJoin', 'classNames'])
+
+/** Inside `className={…}` or a class-merge call — anywhere in the argument tree. */
+const isClassPosition = (node) => {
+  for (let parent = node.parent; parent; parent = parent.parent) {
+    if (ts.isJsxAttribute(parent)) {
+      return ts.isIdentifier(parent.name) && (parent.name.text === 'className' || parent.name.text === 'class')
+    }
+    if (ts.isCallExpression(parent)) {
+      return ts.isIdentifier(parent.expression) && MERGE_FUNCTIONS.has(parent.expression.text)
+    }
+    if (ts.isJsxExpression(parent) || ts.isArrayLiteralExpression(parent) || ts.isObjectLiteralExpression(parent)
+      || ts.isPropertyAssignment(parent) || ts.isConditionalExpression(parent) || ts.isBinaryExpression(parent)
+      || ts.isParenthesizedExpression(parent)) continue
+    return false
+  }
+  return false
+}
+
+/** Reads as a Tailwind class list: every token lowercase, a third of them carrying `-`, `:`, `/` or `@`. */
+const looksLikeClassList = (text) => {
+  const tokens = text.trim().split(/\s+/)
+  if (tokens.length < 2) return false
+  if (!tokens.every((token) => /^[-a-z0-9:_[\]/.()#%!*&>+~,@='\\$]+$/.test(token))) return false
+  return tokens.filter((token) => /[-:/@]/.test(token)).length * 3 >= tokens.length
+}
+
 const KEYBOARD_KEYS = new Set(['Enter', 'Escape', 'Tab'])
 
 const isKeyboardKeyCheck = (node) => {
@@ -81,6 +112,7 @@ const isNotCopyPosition = (node) => {
   if (ts.isPropertyAssignment(parent) && parent.name === node) return true
   if (ts.isCallExpression(parent) && parent.expression.kind === ts.SyntaxKind.ImportKeyword) return true
   if (isKeyboardKeyCheck(node)) return true
+  if (isClassPosition(node)) return true
   return isDeveloperMessage(node)
 }
 
@@ -89,10 +121,10 @@ const countCopyLiterals = (file) => {
   const hits = []
   const visit = (node) => {
     if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
-      if (!isNotCopyPosition(node) && isCopyLike(node.text)) hits.push(node.text)
+      if (!isNotCopyPosition(node) && isCopyLike(node.text) && !looksLikeClassList(node.text)) hits.push(node.text)
     } else if (ts.isTemplateExpression(node) && !isNotCopyPosition(node)) {
       const text = [node.head.text, ...node.templateSpans.map((span) => span.literal.text)].join("")
-      if (isCopyLike(text)) hits.push(text)
+      if (isCopyLike(text) && !looksLikeClassList(text)) hits.push(text)
     }
     ts.forEachChild(node, visit)
   }

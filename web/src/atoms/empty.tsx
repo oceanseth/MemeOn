@@ -18,13 +18,15 @@ export const emptyVariants = cva(
     variants: {
       variant: {
         neutral: 'text-foreground',
+        /** work in flight inside a form panel: the raised fill, the title muted with the body */
+        busy: 'material-raised text-muted-foreground',
         error: 'bg-error text-error-foreground',
         success: 'bg-success text-success-foreground',
         warning: 'bg-warning text-warning-foreground',
         info: 'bg-info text-info-foreground',
       },
       size: {
-        default: 'gap-gutter p-card-inset',
+        default: 'gap-4.5 p-6',
         inline: 'items-start gap-3 rounded-md p-4 text-left',
       },
     },
@@ -106,6 +108,7 @@ export function EmptyTitle({
       className: cn(
         'm-0 font-display text-2xl font-normal text-balance',
         'group-data-[size=inline]/empty:text-xl',
+        'group-data-[variant=busy]/empty:text-muted-foreground',
         className,
       ),
     },
@@ -158,57 +161,6 @@ export function PageState({
       data-slot="page-state"
       data-size={size ?? 'default'}
       className={cn(pageStateVariants({ size }), className)}
-      {...props}
-    />
-  )
-}
-
-/* Transitional: `EmptyState` exactly as the ten screens still render it — raw `h2`/`h3`/`p`
-   children styled through descendant rules, the tall page inset, `ok`/`busy` tone names, the
-   `error` flag. Kept as its own element so nothing shifts until the screen waves move to the
-   parts above (`Empty` + `EmptyTitle`/`EmptyDescription`/`EmptyContent`); E1 deletes. */
-export type EmptyStateTone = 'neutral' | 'error' | 'ok' | 'warning' | 'busy' | 'info'
-
-const EMPTY_STATE_TONE: Record<EmptyStateTone, string> = {
-  neutral: 'bg-card [&_:where(h2,h3)]:text-foreground',
-  error: 'bg-error [&_:where(h2,h3)]:text-error-foreground [&_strong]:text-error-foreground',
-  ok: 'bg-success [&_:where(h2,h3)]:text-success-foreground',
-  warning: 'bg-warning [&_:where(h2,h3)]:text-warning-foreground',
-  info: 'bg-info [&_:where(h2,h3)]:text-info-foreground',
-  busy: 'bg-info [&_:where(h2,h3)]:text-info-foreground',
-}
-
-export interface EmptyStateProps extends ComponentPropsWithoutRef<'div'> {
-  /** Additive; default is neutral. `error` also sets `role="alert"`. */
-  tone?: EmptyStateTone | undefined
-  error?: boolean
-}
-
-export function EmptyState({ tone, error = false, role, className, ...props }: EmptyStateProps) {
-  const resolved: EmptyStateTone = tone ?? (error ? 'error' : 'neutral')
-  return (
-    <div
-      data-slot="empty-state"
-      data-tone={resolved}
-      role={role ?? (error || resolved === 'error' ? 'alert' : 'status')}
-      className={cn(
-        'rounded-lg material-card px-5 py-15 text-center text-base text-muted-foreground',
-        '[&_:where(h2,h3)]:mt-0 [&_:where(h2,h3)]:mb-3 [&_:where(h2,h3)]:text-2xl',
-        '[&_p]:m-0 [&_p]:mb-1.5 [&_p]:text-base',
-        EMPTY_STATE_TONE[resolved],
-        className,
-      )}
-      {...props}
-    />
-  )
-}
-
-/** The action row inside a block-flow `EmptyState`; children bring no margins of their own. */
-export function EmptyActions({ className, ...props }: ComponentPropsWithoutRef<'div'>) {
-  return (
-    <div
-      data-slot="empty-actions"
-      className={cn('mt-gutter flex flex-wrap items-center justify-center gap-2.5 *:my-0', className)}
       {...props}
     />
   )

@@ -1,8 +1,9 @@
-import { Notice } from '@/atoms/alert'
+import { Alert } from '@/atoms/alert'
 import { Badge } from '@/atoms/badge'
 import { Button } from '@/atoms/button'
 import { DialogFooter } from '@/atoms/dialog'
 import { Input } from '@/atoms/input'
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/atoms/input-group'
 import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from '@/atoms/item'
 import { Label } from '@/atoms/label'
 import { LiveRegion } from '@/atoms/live-region'
@@ -12,11 +13,10 @@ import type { GiftDialogModel } from '../lib/giftDialogModel'
 import { DialogFrame } from '@/molecules/dialog-frame'
 
 /**
- * The scrolling list well. While the transfer runs the whole list dims and stops answering the
- * pointer, on top of every row's own `disabled`: the lockdown is visible, not merely announced.
+ * The scrolling list well. While the transfer runs every row is `disabled`, and `Item` carries the
+ * disabled look and drops its hover tint for a disabled button row.
  */
 const LIST = 'max-h-75 overflow-y-auto scrollbar-thin'
-const LIST_BUSY = 'pointer-events-none opacity-(--opacity-disabled)'
 
 /**
  * Gift shares from your binder to a friend. Its engine supplies all behavior, including the
@@ -50,7 +50,7 @@ export function GiftDialog({ model }: { model: GiftDialogModel }) {
         className="w-full"
         {...model.searchInputProps}
       />
-      <div className={cn(LIST, model.busy && LIST_BUSY)} data-slot="gift-list">
+      <div className={cn(LIST, model.busy && 'pointer-events-none')} data-slot="gift-list">
         {/* my-4 is the UA paragraph margin preflight removed; the empty binder read as a gap, not a row */}
         {model.showEmpty && <p className="my-4 text-base text-muted-foreground">{model.emptyMessage}</p>}
         <ItemGroup>
@@ -58,7 +58,7 @@ export function GiftDialog({ model }: { model: GiftDialogModel }) {
             <Item
               key={row.id}
               render={<button type="button" {...row.buttonProps} />}
-              variant={row.selected ? 'muted' : 'default'}
+              aria-pressed={row.selected}
               className="text-left"
             >
               <ItemMedia variant="image">
@@ -79,14 +79,14 @@ export function GiftDialog({ model }: { model: GiftDialogModel }) {
       </div>
       <DialogFooter>
         {/* a bare Label, not a Field: Field would name the control by this word through
-            `aria-labelledby`, over the model's fuller `aria-label` ("Shares to gift, up to N"). The
-            maximum is plain text after the field, not an InputGroup addon: the group dims as one
-            while the transfer runs and axe then fails the addon's contrast */}
+            `aria-labelledby`, over the model's fuller `aria-label` ("Shares to gift, up to N") */}
         {model.showControls && (
           <div className="mr-auto flex items-center gap-2" data-slot="gift-shares">
             <Label htmlFor={sharesId}>{model.sharesLabel}</Label>
-            <Input id={sharesId} type="number" className="w-21" {...model.sharesInputProps} />
-            <span className="text-sm text-muted-foreground">{model.sharesMaxLabel}</span>
+            <InputGroup className="w-40">
+              <InputGroupInput id={sharesId} type="number" {...model.sharesInputProps} />
+              <InputGroupAddon align="inline-end">{model.sharesMaxLabel}</InputGroupAddon>
+            </InputGroup>
           </div>
         )}
         <Button {...model.cancelButtonProps}>{model.cancelLabel}</Button>
@@ -96,14 +96,12 @@ export function GiftDialog({ model }: { model: GiftDialogModel }) {
           </Button>
         )}
       </DialogFooter>
-      {/* mounted before the copy arrives, so the failure is announced rather than merely displayed.
-          Still the transitional `Notice`, not `Alert`: `hooks/social-regressions.runtime.test.tsx`
-          reads the band as `[data-slot="notice"]` (LEDGER L13); E1 moves the probe and the band together */}
+      {/* mounted before the copy arrives, so the failure is announced rather than merely displayed */}
       <LiveRegion politeness="assertive" variant="visible" data-slot="gift-error">
         {model.error && (
-          <Notice tone="error" role="none">
+          <Alert variant="error" role="none" className="mt-3">
             {model.error}
-          </Notice>
+          </Alert>
         )}
       </LiveRegion>
     </DialogFrame>

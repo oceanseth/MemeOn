@@ -4,12 +4,11 @@ import { cn } from '@/lib/cn'
 
 /**
  * The page title row: title (and its intro) on the left, whatever the screen puts beside it on
- * the right. From the `lg` cut a direct control row — `FilterBar` or the `Toolbar` that replaces
- * it — absorbs the row's slack instead of clipping its own field.
+ * the right. From the `lg` cut a direct `Toolbar` absorbs the row's slack instead of clipping its
+ * own field.
  */
 const pageHeadVariants = cva([
   'mx-0 mt-5 mb-6 flex flex-wrap items-center justify-between gap-4',
-  'lg:*:data-[slot=filter-bar]:flex-auto lg:*:data-[slot=filter-bar]:justify-end',
   'lg:*:data-[slot=toolbar]:flex-auto lg:*:data-[slot=toolbar]:justify-end',
 ])
 
@@ -44,11 +43,6 @@ export function PageHead({ title, subtitle, level = 'h2', className, children, .
       {children}
     </div>
   )
-}
-
-/** Layout only; inputs, selects and buttons are supplied by the consumer. */
-export function FilterBar({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
-  return <div data-slot="filter-bar" className={cn('flex flex-wrap items-center gap-2.5', className)} {...rest} />
 }
 
 export { pageHeadVariants }

@@ -156,7 +156,7 @@ export const SelfInTopTen: Story = {
     // rows are raised Items; the frame axis marks the podium's first place and your own row
     const rows = canvasElement.querySelectorAll('[data-slot="person-row"]')
     await expect(rows[0]).toHaveAttribute('data-variant', 'raised')
-    await expect(rows[0]).toHaveAttribute('data-frame', 'brand')
+    await expect(rows[0]).toHaveAttribute('data-frame', 'primary')
     await expect(rows[1]).toHaveAttribute('data-frame', 'none')
   },
 }

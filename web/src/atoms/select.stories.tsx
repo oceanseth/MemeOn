@@ -72,7 +72,7 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const trigger = canvas.getByRole('combobox', { name: 'Tier' })
-    await expect(trigger).toHaveAttribute('data-slot', 'select')
+    await expect(trigger).toHaveAttribute('data-slot', 'select-trigger')
     await expect(trigger).toHaveAttribute('data-variant', 'default')
     await expect(trigger).toHaveTextContent('Holo')
   },
@@ -135,7 +135,8 @@ export const Typeahead: Story = {
     await userEvent.tab()
     await userEvent.keyboard('{Enter}')
     const listbox = await screen.findByRole('listbox')
-    await userEvent.keyboard('gol')
+    // one dispatch, no inter-key timer: Base UI resets its typeahead buffer on a pause
+    await userEvent.keyboard('gol', { delay: null })
     await waitFor(() =>
       expect(within(listbox).getByRole('option', { name: 'Gold' })).toHaveAttribute(
         'data-highlighted',

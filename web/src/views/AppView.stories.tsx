@@ -29,7 +29,12 @@ type Story = StoryObj<typeof meta>
 
 export const PublicLandingRoute: Story = {
   loaders: [connectedLoader({ authenticated: false })],
-  beforeEach: async (context) => connectedBeforeEach(context),
+  beforeEach: async (context) => {
+    // the landing route is code-split: warm its chunk so the play function sees the route, not
+    // the suspense fallback, whatever else the shard is doing
+    await import('./LandingView')
+    return connectedBeforeEach(context)
+  },
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><AppView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)

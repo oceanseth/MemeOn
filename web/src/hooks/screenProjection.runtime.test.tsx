@@ -210,11 +210,11 @@ it('Binder projects private-filter events', async () => {
 })
 
 it('Profile projects loaded data and tab events', async () => {
-  const probe = await mountHook(useProfileScreen, (m) => `${m.profile?.name ?? ''}:${m.binderTabButtonProps['aria-pressed']}`)
-  expect(probe.renders).toContain(':false')
-  expect(probe.text()).toBe('pal:false')
-  await act(() => probe.current().binderTabButtonProps.onClick?.({} as never))
-  expect(probe.text()).toBe('pal:true')
+  const probe = await mountHook(useProfileScreen, (m) => `${m.profile?.name ?? ''}:${m.tabsProps.value}`)
+  expect(probe.renders).toContain(':created')
+  expect(probe.text()).toBe('pal:created')
+  await act(() => probe.current().tabsProps.onValueChange('binder'))
+  expect(probe.text()).toBe('pal:binder')
 })
 
 it('Leaderboard projects async row results', async () => {
@@ -303,7 +303,7 @@ it('ProfileView retains the selected tab and mounted cards while follow and frie
     throw new Error(`Unexpected relationship request: ${path}`)
   })
   await act(() => root.render(tree(<ProfileView initialTab="binder" />)))
-  expect(button('Binder').getAttribute('aria-pressed')).toBe('true')
+  expect(button('Binder').getAttribute('aria-selected')).toBe('true')
   expect(host.textContent).toContain('held card')
   const binderTab = button('Binder')
   await act(async () => { button('Follow').click() })
@@ -316,7 +316,7 @@ it('ProfileView retains the selected tab and mounted cards while follow and frie
   expect(host.querySelector('[data-slot="friend-state"]')?.textContent).toContain('Request sent')
   expect(Array.from(host.querySelectorAll('button')).some((b) => b.textContent?.includes('friend'))).toBe(false)
   expect(button('Binder')).toBe(binderTab)
-  expect(button('Binder').getAttribute('aria-pressed')).toBe('true')
+  expect(button('Binder').getAttribute('aria-selected')).toBe('true')
   expect(requests.filter((r) => r.path.endsWith('/profile'))).toHaveLength(3)
   expect(JSON.parse(String(requests.find((r) => r.path === '/api/friends/request')?.init?.body))).toEqual({ userId: 'user-pal' })
 })
@@ -371,7 +371,7 @@ it('actual profile route keys reject late results and reset the selected tab for
     <Navigation />
   </MemoryRouter></StoresProvider>))
   await act(() => button('Binder').click())
-  expect(button('Binder').getAttribute('aria-pressed')).toBe('true')
+  expect(button('Binder').getAttribute('aria-selected')).toBe('true')
   await act(async () => { button('Follow').click() })
   expect(oldLoads).toBe(2)
   await act(() => navigate('/u/next'))
@@ -380,7 +380,7 @@ it('actual profile route keys reject late results and reset the selected tab for
     await nextProfile.promise
   })
   expect(host.querySelector('h1')?.textContent).toBe('Next profile')
-  expect(button('Created').getAttribute('aria-pressed')).toBe('true')
+  expect(button('Created').getAttribute('aria-selected')).toBe('true')
   const tab = button('Created')
   await act(async () => {
     oldProfile.resolve(jsonResponse({ ...profile, profile: { ...profile.profile, name: 'Old profile' } }))

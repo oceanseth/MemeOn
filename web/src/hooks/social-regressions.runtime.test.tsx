@@ -130,14 +130,14 @@ function giftRequests(requests: RecordedRequest[]): RecordedRequest[] {
 
 async function openAndPickGift(): Promise<HTMLElement> {
   await click(host.querySelector<HTMLElement>('[aria-label^="Gift shares to"]')!)
-  const dialog = host.querySelector<HTMLElement>('[data-slot="dialog"]')!
+  const dialog = host.querySelector<HTMLElement>('[data-slot="dialog-content"]')!
   await click(button(giftablePaper.title, dialog))
   return dialog
 }
 
 // the dialog is a Base UI popup: mounted means open, so presence is the whole state
 function giftDialogOpen(): boolean {
-  return host.querySelector('[data-slot="dialog"]') !== null
+  return host.querySelector('[data-slot="dialog-content"]') !== null
 }
 
 let host: HTMLDivElement
@@ -235,7 +235,7 @@ describe('FriendsView gift lifetime', () => {
       firstGift.resolve(json({ error: 'gift unavailable' }, 503))
       await settle()
     })
-    expect(dialog.querySelector('[data-slot="notice"]')?.textContent).toContain('gift unavailable')
+    expect(dialog.querySelector('[data-slot="alert"]')?.textContent).toContain('gift unavailable')
     expect(button('Gift 1 of', dialog).disabled).toBe(false)
     expect(giftRequests(api.requests)).toHaveLength(1)
 
@@ -291,7 +291,7 @@ describe('FriendsView friend-request debounce ownership', () => {
     expect(api.userQueries).toEqual(['Alice', 'Bob'])
     // the raw API string never reaches the user; the surface names the problem and the recovery
     expect(host.textContent).toContain(copy.errors.request)
-    expect(host.querySelector('[data-slot="notice"]')).not.toBeNull()
+    expect(host.querySelector('[data-slot="alert"]')).not.toBeNull()
     expect(host.textContent).toContain('Bob')
     expect(button('Add friend')).toBeTruthy()
   })

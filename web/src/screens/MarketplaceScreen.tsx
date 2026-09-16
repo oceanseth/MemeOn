@@ -9,6 +9,7 @@ import {
   EmptyTitle,
   PageState,
 } from '@/atoms/empty'
+import { Heading } from '@/atoms/heading'
 import { Icon } from '@/atoms/icon'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/atoms/input-group'
 import { MemeCard } from '@/atoms/meme-card'
@@ -16,6 +17,8 @@ import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Select } from '@/atoms/select'
 import { SkeletonCard } from '@/atoms/skeleton'
+import { Toggle } from '@/atoms/toggle'
+import { ToggleGroup, ToggleGroupItem } from '@/atoms/toggle-group'
 import { Toolbar, ToolbarStart } from '@/atoms/toolbar'
 import type { MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
 import { cn } from '../lib/cn'
@@ -26,25 +29,25 @@ import { SortChips } from '@/molecules/sort-chips'
 
 /**
  * The control plate docks under the topbar while the grid scrolls. It bleeds only into the page
- * container's own gutter (`-mx-page-x px-page-x`). A phone has no vertical budget to pin filters,
+ * container's own gutter (`-mx-5 px-5`). A phone has no vertical budget to pin filters,
  * so ≤720 the whole treatment is absent.
  */
 const marketControls = cn(
-  'flex', 'flex-col', 'gap-3.5', 'pt-0', 'pb-3.5',
+  'flex flex-col gap-3.5 pt-0 pb-3.5',
   /* it docks under the phone header (`--topbar-h`); at the shell breakpoint that height is 0, so
-     the plate takes the sidebar's own `page-x` inset instead of the viewport edge */
-  'lg:docked', 'lg:-mx-page-x', 'lg:px-page-x',
+     the plate takes the sidebar's own page gutter instead of the viewport edge */
+  'lg:docked lg:-mx-5 lg:px-5',
   'xl:top-5',
 )
 
 /** The search well grows into the toolbar's slack and stops at the reading width. */
-const searchWell = cn('min-w-0', 'flex-1', 'lg:max-w-search')
+const searchWell = 'min-w-0 flex-1 lg:max-w-135'
 
 /** The pre-ox/ui grid: 4-up ~262 at the 1108 column (`minmax(230px, 1fr)`), 2-up 166 on the phone. */
 const cardGrid = cn(
-  'm-0', 'grid', 'list-none', 'items-start', 'gap-5', 'p-0',
+  'm-0 grid list-none items-start gap-5 p-0',
   'grid-cols-[repeat(auto-fill,minmax(230px,1fr))]',
-  'max-sm:grid-cols-2', 'max-sm:gap-gutter',
+  'max-sm:grid-cols-2 max-sm:gap-4.5',
 )
 
 /**
@@ -53,30 +56,19 @@ const cardGrid = cn(
  * grid track.
  */
 const cardSlot = cn(
-  'skip-render',
-  'pointer-events-none', 'p-bloom', '-m-bloom', '*:pointer-events-auto',
-  'max-sm:p-page-x', 'max-sm:-m-page-x',
+  'skip-render pointer-events-none p-7.5 -m-7.5 *:pointer-events-auto',
+  'max-sm:p-5 max-sm:-m-5',
 )
 
 /** Results / Count: the section heading left, the live count right, on one baseline. */
-const resultsRow = cn(
-  'mt-1', 'mb-gutter', 'flex', 'flex-wrap', 'items-baseline', 'justify-between', 'gap-x-4', 'gap-y-2',
-)
-/* the grid's own heading: 28px, one step down on the phone so the live count keeps its line.
-   `Heading` has no `text-3xl max-md:text-2xl` size yet (SC2/requests.md), so the plain `<h2>`
-   still spells it — no atom is being restyled here. */
-const sectionHeadingClasses = cn(
-  'm-0', 'font-display', 'text-3xl', 'font-normal', 'text-foreground', 'max-md:text-2xl',
-)
-const summaryRow = cn(
-  'flex', 'flex-wrap', 'items-center', 'gap-2.5', 'text-sm', 'text-muted-foreground',
-)
+const resultsRow = 'mt-1 mb-4.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2'
+const summaryRow = 'flex flex-wrap items-center gap-2.5 text-sm text-muted-foreground'
 
-const marketDisclosures = cn('flex', 'w-full', 'gap-3', 'lg:hidden')
-const marketFilters = cn('flex', 'flex-col', 'gap-3', 'max-lg:data-[collapsed=true]:hidden')
+const marketDisclosures = 'flex w-full gap-3 lg:hidden'
+const marketFilters = 'flex flex-col gap-3 max-lg:data-[collapsed=true]:hidden'
 
 /** Toolbar Mint: bubblegum under the shell cut, neutral once the sidebar owns primary (`mint`). */
-const mintLink = cn(buttonVariants({ variant: 'mint' }), 'w-full', 'lg:w-51.5')
+const mintLink = cn(buttonVariants({ variant: 'mint' }), 'w-full lg:w-51.5')
 
 /** Marketplace list as a function of its engine-provided model. */
 export function MarketplaceScreen({
@@ -102,7 +94,7 @@ export function MarketplaceScreen({
       <PageHead level="h1" title={pageTitle} subtitle={intro} className="mb-3.5" />
       <div data-slot="market-controls" className={marketControls}>
         <Toolbar data-slot="market-toolbar">
-          {/* the well's own width lives on the wrapper: `max-w-search` is a `--container-*` name
+          {/* the well's own width lives on the wrapper: `max-w-135` is a `--container-*` name
               the lint's grammar does not read, and widths are the toolbar's business anyway */}
           <div className={searchWell}>
             <InputGroup>
@@ -137,21 +129,27 @@ export function MarketplaceScreen({
           className={marketFilters}
           {...filtersPanelProps}
         >
-          {/* media, listed, and tier filters — pressed tab for the active filter */}
+          {/* media, listed, and tier filters — the pressed item is the active filter */}
           <Toolbar>
-            <ToolbarStart {...filterTabs.mediaGroupProps}>
-              {filterTabs.media.map((tab) => (
-                <Button key={tab.key} {...tab.buttonProps}>{tab.label}</Button>
-              ))}
+            <ToolbarStart>
+              <ToggleGroup {...filterTabs.mediaGroupProps}>
+                {filterTabs.media.map((tab) => (
+                  <ToggleGroupItem key={tab.key} value={tab.key}>
+                    {tab.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
             </ToolbarStart>
-            <Button {...filterTabs.listed.buttonProps}>{filterTabs.listed.label}</Button>
+            <Toggle pressed={filterTabs.listed.pressed} onPressedChange={filterTabs.listed.onPressedChange}>
+              {filterTabs.listed.label}
+            </Toggle>
             <Select items={tierSelectItems} variant="pill" {...tierSelectProps} />
           </Toolbar>
           <SortChips model={sortChips} />
         </div>
       </div>
       <div className={resultsRow}>
-        <h2 className={sectionHeadingClasses}>{sectionTitle}</h2>
+        <Heading size="title-phone">{sectionTitle}</Heading>
         {/* one status line: the count doubles as the live region, and the state card owns the error copy */}
         <div data-slot="market-summary" className={summaryRow} {...statusProps}>
           <span>{resultsLabel}</span>
@@ -197,7 +195,7 @@ export function MarketplaceScreen({
           ))}
         </div>
         {showMore && (
-          <div ref={sentinelRef} data-slot="load-more" className="mt-gutter">
+          <div ref={sentinelRef} data-slot="load-more" className="mt-4.5">
             <EmptyContent>
               {loadMoreError && <Alert variant="error">{loadMoreError}</Alert>}
               <Button className="max-sm:w-full" {...loadMoreProps}>{loadMoreLabel}</Button>

@@ -16,6 +16,8 @@ const spinnerVariants = cva('inline-block flex-none rounded-full forced-colors:b
       sm: 'size-4.5 border-2',
       /** the 24px ring of a full-panel wait */
       md: 'size-6 border-3',
+      /** the 38px ring a whole route waits on */
+      lg: 'size-9.5 border-3',
     },
     tone: {
       default: 'border-border border-t-primary',

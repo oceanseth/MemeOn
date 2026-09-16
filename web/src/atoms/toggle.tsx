@@ -21,12 +21,12 @@ export const toggleVariants = cva(
   {
     variants: {
       size: {
-        default: 'h-control rounded-lg px-4.5 text-base',
-        sm: 'h-control-sm rounded-sm px-3 text-sm hit-44',
+        default: 'h-11.5 rounded-lg px-4.5 text-base',
+        sm: 'h-8.5 rounded-sm px-3 text-sm hit-44',
         /** the SortChips row: a 46px pill, 40 on the phone, still 44 of target on a coarse pointer */
-        chip: 'h-control rounded-full px-4 text-base max-sm:h-10 pointer-coarse:min-h-hit',
+        chip: 'h-11.5 rounded-full px-4 text-base max-sm:h-10 pointer-coarse:min-h-11',
         /** the 34px square, an emoji for a label */
-        icon: 'size-control-sm rounded-sm p-0 text-base leading-none hit-44',
+        icon: 'size-8.5 rounded-sm p-0 text-base leading-none hit-44',
       },
       variant: {
         default: cn('material-raised font-semibold', 'lift press', 'data-pressed:material-pressed'),

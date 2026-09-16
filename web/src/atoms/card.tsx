@@ -17,11 +17,15 @@ const cardVariants = cva('rounded-lg material-card', {
       accent: 'bg-accent',
       /** a fresh or selected card: the primary ring inside the edge */
       highlighted: 'inset-ring-2 inset-ring-primary',
+      /** a well, not a plate: a rail that holds cards of its own */
+      pressed: 'material-pressed',
     },
     size: {
-      default: 'p-card-inset max-md:p-gutter',
-      sm: 'p-5 max-md:p-gutter',
+      default: 'p-6 max-md:p-4.5',
+      sm: 'p-5 max-md:p-4.5',
       xs: 'px-5 py-4',
+      /** the one centred card of a route that is nothing but the card */
+      lg: 'px-8 py-10 max-md:p-6.5',
     },
   },
   defaultVariants: { variant: 'default', size: 'default' },

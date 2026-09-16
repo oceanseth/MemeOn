@@ -24,16 +24,16 @@ const SKELETON_ROWS = ['a', 'b', 'c']
 
 /** Give and want side by side at 2xl, stacked below. */
 const composeGrid = cn(
-  'flex', 'flex-col', 'gap-5',
-  'xl:grid', 'xl:grid-cols-[repeat(2,minmax(0,1fr))]', 'xl:gap-x-7', 'xl:gap-y-5',
+  'flex flex-col gap-5',
+  'xl:grid xl:grid-cols-[repeat(2,minmax(0,1fr))] xl:gap-x-7 xl:gap-y-5',
   'xl:[&>*:not([data-slot=field-set])]:col-span-full',
 )
-const columnFields = cn('flex', 'flex-col', 'gap-2.5')
+const columnFields = 'flex flex-col gap-2.5'
 /** A stack of cards, evenly spaced. */
-const rowList = cn('flex', 'flex-col', 'gap-3.5')
-const countNote = cn('text-sm', 'text-muted-foreground', 'tabular-nums')
-const listHeadingRow = cn('mb-3.5', 'items-baseline')
-const proposeCaption = cn('text-sm', 'text-muted-foreground')
+const rowList = 'flex flex-col gap-3.5'
+const countNote = 'text-sm text-muted-foreground tabular-nums'
+const listHeadingRow = 'mb-3.5 items-baseline'
+const proposeCaption = 'text-sm text-muted-foreground'
 
 /** Trade lists and a controlled compose panel as a function of its model. */
 export function TradesScreen({

@@ -1,5 +1,5 @@
 import { cva, type VariantProps } from 'class-variance-authority'
-import type { ComponentProps } from 'react'
+import { forwardRef, type ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
 
 /**
@@ -14,6 +14,8 @@ export const headingVariants = cva('m-0 font-display font-normal text-foreground
       display: 'text-5xl max-md:text-4xl',
       section: 'text-4xl max-md:text-2xl',
       title: 'text-3xl',
+      /** a title whose trailing count must keep its line on a phone */
+      'title-phone': 'text-3xl max-md:text-2xl',
       'card-title': 'text-2xl',
       'card-title-phone': 'font-sans text-lg font-semibold',
     },
@@ -30,13 +32,18 @@ export interface HeadingProps extends ComponentProps<'h2'>, VariantProps<typeof 
   as?: HeadingLevel | undefined
 }
 
-export function Heading({ as: Tag = 'h2', size, className, ...props }: HeadingProps) {
+/** The ref reaches the element: a screen that focuses its outcome heading passes one. */
+export const Heading = forwardRef<HTMLHeadingElement, HeadingProps>(function Heading(
+  { as: Tag = 'h2', size, className, ...props },
+  ref,
+) {
   return (
     <Tag
+      ref={ref}
       data-slot="heading"
       data-size={size ?? 'title'}
       className={cn(headingVariants({ size }), className)}
       {...props}
     />
   )
-}
+})
