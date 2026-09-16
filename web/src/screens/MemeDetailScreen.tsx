@@ -1,15 +1,20 @@
-import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
+import { Alert } from '@/atoms/alert'
 import { Badge } from '@/atoms/badge'
-import { Button, buttonClasses } from '@/atoms/button'
-import { EmptyActions, EmptyState } from '@/atoms/empty-state'
+import { Button, buttonVariants } from '@/atoms/button'
+import { Card, CardTitle } from '@/atoms/card'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
 import { Field, FieldLabel, Hint } from '@/atoms/field'
+import { Heading } from '@/atoms/heading'
+import { InlineLink } from '@/atoms/inline-link'
 import { Input } from '@/atoms/input'
 import { MemeCard } from '@/atoms/meme-card'
+/* the one `Notice` left in the tree: `hooks/market-regressions.runtime.test.tsx:255` reads this
+   region as `[data-slot="notice"]`. LEDGER L13 hands the probe to E1; the site switches with it. */
 import { Notice } from '@/atoms/notice'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
-import { Panel, PanelHeading } from '@/atoms/panel'
+import { Progress } from '@/atoms/progress'
 import { Skeleton } from '@/atoms/skeleton'
 import { Spinner } from '@/atoms/spinner'
 import { cn } from '../lib/cn'
@@ -50,13 +55,8 @@ const personRow = cn(
 
 const rowList = 'mt-3 flex flex-col gap-2'
 
-const inlineLink = 'text-link underline underline-offset-3 decoration-1'
-
 /** Tier line: success colour signed in, link colour on public card — one element, one swap. */
 const heroTierLine = 'm-0 text-sm font-semibold'
-
-const ladderTrack = 'mt-2 h-track overflow-hidden rounded-full bg-muted'
-const ladderFill = cn('h-full w-(--fill) rounded-full bg-linear-to-r from-brand via-primary to-brand')
 
 /** Where this card sits on the rarity ladder, and the tier's own line of hype under it. */
 function TierLadder({ model, hype }: { model: DetailTierLadderModel; hype: string }) {
@@ -67,9 +67,7 @@ function TierLadder({ model, hype }: { model: DetailTierLadderModel; hype: strin
         <span className="text-sm font-semibold text-success-foreground">{model.currentLabel}</span>
         <span className="text-xs font-medium text-muted-foreground tabular-nums">{model.nextLabel}</span>
       </div>
-      <div className={ladderTrack} {...model.meterProps}>
-        <div className={ladderFill} style={{ '--fill': model.fillWidth } as CSSProperties} />
-      </div>
+      <Progress className="mt-2" value={model.value} variant="ladder" {...model.meterProps} />
       <p className={caption}>{hype}</p>
     </div>
   )
@@ -79,11 +77,15 @@ function TierLadder({ model, hype }: { model: DetailTierLadderModel; hype: strin
 export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingLabel, detail }: MemeDetailScreenModel) {
   if (showNotFound) return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <EmptyState className="mt-15">
-        <h2>This card was pulled</h2>
-        <p>{notFound.message}</p>
-        <EmptyActions><Link className={buttonClasses()} {...notFound.linkProps}>{notFound.linkLabel}</Link></EmptyActions>
-      </EmptyState>
+      <Empty className="mt-15">
+        <EmptyHeader>
+          <EmptyTitle render={<h2 />}>This card was pulled</EmptyTitle>
+          <EmptyDescription>{notFound.message}</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Link className={buttonVariants()} {...notFound.linkProps}>{notFound.linkLabel}</Link>
+        </EmptyContent>
+      </Empty>
     </PageContainer>
   )
   if (showLoading || !detail) return (
@@ -109,7 +111,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
 
   /* share-link arrival: no session — meme name is the H1, no PageHead */
   const isPublic = !!detail.signedOut
-  const privateBadge = detail.private ? <Badge tone="info">🙈 private</Badge> : null
+  const privateBadge = detail.private ? <Badge variant="info">🙈 private</Badge> : null
 
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
@@ -121,16 +123,17 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
       <div className={detailGrid}>
         <div data-slot="detail-metadata" className={cn('flex min-w-0 flex-col', metaPlacement)}>
           {isPublic && (
-            <h1 className="m-0 flex flex-wrap items-center gap-x-3 font-display text-5xl font-normal text-foreground max-md:text-4xl wrap-anywhere">
-              {detail.title}{privateBadge}
-            </h1>
+            <Heading as="h1" size="display" className="wrap-anywhere">
+              {/* the gap between the name and its seal is the row's, not the heading's */}
+              <span className="flex flex-wrap items-center gap-x-3">{detail.title}{privateBadge}</span>
+            </Heading>
           )}
           <p className={cn('mb-0 text-base font-medium text-muted-foreground', isPublic ? 'mt-2.5' : 'mt-0')}>
-            minted by <Link className={inlineLink} {...detail.creatorLinkProps}>{detail.creatorName}</Link>
-            {' · '}owned by <Link className={inlineLink} {...detail.ownerLinkProps}>{detail.ownerName}</Link>
+            minted by <InlineLink render={<Link {...detail.creatorLinkProps} />}>{detail.creatorName}</InlineLink>
+            {' · '}owned by <InlineLink render={<Link {...detail.ownerLinkProps} />}>{detail.ownerName}</InlineLink>
             {detail.tagsLabel && <> · {detail.tagsLabel}</>}
-            {detail.remixLinkProps && <> · <Link className={inlineLink} {...detail.remixLinkProps}>🧬 remix</Link></>}
-            {detail.sourceLinkProps && <> · <a className={inlineLink} {...detail.sourceLinkProps}>{detail.sourceLabel}</a></>}
+            {detail.remixLinkProps && <> · <InlineLink render={<Link {...detail.remixLinkProps} />}>🧬 remix</InlineLink></>}
+            {detail.sourceLinkProps && <> · <InlineLink {...detail.sourceLinkProps}>{detail.sourceLabel}</InlineLink></>}
           </p>
           <p className="mt-4 mb-0 text-lg font-medium text-foreground tabular-nums">
             👁️ {detail.viewsLabel} {detail.viewsWord} · 🔁 {detail.resharesLabel} {detail.resharesWord}
@@ -139,7 +142,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           </p>
           {/* the page's two live regions: inside this ungapped column an empty one costs nothing,
              so the rail keeps its 18px rhythm whether a message is showing or not */}
-          <div {...detail.noticeProps}>{detail.notice && <Notice tone="ok" role="none">{detail.notice}</Notice>}</div>
+          <div {...detail.noticeProps}>{detail.notice && <Alert variant="success" role="none" className="mt-3">{detail.notice}</Alert>}</div>
           <div {...detail.errorProps}>{detail.error && <Notice tone="error" role="none">{detail.error}</Notice>}</div>
         </div>
 
@@ -162,41 +165,41 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
 
         <div data-slot="detail-rail" className={cn(rail, railPlacement)}>
           {detail.signedOut && (
-            <Panel>
-              <PanelHeading size="hero" className="mb-0">{detail.signedOut.title}</PanelHeading>
+            <Card>
+              <CardTitle size="card-title">{detail.signedOut.title}</CardTitle>
               <p className={caption}>{detail.signedOut.body}</p>
               <div className={panelRow}>
                 {/* the single bubblegum on a public card */}
                 <Button variant="primary" className="max-sm:w-full" {...detail.signedOut.loginButtonProps}>
                   {detail.signedOut.loginLabel}
                 </Button>
-                <Link className={cn(buttonClasses(), 'max-sm:w-full')} {...detail.signedOut.browseLinkProps}>
+                <Link className={cn(buttonVariants(), 'max-sm:w-full')} {...detail.signedOut.browseLinkProps}>
                   {detail.signedOut.browseLabel}
                 </Link>
               </div>
               {detail.signedOut.error && (
-                <Notice tone="error" {...detail.signedOut.errorProps}>{detail.signedOut.error}</Notice>
+                <Alert variant="error" className="mt-3" {...detail.signedOut.errorProps}>{detail.signedOut.error}</Alert>
               )}
-            </Panel>
+            </Card>
           )}
 
-          <Panel>
-            <h2>Share to go viral</h2>
+          <Card>
+            <CardTitle size="title" render={<h2 />}>Share to go viral</CardTitle>
             <p className={caption}>{SHARE_CAPTION}</p>
             <div className={panelRow}>
               <Input className="min-w-50 flex-1 max-sm:w-full max-sm:flex-none" {...detail.shareInputProps} />
               {/* the ultraviolet companion: the card's one bubblegum belongs to the buy control */}
-              <Button variant="secondary" className="max-sm:flex-1" {...detail.copyButtonProps}>
+              <Button variant="brand" className="max-sm:flex-1" {...detail.copyButtonProps}>
                 {detail.copyButtonLabel}
               </Button>
-              <a className={cn(buttonClasses(), 'max-sm:flex-1')} {...detail.previewLinkProps}>Preview card</a>
+              <a className={cn(buttonVariants(), 'max-sm:flex-1')} {...detail.previewLinkProps}>Preview card</a>
             </div>
-          </Panel>
+          </Card>
 
 
           {detail.listing && !detail.signedOut ? (
-            <Panel>
-              <PanelHeading size="hero" className="mb-0">{detail.listing.saleLabel}</PanelHeading>
+            <Card>
+              <CardTitle size="card-title">{detail.listing.saleLabel}</CardTitle>
               {detail.listing.showBuy && detail.listing.balanceLabel && (
                 <p className={caption}>{detail.listing.balanceLabel}</p>
               )}
@@ -215,10 +218,10 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
                   <Button {...detail.listing.unlistButtonProps}>{detail.listing.unlistButtonLabel}</Button>
                 </div>
               )}
-            </Panel>
+            </Card>
           ) : detail.list.show ? (
-            <Panel>
-              <h3>List shares for sale</h3>
+            <Card>
+              <CardTitle render={<h3 />} className="mb-1.5">List shares for sale</CardTitle>
               <p className={caption}>Name your price — anyone in the market can pick up a slice of the joke.</p>
               <div className={cn(panelRow, 'items-end')}>
                 <Field>
@@ -234,55 +237,55 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
                 <Button variant="primary" {...detail.list.listButtonProps}>{detail.list.listButtonLabel}</Button>
               </div>
               {detail.list.disabledReason && <Hint>{detail.list.disabledReason}</Hint>}
-            </Panel>
+            </Card>
           ) : null}
 
           {detail.actions.length > 0 && (
-            <Panel>
-              <h3>Card controls</h3>
+            <Card>
+              <CardTitle render={<h3 />} className="mb-1.5">Card controls</CardTitle>
               <p className={caption}>What you hold decides what you can do with this card.</p>
               <div className={panelRow}>
                 {detail.actions.map((action) => (
                   <Button
                     key={action.label}
                     variant={action.variant}
-                    className={cn(action.variant === 'danger' && 'ml-auto')}
+                    className={cn(action.variant === 'destructive' && 'ml-auto')}
                     {...action.buttonProps}
                   >
                     {action.label}
                   </Button>
                 ))}
               </div>
-            </Panel>
+            </Card>
           )}
 
           {/* spread sources and cap table side by side under the market card */}
           <div
             data-slot="detail-spread"
-            className="flex flex-wrap items-start gap-gutter *:min-w-70 *:flex-1 [&>[data-slot=panel]]:mt-0"
+            className="flex flex-wrap items-start gap-gutter *:min-w-70 *:flex-1 [&>[data-slot=card]]:mt-0"
           >
             {detail.sources.length > 0 && (
-              <Panel>
-                <h3>📡 Where it’s spreading</h3>
+              <Card>
+                <CardTitle render={<h3 />} className="mb-1.5">📡 Where it’s spreading</CardTitle>
                 <div className={rowList}>
                   {detail.sources.map((source) => (
                     <div key={source.id} className={personRow}>
                       <span className="truncate">
                         {source.linkProps
-                          ? <a className={inlineLink} {...source.linkProps}>{source.label}</a>
+                          ? <InlineLink {...source.linkProps}>{source.label}</InlineLink>
                           : source.label}
                       </span>
                       <span className="ml-auto shrink-0 text-muted-foreground tabular-nums">👁️ {source.viewsLabel}</span>
                     </div>
                   ))}
                 </div>
-              </Panel>
+              </Card>
             )}
             <MemeplexPanel model={detail.plex} />
           </div>
 
-          <Panel>
-            <h3>{detail.capTableTitle}</h3>
+          <Card>
+            <CardTitle render={<h3 />} className="mb-1.5">{detail.capTableTitle}</CardTitle>
             <div className={rowList}>
               {detail.capTable.map((holder) => (
                 <div key={holder.userId} className={cn(personRow, 'tabular-nums')}>
@@ -292,7 +295,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
               ))}
             </div>
             {detail.capTableNote && <p className={caption}>{detail.capTableNote}</p>}
-          </Panel>
+          </Card>
         </div>
       </div>
       <ConfirmDialog model={detail.deleteDialog} />

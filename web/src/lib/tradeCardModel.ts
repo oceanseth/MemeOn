@@ -49,7 +49,7 @@ export interface TradeActionModel {
    * Which button the row wears: the constructive answer is the card's one bubblegum, declining is
    * the neutral raised pill beside it, and withdrawing your own live offer is destructive.
    */
-  variant: 'primary' | 'default' | 'danger'
+  variant: 'primary' | 'default' | 'destructive'
   buttonProps: Pick<
     ButtonHTMLAttributes<HTMLButtonElement>,
     'onClick' | 'disabled' | 'aria-busy' | 'aria-label'
@@ -200,7 +200,7 @@ export function buildTradeCardModel({
             {
               kind: 'cancel',
               label: running('cancel') ? copy.actions.withdrawing : copy.actions.withdraw,
-              variant: 'danger',
+              variant: 'destructive',
               buttonProps: {
                 onClick: () => onRespond(trade, 'cancel'),
                 disabled: locked,
