@@ -2,7 +2,7 @@ import { AlertDialog as AlertDialogPrimitive } from '@base-ui/react/alert-dialog
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
-import { Button, buttonClasses, type ButtonProps } from '@/atoms/button'
+import { Button, type ButtonProps } from '@/atoms/button'
 import type { Styled } from '@/atoms/field'
 
 export function AlertDialog(props: AlertDialogPrimitive.Root.Props) {
@@ -141,17 +141,15 @@ export function AlertDialogAction(props: ButtonProps) {
   return <Button data-slot="alert-dialog-action" {...props} />
 }
 
-export type AlertDialogCancelProps = Styled<AlertDialogPrimitive.Close.Props> & Pick<ButtonProps, 'variant'>
+export type AlertDialogCancelProps = Styled<AlertDialogPrimitive.Close.Props> & Pick<ButtonProps, 'variant' | 'size'>
 
-/**
- * The way out: Base UI's Close wearing the Button pill. Styled through `buttonClasses` rather
- * than `render={<Button />}` because the F1 Button does not forward its ref, which Close needs.
- */
-export function AlertDialogCancel({ className, variant = 'default', ...props }: AlertDialogCancelProps) {
+/** The way out: Base UI's Close rendered as the Button pill (the registry form). */
+export function AlertDialogCancel({ className, variant = 'default', size = 'default', ...props }: AlertDialogCancelProps) {
   return (
     <AlertDialogPrimitive.Close
       data-slot="alert-dialog-cancel"
-      className={cn(buttonClasses(variant), className)}
+      className={cn(className)}
+      render={<Button variant={variant} size={size} />}
       {...props}
     />
   )

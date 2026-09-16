@@ -39,7 +39,7 @@ function Frame({ media, ...props }: AlertDialogContentProps & { media?: boolean 
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Keep it</AlertDialogCancel>
-            <AlertDialogAction variant="danger" onClick={onConfirm}>
+            <AlertDialogAction variant="destructive" onClick={onConfirm}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -121,7 +121,7 @@ export const Triggered: Story = {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Keep it</AlertDialogCancel>
-            <AlertDialogAction variant="danger">Delete</AlertDialogAction>
+            <AlertDialogAction variant="destructive">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
