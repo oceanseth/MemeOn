@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
-import { Button, buttonClasses } from '@/atoms/button'
+import { Alert } from '@/atoms/alert'
+import { Button, buttonVariants } from '@/atoms/button'
+import { DialogFooter } from '@/atoms/dialog'
 import { MemeCard } from '@/atoms/meme-card'
-import { FilterBar } from '@/atoms/page-head'
-import { cn } from '../lib/cn'
+import { Progress } from '@/atoms/progress'
+import { cn } from '@/lib/cn'
 import type { QuestBarModel } from '../lib/questBarModel'
 import { DialogFrame } from '@/molecules/dialog-frame'
 
@@ -12,7 +14,13 @@ const BRAINCELL_SRC = '/api/brand/braincell.png'
 /** `inline-block` is load-bearing in the dialog heading: preflight would drop the coin onto its own line. */
 const BRAINCELL_IMG = 'inline-block size-6.5 rounded-full object-cover align-middle'
 
-/** Pressed well: quest lane left, claim pill right; stacks below 900. */
+/** One rail per page (it lives in the shell), so the meter can name itself by the title's id. */
+const TITLE_ID = 'questbar-title'
+
+/**
+ * Pressed well: quest lane left, claim pill right; stacks below 900. The well is the rail's own
+ * material — `Card` has no pressed variant yet (requested), and a raised card is not the design.
+ */
 const RAIL = cn(
   'mx-page-x mt-3 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-lg material-pressed p-gutter',
   'xl:mt-2 xl:flex-nowrap xl:px-6 xl:py-5',
@@ -27,7 +35,7 @@ const TITLE = cn(
 
 const CHIPS = 'flex flex-wrap items-center gap-x-6 gap-y-2 max-xl:gap-x-2'
 
-/** Onest 15/19 500 ink-muted (14/18 on the phone); a linked chip darkens on hover. */
+/** Onest base 500 muted (sm on the phone); a linked chip darkens on hover. */
 const CHIP = cn(
   'inline-flex items-center gap-1.5 text-base font-medium whitespace-nowrap text-muted-foreground',
   'max-xl:text-sm',
@@ -41,25 +49,6 @@ const CHIP_LINK = cn(
   'focus-ring',
 )
 
-/** Dismiss is text-weight so the claim pill stays the only loud control in the rail. */
-const TEXT_BUTTON = cn(
-  'inline-flex min-h-8 shrink-0 cursor-pointer items-center rounded-sm border-0 bg-transparent px-2 py-1',
-  'text-sm font-medium text-muted-foreground',
-  'transition-tint',
-  'hover:text-foreground',
-  'pointer-coarse:min-h-hit',
-  'focus-ring',
-)
-
-/** Neutral raised claim pill — not the chrome primary. Busy = progress cursor, no spinner. */
-const CLAIM_BUTTON = cn(
-  'inline-flex h-control shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4.5',
-  'material-raised text-base font-semibold text-foreground',
-  'transition-press lift',
-  'pointer-coarse:min-h-hit',
-  'focus-ring',
-)
-
 /** The card grid with the starter pack's tighter tracks; under 561px only the gap tightens. */
 const PACK_GRID = 'm-0 grid list-none items-start grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-5 p-0 max-sm:gap-3'
 
@@ -69,6 +58,7 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
 
   const claim = model.chips.find((chip) => chip.kind === 'claim')
   const steps = model.chips.filter((chip) => chip.kind === 'step')
+  const done = steps.filter((chip) => chip.done).length
 
   return (
     <>
@@ -76,21 +66,24 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
         <div className={RAIL} data-slot="questbar">
           <div className="flex min-w-0 flex-col gap-2.5 max-xl:w-full xl:flex-1" data-slot="questbar-head">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span className={TITLE} data-slot="questbar-title">
+              <span id={TITLE_ID} className={TITLE} data-slot="questbar-title">
                 <img className={BRAINCELL_IMG} src={BRAINCELL_SRC} alt="" width={26} height={26} />{' '}
                 Earn your braincells ·{' '}
                 <span data-slot="questbar-count">{model.completionLabel}</span>
               </span>
-              {/* dismiss ends the title row beside the claim pill at 900+, above it on phone */}
-              <button
-                type="button"
-                className={cn(TEXT_BUTTON, 'ml-auto')}
-                data-slot="quest-later"
-                {...model.dismissProps}
-              >
+              {/* dismiss ends the title row beside the claim pill at 900+, above it on phone; ghost, so
+                  the claim pill stays the only loud control in the rail */}
+              <Button variant="ghost" size="xs" className="ml-auto" data-slot="quest-later" {...model.dismissProps}>
                 {model.dismissLabel}
-              </button>
+              </Button>
             </div>
+            {/* the ladder as a meter, named by the title beside it; the chips below list every step */}
+            <Progress
+              value={done}
+              max={model.chips.length}
+              aria-labelledby={TITLE_ID}
+              data-slot="questbar-progress"
+            />
             {/* hint is sr-only: every quest is visible inline, nothing to hover for instructions */}
             {model.hint && (
               <small className="sr-only" data-slot="quest-hint">
@@ -98,9 +91,9 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
               </small>
             )}
             {model.errorMessage && (
-              <span className="text-sm text-error-foreground" data-slot="questbar-error" {...model.errorProps}>
+              <Alert variant="error" size="compact" data-slot="questbar-error" {...model.errorProps}>
                 {model.errorMessage}
-              </span>
+              </Alert>
             )}
             <div className={CHIPS} data-slot="questbar-inner">
               {steps.map((chip) => {
@@ -123,21 +116,11 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
               })}
             </div>
           </div>
+          {/* the neutral raised claim pill — not the chrome primary; busy = full opacity, progress cursor */}
           {claim && (
-            <button
-              type="button"
-              data-slot="quest-claim"
-              className={cn(
-                CLAIM_BUTTON,
-                'max-xl:w-full',
-                claim.busy
-                  ? 'cursor-progress opacity-100'
-                  : 'disabled-look',
-              )}
-              {...claim.buttonProps}
-            >
+            <Button className="max-xl:w-full" busy={claim.busy} data-slot="quest-claim" {...claim.buttonProps}>
               🎁 {claim.label}
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -157,8 +140,6 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
         titleId={model.pack.titleId}
         close={{ label: model.pack.closeLabel }}
         description={model.pack.description}
-        // the legacy `<p class="muted">` kept the body size and its UA paragraph margins
-        descriptionClassName="my-4 text-base"
       >
         {model.pack.showCards && (
           <div className={PACK_GRID} data-slot="pack-grid">
@@ -167,12 +148,13 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
             ))}
           </div>
         )}
-        <FilterBar className="mt-4">
-          <Link className={buttonClasses('primary')} {...model.pack.binderLinkProps}>
+        <DialogFooter>
+          {/* one element, one tab stop: a link wearing the pill, not a button inside a link */}
+          <Link className={buttonVariants({ variant: 'primary' })} {...model.pack.binderLinkProps}>
             View in My Binder
           </Link>
           <Button {...model.pack.exploreButtonProps}>Keep exploring</Button>
-        </FilterBar>
+        </DialogFooter>
       </DialogFrame>
     </>
   )
