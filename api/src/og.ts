@@ -180,24 +180,48 @@ function hexToInt(hex: string): number {
 const esc = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
-function ogMetaBlock(meme: Meme, ogImageUrl: string): { title: string; block: string } {
+/**
+ * Discord's inline player never loops og:video (no meta tag controls it), but
+ * animated gif embeds loop endlessly. Giphy serves every rendition of a clip
+ * under the same path, so the stored mp4 maps straight to its gif twin — both
+ * the filename and the `rid` query param name the rendition. Null for videos
+ * that didn't come from giphy (no gif exists to point at).
+ */
+export function giphyGifUrl(videoUrl: string): string | null {
+  try {
+    if (!/(^|\.)giphy\.com$/i.test(new URL(videoUrl).hostname)) return null
+  } catch {
+    return null
+  }
+  if (!/giphy\.mp4/i.test(videoUrl)) return null
+  return videoUrl.replace(/giphy\.mp4/gi, 'giphy.gif')
+}
+
+function ogMetaBlock(
+  meme: Meme,
+  ogImageUrl: string,
+  gifUrl: string | null = null,
+): { title: string; block: string } {
   const tier = tierFor(meme.reshares)
   const title = `${meme.title} — ${tier.name.toUpperCase()} ${tier.rarity}`
   const desc = `${meme.reshares.toLocaleString()} views · ${(meme.uniqueRefs ?? 0).toLocaleString()} reshares · ${tier.hype} Collect, trade, and invest on MemeOn.`
   const pageUrl = `${env.siteOrigin}/m/${meme.id}`
-  const video = meme.mediaType === 'video' && meme.videoUrl
+  const video = !gifUrl && meme.mediaType === 'video' && meme.videoUrl
+  // gif embed (Discord): the raw animated gif replaces the branded card and the
+  // player so the client loops it; its dimensions aren't the card's, so omit them
+  const image = gifUrl
+    ? `<meta property="og:image" content="${esc(gifUrl)}">\n<meta property="og:image:type" content="image/gif">`
+    : `<meta property="og:image" content="${esc(ogImageUrl)}">\n<meta property="og:image:width" content="${OG_W}">\n<meta property="og:image:height" content="${OG_H}">`
   const block = `<meta property="og:site_name" content="MemeOn">
 <meta property="og:type" content="website">
 <meta property="og:url" content="${esc(pageUrl)}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
-<meta property="og:image" content="${esc(ogImageUrl)}">
-<meta property="og:image:width" content="${OG_W}">
-<meta property="og:image:height" content="${OG_H}">
+${image}
 ${video ? `<meta property="og:video" content="${esc(meme.videoUrl!)}">\n<meta property="og:video:type" content="video/mp4">\n` : ''}<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(desc)}">
-<meta name="twitter:image" content="${esc(ogImageUrl)}">
+<meta name="twitter:image" content="${esc(gifUrl ?? ogImageUrl)}">
 <meta name="theme-color" content="${tier.color}">`
   return { title, block }
 }
@@ -226,8 +250,16 @@ async function fetchIndexHtml(): Promise<string | null> {
  * og tags; humans get the full SPA at this same URL — it never redirects, so
  * copying the address bar re-shares the counting /m/ link.
  */
-export async function memePageHtml(meme: Meme, ogImageUrl: string): Promise<string> {
-  const { title, block } = ogMetaBlock(meme, ogImageUrl)
+export async function memePageHtml(
+  meme: Meme,
+  ogImageUrl: string,
+  opts: { loopingGif?: boolean } = {},
+): Promise<string> {
+  const gifUrl =
+    opts.loopingGif && meme.mediaType === 'video' && meme.videoUrl
+      ? giphyGifUrl(meme.videoUrl)
+      : null
+  const { title, block } = ogMetaBlock(meme, ogImageUrl, gifUrl)
   const index = await fetchIndexHtml()
   if (index) {
     return index
