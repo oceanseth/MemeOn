@@ -41,6 +41,9 @@ export const Incoming: Story = {
       'Decline',
       'Accept',
     ])
+    /* the card's parts: the parties line is the title, the status the header's action slot */
+    await expect(canvasElement.querySelector('[data-slot="card-title"]')).toHaveTextContent('lou offered you a deal')
+    await expect(canvasElement.querySelector('[data-slot="card-footer"]')).not.toBeNull()
   },
 }
 export const Outgoing: Story = {
