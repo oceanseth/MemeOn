@@ -94,6 +94,7 @@ export const Error: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('alert')).toHaveTextContent(copy.loadError)
+    await expect(canvasElement.querySelector('[data-slot="empty"]')).toHaveAttribute('data-variant', 'error')
     await expect(canvas.queryByText(copy.empty)).toBeNull()
     await userEvent.click(canvas.getByRole('button', { name: copy.retry }))
     await expect(args.retry).toHaveBeenCalled()
@@ -119,6 +120,10 @@ export const MixedAvatars: Story = {
   },
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelectorAll('[data-slot="person-row"] [data-slot="avatar"]')).toHaveLength(4)
+    // the podium takes the podium disc, the ladder the rank disc
+    const podium = canvasElement.querySelector('[data-slot="podium-cards"] [data-slot="avatar"]')
+    await expect(podium).toHaveAttribute('data-size', 'podium')
+    await expect(canvasElement.querySelector('[data-slot="leaderboard"] [data-slot="avatar"]')).toHaveAttribute('data-size', 'rank')
   },
 }
 
@@ -148,6 +153,11 @@ export const SelfInTopTen: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByText(copy.row.you)).toBeInTheDocument()
     await expect(canvas.getByRole('link', { name: copy.row.youLabel(copy.row.label(2, meLou.name, meLou.coins)) })).toBeInTheDocument()
+    // rows are raised Items; the frame axis marks the podium's first place and your own row
+    const rows = canvasElement.querySelectorAll('[data-slot="person-row"]')
+    await expect(rows[0]).toHaveAttribute('data-variant', 'raised')
+    await expect(rows[0]).toHaveAttribute('data-frame', 'brand')
+    await expect(rows[1]).toHaveAttribute('data-frame', 'none')
   },
 }
 

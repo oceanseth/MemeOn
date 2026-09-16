@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
+import { expect } from 'storybook/test'
 import type { DiscordLinkScreenModel } from '../hooks/useDiscordLinkScreen'
 import { DiscordLinkScreen } from './DiscordLinkScreen'
 
@@ -56,6 +57,13 @@ export const Working: Story = {
     showBusy: true,
     busyMessage: 'Connecting your Discord…',
   },
+  play: async ({ canvasElement }) => {
+    // the waiting row is a muted Item with the 24px ring, not a restyled Spinner in a hand-made well
+    const row = canvasElement.querySelector('[data-slot="item"]')!
+    await expect(row).toHaveAttribute('data-variant', 'muted')
+    await expect(row.querySelector('[data-slot="spinner"]')).toHaveAttribute('data-size', 'md')
+    await expect(row.querySelector('[data-slot="item-title"]')).toHaveTextContent('Connecting your Discord…')
+  },
 }
 
 export const Done: Story = {
@@ -64,6 +72,14 @@ export const Done: Story = {
     heading: '🎮 Connected!',
     showConfirm: false,
     showDone: true,
+  },
+  play: async ({ canvasElement }) => {
+    const alert = canvasElement.querySelector('[data-slot="alert"]')!
+    await expect(alert).toHaveAttribute('data-variant', 'success')
+    // the row's own action is 40 tall and lives in the alert's action row
+    const action = alert.querySelector('[data-slot="alert-action"] a')!
+    await expect(action).toHaveAttribute('href', '/discord')
+    await expect(action.clientHeight).toBe(40)
   },
 }
 
@@ -76,6 +92,11 @@ export const ErrorRetryable: Story = {
     errTitle: "Couldn't connect Discord",
     errBody: "MemeOn couldn't reach the linker. Try again in a moment.",
     canRetry: true,
+  },
+  play: async ({ canvasElement }) => {
+    const alert = canvasElement.querySelector('[data-slot="alert"]')!
+    await expect(alert).toHaveAttribute('role', 'alert')
+    await expect(alert.querySelectorAll('[data-slot="alert-action"] > *')).toHaveLength(2)
   },
 }
 

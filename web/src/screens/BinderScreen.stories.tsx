@@ -104,6 +104,8 @@ export const Empty: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('link', { name: /Mint your first meme/ })).toBeInTheDocument()
     await expect(canvas.getByRole('status')).toHaveTextContent('No cards shown')
+    // the empty card announces nothing: the toolbar's status line is this screen's live region
+    await expect(canvasElement.querySelector('[data-slot="empty"]')).toHaveAttribute('role', 'none')
   },
 }
 
@@ -118,6 +120,8 @@ export const Error: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const alert = canvas.getByRole('alert')
+    await expect(alert).toHaveAttribute('data-slot', 'empty')
+    await expect(alert).toHaveAttribute('data-variant', 'error')
     await expect(alert).toHaveTextContent("Couldn't load your binder.")
     await expect(alert).toHaveTextContent('Your cards are safe')
     await expect(canvas.getByRole('button', { name: 'Try again' })).toBeInTheDocument()
@@ -144,6 +148,9 @@ export const Ready: Story = {
     await expect(canvas.getByRole('listitem', { name: /8\/100 shares/ })).toBeInTheDocument()
     await expect(canvas.getByRole('group', { name: /Sort and filter/ })).toBeInTheDocument()
     await expect(canvas.getByRole('status')).toHaveTextContent('3 cards shown')
+    // the ownership groove is a Progress, not a hand-spelled track with an inline width
+    await expect(canvasElement.querySelectorAll('[data-slot="progress"]')).toHaveLength(3)
+    await expect(canvasElement.querySelector('[data-slot="progress-indicator"]')).toHaveAttribute('data-variant', 'default')
   },
 }
 
@@ -202,6 +209,11 @@ export const Full: Story = {
     await expect(lane.firstElementChild).toHaveTextContent('Show private (1)')
     await expect(lane.children[1]?.querySelector('[data-slot="sort-chips"]')).not.toBeNull()
     await expect(lane.lastElementChild).toHaveTextContent('Mint a meme')
+    /* the private filter is the Checkbox's pill variant, not a restyled row */
+    await expect(lane.querySelector('[data-slot="checkbox-label"]')).toHaveAttribute('data-variant', 'pill')
+    /* the identity block and the toolbar are the Card and Toolbar atoms */
+    await expect(canvasElement.querySelector('[data-slot="binder-identity"]')).toHaveAttribute('data-size', 'sm')
+    await expect(canvasElement.querySelector('[data-slot="binder-toolbar"]')).toHaveAttribute('data-align', 'between')
   },
 }
 

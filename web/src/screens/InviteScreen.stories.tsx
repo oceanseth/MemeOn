@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
-import { fn } from 'storybook/test'
+import { expect, fn } from 'storybook/test'
 import { inviteLou, invitePal } from '../../.storybook/fixtures'
 import { buildInviteStats, type InviteScreenModel } from '../hooks/useInviteScreen'
 import { buildMemeCardModel } from '../lib/memeCardModel'
@@ -90,6 +90,11 @@ export const Error: Story = {
     showFatalError: true,
     showSpinner: false,
   },
+  play: async ({ canvasElement }) => {
+    const empty = canvasElement.querySelector('[data-slot="empty"]')!
+    await expect(empty).toHaveAttribute('data-variant', 'error')
+    await expect(empty.querySelectorAll('[data-slot="empty-content"] > *')).toHaveLength(2)
+  },
 }
 
 /** The recovery leg of the dead link: Masky signup is in flight. */
@@ -132,6 +137,13 @@ export const AcceptError: Story = {
     ...ready,
     err: 'invite already used',
     showAcceptError: true,
+  },
+  play: async ({ canvasElement }) => {
+    // the hero is the Card atom and the failure band is an Alert that interrupts
+    await expect(canvasElement.querySelector('[data-slot="invite-hero"]')).toHaveAttribute('data-size', 'sm')
+    const alert = canvasElement.querySelector('[data-slot="alert"]')!
+    await expect(alert).toHaveAttribute('data-variant', 'error')
+    await expect(alert).toHaveAttribute('role', 'alert')
   },
 }
 

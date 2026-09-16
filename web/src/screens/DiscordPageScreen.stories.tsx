@@ -64,6 +64,10 @@ export const Ready: Story = {
     await expect(cta).toHaveAttribute('aria-describedby', 'discord-cta-note')
     await expect(canvas.getByText('opens Discord in a new tab')).toBeVisible()
     await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('MemeOn for Discord')
+    // five Cards: three flow steps, the FAQ band and the asset row; each flow title is a CardTitle
+    await expect(canvasElement.querySelectorAll('[data-slot="card"]')).toHaveLength(5)
+    await expect(canvasElement.querySelectorAll('[data-slot="card-title"][data-size="card-title"]')).toHaveLength(3)
+    await expect(canvas.getByRole('heading', { name: 'Tiny FAQ' })).toHaveAttribute('data-slot', 'heading')
   },
 }
 
@@ -73,6 +77,9 @@ export const NotConfigured: Story = {
     showLoading: false,
     showInstall: false,
     showPending: true,
+  },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector('[data-slot="alert"]')).toHaveAttribute('data-variant', 'info')
   },
 }
 

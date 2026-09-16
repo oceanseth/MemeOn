@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
-import { fn } from 'storybook/test'
+import { expect, fn, within } from 'storybook/test'
 import { friendAccepted, giftablePaper, meLou, paperMeme } from '../../.storybook/fixtures'
 import type { ProfileScreenModel } from '../hooks/useProfileScreen'
 import { buildMemeCardModel } from '../lib/memeCardModel'
@@ -140,6 +140,14 @@ export const Loading: Story = {
 /** transport failure: retry stays on the profile, the link is the way out */
 export const LoadError: Story = {
   args: { showErr: true, profile: null, showActions: false, showEmpty: false },
+  play: async ({ canvasElement }) => {
+    // `Empty variant="error"` keeps the h2 title and the alert role the page had
+    const empty = canvasElement.querySelector('[data-slot="empty"]')!
+    await expect(empty).toHaveAttribute('data-variant', 'error')
+    await expect(empty).toHaveAttribute('role', 'alert')
+    await expect(empty.querySelector('[data-slot="empty-title"]')?.tagName).toBe('H2')
+    await expect(empty.querySelectorAll('[data-slot="empty-content"] a, [data-slot="empty-content"] button')).toHaveLength(2)
+  },
 }
 
 /** 404: the link itself is dead, so retry is not the story — the marketplace is */
@@ -327,6 +335,13 @@ export const Busy: Story = {
 
 export const ActionFailed: Story = {
   args: { ...oneCreatedCard, showActionErr: true, actionErr: "Couldn't update — try again." },
+  play: async ({ canvasElement }) => {
+    const alert = within(canvasElement).getByRole('alert')
+    await expect(alert).toHaveAttribute('data-slot', 'alert')
+    await expect(alert).toHaveAttribute('data-variant', 'error')
+    // the identity block is the Card atom now, not a hand-spelled band
+    await expect(canvasElement.querySelector('[data-slot="profile-identity"]')).toHaveAttribute('data-size', 'sm')
+  },
 }
 
 /** a display name with no spaces still shares the 390px hero with a 96px avatar */
