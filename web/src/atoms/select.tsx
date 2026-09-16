@@ -133,7 +133,7 @@ export function SelectContent({
             'origin-(--transform-origin) overflow-x-hidden overflow-y-auto',
             'rounded-lg material-pop p-1.5 text-foreground',
             'duration-100 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95',
-            'motion-reduce:animate-none',
+            'motion-reduce:animate-none!',
             className,
           )}
           {...props}
