@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Alert } from '@/atoms/alert'
 import { Button, buttonVariants } from '@/atoms/button'
@@ -98,13 +99,15 @@ export interface QuestBarProps {
  * The onboarding ladder, tucked into the braincell pill: the ring on the pill is the meter, and a
  * press opens the whole rail — title and count, the progress bar, every quest with its reward,
  * the claim pill, Later. Parent owns steps, pack dialog, claim, and dismiss; Base UI owns the
- * popover's open state, as it does the account menu's.
+ * popover's open state, and `actionsRef.close()` dismisses the panel before the pack dialog opens
+ * so the positioner cannot drift off-screen.
  */
 export function QuestBar({ model, balance }: QuestBarProps) {
   const live = model !== null && model.visible && model.showSteps
   const claim = model?.chips.find((chip) => chip.kind === 'claim')
   const steps = model?.chips.filter((chip) => chip.kind === 'step') ?? []
   const done = steps.filter((chip) => chip.done).length
+  const popoverActions = useRef<{ close: () => void } | null>(null)
 
   const figure = <span aria-hidden="true">{balance.text}</span>
 
@@ -112,7 +115,7 @@ export function QuestBar({ model, balance }: QuestBarProps) {
     <>
       {live ? (
         <div className="relative" data-slot="questbar">
-          <Popover defaultOpen={model.defaultOpen}>
+          <Popover defaultOpen={model.defaultOpen} actionsRef={popoverActions}>
             <PopoverTrigger
               render={<button type="button" className={PILL_TRIGGER} />}
               data-slot="quest-trigger"
@@ -192,7 +195,16 @@ export function QuestBar({ model, balance }: QuestBarProps) {
                 </ul>
                 {/* the neutral raised claim pill — not the chrome primary; busy = full opacity, progress cursor */}
                 {claim && (
-                  <Button className="w-full" busy={claim.busy} data-slot="quest-claim" {...claim.buttonProps}>
+                  <Button
+                    className="w-full"
+                    busy={claim.busy}
+                    data-slot="quest-claim"
+                    {...claim.buttonProps}
+                    onClick={(event) => {
+                      popoverActions.current?.close()
+                      claim.buttonProps.onClick?.(event)
+                    }}
+                  >
                     🎁 {claim.label}
                   </Button>
                 )}

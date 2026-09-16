@@ -72,15 +72,17 @@ export const Fresh: Story = {
     /* every quest is in the panel from the first render — nothing waits behind a disclosure */
     await expect(canvas.getByRole('link', { name: /Mint/ })).toHaveAttribute('href', '/binder/new')
     await expect(canvas.getByRole('link', { name: /trade/i })).toBeInTheDocument()
-    const claim = canvas.getByRole('button', { name: /starter pack/i })
-    await expect(claim).toHaveAttribute('data-slot', 'quest-claim')
-    await userEvent.click(claim)
-    await expect(onClaimPack).toHaveBeenCalledTimes(1)
-
     const later = canvas.getByRole('button', { name: 'Later — hide quests for now' })
     await expect(later).toHaveAttribute('data-slot', 'quest-later')
     await userEvent.click(later)
     await expect(onDismissSteps).toHaveBeenCalledTimes(1)
+
+    const claim = canvas.getByRole('button', { name: /starter pack/i })
+    await expect(claim).toHaveAttribute('data-slot', 'quest-claim')
+    await userEvent.click(claim)
+    await expect(onClaimPack).toHaveBeenCalledTimes(1)
+    /* close before the pack dialog opens so the positioner cannot drift off-screen */
+    await waitFor(() => expect(canvas.queryByText('Earn your braincells')).toBeNull())
   },
 }
 
