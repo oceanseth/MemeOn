@@ -31,7 +31,8 @@ function CurrentSearch() {
 async function pickOption(trigger: HTMLElement, optionName: string): Promise<void> {
   await userEvent.click(trigger)
   const listbox = await screen.findByRole('listbox')
-  await userEvent.click(within(listbox).getByRole('option', { name: optionName }))
+  // the popup mounts before its options paint, so the option is awaited too, never sampled
+  await userEvent.click(await within(listbox).findByRole('option', { name: optionName }))
 }
 
 const marketCalls = (scenario: ConnectedScenario, match = ''): number =>
