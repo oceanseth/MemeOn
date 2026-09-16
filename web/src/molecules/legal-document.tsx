@@ -1,32 +1,31 @@
+import { Fragment } from 'react'
 import { Link } from 'react-router-dom'
+import { Heading } from '@/atoms/heading'
+import { InlineLink } from '@/atoms/inline-link'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
+import { Separator } from '@/atoms/separator'
+import { toggleVariants } from '@/atoms/toggle'
 import { cn } from '../lib/cn'
 import type { LegalBlock, LegalDocumentModel, LegalInline } from '../lib/legalDocumentModel'
 
 export type { LegalDocumentModel, LegalDocumentSection } from '../lib/legalDocumentModel'
 
-/** Legal page layout: 720 measure, section hairlines. */
-const SECTION = 'mt-6 border-b border-border pb-5.5 last:border-b-0'
-const H2 = cn(
-  'm-0 font-display text-2xl font-normal text-foreground',
-  '[scroll-margin-top:calc(var(--topbar-h)+16px)]',
-)
+/** Legal page layout: 720 measure, a hairline between sections. */
+const SECTION = 'mt-6 pb-5.5'
+/** The heading a TOC chip jumps to docks under the phone's sticky header. */
+const H2_SCROLL = '[scroll-margin-top:calc(var(--topbar-h)+16px)]'
 const P = 'mt-4 mb-0 max-w-measure text-base text-foreground'
-const A = 'text-link underline underline-offset-3 decoration-1 font-semibold'
 const LIST = 'mt-2.5 mb-0 list-disc pl-6'
 const LIST_ITEM_FIRST = cn(P, 'mt-0')
 const LIST_ITEM = cn(P, 'mt-2.5')
-/** The cross-link that closes the document: 16/24, 600, ultraviolet, underline offset 3. */
-const CROSS_LINK = cn(A, 'inline-block mt-2.5')
 
-/* TOC chips: 44px target; current section is pressed, rest are outlined */
-const TOC_CHIP = cn(
-  'inline-flex min-h-hit items-center rounded-lg px-3.5 text-sm text-foreground no-underline',
-  'transition-tint',
-)
-const TOC_CHIP_REST = cn(TOC_CHIP, 'border border-border hover:bg-accent')
-const TOC_CHIP_CURRENT = cn(TOC_CHIP, 'material-pressed')
+/**
+ * TOC chips are anchors, so they wear the `Toggle` atom's classes rather than its element (a
+ * chip that navigates is a link, not a button): the small chip, and the section the page opens
+ * on is the pressed one. `data-pressed` is the state Base UI would write on a real toggle.
+ */
+const TOC_CHIP = toggleVariants({ size: 'sm' })
 
 function Inline({ inline }: { inline: LegalInline }) {
   if (typeof inline === 'string') return inline
@@ -36,11 +35,15 @@ function Inline({ inline }: { inline: LegalInline }) {
     case 'code':
       return <code>{inline.text}</code>
     case 'link':
-      return <Link className={A} to={inline.to}>{inline.text}</Link>
+      return <InlineLink variant="strong" render={<Link to={inline.to} />}>{inline.text}</InlineLink>
     case 'external':
-      return <a className={A} href={inline.href} target="_blank" rel="noopener noreferrer">{inline.text}</a>
+      return (
+        <InlineLink variant="strong" href={inline.href} target="_blank" rel="noopener noreferrer">
+          {inline.text}
+        </InlineLink>
+      )
     case 'mailto':
-      return <a className={A} href={inline.href}>{inline.text}</a>
+      return <InlineLink variant="strong" href={inline.href}>{inline.text}</InlineLink>
   }
 }
 
@@ -64,7 +67,7 @@ function Block({ block }: { block: LegalBlock }) {
 /** Shared chrome for Privacy and Terms: TOC chips, section hairlines, cross-link. */
 export function LegalDocument({ title, updated, tocLabel, toc, sections, crossLink }: LegalDocumentModel) {
   return (
-    <PageContainer as="main" id="main" tabIndex={-1} narrow className="pt-9">
+    <PageContainer as="main" id="main" tabIndex={-1} width="narrow" className="pt-9">
       <PageHead
         level="h1"
         title={title}
@@ -76,7 +79,7 @@ export function LegalDocument({ title, updated, tocLabel, toc, sections, crossLi
         <ul data-slot="legal-toc" className="m-0 flex list-none flex-wrap gap-2 p-0">
           {toc.map((entry, index) => (
             <li key={entry.id}>
-              <a className={index === 0 ? TOC_CHIP_CURRENT : TOC_CHIP_REST} href={`#${entry.id}`}>
+              <a className={TOC_CHIP} href={`#${entry.id}`} data-pressed={index === 0 ? '' : undefined}>
                 {entry.label}
               </a>
             </li>
@@ -85,21 +88,25 @@ export function LegalDocument({ title, updated, tocLabel, toc, sections, crossLi
       </nav>
 
       {sections.map((section, index) => (
-        <section
-          key={section.id}
-          data-slot="legal-section"
-          className={cn(SECTION, index === 0 && 'mt-8')}
-        >
-          <h2 className={H2} id={section.id}>{section.heading}</h2>
-          {section.blocks.map((block, blockIndex) => <Block key={blockIndex} block={block} />)}
-          {index === sections.length - 1 && (
-            <p className="m-0">
-              <Link className={CROSS_LINK} to={crossLink.to}>
-                {crossLink.label} <span aria-hidden="true">→</span>
-              </Link>
-            </p>
-          )}
-        </section>
+        <Fragment key={section.id}>
+          <section
+            data-slot="legal-section"
+            className={cn(SECTION, index === 0 && 'mt-8')}
+          >
+            <Heading as="h2" size="card-title" id={section.id} className={H2_SCROLL}>
+              {section.heading}
+            </Heading>
+            {section.blocks.map((block, blockIndex) => <Block key={blockIndex} block={block} />)}
+            {index === sections.length - 1 && (
+              <p className="m-0">
+                <InlineLink variant="strong" className="mt-2.5 inline-block" render={<Link to={crossLink.to} />}>
+                  {crossLink.label} <span aria-hidden="true">→</span>
+                </InlineLink>
+              </p>
+            )}
+          </section>
+          {index < sections.length - 1 && <Separator />}
+        </Fragment>
       ))}
     </PageContainer>
   )
