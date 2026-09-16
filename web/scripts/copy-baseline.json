@@ -1,16 +1,13 @@
 {
-  "screens/AppShellScreen.tsx": 17,
-  "screens/AuthStatusScreen.tsx": 12,
-  "screens/BinderScreen.tsx": 15,
-  "screens/CreateMemeScreen.tsx": 54,
-  "screens/DevelopersScreen.tsx": 15,
-  "screens/DiscordLinkScreen.tsx": 12,
-  "screens/DiscordPageScreen.tsx": 11,
-  "screens/FriendsScreen.tsx": 28,
-  "screens/InviteScreen.tsx": 14,
-  "screens/LandingScreen.tsx": 48,
-  "screens/LeaderboardScreen.tsx": 18,
-  "screens/MemeDetailScreen.tsx": 27,
-  "screens/ProfileScreen.tsx": 25,
-  "screens/SettingsScreen.tsx": 5
+  "screens/AppShellScreen.tsx": 2,
+  "screens/BinderScreen.tsx": 2,
+  "screens/CreateMemeScreen.tsx": 20,
+  "screens/DevelopersScreen.tsx": 2,
+  "screens/DiscordPageScreen.tsx": 2,
+  "screens/FriendsScreen.tsx": 2,
+  "screens/InviteScreen.tsx": 1,
+  "screens/LandingScreen.tsx": 13,
+  "screens/LeaderboardScreen.tsx": 1,
+  "screens/MemeDetailScreen.tsx": 2,
+  "screens/ProfileScreen.tsx": 3
 }

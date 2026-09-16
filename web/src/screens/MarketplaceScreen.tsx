@@ -33,21 +33,21 @@ import { SortChips } from '@/molecules/sort-chips'
  * so ≤720 the whole treatment is absent.
  */
 const marketControls = cn(
-  'flex', 'flex-col', 'gap-3.5', 'pt-0', 'pb-3.5',
+  'flex flex-col gap-3.5 pt-0 pb-3.5',
   /* it docks under the phone header (`--topbar-h`); at the shell breakpoint that height is 0, so
-     the plate takes the sidebar's own `page-x` inset instead of the viewport edge */
-  'lg:docked', 'lg:-mx-5', 'lg:px-5',
+     the plate takes the sidebar's own page gutter instead of the viewport edge */
+  'lg:docked lg:-mx-5 lg:px-5',
   'xl:top-5',
 )
 
 /** The search well grows into the toolbar's slack and stops at the reading width. */
-const searchWell = cn('min-w-0', 'flex-1', 'lg:max-w-135')
+const searchWell = 'min-w-0 flex-1 lg:max-w-135'
 
 /** The pre-ox/ui grid: 4-up ~262 at the 1108 column (`minmax(230px, 1fr)`), 2-up 166 on the phone. */
 const cardGrid = cn(
-  'm-0', 'grid', 'list-none', 'items-start', 'gap-5', 'p-0',
+  'm-0 grid list-none items-start gap-5 p-0',
   'grid-cols-[repeat(auto-fill,minmax(230px,1fr))]',
-  'max-sm:grid-cols-2', 'max-sm:gap-4.5',
+  'max-sm:grid-cols-2 max-sm:gap-4.5',
 )
 
 /**
@@ -56,24 +56,19 @@ const cardGrid = cn(
  * grid track.
  */
 const cardSlot = cn(
-  'skip-render',
-  'pointer-events-none', 'p-7.5', '-m-7.5', '*:pointer-events-auto',
-  'max-sm:p-5', 'max-sm:-m-5',
+  'skip-render pointer-events-none p-7.5 -m-7.5 *:pointer-events-auto',
+  'max-sm:p-5 max-sm:-m-5',
 )
 
 /** Results / Count: the section heading left, the live count right, on one baseline. */
-const resultsRow = cn(
-  'mt-1', 'mb-4.5', 'flex', 'flex-wrap', 'items-baseline', 'justify-between', 'gap-x-4', 'gap-y-2',
-)
-const summaryRow = cn(
-  'flex', 'flex-wrap', 'items-center', 'gap-2.5', 'text-sm', 'text-muted-foreground',
-)
+const resultsRow = 'mt-1 mb-4.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2'
+const summaryRow = 'flex flex-wrap items-center gap-2.5 text-sm text-muted-foreground'
 
-const marketDisclosures = cn('flex', 'w-full', 'gap-3', 'lg:hidden')
-const marketFilters = cn('flex', 'flex-col', 'gap-3', 'max-lg:data-[collapsed=true]:hidden')
+const marketDisclosures = 'flex w-full gap-3 lg:hidden'
+const marketFilters = 'flex flex-col gap-3 max-lg:data-[collapsed=true]:hidden'
 
 /** Toolbar Mint: bubblegum under the shell cut, neutral once the sidebar owns primary (`mint`). */
-const mintLink = cn(buttonVariants({ variant: 'mint' }), 'w-full', 'lg:w-51.5')
+const mintLink = cn(buttonVariants({ variant: 'mint' }), 'w-full lg:w-51.5')
 
 /** Marketplace list as a function of its engine-provided model. */
 export function MarketplaceScreen({
