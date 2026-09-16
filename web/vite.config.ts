@@ -61,7 +61,7 @@ export default defineConfig({
           enabled: true,
           headless: true,
           screenshotDirectory: path.join(dirname, 'node_modules/.cache/runtime-screenshots'),
-          provider: playwright({}),
+          provider: playwright({ contextOptions: { reducedMotion: 'reduce' } }),
           instances: [{ browser: 'chromium' }]
         }
       }
@@ -78,7 +78,7 @@ export default defineConfig({
         browser: {
           enabled: true,
           headless: true,
-          provider: playwright({}),
+          provider: playwright({ contextOptions: { reducedMotion: 'reduce' } }),
           instances: [{
             browser: 'chromium'
           }]
