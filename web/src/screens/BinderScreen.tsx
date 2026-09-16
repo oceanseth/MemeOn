@@ -21,26 +21,29 @@ const SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6'] as const
 
 /* shared binder grid — exported for ProfileScreen's binder tab */
 
-/** Same `minmax(230px, 1fr)` the production `.card-grid` used; 2 × 166 + 18 = 350 at the phone margin. */
+/** Same `minmax(230px, 1fr)` the production `.card-grid` used; 2 × 166 + 18 = 350 at the phone margin.
+ *  No `items-start`: every slot takes its row, so every card in the row is one size. */
 export const binderGridClasses = cn(
-  'm-0 grid list-none items-start grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5 p-0',
+  'm-0 grid list-none grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5 p-0',
   'max-sm:grid-cols-2 max-sm:gap-4.5',
 )
 
 /**
  * Skip-rendering box around a card. `content-visibility` must not sit on the card itself — it would
  * clip the blurred glow bloom, which the padding / negative-margin pair contains without moving the
- * grid track.
+ * grid track. A one-cell grid, so the card stretches to the slot as the slot does to its row.
  */
 export const binderCardSlotClasses = cn(
-  'skip-render',
+  'skip-render grid',
   'pointer-events-none p-7.5 -m-7.5 *:pointer-events-auto',
   'max-sm:p-5 max-sm:-m-5',
 )
 
-/** The creator/private row under a binder card: the atom's own footer rhythm, one line lower. */
+/** The creator/private row under a binder card: the atom's own footer rhythm, one line lower. It is
+ *  always there, at the badge's 24px, so a card that has nothing to say here is still the same
+ *  height as one that does — a grid's rows must match across rows, not only within one. */
 const binderCardFooterClasses = cn(
-  'mt-0.5 flex items-start justify-between gap-2 text-xs font-medium text-foreground tabular-nums',
+  'mt-0.5 flex min-h-6 items-start justify-between gap-2 text-xs font-medium text-foreground tabular-nums',
   '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
 )
 
@@ -178,16 +181,18 @@ export function BinderScreen({
                 footerRight={<span className="font-semibold text-foreground">{card.sharesLabel}</span>}
                 footer={
                   <>
-                    {(card.showCreator || card.showPrivate) && (
-                      <span className={binderCardFooterClasses}>
-                        <span className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
-                          {card.showCreator && <span>you minted this</span>}
-                          {card.showPrivate && <Badge>🙈 private</Badge>}
-                        </span>
+                    <span data-slot="binder-card-note" className={binderCardFooterClasses}>
+                      <span className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
+                        {card.showCreator && <span>you minted this</span>}
+                        {card.showPrivate && <Badge>🙈 private</Badge>}
                       </span>
-                    )}
-                    {/* the ownership groove: how much of this meme the binder holds */}
-                    <Progress value={card.sharesPct} variant="braincell" aria-hidden="true" className="mt-1" />
+                    </span>
+                    {/* the ownership groove: how much of this meme the binder holds. `mt-auto` pins it
+                       to the card's bottom edge, so whatever slack a stretched row leaves sits above
+                       the meter rather than under it. */}
+                    <div data-slot="binder-meter" className="mt-auto pt-1">
+                      <Progress value={card.sharesPct} variant="braincell" aria-hidden="true" />
+                    </div>
                   </>
                 }
               />

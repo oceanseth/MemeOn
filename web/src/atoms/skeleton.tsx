@@ -2,7 +2,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentPropsWithoutRef } from 'react'
 import { cn } from '@/lib/cn'
 
-/** A pressed well with the highlight sweeping across it; `card` reserves a card slot's 340px. */
+/** A pressed well with the highlight sweeping across it; `card` reserves a grid card's exact box. */
 export const skeletonVariants = cva(
   [
     'relative overflow-hidden rounded-lg material-pressed',
@@ -14,7 +14,9 @@ export const skeletonVariants = cva(
     variants: {
       variant: {
         default: '',
-        card: 'aspect-square box-content pb-17.5',
+        /** a grid `MemeCard` is its square art plus 124px: the card inset (16) and the reserved
+         *  meta — two title lines, the stats line, the two-line value row and their spacing */
+        card: 'aspect-square box-content pb-31',
         row: 'min-h-16',
         /** stands in for an `Avatar size="hero"`: the same radius, the caller gives the size */
         avatar: 'rounded-xl',

@@ -255,7 +255,6 @@ export const AllTiers: Story = {
           width: 'min(1180px, calc(100vw - 32px))',
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))',
-          alignItems: 'start',
           gap: 20,
         }}
       >
@@ -274,3 +273,55 @@ export const AllTiers: Story = {
 
 /** The same ladder on the dark arm: seven frames and seven chips that still read as seven tiers. */
 export const Dark: Story = { ...AllTiers, globals: { theme: 'dark' } }
+
+/**
+ * Four neighbours whose content differs in every way a grid meets — a one-line and a two-line
+ * title, a listing and none, an eye stat and none — on the market track. Every card is one size,
+ * and the value row lands at the same height in each: the title and the listing slot reserve
+ * their lines, and the track stretches whatever is left.
+ */
+export const Uniform: Story = {
+  args: { model: buildMemeCardModel(paperMeme) },
+  decorators: [
+    (Story) => (
+      <div
+        style={{
+          width: 'min(1180px, calc(100vw - 32px))',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
+          gap: 20,
+        }}
+      >
+        <Story />
+      </div>
+    ),
+  ],
+  render: () => (
+    <>
+      {[paperMeme, longTitleMeme, listedHolo, noViewsMeme].map((meme) => (
+        <MemeCard key={meme.id} model={buildMemeCardModel(meme)} />
+      ))}
+    </>
+  ),
+  play: async ({ canvasElement }) => {
+    const cards = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="meme-card"]')]
+    await expect(cards).toHaveLength(4)
+    const boxes = cards.map((card) => card.getBoundingClientRect())
+    const first = boxes[0]!
+    // the two-line title really did wrap: the long one is taller than the reserve would be alone
+    const titles = cards.map((card) => card.querySelector('[data-slot="meme-title"]')!.getBoundingClientRect().height)
+    await expect(Math.max(...titles)).toBe(Math.min(...titles))
+    for (const box of boxes) {
+      await expect(Math.round(box.width)).toBe(Math.round(first.width))
+      await expect(Math.round(box.height)).toBe(Math.round(first.height))
+    }
+    // the value row sits at one offset in every card, listing or not
+    const subTops = cards.map((card, index) => {
+      const sub = card.querySelector('[data-slot="meme-sub"]')!.getBoundingClientRect()
+      return Math.round(sub.top - boxes[index]!.top)
+    })
+    await expect(new Set(subTops).size).toBe(1)
+    const subHeights = cards.map((card) => card.querySelector('[data-slot="meme-sub"]')!.getBoundingClientRect().height)
+    await expect(Math.max(...subHeights)).toBe(Math.min(...subHeights))
+  },
+}
