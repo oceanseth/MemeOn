@@ -38,6 +38,10 @@ const avatarMenu = (
         { key: 'profile', label: 'Profile', to: `/u/${meLou.sub}` },
         { key: 'settings', label: 'Settings', to: '/settings' },
       ],
+      legal: [
+        { key: 'privacy', label: 'Privacy Policy', to: '/privacy' },
+        { key: 'terms', label: 'Terms of Service', to: '/terms' },
+      ],
       theme: { label: 'Theme', value: 'light', onChange: fn() },
       logOut: { label: 'Log out', onSelect: fn() },
     }}
@@ -113,7 +117,7 @@ export const LoggedOut: Story = {
   },
 }
 
-/** The signed-in frame: the bar with its links and cluster, the page, the footer; the tab bar hidden. */
+/** The signed-in frame from the cut: the bar with its links and cluster, the page, the footer; the tab bar hidden. */
 export const LoggedIn: Story = {
   args: { nav, headerEnd: headerEnd(false), bottomNav },
   play: async ({ canvasElement }) => {
@@ -127,6 +131,8 @@ export const LoggedIn: Story = {
     await expect(canvas.getByRole('link', { name: 'Marketplace' })).toHaveAttribute('aria-current', 'page')
     await expect(canvas.getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
     await expect(canvas.getByText(`${meLou.coins.toLocaleString()} braincells`)).toBeInTheDocument()
+    /* from the cut the footer is the page's end, tab bar or not */
+    await expect(canvas.getByRole('navigation', { name: 'Footer' })).toBeVisible()
   },
 }
 
@@ -158,6 +164,8 @@ export const Phone390: Story = {
     /* the column clears the bar: the 80 row plus the home indicator (app-shell.css) */
     const content = canvasElement.querySelector('[data-slot="content"]')!
     await expect(getComputedStyle(content).paddingBottom).toBe('80px')
+    /* a phone app has no site footer: where the tab bar is, the footer is not */
+    await expect(canvasElement.querySelector('[data-slot="site-footer"]')).not.toBeVisible()
   },
 }
 

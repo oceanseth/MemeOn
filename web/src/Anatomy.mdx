@@ -177,7 +177,9 @@ Layered onto the tiers and rules above, not a replacement for them:
   `LEADERBOARD_PAGE_SIZE` (8) the same way.
 - The chrome is one sticky 64px bar at every width (`organisms/app-shell.tsx`), so `--topbar-h`
   is the one `:root` value in `src/index.css`; below the cut the tab bar is fixed flush to the
-  viewport's bottom edge, edge to edge, the home indicator's inset inside it. `organisms/app-shell.css`
+  viewport's bottom edge, edge to edge, the home indicator's inset inside it, and the site footer
+  goes with it — a phone app has none — so the account menu's legal group (`avatar-menu-legal`:
+  Privacy Policy, Terms of Service) is the phone's door to those pages. `organisms/app-shell.css`
   carries the tab-bar clearance and hairline, the scroll-driven header hairline and the
   view-transition names. Shell-wrapping stories render with `layout: 'fullscreen'`.
 - `focus-ring` (an `@utility` in `index.css`) is the one focus contract every interactive atom,
@@ -214,7 +216,7 @@ Probe these instead of a class name or copy string:
 | Landing | `landing-hero`, `hero-pile`, `hero-card`, `hero-card-slot`, `hero-card-art`, `landing-how`, `landing-tiers`, `tier-card`, `tier-frame-slot`, `tier-frame-img`, `landing-faq`, `landing-closing` |
 | Legal (Privacy, Terms) | `legal-toc`, `legal-section` |
 | Auth (`screens/AuthStatusScreen.tsx`) | `auth-status` (`data-phase`), `auth-ring`, `auth-timeout`, `auth-web-fallback` |
-| Shell | `header`, `header-row`, `top-nav`, `nav-pill`, `header-end`, `mint-link`, `coins`, `quest-trigger` (`data-progress`), `quest-claim-dot`, `quest-panel`, `tab-item`, `bottom-nav`, `site-footer`, `avatar-menu-identity`, `avatar-menu-name`, `avatar-menu-theme`, `avatar-menu-theme-option`, `avatar-menu-logout` |
+| Shell | `header`, `header-row`, `top-nav`, `nav-pill`, `header-end`, `mint-link`, `coins`, `quest-trigger` (`data-progress`), `quest-claim-dot`, `quest-panel`, `tab-item`, `bottom-nav`, `site-footer`, `avatar-menu-identity`, `avatar-menu-name`, `avatar-menu-theme`, `avatar-menu-theme-option`, `avatar-menu-legal`, `avatar-menu-logout` |
 
 ## Rules
 

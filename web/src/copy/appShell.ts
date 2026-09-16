@@ -35,6 +35,9 @@ export const appShellCopy = {
     settings: 'Settings',
     developers: '🔧 Developers',
     discord: 'Discord',
+    /** The legal pair, named as the pages name themselves; on the phone the menu is their one door. */
+    privacy: 'Privacy Policy',
+    terms: 'Terms of Service',
     theme: 'Theme',
     logOut: sharedCopy.logOut,
   },
