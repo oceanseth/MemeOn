@@ -16,8 +16,7 @@ export function InputGroup({ className, ...props }: ComponentPropsWithoutRef<'di
       className={cn(
         'group/input-group relative flex h-12.5 w-full min-w-0 items-center rounded-md material-pressed',
         'has-disabled:cursor-not-allowed has-disabled:opacity-(--opacity-disabled)',
-        'has-focus-visible:outline-3 has-focus-visible:outline-ring has-focus-visible:outline-offset-2',
-        'contrast-more:has-focus-visible:outline-4 forced-colors:has-focus-visible:outline-fc-highlight',
+        'focus-ring-within',
         'has-aria-invalid:inset-ring-2 has-aria-invalid:inset-ring-destructive',
         'has-data-invalid:inset-ring-2 has-data-invalid:inset-ring-destructive',
         className,

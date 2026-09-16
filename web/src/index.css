@@ -575,6 +575,25 @@
   }
 }
 
+/* The same ring on a group that holds the focused control (`InputGroup`, a search well, any
+   future combobox): the recess takes the ring, not the chromeless input inside it. */
+@utility focus-ring-within {
+  &:has(:focus-visible) {
+    outline: 3px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  @media (prefers-contrast: more) {
+    &:has(:focus-visible) {
+      outline-width: 4px;
+    }
+  }
+  @media (forced-colors: active) {
+    &:has(:focus-visible) {
+      outline-color: var(--color-fc-highlight);
+    }
+  }
+}
+
 @utility focus-ring-inset {
   &:focus-visible {
     outline: 3px solid var(--color-ring);
