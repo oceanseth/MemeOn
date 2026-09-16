@@ -27,7 +27,7 @@ const ONLINE_STRIP = cn(
 
 /** Fixed title width so avatar lanes align across strips. */
 const ONLINE_TITLE = cn(
-  'w-35 shrink-0 font-display text-card-title-phone font-medium tracking-card-title text-foreground',
+  'w-35 shrink-0 text-lg font-semibold text-foreground',
   'max-sm:w-full',
 )
 
@@ -46,11 +46,11 @@ const IDENTITY = cn(
 )
 
 const NAME = cn(
-  'block truncate font-display text-card-title-phone font-medium tracking-card-title text-foreground',
+  'block truncate text-lg font-semibold text-foreground',
   'wrap-anywhere',
 )
 
-const META = 'mt-0.5 block truncate text-micro font-medium text-muted-foreground'
+const META = 'mt-0.5 block truncate text-xs font-medium text-muted-foreground'
 
 /* The action cluster: raised companion first, the row's one bubblegum second, the quiet exit last.
    On a phone the two pills share the 310px row and the text action keeps its own 44px target. */
@@ -61,7 +61,7 @@ const ROW_PILL = 'max-sm:flex-1 max-sm:px-3'
 /** Quiet exit as link-coloured text — confirm dialog carries the weight, not a red row button. */
 const TEXT_ACTION = cn(
   'shrink-0 cursor-pointer rounded-lg border-0 bg-transparent px-2.5 py-3.5',
-  'text-small font-semibold text-link',
+  'text-sm font-semibold text-link',
   'focus-ring',
   'disabled-look',
   'pointer-coarse:min-h-hit',
@@ -70,10 +70,10 @@ const TEXT_ACTION = cn(
 /** Pending is a pressed pill with no action behind it. */
 const PENDING_PILL = cn(
   'inline-flex h-control shrink-0 items-center justify-center rounded-lg px-4.5',
-  'material-pressed text-label font-semibold text-muted-foreground',
+  'material-pressed text-base font-semibold text-muted-foreground',
 )
 
-const SECTION_HEADING = 'mt-8 mb-3 font-display text-title font-medium tracking-title text-foreground'
+const SECTION_HEADING = 'mt-8 mb-3 font-display text-3xl font-normal text-foreground'
 
 const SECTION = 'flex flex-col gap-3.5'
 
@@ -182,10 +182,10 @@ export function FriendsScreen({
 
       {showSearchPanel && (
         <Panel className="mb-5">
-          <h2 className="font-display text-card-title-phone font-medium tracking-card-title">Search results</h2>
+          <h2 className="text-lg font-semibold">Search results</h2>
           <div role="status">
-            {showSearching && <p className="m-0 text-label text-muted-foreground">{searchingLabel}</p>}
-            {showNoHits && <p className="m-0 text-label text-muted-foreground">{noHitsMessage}</p>}
+            {showSearching && <p className="m-0 text-base text-muted-foreground">{searchingLabel}</p>}
+            {showNoHits && <p className="m-0 text-base text-muted-foreground">{noHitsMessage}</p>}
           </div>
           {showHits && (
             <div className={cn(SECTION, 'mt-3.5')}>
@@ -210,7 +210,7 @@ export function FriendsScreen({
                 key={f.sub}
                 {...f.onlineLinkProps}
                 className={cn(
-                  'group inline-flex items-center gap-2 rounded-lg text-small text-foreground no-underline',
+                  'group inline-flex items-center gap-2 rounded-lg text-sm text-foreground no-underline',
                   'focus-ring',
                 )}
               >
@@ -219,7 +219,7 @@ export function FriendsScreen({
               </Link>
             ))}
           </div>
-          <span className="flex shrink-0 items-center gap-2 text-micro font-semibold text-muted-foreground max-sm:ml-auto">
+          <span className="flex shrink-0 items-center gap-2 text-xs font-semibold text-muted-foreground max-sm:ml-auto">
             <span aria-hidden="true" className={DOT} />
             {onlineCountLabel}
           </span>
@@ -227,7 +227,7 @@ export function FriendsScreen({
       ) : null}
 
       {showLoading ? (
-        <div role="status" className="flex items-center justify-center gap-2.5 px-5 py-15 text-label text-muted-foreground">
+        <div role="status" className="flex items-center justify-center gap-2.5 px-5 py-15 text-base text-muted-foreground">
           <Spinner />
           {loadingLabel}
         </div>
@@ -308,7 +308,7 @@ export function FriendsScreen({
         </>
       )}
 
-      {showCircleHint ? <p className="mt-6 text-label text-muted-foreground">{circleHintMessage}</p> : null}
+      {showCircleHint ? <p className="mt-6 text-base text-muted-foreground">{circleHintMessage}</p> : null}
 
       <GiftDialog model={giftDialog} />
       <ConfirmDialog model={removeDialog} />

@@ -161,7 +161,7 @@ export function SelectLabel({ className, ...props }: Styled<BaseSelect.GroupLabe
   return (
     <BaseSelect.GroupLabel
       data-slot="select-label"
-      className={cn('px-3 py-1 text-caption text-muted-foreground', className)}
+      className={cn('px-3 py-1 text-sm text-muted-foreground', className)}
       {...props}
     />
   )
@@ -173,7 +173,7 @@ export function SelectItem({ className, children, ...props }: Styled<BaseSelect.
     <BaseSelect.Item
       data-slot="select-item"
       className={cn(
-        'flex min-h-hit w-full cursor-default items-center gap-2 rounded-md px-3 text-label',
+        'flex min-h-hit w-full cursor-default items-center gap-2 rounded-md px-3 text-base',
         'select-none outline-none',
         'data-highlighted:bg-muted data-selected:font-semibold',
         'disabled-look',

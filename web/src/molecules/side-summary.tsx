@@ -5,19 +5,19 @@ import type { TradeSideSummaryModel } from '../lib/tradeCardModel'
 /** Recessed well inside the raised proposal card. */
 const WELL = cn(
   'rounded-lg material-pressed p-4',
-  'text-small wrap-anywhere [&_em]:wrap-anywhere',
+  'text-sm wrap-anywhere [&_em]:wrap-anywhere',
 )
 
 /** Owner label: caption, bold, ink-muted. */
-const LEGEND = 'mt-0 mb-2 font-sans text-caption font-bold tracking-normal text-muted-foreground'
+const LEGEND = 'mt-0 mb-2 font-sans text-sm font-semibold text-muted-foreground'
 
 const LINE = 'flex items-center gap-2'
 
 /** 36px thumb, radius 9, 2px line ring — board 30px, bumped for legibility in the well. */
 const THUMB = 'size-9 shrink-0 rounded-xs border-2 border-border bg-accent object-cover'
 
-const MEME_LINE = 'min-w-0 font-sans text-caption font-medium text-foreground'
-const COINS = 'font-sans text-small font-medium text-foreground tabular-nums'
+const MEME_LINE = 'min-w-0 font-sans text-sm font-medium text-foreground'
+const COINS = 'font-sans text-sm font-medium text-foreground tabular-nums'
 
 export function SideSummary({ model }: { model: TradeSideSummaryModel }) {
   return (

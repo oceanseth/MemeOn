@@ -43,7 +43,7 @@ const OWNERSHIP_TRACK = 'mt-1 block h-track overflow-hidden rounded-full bg-mute
 
 /* reward rail lives in AppShell QuestBar — claim is a one-shot shell mutation, not duplicated here */
 
-const SECTION_HEADING = 'm-0 font-display text-title font-medium tracking-title text-foreground'
+const SECTION_HEADING = 'm-0 font-display text-3xl font-normal text-foreground'
 
 /** The toolbar row: heading + live count on the left, the 46px control lane on the right. */
 const TOOLBAR = 'mt-7 mb-gutter flex flex-wrap items-end justify-between gap-x-6 gap-y-3.5'
@@ -51,7 +51,7 @@ const TOOLBAR = 'mt-7 mb-gutter flex flex-wrap items-end justify-between gap-x-6
 /** Private toggle as a real checkbox inside a pill — checked state presses the pill. */
 const PRIVATE_PILL = cn(
   'ms-0 min-h-control gap-2.5 rounded-lg material-raised px-4.5 py-0',
-  'text-label font-semibold text-foreground',
+  'text-base font-semibold text-foreground',
   'has-data-checked:material-pressed',
 )
 
@@ -105,11 +105,11 @@ export function BinderScreen({
           <div className="min-w-0">
             <p
               data-slot="binder-identity-name"
-              className="m-0 font-display text-title font-medium tracking-title text-foreground"
+              className="m-0 font-display text-3xl font-normal text-foreground"
             >
               {identity.name}
             </p>
-            <p className="m-0 mt-2 text-small font-medium text-muted-foreground tabular-nums">
+            <p className="m-0 mt-2 text-sm font-medium text-muted-foreground tabular-nums">
               {identity.statsLabel}
             </p>
           </div>
@@ -121,7 +121,7 @@ export function BinderScreen({
           <h3 className={SECTION_HEADING}>{collectionHeading}</h3>
           {/* mounted in every state, text swapped: a live region inserted with its content is missed */}
           <span
-            className="mt-1 block text-small text-muted-foreground tabular-nums"
+            className="mt-1 block text-sm text-muted-foreground tabular-nums"
             {...statusProps}
           >
             {statusMessage}

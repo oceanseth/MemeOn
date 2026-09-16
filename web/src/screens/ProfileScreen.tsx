@@ -20,12 +20,12 @@ const IDENTITY_CARD = cn(
 )
 
 const IDENTITY_LINE =
-  'm-0 truncate font-display text-title font-medium tracking-title text-foreground wrap-anywhere'
+  'm-0 truncate font-display text-3xl font-normal text-foreground wrap-anywhere'
 
-const META_LINE = 'm-0 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-label font-semibold text-muted-foreground'
+const META_LINE = 'm-0 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-base font-semibold text-muted-foreground'
 
 /** The friend state is a caption, not a pill: a standing fact never competes with the actions. */
-const FRIEND_CAPTION = 'm-0 mt-1.5 text-label font-semibold text-muted-foreground'
+const FRIEND_CAPTION = 'm-0 mt-1.5 text-base font-semibold text-muted-foreground'
 
 const ACTIONS = 'flex flex-wrap items-center gap-3 max-sm:w-full max-sm:*:flex-1'
 
@@ -35,7 +35,7 @@ const TABS = 'mb-gutter flex flex-wrap items-center gap-3.5 max-sm:*:flex-1'
 const BINDER_HERO = 'flex items-center gap-4 max-sm:items-start'
 const BINDER_HERO_STACK = 'mt-5 mb-10 flex flex-col gap-2.5'
 /** Binder intro is label weight, not PageHead subtitle. */
-const BINDER_INTRO = 'm-0 text-label text-muted-foreground'
+const BINDER_INTRO = 'm-0 text-base text-muted-foreground'
 
 /** Profile as a function of its model. Tabs, relationship state and copy are controlled props. */
 export function ProfileScreen({
@@ -279,7 +279,7 @@ export function ProfileScreen({
               <Button className="max-sm:w-full" {...showMoreButtonProps}>
                 {showMoreLabel}
               </Button>
-              <p className="m-0 text-micro text-muted-foreground tabular-nums">{gridCountLabel}</p>
+              <p className="m-0 text-xs text-muted-foreground tabular-nums">{gridCountLabel}</p>
             </div>
           )}
         </>
@@ -293,7 +293,7 @@ export function ProfileScreen({
               {joinLabel}
             </Link>
           </div>
-          <p className="m-0 text-label text-muted-foreground">{reshareNote}</p>
+          <p className="m-0 text-base text-muted-foreground">{reshareNote}</p>
         </div>
       )}
     </PageContainer>

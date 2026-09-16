@@ -20,7 +20,7 @@ export function Field({ className, ...props }: Styled<FieldRootProps>) {
   return (
     <BaseField.Root
       data-slot="field"
-      className={cn('flex flex-col gap-1.5 text-small font-semibold text-foreground', className)}
+      className={cn('flex flex-col gap-1.5 text-sm font-semibold text-foreground', className)}
       {...props}
     />
   )
@@ -36,7 +36,7 @@ export function FieldLabel({ className, ...props }: Styled<FieldLabelProps>) {
   )
 }
 
-const descriptionChrome = 'mt-1 block text-caption font-normal text-muted-foreground'
+const descriptionChrome = 'mt-1 block text-sm font-normal text-muted-foreground'
 
 export function FieldDescription({ className, ...props }: Styled<FieldDescriptionProps>) {
   return (
@@ -53,7 +53,7 @@ export function FieldError({ className, ...props }: Styled<FieldErrorProps>) {
   return (
     <BaseField.Error
       data-slot="field-error"
-      className={cn('mt-1 block text-caption font-normal text-destructive', className)}
+      className={cn('mt-1 block text-sm font-normal text-destructive', className)}
       {...props}
     />
   )
@@ -81,7 +81,7 @@ export function FieldCounter({ className, ...props }: ComponentPropsWithoutRef<'
   return (
     <span
       data-slot="field-counter"
-      className={cn('ml-auto shrink-0 text-caption font-normal text-muted-foreground tabular-nums', className)}
+      className={cn('ml-auto shrink-0 text-sm font-normal text-muted-foreground tabular-nums', className)}
       {...props}
     />
   )
@@ -96,8 +96,8 @@ export function FieldSet({ className, ...props }: Styled<FieldsetRootProps>) {
 export const fieldLegendVariants = cva('p-0', {
   variants: {
     variant: {
-      legend: 'mb-2.5 text-intro font-semibold text-foreground',
-      label: 'mb-2 text-micro font-bold tracking-wider text-muted-foreground uppercase',
+      legend: 'mb-2.5 text-lg font-semibold text-foreground',
+      label: 'mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase',
     },
   },
   defaultVariants: { variant: 'legend' },

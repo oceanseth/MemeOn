@@ -7,10 +7,10 @@ import type { TradeCardModel } from '../lib/tradeCardModel'
 /** Raised surface card, 20px padding. */
 const CARD = 'rounded-lg material-card p-5'
 
-/** Unbounded 17/22 — a card headline, not a section heading. */
-const HEADLINE = 'font-display text-card-title-phone font-medium tracking-card-title text-foreground'
+/** Onest 18/26 semibold — a card headline under the display face's 20px floor. */
+const HEADLINE = 'text-lg font-semibold text-foreground'
 
-const SUBLINE = 'mt-1 block text-caption text-muted-foreground'
+const SUBLINE = 'mt-1 block text-sm text-muted-foreground'
 
 /** Give/get stay left/right regardless of proposer — "You give" is always the left plate. */
 const DEAL = cn(
@@ -21,7 +21,7 @@ const DEAL = cn(
 
 /** Swap glyph uses `--color-link`: `--color-ring` fails contrast on surface text. */
 const SWAP = cn(
-  'self-center font-display text-title text-link',
+  'self-center font-display text-3xl text-link',
   'max-xl:rotate-90 max-xl:justify-self-center',
 )
 
@@ -50,7 +50,7 @@ export function TradeCard({ model }: { model: TradeCardModel }) {
         <SideSummary model={model.get} />
       </div>
       {model.finalityLine && (
-        <p data-slot="trade-finality" className="m-0 mb-3.5 text-small text-muted-foreground">
+        <p data-slot="trade-finality" className="m-0 mb-3.5 text-sm text-muted-foreground">
           {model.finalityLine}
         </p>
       )}

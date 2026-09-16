@@ -43,12 +43,12 @@ const tabsTriggerVariants = cva(
     variants: {
       variant: {
         default: cn(
-          'h-control-sm min-w-0 flex-1 rounded-md bg-transparent px-3 text-small font-semibold text-muted-foreground',
+          'h-control-sm min-w-0 flex-1 rounded-md bg-transparent px-3 text-sm font-semibold text-muted-foreground',
           'hover:text-foreground',
-          'data-active:material-raised data-active:font-bold data-active:text-foreground',
+          'data-active:material-raised data-active:font-semibold data-active:text-foreground',
         ),
         pills: cn(
-          'h-control rounded-lg material-raised px-4.5 text-label font-semibold text-foreground',
+          'h-control rounded-lg material-raised px-4.5 text-base font-semibold text-foreground',
           'press',
           'data-active:material-pressed',
         ),

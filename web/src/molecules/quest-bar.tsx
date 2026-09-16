@@ -18,19 +18,19 @@ const RAIL = cn(
   'xl:mt-2 xl:flex-nowrap xl:px-6 xl:py-5',
 )
 
-/** Unbounded card-title; phone steps to card-title-phone. */
+/** Unbounded 2xl; under the shell cut it steps to xl, the display face's floor. */
 const TITLE = cn(
   'inline-flex items-center gap-2 whitespace-nowrap',
-  'font-display text-card-title font-medium tracking-card-title text-foreground',
-  'max-xl:text-card-title-phone',
+  'font-display text-2xl font-normal text-foreground',
+  'max-xl:text-xl',
 )
 
 const CHIPS = 'flex flex-wrap items-center gap-x-6 gap-y-2 max-xl:gap-x-2'
 
 /** Onest 15/19 500 ink-muted (14/18 on the phone); a linked chip darkens on hover. */
 const CHIP = cn(
-  'inline-flex items-center gap-1.5 text-label font-medium whitespace-nowrap text-muted-foreground',
-  'max-xl:text-small',
+  'inline-flex items-center gap-1.5 text-base font-medium whitespace-nowrap text-muted-foreground',
+  'max-xl:text-sm',
   'transition-tint',
   'group-hover:text-foreground',
 )
@@ -44,7 +44,7 @@ const CHIP_LINK = cn(
 /** Dismiss is text-weight so the claim pill stays the only loud control in the rail. */
 const TEXT_BUTTON = cn(
   'inline-flex min-h-8 shrink-0 cursor-pointer items-center rounded-sm border-0 bg-transparent px-2 py-1',
-  'text-small font-medium text-muted-foreground',
+  'text-sm font-medium text-muted-foreground',
   'transition-tint',
   'hover:text-foreground',
   'pointer-coarse:min-h-hit',
@@ -54,7 +54,7 @@ const TEXT_BUTTON = cn(
 /** Neutral raised claim pill — not the chrome primary. Busy = progress cursor, no spinner. */
 const CLAIM_BUTTON = cn(
   'inline-flex h-control shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4.5',
-  'material-raised text-label font-semibold text-foreground',
+  'material-raised text-base font-semibold text-foreground',
   'transition-press lift',
   'pointer-coarse:min-h-hit',
   'focus-ring',
@@ -98,7 +98,7 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
               </small>
             )}
             {model.errorMessage && (
-              <span className="text-small text-error-foreground" data-slot="questbar-error" {...model.errorProps}>
+              <span className="text-sm text-error-foreground" data-slot="questbar-error" {...model.errorProps}>
                 {model.errorMessage}
               </span>
             )}
@@ -109,7 +109,7 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
                     <span aria-hidden="true">{chip.done ? '✅' : '⬜'}</span>
                     <span className="sr-only">{chip.statusLabel} </span>{' '}
                     {chip.title}{' '}
-                    <em className="text-small not-italic" aria-hidden="true">{chip.rewardLabel}</em>
+                    <em className="text-sm not-italic" aria-hidden="true">{chip.rewardLabel}</em>
                     <span className="sr-only">, {chip.rewardAriaLabel}</span>
                   </span>
                 )
@@ -158,7 +158,7 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
         close={{ label: model.pack.closeLabel }}
         description={model.pack.description}
         // the legacy `<p class="muted">` kept the body size and its UA paragraph margins
-        descriptionClassName="my-4 text-body"
+        descriptionClassName="my-4 text-base"
       >
         {model.pack.showCards && (
           <div className={PACK_GRID} data-slot="pack-grid">

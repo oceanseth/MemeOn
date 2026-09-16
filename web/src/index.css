@@ -161,57 +161,65 @@
   --spacing-track: 6px; /* a meter's track height */
   --spacing-halo: 5px; /* the coarse-pointer halo around a 34px control: (44 − 34) / 2 */
 
-  /* ── Type. Display is Unbounded at weight 500 (800 blows up the measure); everything else is
-     Onest. The weight lives in `@layer base` as `--font-weight-display` because Tailwind would
-     read a `--font-weight-*` theme key as a `font-<name>` utility and collide with the family.
-     `--font-heading` is the name registry files use for the display face. */
+  /* ── Type. Two faces: Unbounded (display, variable 200–900) and Onest (UI/body, variable 100–900).
+     One ten-step stock scale; every step carries its size, line-height, letter-spacing and default
+     weight, so `text-2xl` is a complete setting and a call site adds a family and, rarely, a weight.
+     Tracking is tuned per size, not per face: small text opens up, display sizes close in. The
+     text steps (xs…lg) are Onest's; xl and above are the display steps and may wear Unbounded —
+     never below 20px, where its 0.71em lowercase and 0.57em x-height read as a bold text face.
+     Unbounded's step weight is 400 (its stems match Onest 600); 500 is reserved for the wordmark
+     and the landing hero. 700 does not exist in this typeset. Neither face carries an `opsz`
+     axis, so `font-optical-sizing` has nothing to do and the per-step tracking below is the
+     optical-size substitute. No `--tracking-*` role token survives: a step carries its tracking
+     and the stock `tracking-wider` / `tracking-normal` are the only escapes. */
   --font-display: 'Unbounded Variable', 'Unbounded', system-ui, sans-serif;
   --font-heading: var(--font-display);
   --font-sans: 'Onest Variable', 'Onest', system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-  --tracking-display: -0.04em;
-  --tracking-title: -0.025em;
-  --tracking-card-title: -0.02em;
 
-  /* Role ladder; stock `text-xs…9xl` are reset so this is the only ladder. Each step carries its
-     line-height: `/tight`, `leading-*` appear only inside an atom. Display-face steps (Unbounded
-     500) sit above the Onest UI steps; `display`, `section` and `card-title` shrink under
-     `max-md` (< 641px). The glyph steps size emoji: unitless leading, no `text-[Npx]`. */
   --text-*: initial;
-  --text-display: 44px;
-  --text-display--line-height: 55px;
-  --text-display-phone: 32px;
-  --text-display-phone--line-height: 40px;
-  --text-section: 32px;
-  --text-section--line-height: 40px;
-  --text-section-phone: 26px;
-  --text-section-phone--line-height: 32px;
-  --text-title: 27px;
-  --text-title--line-height: 34px;
-  --text-card-title: 23px;
-  --text-card-title--line-height: 27px;
-  --text-card-title-phone: 17px;
-  --text-card-title-phone--line-height: 21px;
-  --text-intro: 17px;
-  --text-intro--line-height: 22px;
-  --text-body: 16px;
-  --text-body--line-height: 24px;
-  --text-label: 15px;
-  --text-label--line-height: 19px;
-  --text-small: 14px;
-  --text-small--line-height: 18px;
-  --text-caption: 13px;
-  --text-caption--line-height: 16px;
-  --text-micro: 12px;
-  --text-micro--line-height: 16px;
-  --text-glyph-sm: 16px;
-  --text-glyph-sm--line-height: 1;
-  --text-glyph: 20px;
-  --text-glyph--line-height: 1.25;
-  --text-glyph-lg: 25px;
-  --text-glyph-lg--line-height: 1.25;
-  --text-glyph-hero: 48px;
-  --text-glyph-hero--line-height: 1.25;
+  /* text steps · Onest */
+  --text-xs: 12px; /* chip, badge, tab label, stat line, eyebrow */
+  --text-xs--line-height: 16px;
+  --text-xs--letter-spacing: 0.02em;
+  --text-xs--font-weight: 500;
+  --text-sm: 14px; /* meta line, caption, secondary label, small button */
+  --text-sm--line-height: 20px;
+  --text-sm--letter-spacing: 0.005em;
+  --text-sm--font-weight: 400;
+  --text-base: 16px; /* body, button label, nav row, form label */
+  --text-base--line-height: 24px;
+  --text-base--letter-spacing: 0em;
+  --text-base--font-weight: 400;
+  --text-lg: 18px; /* page intro, lede, panel title in the text face, big stat line */
+  --text-lg--line-height: 26px;
+  --text-lg--letter-spacing: 0em;
+  --text-lg--font-weight: 400;
+  /* display steps · Unbounded (Onest allowed for a large numeral) */
+  --text-xl: 20px; /* meme card title, compact card title */
+  --text-xl--line-height: 24px;
+  --text-xl--letter-spacing: -0.005em;
+  --text-xl--font-weight: 400;
+  --text-2xl: 24px; /* card / panel title, legal h2, footer wordmark, section on the phone */
+  --text-2xl--line-height: 28px;
+  --text-2xl--letter-spacing: -0.01em;
+  --text-2xl--font-weight: 400;
+  --text-3xl: 28px; /* dialog title, sidebar wordmark, detail hero title */
+  --text-3xl--line-height: 32px;
+  --text-3xl--letter-spacing: -0.015em;
+  --text-3xl--font-weight: 400;
+  --text-4xl: 32px; /* section heading, page title on the phone */
+  --text-4xl--line-height: 36px;
+  --text-4xl--letter-spacing: -0.02em;
+  --text-4xl--font-weight: 400;
+  --text-5xl: 40px; /* page title */
+  --text-5xl--line-height: 44px;
+  --text-5xl--letter-spacing: -0.025em;
+  --text-5xl--font-weight: 400;
+  --text-6xl: 48px; /* the landing hero, the pack-opened glyph */
+  --text-6xl--line-height: 52px;
+  --text-6xl--letter-spacing: -0.03em;
+  --text-6xl--font-weight: 500;
 
   /* ── Layout. The widths routes and prose stop at; single-use widths are a grid step on the
      element instead. `card-narrow` is a container-query cut (`@max-card-narrow:`). */
@@ -295,10 +303,10 @@
        shell breakpoint, 0 at and above it); this root default only ever paints in an isolated
        Storybook story that mounts a screen without the shell. */
     --topbar-h: 64px;
-    /* display weight, kept out of `@theme` so it cannot shadow the `font-display` family utility */
-    --font-weight-display: 500;
-    /* body tracking; only `body` reads it, and the dark arm opens it a touch (below) */
-    --tracking-ui: 0em;
+    /* Unbounded's heading weight, kept out of `@theme` so it cannot shadow the `font-display`
+       family utility. 400: its stems already match Onest 600. The wordmark and the landing hero
+       are the two poster moments and wear 500 by hand. */
+    --font-weight-display: 400;
     /* Prismatic's real chip: a bubblegum→ultraviolet sweep, deeper stops in the dark arm.
        `light-dark()` only takes colours, so the flip sits on each stop rather than on the image;
        `--color-tier-prismatic-chip` is the first stop for anything that needs a flat colour and
@@ -331,20 +339,23 @@
     color-scheme: dark;
   }
 
-  /* Light type on a dark canvas: open leading a step and ease Unbounded's negative tracking. */
+  /* Light type on a dark canvas blooms a touch wider and tighter (irradiation): ease the display
+     steps' negative tracking by 0.01em. Leading never flips with the theme — a layout must not
+     reflow when the user toggles dark — and the text steps are left alone (0.01em at 16px is a
+     sixth of a pixel). */
   :root[data-theme='dark'] {
-    --text-body--line-height: 26px;
-    --text-intro--line-height: 24px;
-    --tracking-display: -0.03em;
-    --tracking-ui: 0.01em;
+    --text-6xl--letter-spacing: -0.02em;
+    --text-5xl--letter-spacing: -0.015em;
+    --text-4xl--letter-spacing: -0.01em;
+    --text-3xl--letter-spacing: -0.005em;
   }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme='light']) {
-      --text-body--line-height: 26px;
-      --text-intro--line-height: 24px;
-      --tracking-display: -0.03em;
-      --tracking-ui: 0.01em;
+      --text-6xl--letter-spacing: -0.02em;
+      --text-5xl--letter-spacing: -0.015em;
+      --text-4xl--letter-spacing: -0.01em;
+      --text-3xl--letter-spacing: -0.005em;
     }
   }
 
@@ -360,9 +371,17 @@
     background: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    font-size: var(--text-body);
-    line-height: var(--text-body--line-height);
-    letter-spacing: var(--tracking-ui);
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
+    letter-spacing: var(--text-base--letter-spacing);
+    font-weight: var(--text-base--font-weight);
+    /* Grayscale antialiasing on macOS: Chrome and Safari otherwise dilate glyphs, which is a large
+       part of why Unbounded 500 read as a bold. Light-on-dark gains the most. */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* every number in this app is a count, a price or a holding: figures line up by default;
+       prose that wants proportional figures opts out with `proportional-nums` */
+    font-variant-numeric: tabular-nums;
     min-height: 100dvh;
   }
 
@@ -377,59 +396,67 @@
     scroll-margin-top: var(--topbar-h);
   }
 
-  /* Preflight resets headings to `font-size: inherit`, so the ladder is authored here: Unbounded
-     at its one weight, one size and tracking per level. h1 = display, h2 = title, h3 = card-title,
-     h4 = card-title-phone. Tracking tightens as the size grows; 15px Unbounded never sees −0.04em. */
+  /* Preflight resets headings to `font-size: inherit`, so the ladder is authored here. h1 = 5xl,
+     h2 = 3xl, h3 = 2xl, all Unbounded at the heading weight; h4 is below the display face's 20px
+     floor and drops to Onest 600 at `lg`. Headings balance their line breaks; paragraphs (below)
+     take `pretty`. Each step carries its own tracking, so no level names one. */
   h1,
   h2,
-  h3,
-  h4 {
+  h3 {
     margin: 0 0 8px;
     font-family: var(--font-display);
     font-weight: var(--font-weight-display);
+    text-wrap: balance;
   }
 
   h1 {
-    font-size: var(--text-display);
-    line-height: var(--text-display--line-height);
-    letter-spacing: var(--tracking-display);
+    font-size: var(--text-5xl);
+    line-height: var(--text-5xl--line-height);
+    letter-spacing: var(--text-5xl--letter-spacing);
   }
 
   h2 {
-    font-size: var(--text-title);
-    line-height: var(--text-title--line-height);
-    letter-spacing: var(--tracking-title);
+    font-size: var(--text-3xl);
+    line-height: var(--text-3xl--line-height);
+    letter-spacing: var(--text-3xl--letter-spacing);
   }
 
   h3 {
-    font-size: var(--text-card-title);
-    line-height: var(--text-card-title--line-height);
-    letter-spacing: var(--tracking-card-title);
+    font-size: var(--text-2xl);
+    line-height: var(--text-2xl--line-height);
+    letter-spacing: var(--text-2xl--letter-spacing);
   }
 
   h4 {
-    font-size: var(--text-card-title-phone);
-    line-height: var(--text-card-title-phone--line-height);
-    letter-spacing: var(--tracking-card-title);
+    margin: 0 0 8px;
+    font-family: var(--font-sans);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--text-lg);
+    line-height: var(--text-lg--line-height);
+    letter-spacing: var(--text-lg--letter-spacing);
+    text-wrap: balance;
   }
 
   /* the phone sizes of the two levels that shrink (the `max-md` cut) */
   h1 {
     @variant max-md {
-      font-size: var(--text-display-phone);
-      line-height: var(--text-display-phone--line-height);
+      font-size: var(--text-4xl);
+      line-height: var(--text-4xl--line-height);
+      letter-spacing: var(--text-4xl--letter-spacing);
     }
   }
 
   h3 {
     @variant max-md {
-      font-size: var(--text-card-title-phone);
-      line-height: var(--text-card-title-phone--line-height);
+      font-size: var(--text-xl);
+      line-height: var(--text-xl--line-height);
+      letter-spacing: var(--text-xl--letter-spacing);
     }
   }
 
   p {
-    line-height: var(--text-body--line-height);
+    line-height: var(--text-base--line-height);
+    text-wrap: pretty;
   }
 
   /* the one thing a user must type verbatim never breaks mid-token */

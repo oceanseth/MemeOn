@@ -21,12 +21,12 @@ export const toggleVariants = cva(
   {
     variants: {
       size: {
-        default: 'h-control rounded-lg px-4.5 text-label',
-        sm: 'h-control-sm rounded-sm px-3 text-small hit-44',
+        default: 'h-control rounded-lg px-4.5 text-base',
+        sm: 'h-control-sm rounded-sm px-3 text-sm hit-44',
         /** the SortChips row: a 46px pill, 40 on the phone, still 44 of target on a coarse pointer */
-        chip: 'h-control rounded-full px-4 text-label max-sm:h-10 pointer-coarse:min-h-hit',
+        chip: 'h-control rounded-full px-4 text-base max-sm:h-10 pointer-coarse:min-h-hit',
         /** the 34px square, an emoji for a label */
-        icon: 'size-control-sm rounded-sm p-0 text-glyph-sm hit-44',
+        icon: 'size-control-sm rounded-sm p-0 text-base leading-none hit-44',
       },
       variant: {
         default: cn('material-raised font-semibold', 'lift press', 'data-pressed:material-pressed'),
@@ -36,9 +36,9 @@ export const toggleVariants = cva(
           'data-pressed:material-pressed data-pressed:text-foreground',
         ),
         segment: cn(
-          'min-w-0 flex-1 rounded-md bg-transparent px-1 text-micro font-semibold text-muted-foreground',
+          'min-w-0 flex-1 rounded-md bg-transparent px-1 text-xs font-semibold text-muted-foreground',
           'hover:text-foreground',
-          'data-pressed:material-raised data-pressed:font-bold data-pressed:text-foreground',
+          'data-pressed:material-raised data-pressed:font-semibold data-pressed:text-foreground',
         ),
       },
     },

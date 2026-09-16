@@ -93,7 +93,7 @@ export const LargeFallback: Story = {
     const canvas = within(canvasElement)
     const monogram = canvas.getByText('Ó')
     await expect(monogram).toBeVisible()
-    await expect(getComputedStyle(monogram).fontSize).toBe(token('--text-card-title'))
+    await expect(getComputedStyle(monogram).fontSize).toBe(token('--text-2xl'))
   },
 }
 

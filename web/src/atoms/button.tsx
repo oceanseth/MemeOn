@@ -11,7 +11,7 @@ const RAISED = 'material-raised lift press aria-pressed:material-pressed aria-pr
 const buttonVariants = cva(
   [
     'inline-flex items-center justify-center gap-2 whitespace-nowrap',
-    'cursor-pointer select-none rounded-lg font-semibold text-foreground',
+    'cursor-pointer select-none rounded-lg font-medium text-foreground',
     'transition-press focus-ring hit-44',
     'aria-disabled:pointer-events-none disabled-look',
   ],
@@ -35,15 +35,15 @@ const buttonVariants = cva(
       },
       size: {
         /** 46px, the control height */
-        default: 'h-control px-4.5 text-label',
+        default: 'h-control px-4.5 text-base',
         /** 40px: a row action beside a line of copy */
-        sm: 'h-10 px-3.5 text-small',
+        sm: 'h-10 px-3.5 text-sm',
         /** 34px chip: a mode or filter toggle; the halo makes up the pointer target */
-        xs: 'h-control-sm rounded-sm px-3 text-caption',
+        xs: 'h-control-sm rounded-sm px-3 text-sm',
         icon: 'size-control',
         'icon-sm': 'size-control-sm rounded-sm',
         /** the sign-in CTA: full width on the phone, wraps, never under the control height */
-        login: 'h-auto min-h-control w-full min-w-64 max-w-full px-4.5 py-3 text-label leading-5 whitespace-normal md:w-auto',
+        login: 'h-auto min-h-control w-full min-w-64 max-w-full px-4.5 py-3 text-base leading-5 whitespace-normal md:w-auto',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },

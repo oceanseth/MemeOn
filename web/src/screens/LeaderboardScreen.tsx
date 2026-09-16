@@ -12,7 +12,7 @@ import type { LeaderboardRowModel, LeaderboardScreenModel } from '../hooks/useLe
 const skeletonRows = [0, 1, 2, 3, 4]
 
 /** Braincell count colour: bubblegum ramp flips with theme. */
-const COUNT = 'font-sans font-bold text-braincell tabular-nums'
+const COUNT = 'font-sans font-semibold text-braincell tabular-nums'
 
 /** Podium panel: head left, three cards right; stacks on phone. */
 const PODIUM_PANEL = cn(
@@ -48,9 +48,9 @@ const ROW_LINK = cn(
   'lift transition-press',
 )
 
-const NAME = 'min-w-0 flex-1 truncate font-display text-card-title-phone font-medium tracking-card-title text-foreground'
+const NAME = 'min-w-0 flex-1 truncate text-lg font-semibold text-foreground'
 
-const RANK_NUMERAL = 'w-7 shrink-0 text-center font-display text-intro font-medium tracking-card-title text-muted-foreground'
+const RANK_NUMERAL = 'w-7 shrink-0 text-center text-lg font-semibold text-muted-foreground tabular-nums'
 
 function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: string }) {
   return (
@@ -68,7 +68,7 @@ function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: 
           {youLabel}
         </Badge>
       ) : null}
-      <span className={cn(COUNT, 'shrink-0 text-label whitespace-nowrap')}>{leader.braincellsLabel}</span>
+      <span className={cn(COUNT, 'shrink-0 text-base whitespace-nowrap')}>{leader.braincellsLabel}</span>
     </Link>
   )
 }
@@ -131,10 +131,10 @@ export function LeaderboardScreen({
           {/* podium: head + top three; ranks 4+ continue in the list below */}
           <div className={PODIUM_PANEL} data-slot="podium">
             <div className="max-w-75 flex-1" data-slot="podium-head">
-              <h2 className="m-0 font-display text-section font-medium tracking-title text-foreground max-md:text-section-phone">
+              <h2 className="m-0 font-display text-4xl font-normal text-foreground max-md:text-2xl">
                 {podiumTitle}
               </h2>
-              <p className="m-0 mt-1.5 text-body text-muted-foreground">{podiumSubtitle}</p>
+              <p className="m-0 mt-1.5 text-base text-muted-foreground">{podiumSubtitle}</p>
             </div>
 
             <ol className={PODIUM_LIST} data-slot="podium-cards" aria-label={podiumTitle}>
@@ -147,7 +147,7 @@ export function LeaderboardScreen({
                     className={cn(ROW_LINK, 'block h-full')}
                   >
                     <span className={cn(PODIUM, l.rankNumeral === '1' && PODIUM_FIRST)}>
-                      <span aria-hidden="true" className="text-glyph-lg max-md:text-glyph">
+                      <span aria-hidden="true" className="text-2xl leading-none max-md:text-xl">
                         {l.medalLabel}
                       </span>
                       <Avatar
@@ -170,7 +170,7 @@ export function LeaderboardScreen({
                           {youLabel}
                         </Badge>
                       ) : null}
-                      <span className={cn(COUNT, 'text-intro font-bold md:mt-2 max-md:text-label')}>
+                      <span className={cn(COUNT, 'text-lg font-semibold md:mt-2 max-md:text-base')}>
                         {l.braincellsLabel}
                       </span>
                     </span>

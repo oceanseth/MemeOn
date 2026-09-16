@@ -8,7 +8,7 @@ import { cn } from '@/lib/cn'
  * — natively (`:disabled`) or the Base UI way (`data-disabled`, no native attribute).
  */
 export const labelVariants = cva([
-  'flex w-fit items-center gap-2 text-small font-semibold text-foreground select-none',
+  'flex w-fit items-center gap-2 text-sm font-semibold text-foreground select-none',
   'disabled-look',
   'peer-disabled:cursor-not-allowed peer-disabled:opacity-(--opacity-disabled)',
   'peer-data-disabled:cursor-not-allowed peer-data-disabled:opacity-(--opacity-disabled)',

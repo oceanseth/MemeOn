@@ -12,7 +12,7 @@ import { cn } from '@/lib/cn'
 export const emptyVariants = cva(
   [
     'group/empty flex w-full min-w-0 flex-col items-center justify-center',
-    'rounded-lg material-card text-center text-label',
+    'rounded-lg material-card text-center text-base',
   ],
   {
     variants: {
@@ -68,7 +68,7 @@ export function EmptyHeader({ className, ...props }: ComponentPropsWithoutRef<'d
 export const emptyMediaVariants = cva('flex shrink-0 items-center justify-center', {
   variants: {
     variant: {
-      default: 'text-glyph-hero',
+      default: 'text-6xl leading-none',
       icon: 'size-12 rounded-md bg-muted text-foreground',
     },
   },
@@ -104,8 +104,8 @@ export function EmptyTitle({
       ...props,
       'data-slot': 'empty-title',
       className: cn(
-        'm-0 font-display text-card-title font-medium tracking-card-title text-balance',
-        'group-data-[size=inline]/empty:text-card-title-phone',
+        'm-0 font-display text-2xl font-normal text-balance',
+        'group-data-[size=inline]/empty:text-xl',
         className,
       ),
     },
@@ -117,8 +117,8 @@ export function EmptyDescription({ className, ...props }: ComponentPropsWithoutR
     <p
       data-slot="empty-description"
       className={cn(
-        'm-0 text-label text-muted-foreground text-pretty',
-        'group-data-[size=inline]/empty:text-small group-data-[size=inline]/empty:font-medium',
+        'm-0 text-base text-muted-foreground text-pretty',
+        'group-data-[size=inline]/empty:text-sm group-data-[size=inline]/empty:font-medium',
         className,
       )}
       {...props}
@@ -142,7 +142,7 @@ export const pageStateVariants = cva('text-center text-muted-foreground', {
   variants: {
     size: {
       default: 'pt-20',
-      compact: 'pt-8 text-small',
+      compact: 'pt-8 text-sm',
     },
   },
   defaultVariants: { size: 'default' },
@@ -192,10 +192,9 @@ export function EmptyState({ tone, error = false, role, className, ...props }: E
       data-tone={resolved}
       role={role ?? (error || resolved === 'error' ? 'alert' : 'status')}
       className={cn(
-        'rounded-lg material-card px-5 py-15 text-center text-label text-muted-foreground',
-        '[&_:where(h2,h3)]:mt-0 [&_:where(h2,h3)]:mb-3 [&_:where(h2,h3)]:text-card-title',
-        '[&_:where(h2,h3)]:tracking-card-title',
-        '[&_p]:m-0 [&_p]:mb-1.5 [&_p]:text-label',
+        'rounded-lg material-card px-5 py-15 text-center text-base text-muted-foreground',
+        '[&_:where(h2,h3)]:mt-0 [&_:where(h2,h3)]:mb-3 [&_:where(h2,h3)]:text-2xl',
+        '[&_p]:m-0 [&_p]:mb-1.5 [&_p]:text-base',
         EMPTY_STATE_TONE[resolved],
         className,
       )}

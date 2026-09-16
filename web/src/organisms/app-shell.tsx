@@ -65,15 +65,15 @@ const HEADER_APP = 'xl:mt-7 xl:min-h-14 xl:px-page-x'
 /** Public header: 52px column inset + PageContainer padding. */
 const HEADER_PUBLIC = 'xl:px-page-x xl:py-8'
 
-/** The wordmark: Unbounded at the display weight, the circle mark beside it; sized per slot. */
+/** The wordmark: Unbounded 500 — with the landing hero, the typeset's two poster moments. */
 const WORDMARK = cn(
   'inline-flex shrink-0 items-center gap-2 whitespace-nowrap',
-  'font-display font-medium tracking-title text-foreground no-underline',
+  'font-display font-medium text-foreground no-underline',
   FOCUS,
 )
 const WORDMARK_SIZE = {
-  sidebar: 'text-title',
-  header: 'text-title max-md:text-card-title max-md:tracking-card-title xl:text-section',
+  sidebar: 'text-3xl',
+  header: 'text-3xl max-md:text-2xl xl:text-4xl',
 } as const
 
 function Wordmark({ size, className }: { size: keyof typeof WORDMARK_SIZE; className?: string | undefined }) {
@@ -92,10 +92,10 @@ function Wordmark({ size, className }: { size: keyof typeof WORDMARK_SIZE; class
   )
 }
 
-/** Sidebar nav row: 192×48, radius 24, icon lane 22 + label 15/19; current = pressed + 600. */
+/** Sidebar nav row: 192×48, radius 24, icon lane 22 + label 16/24 at 500; current = pressed + 600. */
 export const NAV_ROW = cn(
   'flex h-12 items-center gap-3 rounded-lg px-3.5',
-  'text-label font-medium text-foreground no-underline',
+  'text-base font-medium text-foreground no-underline',
   'transition-press',
   'hover:bg-accent',
   'aria-[current=page]:material-pressed aria-[current=page]:font-semibold',
@@ -105,7 +105,7 @@ export const NAV_ROW = cn(
 /** The chrome's one primary: bubblegum in light, sky in dark, raised, 46 tall. */
 export const PRIMARY_PILL = cn(
   'inline-flex h-control items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4.5',
-  'material-raised bg-primary text-label font-semibold text-primary-foreground no-underline',
+  'material-raised bg-primary text-base font-medium text-primary-foreground no-underline',
   'transition-press lift press',
   FOCUS,
 )
@@ -113,19 +113,19 @@ export const PRIMARY_PILL = cn(
 /** Utility link: current page = 36px pressed pill. */
 export const UTILITY_LINK = cn(
   '-ml-3 inline-flex h-9 items-center rounded-md px-3',
-  'text-small font-medium text-foreground no-underline',
+  'text-sm font-medium text-foreground no-underline',
   'transition-tint',
   'hover:bg-accent',
-  'aria-[current=page]:material-pressed aria-[current=page]:font-bold',
+  'aria-[current=page]:material-pressed aria-[current=page]:font-semibold',
   'pointer-coarse:min-h-hit',
   FOCUS,
 )
 
-/** Tab bar item: 62×44, radius 22, icon 22 over a 12px label; current = pressed + 700. */
+/** Tab bar item: 62×44, radius 22, icon 22 over a 12px label at 500; current = pressed + 600. */
 export const TAB_ITEM = cn(
   'flex h-hit w-15.5 shrink-0 flex-col items-center justify-center gap-1 rounded-full',
-  'text-micro leading-tight font-semibold text-foreground no-underline',
-  'aria-[current=page]:material-pressed aria-[current=page]:font-bold',
+  'text-xs leading-tight font-medium text-foreground no-underline',
+  'aria-[current=page]:material-pressed aria-[current=page]:font-semibold',
   FOCUS,
 )
 
@@ -146,18 +146,18 @@ const TAB_BAR = cn(
 const FOOTER = cn(
   'mt-12 flex flex-wrap items-center gap-x-5 gap-y-3 border-t border-border',
   'px-page-x pt-5.5 pb-safe-8.5',
-  'text-caption text-muted-foreground',
+  'text-sm text-muted-foreground',
   'max-xl:flex-col max-xl:items-center',
 )
 const FOOTER_APP = 'xl:px-page-x'
 const FOOTER_PUBLIC = 'xl:px-page-x'
 
-/** Onest 13 ink-muted; the current page is bold ink (react-router's `aria-current` from NavLink). */
+/** Onest 14 ink-muted; the current page is 600 ink (react-router's `aria-current` from NavLink). */
 const FOOTER_LINK = cn(
   'text-muted-foreground no-underline',
   'transition-tint',
   'hover:text-foreground',
-  'aria-[current=page]:font-bold aria-[current=page]:text-foreground',
+  'aria-[current=page]:font-semibold aria-[current=page]:text-foreground',
   'pointer-coarse:inline-flex pointer-coarse:min-h-hit pointer-coarse:items-center',
   FOCUS,
 )
@@ -207,7 +207,7 @@ export function AppShell({ sidebar, contextLine, headerEnd, quest, bottomNav, ch
             <Wordmark size="header" className={app ? 'xl:hidden' : undefined} />
             {app && contextLine ? (
               <p
-                className="m-0 hidden min-w-0 truncate text-label font-medium text-muted-foreground xl:block"
+                className="m-0 hidden min-w-0 truncate text-base font-medium text-muted-foreground xl:block"
                 data-slot="context-line"
               >
                 {contextLine}
@@ -220,7 +220,7 @@ export function AppShell({ sidebar, contextLine, headerEnd, quest, bottomNav, ch
           {quest}
           {children}
           <footer className={cn(FOOTER, app ? FOOTER_APP : FOOTER_PUBLIC)} data-slot="site-footer">
-            <span className="font-display text-card-title font-medium tracking-card-title text-foreground">MemeOn</span>
+            <span className="font-display text-2xl font-medium text-foreground">MemeOn</span>
             <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 xl:ml-auto" aria-label="Footer">
               <NavLink to="/privacy" className={() => FOOTER_LINK}>
                 Privacy

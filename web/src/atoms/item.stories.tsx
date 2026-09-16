@@ -176,8 +176,8 @@ export const WithHeaderAndFooter: Story = {
   render: () => (
     <Item variant="outline">
       <ItemHeader>
-        <span className="text-caption text-muted-foreground">Trade #42</span>
-        <span className="text-caption text-muted-foreground">2 days ago</span>
+        <span className="text-sm text-muted-foreground">Trade #42</span>
+        <span className="text-sm text-muted-foreground">2 days ago</span>
       </ItemHeader>
       <ItemContent>
         <ItemTitle>Lou offers 3 shares</ItemTitle>

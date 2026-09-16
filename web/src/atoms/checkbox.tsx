@@ -19,7 +19,7 @@ const boxChrome = cn(
 /** The labelled row: a 44px target around box + words. `pill` is the binder's private toggle. */
 export const checkboxLabelVariants = cva(
   [
-    'inline-flex min-h-hit cursor-pointer items-center gap-2.5 text-label text-foreground',
+    'inline-flex min-h-hit cursor-pointer items-center gap-2.5 text-base text-foreground',
     'has-data-disabled:cursor-not-allowed has-data-disabled:opacity-(--opacity-disabled)',
   ],
   {

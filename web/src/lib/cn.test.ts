@@ -36,25 +36,25 @@ describe('cn', () => {
     expect(cn('mb-gutter', 'mb-0')).toBe('mb-0')
   })
 
-  /* the role ladder is named, not t-shirt sized, so `text-display` has to be registered as a font
-     size — otherwise cn files it under text colour and `text-foreground` deletes it */
+  /* the scale is the stock t-shirt ladder now, so cn's own font-size validator owns it; these are
+     the regressions that would come back if a step ever grew a role name again */
   it('merges the type ladder as font sizes, not colours', () => {
-    expect(cn('text-display', 'text-title')).toBe('text-title')
-    expect(cn('text-foreground', 'text-body')).toBe('text-foreground text-body')
-    expect(cn('text-label', 'text-muted-foreground')).toBe('text-label text-muted-foreground')
-    expect(cn('text-small', 'text-intro')).toBe('text-intro')
-    expect(cn('text-display-phone', 'text-foreground', 'md:text-display')).toBe(
-      'text-display-phone text-foreground md:text-display',
+    expect(cn('text-5xl', 'text-3xl')).toBe('text-3xl')
+    expect(cn('text-foreground', 'text-base')).toBe('text-foreground text-base')
+    expect(cn('text-base', 'text-muted-foreground')).toBe('text-base text-muted-foreground')
+    expect(cn('text-sm', 'text-lg')).toBe('text-lg')
+    expect(cn('text-4xl', 'text-foreground', 'md:text-5xl')).toBe(
+      'text-4xl text-foreground md:text-5xl',
     )
-    expect(cn('text-section-phone', 'md:text-section')).toBe('text-section-phone md:text-section')
-    expect(cn('text-caption', 'text-muted-foreground')).toBe('text-caption text-muted-foreground')
-    expect(cn('text-glyph', 'text-glyph-lg')).toBe('text-glyph-lg')
-    expect(cn('text-glyph-sm', 'text-primary-foreground')).toBe('text-glyph-sm text-primary-foreground')
+    expect(cn('text-2xl', 'md:text-4xl')).toBe('text-2xl md:text-4xl')
+    expect(cn('text-sm', 'text-muted-foreground')).toBe('text-sm text-muted-foreground')
+    expect(cn('text-xl leading-none', 'text-2xl leading-none')).toBe('text-2xl leading-none')
+    expect(cn('text-base leading-none', 'text-primary-foreground')).toBe('text-base leading-none text-primary-foreground')
   })
 
-  it('merges the display trackings against each other', () => {
-    expect(cn('tracking-display', 'tracking-title')).toBe('tracking-title')
-    expect(cn('tracking-card-title', 'md:tracking-title')).toBe('tracking-card-title md:tracking-title')
+  it('merges the stock trackings against each other', () => {
+    expect(cn('tracking-tighter', 'tracking-tight')).toBe('tracking-tight')
+    expect(cn('tracking-normal', 'md:tracking-wider')).toBe('tracking-normal md:tracking-wider')
   })
 
   it('merges inside the project breakpoint variants', () => {
@@ -65,7 +65,7 @@ describe('cn', () => {
 
   it('keeps utilities that only differ by variant', () => {
     expect(cn('rounded-lg', 'max-lg:rounded-full')).toBe('rounded-lg max-lg:rounded-full')
-    expect(cn('text-display', 'max-md:text-display-phone')).toBe('text-display max-md:text-display-phone')
+    expect(cn('text-5xl', 'max-md:text-4xl')).toBe('text-5xl max-md:text-4xl')
   })
 
   /* the custom utilities index.css declares have no conflict group: cn passes them through, so a

@@ -101,27 +101,27 @@ const CONTAINERS: ReadonlyArray<{ token: string; spec: string; className: string
 ]
 
 const LADDER: ReadonlyArray<{ step: string; spec: string; className: string; sample?: string }> = [
-  { step: 'display', spec: 'Unbounded 500 · 44/55 · -0.04em', className: 'font-display font-medium text-display tracking-display' },
-  { step: 'display-phone', spec: 'Unbounded 500 · 32/40', className: 'font-display font-medium text-display-phone tracking-display' },
-  { step: 'section', spec: 'Unbounded 500 · 32/40 · -0.025em', className: 'font-display font-medium text-section tracking-title' },
-  { step: 'section-phone', spec: 'Unbounded 500 · 26/32', className: 'font-display font-medium text-section-phone tracking-title' },
-  { step: 'title', spec: 'Unbounded 500 · 27/34 · -0.025em', className: 'font-display font-medium text-title tracking-title' },
-  { step: 'card-title', spec: 'Unbounded 500 · 23/27 · -0.02em', className: 'font-display font-medium text-card-title tracking-card-title' },
-  { step: 'card-title-phone', spec: 'Unbounded 500 · 17/21', className: 'font-display font-medium text-card-title-phone tracking-card-title' },
-  { step: 'intro', spec: 'Onest 400 · 17/22', className: 'font-sans text-intro' },
-  { step: 'body', spec: 'Onest 400 · 16/24', className: 'font-sans text-body' },
-  { step: 'label', spec: 'Onest 600 · 15/19', className: 'font-sans font-semibold text-label' },
-  { step: 'small', spec: 'Onest 400 · 14/18', className: 'font-sans text-small' },
-  { step: 'caption', spec: 'Onest 400 · 13/16', className: 'font-sans text-caption' },
-  { step: 'micro', spec: 'Onest 700 · 12/16', className: 'font-sans font-bold text-micro' },
-  { step: 'glyph-sm', spec: 'emoji · 16 / 1', className: 'text-glyph-sm', sample: '🎨 🌙 ☀️' },
-  { step: 'glyph', spec: 'emoji · 20 / 1.25', className: 'text-glyph', sample: '🧠 🔔 🏆' },
-  { step: 'glyph-lg', spec: 'emoji · 25 / 1.25', className: 'text-glyph-lg', sample: '🥇 🥈 🥉' },
-  { step: 'glyph-hero', spec: 'emoji · 48 / 1.25', className: 'text-glyph-hero', sample: '🎉' },
+  { step: 'display', spec: 'Unbounded 500 · 44/55 · -0.04em', className: 'font-display font-normal text-5xl' },
+  { step: 'display-phone', spec: 'Unbounded 500 · 32/40', className: 'font-display font-normal text-4xl' },
+  { step: 'section', spec: 'Unbounded 500 · 32/40 · -0.025em', className: 'font-display font-normal text-4xl' },
+  { step: 'section-phone', spec: 'Unbounded 500 · 26/32', className: 'font-display font-normal text-2xl' },
+  { step: 'title', spec: 'Unbounded 500 · 27/34 · -0.025em', className: 'font-display font-normal text-3xl' },
+  { step: 'card-title', spec: 'Unbounded 500 · 23/27 · -0.02em', className: 'font-display font-normal text-2xl' },
+  { step: 'card-title-phone', spec: 'Unbounded 500 · 17/21', className: 'font-display font-normal text-xl' },
+  { step: 'intro', spec: 'Onest 400 · 17/22', className: 'font-sans text-lg' },
+  { step: 'body', spec: 'Onest 400 · 16/24', className: 'font-sans text-base' },
+  { step: 'label', spec: 'Onest 600 · 15/19', className: 'font-sans font-semibold text-base' },
+  { step: 'small', spec: 'Onest 400 · 14/18', className: 'font-sans text-sm' },
+  { step: 'caption', spec: 'Onest 400 · 13/16', className: 'font-sans text-sm' },
+  { step: 'micro', spec: 'Onest 700 · 12/16', className: 'font-sans font-semibold text-xs' },
+  { step: 'glyph-sm', spec: 'emoji · 16 / 1', className: 'text-base leading-none', sample: '🎨 🌙 ☀️' },
+  { step: 'glyph', spec: 'emoji · 20 / 1.25', className: 'text-xl leading-none', sample: '🧠 🔔 🏆' },
+  { step: 'glyph-lg', spec: 'emoji · 25 / 1.25', className: 'text-2xl leading-none', sample: '🥇 🥈 🥉' },
+  { step: 'glyph-hero', spec: 'emoji · 48 / 1.25', className: 'text-6xl leading-none', sample: '🎉' },
 ]
 
 function Heading({ children }: { children: string }) {
-  return <h2 className="mt-8 mb-3 text-title tracking-title">{children}</h2>
+  return <h2 className="mt-8 mb-3 text-3xl">{children}</h2>
 }
 
 function Swatch({ token, bg, text }: { token: string; bg: string; text?: string }) {
@@ -129,11 +129,11 @@ function Swatch({ token, bg, text }: { token: string; bg: string; text?: string 
     <li className="flex flex-col gap-1">
       <div
         data-slot={`swatch-${token}`}
-        className={cn('flex h-14 items-center justify-center rounded-sm border border-border text-micro', bg, text)}
+        className={cn('flex h-14 items-center justify-center rounded-sm border border-border text-xs', bg, text)}
       >
         {text ? 'on it' : ''}
       </div>
-      <code className="w-fit text-micro">{token}</code>
+      <code className="w-fit text-xs">{token}</code>
     </li>
   )
 }
@@ -141,8 +141,8 @@ function Swatch({ token, bg, text }: { token: string; bg: string; text?: string 
 export function TokenSheet() {
   return (
     <div className="mx-auto max-w-360 bg-background p-6 text-foreground" data-slot="token-sheet">
-      <h1 className="text-display tracking-display">Tokens</h1>
-      <p className="max-w-measure text-intro text-muted-foreground">
+      <h1 className="text-5xl">Tokens</h1>
+      <p className="max-w-measure text-lg text-muted-foreground">
         Every colour below is a <code>light-dark()</code> pair; the theme toolbar flips <code>data-theme</code> on{' '}
         <code>&lt;html&gt;</code> and the browser picks the arm. Same markup, both arms.
       </p>
@@ -160,12 +160,12 @@ export function TokenSheet() {
           <li key={tier.key} className="flex flex-col items-center gap-2">
             <div data-slot={`tier-frame-${tier.key}`} className={cn('foil-card rounded-md', `tier-${tier.key}`)}>
               <div className="foil-frame flex h-20 w-28 items-end rounded-md bg-muted p-2">
-                <span data-slot={`tier-chip-${tier.key}`} className={cn('rounded-sm px-2 py-1 text-micro font-bold', tier.chip)}>
+                <span data-slot={`tier-chip-${tier.key}`} className={cn('rounded-sm px-2 py-1 text-xs font-semibold', tier.chip)}>
                   {tier.label}
                 </span>
               </div>
             </div>
-            <code className="text-micro">{tier.key}</code>
+            <code className="text-xs">{tier.key}</code>
           </li>
         ))}
       </ul>
@@ -176,7 +176,7 @@ export function TokenSheet() {
           <span
             key={name}
             data-slot={`material-${name}`}
-            className={cn('inline-flex h-control items-center rounded-lg px-4.5 text-label font-semibold', className)}
+            className={cn('inline-flex h-control items-center rounded-lg px-4.5 text-base font-semibold', className)}
           >
             {label}
           </span>
@@ -185,13 +185,13 @@ export function TokenSheet() {
           type="button"
           disabled
           data-slot="material-disabled"
-          className="disabled-look inline-flex h-control items-center rounded-lg material-raised px-4.5 text-label font-semibold"
+          className="disabled-look inline-flex h-control items-center rounded-lg material-raised px-4.5 text-base font-semibold"
         >
           disabled-look
         </button>
         <span
           data-slot="material-field"
-          className="inline-flex h-12.5 w-64 items-center rounded-md material-pressed px-4.5 text-body text-muted-foreground"
+          className="inline-flex h-12.5 w-64 items-center rounded-md material-pressed px-4.5 text-base text-muted-foreground"
         >
           the field well
         </span>
@@ -202,7 +202,7 @@ export function TokenSheet() {
         {RADII.map(({ step, className }) => (
           <li key={step} className="flex flex-col items-center gap-1">
             <div data-slot={`radius-${step}`} className={cn('h-16 w-24 border-3 border-border bg-card', className)} />
-            <code className="text-micro">{className}</code>
+            <code className="text-xs">{className}</code>
           </li>
         ))}
       </ul>
@@ -211,7 +211,7 @@ export function TokenSheet() {
       <ul className="flex flex-col gap-2">
         {SPACING.map(({ token, role, className }) => (
           <li key={token} className="grid items-center gap-x-4 md:grid-cols-[280px_1fr]">
-            <code className="w-fit text-micro whitespace-normal">
+            <code className="w-fit text-xs whitespace-normal">
               {token} · {role}
             </code>
             <div data-slot={`spacing-${token}`} className={cn('h-3 rounded-full bg-primary', className)} />
@@ -223,7 +223,7 @@ export function TokenSheet() {
       <ul className="flex flex-col gap-2 overflow-hidden">
         {CONTAINERS.map(({ token, spec, className }) => (
           <li key={token} className="flex flex-col gap-1">
-            <code className="w-fit text-micro whitespace-normal">
+            <code className="w-fit text-xs whitespace-normal">
               {token} · {spec}
             </code>
             <div data-slot={`container-${token}`} className={cn('h-3 w-full rounded-full bg-brand', className)} />
@@ -235,7 +235,7 @@ export function TokenSheet() {
       <ul className="flex flex-col gap-3">
         {LADDER.map(({ step, spec, className, sample }) => (
           <li key={step} className="grid gap-x-4 gap-y-1 md:grid-cols-[280px_1fr] md:items-baseline">
-            <code className="w-fit text-micro whitespace-normal">
+            <code className="w-fit text-xs whitespace-normal">
               {step} · {spec}
             </code>
             <p data-slot={`ladder-${step}`} className={cn('m-0', className)}>
@@ -347,7 +347,7 @@ async function assertTokensPainted(which: 'light' | 'dark') {
     await expect(parseFloat(style.lineHeight)).toBeCloseTo(size * parseFloat(token(`--text-${step}--line-height`)), 3)
   }
   const display = getComputedStyle(slot('ladder-display'))
-  await expect(display.letterSpacing).toBe(resolved('letterSpacing', token('--tracking-display'), token('--text-display')))
+  await expect(display.letterSpacing).toBe(resolved('letterSpacing', token('--tracking-display'), token('--text-5xl')))
   await expect(display.fontFamily).toContain('Unbounded Variable')
   await document.fonts.ready
   await expect(document.fonts.check("500 16px 'Unbounded Variable'")).toBe(true)

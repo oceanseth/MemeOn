@@ -38,14 +38,14 @@ const metaPlacement = '2xl:col-start-2 2xl:row-start-1'
 const railPlacement = '2xl:col-start-2 2xl:row-start-2'
 
 /** The caption under a panel heading: 13/16 on ink-muted. */
-const caption = 'mt-1.5 mb-0 text-caption text-muted-foreground'
+const caption = 'mt-1.5 mb-0 text-sm text-muted-foreground'
 
 const panelRow = 'mt-4 flex flex-wrap items-center gap-2.5'
 
 /** The sources / cap-table row: a shallow well, not a bordered box. */
 const personRow = cn(
   'flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-muted px-3.5 py-2.5',
-  'text-small text-foreground *:min-w-0',
+  'text-sm text-foreground *:min-w-0',
 )
 
 const rowList = 'mt-3 flex flex-col gap-2'
@@ -53,7 +53,7 @@ const rowList = 'mt-3 flex flex-col gap-2'
 const inlineLink = 'text-link underline underline-offset-3 decoration-1'
 
 /** Tier line: success colour signed in, link colour on public card — one element, one swap. */
-const heroTierLine = 'm-0 text-caption font-bold'
+const heroTierLine = 'm-0 text-sm font-semibold'
 
 const ladderTrack = 'mt-2 h-track overflow-hidden rounded-full bg-muted'
 const ladderFill = cn('h-full w-(--fill) rounded-full bg-linear-to-r from-brand via-primary to-brand')
@@ -64,8 +64,8 @@ function TierLadder({ model, hype }: { model: DetailTierLadderModel; hype: strin
     /* +12px top margin: MemeCard footer already gaps 6px; design wants 18 before the meter */
     <div data-slot="tier-progression" className="mt-3">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-        <span className="text-caption font-bold text-success-foreground">{model.currentLabel}</span>
-        <span className="text-micro/tight font-medium text-muted-foreground tabular-nums">{model.nextLabel}</span>
+        <span className="text-sm font-semibold text-success-foreground">{model.currentLabel}</span>
+        <span className="text-xs font-medium text-muted-foreground tabular-nums">{model.nextLabel}</span>
       </div>
       <div className={ladderTrack} {...model.meterProps}>
         <div className={ladderFill} style={{ '--fill': model.fillWidth } as CSSProperties} />
@@ -91,7 +91,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
       {/* a labelled spinner row, never a bare spinner, over the shape the page is about to take */}
       <div
         data-slot="loading-state"
-        className="flex items-center justify-center gap-2.5 px-5 py-10 text-small text-muted-foreground"
+        className="flex items-center justify-center gap-2.5 px-5 py-10 text-sm text-muted-foreground"
         role="status"
       >
         <Spinner />{loadingLabel}
@@ -121,18 +121,18 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
       <div className={detailGrid}>
         <div data-slot="detail-metadata" className={cn('flex min-w-0 flex-col', metaPlacement)}>
           {isPublic && (
-            <h1 className="m-0 flex flex-wrap items-center gap-x-3 font-display text-display font-medium tracking-display text-foreground max-md:text-display-phone wrap-anywhere">
+            <h1 className="m-0 flex flex-wrap items-center gap-x-3 font-display text-5xl font-normal text-foreground max-md:text-4xl wrap-anywhere">
               {detail.title}{privateBadge}
             </h1>
           )}
-          <p className={cn('mb-0 text-label font-medium text-muted-foreground', isPublic ? 'mt-2.5' : 'mt-0')}>
+          <p className={cn('mb-0 text-base font-medium text-muted-foreground', isPublic ? 'mt-2.5' : 'mt-0')}>
             minted by <Link className={inlineLink} {...detail.creatorLinkProps}>{detail.creatorName}</Link>
             {' · '}owned by <Link className={inlineLink} {...detail.ownerLinkProps}>{detail.ownerName}</Link>
             {detail.tagsLabel && <> · {detail.tagsLabel}</>}
             {detail.remixLinkProps && <> · <Link className={inlineLink} {...detail.remixLinkProps}>🧬 remix</Link></>}
             {detail.sourceLinkProps && <> · <a className={inlineLink} {...detail.sourceLinkProps}>{detail.sourceLabel}</a></>}
           </p>
-          <p className="mt-4 mb-0 text-intro font-bold text-foreground tabular-nums">
+          <p className="mt-4 mb-0 text-lg font-medium text-foreground tabular-nums">
             👁️ {detail.viewsLabel} {detail.viewsWord} · 🔁 {detail.resharesLabel} {detail.resharesWord}
             {' · '}🧠 {detail.valueLabel} card value
             {detail.holdingsLabel && <> · you hold {detail.holdingsLabel}</>}

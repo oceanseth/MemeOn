@@ -13,20 +13,20 @@ export const composeGrid = cn(
 )
 
 /** Composer legends at intro size, not micro caps. */
-export const composeLegend = cn('mb-2.5 text-intro font-semibold tracking-normal text-foreground normal-case')
+export const composeLegend = cn('mb-2.5 text-lg font-semibold text-foreground normal-case')
 
 /** A stack of cards, evenly spaced. */
 export const rowList = cn('flex flex-col gap-3.5')
 
 /** Unbounded title — the section heading each list outside the composer sits under. */
-export const listHeading = cn('m-0 font-display text-title font-medium tracking-title text-foreground')
+export const listHeading = cn('m-0 font-display text-3xl font-normal text-foreground')
 
 export const headingRow = cn('mb-3.5 flex flex-wrap items-baseline gap-x-3 gap-y-1')
 
-export const countNote = cn('text-small text-muted-foreground tabular-nums')
+export const countNote = cn('text-sm text-muted-foreground tabular-nums')
 
-export const composerIntro = cn('m-0 mt-1.5 text-small font-medium text-muted-foreground')
+export const composerIntro = cn('m-0 mt-1.5 text-sm font-medium text-muted-foreground')
 
 export const proposeRow = cn('flex flex-wrap items-center justify-between gap-x-6 gap-y-3.5')
 
-export const proposeCaption = cn('text-small text-muted-foreground')
+export const proposeCaption = cn('text-sm text-muted-foreground')

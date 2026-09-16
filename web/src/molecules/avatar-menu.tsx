@@ -50,7 +50,7 @@ const POPUP = cn(
  */
 const ITEM = cn(
   'flex min-h-hit w-full cursor-pointer items-center rounded-md border-0 bg-transparent px-3',
-  'text-label font-medium text-foreground no-underline select-none',
+  'text-base font-medium text-foreground no-underline select-none',
   'data-highlighted:bg-accent',
   'focus-ring-inset',
 )

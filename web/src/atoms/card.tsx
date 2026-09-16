@@ -56,12 +56,12 @@ export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElemen
 }
 
 /** The heading steps a card title takes; `intro` is the panel default. */
-const cardTitleVariants = cva('m-0 font-display font-medium text-foreground', {
+const cardTitleVariants = cva('m-0 font-display font-normal text-foreground text-balance', {
   variants: {
     size: {
-      intro: 'text-intro tracking-normal',
-      'card-title': 'text-card-title tracking-card-title',
-      title: 'text-title tracking-title',
+      intro: 'font-sans text-lg font-semibold',
+      'card-title': 'text-2xl',
+      title: 'text-3xl',
     },
   },
   defaultVariants: { size: 'intro' },
@@ -86,7 +86,7 @@ export function CardTitle({ className, size, render, ...props }: CardTitleProps)
 }
 
 export function CardDescription({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
-  return <p data-slot="card-description" className={cn('text-small text-muted-foreground', className)} {...props} />
+  return <p data-slot="card-description" className={cn('text-sm text-muted-foreground', className)} {...props} />
 }
 
 export function CardAction({ className, ...props }: HTMLAttributes<HTMLDivElement>) {

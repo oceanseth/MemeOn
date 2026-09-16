@@ -11,12 +11,12 @@ const meta = {
   render: (args) => (
     <Collapsible {...args} className="w-96 rounded-lg material-raised">
       <CollapsibleTrigger className="group flex min-h-hit w-full cursor-pointer items-center gap-3 rounded-lg px-gutter py-3.5 text-left focus-ring">
-        <span aria-hidden="true" className="shrink-0 text-label text-muted-foreground transition-lift group-data-panel-open:rotate-180">
+        <span aria-hidden="true" className="shrink-0 text-base text-muted-foreground transition-lift group-data-panel-open:rotate-180">
           ▾
         </span>
-        <span className="text-intro font-semibold text-foreground">How do shares work?</span>
+        <span className="text-lg font-semibold text-foreground">How do shares work?</span>
       </CollapsibleTrigger>
-      <CollapsibleContent className="px-gutter pb-4 text-body text-muted-foreground">
+      <CollapsibleContent className="px-gutter pb-4 text-base text-muted-foreground">
         Every meme mints a fixed number of shares; a reshare moves one to the resharer.
       </CollapsibleContent>
     </Collapsible>

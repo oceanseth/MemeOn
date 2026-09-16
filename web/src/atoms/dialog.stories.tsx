@@ -128,7 +128,7 @@ export const Scrolling: Story = {
             <DialogTitle>A long explanation</DialogTitle>
           </DialogHeader>
           {Array.from({ length: 30 }, (_, index) => (
-            <p key={index} className="m-0 text-small text-muted-foreground">
+            <p key={index} className="m-0 text-sm text-muted-foreground">
               Line {index + 1} of a very long explanation.
             </p>
           ))}

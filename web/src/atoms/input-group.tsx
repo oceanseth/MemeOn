@@ -28,7 +28,7 @@ export function InputGroup({ className, ...props }: ComponentPropsWithoutRef<'di
 }
 
 export const inputGroupAddonVariants = cva(
-  'flex h-auto shrink-0 cursor-text items-center justify-center gap-2 text-label text-muted-foreground select-none',
+  'flex h-auto shrink-0 cursor-text items-center justify-center gap-2 text-base text-muted-foreground select-none',
   {
     variants: {
       align: {
@@ -67,7 +67,7 @@ export function InputGroupText({ className, ...props }: ComponentPropsWithoutRef
   return (
     <span
       data-slot="input-group-text"
-      className={cn('flex items-center gap-2 text-label text-muted-foreground', className)}
+      className={cn('flex items-center gap-2 text-base text-muted-foreground', className)}
       {...props}
     />
   )

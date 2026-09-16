@@ -13,7 +13,7 @@ const PICK_PLACEHOLDER: SelectOption = { value: '', label: 'Link from your binde
 
 /* The strip's own copy scale: 14/18 on ink-muted, which is the smallest the ladder goes before
    the micro line the cards themselves use. */
-const LINE = 'text-small text-muted-foreground'
+const LINE = 'text-sm text-muted-foreground'
 
 /** This meme's ancestry, remixes, related cards, and controlled linking controls. */
 export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {

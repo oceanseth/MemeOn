@@ -110,7 +110,7 @@ export function AlertDialogMedia({ className, ...props }: ComponentProps<'div'>)
   return (
     <div
       data-slot="alert-dialog-media"
-      className={cn('inline-flex size-10 shrink-0 items-center justify-center rounded-md material-pressed text-glyph', className)}
+      className={cn('inline-flex size-10 shrink-0 items-center justify-center rounded-md material-pressed text-xl leading-none', className)}
       {...props}
     />
   )
@@ -120,7 +120,7 @@ export function AlertDialogTitle({ className, ...props }: Styled<AlertDialogPrim
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
-      className={cn('m-0 font-display text-title font-medium tracking-title text-foreground text-pretty', className)}
+      className={cn('m-0 font-display text-3xl font-normal text-foreground text-pretty', className)}
       {...props}
     />
   )
@@ -130,7 +130,7 @@ export function AlertDialogDescription({ className, ...props }: Styled<AlertDial
   return (
     <AlertDialogPrimitive.Description
       data-slot="alert-dialog-description"
-      className={cn('m-0 text-label text-muted-foreground', className)}
+      className={cn('m-0 text-base text-muted-foreground', className)}
       {...props}
     />
   )

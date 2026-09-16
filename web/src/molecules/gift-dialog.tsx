@@ -55,7 +55,7 @@ export function GiftDialog({ model }: { model: GiftDialogModel }) {
         data-slot="gift-list"
       >
         {/* my-4 is the UA paragraph margin preflight removed; the empty binder read as a gap, not a row */}
-        {model.showEmpty && <p className="my-4 text-label leading-[1.55] text-muted-foreground">{model.emptyMessage}</p>}
+        {model.showEmpty && <p className="my-4 text-base leading-[1.55] text-muted-foreground">{model.emptyMessage}</p>}
         {model.rows.map((row) => (
           <Button key={row.id} className={ROW} {...row.buttonProps}>
             <span className={THUMB}>
@@ -64,7 +64,7 @@ export function GiftDialog({ model }: { model: GiftDialogModel }) {
             <span className="flex-[1_1_120px] overflow-hidden font-semibold text-ellipsis">
               {row.title}
             </span>
-            <span className="shrink-0 text-micro text-muted-foreground tabular-nums">{row.sharesLabel}</span>
+            <span className="shrink-0 text-xs text-muted-foreground tabular-nums">{row.sharesLabel}</span>
             {/* the one place rarity says its own name: the seal the cards already wear */}
             <TierChip tierKey={row.tierKey} label={row.tierLabel} className="shrink-0" />
             {row.listed && (
@@ -77,7 +77,7 @@ export function GiftDialog({ model }: { model: GiftDialogModel }) {
       </div>
       <FilterBar className="mt-4">
         {model.showControls && (
-          <label className="inline-flex items-center gap-2 text-label text-muted-foreground">
+          <label className="inline-flex items-center gap-2 text-base text-muted-foreground">
             {model.sharesLabel}{' '}
             <Input type="number" className="w-21" {...model.sharesInputProps} />{' '}
             <span>{model.sharesMaxLabel}</span>

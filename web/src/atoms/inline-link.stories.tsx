@@ -10,7 +10,7 @@ const meta = {
   decorators: [
     (Story) => (
       <MemoryRouter>
-        <p className="m-0 max-w-105 p-4 text-body text-foreground">
+        <p className="m-0 max-w-105 p-4 text-base text-foreground">
           Every reshare climbs <Story /> a little further.
         </p>
       </MemoryRouter>

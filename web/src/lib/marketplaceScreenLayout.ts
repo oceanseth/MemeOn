@@ -47,14 +47,14 @@ export const cardSlot = cn(
 
 /** Results / Count: the section heading left, the live count right, on one baseline. */
 export const resultsRow = cn('mt-1 mb-gutter flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2')
-export const sectionHeading = cn('m-0 font-display text-title font-medium tracking-title text-foreground')
-export const summaryRow = cn('flex flex-wrap items-center gap-2.5 text-small text-muted-foreground')
+export const sectionHeading = cn('m-0 font-display text-3xl font-normal text-foreground max-md:text-2xl')
+export const summaryRow = cn('flex flex-wrap items-center gap-2.5 text-sm text-muted-foreground')
 
 /**
  * A small button keeps an explicit height: the pill is 46 tall now, and padding no longer shrinks
  * it. 36 is the drawn size; a coarse pointer still gets the 44 a finger needs.
  */
-export const chipButton = cn('h-9 px-3 text-micro pointer-coarse:min-h-hit')
+export const chipButton = cn('h-9 px-3 text-xs pointer-coarse:min-h-hit')
 
 export const searchInput = cn('w-full pl-12.5')
 
@@ -64,7 +64,7 @@ export const marketFilters = cn('flex flex-col gap-3 max-lg:data-[collapsed=true
 
 export const filterRow = cn('flex flex-wrap items-center gap-3')
 
-export const endOfList = cn('pt-8 text-small')
+export const endOfList = cn('pt-8 text-sm')
 
 /** Tier filter as a raised pill — same material as neighbours, not a recessed form Select. */
 export const tierPill = cn(

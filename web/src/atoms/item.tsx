@@ -29,7 +29,7 @@ export function ItemSeparator({ className, ...props }: ComponentProps<typeof Sep
  */
 export const itemVariants = cva(
   cn(
-    'group/item flex w-full min-h-hit flex-wrap items-center rounded-md text-label text-foreground',
+    'group/item flex w-full min-h-hit flex-wrap items-center rounded-md text-base text-foreground',
     'transition-tint outline-none focus-ring',
     '[a]:cursor-pointer [a]:no-underline [a]:hover:bg-accent [button]:cursor-pointer [button]:hover:bg-accent',
   ),
@@ -77,7 +77,7 @@ export const itemMediaVariants = cva(
     variants: {
       variant: {
         default: 'bg-transparent',
-        icon: 'text-glyph',
+        icon: 'text-xl leading-none',
         image: 'size-10 overflow-hidden rounded-sm group-data-[size=sm]/item:size-8 *:size-full *:object-cover',
       },
     },
@@ -106,7 +106,7 @@ export function ItemContent({ className, ...props }: ComponentProps<'div'>) {
   return <div data-slot="item-content" className={cn('flex min-w-0 flex-1 flex-col gap-0.5', className)} {...props} />
 }
 
-const itemTitleVariants = cva('flex w-fit max-w-full items-center gap-2 text-label font-semibold leading-snug text-foreground', {
+const itemTitleVariants = cva('flex w-fit max-w-full items-center gap-2 text-base font-semibold text-foreground', {
   variants: {
     /** one line, ellipsis — a name in a fixed-width row; off, a message wraps */
     truncate: {
@@ -131,7 +131,7 @@ export function ItemDescription({ className, ...props }: ComponentProps<'p'>) {
   return (
     <p
       data-slot="item-description"
-      className={cn('m-0 text-left text-small font-normal text-muted-foreground text-pretty', className)}
+      className={cn('m-0 text-left text-sm font-normal text-muted-foreground text-pretty', className)}
       {...props}
     />
   )

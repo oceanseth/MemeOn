@@ -42,7 +42,7 @@ const DANGER = 'inset-ring-2 inset-ring-destructive'
 /** The ✕ is a 40px neutral raised square — the design has no drawn x, and the glyph is the button. */
 const CLOSE = cn(
   'absolute top-6 right-6 inline-flex size-10 pointer-coarse:size-hit cursor-pointer items-center justify-center',
-  'rounded-sm material-raised p-0 text-label text-foreground',
+  'rounded-sm material-raised p-0 text-base text-foreground',
   'transition-press',
   'press',
   'focus-ring',
@@ -139,7 +139,7 @@ export function DialogFrame({
     <Dialog.Title
       id={titleId ?? `${id}-title`}
       render={<h3 />}
-      className="m-0 mb-1.5 text-title tracking-title"
+      className="m-0 mb-1.5 text-3xl"
       data-slot="dialog-title"
     >
       {title}
@@ -185,7 +185,7 @@ export function DialogFrame({
                 id={descriptionId ?? `${id}-description`}
                 render={descriptionAs === 'div' ? <div /> : <p />}
                 // label scale, not body — matches every modal description in the app
-                className={cn('m-0 text-label text-muted-foreground', descriptionClassName)}
+                className={cn('m-0 text-base text-muted-foreground', descriptionClassName)}
                 data-slot="dialog-description"
               >
                 {description}

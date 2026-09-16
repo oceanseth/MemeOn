@@ -14,8 +14,8 @@ import { FaqItem } from '@/molecules/faq-item'
 import { HeroVideo } from '@/molecules/hero-video'
 import './LandingScreen.css'
 
-const FACE = 'font-display font-medium text-foreground'
-const SECTION_TITLE = cn(FACE, 'm-0 text-section-phone tracking-title md:text-section')
+const FACE = 'font-display font-normal text-foreground'
+const SECTION_TITLE = cn(FACE, 'm-0 text-2xl md:text-4xl')
 const SECTION = 'mt-14 max-md:mt-10'
 
 const CARD = 'rounded-lg material-card p-gutter'
@@ -71,13 +71,13 @@ export function LandingScreen({
           <div className="min-w-0">
             <h1
               className={cn(
-                'm-0 font-display text-display-phone font-medium tracking-display text-foreground text-pretty',
-                'md:text-display',
+                'm-0 font-display text-4xl font-medium text-foreground text-balance',
+                'md:text-6xl',
               )}
             >
               Memes are the new trading cards
             </h1>
-            <p className="mt-5 mb-0 max-w-measure text-pretty text-intro text-muted-foreground">
+            <p className="mt-5 mb-0 max-w-measure text-pretty text-lg text-muted-foreground">
               Mint the moment. Watch it spread. Trade the cards everyone sends each other anyway —
               every meme gets a share link whose foil frame levels up as it travels.
             </p>
@@ -88,7 +88,7 @@ export function LandingScreen({
                 <Button variant="login" {...loginButtonProps}>
                   {loginLabel}
                 </Button>
-                <p className="m-0 max-w-[24ch] text-small text-muted-foreground">
+                <p className="m-0 max-w-[24ch] text-sm text-muted-foreground">
                   No email. No real name. Just your Masky avatar.
                 </p>
               </div>
@@ -136,7 +136,7 @@ export function LandingScreen({
                     </span>
                   </span>
                   <span
-                    className="mx-1 mt-1.5 mb-1.5 block pr-13 font-sans text-caption font-medium tracking-normal text-foreground md:text-label"
+                    className="mx-1 mt-1.5 mb-1.5 block pr-13 font-sans text-sm font-medium text-foreground md:text-base"
                   >
                     {card.caption}
                   </span>
@@ -144,7 +144,7 @@ export function LandingScreen({
                     tierKey={card.tierKey}
                     label={card.tierName}
                     /* pile seal one step smaller than grid thumb so it never crowds the title */
-                    className="absolute right-2.5 bottom-2.5 px-2 py-1 text-micro"
+                    className="absolute right-2.5 bottom-2.5 px-2 py-1 text-xs"
                   />
                 </li>
               )
@@ -160,11 +160,11 @@ export function LandingScreen({
           {HOW_IT_WORKS.map((step) => (
             <li key={step.step} className={CARD}>
               {/* step number in link colour — focus token misses contrast on dark surfaces */}
-              <span className="block text-small font-semibold text-link tabular-nums">
+              <span className="block text-sm font-semibold text-link tabular-nums">
                 {step.step}
               </span>
-              <h3 className={cn(FACE, 'mt-3 mb-0 text-card-title tracking-card-title')}>{step.title}</h3>
-              <p className="mt-2 mb-0 text-small text-muted-foreground">{step.body}</p>
+              <h3 className={cn(FACE, 'mt-3 mb-0 text-2xl')}>{step.title}</h3>
+              <p className="mt-2 mb-0 text-sm text-muted-foreground">{step.body}</p>
             </li>
           ))}
         </ol>
@@ -205,13 +205,13 @@ export function LandingScreen({
                   ) : null}
                 </span>
               </span>
-              <h3 className={cn(FACE, 'mt-3 mb-0 text-card-title-phone tracking-card-title')}>
+              <h3 className={cn(FACE, 'mt-3 mb-0 font-sans text-lg font-semibold')}>
                 {t.name}
               </h3>
-              <span className="mt-2.5 text-small font-bold text-link tabular-nums">
+              <span className="mt-2.5 text-sm font-semibold text-link tabular-nums">
                 {t.resharesLabel}
               </span>
-              <span className="mt-1 text-micro/tight text-muted-foreground">{t.rarityLabel}</span>
+              <span className="mt-1 text-xs text-muted-foreground">{t.rarityLabel}</span>
             </li>
           ))}
         </ol>
@@ -226,7 +226,7 @@ export function LandingScreen({
 
       {/* FAQ */}
       <section data-slot="landing-faq" className={SECTION}>
-        <h2 className={cn(FACE, 'm-0 mb-6 text-section-phone tracking-title md:text-section')}>FAQ</h2>
+        <h2 className={cn(FACE, 'm-0 mb-6 text-2xl md:text-4xl')}>FAQ</h2>
         <div className="max-w-measure">
           <FaqItem question="How does a card level up?" defaultOpen>
             <p>
@@ -297,8 +297,8 @@ export function LandingScreen({
         >
           <p
             className={cn(
-              'm-0 font-display font-medium text-brand-foreground',
-              'text-card-title tracking-card-title md:text-title md:tracking-title',
+              'm-0 font-display font-normal text-brand-foreground',
+              'text-2xl md:text-3xl',
             )}
           >
             {closingLine}
