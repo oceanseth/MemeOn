@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
-import { Button, buttonClasses } from '@/atoms/button'
+import { Alert, AlertAction } from '@/atoms/alert'
+import { Button, buttonVariants } from '@/atoms/button'
+import { Card } from '@/atoms/card'
+import { Item, ItemMedia, ItemTitle } from '@/atoms/item'
 import { PageContainer } from '@/atoms/page-container'
-import { Panel } from '@/atoms/panel'
 import { Spinner } from '@/atoms/spinner'
 import { cn } from '../lib/cn'
 import type { DiscordLinkScreenModel } from '../hooks/useDiscordLinkScreen'
@@ -13,19 +15,11 @@ const TITLE = cn(
   'max-md:text-2xl',
 )
 
-const ROW = cn(
-  'flex flex-wrap items-center justify-between gap-4 rounded-lg px-4 py-3',
-  'max-md:flex-col max-md:items-start max-md:gap-2.5 max-md:px-3.5',
-)
-
-/** Row label inherits tone colour — command is plain text, not a code chip. */
+/** Row label inherits the band's tone — the command is plain text, not a code chip. */
 const ROW_LABEL = 'm-0 text-sm font-semibold [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-inherit'
 
-/**
- * The row's own action is 40 tall, not the page's 46: it answers the row, not the page. A finger
- * still gets 44 — at any width, because a touch screen is not always a narrow one.
- */
-const ROW_ACTION = 'h-10 shrink-0 max-md:h-hit pointer-coarse:min-h-hit'
+/** Each phase names its own card; the lede above the rows never moves. */
+const CARD_LEDE = 'm-0 mb-3 text-base font-semibold text-muted-foreground'
 
 /** Discord connect ritual as a function of its model. Every engine state is one set of args. */
 export function DiscordLinkScreen({
@@ -59,7 +53,7 @@ export function DiscordLinkScreen({
               <Button variant="primary" onClick={onConfirm}>
                 Connect Discord
               </Button>
-              <Link className={buttonClasses()} to="/discord">
+              <Link className={buttonVariants()} to="/discord">
                 Not now
               </Link>
             </div>
@@ -75,49 +69,51 @@ export function DiscordLinkScreen({
         className={cn(COLUMN, 'mt-8 text-left empty:mt-0')}
       >
         {(showBusy || showDone) && (
-          <Panel className="p-5.5 max-md:p-gutter">
-            <p className="m-0 mb-3 text-base font-semibold text-muted-foreground">What happens next</p>
+          <Card size="sm">
+            <p className={CARD_LEDE}>What happens next</p>
             {showBusy && (
-              <div className={cn(ROW, 'bg-muted max-md:flex-row max-md:items-center')}>
-                <span className="flex items-center gap-3">
-                  <Spinner className="size-6 border-3" />
-                  <span className="text-base font-semibold text-foreground">{busyMessage}</span>
-                </span>
-              </div>
+              <Item variant="muted">
+                <ItemMedia>
+                  <Spinner size="md" />
+                </ItemMedia>
+                <ItemTitle>{busyMessage}</ItemTitle>
+              </Item>
             )}
             {showDone && (
-              <div className={cn(ROW, 'bg-success')}>
-                <p className={cn(ROW_LABEL, 'text-success-foreground')}>
+              <Alert variant="success" className="block w-full max-w-none">
+                <p className={ROW_LABEL}>
                   Head back to Discord — <code>/memeon</code> now ranks your binder 💼 and friends'
                   memes 🤝 first.
                 </p>
-                <Link className={cn(buttonClasses(), ROW_ACTION)} to="/discord">
-                  Back to MemeOn
-                </Link>
-              </div>
+                <AlertAction>
+                  <Link className={buttonVariants({ size: 'sm' })} to="/discord">
+                    Back to MemeOn
+                  </Link>
+                </AlertAction>
+              </Alert>
             )}
-          </Panel>
+          </Card>
         )}
       </div>
 
       {showError && (
         <div className={cn(COLUMN, 'mt-8 text-left')}>
-          <Panel className="p-5.5 max-md:p-gutter">
-            <p className="m-0 mb-3 text-base font-semibold text-muted-foreground">What happens next</p>
-            <div className={cn(ROW, 'bg-error')} role="alert">
-              <p className={cn(ROW_LABEL, 'text-error-foreground')}>{errBody}</p>
-              <span className="flex shrink-0 flex-wrap items-center gap-2.5">
+          <Card size="sm">
+            <p className={CARD_LEDE}>What happens next</p>
+            <Alert variant="error" className="block w-full max-w-none">
+              <p className={ROW_LABEL}>{errBody}</p>
+              <AlertAction>
                 {canRetry && (
-                  <Button variant="primary" className={ROW_ACTION} onClick={onRetry}>
+                  <Button variant="primary" size="sm" onClick={onRetry}>
                     Try again
                   </Button>
                 )}
-                <Link className={cn(buttonClasses(), ROW_ACTION)} to="/discord">
+                <Link className={buttonVariants({ size: 'sm' })} to="/discord">
                   Back to MemeOn
                 </Link>
-              </span>
-            </div>
-          </Panel>
+              </AlertAction>
+            </Alert>
+          </Card>
         </div>
       )}
     </PageContainer>

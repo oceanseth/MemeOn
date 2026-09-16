@@ -1,18 +1,11 @@
 import { Link } from 'react-router-dom'
-import { Button, buttonClasses } from '@/atoms/button'
+import { Button, buttonVariants } from '@/atoms/button'
+import { Card, CardTitle } from '@/atoms/card'
+import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/atoms/item'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
-import { Panel, PanelHeading } from '@/atoms/panel'
-import { cn } from '../lib/cn'
 import type { SettingsScreenModel } from '../hooks/useSettingsScreen'
 import { ThemeControl } from '@/molecules/theme-control'
-
-/** Settings section card — Panel raised material. */
-const CARD = 'px-5 py-gutter max-md:px-5 max-md:py-gutter'
-
-const ROW = 'mt-4 flex flex-wrap items-center gap-3'
-const SUBJECT = 'text-base font-semibold text-foreground'
-const FACT = 'text-sm text-muted-foreground'
 
 /** Account, Appearance, Connections as a function of the model. Pure props → markup. */
 export function SettingsScreen({
@@ -27,43 +20,52 @@ export function SettingsScreen({
       <PageHead level="h1" title={title} subtitle={intro} className="mb-5" />
       <div data-slot="settings-sections" className="flex flex-col gap-5">
         {account && (
-          <Panel className={CARD}>
-            <PanelHeading size="section" className="mb-0">{account.heading}</PanelHeading>
-            <div data-slot="settings-account" className={cn(ROW, 'max-md:flex-col max-md:items-start max-md:gap-2.5')}>
-              <span className={SUBJECT}>{account.nameLabel}</span>
-              <span className={FACT}>{account.providerLabel}</span>
-              <Button className="ms-auto max-md:ms-0" {...account.logoutButtonProps}>
-                {account.logoutLabel}
-              </Button>
-            </div>
-          </Panel>
+          <Card size="xs">
+            <CardTitle render={<h2 />}>{account.heading}</CardTitle>
+            <Item data-slot="settings-account" className="mt-4 max-md:flex-col max-md:items-start">
+              <ItemContent>
+                <ItemTitle>{account.nameLabel}</ItemTitle>
+                <ItemDescription>{account.providerLabel}</ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                <Button {...account.logoutButtonProps}>{account.logoutLabel}</Button>
+              </ItemActions>
+            </Item>
+          </Card>
         )}
 
-        <Panel className={CARD}>
-          <PanelHeading size="section" className="mb-0">{appearance.heading}</PanelHeading>
+        <Card size="xs">
+          <CardTitle render={<h2 />}>{appearance.heading}</CardTitle>
           <div data-slot="settings-appearance" className="mt-3.5">
             <ThemeControl model={appearance.theme} />
-            <p className={cn(FACT, 'mt-2.5 mb-0')}>{appearance.caption}</p>
+            <p className="mt-2.5 mb-0 text-sm text-muted-foreground">{appearance.caption}</p>
           </div>
-        </Panel>
+        </Card>
 
-        <Panel className={CARD}>
-          <PanelHeading size="section" className="mb-0">{connections.heading}</PanelHeading>
+        <Card size="xs">
+          <CardTitle render={<h2 />}>{connections.heading}</CardTitle>
           <ul data-slot="settings-connections" className="m-0 list-none p-0">
             {connections.rows.map((row) => (
-              <li key={row.key} className={ROW} data-slot="connection-row" data-linked={row.linked}>
-                <span className={SUBJECT}>{row.serviceLabel}</span>
-                <span className={FACT}>{row.stateLabel}</span>
-                <Link
-                  className={cn(buttonClasses(), 'ms-auto max-md:ms-0')}
-                  {...row.actionLinkProps}
-                >
-                  {row.actionLabel}
-                </Link>
-              </li>
+              <Item
+                key={row.key}
+                render={<li />}
+                data-slot="connection-row"
+                data-linked={row.linked}
+                className="mt-4 max-md:flex-col max-md:items-start"
+              >
+                <ItemContent>
+                  <ItemTitle>{row.serviceLabel}</ItemTitle>
+                  <ItemDescription>{row.stateLabel}</ItemDescription>
+                </ItemContent>
+                <ItemActions>
+                  <Link className={buttonVariants()} {...row.actionLinkProps}>
+                    {row.actionLabel}
+                  </Link>
+                </ItemActions>
+              </Item>
             ))}
           </ul>
-        </Panel>
+        </Card>
       </div>
     </PageContainer>
   )

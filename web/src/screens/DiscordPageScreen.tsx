@@ -1,20 +1,13 @@
-import { buttonClasses } from '@/atoms/button'
-import { Notice } from '@/atoms/notice'
+import { Alert } from '@/atoms/alert'
+import { Button, buttonVariants } from '@/atoms/button'
+import { Card, CardDescription, CardTitle } from '@/atoms/card'
+import { Heading } from '@/atoms/heading'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
-import { Panel } from '@/atoms/panel'
-import { Spinner } from '@/atoms/spinner'
-import { cn } from '../lib/cn'
 import type { DiscordPageScreenModel } from '../hooks/useDiscordPageScreen'
-
-const FLOW_CARD = 'rounded-lg px-5 py-4 max-md:px-5 max-md:py-4'
 
 /** Command line uses link colour — focus token misses contrast on dark surfaces. */
 const FLOW_COMMAND = 'm-0 text-base font-semibold text-link'
-
-const FLOW_TITLE = 'mt-2 mb-0 font-display text-2xl font-normal text-foreground'
-const FLOW_BODY = 'mt-1 mb-0 text-sm font-medium text-muted-foreground'
-const FAQ_QUESTION = 'mt-5 mb-0 text-lg font-semibold text-foreground first:mt-0'
 
 /** Discord install landing as a function of its model. Every engine state is one set of args. */
 export function DiscordPageScreen({
@@ -36,14 +29,13 @@ export function DiscordPageScreen({
       {/* one reserved box for every phase, so the CTA never pops the page down when config lands */}
       <div className="flex min-h-14 flex-wrap items-center gap-2 max-md:flex-col max-md:items-start">
         {showLoading && (
-          <span className={buttonClasses('primary')} aria-disabled="true">
-            <Spinner />
+          <Button variant="primary" busy disabled focusableWhenDisabled>
             Checking Discord…
-          </span>
+          </Button>
         )}
         {showInstall && (
           <>
-            <a {...installLinkProps} className={buttonClasses('primary')} aria-describedby="discord-cta-note">
+            <a {...installLinkProps} className={buttonVariants({ variant: 'primary' })} aria-describedby="discord-cta-note">
               🧠 Add MemeOn to Discord
             </a>
             <span id="discord-cta-note" className="ms-3 text-sm font-medium text-muted-foreground max-md:ms-0">
@@ -52,14 +44,14 @@ export function DiscordPageScreen({
           </>
         )}
         {showPending && (
-          <Notice tone="info" className="mt-0" role="status">
+          <Alert variant="info" role="status">
             Almost live — the Discord app is being registered. Check back soon!
-          </Notice>
+          </Alert>
         )}
         {showError && (
-          <Notice tone="error" className="mt-0" role="alert">
+          <Alert variant="error" role="alert">
             Couldn't reach MemeOn — reload to try again.
-          </Notice>
+          </Alert>
         )}
       </div>
 
@@ -67,51 +59,56 @@ export function DiscordPageScreen({
         <h2 id="discord-how" className="sr-only">
           How it works
         </h2>
-        <Panel className={FLOW_CARD}>
+        <Card size="xs">
           <p className={FLOW_COMMAND}>/memeon</p>
-          <p className={FLOW_TITLE}>Search live cards</p>
-          <p className={FLOW_BODY}>Your binder 💼 and friends' memes 🤝 rank first.</p>
-        </Panel>
-        <Panel className={FLOW_CARD}>
+          <CardTitle render={<h3 />} size="card-title" className="mt-2">
+            Search live cards
+          </CardTitle>
+          <CardDescription className="mt-1">Your binder 💼 and friends' memes 🤝 rank first.</CardDescription>
+        </Card>
+        <Card size="xs">
           <p className={FLOW_COMMAND}>/memeon-connect</p>
-          <p className={FLOW_TITLE}>Make it yours</p>
-          <p className={FLOW_BODY}>A private link connects one Masky account.</p>
-        </Panel>
-        <Panel className={FLOW_CARD}>
+          <CardTitle render={<h3 />} size="card-title" className="mt-2">
+            Make it yours
+          </CardTitle>
+          <CardDescription className="mt-1">A private link connects one Masky account.</CardDescription>
+        </Card>
+        <Card size="xs">
           <p className={FLOW_COMMAND}>Paper → ✨Shiny✨</p>
-          <p className={FLOW_TITLE}>Make every drop matter</p>
-          <p className={FLOW_BODY}>Every post ticks the reshare counter.</p>
-        </Panel>
+          <CardTitle render={<h3 />} size="card-title" className="mt-2">
+            Make every drop matter
+          </CardTitle>
+          <CardDescription className="mt-1">Every post ticks the reshare counter.</CardDescription>
+        </Card>
       </section>
 
-      <Panel
-        aria-labelledby="discord-faq"
-        className={cn('mt-6 bg-accent p-6 max-md:p-6', '[&_h2]:m-0')}
-      >
-        <h2 id="discord-faq" className="font-display text-2xl font-normal text-foreground md:text-4xl">
+      <Card variant="accent" aria-labelledby="discord-faq" className="mt-6">
+        <Heading as="h2" size="section" id="discord-faq">
           Tiny FAQ
-        </h2>
-        <p className={cn(FAQ_QUESTION, 'mt-5')}>Does this need a server admin?</p>
-        <p className={FLOW_BODY}>
+        </Heading>
+        <CardTitle render={<h3 />} className="mt-5">
+          Does this need a server admin?
+        </CardTitle>
+        <CardDescription className="mt-1">
           No. {installSteps} Choose <strong>Add to My Apps</strong> for every server and DM, or add
           it to a server you manage.
-        </p>
-        <p className={cn(FAQ_QUESTION, 'mt-gutter')}>Is my Discord identity public?</p>
-        <p className={FLOW_BODY}>Never. It only improves your own ranked search.</p>
-      </Panel>
+        </CardDescription>
+        <CardTitle render={<h3 />} className="mt-4.5">
+          Is my Discord identity public?
+        </CardTitle>
+        <CardDescription className="mt-1">Never. It only improves your own ranked search.</CardDescription>
+      </Card>
 
-      <Panel className="mt-6 flex flex-wrap items-center gap-3 rounded-lg px-5 py-4 max-md:flex-col max-md:items-start max-md:px-5 max-md:py-4">
-        <h2 className="m-0 text-lg font-semibold text-foreground">
-          MemeOn brain assets
-        </h2>
+      <Card size="xs" className="mt-6 flex flex-wrap items-center gap-3 max-md:flex-col max-md:items-start">
+        <CardTitle render={<h2 />}>MemeOn brain assets</CardTitle>
         <span className="flex flex-wrap items-center gap-2">
-          <a className={buttonClasses()} href="/brand/memeon-logo-1024.png" download="memeon-logo-1024.png">
+          <a className={buttonVariants()} href="/brand/memeon-logo-1024.png" download="memeon-logo-1024.png">
             {/* no drawn download glyph exists in the Central set: the ⬇ text keeps its own slot */}
             <span aria-hidden="true" className="inline-flex w-5 shrink-0 justify-center">⬇</span>
             Full size
           </a>
           <a
-            className={buttonClasses()}
+            className={buttonVariants()}
             href="/brand/memeon-logo-circle-256.png"
             download="memeon-logo-256.png"
           >
@@ -119,7 +116,7 @@ export function DiscordPageScreen({
             Round
           </a>
         </span>
-      </Panel>
+      </Card>
     </PageContainer>
   )
 }
