@@ -1,25 +1,39 @@
 import { Link } from 'react-router-dom'
-import { Button, buttonClasses } from '@/atoms/button'
-import { EmptyActions, EmptyState } from '@/atoms/empty-state'
-import { Field, FieldHint, FieldLabel } from '@/atoms/field'
-import { Fieldset, FieldsetLegend } from '@/atoms/fieldset'
+import { Alert } from '@/atoms/alert'
+import { Button, buttonVariants } from '@/atoms/button'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/atoms/card'
+import { Empty, EmptyContent, EmptyDescription } from '@/atoms/empty'
+import { Field, FieldDescription, FieldLabel, FieldLegend, FieldSet } from '@/atoms/field'
+import { Heading } from '@/atoms/heading'
 import { Input } from '@/atoms/input'
-import { Notice } from '@/atoms/notice'
+import { LiveRegion } from '@/atoms/live-region'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
-import { Panel, PanelHeading } from '@/atoms/panel'
 import { Select } from '@/atoms/select'
 import { SkeletonRow } from '@/atoms/skeleton'
+import { Toolbar } from '@/atoms/toolbar'
 import { cn } from '../lib/cn'
 import type { TradesScreenModel } from '../hooks/useTradesScreen'
-import {
-  columnFields, composeGrid, composeLegend, composerIntro, countNote, headingRow, listHeading,
-  liveRegion, proposeCaption, proposeRow, rowList,
-} from '../lib/tradesScreenLayout'
 import { ConfirmDialog } from '@/molecules/confirm-dialog'
 import { TradeCard } from '@/molecules/trade-card'
 
 const SKELETON_ROWS = ['a', 'b', 'c']
+
+/* One token per `cn` argument: a multi-word class string in a `screens/` file is counted as copy
+   by `scripts/check-copy.mjs` (LEDGER L24). */
+
+/** Give and want side by side at 2xl, stacked below. */
+const composeGrid = cn(
+  'flex', 'flex-col', 'gap-5',
+  'xl:grid', 'xl:grid-cols-[repeat(2,minmax(0,1fr))]', 'xl:gap-x-7', 'xl:gap-y-5',
+  'xl:[&>*:not([data-slot=field-set])]:col-span-full',
+)
+const columnFields = cn('flex', 'flex-col', 'gap-2.5')
+/** A stack of cards, evenly spaced. */
+const rowList = cn('flex', 'flex-col', 'gap-3.5')
+const countNote = cn('text-sm', 'text-muted-foreground', 'tabular-nums')
+const listHeadingRow = cn('mb-3.5', 'items-baseline')
+const proposeCaption = cn('text-sm', 'text-muted-foreground')
 
 /** Trade lists and a controlled compose panel as a function of its model. */
 export function TradesScreen({
@@ -55,63 +69,75 @@ export function TradesScreen({
     </PageHead>
     {/* both regions are mounted in every state and only their text swaps: a live region inserted
         together with its content is commonly missed, and this is the irreversible surface */}
-    <div className={liveRegion} {...noticeProps}>{msg && <Notice tone="ok" role="none">{msg}</Notice>}</div>
-    <div className={liveRegion} {...errorNoticeProps}>{showErrorNotice && <Notice tone="error" role="none">{err}</Notice>}</div>
+    <LiveRegion variant="visible" className="not-empty:mb-4" {...noticeProps}>
+      {msg && <Alert variant="success" role="none">{msg}</Alert>}
+    </LiveRegion>
+    <LiveRegion variant="visible" className="not-empty:mb-4" {...errorNoticeProps}>
+      {showErrorNotice && <Alert variant="error" role="none">{err}</Alert>}
+    </LiveRegion>
     <div className="[&>*+*]:mt-8">
       {compose && (compose.noFriends
-        ? <EmptyState role="none" id={compose.formProps.id}>
-            <p>{compose.noFriendsMessage}</p>
-            <EmptyActions><Link className={buttonClasses('primary')} {...compose.findFriendsLinkProps}>{compose.findFriendsLabel}</Link></EmptyActions>
-          </EmptyState>
-        : <Panel>
-            <PanelHeading size="composer" className="mb-0">{compose.heading}</PanelHeading>
-            <p className={composerIntro}>{compose.intro}</p>
+        ? <Empty role="none" id={compose.formProps.id}>
+            <EmptyDescription>{compose.noFriendsMessage}</EmptyDescription>
+            <EmptyContent>
+              <Link className={buttonVariants({ variant: 'primary' })} {...compose.findFriendsLinkProps}>{compose.findFriendsLabel}</Link>
+            </EmptyContent>
+          </Empty>
+        : <Card>
+            <CardHeader>
+              <CardTitle size="title">{compose.heading}</CardTitle>
+              <CardDescription>{compose.intro}</CardDescription>
+            </CardHeader>
             <form className={cn(composeGrid, 'mt-5')} {...compose.formProps}>
-              <Field><FieldLabel>{compose.tradeWithLabel}</FieldLabel><Select items={compose.friendSelectItems} {...compose.friendSelectProps} /></Field>
-              <Fieldset>
-                <FieldsetLegend className={composeLegend}>{compose.youGiveLegend}</FieldsetLegend>
+              <Field><FieldLabel>{compose.tradeWithLabel}</FieldLabel><Select aria-label={compose.tradeWithLabel} items={compose.friendSelectItems} {...compose.friendSelectProps} /></Field>
+              <FieldSet>
+                <FieldLegend>{compose.youGiveLegend}</FieldLegend>
                 <div className={columnFields}>
-                  <Field><FieldLabel>{compose.youGiveBinderLabel}</FieldLabel><Select items={compose.offerMemeSelectItems} {...compose.offerMemeSelectProps} /></Field>
-                  {compose.showOfferShares && <Field><FieldLabel>{compose.sharesToGiveLabel}</FieldLabel><Input type="number" {...compose.offerSharesInputProps} /><FieldHint>{compose.offerSharesHint}</FieldHint></Field>}
-                  <Field><FieldLabel>{compose.braincellsAddLabel}</FieldLabel><Input type="number" {...compose.offerCoinsInputProps} /><FieldHint>{compose.offerCoinsHint}</FieldHint></Field>
+                  <Field><FieldLabel>{compose.youGiveBinderLabel}</FieldLabel><Select aria-label={compose.youGiveBinderLabel} items={compose.offerMemeSelectItems} {...compose.offerMemeSelectProps} /></Field>
+                  {compose.showOfferShares && <Field><FieldLabel>{compose.sharesToGiveLabel}</FieldLabel><Input type="number" {...compose.offerSharesInputProps} /><FieldDescription>{compose.offerSharesHint}</FieldDescription></Field>}
+                  <Field><FieldLabel>{compose.braincellsAddLabel}</FieldLabel><Input type="number" {...compose.offerCoinsInputProps} /><FieldDescription>{compose.offerCoinsHint}</FieldDescription></Field>
                 </div>
-              </Fieldset>
-              <Fieldset>
-                <FieldsetLegend className={composeLegend}>{compose.youWantLegend}</FieldsetLegend>
+              </FieldSet>
+              <FieldSet>
+                <FieldLegend>{compose.youWantLegend}</FieldLegend>
                 <div className={columnFields}>
-                  <Field><FieldLabel>{compose.youWantMemesLabel}</FieldLabel><Select items={compose.askMemeSelectItems} {...compose.askMemeSelectProps} /></Field>
+                  <Field><FieldLabel>{compose.youWantMemesLabel}</FieldLabel><Select aria-label={compose.youWantMemesLabel} items={compose.askMemeSelectItems} {...compose.askMemeSelectProps} /></Field>
                   {compose.showAskShares && <Field><FieldLabel>{compose.sharesToWantLabel}</FieldLabel><Input type="number" {...compose.askSharesInputProps} /></Field>}
                   <Field><FieldLabel>{compose.braincellsWantLabel}</FieldLabel><Input type="number" {...compose.askCoinsInputProps} /></Field>
                 </div>
-              </Fieldset>
-              {compose.error && <Notice tone="error" {...compose.errorNoticeProps}>{compose.error}</Notice>}
-              <div className={proposeRow}>
+              </FieldSet>
+              {compose.error && <Alert variant="error" {...compose.errorNoticeProps}>{compose.error}</Alert>}
+              <Toolbar align="between">
                 <span className={proposeCaption}>{compose.proposeCaption}</span>
                 <Button variant="primary" type="submit" className="max-md:w-full" {...compose.proposeButtonProps}>{compose.proposeButtonLabel}</Button>
-              </div>
+              </Toolbar>
             </form>
-          </Panel>)}
+          </Card>)}
       {showLoading && <div className={rowList} {...loadingProps}>
         <span className="sr-only">{loadingLabel}</span>
         {SKELETON_ROWS.map((row) => <SkeletonRow key={row} className="min-h-45" />)}
       </div>}
-      {showError && <EmptyState error {...errorNoticeProps}>
-        <p><strong>{err}</strong></p>
-        <EmptyActions><Button variant="primary" {...retryButtonProps}>{retryLabel}</Button></EmptyActions>
-      </EmptyState>}
+      {showError && <Empty variant="error" {...errorNoticeProps}>
+        <EmptyDescription><strong>{err}</strong></EmptyDescription>
+        <EmptyContent><Button variant="primary" {...retryButtonProps}>{retryLabel}</Button></EmptyContent>
+      </Empty>}
       {showLists && <>
         <section aria-labelledby="trades-open">
-          <div className={headingRow}>
-            <h3 id="trades-open" className={listHeading}>{openHeading}</h3>
+          <Toolbar className={listHeadingRow}>
+            <Heading as="h3" id="trades-open">{openHeading}</Heading>
             {openCountLabel && <span className={countNote}>{openCountLabel}</span>}
-          </div>
-          {open.length === 0 ? <EmptyState role="none">{openEmptyMessage}</EmptyState> : <div className={rowList}>{open.map((trade) => <TradeCard key={trade.id} model={trade} />)}</div>}
+          </Toolbar>
+          {open.length === 0
+            ? <Empty role="none"><EmptyDescription>{openEmptyMessage}</EmptyDescription></Empty>
+            : <div className={rowList}>{open.map((trade) => <TradeCard key={trade.id} model={trade} />)}</div>}
         </section>
         <section aria-labelledby="trades-history">
-          <div className={headingRow}>
-            <h3 id="trades-history" className={listHeading}>{historyHeading}</h3>
-          </div>
-          {history.length === 0 ? <EmptyState role="none">{historyEmptyMessage}</EmptyState> : <div className={rowList}>{history.map((trade) => <TradeCard key={trade.id} model={trade} />)}</div>}
+          <Toolbar className={listHeadingRow}>
+            <Heading as="h3" id="trades-history">{historyHeading}</Heading>
+          </Toolbar>
+          {history.length === 0
+            ? <Empty role="none"><EmptyDescription>{historyEmptyMessage}</EmptyDescription></Empty>
+            : <div className={rowList}>{history.map((trade) => <TradeCard key={trade.id} model={trade} />)}</div>}
         </section>
       </>}
     </div>
