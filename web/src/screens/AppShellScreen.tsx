@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Avatar } from '@/atoms/avatar'
+import { buttonVariants } from '@/atoms/button'
 import { Icon } from '@/atoms/icon'
 import { cn } from '../lib/cn'
 import type { AppShellScreenModel } from '../hooks/useAppShellScreen'
@@ -8,20 +9,11 @@ import { AlertsBell } from '@/molecules/alerts-bell'
 import { AvatarMenu } from '@/molecules/avatar-menu'
 import { QuestBar } from '@/molecules/quest-bar'
 import { ThemeControl } from '@/molecules/theme-control'
-import {
-  AppShell,
-  NAV_ROW,
-  PRIMARY_PILL,
-  TAB_ITEM,
-  TAB_ITEM_PRIMARY,
-  UTILITY_LINK,
-} from '@/organisms/app-shell'
-
-/** The 22×22 icon lane every nav row shares, so labels line up whatever glyph sits in it. */
-const ICON_LANE = 'inline-flex size-icon shrink-0 items-center justify-center'
+import { AppShell } from '@/organisms/app-shell'
+import { NavIcon, NavRow, TabItem, UtilityLink } from '@/organisms/nav-item'
 
 /** The desktop header avatar is a link to the profile; the phone one opens the account menu. */
-const AVATAR_LINK = cn('inline-flex shrink-0 rounded-md no-underline', 'focus-ring')
+const AVATAR_LINK = cn('inline-flex shrink-0 rounded-md', 'focus-ring')
 
 /** "🧠 2,480": a neutral raised pill at 900+; bare bold text in the phone cluster (the design's, and the only way it fits 350). */
 const COINS = cn(
@@ -30,11 +22,8 @@ const COINS = cn(
   'max-xl:h-auto max-xl:rounded-none max-xl:bg-transparent max-xl:px-0 max-xl:font-semibold max-xl:shadow-none',
 )
 
-/* an emoji in the icon lane sits on the `xl` step with the glyph's own leading */
-const NAV_EMOJI = cn('text-xl', 'leading-none')
-
 const GEAR_LINK = cn(
-  'inline-flex size-icon shrink-0 items-center justify-center rounded-xs text-foreground no-underline',
+  'inline-flex size-icon shrink-0 items-center justify-center rounded-xs text-foreground',
   'hover:text-muted-foreground',
   'pointer-coarse:size-hit',
   'focus-ring',
@@ -72,36 +61,35 @@ export function AppShellScreen({
     <>
       <nav className="mt-10 flex flex-col gap-3" aria-label="Main" data-slot="sidebar-nav">
         {navItems.map((item) => (
-          <Link key={item.to} to={item.to} className={NAV_ROW} aria-current={item.current ? 'page' : undefined}>
-            <span className={ICON_LANE} aria-hidden="true" data-slot="nav-icon">
-              {/* an emoji stays an emoji: it takes the icon lane instead of a drawn twin */}
-              {item.emoji ? (
-                <span className={NAV_EMOJI}>{item.emoji}</span>
-              ) : (
-                <Icon name={item.icon} size={22} />
-              )}
-            </span>
+          <NavRow key={item.to} current={item.current} render={<Link to={item.to} />}>
+            {/* an emoji stays an emoji: it takes the icon lane instead of a drawn twin */}
+            <NavIcon>{item.emoji ? item.emoji : <Icon name={item.icon} size={22} />}</NavIcon>
             {item.label}
-          </Link>
+          </NavRow>
         ))}
       </nav>
-      <Link {...mintLinkProps} className={cn(PRIMARY_PILL, 'mx-1 mt-11')} data-slot="mint-link">
+      {/* the chrome's one primary, as a link: shadcn's "as link" form of the Button */}
+      <Link
+        {...mintLinkProps}
+        className={cn(buttonVariants({ variant: 'primary' }), 'mx-1 mt-11')}
+        data-slot="mint-link"
+      >
         <span aria-hidden="true">＋</span> Mint a meme
       </Link>
       <div className="mt-auto flex flex-col pt-6" data-slot="sidebar-foot">
         <ThemeControl model={theme} className="mx-1" />
         <nav className="mx-3 mt-4 flex flex-col items-start gap-1" aria-label="More" data-slot="utility-links">
           {utilityLinks.map((link) => (
-            <Link key={link.to} to={link.to} className={UTILITY_LINK} aria-current={link.current ? 'page' : undefined}>
+            <UtilityLink key={link.to} current={link.current} render={<Link to={link.to} />}>
               {/* NBSP after emoji so it does not glue to the label */}
-              {link.emoji ? `${link.emoji}  ` : ''}
+              {link.emoji ? `${link.emoji}  ` : ''}
               {link.label}
-            </Link>
+            </UtilityLink>
           ))}
         </nav>
         {identity && (
           <div className="mx-1 mt-3 flex min-h-14 items-center gap-3" data-slot="identity">
-            <Avatar name={identity.name} src={identity.src} size="md" className="rounded-md material-raised" />
+            <Avatar name={identity.name} src={identity.src} size="md" />
             <span className="min-w-0 flex-1 truncate text-base font-semibold text-foreground" data-slot="identity-name">
               {identity.name}
             </span>
@@ -119,10 +107,12 @@ export function AppShellScreen({
 
   const headerEnd = (
     <>
-      {/* the sidebar carries the segmented control at 900+; the header button is the phone's and the public pages' */}
+      {/* the sidebar carries the segmented control at 900+; the header button is the phone's and
+          the public pages' — and the public one grows past the cut, which is its own size */}
       <ThemeControl
         model={{ ...theme, variant: 'button' }}
-        className={showNav ? 'xl:hidden' : 'xl:size-10 xl:rounded-md xl:text-xl'}
+        size={showNav ? 'sm' : 'lg'}
+        className={showNav ? 'xl:hidden' : undefined}
       />
       {showToolbar && coins && (
         <span className={COINS} data-slot="coins">
@@ -133,7 +123,7 @@ export function AppShellScreen({
       {showToolbar && <AlertsBell model={alertsBell} />}
       {showToolbar && avatar && (
         <Link {...avatar.linkProps} className={cn(AVATAR_LINK, 'max-xl:hidden')}>
-          <Avatar name={avatar.name} src={avatar.src} size="md" className="rounded-md material-raised" />
+          <Avatar name={avatar.name} src={avatar.src} size="md" />
         </Link>
       )}
       {showToolbar && avatarMenu && (
@@ -146,17 +136,15 @@ export function AppShellScreen({
 
   const tabs = showNav
     ? bottomNav.map((item) => (
-        <Link
+        <TabItem
           key={item.to}
-          to={item.to}
-          className={cn(TAB_ITEM, item.primary && TAB_ITEM_PRIMARY)}
-          aria-current={item.current ? 'page' : undefined}
-          data-slot="tab-item"
-          data-primary={item.primary || undefined}
+          current={item.current}
+          primary={item.primary}
+          render={<Link to={item.to} />}
         >
           <Icon name={item.icon} size={22} />
           {item.label}
-        </Link>
+        </TabItem>
       ))
     : undefined
 

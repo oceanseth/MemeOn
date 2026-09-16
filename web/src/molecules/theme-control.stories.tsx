@@ -21,6 +21,9 @@ export const Segmented: Story = {
     const canvas = within(canvasElement)
     onChange.mockClear()
     const group = canvas.getByRole('group', { name: 'Theme' })
+    /* 184 × 40: three 34px segments and the well's 3px inset */
+    await expect(getComputedStyle(group).width).toBe('184px')
+    await expect(getComputedStyle(group).height).toBe('40px')
     const light = within(group).getByRole('button', { name: /Light/ })
     await expect(light).toHaveAttribute('aria-pressed', 'true')
     await expect(within(group).getByRole('button', { name: /Auto/ })).toHaveAttribute('aria-pressed', 'false')
@@ -33,15 +36,31 @@ export const Segmented: Story = {
 }
 
 /** The header button: the current arm's emoji, the name says where a press goes. */
-export const Button: Story = {
+export const HeaderButton: Story = {
   args: { model: { value: 'auto', onChange, variant: 'button' } },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     onChange.mockClear()
     const button = canvas.getByRole('button', { name: 'Theme: Auto. Switch to Light' })
     await expect(button).toHaveTextContent('🌗')
+    /* the Button atom's 34px square: the control the whole chrome uses */
+    await expect(getComputedStyle(button).height).toBe('34px')
     await userEvent.click(button)
     await expect(onChange).toHaveBeenCalledWith('light')
+  },
+}
+
+/**
+ * The public desktop header has no sidebar to balance the cluster, so its square grows past the
+ * shell cut. It is the control's own size, not a class the screen passes.
+ */
+export const HeaderButtonPublic: Story = {
+  args: { model: { value: 'dark', onChange, variant: 'button' }, size: 'lg' },
+  play: async ({ canvasElement }) => {
+    const button = within(canvasElement).getByRole('button', { name: 'Theme: Dark. Switch to Auto' })
+    await expect(button).toHaveAttribute('data-preference', 'dark')
+    /* the story canvas is wider than the 900px cut */
+    await expect(getComputedStyle(button).height).toBe('40px')
   },
 }
 

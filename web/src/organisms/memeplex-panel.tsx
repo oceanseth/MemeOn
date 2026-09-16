@@ -1,11 +1,13 @@
 import { Link } from 'react-router-dom'
+import { Alert } from '@/atoms/alert'
 import { Button } from '@/atoms/button'
+import { Card, CardTitle } from '@/atoms/card'
+import { InlineLink } from '@/atoms/inline-link'
 import { Input } from '@/atoms/input'
+import { LiveRegion } from '@/atoms/live-region'
 import { MemeCard } from '@/atoms/meme-card'
-import { Notice } from '@/atoms/notice'
-import { FilterBar } from '@/atoms/page-head'
-import { Panel, PanelHeading } from '@/atoms/panel'
 import { Select, type SelectOption } from '@/atoms/select'
+import { Toolbar, ToolbarStart } from '@/atoms/toolbar'
 import { cn } from '../lib/cn'
 import type { MemeplexPanelModel } from '../lib/memeplexPanelModel'
 
@@ -20,19 +22,21 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
   if (!model.show) return null
 
   return (
-    /* The raised section card every panel on the page wears (`atoms/Panel`): bg-card,
-       rounded-lg, material-card, with its head at the shared intro step. */
-    <Panel className="mt-4">
-      <PanelHeading size="section">🕸️ Memeplex</PanelHeading>
+    /* The raised section card every panel on the page wears: `bg-card`, `rounded-lg`,
+       `material-card`, the card inset, with its head at the shared intro step.
+       `data-slot="panel"` stays until MemeDetailScreen's `[&>[data-slot=panel]]:mt-0` moves to
+       the card slot (LEDGER L47). */
+    <Card className="mt-4" data-slot="panel">
+      <CardTitle size="intro" render={<h3 />} className="mb-1.5">🕸️ Memeplex</CardTitle>
       {model.ancestors.length > 0 && (
         <p className={cn('my-2', LINE)}>
           Descended from{' '}
           {model.ancestors.map((ancestor, index) => (
             <span key={ancestor.id}>
               {index > 0 && ' → '}
-              <Link className="text-link underline underline-offset-3 decoration-1" {...ancestor.linkProps}>
+              <InlineLink render={<Link {...ancestor.linkProps} />}>
                 "{ancestor.title}"
-              </Link>
+              </InlineLink>
             </span>
           ))}
           {model.showOriginalLabel && ' (the original)'}
@@ -56,38 +60,40 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
       )}
 
       {model.canEdit && (
-        <FilterBar className="mt-3">
-          <Select
-            items={[PICK_PLACEHOLDER, ...model.linkable.map((candidate) => ({ value: candidate.id, label: candidate.title }))]}
-            {...model.pickerProps}
-          />
-          <Input
-            className="min-w-45"
-            placeholder="…or paste a meme link"
-            {...model.pastedProps}
-          />
-          {/* one primary per card: the model already chose which of the two inputs this submits */}
-          {model.showLink && (
-            <Button variant="primary" {...model.linkButtonProps}>
-              Link
-            </Button>
-          )}
-        </FilterBar>
+        <Toolbar className="mt-3">
+          <ToolbarStart>
+            <Select
+              items={[PICK_PLACEHOLDER, ...model.linkable.map((candidate) => ({ value: candidate.id, label: candidate.title }))]}
+              {...model.pickerProps}
+            />
+            <Input
+              className="min-w-45"
+              placeholder="…or paste a meme link"
+              {...model.pastedProps}
+            />
+            {/* one primary per card: the model already chose which of the two inputs this submits */}
+            {model.showLink && (
+              <Button variant="primary" {...model.linkButtonProps}>
+                Link
+              </Button>
+            )}
+          </ToolbarStart>
+        </Toolbar>
       )}
-      <div {...model.noticeProps}>
+      <LiveRegion variant="visible" {...model.noticeProps}>
         {model.notice && (
-          <Notice tone="ok" role="none">
+          <Alert variant="success" role="none" className="mt-3">
             {model.notice}
-          </Notice>
+          </Alert>
         )}
-      </div>
-      <div {...model.errorProps}>
+      </LiveRegion>
+      <LiveRegion variant="visible" {...model.errorProps}>
         {model.error && (
-          <Notice tone="error" role="none">
+          <Alert variant="error" role="none" className="mt-3">
             {model.error}
-          </Notice>
+          </Alert>
         )}
-      </div>
-    </Panel>
+      </LiveRegion>
+    </Card>
   )
 }

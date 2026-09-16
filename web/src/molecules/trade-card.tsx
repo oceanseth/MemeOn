@@ -1,16 +1,9 @@
 import { Badge } from '@/atoms/badge'
 import { Button } from '@/atoms/button'
+import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/atoms/card'
 import { cn } from '../lib/cn'
 import { SideSummary } from '@/molecules/side-summary'
 import type { TradeCardModel } from '../lib/tradeCardModel'
-
-/** Raised surface card, 20px padding. */
-const CARD = 'rounded-lg material-card p-5'
-
-/** Onest 18/26 semibold — a card headline under the display face's 20px floor. */
-const HEADLINE = 'text-lg font-semibold text-foreground'
-
-const SUBLINE = 'mt-1 block text-sm text-muted-foreground'
 
 /** Give/get stay left/right regardless of proposer — "You give" is always the left plate. */
 const DEAL = cn(
@@ -25,23 +18,28 @@ const SWAP = cn(
   'max-xl:rotate-90 max-xl:justify-self-center',
 )
 
-const ACTIONS = 'flex flex-wrap items-center justify-end gap-3'
-
+/**
+ * One trade proposal: the `Card` atom at its 20px inset, the parties line as its title, the status
+ * as the header's action slot, the two wells, and the responses in the footer.
+ */
 export function TradeCard({ model }: { model: TradeCardModel }) {
   return (
-    <div data-slot="trade-card" className={CARD}>
-      <div className="flex flex-wrap items-start gap-x-2.5 gap-y-1">
-        <div className="min-w-0 flex-1">
-          <strong className={HEADLINE}>{model.partiesLabel}</strong>
-          <span className={SUBLINE}>
-            {model.waitingLabel} ·{' '}
-            <time dateTime={model.createdAtIso} title={model.createdTitle}>
-              {model.createdLabel}
-            </time>
-          </span>
-        </div>
-        {model.showStatusBadge && <Badge>{model.statusLabel}</Badge>}
-      </div>
+    <Card data-slot="trade-card" size="sm">
+      <CardHeader>
+        {/* a proposal line is a card headline, not an outline level: Onest 18/26 at 600 */}
+        <CardTitle render={<strong />}>{model.partiesLabel}</CardTitle>
+        <CardDescription>
+          {model.waitingLabel} ·{' '}
+          <time dateTime={model.createdAtIso} title={model.createdTitle}>
+            {model.createdLabel}
+          </time>
+        </CardDescription>
+        {model.showStatusBadge && (
+          <CardAction>
+            <Badge>{model.statusLabel}</Badge>
+          </CardAction>
+        )}
+      </CardHeader>
       <div className={DEAL}>
         <SideSummary model={model.give} />
         <div aria-hidden="true" className={SWAP}>
@@ -55,14 +53,14 @@ export function TradeCard({ model }: { model: TradeCardModel }) {
         </p>
       )}
       {model.actions.length > 0 && (
-        <div className={ACTIONS}>
+        <CardFooter className="justify-end">
           {model.actions.map((action) => (
             <Button key={action.kind} variant={action.variant} {...action.buttonProps}>
               {action.label}
             </Button>
           ))}
-        </div>
+        </CardFooter>
       )}
-    </div>
+    </Card>
   )
 }

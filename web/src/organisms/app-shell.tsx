@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link, NavLink } from 'react-router-dom'
+import { FooterLink } from '@/organisms/nav-item'
 import { cn } from '../lib/cn'
 import './app-shell.css'
 
@@ -12,12 +13,16 @@ import './app-shell.css'
 /** The shared ring (`lib/focus`), on every control this file paints itself. */
 const FOCUS = 'focus-ring'
 
-/** A bypass block costs nothing until it is focused: it waits 60px above the page. */
+/**
+ * A bypass block costs nothing until it is focused: it sits at the page's top-left and waits 80px
+ * above it, translated rather than offset, so the slide is a stock transition (`transition-lift`
+ * carries its own reduced-motion off switch) instead of an arbitrary `[transition:top…]`.
+ */
 const SKIP_LINK = cn(
-  'absolute -top-15 left-3 z-[calc(var(--z-header)+10)]',
-  'rounded-lg material-raised px-4 py-2.5 text-foreground no-underline',
-  '[transition:top_var(--dur-base)_ease] motion-reduce:transition-none',
-  'focus:top-3',
+  'absolute top-3 left-3 z-[calc(var(--z-header)+10)]',
+  'rounded-lg material-raised px-4 py-2.5 text-foreground',
+  '-translate-y-20 transition-lift',
+  'focus:translate-y-0',
   FOCUS,
 )
 
@@ -47,8 +52,6 @@ const CONTENT = cn('flex min-w-0 flex-1 flex-col', '[&>main]:w-full [&>main]:gro
 const CONTENT_APP = 'xl:pr-9 xl:pl-page-x'
 /** Public pages: 72px from the frame edge. */
 const CONTENT_PUBLIC = 'xl:px-13'
-/** The fixed tab bar is 80 tall, 10 up: the column ends 100 above the safe area so nothing hides under it. */
-const CONTENT_ABOVE_TABS = 'max-xl:pb-[calc(100px+env(safe-area-inset-bottom,0px))]'
 
 /**
  * One header for every state. Below 900 it is the sticky blur plate the page scrolls under
@@ -92,49 +95,6 @@ function Wordmark({ size, className }: { size: keyof typeof WORDMARK_SIZE; class
   )
 }
 
-/** Sidebar nav row: 192×48, radius 24, icon lane 22 + label 16/24 at 500; current = pressed + 600. */
-export const NAV_ROW = cn(
-  'flex h-12 items-center gap-3 rounded-lg px-3.5',
-  'text-base font-medium text-foreground no-underline',
-  'transition-press',
-  'hover:bg-accent',
-  'aria-[current=page]:material-pressed aria-[current=page]:font-semibold',
-  FOCUS,
-)
-
-/** The chrome's one primary: bubblegum in light, sky in dark, raised, 46 tall. */
-export const PRIMARY_PILL = cn(
-  'inline-flex h-control items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4.5',
-  'material-raised bg-primary text-base font-medium text-primary-foreground no-underline',
-  'transition-press lift press',
-  FOCUS,
-)
-
-/** Utility link: current page = 36px pressed pill. */
-export const UTILITY_LINK = cn(
-  '-ml-3 inline-flex h-9 items-center rounded-md px-3',
-  'text-sm font-medium text-foreground no-underline',
-  'transition-tint',
-  'hover:bg-accent',
-  'aria-[current=page]:material-pressed aria-[current=page]:font-semibold',
-  'pointer-coarse:min-h-hit',
-  FOCUS,
-)
-
-/** Tab bar item: 62×44, radius 22, icon 22 over a 12px label at 500; current = pressed + 600. */
-export const TAB_ITEM = cn(
-  'flex h-hit w-15.5 shrink-0 flex-col items-center justify-center gap-1 rounded-full',
-  'text-xs leading-tight font-medium text-foreground no-underline',
-  'aria-[current=page]:material-pressed aria-[current=page]:font-semibold',
-  FOCUS,
-)
-
-/** The centre Mint item: the tab bar's single primary, raised in the action colour; pressed when current. */
-export const TAB_ITEM_PRIMARY = cn(
-  'material-raised bg-primary text-primary-foreground',
-  'aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground',
-)
-
 /** 370×80 at 10 from the bottom, fluid to the phone's width, radius 30, raised. */
 const TAB_BAR = cn(
   'fixed bottom-[calc(10px+env(safe-area-inset-bottom,0px))] left-1/2 z-(--z-header) -translate-x-1/2',
@@ -151,16 +111,6 @@ const FOOTER = cn(
 )
 const FOOTER_APP = 'xl:px-page-x'
 const FOOTER_PUBLIC = 'xl:px-page-x'
-
-/** Onest 14 ink-muted; the current page is 600 ink (react-router's `aria-current` from NavLink). */
-const FOOTER_LINK = cn(
-  'text-muted-foreground no-underline',
-  'transition-tint',
-  'hover:text-foreground',
-  'aria-[current=page]:font-semibold aria-[current=page]:text-foreground',
-  'pointer-coarse:inline-flex pointer-coarse:min-h-hit pointer-coarse:items-center',
-  FOCUS,
-)
 
 export interface AppShellProps {
   /** The signed-in sidebar's content, under the wordmark. Its presence selects the app layout. */
@@ -199,7 +149,7 @@ export function AppShell({ sidebar, contextLine, headerEnd, quest, bottomNav, ch
           </div>
         )}
         <div
-          className={cn(CONTENT, app ? CONTENT_APP : CONTENT_PUBLIC, bottomNav && CONTENT_ABOVE_TABS)}
+          className={cn(CONTENT, app ? CONTENT_APP : CONTENT_PUBLIC)}
           data-slot="content"
         >
           <header className={cn(HEADER, app ? HEADER_APP : HEADER_PUBLIC)} data-slot="header">
@@ -222,22 +172,12 @@ export function AppShell({ sidebar, contextLine, headerEnd, quest, bottomNav, ch
           <footer className={cn(FOOTER, app ? FOOTER_APP : FOOTER_PUBLIC)} data-slot="site-footer">
             <span className="font-display text-2xl font-medium text-foreground">MemeOn</span>
             <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 xl:ml-auto" aria-label="Footer">
-              <NavLink to="/privacy" className={() => FOOTER_LINK}>
-                Privacy
-              </NavLink>
-              <NavLink to="/terms" className={() => FOOTER_LINK}>
-                Terms
-              </NavLink>
-              <NavLink to="/developers" className={() => FOOTER_LINK}>
-                Developers
-              </NavLink>
-              <NavLink to="/discord" className={() => FOOTER_LINK}>
-                Discord
-              </NavLink>
+              <FooterLink render={<NavLink to="/privacy" />}>Privacy</FooterLink>
+              <FooterLink render={<NavLink to="/terms" />}>Terms</FooterLink>
+              <FooterLink render={<NavLink to="/developers" />}>Developers</FooterLink>
+              <FooterLink render={<NavLink to="/discord" />}>Discord</FooterLink>
               {/* a real static file in public/, not a route: it must leave the SPA */}
-              <a href="/skill.md" className={FOOTER_LINK}>
-                API
-              </a>
+              <FooterLink href="/skill.md">API</FooterLink>
             </nav>
           </footer>
         </div>
