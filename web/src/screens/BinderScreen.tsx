@@ -1,14 +1,17 @@
-import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { Avatar } from '@/atoms/avatar'
 import { Badge } from '@/atoms/badge'
-import { Button, buttonClasses } from '@/atoms/button'
+import { Button, buttonVariants } from '@/atoms/button'
+import { Card } from '@/atoms/card'
 import { Checkbox } from '@/atoms/checkbox'
-import { EmptyActions, EmptyState } from '@/atoms/empty-state'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader } from '@/atoms/empty'
+import { Heading } from '@/atoms/heading'
 import { MemeCard, memeCardSubClasses } from '@/atoms/meme-card'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
+import { Progress } from '@/atoms/progress'
 import { SkeletonCard } from '@/atoms/skeleton'
+import { Toolbar } from '@/atoms/toolbar'
 import type { BinderScreenModel } from '../hooks/useBinderScreen'
 import { cn } from '../lib/cn'
 import { SortChips } from '@/molecules/sort-chips'
@@ -38,28 +41,7 @@ export const binderCardSlotClasses = cn(
 /** The creator/private row under a binder card: the atom's own footer rhythm, one line lower. */
 const binderCardFooterClasses = cn(memeCardSubClasses, 'mt-0.5')
 
-/** The ownership groove: a recessed track with the braincell-gold fill the binder counts in. */
-const OWNERSHIP_TRACK = 'mt-1 block h-track overflow-hidden rounded-full bg-muted'
-
 /* reward rail lives in AppShell QuestBar — claim is a one-shot shell mutation, not duplicated here */
-
-const SECTION_HEADING = 'm-0 font-display text-3xl font-normal text-foreground'
-
-/** The toolbar row: heading + live count on the left, the 46px control lane on the right. */
-const TOOLBAR = 'mt-7 mb-gutter flex flex-wrap items-end justify-between gap-x-6 gap-y-3.5'
-
-/** Private toggle as a real checkbox inside a pill — checked state presses the pill. */
-const PRIVATE_PILL = cn(
-  'ms-0 min-h-control gap-2.5 rounded-lg material-raised px-4.5 py-0',
-  'text-base font-semibold text-foreground',
-  'has-data-checked:material-pressed',
-)
-
-/** Toolbar Mint: bubblegum on phone, neutral on desktop (sidebar owns primary). */
-const MINT_LINK = cn(
-  buttonClasses(),
-  'max-xl:w-full max-xl:bg-primary max-xl:text-primary-foreground',
-)
 
 /** Own binder as a function of its model. Every engine state is one set of args. */
 export function BinderScreen({
@@ -92,16 +74,12 @@ export function BinderScreen({
 
       {/* identity card — raised surface, not a bare row */}
       {identity && (
-        <div
+        <Card
+          size="sm"
           data-slot="binder-identity"
-          className="mb-6 flex min-h-24.5 items-center gap-4 rounded-lg material-card p-5"
+          className="mb-6 flex min-h-24.5 items-center gap-4"
         >
-          <Avatar
-            name={identity.name}
-            src={identity.pictureUrl}
-            size="lg"
-            className="size-14 rounded-lg"
-          />
+          <Avatar name={identity.name} src={identity.pictureUrl} size="lg" />
           <div className="min-w-0">
             <p
               data-slot="binder-identity-name"
@@ -113,12 +91,12 @@ export function BinderScreen({
               {identity.statsLabel}
             </p>
           </div>
-        </div>
+        </Card>
       )}
 
-      <div data-slot="binder-toolbar" className={TOOLBAR}>
+      <Toolbar align="between" data-slot="binder-toolbar" className="mt-7 mb-4.5 items-end">
         <div className="min-w-0">
-          <h3 className={SECTION_HEADING}>{collectionHeading}</h3>
+          <Heading as="h3">{collectionHeading}</Heading>
           {/* mounted in every state, text swapped: a live region inserted with its content is missed */}
           <span
             className="mt-1 block text-sm text-muted-foreground tabular-nums"
@@ -134,17 +112,18 @@ export function BinderScreen({
         >
           {/* toolbar order: private filter → sort → Mint */}
           {showPrivateToggle && (
-            <Checkbox label={privateToggleLabel} className={PRIVATE_PILL} {...privateToggleProps} />
+            <Checkbox label={privateToggleLabel} variant="pill" {...privateToggleProps} />
           )}
           <SortChips model={sortChips} />
-          <Link className={MINT_LINK} {...createLinkProps}>
+          {/* Mint is bubblegum under the shell cut and neutral beside the sidebar */}
+          <Link className={cn(buttonVariants({ variant: 'mint' }), 'max-xl:w-full')} {...createLinkProps}>
             <span className="xl:hidden" aria-hidden="true">
               ＋
             </span>
             {createLabel}
           </Link>
         </div>
-      </div>
+      </Toolbar>
 
       {showLoading ? (
         <ul className={binderGridClasses} aria-hidden="true">
@@ -155,25 +134,27 @@ export function BinderScreen({
           ))}
         </ul>
       ) : showError ? (
-        <EmptyState error>
-          <p>
-            <strong>{errorTitle}</strong>
-          </p>
-          <p>{errorMessage}</p>
-          <EmptyActions>
+        <Empty variant="error">
+          <EmptyHeader>
+            <EmptyDescription>
+              <strong>{errorTitle}</strong>
+            </EmptyDescription>
+            <EmptyDescription>{errorMessage}</EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
             <Button variant="primary" {...retryProps}>
               Try again
             </Button>
-          </EmptyActions>
-        </EmptyState>
+          </EmptyContent>
+        </Empty>
       ) : showEmpty ? (
         // the persistent status label above is the one live region for this screen
-        <EmptyState role="none">
-          <p>{emptyMessage}</p>
+        <Empty role="none">
+          <EmptyDescription>{emptyMessage}</EmptyDescription>
           {emptyAction && (
-            <EmptyActions>
+            <EmptyContent>
               {emptyAction.kind === 'create' ? (
-                <Link className={buttonClasses('primary')} {...emptyAction.linkProps}>
+                <Link className={buttonVariants({ variant: 'primary' })} {...emptyAction.linkProps}>
                   {emptyAction.label}
                 </Link>
               ) : (
@@ -181,9 +162,9 @@ export function BinderScreen({
                   {emptyAction.label}
                 </Button>
               )}
-            </EmptyActions>
+            </EmptyContent>
           )}
-        </EmptyState>
+        </Empty>
       ) : showGrid ? (
         <ul className={binderGridClasses}>
           {cards.map((card) => (
@@ -202,9 +183,8 @@ export function BinderScreen({
                         </span>
                       </span>
                     )}
-                    <span className={OWNERSHIP_TRACK} aria-hidden="true">
-                      <i className="block h-full w-(--fill) bg-warning-foreground" style={{ '--fill': `${card.sharesPct}%` } as CSSProperties} />
-                    </span>
+                    {/* the ownership groove: how much of this meme the binder holds */}
+                    <Progress value={card.sharesPct} aria-hidden="true" className="mt-1" />
                   </>
                 }
               />
