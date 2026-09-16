@@ -30,6 +30,9 @@ const COINS = cn(
   'max-xl:h-auto max-xl:rounded-none max-xl:bg-transparent max-xl:px-0 max-xl:font-semibold max-xl:shadow-none',
 )
 
+/* an emoji in the icon lane sits on the `xl` step with the glyph's own leading */
+const NAV_EMOJI = cn('text-xl', 'leading-none')
+
 const GEAR_LINK = cn(
   'inline-flex size-icon shrink-0 items-center justify-center rounded-xs text-foreground no-underline',
   'hover:text-muted-foreground',
@@ -73,7 +76,7 @@ export function AppShellScreen({
             <span className={ICON_LANE} aria-hidden="true" data-slot="nav-icon">
               {/* an emoji stays an emoji: it takes the icon lane instead of a drawn twin */}
               {item.emoji ? (
-                <span className="text-xl leading-none">{item.emoji}</span>
+                <span className={NAV_EMOJI}>{item.emoji}</span>
               ) : (
                 <Icon name={item.icon} size={22} />
               )}

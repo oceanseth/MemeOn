@@ -5,12 +5,19 @@ import '@/atoms/foil.css'
 
 /**
  * The token sheet: every colour role, the tier chips and frames, the materials, the radius steps,
- * the spacing roles, the container widths and the type ladder, painted with nothing but what
- * `index.css` emits. It is the visual reference — if a token looks wrong here it is wrong
- * everywhere — and a probe: each swatch carries a `data-slot` (`swatch-<token>`, `radius-<step>`,
- * `spacing-<role>`, `container-<name>`, `ladder-<step>`, `material-<name>`) and the play functions
- * compare its computed style with the token read back from `:root`, never with a literal.
+ * the spacing roles, the container widths, the breakpoints and the type scale, painted with
+ * nothing but what `index.css` emits. It is the visual reference — if a token looks wrong here it
+ * is wrong everywhere — and a probe: each specimen carries a `data-slot` (`swatch-<token>`,
+ * `radius-<step>`, `spacing-<role>`, `container-<name>`, `breakpoint-<name>`, `ladder-<step>`,
+ * `glyph-<step>`, `heading-<level>`, `material-<name>`) and the play functions compare its
+ * computed style with the token read back from `:root`, never with a literal. The spec beside a
+ * type specimen is read from the same tokens, so the sheet cannot describe a scale it is not
+ * painting.
  */
+
+/** A token's raw value on `:root`, as authored (a `light-dark()` pair stays a pair). */
+const token = (name: string) =>
+  typeof document === 'undefined' ? '' : getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
 const SEMANTIC: ReadonlyArray<{ token: string; bg: string; text?: string }> = [
   { token: 'background', bg: 'bg-background', text: 'text-foreground' },
@@ -100,24 +107,71 @@ const CONTAINERS: ReadonlyArray<{ token: string; spec: string; className: string
   { token: 'measure', spec: '65ch · body prose', className: 'max-w-measure' },
 ]
 
-const LADDER: ReadonlyArray<{ step: string; spec: string; className: string; sample?: string }> = [
-  { step: 'display', spec: 'Unbounded 500 · 44/55 · -0.04em', className: 'font-display font-normal text-5xl' },
-  { step: 'display-phone', spec: 'Unbounded 500 · 32/40', className: 'font-display font-normal text-4xl' },
-  { step: 'section', spec: 'Unbounded 500 · 32/40 · -0.025em', className: 'font-display font-normal text-4xl' },
-  { step: 'section-phone', spec: 'Unbounded 500 · 26/32', className: 'font-display font-normal text-2xl' },
-  { step: 'title', spec: 'Unbounded 500 · 27/34 · -0.025em', className: 'font-display font-normal text-3xl' },
-  { step: 'card-title', spec: 'Unbounded 500 · 23/27 · -0.02em', className: 'font-display font-normal text-2xl' },
-  { step: 'card-title-phone', spec: 'Unbounded 500 · 17/21', className: 'font-display font-normal text-xl' },
-  { step: 'intro', spec: 'Onest 400 · 17/22', className: 'font-sans text-lg' },
-  { step: 'body', spec: 'Onest 400 · 16/24', className: 'font-sans text-base' },
-  { step: 'label', spec: 'Onest 600 · 15/19', className: 'font-sans font-semibold text-base' },
-  { step: 'small', spec: 'Onest 400 · 14/18', className: 'font-sans text-sm' },
-  { step: 'caption', spec: 'Onest 400 · 13/16', className: 'font-sans text-sm' },
-  { step: 'micro', spec: 'Onest 700 · 12/16', className: 'font-sans font-semibold text-xs' },
-  { step: 'glyph-sm', spec: 'emoji · 16 / 1', className: 'text-base leading-none', sample: '🎨 🌙 ☀️' },
-  { step: 'glyph', spec: 'emoji · 20 / 1.25', className: 'text-xl leading-none', sample: '🧠 🔔 🏆' },
-  { step: 'glyph-lg', spec: 'emoji · 25 / 1.25', className: 'text-2xl leading-none', sample: '🥇 🥈 🥉' },
-  { step: 'glyph-hero', spec: 'emoji · 48 / 1.25', className: 'text-6xl leading-none', sample: '🎉' },
+/* The scale. `text-<step>` is a complete setting — size, line-height, letter-spacing and default
+   weight all come from the step — so a specimen wears the size class and a family and nothing
+   else, and its computed style is the token's own value. The text steps are Onest's; `xl` and
+   above are the display steps and may wear Unbounded, never below it (20px is the display face's
+   floor). A display step in Onest is allowed for one thing: a large numeral. */
+const STEPS = ['xs', 'sm', 'base', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl'] as const
+type Step = (typeof STEPS)[number]
+
+/** literal class names: the scanner has to see each one to emit it */
+const STEP_CLASS: Record<Step, string> = {
+  xs: 'text-xs',
+  sm: 'text-sm',
+  base: 'text-base',
+  lg: 'text-lg',
+  xl: 'text-xl',
+  '2xl': 'text-2xl',
+  '3xl': 'text-3xl',
+  '4xl': 'text-4xl',
+  '5xl': 'text-5xl',
+  '6xl': 'text-6xl',
+}
+
+const STEP_ROLE: Record<Step, string> = {
+  xs: 'chip, badge, tab label, stat line, eyebrow',
+  sm: 'meta line, caption, secondary label, small button',
+  base: 'body, button label, nav row, form label',
+  lg: 'intro, lede, panel title, big stat',
+  xl: 'meme card title, compact card title',
+  '2xl': 'card and panel title, legal h2, footer wordmark',
+  '3xl': 'dialog title, sidebar wordmark, detail hero',
+  '4xl': 'section heading, page title on the phone',
+  '5xl': 'page title',
+  '6xl': 'the landing hero',
+}
+
+/** `xl` and up wear Unbounded; below 20px the display face reads as a bold text face. */
+const isDisplayStep = (step: Step) => STEPS.indexOf(step) >= STEPS.indexOf('xl')
+
+/** The spec column, read from the same tokens the specimen beside it is painted with. */
+function stepSpec(step: Step): string {
+  const size = token(`--text-${step}`)
+  const leading = token(`--text-${step}--line-height`)
+  const tracking = token(`--text-${step}--letter-spacing`)
+  const weight = token(`--text-${step}--font-weight`)
+  const face = isDisplayStep(step) ? 'Unbounded' : 'Onest'
+  return `${face} ${weight} · ${size}/${leading} · ${tracking}`
+}
+
+/** Emoji sit on four of the steps with `leading-none`; the glyph roles are gone. */
+const GLYPHS: ReadonlyArray<{ step: Step; role: string; sample: string }> = [
+  { step: 'base', role: 'a glyph in a 32px square', sample: '🎨 🌙 ☀️' },
+  { step: 'xl', role: 'a row or item glyph', sample: '🧠 🔔 🏆' },
+  { step: '2xl', role: 'a podium medal', sample: '🥇 🥈 🥉' },
+  { step: '6xl', role: 'an empty state, a pack opening', sample: '🎉' },
+]
+
+/* `--breakpoint-*`: six named cuts, no literals. Tailwind writes `bp:` as (width >= N) and
+   `max-bp:` as (width < N). */
+const BREAKPOINTS: ReadonlyArray<{ name: string; role: string }> = [
+  { name: 'xs', role: 'discord link, alerts popover' },
+  { name: 'sm', role: '2-up grids, leaderboard and person rows, login CTA' },
+  { name: 'md', role: 'the phone cut: link status, filter bars, hero video' },
+  { name: 'lg', role: 'bottom-sheet dialogs, market controls, quest scroller' },
+  { name: 'xl', role: 'the shell: sidebar in, phone header out' },
+  { name: '2xl', role: 'four-column tier grid, the create rail' },
 ]
 
 function Heading({ children }: { children: string }) {
@@ -231,26 +285,82 @@ export function TokenSheet() {
         ))}
       </ul>
 
-      <Heading>Type ladder</Heading>
-      <ul className="flex flex-col gap-3">
-        {LADDER.map(({ step, spec, className, sample }) => (
-          <li key={step} className="grid gap-x-4 gap-y-1 md:grid-cols-[280px_1fr] md:items-baseline">
-            <code className="w-fit text-xs whitespace-normal">
-              {step} · {spec}
+      <Heading>Breakpoints</Heading>
+      <ul className="flex flex-col gap-1.5">
+        {BREAKPOINTS.map(({ name, role }) => (
+          <li key={name} data-slot={`breakpoint-${name}`} className="flex flex-wrap items-baseline gap-x-3">
+            <code className="w-24 shrink-0 text-xs">{name}</code>
+            <code className="w-20 shrink-0 text-xs tabular-nums">{token(`--breakpoint-${name}`)}</code>
+            <span className="min-w-0 text-sm text-muted-foreground">{role}</span>
+          </li>
+        ))}
+      </ul>
+
+      <Heading>Type scale</Heading>
+      <ul className="flex flex-col gap-4">
+        {STEPS.map((step) => (
+          <li key={step} className="grid gap-x-4 gap-y-1 md:grid-cols-[300px_1fr] md:items-baseline">
+            <code data-slot={`ladder-row-spec-${step}`} className="w-fit text-xs whitespace-normal">
+              {step} · {stepSpec(step)} · {STEP_ROLE[step]}
             </code>
-            <p data-slot={`ladder-${step}`} className={cn('m-0', className)}>
-              {sample ?? 'Memes are the new trading cards'}
+            <div className="flex min-w-0 flex-col gap-1">
+              {/* the specimen wears its size and a family and nothing else: weight and tracking
+                  arrive from the step, which is what the play function then reads back */}
+              <p
+                data-slot={`ladder-${step}`}
+                className={cn('m-0 truncate', STEP_CLASS[step], isDisplayStep(step) ? 'font-display' : 'font-sans')}
+              >
+                Memes are the new trading cards
+              </p>
+              {isDisplayStep(step) ? (
+                <p
+                  data-slot={`ladder-numeral-${step}`}
+                  className={cn('m-0 font-sans text-muted-foreground', STEP_CLASS[step])}
+                >
+                  2,480
+                </p>
+              ) : null}
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <Heading>Emoji on the scale</Heading>
+      <ul className="flex flex-col gap-3">
+        {GLYPHS.map(({ step, role, sample }) => (
+          <li key={step} className="grid gap-x-4 gap-y-1 md:grid-cols-[300px_1fr] md:items-baseline">
+            <code className="w-fit text-xs whitespace-normal">
+              {step} + leading-none · {role}
+            </code>
+            {/* the size first: cn treats `text-<step>` and `leading-*` as one axis, later wins */}
+            <p data-slot={`glyph-${step}`} className={cn('m-0', STEP_CLASS[step], 'leading-none')}>
+              {sample}
             </p>
           </li>
         ))}
       </ul>
 
+      <Heading>Numerals</Heading>
+      <div className="rounded-lg material-card p-card-inset" data-slot="numerals">
+        <p className="m-0 text-lg" data-slot="numerals-a">
+          1,111,111 · 0123456789
+        </p>
+        <p className="m-0 text-lg" data-slot="numerals-b">
+          2,480,000 · 9876543210
+        </p>
+        <p className="m-0 mt-2 text-sm text-muted-foreground">
+          <code>font-variant-numeric: tabular-nums</code> on <code>body</code>: every number in this app is a count, a
+          price or a holding, so the two lines above are exactly as wide as each other. Prose opts out with{' '}
+          <code>proportional-nums</code>.
+        </p>
+      </div>
+
       <Heading>Headings from the base layer</Heading>
       <div className="rounded-lg material-card p-card-inset">
-        <h1>h1 is display</h1>
-        <h2>h2 is title</h2>
-        <h3>h3 is card-title</h3>
-        <h4>h4 is card-title-phone</h4>
+        <h1 data-slot="heading-h1">h1 is the 5xl step (4xl on a phone)</h1>
+        <h2 data-slot="heading-h2">h2 is the 3xl step</h2>
+        <h3 data-slot="heading-h3">h3 is the 2xl step (xl on a phone)</h3>
+        <h4 data-slot="heading-h4">h4 is Onest 600 at lg — below the display face&rsquo;s floor</h4>
         <p>
           Body copy is Onest 16/24 on the foreground. A{' '}
           <a className="text-link underline underline-offset-3 decoration-1" href="#top">
@@ -271,9 +381,6 @@ const meta = {
 
 export default meta
 type Story = StoryObj<typeof meta>
-
-/** A token's raw value on `:root`, as authored (a `light-dark()` pair stays a pair). */
-const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
 /** The arm of a `light-dark(<light>, <dark>)` value, or the value itself when it does not flip. */
 function arm(value: string, which: 'light' | 'dark'): string {
@@ -335,23 +442,68 @@ async function assertTokensPainted(which: 'light' | 'dark') {
     await expect(getComputedStyle(slot(`container-${name}`)).maxWidth).toBe(token(`--container-${name}`))
   }
 
-  for (const step of ['display', 'title', 'card-title', 'body', 'label', 'micro']) {
+  for (const name of BREAKPOINTS) {
+    const value = token(`--breakpoint-${name.name}`)
+    await expect(value).toMatch(/^\d+px$/)
+    await expect(slot(`breakpoint-${name.name}`).textContent).toContain(value)
+  }
+
+  /* every step, both of its faces where the scale allows a second one: a `text-<step>` class is a
+     complete setting, so size, leading, tracking and the default weight are all the step's own */
+  for (const step of STEPS) {
     const style = getComputedStyle(slot(`ladder-${step}`))
     await expect(style.fontSize).toBe(token(`--text-${step}`))
     await expect(style.lineHeight).toBe(token(`--text-${step}--line-height`))
+    await expect(style.letterSpacing).toBe(
+      resolved('letterSpacing', token(`--text-${step}--letter-spacing`), token(`--text-${step}`)),
+    )
+    await expect(style.fontWeight).toBe(token(`--text-${step}--font-weight`))
+    await expect(style.fontFamily).toContain(isDisplayStep(step) ? 'Unbounded Variable' : 'Onest Variable')
+    /* the spec column is read from the same tokens, so it can never describe a different scale */
+    await expect(slot(`ladder-row-spec-${step}`).textContent).toContain(token(`--text-${step}`))
+    if (isDisplayStep(step)) {
+      const numeral = getComputedStyle(slot(`ladder-numeral-${step}`))
+      await expect(numeral.fontSize).toBe(token(`--text-${step}`))
+      await expect(numeral.fontFamily).toContain('Onest Variable')
+    }
   }
-  for (const step of ['glyph-sm', 'glyph', 'glyph-lg', 'glyph-hero']) {
-    const style = getComputedStyle(slot(`ladder-${step}`))
-    const size = parseFloat(token(`--text-${step}`))
-    await expect(style.fontSize).toBe(`${size}px`)
-    await expect(parseFloat(style.lineHeight)).toBeCloseTo(size * parseFloat(token(`--text-${step}--line-height`)), 3)
+
+  /* the display face has a floor: nothing under 20px is allowed to wear it */
+  await expect(parseFloat(token('--text-xl'))).toBe(20)
+  for (const step of ['xs', 'sm', 'base', 'lg'] as const) {
+    await expect(parseFloat(token(`--text-${step}`))).toBeLessThan(parseFloat(token('--text-xl')))
   }
-  const display = getComputedStyle(slot('ladder-display'))
-  await expect(display.letterSpacing).toBe(resolved('letterSpacing', token('--tracking-display'), token('--text-5xl')))
-  await expect(display.fontFamily).toContain('Unbounded Variable')
+
+  for (const { step } of GLYPHS) {
+    const style = getComputedStyle(slot(`glyph-${step}`))
+    await expect(style.fontSize).toBe(token(`--text-${step}`))
+    await expect(style.lineHeight).toBe(style.fontSize)
+  }
+
+  for (const [level, step] of [['h1', '5xl'], ['h2', '3xl'], ['h3', '2xl']] as const) {
+    const style = getComputedStyle(slot(`heading-${level}`))
+    await expect(style.fontSize).toBe(token(`--text-${step}`))
+    await expect(style.fontFamily).toContain('Unbounded Variable')
+    await expect(style.fontWeight).toBe(token('--font-weight-display'))
+  }
+  const h4 = getComputedStyle(slot('heading-h4'))
+  await expect(h4.fontSize).toBe(token('--text-lg'))
+  await expect(h4.fontFamily).toContain('Onest Variable')
+  await expect(h4.fontWeight).toBe(token('--font-weight-semibold'))
+
+  /* every number is a count, a price or a holding: figures are tabular, so two lines of the same
+     length are exactly as wide as each other */
+  await expect(getComputedStyle(slot('numerals')).fontVariantNumeric).toContain('tabular-nums')
+  await expect(slot('numerals-a').getBoundingClientRect().width).toBeCloseTo(
+    slot('numerals-b').getBoundingClientRect().width,
+    1,
+  )
+
   await document.fonts.ready
+  await expect(document.fonts.check("400 16px 'Unbounded Variable'")).toBe(true)
   await expect(document.fonts.check("500 16px 'Unbounded Variable'")).toBe(true)
   await expect(document.fonts.check("400 16px 'Onest Variable'")).toBe(true)
+  await expect(document.fonts.check("600 16px 'Onest Variable'")).toBe(true)
 }
 
 export const Light: Story = {
