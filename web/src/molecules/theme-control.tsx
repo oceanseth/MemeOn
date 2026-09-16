@@ -6,7 +6,8 @@ import type { ThemePreference } from '../stores/themeStore'
 
 /**
  * What the theme control renders from. The hook builds it off `useTheme()`; `variant` picks the
- * sidebar's segmented well or the header's one-glyph button (the screen overrides it per slot).
+ * Settings page's segmented well or the public header's one-glyph button. The account menu draws
+ * the same three states as a radio from `THEME_OPTIONS`.
  */
 export interface ThemeControlModel {
   value: ThemePreference
@@ -15,28 +16,28 @@ export interface ThemeControlModel {
 }
 
 /** The three states, in the order the button cycles them. Every glyph is an emoji and stays one. */
-const OPTIONS: readonly { value: ThemePreference; emoji: string; label: string }[] = [
+export const THEME_OPTIONS: readonly { value: ThemePreference; emoji: string; label: string }[] = [
   { value: 'auto', emoji: '🌗', label: 'Auto' },
   { value: 'light', emoji: '☀️', label: 'Light' },
   { value: 'dark', emoji: '🌙', label: 'Dark' },
 ]
 
-const optionFor = (value: ThemePreference) => OPTIONS.find((o) => o.value === value) ?? OPTIONS[0]!
+const optionFor = (value: ThemePreference) => THEME_OPTIONS.find((o) => o.value === value) ?? THEME_OPTIONS[0]!
 const nextAfter = (value: ThemePreference) =>
-  OPTIONS[(OPTIONS.findIndex((o) => o.value === value) + 1) % OPTIONS.length]!
+  THEME_OPTIONS[(THEME_OPTIONS.findIndex((o) => o.value === value) + 1) % THEME_OPTIONS.length]!
 
 /**
  * The header square wears the Button's own icon recipe (34px, raised, the coarse-pointer halo) and
  * owns the two things the atom has no axis for: the emoji's glyph step, and the growth to 40 past
- * the shell cut on a page with no sidebar to balance it. The classes go on a plain `<button>`
+ * the shell cut, where the public header has room for it. The classes go on a plain `<button>`
  * rather than through `<Button className>`, which is the restyle this variant replaces.
  */
 const themeButtonVariants = cva('text-base leading-none', {
   variants: {
     size: {
-      /** beside a sidebar or in the phone cluster: the 34px square, at every width */
+      /** the phone cluster: the 34px square, at every width */
       sm: '',
-      /** the public desktop header: 40px once the page is wide enough to have no sidebar */
+      /** the public desktop header: 40px from the shell cut up */
       lg: 'xl:size-10 xl:rounded-md xl:text-xl',
     },
   },
@@ -86,7 +87,7 @@ export function ThemeControl({ model, size, className }: ThemeControlProps) {
       className={cn('w-46', className)}
       data-slot="theme-segmented"
     >
-      {OPTIONS.map((option) => (
+      {THEME_OPTIONS.map((option) => (
         <ToggleGroupItem<ThemePreference> key={option.value} value={option.value} data-slot="theme-segment">
           {option.emoji}
           {' '}

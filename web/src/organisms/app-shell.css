@@ -15,47 +15,115 @@
 
 @layer components {
   /*
-   * The sticky-chrome contract. `--topbar-h` is the height every descendant of `<main>` docks
-   * under: `main { scroll-margin-top }` (`src/index.css`), the marketplace's sticky control band
-   * (`lg:top-(--topbar-h)`), the create rail, the legal `<h2>` scroll margins and the alerts
-   * popover's phone placement.
+   * The bottom half of the sticky-chrome contract (`--topbar-h`, `src/index.css`, is the top
+   * half): the fixed tab bar is 80 tall and floats 10 above the safe area, so the content column
+   * ends 100 *plus* the inset above the viewport's bottom or the page's last row hides under the
+   * bar.
    *
-   * `:root` holds a fallback (64px, `src/index.css`, for a story that mounts a screen without the
-   * shell); the shell's own geometry lives beside
-   * the component that produces it and keys off the slot the shell writes. Two arms, split at the
-   * shell's breakpoint (`xl`, 900px, named in `src/index.css`):
-   *
-   *   max-xl  the phone header is sticky: 5 + 54 (the 34px cluster in a 54px row, the 27/34
-   *           wordmark) + 5 = 64.
-   *   xl      the sidebar is the persistent chrome and the header is a static row: nothing to
-   *           dock under, so 0.
-   *
-   * It has to be a rule rather than an inline style: the custom property must be readable from
-   * `:root` down, and `<main>` is a screen's element the shell only wraps.
-   */
-  :root:has([data-slot='header']) {
-    @variant max-xl {
-      --topbar-h: 64px;
-    }
-
-    @variant xl {
-      --topbar-h: 0px;
-    }
-  }
-
-  /*
-   * The other half of that contract, at the other end of the column: the fixed tab bar is 80 tall
-   * and floats 10 above the safe area, so the content column ends 100 *plus* the inset above the
-   * viewport's bottom or the page's last row hides under the bar.
-   *
-   * It is a rule rather than a class for the same reason as `--topbar-h`: the sum has no utility.
-   * `pb-safe-<n>` is `max(step, inset)` — the clearance the bar needs is `step + inset` — and an
-   * arbitrary `pb-[calc(…)]` is an off-token value the design-system lint (rightly) rejects. The
-   * selector keys off the slots the shell writes, so it costs nothing on a page with no tab bar.
+   * It is a rule rather than a class because the sum has no utility: `pb-safe-<n>` is
+   * `max(step, inset)` — the clearance the bar needs is `step + inset` — and an arbitrary
+   * `pb-[calc(…)]` is an off-token value the design-system lint (rightly) rejects. The selector
+   * keys off the slots the shell writes, so it costs nothing on a page with no tab bar.
    */
   :root:has([data-slot='bottom-nav']) [data-slot='content'] {
     @variant max-xl {
       padding-bottom: calc(var(--spacing) * 25 + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
+  /*
+   * The bar sits on the page with no edge until the page moves: over the first 48px of scroll a
+   * hairline and a short soft shadow fade in under it, driven by the scroll position itself, so
+   * the plate reads as glass over content rather than a band painted on the canvas. CSS-only, no
+   * listener; an engine without scroll timelines simply keeps the edgeless bar, which is a good
+   * state, not a fallback.
+   */
+  @supports (animation-timeline: scroll()) {
+    [data-slot='header'] {
+      animation: shell-header-scrolled linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 calc(var(--spacing) * 12);
+    }
+  }
+
+  @keyframes shell-header-scrolled {
+    from {
+      box-shadow: 0 1px 0 transparent;
+    }
+    to {
+      box-shadow:
+        0 1px 0 var(--color-border),
+        var(--relief-shadow) 0 8px 24px -16px;
+    }
+  }
+
+  /*
+   * View transitions, named from the chrome. The bar and the tab bar hold still (their own names
+   * pull them out of the root cross-fade), the current link's pressed well is a named element so
+   * the browser tweens its box from the old link to the new one, and the page beneath fades up
+   * 8px. `lib/viewTransition` starts the transition; it also skips it under reduced motion, and
+   * the media query below stops the pseudo-elements in case one was started anyway.
+   */
+  [data-slot='header'] {
+    view-transition-name: shell-header;
+  }
+
+  [data-slot='bottom-nav'] {
+    view-transition-name: shell-tab-bar;
+  }
+
+  [data-slot='nav-pill'][aria-current='page'] {
+    view-transition-name: shell-nav-current;
+  }
+
+  [data-slot='tab-item'][aria-current='page'] {
+    view-transition-name: shell-tab-current;
+  }
+
+  ::view-transition-old(root) {
+    animation: shell-page-out var(--dur-base) ease-out both;
+  }
+
+  ::view-transition-new(root) {
+    animation: shell-page-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  ::view-transition-group(shell-nav-current),
+  ::view-transition-group(shell-tab-current) {
+    animation-duration: 280ms;
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* the well glides rather than cross-fades: the new snapshot rides the group, the old one is not drawn */
+  ::view-transition-old(shell-nav-current),
+  ::view-transition-old(shell-tab-current) {
+    animation: none;
+    opacity: 0;
+  }
+
+  ::view-transition-new(shell-nav-current),
+  ::view-transition-new(shell-tab-current) {
+    animation: none;
+  }
+
+  @keyframes shell-page-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes shell-page-in {
+    from {
+      opacity: 0;
+      translate: 0 calc(var(--spacing) * 2);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation: none !important;
     }
   }
 }

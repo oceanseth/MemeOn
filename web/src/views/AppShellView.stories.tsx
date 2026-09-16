@@ -150,6 +150,10 @@ export const ClaimPackAndDismissOverlay: Story = {
   ...connected,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
+    // the ladder lives behind the braincell pill: its ring reads nothing, its name says so
+    const pill = await canvas.findByRole('button', { name: /quests 0 of 5/ })
+    await expect(pill).toHaveAttribute('data-progress', '0')
+    await userEvent.click(pill)
     await userEvent.click(await canvas.findByRole('button', { name: /claim your starter pack/i }))
     const opening = canvas.getByRole('button', { name: /Opening/ })
     await expect(opening).toBeDisabled()
@@ -158,7 +162,6 @@ export const ClaimPackAndDismissOverlay: Story = {
 
     loaded.requests.resolvePack(Response.json({ memes: [paperMeme], reward: 20 }))
     const modal = await canvas.findByRole('dialog', { name: /Starter pack opened/ })
-    await expect(canvas.getByText('1/5')).toBeInTheDocument()
     await expect(within(modal).getByText(/You now hold 10 shares/)).toHaveTextContent('plus 20')
     await expect(within(modal).getByRole('link', { name: new RegExp(paperMeme.title) })).toHaveAttribute('href', `/m/${paperMeme.id}`)
     await userEvent.click(within(modal).getByRole('heading'))
@@ -166,6 +169,8 @@ export const ClaimPackAndDismissOverlay: Story = {
     /* Escape is Base UI's own cancel path; the shell clears the pack from context */
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(canvas.queryByRole('dialog')).not.toBeInTheDocument())
+    // one step in: the pill's ring and name both moved on, and the claim is gone from the ladder
+    await expect(await canvas.findByRole('button', { name: /quests 1 of 5/ })).toHaveAttribute('data-progress', '20')
     await expect(canvas.queryByRole('button', { name: /claim your starter pack/i })).not.toBeInTheDocument()
   },
 }
@@ -174,6 +179,7 @@ export const EmptyVaultAndBinderDismiss: Story = {
   ...connected,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
+    await userEvent.click(await canvas.findByRole('button', { name: /quests 0 of 5/ }))
     await userEvent.click(await canvas.findByRole('button', { name: /claim your starter pack/i }))
     loaded.requests.resolvePack(Response.json({ memes: [], reward: 20 }))
     const modal = await canvas.findByRole('dialog', { name: /Starter pack opened/ })
@@ -189,10 +195,11 @@ export const LogoutClearsConnectedChrome: Story = {
   ...connected,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await expect(await canvas.findByRole('button', { name: 'Log out' })).toBeInTheDocument()
+    const trigger = await canvas.findByRole('button', { name: 'Account menu' })
     await expect(canvas.getByRole('link', { name: 'My Binder' })).toHaveAttribute('href', '/binder')
-    await userEvent.click(canvas.getByRole('button', { name: 'Log out' }))
-    await waitFor(() => expect(canvas.queryByRole('button', { name: 'Log out' })).not.toBeInTheDocument())
+    await userEvent.click(trigger)
+    await userEvent.click(await canvas.findByRole('menuitem', { name: 'Log out' }))
+    await waitFor(() => expect(canvas.queryByRole('button', { name: 'Account menu' })).not.toBeInTheDocument())
     await expect(canvas.queryByRole('link', { name: 'My Binder' })).not.toBeInTheDocument()
     await expect(canvas.getByRole('link', { name: 'MemeOn' })).toBeInTheDocument()
     await expect(loaded.shellStores.auth.user).toBeNull()

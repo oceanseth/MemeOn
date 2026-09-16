@@ -118,7 +118,7 @@ export const LogoutClearsProtectedRoute: Story = {
     loaded.authStores.auth.logout()
     await waitFor(() => {
       expect(canvas.queryByRole('heading', { name: /Developers/ })).not.toBeInTheDocument()
-      expect(canvas.queryByRole('button', { name: 'Log out' })).not.toBeInTheDocument()
+      expect(canvas.queryByRole('button', { name: 'Account menu' })).not.toBeInTheDocument()
       expect(canvas.getByRole('button', { name: /Log in with Masky/ })).toBeInTheDocument()
     })
     await expect(sessionToken()).toBeNull()
@@ -130,9 +130,11 @@ export const LogoutButtonClearsNavigation: Story = {
   ...authSetup,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: 'Log out' }))
+    // Log out lives in the account menu behind the header avatar
+    await userEvent.click(canvas.getByRole('button', { name: 'Account menu' }))
+    await userEvent.click(await canvas.findByRole('menuitem', { name: 'Log out' }))
     await waitFor(() => {
-      expect(canvas.queryByRole('button', { name: 'Log out' })).not.toBeInTheDocument()
+      expect(canvas.queryByRole('button', { name: 'Account menu' })).not.toBeInTheDocument()
       expect(canvas.queryByRole('link', { name: 'My Binder' })).not.toBeInTheDocument()
       expect(canvas.getByRole('button', { name: /Log in with Masky/ })).toBeInTheDocument()
     })
@@ -149,10 +151,10 @@ export const SettingsRoute: Story = {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('heading', { name: 'Settings', level: 1 })).toBeInTheDocument()
     await expect(canvasElement.querySelector('main#main[tabindex="-1"]')).not.toBeNull()
-    // the sidebar's utility link and the identity gear both land on the route that now exists
-    const ways = canvas.getAllByRole('link', { name: 'Settings' })
-    await expect(ways.length).toBeGreaterThan(0)
-    for (const way of ways) await expect(way).toHaveAttribute('href', '/settings')
+    // the account menu's Settings row lands on the route that now exists
+    await userEvent.click(canvas.getByRole('button', { name: 'Account menu' }))
+    await expect(await canvas.findByRole('menuitem', { name: 'Settings' })).toHaveAttribute('href', '/settings')
+    await userEvent.keyboard('{Escape}')
   },
 }
 

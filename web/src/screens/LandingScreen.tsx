@@ -61,7 +61,7 @@ export function LandingScreen({
 
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      {/* hero band bleeds into the page gutter, not the shell sidebar gap */}
+      {/* hero band bleeds into the page gutter, not the shell column's inset */}
       <section
         data-slot="landing-hero"
         className="-mx-5 border-b border-border bg-accent px-5 pt-12 pb-14 max-md:pt-8 max-md:pb-10"

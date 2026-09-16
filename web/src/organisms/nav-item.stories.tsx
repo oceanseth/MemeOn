@@ -2,58 +2,38 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Link, MemoryRouter } from 'react-router-dom'
 import { expect, within } from 'storybook/test'
 import { Icon } from '@/atoms/icon'
-import { NavIcon, NavRow, TabItem, UtilityLink } from '@/organisms/nav-item'
+import { NavPill, TabItem } from '@/organisms/nav-item'
 
 const meta = {
   title: 'Organisms/NavItem',
-  component: NavRow,
+  component: NavPill,
   decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
-} satisfies Meta<typeof NavRow>
+} satisfies Meta<typeof NavPill>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** The sidebar's rows: the current one is the pressed well, the rest tint on hover. */
-export const SidebarRows: Story = {
+/** The bar's links: the current one is the pressed well, the rest tint on hover. */
+export const TopBarPills: Story = {
   render: () => (
-    <nav className="flex w-54 flex-col gap-3" aria-label="Main">
-      <NavRow current render={<Link to="/marketplace" />}>
-        <NavIcon><Icon name="storefront" /></NavIcon> Marketplace
-      </NavRow>
-      <NavRow render={<Link to="/binder" />}>
-        <NavIcon><Icon name="book" /></NavIcon> My Binder
-      </NavRow>
-      <NavRow render={<Link to="/leaderboard" />}>
-        <NavIcon>🏆</NavIcon> Top Brains
-      </NavRow>
+    <nav className="flex items-center gap-1" aria-label="Main">
+      <NavPill current render={<Link to="/marketplace" />}>Marketplace</NavPill>
+      <NavPill render={<Link to="/binder" />}>My Binder</NavPill>
+      <NavPill render={<Link to="/leaderboard" />}>
+        <span aria-hidden="true">🏆</span> Top Brains
+      </NavPill>
     </nav>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const current = canvas.getByRole('link', { name: 'Marketplace' })
     await expect(current).toHaveAttribute('aria-current', 'page')
-    await expect(current).toHaveAttribute('data-slot', 'nav-row')
-    /* 48px row, whatever sits in the lane */
-    await expect(getComputedStyle(current).height).toBe('48px')
-    await expect(canvas.getByRole('link', { name: 'My Binder' })).not.toHaveAttribute('aria-current')
-    const lane = canvasElement.querySelectorAll('[data-slot="nav-icon"]')
-    await expect(getComputedStyle(lane[0]!).width).toBe('22px')
-  },
-}
-
-/** The utility rows under the nav: 36px, the current one pressed. */
-export const UtilityRows: Story = {
-  render: () => (
-    <nav className="flex w-54 flex-col items-start gap-1" aria-label="More">
-      <UtilityLink render={<Link to="/discord" />}>Discord</UtilityLink>
-      <UtilityLink current render={<Link to="/settings" />}>Settings</UtilityLink>
-    </nav>
-  ),
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    const current = canvas.getByRole('link', { name: 'Settings' })
-    await expect(current).toHaveAttribute('aria-current', 'page')
+    await expect(current).toHaveAttribute('data-slot', 'nav-pill')
+    /* 36px pill */
     await expect(getComputedStyle(current).height).toBe('36px')
+    await expect(canvas.getByRole('link', { name: 'My Binder' })).not.toHaveAttribute('aria-current')
+    /* the emoji leads the label and stays out of the name */
+    await expect(canvas.getByRole('link', { name: 'Top Brains' })).toHaveTextContent('🏆 Top Brains')
   },
 }
 
@@ -78,4 +58,4 @@ export const TabBarItems: Story = {
   },
 }
 
-export const Dark: Story = { ...SidebarRows, globals: { theme: 'dark' } }
+export const Dark: Story = { ...TopBarPills, globals: { theme: 'dark' } }

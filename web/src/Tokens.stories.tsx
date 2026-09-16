@@ -118,7 +118,7 @@ const STEP_ROLE: Record<Step, string> = {
   lg: 'intro, lede, panel title, big stat',
   xl: 'meme card title, compact card title',
   '2xl': 'card and panel title, legal h2, footer wordmark',
-  '3xl': 'dialog title, sidebar wordmark, detail hero',
+  '3xl': 'dialog title, header wordmark, detail hero',
   '4xl': 'section heading, page title on the phone',
   '5xl': 'page title',
   '6xl': 'the landing hero',
@@ -152,7 +152,7 @@ const BREAKPOINTS: ReadonlyArray<{ name: string; role: string }> = [
   { name: 'sm', role: '2-up grids, leaderboard and person rows, login CTA' },
   { name: 'md', role: 'the phone cut: link status, filter bars, hero video' },
   { name: 'lg', role: 'bottom-sheet dialogs, market controls, quest scroller' },
-  { name: 'xl', role: 'the shell: sidebar in, phone header out' },
+  { name: 'xl', role: 'the shell: the bar\'s links in, the tab bar out' },
   { name: '2xl', role: 'four-column tier grid, the create rail' },
 ]
 

@@ -34,10 +34,8 @@ import { SortChips } from '@/molecules/sort-chips'
  */
 const marketControls = cn(
   'flex flex-col gap-3.5 pt-0 pb-3.5',
-  /* it docks under the phone header (`--topbar-h`); at the shell breakpoint that height is 0, so
-     the plate takes the sidebar's own page gutter instead of the viewport edge */
+  /* it docks under the sticky bar (`--topbar-h`, the same 64 at every width) */
   'lg:docked lg:-mx-5 lg:px-5',
-  'xl:top-5',
 )
 
 /** The search well grows into the toolbar's slack and stops at the reading width. */
@@ -67,7 +65,7 @@ const summaryRow = 'flex flex-wrap items-center gap-2.5 text-sm text-muted-foreg
 const marketDisclosures = 'flex w-full gap-3 lg:hidden'
 const marketFilters = 'flex flex-col gap-3 max-lg:data-[collapsed=true]:hidden'
 
-/** Toolbar Mint: bubblegum under the shell cut, neutral once the sidebar owns primary (`mint`). */
+/** Toolbar Mint: bubblegum under the shell cut, neutral once the header owns primary (`mint`). */
 const mintLink = cn(buttonVariants({ variant: 'mint' }), 'w-full lg:w-51.5')
 
 /** Marketplace list as a function of its engine-provided model. */

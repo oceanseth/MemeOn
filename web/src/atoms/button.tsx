@@ -27,7 +27,7 @@ const buttonVariants = cva(
         brand: [RAISED, 'bg-brand text-brand-foreground'],
         /** tinted, not the strong red: delete, revoke, decline */
         destructive: [RAISED, 'bg-error text-error-foreground'],
-        /** the toolbar Mint: bubblegum under the shell cut, neutral once the sidebar owns primary */
+        /** the toolbar Mint: bubblegum under the shell cut, neutral once the header owns primary */
         mint: [RAISED, 'bg-primary text-primary-foreground xl:bg-accent xl:text-foreground'],
         /** no plate; a tint on hover and the pressed well when it is on */
         ghost: 'hover:bg-accent aria-pressed:material-pressed',

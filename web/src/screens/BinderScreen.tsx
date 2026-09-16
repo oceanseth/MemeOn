@@ -118,7 +118,7 @@ export function BinderScreen({
             <Checkbox label={privateToggleLabel} variant="pill" {...privateToggleProps} />
           )}
           <SortChips model={sortChips} />
-          {/* Mint is bubblegum under the shell cut and neutral beside the sidebar */}
+          {/* Mint is bubblegum under the shell cut and neutral once the header owns primary */}
           <Link className={cn(buttonVariants({ variant: 'mint' }), 'max-xl:w-full')} {...createLinkProps}>
             <span className="xl:hidden" aria-hidden="true">
               ＋

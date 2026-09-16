@@ -11,6 +11,8 @@ export const questBarCopy = {
     busy: 'Opening…',
     label: (title: string, reward: number) => `${title} (+${reward} 🧠)`,
   },
+  /** The braincell pill's sr-only suffix while the ladder is live: "quests 1 of 5". */
+  progress: (done: number, total: number) => `quests ${done} of ${total}`,
   dismiss: 'Later',
   dismissA11y: 'Later — hide quests for now',
   pack: {

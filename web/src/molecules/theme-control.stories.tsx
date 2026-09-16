@@ -15,7 +15,7 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-/** The sidebar well: three segments, the current one raised. A press on it reports nothing. */
+/** The Settings well: three segments, the current one raised. A press on it reports nothing. */
 export const Segmented: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -51,7 +51,7 @@ export const HeaderButton: Story = {
 }
 
 /**
- * The public desktop header has no sidebar to balance the cluster, so its square grows past the
+ * The public desktop header has room in its cluster, so its square grows past the
  * shell cut. It is the control's own size, not a class the screen passes.
  */
 export const HeaderButtonPublic: Story = {

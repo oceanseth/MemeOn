@@ -100,6 +100,14 @@ it('keeps the legacy mint draft mounted while a post-pack refresh replaces an ol
   })
   expect(held).toHaveLength(1)
 
+  // the ladder lives behind the braincell pill: open it, then claim
+  await act(async () => {
+    host.querySelector<HTMLButtonElement>('button[data-slot="quest-trigger"]')!.click()
+    await nextTick()
+  })
+  for (let attempt = 0; attempt < 100 && !host.querySelector('[data-slot="quest-claim"]'); attempt += 1) {
+    await act(async () => { await new Promise((r) => setTimeout(r, 10)) })
+  }
   await act(async () => {
     [...host.querySelectorAll<HTMLButtonElement>('button')].find((button) => button.textContent?.includes('Starter pack'))!.click()
     await nextTick()
@@ -116,7 +124,8 @@ it('keeps the legacy mint draft mounted while a post-pack refresh replaces an ol
     held[1]!.resolve(Response.json(held[1]!.snapshot))
     await nextTick()
   })
-  expect(host.querySelector('[data-slot="coins"]')?.textContent).toContain('52')
+  // the pill is the quest trigger while the ladder is live, the plain balance once it is not
+  expect(host.querySelector('[data-slot="quest-trigger"], [data-slot="coins"]')?.textContent).toContain('52')
   expect(host.querySelector<HTMLInputElement>('input#create-title')).toBe(title)
   expect(title.value).toBe('Keep my draft')
   expect(prompt.value).toBe('Draft prompt survives account refresh')

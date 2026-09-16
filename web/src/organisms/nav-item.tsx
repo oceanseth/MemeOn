@@ -1,15 +1,14 @@
 import { mergeProps } from '@base-ui/react/merge-props'
 import { useRender } from '@base-ui/react/use-render'
 import { cva, type VariantProps } from 'class-variance-authority'
-import type { ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
 
 /**
- * The shell's navigation rows. Each was an exported class string on `AppShell`; as components the
- * lint can see them, the current page is a prop rather than a hand-written `aria-current`, and a
- * screen never spells the chrome again.
+ * The shell's navigation links: the top bar's pills, the phone tab bar's items, the footer's
+ * links. As components the lint can see them, the current page is a prop rather than a
+ * hand-written `aria-current`, and a screen never spells the chrome again.
  *
- * All four render an `<a>` by default and take a router link through `render` — a navigation
+ * All three render an `<a>` by default and take a router link through `render` — a navigation
  * target is a link, so none of them is a `Button` (shadcn's "as link" convention).
  */
 export interface NavItemProps extends useRender.ComponentProps<'a'> {
@@ -20,65 +19,31 @@ export interface NavItemProps extends useRender.ComponentProps<'a'> {
 const currentProps = (current: boolean | undefined) =>
   (current ? { 'aria-current': 'page' as const } : {})
 
-/** Sidebar nav row: 192×48, radius 24, icon lane 22 + label 16/24 at 500; current = pressed + 600. */
-export const navRowVariants = cva(
+/**
+ * Top-bar link: a 36px pill, Onest base at 500; the current page is the pressed well at 600. The
+ * well is a named view-transition element (`app-shell.css`), so on a route change it glides to
+ * the next link instead of blinking there.
+ */
+export const navPillVariants = cva(
   cn(
-    'flex h-12 items-center gap-3 rounded-lg px-3.5',
-    'text-base font-medium text-foreground',
-    'transition-press',
-    'hover:bg-accent',
-    'aria-[current=page]:material-pressed aria-[current=page]:font-semibold',
-    'focus-ring',
-  ),
-)
-
-export function NavRow({ className, current, render, ...props }: NavItemProps) {
-  return useRender({
-    defaultTagName: 'a',
-    props: mergeProps<'a'>(
-      { className: cn(navRowVariants(), className), ...currentProps(current) },
-      props,
-    ),
-    render,
-    state: { slot: 'nav-row' },
-  })
-}
-
-/** The 22×22 lane every nav row shares, so labels line up whatever glyph sits in it. */
-export function NavIcon({ className, ...props }: ComponentProps<'span'>) {
-  return (
-    <span
-      aria-hidden="true"
-      data-slot="nav-icon"
-      /* an emoji in the lane sits on the `xl` step with the glyph's own leading */
-      className={cn('inline-flex size-5.5 shrink-0 items-center justify-center text-xl leading-none', className)}
-      {...props}
-    />
-  )
-}
-
-/** Utility link under the sidebar's nav: current page = 36px pressed pill. */
-export const utilityLinkVariants = cva(
-  cn(
-    '-ml-3 inline-flex h-9 items-center rounded-md px-3',
-    'text-sm font-medium text-foreground',
+    'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3',
+    'text-base font-medium whitespace-nowrap text-foreground no-underline',
     'transition-tint',
     'hover:bg-accent',
     'aria-[current=page]:material-pressed aria-[current=page]:font-semibold',
-    'pointer-coarse:min-h-11',
     'focus-ring',
   ),
 )
 
-export function UtilityLink({ className, current, render, ...props }: NavItemProps) {
+export function NavPill({ className, current, render, ...props }: NavItemProps) {
   return useRender({
     defaultTagName: 'a',
     props: mergeProps<'a'>(
-      { className: cn(utilityLinkVariants(), className), ...currentProps(current) },
+      { className: cn(navPillVariants(), className), ...currentProps(current) },
       props,
     ),
     render,
-    state: { slot: 'utility-link' },
+    state: { slot: 'nav-pill' },
   })
 }
 
