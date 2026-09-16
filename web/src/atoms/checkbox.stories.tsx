@@ -2,14 +2,22 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { Checkbox } from '@/atoms/checkbox'
+import { Field, FieldLabel } from '@/atoms/field'
 
 const onCheckedChange = fn()
 
-function ControlledCheckbox({ initial = false }: { initial?: boolean }) {
+function ControlledCheckbox({
+  initial = false,
+  variant,
+}: {
+  initial?: boolean
+  variant?: 'default' | 'pill'
+}) {
   const [checked, setChecked] = useState(initial)
   return (
     <Checkbox
       label="Show private (3)"
+      variant={variant}
       checked={checked}
       onCheckedChange={(next) => {
         setChecked(next)
@@ -38,7 +46,10 @@ type Story = StoryObj<typeof meta>
 export const Unchecked: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('checkbox', { name: 'For sale' })).not.toBeChecked()
+    const box = canvas.getByRole('checkbox', { name: 'For sale' })
+    await expect(box).not.toBeChecked()
+    await expect(box).toHaveAttribute('data-slot', 'checkbox')
+    await expect(box.closest('[data-slot="checkbox-label"]')).not.toBeNull()
   },
 }
 
@@ -49,6 +60,7 @@ export const Checked: Story = {
     const box = canvas.getByRole('checkbox', { name: 'For sale' })
     await expect(box).toBeChecked()
     await expect(box).toHaveAttribute('data-checked')
+    await expect(box.querySelector('[data-slot="checkbox-indicator"]')).not.toBeNull()
   },
 }
 
@@ -85,6 +97,41 @@ export const Disabled: Story = {
     await expect(canvas.getByRole('checkbox', { name: 'For sale' })).toHaveAttribute(
       'data-disabled',
     )
+  },
+}
+
+/** The binder's private toggle: a real checkbox inside a raised pill that presses when checked. */
+export const Pill: Story = {
+  render: () => <ControlledCheckbox variant="pill" />,
+  play: async ({ canvasElement }) => {
+    onCheckedChange.mockClear()
+    const canvas = within(canvasElement)
+    const row = canvas.getByText('Show private (3)').closest('[data-slot="checkbox-label"]')!
+    await expect(row).toHaveAttribute('data-variant', 'pill')
+    await expect((row as HTMLElement).offsetHeight).toBe(46)
+    await userEvent.click(canvas.getByText('Show private (3)'))
+    await expect(canvas.getByRole('checkbox', { name: 'Show private (3)' })).toBeChecked()
+  },
+}
+
+/** No `label`: just the box, for a `Field` or `Label` that labels it from outside. */
+export const BareBox: Story = {
+  render: () => (
+    <Field>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <Checkbox id="terms" />
+        <FieldLabel htmlFor="terms">I read the fine print</FieldLabel>
+      </div>
+    </Field>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const box = canvas.getByRole('checkbox', { name: 'I read the fine print' })
+    await expect(box.closest('[data-slot="checkbox-label"]')).toBeNull()
+    // the raised 22px box on the checkbox radius
+    await expect(box.offsetWidth).toBe(22)
+    await userEvent.click(canvas.getByText('I read the fine print'))
+    await expect(box).toBeChecked()
   },
 }
 

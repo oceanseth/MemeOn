@@ -1,13 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, userEvent, within } from 'storybook/test'
 import {
-  ErrorText,
   Field,
   FieldCounter,
+  FieldDescription,
   FieldError,
   FieldFooter,
-  FieldHint,
   FieldLabel,
+  FieldLegend,
+  FieldSet,
+  Fieldset,
+  FieldsetLegend,
   Hint,
 } from '@/atoms/field'
 import { Input } from '@/atoms/input'
@@ -39,21 +42,26 @@ export const Default: Story = {
     await expect(canvas.getByLabelText('Share link')).toHaveValue(
       'https://memeon.lol/m/meme-holo',
     )
+    await expect(canvas.getByText('Share link')).toHaveAttribute('data-slot', 'field-label')
   },
 }
 
-export const WithHint: Story = {
+export const WithDescription: Story = {
   render: () => (
     <Field>
       <FieldLabel>Tags</FieldLabel>
       <Input placeholder="cat, chaos, monday" />
-      <FieldHint>Up to five, comma separated.</FieldHint>
+      <FieldDescription>Up to five, comma separated.</FieldDescription>
     </Field>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByLabelText('Tags')).toHaveAccessibleDescription(
       'Up to five, comma separated.',
+    )
+    await expect(canvas.getByText('Up to five, comma separated.')).toHaveAttribute(
+      'data-slot',
+      'field-description',
     )
   },
 }
@@ -65,7 +73,7 @@ export const WithCounter: Story = {
       <FieldLabel>Title</FieldLabel>
       <Input defaultValue="chrome streak" maxLength={20} />
       <FieldFooter>
-        <FieldHint>Up to 20 characters — it has to fit the card banner.</FieldHint>
+        <FieldDescription>Up to 20 characters — it has to fit the card banner.</FieldDescription>
         <FieldCounter>13 / 20</FieldCounter>
       </FieldFooter>
     </Field>
@@ -83,7 +91,7 @@ export const AtLimit: Story = {
       <FieldLabel>Title</FieldLabel>
       <Input defaultValue="twenty characters ok" maxLength={20} />
       <FieldFooter>
-        <FieldHint>Up to 20 characters — it has to fit the card banner.</FieldHint>
+        <FieldDescription>Up to 20 characters — it has to fit the card banner.</FieldDescription>
         <FieldCounter>20 / 20</FieldCounter>
       </FieldFooter>
     </Field>
@@ -101,15 +109,14 @@ export const AtLimit: Story = {
 }
 
 /**
- * Most caption text in the app has no label and no control around it, so the
- * standalone pair renders the same caption without a `<Field>` — where Base UI's parts would throw.
+ * Most caption text in the app has no label and no control around it, so the standalone `Hint`
+ * renders the same caption without a `<Field>` — where Base UI's parts would throw.
  */
 export const Standalone: Story = {
   render: () => (
     <div>
       {/* loose caption: no label, no control — the SortChips / MemeDetail shape */}
       <Hint>Sorting by value needs at least one listing.</Hint>
-      <ErrorText>That binder is empty.</ErrorText>
       {/* a bare label wants phrasing content, so the Trades shape asks for a span */}
       <label>
         Braincells you add
@@ -127,10 +134,6 @@ export const Standalone: Story = {
     await expect(canvas.getByText('Sorting by value needs at least one listing.')).toHaveAttribute(
       'data-slot',
       'hint',
-    )
-    await expect(canvas.getByText('That binder is empty.')).toHaveAttribute(
-      'data-slot',
-      'error-text',
     )
     await expect(canvas.getByText('You hold 40.').tagName).toBe('SPAN')
     await expect(canvas.getByLabelText('Tags')).toHaveAccessibleDescription(
@@ -166,20 +169,116 @@ export const Invalid: Story = {
     const control = canvas.getByLabelText('Shares to give')
     await expect(control).toHaveAttribute('data-invalid')
     await expect(control).toHaveAccessibleDescription('You only own 4 shares.')
+    await expect(canvas.getByText('You only own 4 shares.')).toHaveAttribute(
+      'data-slot',
+      'field-error',
+    )
   },
 }
 
+/** The label dims with its control, so the pair reads as one disabled thing. */
 export const Disabled: Story = {
   render: () => (
     <Field disabled>
       <FieldLabel>Share link</FieldLabel>
       <Input defaultValue="https://memeon.lol/m/meme-holo" />
-      <FieldHint>Available once the mint finishes.</FieldHint>
+      <FieldDescription>Available once the mint finishes.</FieldDescription>
     </Field>
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByLabelText('Share link')).toBeDisabled()
+    await expect(canvas.getByText('Share link')).toHaveAttribute('data-disabled')
+  },
+}
+
+/** The trade composer's two groups: an intro-size legend over a column of fields. */
+export const Grouped: Story = {
+  render: () => (
+    <div style={{ display: 'grid', gap: 16 }}>
+      <FieldSet>
+        <FieldLegend>You give</FieldLegend>
+        <Field>
+          <FieldLabel>Shares to give</FieldLabel>
+          <Input type="number" defaultValue={2} />
+        </Field>
+      </FieldSet>
+      <FieldSet>
+        <FieldLegend>You want</FieldLegend>
+        <Field>
+          <FieldLabel>Shares to get</FieldLabel>
+          <Input type="number" defaultValue={1} />
+        </Field>
+      </FieldSet>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getAllByRole('group')).toHaveLength(2)
+    const legend = canvas.getByText('You give')
+    await expect(legend).toHaveAttribute('data-slot', 'field-legend')
+    await expect(legend).toHaveAttribute('data-variant', 'legend')
+    await expect(canvas.getByRole('group', { name: 'You give' })).toHaveAttribute(
+      'data-slot',
+      'field-set',
+    )
+  },
+}
+
+/** The micro-caps eyebrow, for a group inside a card that already has a heading. */
+export const LegendAsLabel: Story = {
+  render: () => (
+    <FieldSet>
+      <FieldLegend variant="label">Visibility</FieldLegend>
+      <Field>
+        <FieldLabel>Share link</FieldLabel>
+        <Input defaultValue="https://memeon.lol/m/meme-holo" />
+      </Field>
+    </FieldSet>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('Visibility')).toHaveAttribute('data-variant', 'label')
+  },
+}
+
+/** A disabled group disables every control in it. */
+export const GroupDisabled: Story = {
+  render: () => (
+    <FieldSet disabled>
+      <FieldLegend>You want</FieldLegend>
+      <Field>
+        <FieldLabel>Shares to get</FieldLabel>
+        <Input type="number" defaultValue={1} />
+      </Field>
+    </FieldSet>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByLabelText('Shares to get')).toBeDisabled()
+  },
+}
+
+/** The legacy pair the Trades screen still renders: the old slot names, the caps legend by default. */
+export const LegacyFieldset: Story = {
+  render: () => (
+    <Fieldset>
+      <FieldsetLegend>You give</FieldsetLegend>
+      <Field>
+        <FieldLabel>Braincells you add</FieldLabel>
+        <Input type="number" defaultValue={12} />
+      </Field>
+    </Fieldset>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('group', { name: 'You give' })).toHaveAttribute(
+      'data-slot',
+      'fieldset',
+    )
+    const legend = canvas.getByText('You give')
+    await expect(legend).toHaveAttribute('data-slot', 'fieldset-legend')
+    await expect(legend).toHaveAttribute('data-variant', 'label')
   },
 }
 
