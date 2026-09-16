@@ -1,5 +1,5 @@
 {
-  "screens/AppShellScreen.tsx": 21,
+  "screens/AppShellScreen.tsx": 17,
   "screens/AuthStatusScreen.tsx": 13,
   "screens/BinderScreen.tsx": 22,
   "screens/CreateMemeScreen.tsx": 63,

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Link, MemoryRouter } from 'react-router-dom'
 import { expect, fn, within } from 'storybook/test'
 import { meLou, questStepsFresh, unreadSale } from '../../.storybook/fixtures'
+import { buttonVariants } from '@/atoms/button'
 import { Icon } from '@/atoms/icon'
 import { PageContainer } from '@/atoms/page-container'
 import { buildAlertsBellModel } from '../lib/alertsBellModel'
@@ -9,36 +10,37 @@ import { buildQuestBarModel } from '../lib/questBarModel'
 import { AlertsBell } from '@/molecules/alerts-bell'
 import { QuestBar } from '@/molecules/quest-bar'
 import { ThemeControl } from '@/molecules/theme-control'
-import { AppShell, NAV_ROW, PRIMARY_PILL, TAB_ITEM, TAB_ITEM_PRIMARY, UTILITY_LINK } from '@/organisms/app-shell'
+import { AppShell } from '@/organisms/app-shell'
+import { NavIcon, NavRow, TabItem, UtilityLink } from '@/organisms/nav-item'
 
 const sidebar = (
   <>
     <nav className="mt-10 flex flex-col gap-3" aria-label="Main">
-      <Link to="/marketplace" className={NAV_ROW} aria-current="page">
-        <Icon name="storefront" /> Marketplace
-      </Link>
-      <Link to="/binder" className={NAV_ROW}>
-        <Icon name="book" /> My Binder
-      </Link>
-      <Link to="/friends" className={NAV_ROW}>
-        <Icon name="users" /> Friends
-      </Link>
-      <Link to="/trade" className={NAV_ROW}>
-        <Icon name="arrows-left-right" /> Trade
-      </Link>
-      <Link to="/leaderboard" className={NAV_ROW}>
-        <span className="inline-flex size-icon items-center justify-center text-xl leading-none" aria-hidden="true">🏆</span> Top Brains
-      </Link>
+      <NavRow current render={<Link to="/marketplace" />}>
+        <NavIcon><Icon name="storefront" /></NavIcon> Marketplace
+      </NavRow>
+      <NavRow render={<Link to="/binder" />}>
+        <NavIcon><Icon name="book" /></NavIcon> My Binder
+      </NavRow>
+      <NavRow render={<Link to="/friends" />}>
+        <NavIcon><Icon name="users" /></NavIcon> Friends
+      </NavRow>
+      <NavRow render={<Link to="/trade" />}>
+        <NavIcon><Icon name="arrows-left-right" /></NavIcon> Trade
+      </NavRow>
+      <NavRow render={<Link to="/leaderboard" />}>
+        <NavIcon>🏆</NavIcon> Top Brains
+      </NavRow>
     </nav>
-    <Link to="/binder/new" className={`${PRIMARY_PILL} mx-1 mt-11`}>
+    <Link to="/binder/new" className={`${buttonVariants({ variant: 'primary' })} mx-1 mt-11`}>
       <span aria-hidden="true">＋</span> Mint a meme
     </Link>
     <div className="mt-auto flex flex-col pt-6">
       <ThemeControl model={{ value: 'light', onChange: fn(), variant: 'segmented' }} className="mx-1" />
       <nav className="mx-3 mt-4 flex flex-col items-start gap-1" aria-label="More">
-        <Link to="/discord" className={UTILITY_LINK}>Discord</Link>
-        <Link to="/developers" className={UTILITY_LINK}>🔧  Developers</Link>
-        <Link to="/settings" className={UTILITY_LINK} aria-current="page">Settings</Link>
+        <UtilityLink render={<Link to="/discord" />}>Discord</UtilityLink>
+        <UtilityLink render={<Link to="/developers" />}>🔧  Developers</UtilityLink>
+        <UtilityLink current render={<Link to="/settings" />}>Settings</UtilityLink>
       </nav>
     </div>
   </>
@@ -57,11 +59,11 @@ const headerEnd = (
 
 const bottomNav = (
   <>
-    <Link to="/marketplace" className={TAB_ITEM} aria-current="page"><Icon name="storefront" />Market</Link>
-    <Link to="/binder" className={TAB_ITEM}><Icon name="book" />Binder</Link>
-    <Link to="/binder/new" className={`${TAB_ITEM} ${TAB_ITEM_PRIMARY}`}><Icon name="circle-plus" />Mint</Link>
-    <Link to="/friends" className={TAB_ITEM}><Icon name="users" />Friends</Link>
-    <Link to="/trade" className={TAB_ITEM}><Icon name="arrows-left-right" />Trade</Link>
+    <TabItem current render={<Link to="/marketplace" />}><Icon name="storefront" />Market</TabItem>
+    <TabItem render={<Link to="/binder" />}><Icon name="book" />Binder</TabItem>
+    <TabItem primary render={<Link to="/binder/new" />}><Icon name="circle-plus" />Mint</TabItem>
+    <TabItem render={<Link to="/friends" />}><Icon name="users" />Friends</TabItem>
+    <TabItem render={<Link to="/trade" />}><Icon name="arrows-left-right" />Trade</TabItem>
   </>
 )
 
@@ -92,7 +94,7 @@ type Story = StoryObj<typeof meta>
 /** The public frame: wordmark, the theme button, the page, the footer. */
 export const LoggedOut: Story = {
   args: {
-    headerEnd: <ThemeControl model={{ value: 'auto', onChange: fn(), variant: 'button' }} className="xl:size-10 xl:rounded-md xl:text-xl" />,
+    headerEnd: <ThemeControl model={{ value: 'auto', onChange: fn(), variant: 'button' }} size="lg" />,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -144,6 +146,9 @@ export const Phone390: Story = {
     const tabs = canvas.getByRole('navigation', { name: 'Main' })
     await expect(within(tabs).getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
     await expect(canvas.getByRole('link', { name: 'MemeOn' })).toBeVisible()
+    /* the column clears the fixed bar: 80 tall, 10 up, plus the home indicator (app-shell.css) */
+    const content = canvasElement.querySelector('[data-slot="content"]')!
+    await expect(getComputedStyle(content).paddingBottom).toBe('100px')
   },
 }
 

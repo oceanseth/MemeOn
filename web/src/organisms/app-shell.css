@@ -42,4 +42,20 @@
       --topbar-h: 0px;
     }
   }
+
+  /*
+   * The other half of that contract, at the other end of the column: the fixed tab bar is 80 tall
+   * and floats 10 above the safe area, so the content column ends 100 *plus* the inset above the
+   * viewport's bottom or the page's last row hides under the bar.
+   *
+   * It is a rule rather than a class for the same reason as `--topbar-h`: the sum has no utility.
+   * `pb-safe-<n>` is `max(step, inset)` — the clearance the bar needs is `step + inset` — and an
+   * arbitrary `pb-[calc(…)]` is an off-token value the design-system lint (rightly) rejects. The
+   * selector keys off the slots the shell writes, so it costs nothing on a page with no tab bar.
+   */
+  :root:has([data-slot='bottom-nav']) [data-slot='content'] {
+    @variant max-xl {
+      padding-bottom: calc(var(--spacing) * 25 + env(safe-area-inset-bottom, 0px));
+    }
+  }
 }
