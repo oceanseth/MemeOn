@@ -60,4 +60,14 @@ export const Current: Story = {
   ),
 }
 
+/** The 38px ring a whole route waits on. */
+export const Large: Story = {
+  args: { size: 'lg' },
+  play: async ({ canvasElement }) => {
+    const spinner = canvasElement.querySelector<HTMLElement>('[data-slot="spinner"]')!
+    await expect(spinner).toHaveAttribute('data-size', 'lg')
+    await expect(spinner.offsetHeight).toBe(38)
+  },
+}
+
 export const Dark: Story = { ...BesideLabel, globals: { theme: 'dark' } }

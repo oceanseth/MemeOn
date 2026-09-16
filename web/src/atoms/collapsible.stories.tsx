@@ -9,14 +9,14 @@ const meta = {
   component: Collapsible,
   args: { onOpenChange },
   render: (args) => (
-    <Collapsible {...args} className="w-96 rounded-lg material-raised">
-      <CollapsibleTrigger className="group flex min-h-hit w-full cursor-pointer items-center gap-3 rounded-lg px-gutter py-3.5 text-left focus-ring">
+    <Collapsible variant="card" {...args} className="w-96">
+      <CollapsibleTrigger variant="card">
         <span aria-hidden="true" className="shrink-0 text-base text-muted-foreground transition-lift group-data-panel-open:rotate-180">
           ▾
         </span>
         <span className="text-lg font-semibold text-foreground">How do shares work?</span>
       </CollapsibleTrigger>
-      <CollapsibleContent className="px-gutter pb-4 text-base text-muted-foreground">
+      <CollapsibleContent variant="card">
         Every meme mints a fixed number of shares; a reshare moves one to the resharer.
       </CollapsibleContent>
     </Collapsible>
@@ -54,6 +54,16 @@ export const DefaultOpen: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: 'How do shares work?' })).toHaveAttribute('aria-expanded', 'true')
     await expect(canvas.getByText(/fixed number of shares/)).toBeVisible()
+  },
+}
+
+/** The `card` variant paints all three parts, so a composition never paints through `render`. */
+export const CardVariant: Story = {
+  args: { defaultOpen: true },
+  play: async ({ canvasElement }) => {
+    const root = canvasElement.querySelector<HTMLElement>('[data-slot="collapsible"]')!
+    await expect(root).toHaveAttribute('data-variant', 'card')
+    await expect(getComputedStyle(root).borderTopLeftRadius).toBe('24px')
   },
 }
 

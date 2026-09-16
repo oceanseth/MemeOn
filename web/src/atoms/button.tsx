@@ -31,6 +31,13 @@ const buttonVariants = cva(
         mint: [RAISED, 'bg-primary text-primary-foreground xl:bg-accent xl:text-foreground'],
         /** no plate; a tint on hover and the pressed well when it is on */
         ghost: 'hover:bg-accent aria-pressed:material-pressed',
+        /** the translucent plate a control wears over moving pictures */
+        glass: [RAISED, 'glass hover:bg-accent'],
+        /** a square picture button: a pressed well, the picture fills it, the ring marks the pick */
+        cell: [
+          'material-pressed overflow-hidden p-0',
+          'aria-pressed:inset-ring-2 aria-pressed:inset-ring-primary',
+        ],
         /** an inline link that shares the button's box */
         link: 'text-link underline underline-offset-3 hover:no-underline',
       },
@@ -45,6 +52,14 @@ const buttonVariants = cva(
         'icon-sm': 'size-control-sm rounded-sm',
         /** the sign-in CTA: full width on the phone, wraps, never under the control height */
         login: 'h-auto min-h-control w-full min-w-64 max-w-full px-4.5 py-3 text-base leading-5 whitespace-normal md:w-auto',
+        /** a film's centred call to action: a full-height glass pill */
+        pill: 'h-auto min-h-hit rounded-full px-5 py-3 text-base font-semibold',
+        /** the corner toggle over a video; the phone tucks it in tighter */
+        'pill-sm': 'h-auto rounded-full px-3.5 py-2 text-sm max-md:px-3 max-md:py-2 max-md:text-xs',
+        /** a mode chip: the 34px control that grows into a 44px pill on the phone */
+        segment: 'h-control-sm rounded-sm px-3 text-sm max-md:h-hit max-md:rounded-full max-md:text-base',
+        /** a square picture cell in a grid: the caller gives the track, the cell squares it */
+        cell: 'block h-auto aspect-square w-full rounded-md',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },

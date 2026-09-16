@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Badge } from '@/atoms/badge'
 import { Button } from '@/atoms/button'
 import { Item, ItemContent, ItemDescription } from '@/atoms/item'
 import { Popover, PopoverContent, PopoverTrigger } from '@/atoms/popover'
@@ -19,15 +20,8 @@ const ANCHOR_ID = 'alerts-pop-anchor'
 /** The bell glyph on the ghost icon button; the unread bubble sits on its corner. */
 const GLYPH = 'text-xl leading-none xl:text-2xl'
 
-/**
- * The unread count, 16px on the strong destructive pair (the one `check-contrast` guards). It is
- * the molecule's own bubble until `Badge` grows a count size and the strong variant (requested):
- * the default Badge would cover a third of the 34px trigger.
- */
-const BUBBLE = cn(
-  'absolute -top-1 -right-1 inline-flex h-4 min-w-4 items-center justify-center px-1',
-  'rounded-full bg-destructive text-xs leading-none font-semibold text-destructive-foreground tabular-nums',
-)
+/** The unread count rides the trigger's corner; the disc itself is `Badge size="count"`. */
+const BUBBLE = 'absolute -top-1 -right-1'
 
 /**
  * ≤480 the panel leaves the anchor and pins itself under the whole header, gutter to gutter: at
@@ -40,11 +34,8 @@ const POSITIONER = cn(
   'max-xs:w-auto! max-xs:transform-none!',
 )
 
-/** The card of rows: 340 wide, scrolling past 420 tall; ≤480 it fills the header's width. */
-const POPUP = cn(
-  'w-[min(340px,calc(100vw-24px))] max-h-[min(420px,60dvh)] overflow-y-auto',
-  'max-xs:w-auto max-xs:max-h-[calc(100dvh-var(--topbar-h)-24px)]',
-)
+/** The card of rows: 340 wide; the atom's popup owns the scroll and the available height. */
+const POPUP = 'w-[min(340px,calc(100vw-24px))] max-xs:w-auto'
 
 /**
  * Alerts popover, on the `popover` atom. Base UI owns the disclosure wiring — `aria-expanded`,
@@ -67,9 +58,15 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
         >
           <span className={GLYPH}>🔔</span>
           {model.unreadLabel && (
-            <span className={BUBBLE} data-slot="bell-badge" {...model.badgeProps}>
+            <Badge
+              variant="destructive"
+              size="count"
+              className={BUBBLE}
+              data-slot="bell-badge"
+              {...model.badgeProps}
+            >
               {model.unreadLabel}
-            </span>
+            </Badge>
           )}
         </PopoverTrigger>
         <PortalAnchor id={ANCHOR_ID} />
@@ -97,6 +94,7 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
               render={row.linkProps ? <Link {...row.linkProps} /> : undefined}
               data-slot="alert-row"
               data-unread={row.unread || undefined}
+              tone={row.unread ? 'info' : 'none'}
             >
               <ItemContent>
                 <span

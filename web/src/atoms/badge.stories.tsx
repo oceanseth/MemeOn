@@ -63,4 +63,18 @@ export const AsLink: Story = {
   },
 }
 
+/** The unread bubble: the strong destructive pair on a 16px disc. */
+export const Count: Story = {
+  render: () => (
+    <Badge variant="destructive" size="count">
+      7
+    </Badge>
+  ),
+  play: async ({ canvasElement }) => {
+    const badge = canvasElement.querySelector<HTMLElement>('[data-slot="badge"]')!
+    await expect(badge).toHaveAttribute('data-variant', 'destructive')
+    await expect(badge.offsetHeight).toBe(16)
+  },
+}
+
 export const Dark: Story = { ...Variants, globals: { theme: 'dark' } }

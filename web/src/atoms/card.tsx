@@ -17,6 +17,8 @@ const cardVariants = cva('rounded-lg material-card', {
       accent: 'bg-accent',
       /** a fresh or selected card: the primary ring inside the edge */
       highlighted: 'inset-ring-2 inset-ring-primary',
+      /** a well, not a plate: a rail that holds cards of its own */
+      pressed: 'material-pressed',
     },
     size: {
       default: 'p-card-inset max-md:p-gutter',

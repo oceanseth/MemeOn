@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Alert } from '@/atoms/alert'
 import { Button, buttonVariants } from '@/atoms/button'
+import { Card } from '@/atoms/card'
 import { DialogFooter } from '@/atoms/dialog'
 import { MemeCard } from '@/atoms/meme-card'
 import { Progress } from '@/atoms/progress'
@@ -17,13 +18,10 @@ const BRAINCELL_IMG = 'inline-block size-6.5 rounded-full object-cover align-mid
 /** One rail per page (it lives in the shell), so the meter can name itself by the title's id. */
 const TITLE_ID = 'questbar-title'
 
-/**
- * Pressed well: quest lane left, claim pill right; stacks below 900. The well is the rail's own
- * material — `Card` has no pressed variant yet (requested), and a raised card is not the design.
- */
+/** Pressed well: quest lane left, claim pill right; stacks below 900. */
 const RAIL = cn(
-  'mx-page-x mt-3 flex flex-wrap items-center gap-x-5 gap-y-3 rounded-lg material-pressed p-gutter',
-  'xl:mt-2 xl:flex-nowrap xl:px-6 xl:py-5',
+  'mx-5 mt-3 flex flex-wrap items-center gap-x-5 gap-y-3',
+  'xl:mt-2 xl:flex-nowrap',
 )
 
 /** Unbounded 2xl; under the shell cut it steps to xl, the display face's floor. */
@@ -63,7 +61,7 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
   return (
     <>
       {model.showSteps && (
-        <div className={RAIL} data-slot="questbar">
+        <Card variant="pressed" size="sm" className={RAIL} data-slot="questbar">
           <div className="flex min-w-0 flex-col gap-2.5 max-xl:w-full xl:flex-1" data-slot="questbar-head">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span id={TITLE_ID} className={TITLE} data-slot="questbar-title">
@@ -122,7 +120,7 @@ export function QuestBar({ model }: { model: QuestBarModel }) {
               🎁 {claim.label}
             </Button>
           )}
-        </div>
+        </Card>
       )}
 
       <DialogFrame

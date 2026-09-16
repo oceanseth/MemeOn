@@ -76,7 +76,7 @@ export const EmptyBinder: Story = {
 }
 export const Filtered: Story = { args: { model: model({ query: 'silver' }) } }
 export const NoMatch: Story = { args: { model: model({ query: 'zzz' }) } }
-/** A pick: the row wears the muted well and says so, and the shares field appears in the footer. */
+/** A pick: the row wears the pressed well and says so, and the shares field appears in the footer. */
 export const Picked: Story = {
   args: { model: model({ pick: giftablePaper, shares: 3 }) },
   play: async ({ canvasElement }) => {
@@ -84,11 +84,10 @@ export const Picked: Story = {
     // the submit names the pick too, so the row is found by its state, not its name
     const picked = [...rows(canvasElement)].find((row) => row.getAttribute('aria-pressed') === 'true')!
     await expect(picked).toHaveTextContent(giftablePaper.title)
-    await expect(picked).toHaveAttribute('data-variant', 'muted')
     const others = [...rows(canvasElement)].filter((row) => row !== picked)
     await expect(others).toHaveLength(3)
     for (const row of others) {
-      await expect(row).toHaveAttribute('data-variant', 'default')
+      await expect(row).toHaveAttribute('aria-pressed', 'false')
     }
     const shares = canvas.getByRole('spinbutton', { name: /Shares to gift/ })
     await expect(shares).toHaveValue(3)
@@ -115,10 +114,10 @@ export const Busy: Story = {
     for (const row of rows(canvasElement)) {
       await expect(row).toBeDisabled()
     }
-    // the list itself dims and stops answering the pointer
+    // the list stops answering the pointer; each disabled row wears the disabled look itself
     const list = canvasElement.querySelector<HTMLElement>('[data-slot="gift-list"]')!
     await expect(getComputedStyle(list).pointerEvents).toBe('none')
-    await expect(parseFloat(getComputedStyle(list).opacity)).toBeLessThan(1)
+    await expect(parseFloat(getComputedStyle(rows(canvasElement)[0]!).opacity)).toBeLessThan(1)
   },
 }
 /** The failure lands in a live region that was mounted before it, so it is announced. */
@@ -135,5 +134,5 @@ export const Error: Story = {
 }
 export const Closed: Story = { args: { model: model({ open: false, memes: [] }) } }
 
-/** The dark arm of the picker: muted row, tier seals and the one bubblegum→sky submit. */
+/** The dark arm of the picker: pressed row, tier seals and the one bubblegum→sky submit. */
 export const Dark: Story = { ...Picked, globals: { theme: 'dark' } }

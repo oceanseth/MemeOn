@@ -157,4 +157,16 @@ export const TitleSizes: Story = {
   },
 }
 
+/** A well rather than a plate: the rail a quest bar sits in. */
+export const Pressed: Story = {
+  render: () => (
+    <Card variant="pressed" size="sm">
+      <CardTitle>Earn your braincells</CardTitle>
+    </Card>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector('[data-slot="card"]')).toHaveAttribute('data-size', 'sm')
+  },
+}
+
 export const Dark: Story = { ...WithAction, globals: { theme: 'dark' } }

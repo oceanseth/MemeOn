@@ -29,7 +29,6 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-const token = (name: string) => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(name))
 
 /** The 640px frame: Base UI owns modality and focus, the atom owns the box, this the contract. */
 export const Default: Story = {
@@ -63,7 +62,8 @@ export const WithClose: Story = {
     const canvas = within(canvasElement)
     const close = canvas.getByRole('button', { name: 'Close the frame' })
     await expect(close).toHaveAttribute('data-slot', 'dialog-close')
-    await expect(close.offsetHeight).toBe(token('--spacing-control-sm'))
+    // the atom's 40px ✕, not a frame-drawn icon button
+    await expect(close.offsetHeight).toBe(40)
     const header = canvasElement.querySelector<HTMLElement>('[data-slot="dialog-header"]')!
     await expect(getComputedStyle(header).paddingRight).toBe('48px')
     await userEvent.click(close)

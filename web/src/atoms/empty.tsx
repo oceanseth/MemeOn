@@ -18,6 +18,8 @@ export const emptyVariants = cva(
     variants: {
       variant: {
         neutral: 'text-foreground',
+        /** work in flight inside a form panel: the raised fill, the title muted with the body */
+        busy: 'material-raised text-muted-foreground',
         error: 'bg-error text-error-foreground',
         success: 'bg-success text-success-foreground',
         warning: 'bg-warning text-warning-foreground',
@@ -106,6 +108,7 @@ export function EmptyTitle({
       className: cn(
         'm-0 font-display text-2xl font-normal text-balance',
         'group-data-[size=inline]/empty:text-xl',
+        'group-data-[variant=busy]/empty:text-muted-foreground',
         className,
       ),
     },

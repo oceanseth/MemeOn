@@ -9,6 +9,7 @@ import {
   EmptyTitle,
   PageState,
 } from '@/atoms/empty'
+import { Heading } from '@/atoms/heading'
 import { Icon } from '@/atoms/icon'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/atoms/input-group'
 import { MemeCard } from '@/atoms/meme-card'
@@ -61,12 +62,6 @@ const cardSlot = cn(
 /** Results / Count: the section heading left, the live count right, on one baseline. */
 const resultsRow = cn(
   'mt-1', 'mb-gutter', 'flex', 'flex-wrap', 'items-baseline', 'justify-between', 'gap-x-4', 'gap-y-2',
-)
-/* the grid's own heading: 28px, one step down on the phone so the live count keeps its line.
-   `Heading` has no `text-3xl max-md:text-2xl` size yet (SC2/requests.md), so the plain `<h2>`
-   still spells it — no atom is being restyled here. */
-const sectionHeadingClasses = cn(
-  'm-0', 'font-display', 'text-3xl', 'font-normal', 'text-foreground', 'max-md:text-2xl',
 )
 const summaryRow = cn(
   'flex', 'flex-wrap', 'items-center', 'gap-2.5', 'text-sm', 'text-muted-foreground',
@@ -151,7 +146,7 @@ export function MarketplaceScreen({
         </div>
       </div>
       <div className={resultsRow}>
-        <h2 className={sectionHeadingClasses}>{sectionTitle}</h2>
+        <Heading size="title-phone">{sectionTitle}</Heading>
         {/* one status line: the count doubles as the live region, and the state card owns the error copy */}
         <div data-slot="market-summary" className={summaryRow} {...statusProps}>
           <span>{resultsLabel}</span>

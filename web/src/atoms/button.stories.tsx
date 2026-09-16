@@ -114,6 +114,29 @@ export const Variants: Story = {
   },
 }
 
+/** The glass pills a film wears, the segment chip that grows on a phone, and the picture cell. */
+export const GlassCellAndSegment: Story = {
+  render: () => (
+    <div className="flex flex-wrap items-center gap-3">
+      <Button variant="glass" size="pill">
+        ▶ Play
+      </Button>
+      <Button variant="glass" size="pill-sm">
+        Sound on
+      </Button>
+      <Button size="segment">🎨 Generate</Button>
+      <Button variant="cell" size="cell" pressed aria-label="Pick this picture" className="w-20">
+        <span aria-hidden="true">🖼️</span>
+      </Button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const buttons = canvasElement.querySelectorAll<HTMLElement>('[data-slot="button"]')
+    await expect(buttons).toHaveLength(4)
+    await expect(buttons[3]).toHaveAttribute('aria-pressed', 'true')
+  },
+}
+
 export const Dark: Story = { ...Variants, globals: { theme: 'dark' } }
 
 /**

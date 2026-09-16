@@ -14,6 +14,8 @@ export const headingVariants = cva('m-0 font-display font-normal text-foreground
       display: 'text-5xl max-md:text-4xl',
       section: 'text-4xl max-md:text-2xl',
       title: 'text-3xl',
+      /** a title whose trailing count must keep its line on a phone */
+      'title-phone': 'text-3xl max-md:text-2xl',
       'card-title': 'text-2xl',
       'card-title-phone': 'font-sans text-lg font-semibold',
     },

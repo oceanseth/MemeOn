@@ -15,7 +15,9 @@ export function InputGroup({ className, ...props }: ComponentPropsWithoutRef<'di
       data-slot="input-group"
       className={cn(
         'group/input-group relative flex h-12.5 w-full min-w-0 items-center rounded-md material-pressed',
-        'has-disabled:cursor-not-allowed has-disabled:opacity-(--opacity-disabled)',
+        // the control dims itself (`disabled-look` on Input); dimming the group would push an
+        // addon's muted text under the contrast floor, and axe reads it as text either way
+        'has-disabled:cursor-not-allowed',
         'focus-ring-within',
         'has-aria-invalid:inset-ring-2 has-aria-invalid:inset-ring-destructive',
         'has-data-invalid:inset-ring-2 has-data-invalid:inset-ring-destructive',

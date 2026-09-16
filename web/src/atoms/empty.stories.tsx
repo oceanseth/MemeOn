@@ -273,4 +273,22 @@ export const LegacyEmptyState: Story = {
   },
 }
 
+/** Work in flight inside a form panel: the raised fill, the title muted with the body. */
+export const Busy: Story = {
+  render: () => (
+    <Empty variant="busy" size="inline" role="none">
+      <EmptyHeader>
+        <EmptyTitle>Cooking your frame…</EmptyTitle>
+      </EmptyHeader>
+      <EmptyDescription>The card stays here while the frame cooks.</EmptyDescription>
+    </Empty>
+  ),
+  play: async ({ canvasElement }) => {
+    const empty = canvasElement.querySelector<HTMLElement>('[data-slot="empty"]')!
+    await expect(empty).toHaveAttribute('data-variant', 'busy')
+    const title = empty.querySelector<HTMLElement>('[data-slot="empty-title"]')!
+    await expect(getComputedStyle(title).color).toBe(getComputedStyle(empty).color)
+  },
+}
+
 export const Dark: Story = { ...WithActions, globals: { theme: 'dark' } }

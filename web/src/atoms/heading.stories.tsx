@@ -79,4 +79,12 @@ export const Levels: Story = {
   },
 }
 
+/** `title-phone` keeps a trailing live count on the title's line under the 641 cut. */
+export const TitlePhone: Story = {
+  args: { size: 'title-phone', children: 'Fresh drops · 128' },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector('[data-slot="heading"]')).toHaveAttribute('data-size', 'title-phone')
+  },
+}
+
 export const Dark: Story = { ...Sizes, globals: { theme: 'dark' } }

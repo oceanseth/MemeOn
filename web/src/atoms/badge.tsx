@@ -15,9 +15,16 @@ const badgeVariants = cva(
         warning: 'bg-warning text-warning-foreground',
         error: 'bg-error text-error-foreground',
         info: 'bg-info text-info-foreground',
+        /** the strong red pair, for a count that must be seen: an unread bubble */
+        destructive: 'bg-destructive text-destructive-foreground',
+      },
+      size: {
+        default: '',
+        /** a 16px disc on the corner of a 34px trigger: a number, nothing else */
+        count: 'h-4 min-w-4 rounded-full px-1 leading-none tabular-nums',
       },
     },
-    defaultVariants: { variant: 'default' },
+    defaultVariants: { variant: 'default', size: 'default' },
   },
 )
 
@@ -42,13 +49,13 @@ export interface BadgeProps extends Omit<useRender.ComponentProps<'span'>, 'clas
 }
 
 /** `render` swaps the span for a link or a button; the state reaches the DOM as `data-variant`. */
-export function Badge({ className, variant, tone, render, ...props }: BadgeProps) {
+export function Badge({ className, variant, size, tone, render, ...props }: BadgeProps) {
   const resolved = variant ?? (tone ? TONE_VARIANT[tone] : 'default')
   return useRender({
     defaultTagName: 'span',
-    props: mergeProps<'span'>({ className: cn(badgeVariants({ variant: resolved }), className) }, props),
+    props: mergeProps<'span'>({ className: cn(badgeVariants({ variant: resolved, size }), className) }, props),
     render,
-    state: { slot: 'badge', variant: resolved },
+    state: { slot: 'badge', variant: resolved, size: size ?? 'default' },
   })
 }
 

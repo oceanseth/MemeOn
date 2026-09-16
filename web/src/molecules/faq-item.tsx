@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/atoms/collapsible'
 import { Heading } from '@/atoms/heading'
-import { cn } from '../lib/cn'
-
 export interface FaqItemProps {
   /** The question, rendered inside the trigger's `<h3>` so the FAQ keeps a real heading outline. */
   question: ReactNode
@@ -13,35 +11,19 @@ export interface FaqItemProps {
   className?: string
 }
 
-/** The raised card the question sits on; the phone and the desktop share it. */
-const CARD = 'mb-2.5 rounded-lg material-raised'
-
-const TRIGGER = cn(
-  'group flex w-full min-h-hit cursor-pointer items-center gap-3 rounded-lg px-gutter py-3.5 text-left',
-  'focus-ring',
-)
-
-const PANEL = 'px-gutter pb-4 text-base text-muted-foreground'
-
 /**
  * One FAQ card: the `Collapsible` atom standing in for the pre-migration `<details>/<summary>`.
  * Reused by `DiscordPageScreen`'s FAQ (dev package) once that surface migrates off `<details>`.
  *
- * The atom is a pass-through with no variants of its own, so the card paints the three elements
- * it composes through Base UI's `render` prop rather than through their `className`
- * (`MO2/requests.md` asks for a `card` variant on the atom).
+ * The card is the atom's `card` variant: root, trigger and panel each carry their share of it.
  *
  * API: `question` is the trigger's accessible name and heading text; `children` is the panel's
  * body, mounted only while open. `defaultOpen` matches `<details open>` for an uncontrolled item.
  */
 export function FaqItem({ question, children, defaultOpen = false, className }: FaqItemProps) {
   return (
-    <Collapsible
-      defaultOpen={defaultOpen}
-      data-slot="faq-item"
-      render={<div className={cn(CARD, className)} />}
-    >
-      <CollapsibleTrigger data-slot="faq-trigger" render={<button type="button" className={TRIGGER} />}>
+    <Collapsible variant="card" defaultOpen={defaultOpen} data-slot="faq-item" className={className}>
+      <CollapsibleTrigger variant="card" data-slot="faq-trigger">
         {/* no caret icon — the ▾ glyph rotates off the trigger's own `data-panel-open` */}
         <span
           aria-hidden="true"
@@ -55,7 +37,7 @@ export function FaqItem({ question, children, defaultOpen = false, className }: 
           {question}
         </Heading>
       </CollapsibleTrigger>
-      <CollapsibleContent data-slot="faq-panel" render={<div className={PANEL} />}>
+      <CollapsibleContent variant="card" data-slot="faq-panel">
         {children}
       </CollapsibleContent>
     </Collapsible>

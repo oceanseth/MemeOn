@@ -12,6 +12,7 @@ import {
   FieldLabel,
   Hint,
 } from '@/atoms/field'
+import { Heading } from '@/atoms/heading'
 import { Input } from '@/atoms/input'
 /* the foil sheet and the chip, not the card atom: this screen paints a card frame out of its own
    markup, and the mint route is code-split — pulling `MemeCard.tsx` in would put its `react-router`
@@ -63,27 +64,12 @@ const GIPHY_BROWSE_OPTION: SelectOption = { value: '', label: 'Browse categories
  */
 const CAPTION_OFFSET = '-mt-0.5'
 
-/* The page's own title face, restated where the outcome heading is written by hand: `Heading` is
-   not a `forwardRef` component (React 18), and this heading is the success view's focus target. */
-const OUTCOME_HEADING = cn(
-  'm-0 font-display text-5xl font-normal text-foreground',
-  'max-md:text-4xl',
-)
-
 const MODE_ROW = 'mb-5 flex flex-wrap items-center gap-2'
 
 /** Cost caption beside a render action. */
 const COST_NOTE = 'text-sm font-semibold text-muted-foreground'
 const FORM_NOTE = 'mt-1 text-xs font-medium text-muted-foreground'
 
-/* The Giphy result stays a plain `<button>`: a picture cell is a `Button` restyle from its radius
-   to its padding, and the atom has no `cell` variant (SC2/requests.md). */
-const GIPHY_CELL = cn(
-  'block h-auto aspect-square w-full cursor-pointer overflow-hidden rounded-md material-pressed p-0',
-  'transition-press focus-ring disabled-look',
-)
-/* the picked cell keeps its ring on hover: the state is a ring, never a border colour */
-const GIPHY_CELL_PICKED = 'inset-ring-2 inset-ring-primary'
 const GIPHY_MARK = 'text-xs font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase'
 const LOADING_STATE = 'flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-muted-foreground'
 
@@ -112,7 +98,7 @@ function ModeChip({
   children: ReactNode
 }) {
   return (
-    <Button size="xs" {...model.buttonProps}>
+    <Button size="segment" {...model.buttonProps}>
       {children}
     </Button>
   )
@@ -287,9 +273,9 @@ export function CreateMemeScreen({
       <PageContainer as="main" id="main" tabIndex={-1}>
         {/* the outcome heading is the focus target, so it is written here rather than via PageHead */}
         <div data-slot="page-head" className="mx-0 mt-5 mb-6">
-          <h2 tabIndex={-1} ref={focusOutcome} className={OUTCOME_HEADING}>
+          <Heading size="display" tabIndex={-1} ref={focusOutcome}>
             {successHeading}
-          </h2>
+          </Heading>
         </div>
         <div className="sr-only" role="status">{mintStatus}</div>
         <div className={LAYOUT}>
@@ -461,13 +447,9 @@ export function CreateMemeScreen({
                     {giphyResults.map((g) => {
                       const cell = getGiphyResultProps(g)
                       return (
-                        <button
-                          key={g.id}
-                          {...cell.buttonProps}
-                          className={cn(GIPHY_CELL, cell.picked && GIPHY_CELL_PICKED)}
-                        >
+                        <Button key={g.id} variant="cell" size="cell" pressed={cell.picked} {...cell.buttonProps}>
                           <img {...cell.imageProps} className="block h-full w-full object-cover" />
-                        </button>
+                        </Button>
                       )
                     })}
                   </div>
@@ -585,7 +567,7 @@ export function CreateMemeScreen({
               {showBusy && (
                 /* the region is the live one; a second status role here would announce twice */
                 <div data-slot="busy-card">
-                  <Empty size="inline" role="none">
+                  <Empty variant="busy" size="inline" role="none">
                     <EmptyHeader>
                       <EmptyTitle>
                         {busy}
