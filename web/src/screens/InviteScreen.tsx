@@ -1,21 +1,17 @@
 import { Link } from 'react-router-dom'
+import { Alert } from '@/atoms/alert'
 import { Avatar } from '@/atoms/avatar'
-import { Button, buttonClasses } from '@/atoms/button'
-import { EmptyActions, EmptyState } from '@/atoms/empty-state'
+import { Button, buttonVariants } from '@/atoms/button'
+import { Card } from '@/atoms/card'
+import { Empty, EmptyContent, EmptyDescription } from '@/atoms/empty'
+import { Heading } from '@/atoms/heading'
 import { MemeCard } from '@/atoms/meme-card'
-import { Notice } from '@/atoms/notice'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Spinner } from '@/atoms/spinner'
 import { cn } from '../lib/cn'
 import type { InviteScreenModel } from '../hooks/useInviteScreen'
 import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
-
-/** Hero card centred on the avatar, grows with copy. */
-const HERO = cn(
-  'flex flex-col items-center gap-2 rounded-xl material-card px-5 pt-5 pb-7 text-center',
-  'max-sm:rounded-lg max-sm:px-gutter',
-)
 
 /* The name is the page's own step (5xl, 4xl on a phone); the verb line is one rung down. */
 const HERO_NAME = cn(
@@ -33,7 +29,8 @@ const HERO_BODY = 'm-0 mt-4 max-w-card text-lg text-muted-foreground text-pretty
 
 const HERO_NOTE = 'm-0 mt-3 max-w-measure text-base font-medium text-muted-foreground text-pretty'
 
-const SECTION_HEADING = 'mt-8 mb-3.5 font-display text-3xl font-normal text-foreground'
+/** The hero's own action row: the invite's one primary and its quiet companion. */
+const HERO_ACTIONS = 'mt-4.5 flex flex-wrap items-center justify-center gap-2.5'
 
 /** Invite landing as a function of its model. Every engine state is one set of args. */
 export function InviteScreen({
@@ -60,17 +57,17 @@ export function InviteScreen({
     return (
       <PageContainer as="main" id="main" tabIndex={-1}>
         <PageHead level="h1" title={fatalActions.title} className="mb-5" />
-        <EmptyState tone="error">
-          <p>{err}</p>
-          <EmptyActions>
+        <Empty variant="error">
+          <EmptyDescription>{err}</EmptyDescription>
+          <EmptyContent>
             <Button variant="primary" {...fatalActions.joinButtonProps}>
               {fatalActions.joinLabel}
             </Button>
-            <Link className={buttonClasses()} to={fatalActions.homeHref}>
+            <Link className={buttonVariants()} to={fatalActions.homeHref}>
               {fatalActions.homeLabel}
             </Link>
-          </EmptyActions>
-        </EmptyState>
+          </EmptyContent>
+        </Empty>
       </PageContainer>
     )
 
@@ -94,7 +91,7 @@ export function InviteScreen({
     <PageContainer as="main" id="main" tabIndex={-1}>
       <PageHead level="h1" title="You’re invited" className="mb-5" />
 
-      <section className={HERO} data-slot="invite-hero">
+      <Card size="sm" data-slot="invite-hero" className="flex flex-col items-center gap-2 text-center">
         <Avatar name={inviter.name} src={inviter.avatarSrc} size="hero" loading="eager" />
         <h2 className="m-0 mt-3.5">
           <span className={HERO_NAME}>{inviter.name}</span>{' '}
@@ -112,35 +109,37 @@ export function InviteScreen({
 
         {selfActions ? (
           <>
-            <Notice tone="ok">{selfActions.note}</Notice>
-            <EmptyActions>
+            <Alert variant="success" className="mt-3">{selfActions.note}</Alert>
+            <div className={HERO_ACTIONS}>
               <Button variant="primary" {...selfActions.copyButtonProps}>
                 {selfActions.copyLabel}
               </Button>
-              <Link className={buttonClasses()} to={selfActions.friendsHref}>
+              <Link className={buttonVariants()} to={selfActions.friendsHref}>
                 {selfActions.friendsLabel}
               </Link>
-            </EmptyActions>
+            </div>
             <span className="sr-only" role="status">
               {selfActions.copyStatusMessage}
             </span>
           </>
         ) : showAcceptSuccess ? null : (
           // the offer retires once it is taken: the confirmation below is the whole state
-          <EmptyActions>
+          <div className={HERO_ACTIONS}>
             <Button variant="primary" className="max-sm:w-full" {...acceptButtonProps}>
               {acceptLabel}
             </Button>
-          </EmptyActions>
+          </div>
         )}
-        {showAcceptError && <Notice tone="error">{acceptErrorMessage}</Notice>}
-        {showAcceptSuccess && <Notice tone="ok">{acceptSuccessMessage}</Notice>}
+        {showAcceptError && <Alert variant="error" className="mt-3">{acceptErrorMessage}</Alert>}
+        {showAcceptSuccess && <Alert variant="success" className="mt-3">{acceptSuccessMessage}</Alert>}
         <p className={HERO_NOTE}>{inviter.acceptanceNote}</p>
-      </section>
+      </Card>
 
       {showHighlights && (
         <>
-          <h2 className={SECTION_HEADING}>{highlightsTitle}</h2>
+          <Heading as="h2" className="mt-8 mb-3.5">
+            {highlightsTitle}
+          </Heading>
           <ul className={binderGridClasses}>
             {cards.map((card) => (
               <li key={card.id} className={binderCardSlotClasses}>

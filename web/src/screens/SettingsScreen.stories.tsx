@@ -46,6 +46,10 @@ export const Default: Story = {
     await expect(canvas.queryByRole('heading', { name: /Typography|Icon style/ })).toBeNull()
     // the one segmented well, bound to the theme store
     await expect(canvas.getByRole('group', { name: 'Theme' })).toBeInTheDocument()
+    // three Card sections, and every row is an Item
+    await expect(canvasElement.querySelectorAll('[data-slot="card"]')).toHaveLength(3)
+    await expect(canvasElement.querySelector('[data-slot="settings-account"]')).toHaveAttribute('data-variant', 'default')
+    await expect(canvasElement.querySelectorAll('[data-slot="item-title"]').length).toBeGreaterThan(0)
   },
 }
 
@@ -64,6 +68,10 @@ export const NotLinked: Story = {
     await expect(canvas.getByText(copy.connections.discord.service)).toBeInTheDocument()
     await expect(canvas.getByText(copy.connections.discord.notLinked)).toBeInTheDocument()
     await expect(canvas.getByRole('link', { name: copy.connections.discord.connect })).toHaveAttribute('href', '/discord')
+    // the connection row is an `Item` rendered as the list item it always was
+    const row = canvasElement.querySelector('[data-slot="connection-row"]')!
+    await expect(row.tagName).toBe('LI')
+    await expect(row).toHaveAttribute('data-linked', 'false')
   },
 }
 

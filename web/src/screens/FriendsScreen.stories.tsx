@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
-import { fn } from 'storybook/test'
+import { expect, fn, within } from 'storybook/test'
 import { friendAccepted, giftablePaper } from '../../.storybook/fixtures'
 import { friendsCopy as copy } from '../copy/friends'
 import { buildFriendLinkModel, type FriendsScreenModel } from '../hooks/useFriendsScreen'
@@ -120,6 +120,13 @@ export const Empty: Story = {}
 
 export const Error: Story = {
   args: { phase: 'error', showEmpty: false, showError: true },
+  play: async ({ canvasElement }) => {
+    // the error card is `Empty variant="error"`: its title keeps the h2 the outline had
+    const empty = canvasElement.querySelector('[data-slot="empty"]')!
+    await expect(empty).toHaveAttribute('data-variant', 'error')
+    await expect(empty.querySelector('[data-slot="empty-title"]')?.tagName).toBe('H2')
+    await expect(empty).toHaveAttribute('role', 'alert')
+  },
 }
 
 export const Ready: Story = {
@@ -281,6 +288,23 @@ export const Full: Story = {
       pendingLabel: 'Pending',
       cancelButtonProps: { onClick: fn(), 'aria-label': `Cancel your request to ${friendOutgoing.name}` },
     }],
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // the search well is one InputGroup, not a positioned glyph over a padded input
+    const group = canvasElement.querySelector('[data-slot="input-group"]')!
+    await expect(group.querySelector('[data-slot="input-group-addon"]')).toHaveAttribute('data-align', 'inline-start')
+    await expect(canvas.getByRole('searchbox', { name: copy.search.inputLabel })).toHaveAttribute(
+      'data-slot',
+      'input-group-control',
+    )
+    // the filter row is the Toolbar the PageHead lays out
+    await expect(canvasElement.querySelector('[data-slot="toolbar"]')).not.toBeNull()
+    // every person row is a raised Item carrying an actions slot
+    const rows = canvasElement.querySelectorAll('[data-slot="person-row"]')
+    await expect(rows).toHaveLength(3)
+    await expect(rows[0]).toHaveAttribute('data-variant', 'raised')
+    await expect(rows[0]?.querySelector('[data-slot="item-actions"]')).not.toBeNull()
   },
 }
 

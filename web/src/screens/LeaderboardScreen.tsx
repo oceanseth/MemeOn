@@ -2,7 +2,10 @@ import { Link } from 'react-router-dom'
 import { Avatar } from '@/atoms/avatar'
 import { Badge } from '@/atoms/badge'
 import { Button } from '@/atoms/button'
-import { EmptyActions, EmptyState } from '@/atoms/empty-state'
+import { Card } from '@/atoms/card'
+import { Empty, EmptyContent, EmptyDescription } from '@/atoms/empty'
+import { Heading } from '@/atoms/heading'
+import { Item } from '@/atoms/item'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { SkeletonRow } from '@/atoms/skeleton'
@@ -14,12 +17,6 @@ const skeletonRows = [0, 1, 2, 3, 4]
 /** Braincell count colour: bubblegum ramp flips with theme. */
 const COUNT = 'font-sans font-semibold text-braincell tabular-nums'
 
-/** Podium panel: head left, three cards right; stacks on phone. */
-const PODIUM_PANEL = cn(
-  'mb-5 flex items-center gap-10 rounded-lg material-card p-5',
-  'max-md:flex-col max-md:items-stretch max-md:gap-5',
-)
-
 /**
  * Two lists, not one: the podium is inside the panel and the ladder continues beside it. Each row's
  * accessible name already states its rank (`rowLabel` in `useLeaderboardScreen`), so the split
@@ -28,25 +25,8 @@ const PODIUM_PANEL = cn(
 const PODIUM_LIST = cn('m-0 flex list-none gap-5 p-0', 'max-md:flex-col max-md:gap-3.5')
 const BOARD = 'm-0 flex list-none flex-col gap-5 p-0 max-md:gap-3.5'
 
-/* #1 gets action border on raised surface; #2 and #3 stay plain */
-const PODIUM = cn(
-  'flex h-full flex-col items-center rounded-xl material-card px-5 pt-gutter pb-5 text-center',
-  'md:w-54.5',
-  'max-md:flex-row max-md:items-center max-md:gap-3 max-md:rounded-lg max-md:px-5 max-md:py-3.5 max-md:text-left',
-)
-const PODIUM_FIRST = 'bg-accent border-2 border-primary'
-
-const RANK_ROW = cn(
-  'flex items-center gap-3 rounded-xl material-card px-5 py-3.25',
-  'max-md:rounded-lg max-md:px-gutter max-md:py-3.5',
-)
-const RANK_ROW_ME = 'bg-accent border-2 border-brand'
-
-const ROW_LINK = cn(
-  'text-inherit no-underline',
-  'focus-ring',
-  'lift transition-press',
-)
+/** A podium tile is a column on the desktop and a row on the phone; #1 wears the frame. */
+const PODIUM = 'h-full text-center md:w-54.5 md:flex-col md:items-center max-md:text-left'
 
 const NAME = 'min-w-0 flex-1 truncate text-lg font-semibold text-foreground'
 
@@ -54,22 +34,23 @@ const RANK_NUMERAL = 'w-7 shrink-0 text-center text-lg font-semibold text-muted-
 
 function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: string }) {
   return (
-    <Link
-      {...leader.profileLinkProps}
+    <Item
+      render={<Link {...leader.profileLinkProps} />}
       aria-label={leader.linkLabel}
       data-slot="person-row"
-      className={cn(ROW_LINK, RANK_ROW, leader.isMe && RANK_ROW_ME)}
+      variant="raised"
+      frame={leader.isMe ? 'brand' : 'none'}
     >
       <span className={RANK_NUMERAL}>{leader.rankNumeral}</span>
-      <Avatar name={leader.name} src={leader.avatarSrc} size="md" className="size-9 rounded-sm" loading="lazy" />
+      <Avatar name={leader.name} src={leader.avatarSrc} size="rank" loading="lazy" />
       <span className={NAME}>{leader.name}</span>
       {leader.isMe ? (
-        <Badge tone="info" className="shrink-0">
+        <Badge variant="info" className="shrink-0">
           {youLabel}
         </Badge>
       ) : null}
       <span className={cn(COUNT, 'shrink-0 text-base whitespace-nowrap')}>{leader.braincellsLabel}</span>
-    </Link>
+    </Item>
   )
 }
 
@@ -115,70 +96,67 @@ export function LeaderboardScreen({
         {showList ? <span className="sr-only">{listSummary}</span> : null}
       </div>
 
-      {showEmpty ? <EmptyState>{emptyMessage}</EmptyState> : null}
+      {showEmpty ? (
+        <Empty>
+          <EmptyDescription>{emptyMessage}</EmptyDescription>
+        </Empty>
+      ) : null}
 
       {showError ? (
-        <EmptyState tone="error">
-          <p>{errorMessage}</p>
-          <EmptyActions>
+        <Empty variant="error">
+          <EmptyDescription>{errorMessage}</EmptyDescription>
+          <EmptyContent>
             <Button onClick={retry}>{retryLabel}</Button>
-          </EmptyActions>
-        </EmptyState>
+          </EmptyContent>
+        </Empty>
       ) : null}
 
       {showList ? (
         <>
           {/* podium: head + top three; ranks 4+ continue in the list below */}
-          <div className={PODIUM_PANEL} data-slot="podium">
+          <Card
+            size="sm"
+            data-slot="podium"
+            className="mb-5 flex items-center gap-10 max-md:flex-col max-md:items-stretch max-md:gap-5"
+          >
             <div className="max-w-75 flex-1" data-slot="podium-head">
-              <h2 className="m-0 font-display text-4xl font-normal text-foreground max-md:text-2xl">
+              <Heading as="h2" size="section">
                 {podiumTitle}
-              </h2>
+              </Heading>
               <p className="m-0 mt-1.5 text-base text-muted-foreground">{podiumSubtitle}</p>
             </div>
 
             <ol className={PODIUM_LIST} data-slot="podium-cards" aria-label={podiumTitle}>
               {leaders.slice(0, 3).map((l) => (
                 <li key={l.sub}>
-                  <Link
-                    {...l.profileLinkProps}
+                  <Item
+                    render={<Link {...l.profileLinkProps} />}
                     aria-label={l.linkLabel}
                     data-slot="person-row"
-                    className={cn(ROW_LINK, 'block h-full')}
+                    variant="raised"
+                    frame={l.rankNumeral === '1' ? 'brand' : 'none'}
+                    className={PODIUM}
                   >
-                    <span className={cn(PODIUM, l.rankNumeral === '1' && PODIUM_FIRST)}>
-                      <span aria-hidden="true" className="text-2xl leading-none max-md:text-xl">
-                        {l.medalLabel}
-                      </span>
-                      <Avatar
-                        name={l.name}
-                        src={l.avatarSrc}
-                        size="md"
-                        className="size-12.5 rounded-md md:mt-2.5 max-md:size-9 max-md:rounded-sm"
-                        loading="lazy"
-                      />
-                      <span
-                        className={cn(
-                          NAME,
-                          'md:mt-2.5 md:w-full md:flex-none md:text-center max-md:min-w-0',
-                        )}
-                      >
-                        {l.name}
-                      </span>
-                      {l.isMe ? (
-                        <Badge tone="info" className="shrink-0 md:mt-2">
-                          {youLabel}
-                        </Badge>
-                      ) : null}
-                      <span className={cn(COUNT, 'text-lg font-semibold md:mt-2 max-md:text-base')}>
-                        {l.braincellsLabel}
-                      </span>
+                    <span aria-hidden="true" className="text-2xl leading-none max-md:text-xl">
+                      {l.medalLabel}
                     </span>
-                  </Link>
+                    <Avatar name={l.name} src={l.avatarSrc} size="podium" loading="lazy" />
+                    <span className={cn(NAME, 'md:w-full md:flex-none md:text-center max-md:min-w-0')}>
+                      {l.name}
+                    </span>
+                    {l.isMe ? (
+                      <Badge variant="info" className="shrink-0">
+                        {youLabel}
+                      </Badge>
+                    ) : null}
+                    <span className={cn(COUNT, 'text-lg font-semibold max-md:text-base')}>
+                      {l.braincellsLabel}
+                    </span>
+                  </Item>
                 </li>
               ))}
             </ol>
-          </div>
+          </Card>
 
           {/* ranks 4+: each row's accessible name already carries its rank */}
           {leaders.length > 3 ? (
@@ -199,7 +177,7 @@ export function LeaderboardScreen({
 
           {showMore ? (
             <div className="mt-6 flex justify-center">
-              <Button variant="secondary" className="w-55 max-sm:w-full" {...showMoreButtonProps}>
+              <Button variant="brand" className="w-55 max-sm:w-full" {...showMoreButtonProps}>
                 {showMoreLabel}
               </Button>
             </div>

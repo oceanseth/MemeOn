@@ -159,6 +159,10 @@ export const Ready: Story = {
     // the route's title is the page's one h1 (the wave-3 screens took the same step); sections are h3
     await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('Developers')
     await expect(canvas.getByRole('button', { name: 'Create key' })).toBeEnabled()
+    // every key is an Item row, and the two announce wrappers are LiveRegions
+    await expect(canvasElement.querySelectorAll('[data-slot="api-key-row"]').length).toBeGreaterThan(0)
+    await expect(canvasElement.querySelector('[data-slot="api-key-row"]')?.tagName).toBe('LI')
+    await expect(canvasElement.querySelectorAll('[data-slot="live-region"]')).toHaveLength(2)
   },
 }
 
@@ -183,6 +187,7 @@ export const LoadError: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('alert')).toHaveTextContent('your keys are still active')
+    await expect(canvasElement.querySelector('[data-slot="empty"]')).toHaveAttribute('data-variant', 'error')
     await expect(canvas.queryByText(args.emptyCopy)).toBeNull()
     await userEvent.click(canvas.getByRole('button', { name: 'Try again' }))
     await expect(handlers.onRetry).toHaveBeenCalled()
@@ -266,6 +271,10 @@ export const CopyFailed: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('alert')).toHaveTextContent('copy it manually')
+    // the band is an Alert whose whole message is its title
+    const alert = canvasElement.querySelector('[data-slot="alert"]')!
+    await expect(alert).toHaveAttribute('data-variant', 'error')
+    await expect(alert.querySelector('[data-slot="alert-title"]')).not.toBeNull()
     await expect(canvas.getByText(/^mk_3f9a2c8b/)).toHaveAttribute('tabindex', '0')
   },
 }
