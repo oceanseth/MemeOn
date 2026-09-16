@@ -1,0 +1,176 @@
+import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
+import { cva, type VariantProps } from 'class-variance-authority'
+import type { ComponentProps } from 'react'
+import { cn } from '@/lib/cn'
+import type { Styled } from '@/atoms/field'
+
+export function Dialog(props: DialogPrimitive.Root.Props) {
+  return <DialogPrimitive.Root data-slot="dialog" {...props} />
+}
+
+export function DialogTrigger(props: DialogPrimitive.Trigger.Props) {
+  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
+}
+
+/** Pass `container={portalAnchor(id)}` (lib/portalAnchor) to keep the dialog inside its screen. */
+export function DialogPortal(props: DialogPrimitive.Portal.Props) {
+  return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
+}
+
+export function DialogClose(props: DialogPrimitive.Close.Props) {
+  return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
+}
+
+/** The scrim: the overlay tint, a little blur, a fade on each side. */
+export function DialogOverlay({ className, ...props }: Styled<DialogPrimitive.Backdrop.Props>) {
+  return (
+    <DialogPrimitive.Backdrop
+      data-slot="dialog-overlay"
+      className={cn(
+        'fixed inset-0 isolate z-(--z-modal) bg-overlay backdrop-blur-sm',
+        'data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 motion-reduce:animate-none',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+/**
+ * `inset-0 m-auto h-fit` is how a native modal `<dialog>` centres itself; `sheet` drops it to the
+ * floor under the 720px cut so an on-screen keyboard pushes the box instead of burying it.
+ * `danger` is a 2px ring drawn inside the card, so the box never grows and the modal shadow
+ * beneath it is untouched.
+ */
+export const dialogContentVariants = cva(
+  cn(
+    'group/dialog-content fixed inset-0 z-(--z-modal) m-auto box-border flex h-fit w-full flex-col gap-4 overflow-y-auto scrollbar-thin',
+    'max-h-[min(86dvh,86vh)]',
+    'rounded-lg material-modal p-card-inset text-foreground',
+    'outline-none focus-ring',
+    'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 motion-reduce:animate-none',
+  ),
+  {
+    variants: {
+      size: {
+        /** the confirm frame */
+        sm: 'max-w-[min(440px,calc(100vw-24px))]',
+        /** every other modal */
+        md: 'max-w-[min(640px,calc(100vw-24px))]',
+      },
+      variant: {
+        default: '',
+        danger: 'inset-ring-2 inset-ring-destructive',
+      },
+      sheet: {
+        true: 'max-lg:mb-0 max-lg:max-w-none max-lg:rounded-b-none max-lg:pb-safe-6',
+        false: '',
+      },
+    },
+    defaultVariants: {
+      size: 'md',
+      variant: 'default',
+      sheet: false,
+    },
+  },
+)
+
+/** The ✕ is a 40px neutral raised square in the card's corner — the glyph is the button. */
+const CLOSE_BUTTON = cn(
+  'absolute top-card-inset right-card-inset inline-flex size-10 cursor-pointer items-center justify-center pointer-coarse:size-hit',
+  'rounded-sm material-raised p-0 text-label text-foreground',
+  'transition-press press',
+  'focus-ring disabled-look',
+)
+
+export interface DialogContentProps
+  extends Styled<DialogPrimitive.Popup.Props>,
+    VariantProps<typeof dialogContentVariants> {
+  /** the ✕ in the corner; `closeLabel` is its accessible name */
+  showCloseButton?: boolean | undefined
+  closeLabel?: string | undefined
+  /** where the portal renders; pair `PortalAnchor` with `portalAnchor(id)` to stay inside the screen */
+  container?: DialogPrimitive.Portal.Props['container']
+}
+
+/**
+ * Portal + overlay + popup. `initialFocus`/`finalFocus` and `role` pass straight through to the
+ * popup. `aria-modal` is set because Base UI leaves it off and a screen reader that constrains
+ * its cursor by it needs it on both roles.
+ */
+export function DialogContent({
+  className,
+  children,
+  size,
+  variant,
+  sheet,
+  showCloseButton = true,
+  closeLabel = 'Close',
+  container,
+  ...props
+}: DialogContentProps) {
+  return (
+    <DialogPortal container={container} className="contents">
+      <DialogOverlay />
+      <DialogPrimitive.Popup
+        data-slot="dialog-content"
+        data-size={size ?? 'md'}
+        data-variant={variant ?? 'default'}
+        data-close-button={showCloseButton || undefined}
+        aria-modal="true"
+        className={cn(dialogContentVariants({ size, variant, sheet }), className)}
+        {...props}
+      >
+        {children}
+        {showCloseButton && (
+          <DialogPrimitive.Close data-slot="dialog-close" aria-label={closeLabel} className={CLOSE_BUTTON}>
+            <span aria-hidden="true">✕</span>
+          </DialogPrimitive.Close>
+        )}
+      </DialogPrimitive.Popup>
+    </DialogPortal>
+  )
+}
+
+/** Title over description; reserves the ✕'s lane when the content shows one. */
+export function DialogHeader({ className, ...props }: ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="dialog-header"
+      className={cn('flex flex-col gap-1.5 text-left group-data-close-button/dialog-content:pr-12', className)}
+      {...props}
+    />
+  )
+}
+
+/** The action row: buttons to the end, wrapping on a narrow sheet. */
+export function DialogFooter({ className, ...props }: ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="dialog-footer"
+      className={cn('flex flex-wrap items-center justify-end gap-2.5', className)}
+      {...props}
+    />
+  )
+}
+
+export function DialogTitle({ className, ...props }: Styled<DialogPrimitive.Title.Props>) {
+  return (
+    <DialogPrimitive.Title
+      data-slot="dialog-title"
+      className={cn('m-0 font-display text-title font-medium tracking-title text-foreground text-pretty', className)}
+      {...props}
+    />
+  )
+}
+
+/** Label scale, not body — matches every modal description in the app. */
+export function DialogDescription({ className, ...props }: Styled<DialogPrimitive.Description.Props>) {
+  return (
+    <DialogPrimitive.Description
+      data-slot="dialog-description"
+      className={cn('m-0 text-label text-muted-foreground', className)}
+      {...props}
+    />
+  )
+}
