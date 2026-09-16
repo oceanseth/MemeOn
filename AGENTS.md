@@ -1,6 +1,6 @@
 # MemeOn — agent working notes
 
-Operational facts for agents working this repo. **Keep this file lean.** Long-form detail goes in `docs/`; do **not** clutter `mobile/AGENTS.md` or any `agent.md`.
+Operational facts for agents working this repo. **Keep this file lean.** Long-form detail goes in `docs/`; do **not** clutter `mobile/AGENTS.md` or any nested agent file.
 
 ## Resolver table
 
@@ -23,7 +23,7 @@ When you hit one of these situations, use the resolution — do not re-discover 
 | Local deploy / AWS CLI from laptop? | **Do not deploy from local.** Project AWS is not authenticated for local agents. Deploys use **GitHub secrets** only. | Strong 2026-07-28 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
 | Local API testing env? | Local / `local-server` should hit **dev or local** resources, never production. | Strong 2026-07-28 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
 | `api/src/env.ts` defaults look like production | Documented footgun only. **mo-100.13 deferred/closed** (Strong 2026-08-01): CI injects env; local never deploys. Do not open a PR for this unless policy changes. | Strong 2026-08-01 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
-| Repo checkout path | Canonical clone: **`/Users/lou/gts/MemeOn`**. Symlink **`~/memeon`** → same path for older docs/workflows. | Host layout 2026-08-01 |
+| Repo checkout path | Canonical clone: **`/Users/lou/gts/strong/MemeOn`**; per-epic worktrees are its siblings (`memeon-wt-<node>`, see [docs/WORKTREES.md](docs/WORKTREES.md)). | Host layout 2026-09-16 |
 | Terraform vs live prod | README: prod has been mutated via AWS CLI; terraform in-repo is documentation-ish. **Re-import before apply.** | [README.md](README.md) Environments / infra notes |
 | Static-analysis fix track | Epic **`mo-100`** in beads (`bd list` / `bd show mo-100`). **One bead → one PR.** Workflow: **`memeon-bead-pr`**. | `.beads/`, `.grok/workflows/memeon-bead-pr.rhai` |
 | Planner / implementer / verifier | **Never the same agent role for a bead.** Planner (read-only) → implementer (code) → verifier (adversarial) → separate PR opener. | oxferd 2026-07-28 |
