@@ -155,9 +155,8 @@ export const ClaimPackAndDismissOverlay: Story = {
     await expect(pill).toHaveAttribute('data-progress', '0')
     await userEvent.click(pill)
     await userEvent.click(await canvas.findByRole('button', { name: /claim your starter pack/i }))
-    const opening = canvas.getByRole('button', { name: /Opening/ })
-    await expect(opening).toBeDisabled()
-    await userEvent.click(opening)
+    /* the panel closes on claim so the positioner cannot drift once the pack dialog opens */
+    await waitFor(() => expect(canvas.queryByText('Earn your braincells')).toBeNull())
     await expect(loaded.requests.packClaims).toBe(1)
 
     loaded.requests.resolvePack(Response.json({ memes: [paperMeme], reward: 20 }))

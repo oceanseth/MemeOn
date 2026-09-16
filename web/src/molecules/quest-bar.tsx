@@ -1,3 +1,4 @@
+import type { Popover as PopoverPrimitive } from '@base-ui/react/popover'
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Alert } from '@/atoms/alert'
@@ -107,7 +108,7 @@ export function QuestBar({ model, balance }: QuestBarProps) {
   const claim = model?.chips.find((chip) => chip.kind === 'claim')
   const steps = model?.chips.filter((chip) => chip.kind === 'step') ?? []
   const done = steps.filter((chip) => chip.done).length
-  const popoverActions = useRef<{ close: () => void } | null>(null)
+  const popoverActions = useRef<PopoverPrimitive.Root.Actions | null>(null)
 
   const figure = <span aria-hidden="true">{balance.text}</span>
 
