@@ -76,4 +76,15 @@ export const Complete: Story = {
   },
 }
 
+/** The binder's ownership groove: braincell gold, not the action colour. */
+export const Braincell: Story = {
+  args: { value: 60, variant: 'braincell', 'aria-label': 'Shares owned' },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector('[data-slot="progress-indicator"]')).toHaveAttribute(
+      'data-variant',
+      'braincell',
+    )
+  },
+}
+
 export const Dark: Story = { ...Ladder, globals: { theme: 'dark' } }

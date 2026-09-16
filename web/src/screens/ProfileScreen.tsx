@@ -118,7 +118,7 @@ export function ProfileScreen({
       <PageContainer as="main" id="main" tabIndex={-1}>
         <div role="status" aria-live="polite" className="sr-only">{loadingLabel}</div>
         <Card size="sm" className={cn(IDENTITY_CARD, 'mt-5 sm:min-h-34.5')} aria-hidden="true">
-          <Skeleton className="size-21.5" />
+          <Skeleton variant="avatar" className="size-21.5 max-sm:size-18.5" />
           <div className="min-w-0 flex-1">
             <SkeletonBlock className="mb-2.5 h-7.5 w-55 max-w-full" />
             <SkeletonBlock className="w-65 max-w-full" />

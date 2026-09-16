@@ -18,6 +18,8 @@ export const progressIndicatorVariants = cva(
       variant: {
         default: 'bg-primary',
         ladder: 'bg-linear-to-r from-brand via-primary to-brand',
+        /** the braincell gold a binder's ownership groove fills with */
+        braincell: 'bg-warning-foreground',
       },
     },
     defaultVariants: {

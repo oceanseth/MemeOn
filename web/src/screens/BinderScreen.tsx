@@ -184,7 +184,7 @@ export function BinderScreen({
                       </span>
                     )}
                     {/* the ownership groove: how much of this meme the binder holds */}
-                    <Progress value={card.sharesPct} aria-hidden="true" className="mt-1" />
+                    <Progress value={card.sharesPct} variant="braincell" aria-hidden="true" className="mt-1" />
                   </>
                 }
               />

@@ -66,4 +66,14 @@ export const Variants: Story = {
   },
 }
 
+/** Stands in for the hero avatar: the same `rounded-xl`, the caller gives the size. */
+export const AvatarPlaceholder: Story = {
+  render: () => <Skeleton variant="avatar" className="size-21.5" />,
+  play: async ({ canvasElement }) => {
+    const el = canvasElement.querySelector<HTMLElement>('[data-slot="skeleton"]')!
+    await expect(el).toHaveAttribute('data-variant', 'avatar')
+    await expect(getComputedStyle(el).borderTopLeftRadius).toBe('32px')
+  },
+}
+
 export const Dark: Story = { ...Card, globals: { theme: 'dark' } }
