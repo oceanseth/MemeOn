@@ -7,7 +7,7 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '
 import { Heading } from '@/atoms/heading'
 import { Icon } from '@/atoms/icon'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/atoms/input-group'
-import { Item, ItemActions } from '@/atoms/item'
+import { Item, ItemActions, ItemContent, ItemTitle } from '@/atoms/item'
 import { Notice } from '@/atoms/notice'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
@@ -41,12 +41,7 @@ const IDENTITY = cn(
   'focus-ring',
 )
 
-const NAME = cn(
-  'block truncate text-lg font-semibold text-foreground',
-  'wrap-anywhere',
-)
-
-const META = 'mt-0.5 block truncate text-xs font-medium text-muted-foreground'
+const META = 'block truncate text-xs font-medium text-muted-foreground'
 
 /* The action cluster: raised companion first, the row's one bubblegum second, the quiet exit last.
    On a phone the two pills share the 310px row and the text action keeps its own 44px target. */
@@ -81,16 +76,19 @@ function PersonRow({
   return (
     <Item
       variant="raised"
+      size="row"
       data-slot="person-row"
       className="max-sm:flex-col max-sm:items-stretch"
     >
       <div className="flex min-w-0 flex-1 items-center gap-3.5">
         <Link {...profileLinkProps} className={IDENTITY}>
           <Avatar name={name} src={avatarSrc} size="md" className="size-12" loading="lazy" />
-          <span className="min-w-0 flex-1">
-            <span className={NAME}>{name}</span>
+          <ItemContent>
+            <ItemTitle size="lg" truncate>
+              {name}
+            </ItemTitle>
             {statsLabel ? <span className={META}>{statsLabel}</span> : null}
-          </span>
+          </ItemContent>
         </Link>
         {online ? (
           <>

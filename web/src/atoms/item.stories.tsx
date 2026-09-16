@@ -236,4 +236,35 @@ export const WithHeaderAndFooter: Story = {
   },
 }
 
+/** The card-shaped `row` size with the `lg` title step, the podium's `primary` frame, the `info`
+ * tone an unread row wears, and the `flush` line a well holds (no target floor, no inset). */
+export const Rows: Story = {
+  render: () => (
+    <div className="flex flex-col gap-3">
+      <Item variant="raised" size="row" frame="primary">
+        <ItemTitle size="lg" truncate className="min-w-0 flex-1">
+          Lou — first place
+        </ItemTitle>
+        <ItemDescription>240</ItemDescription>
+      </Item>
+      <Item size="row" tone="info">
+        <ItemTitle size="lg">Unread alert</ItemTitle>
+      </Item>
+      <Item size="flush">
+        <ItemTitle>Flush line</ItemTitle>
+        <ItemDescription>inside a well</ItemDescription>
+      </Item>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const items = canvasElement.querySelectorAll<HTMLElement>('[data-slot="item"]')
+    await expect(items[0]).toHaveAttribute('data-size', 'row')
+    await expect(items[0]).toHaveAttribute('data-frame', 'primary')
+    await expect(items[0]!.querySelector('[data-slot="item-title"]')).toHaveAttribute('data-size', 'lg')
+    await expect(items[1]).toHaveAttribute('data-tone', 'info')
+    await expect(items[2]).toHaveAttribute('data-size', 'flush')
+    await expect(items[2]!.clientHeight).toBeLessThan(44)
+  },
+}
+
 export const Dark: Story = { ...Variants, globals: { theme: 'dark' } }

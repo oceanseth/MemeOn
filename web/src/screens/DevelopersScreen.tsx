@@ -159,9 +159,9 @@ export function DevelopersScreen({
           </Empty>
         )}
         {showKeys && keys && (
-          <ul className="m-0 mt-2 list-none p-0 divide-y divide-border">
+          <ul className="m-0 mt-2 list-none divide-y divide-border p-0 *:py-3">
             {keys.map((k) => (
-              <Item key={k.prefix} render={<li />} data-slot="api-key-row">
+              <Item key={k.prefix} size="flush" render={<li />} data-slot="api-key-row">
                 <ItemContent>
                   {/* `overflow-wrap:anywhere` keeps a 60-character label inside the row */}
                   <ItemTitle>{k.label}</ItemTitle>

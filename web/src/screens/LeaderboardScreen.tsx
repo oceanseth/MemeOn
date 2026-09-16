@@ -5,7 +5,7 @@ import { Button } from '@/atoms/button'
 import { Card } from '@/atoms/card'
 import { Empty, EmptyContent, EmptyDescription } from '@/atoms/empty'
 import { Heading } from '@/atoms/heading'
-import { Item } from '@/atoms/item'
+import { Item, ItemTitle } from '@/atoms/item'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { SkeletonRow } from '@/atoms/skeleton'
@@ -28,8 +28,6 @@ const BOARD = 'm-0 flex list-none flex-col gap-5 p-0 max-md:gap-3.5'
 /** A podium tile is a column on the desktop and a row on the phone; #1 wears the frame. */
 const PODIUM = 'h-full text-center md:w-54.5 md:flex-col md:items-center max-md:text-left'
 
-const NAME = 'min-w-0 flex-1 truncate text-lg font-semibold text-foreground'
-
 const RANK_NUMERAL = 'w-7 shrink-0 text-center text-lg font-semibold text-muted-foreground tabular-nums'
 
 function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: string }) {
@@ -39,11 +37,14 @@ function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: 
       aria-label={leader.linkLabel}
       data-slot="person-row"
       variant="raised"
+      size="row"
       frame={leader.isMe ? 'brand' : 'none'}
     >
       <span className={RANK_NUMERAL}>{leader.rankNumeral}</span>
       <Avatar name={leader.name} src={leader.avatarSrc} size="rank" loading="lazy" />
-      <span className={NAME}>{leader.name}</span>
+      <ItemTitle size="lg" truncate className="min-w-0 flex-1">
+        {leader.name}
+      </ItemTitle>
       {leader.isMe ? (
         <Badge variant="info" className="shrink-0">
           {youLabel}
@@ -134,16 +135,17 @@ export function LeaderboardScreen({
                     aria-label={l.linkLabel}
                     data-slot="person-row"
                     variant="raised"
-                    frame={l.rankNumeral === '1' ? 'brand' : 'none'}
+                    size="row"
+                    frame={l.rankNumeral === '1' ? 'primary' : 'none'}
                     className={PODIUM}
                   >
                     <span aria-hidden="true" className="text-2xl leading-none max-md:text-xl">
                       {l.medalLabel}
                     </span>
                     <Avatar name={l.name} src={l.avatarSrc} size="podium" loading="lazy" />
-                    <span className={cn(NAME, 'md:w-full md:flex-none md:text-center max-md:min-w-0')}>
+                    <ItemTitle size="lg" truncate className="min-w-0 flex-1 md:w-full md:flex-none md:text-center">
                       {l.name}
-                    </span>
+                    </ItemTitle>
                     {l.isMe ? (
                       <Badge variant="info" className="shrink-0">
                         {youLabel}

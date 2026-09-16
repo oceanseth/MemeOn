@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Button, buttonVariants } from '@/atoms/button'
 import { Card, CardTitle } from '@/atoms/card'
-import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/atoms/item'
+import { Item, ItemActions, ItemDescription, ItemTitle } from '@/atoms/item'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import type { SettingsScreenModel } from '../hooks/useSettingsScreen'
@@ -22,12 +22,14 @@ export function SettingsScreen({
         {account && (
           <Card size="xs">
             <CardTitle render={<h2 />}>{account.heading}</CardTitle>
-            <Item data-slot="settings-account" className="mt-4 max-md:flex-col max-md:items-start">
-              <ItemContent>
-                <ItemTitle>{account.nameLabel}</ItemTitle>
-                <ItemDescription>{account.providerLabel}</ItemDescription>
-              </ItemContent>
-              <ItemActions>
+            <Item
+              size="flush"
+              data-slot="settings-account"
+              className="mt-4 max-md:flex-col max-md:items-start"
+            >
+              <ItemTitle>{account.nameLabel}</ItemTitle>
+              <ItemDescription>{account.providerLabel}</ItemDescription>
+              <ItemActions className="ms-auto max-md:ms-0">
                 <Button {...account.logoutButtonProps}>{account.logoutLabel}</Button>
               </ItemActions>
             </Item>
@@ -48,16 +50,15 @@ export function SettingsScreen({
             {connections.rows.map((row) => (
               <Item
                 key={row.key}
+                size="flush"
                 render={<li />}
                 data-slot="connection-row"
                 data-linked={row.linked}
                 className="mt-4 max-md:flex-col max-md:items-start"
               >
-                <ItemContent>
-                  <ItemTitle>{row.serviceLabel}</ItemTitle>
-                  <ItemDescription>{row.stateLabel}</ItemDescription>
-                </ItemContent>
-                <ItemActions>
+                <ItemTitle>{row.serviceLabel}</ItemTitle>
+                <ItemDescription>{row.stateLabel}</ItemDescription>
+                <ItemActions className="ms-auto max-md:ms-0">
                   <Link className={buttonVariants()} {...row.actionLinkProps}>
                     {row.actionLabel}
                   </Link>
