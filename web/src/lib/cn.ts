@@ -13,5 +13,13 @@ export const cn = createCn({
       container: ['card', 'measure', 'search', 'tabbar', 'card-narrow'],
       spacing: ['control', 'control-sm', 'icon', 'gutter', 'hit', 'page-x', 'card-inset', 'bloom', 'track', 'halo'],
     },
+    /* The materials are one axis: an element wears exactly one fill+relief. They are `@utility`
+       rules cn cannot see, so without this group `cn(inputVariants(), 'material-raised')` keeps
+       both and the winner is whichever sorts later in the built sheet (equal declaration counts →
+       alphabetical). `glass` is deliberately NOT here: `material-raised glass` is a real pair —
+       the plate is glass, the relief is raised. */
+    classGroups: {
+      material: ['material-card', 'material-raised', 'material-pressed', 'material-pop', 'material-modal'],
+    },
   },
 })

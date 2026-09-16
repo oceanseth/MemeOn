@@ -68,9 +68,13 @@ describe('cn', () => {
     expect(cn('text-5xl', 'max-md:text-4xl')).toBe('text-5xl max-md:text-4xl')
   })
 
-  /* the custom utilities index.css declares have no conflict group: cn passes them through, so a
-     component composes one material and never stacks two */
-  it('passes the material and focus utilities through untouched', () => {
+  /* the materials are one axis — one fill + relief per element — so the later one wins by merge
+     rather than by where it happens to sort in the built sheet */
+  it('merges the materials against each other and passes the rest through', () => {
+    expect(cn('material-pressed', 'material-raised')).toBe('material-raised')
+    expect(cn('material-card', 'aria-pressed:material-pressed')).toBe('material-card aria-pressed:material-pressed')
     expect(cn('material-card', 'focus-ring', 'bg-card')).toBe('material-card focus-ring bg-card')
+    /* `glass` is a plate, not a material: `material-raised glass` is a real pair (hero-video) */
+    expect(cn('material-raised', 'glass')).toBe('material-raised glass')
   })
 })
