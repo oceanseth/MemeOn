@@ -1,7 +1,10 @@
-import { Menu } from '@base-ui/react/menu'
+import { Menu as MenuPrimitive } from '@base-ui/react/menu'
 import { Link } from 'react-router-dom'
 import { Avatar } from '@/atoms/avatar'
-import { cn } from '../lib/cn'
+import { buttonVariants } from '@/atoms/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem } from '@/atoms/dropdown-menu'
+import { PortalAnchor } from '@/atoms/portal-anchor'
+import { portalAnchor } from '../lib/portalAnchor'
 
 export type AvatarMenuItemModel =
   | { key: string; label: string; to: string }
@@ -24,72 +27,41 @@ export interface AvatarMenuModel {
 /** One menu per page — it lives in the header — so one anchor id is enough (see AlertsBell). */
 const ANCHOR_ID = 'avatar-menu-anchor'
 
-const anchorContainer = {
-  get current(): HTMLElement | null {
-    return document.getElementById(ANCHOR_ID)
-  },
-}
-
-/** The 34px header avatar (`atoms/Avatar` size `header`), with the coarse-pointer halo to 44. */
-const TRIGGER = cn(
-  'relative inline-flex shrink-0 cursor-pointer rounded-sm border-0 bg-transparent p-0',
-  'hit-44',
-  'focus-ring',
-)
-
-/** A raised card of 44px rows. */
-const POPUP = cn(
-  'min-w-52 rounded-lg material-pop p-2 outline-none',
-  'focus-ring',
-)
-
 /**
- * A row keeps the app's ring like every other control; the offset is negative so the 3px lands
- * inside the popup's own padding instead of overpainting its edge. The highlighted background stays
- * — it is what a pointer user sees — but it is not the accessible focus indicator on its own.
- */
-const ITEM = cn(
-  'flex min-h-hit w-full cursor-pointer items-center rounded-md border-0 bg-transparent px-3',
-  'text-base font-medium text-foreground no-underline select-none',
-  'data-highlighted:bg-accent',
-  'focus-ring-inset',
-)
-
-/**
- * Profile · Top Brains · Settings · Developers · Log out behind the phone avatar, on Base UI's
- * Menu: it owns the disclosure wiring (`aria-haspopup`, `aria-expanded`), the arrow keys, typeahead,
- * Escape and the outside press. Non-modal on purpose — a five-row menu needs no scroll lock.
+ * Profile · Top Brains · Settings · Developers · Log out behind the phone avatar, on the
+ * `dropdown-menu` atom: Base UI owns the disclosure wiring (`aria-haspopup`, `aria-expanded`), the
+ * arrow keys, typeahead, Escape and the outside press; the atom owns the paint. Non-modal on
+ * purpose — a five-row menu needs no scroll lock. The trigger is the 34px header avatar on the
+ * ghost icon button, which carries the coarse-pointer halo to 44.
  */
 export function AvatarMenu({ model }: { model: AvatarMenuModel }) {
   return (
-    <Menu.Root modal={false} defaultOpen={model.defaultOpen}>
-      <Menu.Trigger className={TRIGGER} data-slot="avatar-menu-trigger" {...model.triggerProps}>
+    <DropdownMenu modal={false} defaultOpen={model.defaultOpen}>
+      {/* the primitive trigger in the ghost icon button's classes, not `<DropdownMenuTrigger
+          render={<Button />}>`: Button does not forward its ref under React 18 (requested) and
+          Base UI needs the trigger element; the lint cannot read a cva call on an atom */}
+      <MenuPrimitive.Trigger
+        className={buttonVariants({ variant: 'ghost', size: 'icon-sm' })}
+        data-slot="avatar-menu-trigger"
+        {...model.triggerProps}
+      >
         <Avatar name={model.name} src={model.src} size="header" />
-      </Menu.Trigger>
-      <span id={ANCHOR_ID} className="contents" data-slot="avatar-menu-anchor" />
-      <Menu.Portal container={anchorContainer} className="contents">
-        <Menu.Positioner side="bottom" align="end" sideOffset={8} collisionPadding={12}>
-          <Menu.Popup className={POPUP} data-slot="avatar-menu">
-            {model.items.map((item) =>
-              'to' in item ? (
-                <Menu.LinkItem
-                  key={item.key}
-                  render={<Link to={item.to} />}
-                  closeOnClick
-                  className={ITEM}
-                  data-slot="avatar-menu-item"
-                >
-                  {item.label}
-                </Menu.LinkItem>
-              ) : (
-                <Menu.Item key={item.key} onClick={item.onSelect} className={ITEM} data-slot="avatar-menu-item">
-                  {item.label}
-                </Menu.Item>
-              ),
-            )}
-          </Menu.Popup>
-        </Menu.Positioner>
-      </Menu.Portal>
-    </Menu.Root>
+      </MenuPrimitive.Trigger>
+      <PortalAnchor id={ANCHOR_ID} />
+      <DropdownMenuContent container={portalAnchor(ANCHOR_ID)} align="end" data-slot="avatar-menu">
+        {model.items.map((item) =>
+          'to' in item ? (
+            // the row is the link itself; Base UI keeps `menuitem` on the anchor and closes on click
+            <DropdownMenuItem key={item.key} render={<Link to={item.to} />} data-slot="avatar-menu-item">
+              {item.label}
+            </DropdownMenuItem>
+          ) : (
+            <DropdownMenuItem key={item.key} onClick={item.onSelect} data-slot="avatar-menu-item">
+              {item.label}
+            </DropdownMenuItem>
+          ),
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
