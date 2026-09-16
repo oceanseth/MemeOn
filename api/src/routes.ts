@@ -1490,5 +1490,8 @@ route('GET /m/:id', async (req) => {
     // the card just changed tiers: bust facebook's scrape cache so old shares upgrade
     await pingFacebookRescrape(`${env.siteOrigin}/m/${meme.id}`)
   }
-  return html(200, await memePageHtml(meme, ogImageUrl))
+  // Discord never loops its og:video player, but loops gif embeds endlessly —
+  // its crawler gets the animated gif in place of the branded card + mp4
+  const loopingGif = /discordbot/i.test(req.headers['user-agent'] ?? '')
+  return html(200, await memePageHtml(meme, ogImageUrl, { loopingGif }))
 })
