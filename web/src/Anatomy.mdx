@@ -16,9 +16,9 @@ or moving a component. `pnpm run check-tiers` runs recursively and must pass;
 
 | Tier | Folder | What lives there | Owns state? |
 |---|---|---|---|
-| **Atoms** | `src/atoms/` | `Avatar` (`sm`/`header`/`md`/`lg`), `Badge`, `Button` (`pressed`/`aria-pressed` toggle state), `Checkbox`, `EmptyState` (additive `tone`), `Field`, `Fieldset`, `Icon`, `Input` (its `controlChrome` is shared by `Select` and `Textarea`), `MemeCard` (plus `tierFrameClasses` from `foil.ts`, `memeCardSubClasses`; `footer` and `footerRight` slots), `Notice`, `PageContainer`, `PageHead`, `Panel` (+ `PanelHeading`: `intro`/`section` share intro · `card` card-title · `composer` title), `Select`, `Skeleton`, `Spinner`, `Textarea`, `TierChip` | No |
+| **Atoms** | `src/atoms/` | `Alert`, `AlertDialog`, `Avatar`, `Badge`, `Button`, `Card`, `Checkbox`, `Collapsible`, `Dialog`, `DropdownMenu`, `Empty` (+ `PageState`), `Field`, `Heading`, `Icon`, `InlineLink`, `Input`, `InputGroup`, `Item`, `Label`, `LiveRegion`, `MemeCard`, `PageContainer`, `PageHead`, `Popover`, `PortalAnchor`, `Progress`, `Select`, `Separator`, `Skeleton`, `Spinner`, `Tabs`, `Textarea`, `TierChip`, `Toggle`, `ToggleGroup`, `Toolbar` | No |
 | **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `HeroVideo`, `LegalDocument`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `TradeCard` (`give`/`get`, not `offer`/`ask`) | No |
-| **Organisms** | `src/organisms/` | `AppShell` (slots `sidebar` / `contextLine` / `headerEnd` / `quest` / `bottomNav`), `MemeplexPanel` | No |
+| **Organisms** | `src/organisms/` | `AppShell` (slots `sidebar` / `contextLine` / `headerEnd` / `quest` / `bottomNav`), `MemeplexPanel`, `NavItem` | No |
 | **Screens** | `src/screens/` | One model object per route/chrome surface | No |
 | **Views** | `src/views/` | Engine wired to screen; `observer` wrap; `AppView` is the route switch | Via hooks |
 
@@ -29,7 +29,7 @@ Beside the tiers, four folders are the engine side:
 | `src/copy/` | **Every user-facing string**, one plain-data module per surface (`settings.ts`, …) plus `shared.ts` for labels that recur. Keys name the role (`intro`, `account.logOut`), never the content; dynamic strings are small pure functions (`account.name(user.name)`, `` shown: (n) => `${plural(n, 'card')} shown` ``). `copy/` imports nothing but `copy/` and the two formatting helpers `lib/plural` and `lib/braincells`, so a noun stays beside its sentence. Hooks and `lib/*Model.ts` builders read it; tests and stories assert **through the same constant**, so a copy change touches one file. Tier components never import it — strings reach them as props. |
 | `src/hooks/` | One `useXScreen()` per screen (exports `XScreenModel`), plus `useAuth`, `useTheme`, `useProjectedActor`, `useDocumentTitle`, `useMountEffect` |
 | `src/stores/` | XState machines (`*Machine.ts`), the MobX `AuthStore` / `ThemeStore`, `createStores` + `StoresContext` |
-| `src/lib/` | Everything with no React tree: the API client, auth, presence, formatting (`braincells`, `plural`), `cn()`, `FOCUS_RING`, the imperative `cardMedia`, and the **model builders** (`*Model.ts`) that turn API records into the prop bags molecules and atoms render (`memeCardModel`, `tradeCardModel`, `questBarModel`, …). Create-meme also keeps its signed upload PUT (`createMemeUpload`) and the video-status poller (`createMemeVideoPoll`) here so `useCreateMemeScreen` stays orchestration-only. Hooks call the builders; components only import their types. |
+| `src/lib/` | Everything with no React tree: the API client, auth, presence, formatting (`braincells`, `plural`), `cn()`, the imperative `cardMedia`, and the **model builders** (`*Model.ts`) that turn API records into the prop bags molecules and atoms render (`memeCardModel`, `tradeCardModel`, `questBarModel`, …). Create-meme also keeps its signed upload PUT (`createMemeUpload`) and the video-status poller (`createMemeVideoPoll`) here so `useCreateMemeScreen` stays orchestration-only. Hooks call the builders; components only import their types. |
 
 | Screen | Engine | Model type | Machine phases |
 |---|---|---|---|
@@ -140,16 +140,14 @@ touch four.
 |---|---|---|
 | Change copy (a title, caption, button label, error string) | `copy/<surface>.ts` — the one place the string is spelled | nothing: the builder, its unit test and the story `play` all read the same constant. If a surface still spells its strings inline (see `scripts/copy-baseline.json`), move them into `copy/` first and run `pnpm --filter web run check-copy -- --update` |
 | Add a string | a role-named key in `copy/<surface>.ts` (a function when it takes a value: `name: (n) => …`); reuse `copy/shared.ts` for a label another surface already has | the builder picks it, the story asserts through it — never by respelling. A story that overrides one part of the model spreads the built model: `{ ...model.connections, rows: […] }` |
-| Change how something looks | the component in its tier: Tailwind utilities on the element (`cn()` merges them) | if a `@theme` token is new, add it in `index.css` **and** register its namespace in `lib/cn.ts`; run `pnpm run check-contrast` for a colour |
+| Change how something looks, set a length, change a token | Tokens: `web/src/index.css` `@theme`. Appearance: the component's `cva` variants. What is allowed: `web/.oxlintrc.json` (`@shadcn/lint`) — run `pnpm --filter web run lint:ds`. | `pnpm run check-contrast` for a colour, `pnpm run check-tokens` for a token |
 | Add a state a screen can be in | the machine in `stores/`, the derived flags in the hook, a **Screen story** for the new state first | the view story that reaches it through the connected scenario |
 | Add a new component | its tier folder, pure props → markup, `data-slot` on the root, a sibling `*.stories.tsx` | `pnpm run check-tiers` |
 | Add a route | a `use*Screen` hook + `*Screen` + `*View` (+ stories), then a `<Route>` in `views/AppView.tsx` (`lazy()` if it is behind `RequireAuth`) | `useDocumentTitle` in the view |
 | Change what the API returns | `lib/types.ts`, the machine that fetches it, the builder that reads it | `.storybook/fixtures.ts` and `msw-handlers.ts` / `connected-scenario.ts` |
-| Change a token (colour, radius, type step, breakpoint) | `index.css` `@theme static` — one place; every arm is a `light-dark()` pair | `pnpm run check-contrast`; `Anatomy/Tokens` in Storybook shows the result |
-| Set a length (height, padding, gap, width) | a role token when the boards repeat it by role — `h-11.5`, `px-control-x`, `gap-control-gap`, `size-5.5`, `p-4.5`, `h-field`, `size-8.5`, `w-nav-item`, `max-w-[65ch]`, `max-w-140`, `rounded-band` / `-well` / `-segment` / `-control-sm` (`index.css` `--spacing-*`, `--radius-*`, `--container-*`); otherwise a grid step (`mt-2.5`, `p-5.5`, `py-3.25`). No `h-[46px]`; `[…]` is for `calc()`, `env()`, `%` and `ch` only | a new role name goes in `index.css` **and** `lib/cn.ts` (`theme.spacing` / `radius` / `container`) with a `cn.test.ts` case |
 
-`pnpm run check` is the whole gate (tiers, copy, contrast, layers, proxy, unit, runtime,
-stories). `check-copy` is a ratchet: it counts copy-like literals still spelled in `hooks/`,
+`pnpm run check` is the whole gate (`lint:ds` first, then tiers, copy, contrast, tokens, layers,
+proxy, unit, runtime, stories). `check-copy` is a ratchet: it counts copy-like literals still spelled in `hooks/`,
 `screens/`, and the `lib/*Model.ts` builders against `scripts/copy-baseline.json`, and a file
 may only match or fall below its number (`--list` names the strings, `--update` locks a drop in;
 it refuses to raise anything). `pnpm run storybook` (port 6006, MSW-backed) is where a state is verified.
@@ -172,22 +170,20 @@ Layered onto the tiers and rules above, not a replacement for them:
   `binderCardSlotClasses`, `binderCardFooterClasses`; `stores/binderMachine.ts` exports
   `BINDER_PAGE_SIZE` (12, the `SHOW_MORE` step); `stores/leaderboardMachine.ts` exports
   `LEADERBOARD_PAGE_SIZE` (8) the same way.
-- `organisms/AppShell.css` keys `--topbar-h` off `:root:has([data-slot='header'])` rather than a
+- `organisms/app-shell.css` keys `--topbar-h` off `:root:has([data-slot='header'])` rather than a
   fixed value: 64px below the shell breakpoint (`2xl`, 900px), 0px at or above it. Shell-wrapping
   stories render with `layout: 'fullscreen'`.
-- `lib/focus.ts` exports `FOCUS_RING`, the one focus contract every interactive atom, row and
-  menu item composes: 3px `--color-focus` outline at 2px offset, `contrast-more` 4px,
-  `forced-colors` `Highlight`. Hand-copied rings are gone; a component that needs a different offset
-  overrides after `FOCUS_RING`, never instead of it.
+- `focus-ring` (an `@utility` in `index.css`) is the one focus contract every interactive atom,
+  row and menu item composes; `focus-ring-within` is its `:has(:focus-visible)` sibling.
 - `hooks/useDocumentTitle.ts` sets `document.title` per route from the view (the hook layer, not the
   screen); `lib/braincells.ts` formats braincell counts (thousands separators, the 🧠 spacing) so
   every screen prints them the same way.
 - `QuestBar` lists every quest inline at both widths, as the boards draw the rail; the old
   "N more ▾" disclosure is gone from the model, the hook and the stories.
 - The token sheet lives outside the tiers, at `src/Tokens.stories.tsx` (titled `Anatomy/Tokens`):
-  every semantic colour, both static ramps, the seven tier chips, the two materials and the type
-  ladder, painted from nothing but the utilities `index.css` emits, each swatch probed via
-  `data-slot="swatch-<token>"`.
+  every semantic colour, both static ramps, the seven tier chips, the materials, the radius steps
+  and the type scale, painted from nothing but the utilities `index.css` emits, each specimen
+  probed via its `data-slot`.
 - The two auth hand-off routes (`/auth/callback`, `/auth/mobile`) are one pure `AuthStatusScreen`
   fed by `useAuthCallbackScreen` and `useMobileAuthForwardScreen`; both cross-origin navigations
   (`navigateToAuthorization`, `forwardToDeepLink`) go through `lib/authNavigation.ts`, which
@@ -226,8 +222,9 @@ Probe these instead of a class name or copy string:
   `lib/braincells`.
 - Presentation is Tailwind utilities on the component, in `@layer utilities`. Only effects no
   utility can express get a co-located `.css` file — today the card foil (`atoms/foil.css`), the
-  skeleton sweep, the spinner, the landing frame-slot shimmer (`screens/LandingScreen.css`) and the
-  shell's `--topbar-h` rule (`organisms/AppShell.css`) — and each restates the layer order at the top.
+  spinner turn (`atoms/spinner.css`), the landing frame-slot shimmer (`screens/LandingScreen.css`)
+  and the shell's `--topbar-h` rule (`organisms/app-shell.css`) — and each restates the layer
+  order at the top.
   The cascade contract itself is the header comment of `src/index.css`.
 - Shared code (`shared/tiers.ts`) is imported as `@memeon/shared/tiers`, never by relative path.
 
