@@ -92,6 +92,11 @@ export const createMemeCopy = {
       `MP4, MOV or WebM, max ${maxMb}MB. Adding one makes it a video meme.`,
     imageLabel: 'Image',
     videoLabel: 'Video',
+    /* the picker's own words. A native file input writes these itself, in the browser's locale
+       and nobody's voice; `atoms/file-drop` takes them from here instead. */
+    chooseImage: 'Choose an image',
+    chooseVideo: 'Choose a video',
+    dropHint: 'or drop one here',
   },
   url: {
     help: 'Paste a direct image link, or a giphy/imgur/reddit page — we grab the main image.',

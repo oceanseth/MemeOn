@@ -56,6 +56,8 @@ const baseContext: CreateMemeContext = {
   urlDraft: '',
   imageUrl: '',
   videoUrl: '',
+  imageFileName: null,
+  videoFileName: null,
   busy: null,
   busyElapsed: null,
   err: null,
@@ -128,6 +130,22 @@ export const Upload: Story = {
     await userEvent.upload(canvas.getByLabelText('Video'), video)
     await expect(actions.uploadImage).toHaveBeenCalledWith(image)
     await expect(actions.uploadVideo).toHaveBeenCalledWith(video)
+  },
+}
+
+/** Picked: the row names the file in our own type, where the browser used to write the sentence. */
+export const UploadPicked: Story = {
+  name: 'Upload with a file picked',
+  args: model({
+    mode: 'upload',
+    imageUrl: '/cat.png',
+    imageFileName: 'cursed-capybara.png',
+    title: 'cursed capybara',
+  }),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText('cursed-capybara.png')).toBeVisible()
+    await expect(canvas.queryByText('No file chosen')).not.toBeInTheDocument()
   },
 }
 

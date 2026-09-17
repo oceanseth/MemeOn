@@ -32,6 +32,21 @@ export interface CreateMemeSelectModel {
   onValueChange: (value: string | null) => void
 }
 
+/**
+ * A mint file picker. `atoms/file-drop` owns every pixel; the model names the filter, the words and
+ * where the file goes — there is no `onChange`, because the control hands over a `File`, not a DOM
+ * event over an input the browser drew.
+ */
+export interface CreateMemeFileDropModel {
+  accept: string
+  chooseLabel: string
+  emptyLabel: string
+  /** The picked file's name, so the row names it instead of the browser. */
+  fileName: string | null
+  'aria-describedby': string
+  onFile: (file: File) => void
+}
+
 export interface CreateMemeSourceModel {
   imageProps: ImgHTMLAttributes<HTMLImageElement>
   linkProps: Pick<LinkProps, 'to'>
@@ -160,9 +175,9 @@ export interface CreateMemeScreenModel {
   fetchUrlButtonProps: ButtonProps
   urlPromptTextareaProps: TextareaProps
   applyUrlEditButtonProps: ButtonProps
-  imageFileInputProps: InputProps
+  imageFileDropProps: CreateMemeFileDropModel
   uploadImageLabel: string
-  videoFileInputProps: InputProps
+  videoFileDropProps: CreateMemeFileDropModel
   uploadVideoLabel: string
   generatePromptTextareaProps: TextareaProps
   generateButtonProps: ButtonProps

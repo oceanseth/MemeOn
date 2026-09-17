@@ -55,15 +55,6 @@ export const Number: Story = {
   },
 }
 
-/** Preflight strips the file-selector button bare; the well dresses it as the app's own raised pill. */
-export const File: Story = {
-  args: { type: 'file', 'aria-label': 'Upload image', accept: 'image/*' },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    await expect(canvas.getByLabelText('Upload image')).toHaveAttribute('type', 'file')
-  },
-}
-
 export const Focused: Story = {
   args: { defaultValue: 'chrome streak' },
   play: async ({ canvasElement }) => {

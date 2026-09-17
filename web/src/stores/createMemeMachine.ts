@@ -67,6 +67,10 @@ export interface CreateMemeContext {
   urlDraft: string
   imageUrl: string
   videoUrl: string
+  /* what the upload picker is holding. Not part of the draft and never sent anywhere: the row has
+     to name the file the moment it is picked, including the one that turns out to be too big. */
+  imageFileName: string | null
+  videoFileName: string | null
   busy: string | null
   /** live "1m04s" counter for the running job, never part of the busy sentence */
   busyElapsed: string | null
@@ -90,8 +94,9 @@ export type CreateMemeEvent =
   | { type: 'SET_TAGS'; tags: string }
   | { type: 'SET_PROMPT'; prompt: string }
   | { type: 'SET_URL_DRAFT'; urlDraft: string }
-  | { type: 'SET_IMAGE_URL'; imageUrl: string; edited?: boolean }
-  | { type: 'SET_VIDEO_URL'; videoUrl: string }
+  | { type: 'SET_IMAGE_URL'; imageUrl: string; edited?: boolean; fileName?: string }
+  | { type: 'SET_VIDEO_URL'; videoUrl: string; fileName?: string }
+  | { type: 'SET_FILE_NAME'; kind: 'image' | 'video'; name: string }
   | { type: 'SET_REMIX_OUTPUT'; remixOutput: RemixOutput }
   | { type: 'SET_VIDEO_MODE'; videoMode: VideoRemixStyle }
   | { type: 'SET_MOTION_PROMPT'; motionPrompt: string }
@@ -150,6 +155,8 @@ export const createMemeMachine = setup({
     urlDraft: '',
     imageUrl: '',
     videoUrl: '',
+    imageFileName: null,
+    videoFileName: null,
     busy: null,
     busyElapsed: null,
     err: null,
@@ -176,9 +183,25 @@ export const createMemeMachine = setup({
         imageUrl: ({ event }) => event.imageUrl,
         edited: ({ event, context }) => event.edited ?? context.edited,
         artworkSource: null,
+        /* art of a new origin, so the picker's line goes with it unless this *is* the upload */
+        imageFileName: ({ event }) => event.fileName ?? null,
       }),
     },
-    SET_VIDEO_URL: { actions: assign({ videoUrl: ({ event }) => event.videoUrl }) },
+    SET_VIDEO_URL: {
+      actions: assign({
+        videoUrl: ({ event }) => event.videoUrl,
+        videoFileName: ({ event }) => event.fileName ?? null,
+      }),
+    },
+    /* sent the instant a file is picked, ahead of the upload, so the row names it while it flies */
+    SET_FILE_NAME: {
+      actions: assign({
+        imageFileName: ({ context, event }) =>
+          event.kind === 'image' ? event.name : context.imageFileName,
+        videoFileName: ({ context, event }) =>
+          event.kind === 'video' ? event.name : context.videoFileName,
+      }),
+    },
     SET_REMIX_OUTPUT: { actions: assign({ remixOutput: ({ event }) => event.remixOutput }) },
     SET_VIDEO_MODE: { actions: assign({ videoMode: ({ event }) => event.videoMode }) },
     SET_MOTION_PROMPT: { actions: assign({ motionPrompt: ({ event }) => event.motionPrompt }) },
@@ -188,6 +211,7 @@ export const createMemeMachine = setup({
         giphyPick: ({ event }) => event.pick,
         imageUrl: ({ event }) => event.pick.gifUrl,
         edited: false,
+        imageFileName: null,
         artworkSource: ({ event }) => ({
           provider: 'giphy',
           id: event.pick.id,
@@ -218,6 +242,7 @@ export const createMemeMachine = setup({
         videoUrl: ({ event, context }) => event.videoUrl ?? context.videoUrl,
         artworkSource: ({ event }) => event.source,
         edited: false,
+        imageFileName: null,
       }),
     },
     SET_EDITED_FRAME: {
@@ -226,6 +251,8 @@ export const createMemeMachine = setup({
         editedFrame: ({ event }) => event.imageUrl,
         artworkSource: null,
         videoUrl: '',
+        imageFileName: null,
+        videoFileName: null,
       }),
     },
     CLEAR_EDITED_FRAME: { actions: assign({ editedFrame: null }) },

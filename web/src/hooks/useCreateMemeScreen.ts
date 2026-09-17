@@ -423,13 +423,20 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
 
   const onImageFile = useCallback(
     async (file: File) => {
+      /* the row names what was picked before it judges it: the oversized file is still the one
+         sitting in the picker when the alert explains why it will not do */
+      send({ type: 'SET_FILE_NAME', kind: 'image', name: file.name })
       if (file.size > MAX_IMAGE_BYTES) {
         send({ type: 'FAIL', err: overCapMessage('image', file.size, MAX_IMAGE_BYTES) })
         return
       }
       beginBusy(copy.busy.uploadingImage)
       try {
-        send({ type: 'SET_IMAGE_URL', imageUrl: await uploadCreateMemeFile(file) })
+        send({
+          type: 'SET_IMAGE_URL',
+          imageUrl: await uploadCreateMemeFile(file),
+          fileName: file.name,
+        })
         settleBusy({ type: 'DONE' })
       } catch (er) {
         settleBusy({ type: 'FAIL', err: er instanceof Error ? er.message : copy.errors.uploadFailed })
@@ -440,13 +447,18 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
 
   const onVideoFile = useCallback(
     async (file: File) => {
+      send({ type: 'SET_FILE_NAME', kind: 'video', name: file.name })
       if (file.size > MAX_VIDEO_BYTES) {
         send({ type: 'FAIL', err: overCapMessage('video', file.size, MAX_VIDEO_BYTES) })
         return
       }
       beginBusy(copy.busy.uploadingVideo)
       try {
-        send({ type: 'SET_VIDEO_URL', videoUrl: await uploadCreateMemeFile(file) })
+        send({
+          type: 'SET_VIDEO_URL',
+          videoUrl: await uploadCreateMemeFile(file),
+          fileName: file.name,
+        })
         if (!actor.getSnapshot().context.imageUrl) {
           send({ type: 'BUSY', busy: copy.busy.extractingPoster })
           const poster = await extractPoster(file)
