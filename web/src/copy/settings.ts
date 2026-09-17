@@ -6,6 +6,7 @@ export const settingsCopy = {
   intro: 'Make yourself at home.',
   account: {
     heading: 'Account',
+    /** a drawn brain icon leads the name label */
     name: (name: string) => `${name}`,
     provider: 'Masky avatar',
     logOut: sharedCopy.logOut,

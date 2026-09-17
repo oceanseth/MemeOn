@@ -12,6 +12,7 @@ import { Spinner } from '@/atoms/spinner'
 import { cn } from '../lib/cn'
 import type { InviteScreenModel } from '../hooks/useInviteScreen'
 import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
+import { Icon } from '@/atoms/icon'
 
 /* The name is the page's own step (5xl, 4xl on a phone); the verb line is one rung down. */
 const HERO_NAME = cn(
@@ -52,6 +53,7 @@ export function InviteScreen({
   inviter,
   cards,
   acceptButtonProps,
+  acceptIcon,
 }: InviteScreenModel) {
   if (showFatalError)
     return (
@@ -61,6 +63,9 @@ export function InviteScreen({
           <EmptyDescription>{err}</EmptyDescription>
           <EmptyContent>
             <Button variant="primary" {...fatalActions.joinButtonProps}>
+              <span aria-hidden="true">
+                <Icon name="theater" size={16} />
+              </span>{' '}
               {fatalActions.joinLabel}
             </Button>
             <Link className={buttonVariants()} to={fatalActions.homeHref}>
@@ -101,7 +106,10 @@ export function InviteScreen({
           {inviter.stats.map((stat, index) => (
             <span key={stat.id} className="inline-flex items-center gap-1.5">
               {index > 0 ? <span aria-hidden="true">·</span> : null}
-              <span aria-hidden="true">{stat.emoji}</span> {stat.value} {stat.label}
+              <span aria-hidden="true">
+                <Icon name={stat.icon} size={16} />
+              </span>{' '}
+              {stat.value} {stat.label}
             </span>
           ))}
         </p>
@@ -112,6 +120,9 @@ export function InviteScreen({
             <Alert variant="success" className="mt-3">{selfActions.note}</Alert>
             <div className={HERO_ACTIONS}>
               <Button variant="primary" {...selfActions.copyButtonProps}>
+                <span aria-hidden="true">
+                  <Icon name="link" size={16} />
+                </span>{' '}
                 {selfActions.copyLabel}
               </Button>
               <Link className={buttonVariants()} to={selfActions.friendsHref}>
@@ -126,6 +137,9 @@ export function InviteScreen({
           // the offer retires once it is taken: the confirmation below is the whole state
           <div className={HERO_ACTIONS}>
             <Button variant="primary" className="max-sm:w-full" {...acceptButtonProps}>
+              <span aria-hidden="true">
+                <Icon name={acceptIcon} size={16} />
+              </span>{' '}
               {acceptLabel}
             </Button>
           </div>
