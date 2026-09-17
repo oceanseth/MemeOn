@@ -48,6 +48,7 @@ jobs:
       - run: pnpm --filter web run check-copy
       - run: pnpm --filter web run check-contrast
       - run: pnpm --filter web run check-tokens
+      - run: pnpm --filter memeon-api run check-palette
       - run: pnpm --filter web run test:check-docs
       - run: pnpm --filter web run test:check-tiers
       - run: pnpm --filter web run test:check-copy

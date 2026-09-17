@@ -39,7 +39,7 @@ Tier frame art is generated with the Masky image API (`api/scripts/generate-fram
   share link. Structure and rules: [`web/src/Anatomy.mdx`](web/src/Anatomy.mdx)
   (also the "Anatomy" page in Storybook). See [Web UI](#web-ui) below.
 - `api/` – Lambda (esbuild-bundled) + Express dev bridge. DynamoDB single-table,
-  Masky OAuth + aigen proxy, session JWTs, og pipeline (jimp), alerts, and the
+  Masky OAuth + aigen proxy, session JWTs, og pipeline (satori + resvg), alerts, and the
   mobile feed layer (likes/dislikes/follows, friend-prioritized `/api/feed`,
   creator profiles, hourly value-history sampling).
 - `mobile/` – Expo React Native app in the pnpm workspace:
