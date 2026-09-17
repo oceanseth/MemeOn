@@ -20,7 +20,7 @@ export const toggleGroupVariants = cva('group/toggle-group flex items-center', {
     variant: {
       default: 'flex-wrap gap-2',
       ghost: 'flex-wrap gap-1',
-      segment: 'w-fit gap-0.5 rounded-full material-pressed p-0.75',
+      segment: 'w-fit gap-1 rounded-full material-pressed p-1',
     },
     orientation: {
       horizontal: 'flex-row',

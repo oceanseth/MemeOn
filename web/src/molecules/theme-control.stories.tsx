@@ -21,9 +21,9 @@ export const Segmented: Story = {
     const canvas = within(canvasElement)
     onChange.mockClear()
     const group = canvas.getByRole('group', { name: 'Theme' })
-    /* 184 × 40: three 34px segments and the well's 3px inset */
-    await expect(getComputedStyle(group).width).toBe('184px')
-    await expect(getComputedStyle(group).height).toBe('40px')
+    /* 224 × 42: three 34px segments inside the well's 4px inset */
+    await expect(getComputedStyle(group).width).toBe('224px')
+    await expect(getComputedStyle(group).height).toBe('42px')
     const light = within(group).getByRole('button', { name: /Light/ })
     await expect(light).toHaveAttribute('aria-pressed', 'true')
     await expect(within(group).getByRole('button', { name: /Auto/ })).toHaveAttribute('aria-pressed', 'false')

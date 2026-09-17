@@ -59,9 +59,9 @@ export const Chips: Story = {
   },
 }
 
-/** The ThemeControl well: 34px segments inside a 40px pressed well; the pressed one is raised. */
+/** The ThemeControl well: 34px segments inside a 42px pressed well; the pressed one is raised. */
 export const Segmented: Story = {
-  args: { 'aria-label': 'Theme', variant: 'segment', size: 'sm', defaultValue: ['auto'], className: 'w-46' },
+  args: { 'aria-label': 'Theme', variant: 'segment', size: 'sm', defaultValue: ['auto'], className: 'w-56' },
   render: (args) => (
     <ToggleGroup {...args}>
       <ToggleGroupItem value="auto"><span aria-hidden="true"><Icon name="contrast" size={16} /></span> Auto</ToggleGroupItem>
@@ -73,8 +73,8 @@ export const Segmented: Story = {
     const canvas = within(canvasElement)
     const well = canvas.getByRole('group', { name: 'Theme' })
     await expect(well).toHaveAttribute('data-variant', 'segment')
-    await expect(well.offsetHeight).toBe(40)
-    await expect(well.offsetWidth).toBe(184)
+    await expect(well.offsetHeight).toBe(42)
+    await expect(well.offsetWidth).toBe(224)
     // the well is the pressed material
     await expect(getComputedStyle(well).boxShadow).toContain('inset')
     const auto = canvas.getByRole('button', { name: 'Auto', pressed: true })
