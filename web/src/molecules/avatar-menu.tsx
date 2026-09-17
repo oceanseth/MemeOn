@@ -16,6 +16,7 @@ import { PortalAnchor } from '@/atoms/portal-anchor'
 import { portalAnchor } from '../lib/portalAnchor'
 import type { ThemePreference } from '../stores/themeStore'
 import { THEME_OPTIONS } from '@/molecules/theme-control'
+import { Icon } from '@/atoms/icon'
 
 export interface AvatarMenuItemModel {
   key: string
@@ -32,9 +33,9 @@ export interface AvatarMenuModel {
   src: string | null
   /** an avatar disc names nothing, so the trigger's name is the model's */
   triggerProps: { 'aria-label': string }
-  /** The routes, in order: Profile · 🏆 Top Brains · Settings · 🔧 Developers · Discord. */
+  /** The routes, in order: Profile · Top Brains · Settings · Developers · Discord. */
   items: AvatarMenuItemModel[]
-  /** 🌗 Auto · ☀️ Light · 🌙 Dark, under the model's label; the same three the Settings page offers. */
+  /** Auto · Light · Dark, under the model's label; the same three the Settings page offers. */
   theme: { label: string; value: ThemePreference; onChange: (preference: ThemePreference) => void }
   logOut: { label: string; onSelect: () => void }
   /** stories only: mount the menu open. The app leaves Base UI to own the open state. */
@@ -90,7 +91,7 @@ export function AvatarMenu({ model }: { model: AvatarMenuModel }) {
           >
             {THEME_OPTIONS.map((option) => (
               <DropdownMenuRadioItem key={option.value} value={option.value} data-slot="avatar-menu-theme-option">
-                <span aria-hidden="true">{option.emoji}</span> {option.label}
+                <Icon name={option.icon} size={18} /> {option.label}
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>

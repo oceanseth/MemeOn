@@ -2,6 +2,7 @@ import { Item, ItemActions, ItemContent, ItemGroup, ItemMedia } from '@/atoms/it
 import { TierChip } from '@/atoms/tier-chip'
 import { cn } from '../lib/cn'
 import type { TradeSideSummaryModel } from '../lib/tradeCardModel'
+import { Icon } from '@/atoms/icon'
 
 /** Recessed well inside the raised proposal card. */
 const WELL = cn(
@@ -24,7 +25,10 @@ export function SideSummary({ model }: { model: TradeSideSummaryModel }) {
   return (
     <div data-slot="trade-side" className={WELL}>
       <h3 className={LEGEND}>{model.ownerLabel}</h3>
-      {model.empty && <div className="text-muted-foreground">nothing 😶</div>}
+      {model.empty && <div className="inline-flex items-center gap-1.5 text-muted-foreground">
+        <Icon name="meh" size={15} />
+        <span>nothing</span>
+      </div>}
       <ItemGroup>
         {model.memeLines.map((meme) => (
           <Item key={meme.id} size="flush">

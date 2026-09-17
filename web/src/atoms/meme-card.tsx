@@ -6,6 +6,7 @@ import { cn } from '@/lib/cn'
 import type { MemeCardModel } from '../lib/memeCardModel'
 import { tierFrameClasses } from '@/atoms/foil'
 import { TierChip } from '@/atoms/tier-chip'
+import { Icon } from '@/atoms/icon'
 import './foil.css'
 
 /* The card is a container for its own meta row (`@max-card-narrow:` fires under 220px). The ring
@@ -157,7 +158,9 @@ export function MemeCard({ model, subTitle, footer, footerRight, size }: MemeCar
           />
           {model.media.kind === 'video' && (
             <button data-slot="media-toggle" className={TOGGLE} {...model.media.toggleProps}>
-              <span aria-hidden="true">⏯</span>
+              <span aria-hidden="true">
+                <Icon name="square-play" size={20} />
+              </span>
             </button>
           )}
         </span>
@@ -167,15 +170,21 @@ export function MemeCard({ model, subTitle, footer, footerRight, size }: MemeCar
           </span>
           {subTitle}
           <span data-slot="meme-stats" className={STATS}>
-            <span aria-hidden="true">
-              {model.viewsLabel !== null && <>👁️ {model.viewsLabel} · </>}🔁{' '}
-              {model.resharesLabel}
-            </span>
+            <span aria-hidden="true" className="inline-flex items-center gap-0.5">
+                            {model.viewsLabel !== null && (
+                              <>
+                                <Icon name="eye" size={14} /> {model.viewsLabel} ·{' '}
+                              </>
+                            )}
+                            <Icon name="refresh-cw" size={14} /> {model.resharesLabel}
+                          </span>
             <span className="sr-only">{model.statsA11yLabel}</span>
           </span>
           <span data-slot="meme-sub" className={cn(memeSubVariants({ size: scale }))}>
             <span className={VALUE}>
-              <span aria-hidden="true">🧠 {model.valueLabel}</span>
+              <span aria-hidden="true" className="inline-flex items-center gap-0.5">
+                <Icon name="brain" size={14} /> {model.valueLabel}
+              </span>
               <span className="sr-only">{model.valueA11yLabel}</span>
             </span>
             {footerRight ? (
