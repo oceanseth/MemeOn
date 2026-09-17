@@ -1,9 +1,12 @@
 import { sortChipsCopy as copy } from '../copy/sortChips'
+import type { IconName } from '@/atoms/icon'
 import type { SortDir, SortKey } from './sorting'
 
 export interface SortChipModel {
   key: SortKey
   label: string
+  /** the stat's drawn glyph, ahead of its label */
+  icon: IconName | null
   /** the one chip that owns the current sort */
   selected: boolean
   /** which way the selected chip sorts; null on the others */
@@ -42,11 +45,11 @@ export interface BuildSortChipsModelInput {
   disabledReason?: string | null
 }
 
-const CHIP_OPTIONS: readonly { key: SortKey; label: string }[] = [
-  { key: 'new', label: copy.chips.new },
-  { key: 'views', label: copy.chips.views },
-  { key: 'reshares', label: copy.chips.reshares },
-  { key: 'value', label: copy.chips.value },
+const CHIP_OPTIONS: readonly { key: SortKey; label: string; icon: IconName | null }[] = [
+  { key: 'new', label: copy.chips.new, icon: null },
+  { key: 'views', label: copy.chips.views, icon: 'eye' },
+  { key: 'reshares', label: copy.chips.reshares, icon: 'refresh-cw' },
+  { key: 'value', label: copy.chips.value, icon: 'brain' },
 ]
 
 const REASON_ID = 'sort-chips-reason'
@@ -58,7 +61,7 @@ export function buildSortChipsModel({
   disabledReason = null,
 }: BuildSortChipsModelInput): SortChipsModel {
   return {
-    chips: CHIP_OPTIONS.map(({ key, label }) => {
+    chips: CHIP_OPTIONS.map(({ key, label, icon }) => {
       const selected = key === sortKey
       const directionLabel = selected
         ? dir === 'desc'
@@ -68,6 +71,7 @@ export function buildSortChipsModel({
       return {
         key,
         label,
+        icon,
         selected,
         direction: selected ? dir : null,
         arrow: selected ? (dir === 'desc' ? '↓' : '↑') : null,

@@ -1,5 +1,6 @@
 import { Hint } from '@/atoms/field'
 import { ToggleGroup, ToggleGroupItem } from '@/atoms/toggle-group'
+import { Icon } from '@/atoms/icon'
 import type { SortChipsModel } from '../lib/sortChipsModel'
 import type { SortKey } from '../lib/sorting'
 
@@ -32,6 +33,11 @@ export function SortChips({ model }: { model: SortChipsModel }) {
             data-slot="sort-chip"
             {...chip.buttonProps}
           >
+            {chip.icon && (
+              <span aria-hidden="true">
+                <Icon name={chip.icon} size={16} />
+              </span>
+            )}
             {chip.label}
             {chip.arrow && (
               <span aria-hidden="true" className="font-semibold">

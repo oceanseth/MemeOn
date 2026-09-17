@@ -106,8 +106,8 @@ export function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
     tierName: FRESH_TIER.name,
     tierLabel: copy.preview.freshlyMinted(FRESH_TIER.name),
     tierColor: FRESH_TIER.color,
-    statsLabel: '👁️ 0 · 🔁 0',
-    valueLabel: '🧠 0',
+    statsLabel: '0 · 0',
+    valueLabel: '0',
     originLabel: originLabelFor(ctx.artworkSource),
   }
 }
