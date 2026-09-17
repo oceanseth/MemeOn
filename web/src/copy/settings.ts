@@ -6,8 +6,7 @@ export const settingsCopy = {
   intro: 'Make yourself at home.',
   account: {
     heading: 'Account',
-    /** Brain mark is part of the name label, not a separate icon. */
-    name: (name: string) => `🧠 ${name}`,
+    name: (name: string) => `${name}`,
     provider: 'Masky avatar',
     logOut: sharedCopy.logOut,
   },
@@ -18,8 +17,7 @@ export const settingsCopy = {
   connections: {
     heading: 'Connections',
     discord: {
-      /** Emoji stays emoji. */
-      service: '🎭 Discord',
+      service: 'Discord',
       notLinked: 'Not linked',
       connect: 'Connect Discord',
       /** The linked row, the day `Me` reports one; today only the story reaches it. */

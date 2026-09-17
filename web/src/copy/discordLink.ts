@@ -1,7 +1,7 @@
 /** Every string the Discord link ritual spells itself. */
 export const discordLinkCopy = {
   heading: 'Connect Discord to MemeOn',
-  done: '🎮 Connected!',
+  done: 'Connected!',
   /** keyed by the busy phases of `discordLinkMachine` */
   busy: {
     checking: 'Checking your link…',

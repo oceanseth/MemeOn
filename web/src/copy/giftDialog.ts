@@ -2,7 +2,7 @@ import { sharedCopy } from './shared'
 
 /** Every string the gift dialog spells for chrome, search, rows and submission. */
 export const giftDialogCopy = {
-  title: (name: string) => `🎁 Gift to ${name}`,
+  title: (name: string) => `Gift to ${name}`,
   hint: 'Pick a meme you hold shares in — the transfer is free and instant.',
   close: 'Close gift dialog',
   cancel: sharedCopy.cancel,

@@ -17,7 +17,7 @@ export const binderCopy = {
     empty: 'No cards shown',
     shownOf: (visible: number, total: number) => `${visible} of ${plural(total, 'card')} shown`,
     shown: (visible: number) => `${plural(visible, 'card')} shown`,
-    value: (value: number) => `🧠 ${value.toLocaleString()}`,
+    value: (value: number) => value.toLocaleString(),
     privateIncluded: 'private included',
     /** How the active sort reads: plain words, never the chip's emoji. `[descending, ascending]`. */
     sort: {
@@ -40,7 +40,7 @@ export const binderCopy = {
     private: 'private',
   },
   emptyState: {
-    firstRun: 'Your binder is empty. Mint your first meme and start the grind to ✨Shiny✨.',
+    firstRun: 'Your binder is empty. Mint your first meme and start the grind to Shiny.',
     allPrivate: (count: number) =>
       `All ${count} of your memes are private. Turn on "Show private" to see them.`,
     mintFirst: '＋ Mint your first meme',
