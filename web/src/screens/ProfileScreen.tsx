@@ -12,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/atoms/tabs'
 import { cn } from '../lib/cn'
 import type { ProfileScreenModel } from '../hooks/useProfileScreen'
 import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
+import { Icon } from '@/atoms/icon'
 
 const SKELETON_CARDS = ['a', 'b', 'c', 'd']
 
@@ -141,7 +142,11 @@ export function ProfileScreen({
       {profile.stats.map((stat, index) => (
         <span key={stat.id} className="inline-flex items-center gap-1.5">
           {index > 0 ? <span aria-hidden="true">·</span> : null}
-          {stat.glyph ? <span aria-hidden="true">{stat.glyph}</span> : null}
+          {stat.glyph ? (
+            <span aria-hidden="true">
+              <Icon name={stat.glyph} size={16} />
+            </span>
+          ) : null}
           {stat.text}
         </span>
       ))}
@@ -150,7 +155,10 @@ export function ProfileScreen({
 
   const friendCaption = showFriendChip ? (
     <p className={FRIEND_CAPTION} data-slot="friend-state">
-      <span aria-hidden="true">{friendChipGlyph}</span> {friendChipText}
+      <span aria-hidden="true">
+        <Icon name={friendChipGlyph!} size={18} />
+      </span>{' '}
+      {friendChipText}
     </p>
   ) : null
 
@@ -161,21 +169,32 @@ export function ProfileScreen({
         <div className={ACTIONS} role="group" aria-label="Profile actions">
           {showFriendButton && (
             <Button variant="primary" {...friendButtonProps}>
-              <span aria-hidden="true">{friendGlyph}</span> {friendText}
+              <span aria-hidden="true">
+                <Icon name={friendGlyph!} size={16} />
+              </span>{' '}
+              {friendText}
             </Button>
           )}
           <Button variant={followButtonVariant} {...followButtonProps}>
             <span aria-hidden="true">{followGlyph}</span> {followText}
           </Button>
           <Link className={buttonVariants()} {...tradeLinkProps}>
-            <span aria-hidden="true">🔁</span> {tradeLabel}
+            <span aria-hidden="true">
+              <Icon name="refresh-cw" size={16} />
+            </span>{' '}
+            {tradeLabel}
           </Link>
         </div>
       )}
 
       {showSelfActions && (
         <div className={ACTIONS} role="group" aria-label="Profile actions">
-          <Button {...shareButtonProps}>{shareLabel}</Button>
+          <Button {...shareButtonProps}>
+            <span aria-hidden="true">
+              <Icon name="link" size={16} />
+            </span>{' '}
+            {shareLabel}
+          </Button>
           <Link className={buttonVariants()} {...settingsLinkProps}>
             {settingsLabel}
           </Link>
@@ -185,7 +204,12 @@ export function ProfileScreen({
       {/* public binder: share + join at page foot; public profile: both on identity card */}
       {showJoin && !showBinderHero && (
         <div className={ACTIONS}>
-          <Button {...shareButtonProps}>{shareLabel}</Button>
+          <Button {...shareButtonProps}>
+            <span aria-hidden="true">
+              <Icon name="link" size={16} />
+            </span>{' '}
+            {shareLabel}
+          </Button>
           <Link className={buttonVariants()} {...joinLinkProps}>
             Log in to add friend
           </Link>
@@ -299,7 +323,12 @@ export function ProfileScreen({
       {showJoin && (
         <div className="mt-9 flex flex-col items-center gap-3 text-center">
           <div className="flex flex-wrap items-center justify-center gap-3 max-sm:w-full max-sm:*:w-full">
-            {showBinderHero ? <Button {...shareButtonProps}>{shareLabel}</Button> : null}
+            {showBinderHero ? <Button {...shareButtonProps}>
+              <span aria-hidden="true">
+                <Icon name="link" size={16} />
+              </span>{' '}
+              {shareLabel}
+            </Button> : null}
             <Link className={cn(buttonVariants({ variant: 'primary' }), 'max-sm:w-full')} {...joinLinkProps}>
               {joinLabel}
             </Link>

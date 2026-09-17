@@ -10,6 +10,7 @@ import { BINDER_PAGE_SIZE } from '../stores/binderMachine'
 import { profileMachine, type ProfileData, type ProfileTab } from '../stores/profileMachine'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import type { ButtonVariant } from '@/atoms/button'
+import type { IconName } from '@/atoms/icon'
 import type { ButtonHTMLAttributes } from 'react'
 import type { LinkProps } from 'react-router-dom'
 
@@ -50,14 +51,14 @@ export interface ProfileScreenModel {
     'onClick' | 'aria-pressed' | 'aria-busy' | 'disabled'
   >
   showFriendButton: boolean
-  friendGlyph: string
+  friendGlyph: IconName | null
   friendText: string
   friendButtonProps: Pick<
     ButtonHTMLAttributes<HTMLButtonElement>,
     'onClick' | 'aria-busy' | 'disabled'
   >
   showFriendChip: boolean
-  friendChipGlyph: string
+  friendChipGlyph: IconName | null
   friendChipText: string
   showActionErr: boolean
   actionErr: string
@@ -109,7 +110,8 @@ interface ProfileCardModel {
 /** Stat glyphs stay visible for wayfinding but never enter the accessible name. */
 export interface ProfileStat {
   id: string
-  glyph: string
+  /** the stat's drawn glyph (`IconName`), or null for a text-only stat */
+  glyph: IconName | null
   text: string
 }
 
@@ -252,19 +254,18 @@ export function useProfileScreen({
   const createdCount = data?.created.length ?? 0
   const binderCount = data?.binder.length ?? 0
   const portfolio = profile?.portfolioValue ?? 0
-  const glyphs = copy.stats.glyphs
   const stats: ProfileStat[] = isPublicBinder
     ? [
-        { id: 'minted', glyph: '', text: copy.stats.minted(createdCount) },
-        { id: 'binder', glyph: '', text: copy.stats.inBinder(binderCount) },
-        { id: 'braincells', glyph: glyphs.braincells, text: copy.stats.braincells(portfolio) },
+        { id: 'minted', glyph: null, text: copy.stats.minted(createdCount) },
+        { id: 'binder', glyph: null, text: copy.stats.inBinder(binderCount) },
+        { id: 'braincells', glyph: 'brain', text: copy.stats.braincells(portfolio) },
       ]
     : !user
-      ? [{ id: 'braincells', glyph: glyphs.braincells, text: copy.stats.braincellsHeld(portfolio) }]
+      ? [{ id: 'braincells', glyph: 'brain', text: copy.stats.braincellsHeld(portfolio) }]
       : [
-          { id: 'collection', glyph: glyphs.collection, text: copy.stats.collection(profile?.collectionSize ?? 0) },
-          { id: 'portfolio', glyph: glyphs.braincells, text: copy.stats.held(portfolio) },
-          { id: 'followers', glyph: glyphs.followers, text: copy.stats.followers(profile?.followers ?? 0) },
+          { id: 'collection', glyph: 'book', text: copy.stats.collection(profile?.collectionSize ?? 0) },
+          { id: 'portfolio', glyph: 'brain', text: copy.stats.held(portfolio) },
+          { id: 'followers', glyph: 'star', text: copy.stats.followers(profile?.followers ?? 0) },
         ]
   const visible = memes.slice(0, visibleLimit)
   /* the friend button is the meaningful relationship move, so it takes the card's one bubblegum
@@ -314,7 +315,7 @@ export function useProfileScreen({
       disabled: busy,
     },
     showFriendButton: friendStatus === null || friendStatus === 'incoming',
-    friendGlyph: friendStatus === 'incoming' ? copy.actions.friend.acceptGlyph : copy.actions.friend.addGlyph,
+    friendGlyph: friendStatus === 'incoming' ? 'circle-check' : 'hand',
     friendText: busy
       ? friendStatus === 'incoming'
         ? copy.actions.friend.accepting
@@ -325,7 +326,7 @@ export function useProfileScreen({
     friendButtonProps: { onClick: onFriendAction, 'aria-busy': busy, disabled: busy },
     showFriendChip: friendStatus === 'accepted' || friendStatus === 'outgoing',
     friendChipGlyph:
-      friendStatus === 'accepted' ? copy.actions.friendChip.friendsGlyph : copy.actions.friendChip.pendingGlyph,
+      friendStatus === 'accepted' ? 'handshake' : 'hourglass',
     friendChipText: friendStatus === 'accepted' ? copy.actions.friendChip.friends : copy.actions.friendChip.pending,
     showActionErr: !!actionErr,
     actionErr: actionErr ?? '',
