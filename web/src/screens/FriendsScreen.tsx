@@ -258,7 +258,7 @@ export function FriendsScreen({
               <PersonRow key={f.sub} {...f} online={f.isOnline} onlineLabel={f.onlineLabel}>
                 <Link className={cn(buttonVariants(), ROW_PILL)} {...f.tradeLinkProps}>
                   <span aria-hidden="true">
-                    <Icon name="refresh-cw" size={16} />
+                    <Icon name="arrows-swap" size={16} />
                   </span>{' '}
                   {f.tradeLabel}
                 </Link>

@@ -2,14 +2,18 @@
 /**
  * APCA contrast floor for the palette, in both theme arms.
  *
- *   node scripts/check-contrast.mjs [indexCss]
+ *   node scripts/check-contrast.mjs [indexCss] [srcDir]
  *
  * WCAG 2.x ratios are computed from a luminance formula that badly misreads dark UI: it scores
  * light-on-dark far higher than the eye does, which is how a dim text token could read
  * "4.6:1, fine" while 12px copy on it was measurably hard to read. APCA (the WCAG 3 draft
  * contrast method) models the text polarity and the spatial frequency instead, and reports a
  * signed lightness contrast, Lc, from -108 to 108. |Lc| 60 is APCA's floor for body text at the
- * 14-18px / 400-weight the app actually sets; every pair below is body text or a chip label.
+ * 14-18px / 400-weight the app actually sets; every pair below is body text, a chip label, or a
+ * glyph stroke. Glyphs are held to the body floor rather than APCA's looser non-text allowance
+ * because `atoms/icon.tsx` draws a 1.5-unit stroke in a 24 box: at the 15-28px the app calls for,
+ * that hairline is thinner than the Onest stem standing next to it, and APCA's spatial-frequency
+ * term says a thinner stroke needs more contrast, not less.
  *
  * This reads the source `@theme` block rather than the built CSS on purpose: these are the
  * authored values, and a token that regresses should fail before it is ever bundled. Colours
@@ -109,6 +113,15 @@ function apcaLc(text, background) {
 /** The stylesheet without its comments, so a token name quoted in prose cannot pass for a block. */
 const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, "")
 
+/**
+ * The same idea for the source scans below, which report line numbers: every CSS/JS block comment
+ * blanked to spaces with the newlines left in place, so a line still sits where it did. Prose that
+ * quotes a class name is prose — the stylesheet explains the bronze medal by naming the very
+ * utility that caused it. The `startsWith("*")` test those scans also run is the one-line version,
+ * and stays, because it catches a `//` note as well.
+ */
+const blankComments = (text) => text.replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, " "))
+
 /** Body of the first `<opener> { … }` block, brace-counted so nested rules do not truncate it. */
 function block(css, opener) {
   const start = css.indexOf(opener)
@@ -200,13 +213,18 @@ const isSystemColor = (name) => typeof name === "string" && name.startsWith("--c
  * own fill (the Notice, the field error) and, where a screen paints it off that fill, on the
  * surface it lands on (a developers key row on accent, a quest step on muted, a detail badge on
  * card); link is the anchor colour on the page, a card, a raised row and a well; braincell is the
- * leaderboard count on card and accent; each tier's chip label sits on its chip, Prismatic's on
- * both stops of its gradient. A background is a token name, or `{ tint, over }`: a translucent
- * state tint composited on the lightest surface it can land on.
+ * leaderboard count on card and accent; destructive is the field's error line on a card and the
+ * dropdown's destructive row on the popover (it is the alerts fill *and* an ink, so it is audited
+ * as both); each tier's chip label sits on its chip, Prismatic's on both stops of its gradient; and
+ * each podium metal is the medal glyph's stroke on a Top Brains tile — `--color-card`, plus
+ * `--color-accent` for the framed first tile and for any tile under the pointer. A background is a
+ * token name, or `{ tint, over }`: a translucent state tint composited on the lightest surface it
+ * can land on.
  */
 const SURFACES = ["--color-background", "--color-card", "--color-accent", "--color-muted"]
 const STATUS = ["success", "warning", "error", "info"]
 const TIERS = ["paper", "silver", "holo", "chrome", "gold", "prismatic", "shiny"]
+const METALS = ["gold", "silver", "bronze"]
 const PAIRS = [
   ...SURFACES.map((surface) => ["--color-foreground", surface]),
   ...SURFACES.map((surface) => ["--color-muted-foreground", surface]),
@@ -231,8 +249,14 @@ const PAIRS = [
   ["--color-link", "--color-muted"],
   ["--color-braincell", "--color-card"],
   ["--color-braincell", "--color-accent"],
+  ["--color-destructive", "--color-card"],
+  ["--color-destructive", "--color-popover"],
   ...TIERS.map((tier) => [`--color-tier-${tier}-chip-text`, `--color-tier-${tier}-chip`]),
   ["--color-tier-prismatic-chip-text", "--tier-prismatic-chip-end"],
+  ...METALS.flatMap((metal) => [
+    [`--color-podium-${metal}`, "--color-card"],
+    [`--color-podium-${metal}`, "--color-accent"],
+  ]),
 ].filter(([fg, bg]) => {
   if (!isSystemColor(fg) && !isSystemColor(bg)) return true
   console.error(`check-contrast: ${fg} on ${bg} names a system colour and cannot be measured — dropped`)
@@ -281,8 +305,12 @@ const rows = PAIRS.flatMap(([fg, bg]) =>
 )
 const failed = rows.filter((row) => !row.pass)
 
-/** Every source file the app paints from, so a `text-<token>` utility cannot hide in one. */
-const SRC = resolve(join(import.meta.dirname, "..", "src"))
+/**
+ * Every source file the app paints from, so a `text-<token>` utility cannot hide in one. It is
+ * overridable like the stylesheet is, and for the same reason: the scans below fail the build, so
+ * they need a fixture tree of their own to be tested against.
+ */
+const SRC = resolve(process.argv[3] ?? join(import.meta.dirname, "..", "src"))
 const sources = existsSync(SRC)
   ? readdirSync(SRC, { recursive: true, withFileTypes: true })
       .filter((entry) => entry.isFile() && /\.(tsx?|css)$/.test(entry.name) && !/\.(test|stories)\./.test(entry.name))
@@ -310,15 +338,56 @@ const inkFills = sources.flatMap((file) => {
 })
 
 /**
- * Completeness: every `--color-*-foreground` the palette declares has to appear in the table above
- * as the text of some pair, or be one of the decorative fills. An ink nobody audits is an ink
- * nobody guarantees.
+ * Completeness, declared side: every `--color-*-foreground` the palette declares has to appear in
+ * the table above as the text of some pair, or be one of the decorative fills. An ink nobody audits
+ * is an ink nobody guarantees.
  */
 const inks = Object.keys(tokens).filter((token) => /^--color-.*-foreground$/.test(token))
 const audited = new Set(PAIRS.map(([fg]) => fg))
 const unaudited = inks.filter(
   (ink) => !audited.has(ink) && !INK_FILLS_ALLOWED.has(`bg-${ink.replace("--color-", "")}`),
 )
+
+/**
+ * Completeness, painted side — and the hole the check above could not see.
+ *
+ * That check is keyed on the token's *name*, so it only ever asked after `--color-*-foreground`.
+ * A colour with any other name could be painted as ink and never be measured, which is how the
+ * leaderboard's bronze medal shipped: it was stroked in `--color-warning`, the amber chip fill
+ * (`--color-tier-gold-chip` is the same token), and a 94%-light hairline on the 99.5%-light card
+ * reads Lc 8 in the light arm and Lc 0 in the dark. Nothing failed, because nothing was looking at
+ * a token whose name did not end in `-foreground`.
+ *
+ * So ask the markup instead of the palette: every colour token a source file paints text or a glyph
+ * stroke in has to be the text of some pair above. `text-`, and `stroke-`/`fill-` for an SVG, under
+ * any variant, sign or modifier, plus the one `color: var(--token)` shape `@layer base` writes. A
+ * name only counts when `--color-<name>` is really declared, which is what keeps `text-sm`,
+ * `text-balance` and CSS's own `text-decoration` out of the table.
+ *
+ * A token that some pair *stands on* is a surface, and a surface painted as ink gets told so by
+ * name: the palette guarantees a surface against inks, never the reverse. A colour can honestly be
+ * both — `--color-destructive` is the alerts badge fill and the field-error line — but it earns the
+ * second job by carrying its own pair, not by being spelled the same.
+ */
+const INK_UTILITY = /\b(?:text|stroke|fill)-([a-z][a-z0-9-]*)/g
+const INK_PROPERTY = /(?:^|[;{\s])color:\s*var\(\s*(--[\w-]+)\s*\)/g
+const paintedInks = new Map()
+for (const file of sources) {
+  blankComments(readFileSync(file, "utf8")).split("\n").forEach((line, index) => {
+    if (line.trimStart().startsWith("*")) return
+    const hits = [
+      ...[...line.matchAll(INK_UTILITY)].map((hit) => `--color-${hit[1]}`),
+      ...[...line.matchAll(INK_PROPERTY)].map((hit) => hit[1]),
+    ]
+    for (const token of hits) {
+      if (token in tokens && !paintedInks.has(token)) {
+        paintedInks.set(token, `${relative(process.cwd(), file)}:${index + 1}`)
+      }
+    }
+  })
+}
+const surfaces = new Set(PAIRS.map(([, bg]) => bg).filter((bg) => typeof bg === "string"))
+const misread = [...paintedInks].filter(([token]) => !audited.has(token))
 
 /**
  * `index.html`'s two `theme-color` metas paint the browser's own chrome around the app, so they
@@ -384,6 +453,22 @@ if (painted.length) {
   process.exit(1)
 }
 
+if (misread.length) {
+  console.error(
+    `\ncheck-contrast: ${misread.length} token(s) are painted as text or a glyph stroke and never audited:\n` +
+      misread
+        .map(([token, where]) =>
+          surfaces.has(token)
+            ? `  ${where} paints ${token}, which pairs above stand ON — a surface is not an ink`
+            : `  ${where} paints ${token}, which no pair above reads`,
+        )
+        .join("\n") +
+      `\n\nA surface is guaranteed against inks, not the other way round, so painting one as a stroke\n` +
+      `measures nothing: give the mark its own ink token and add the pair it lands on to PAIRS.`,
+  )
+  process.exit(1)
+}
+
 if (failed.length) {
   console.error(
     `\ncheck-contrast: ${failed.length} of ${rows.length} pair(s) in ${display} read below APCA Lc ${FLOOR}:\n` +
@@ -397,4 +482,5 @@ if (failed.length) {
 
 console.log(`check-contrast: ${rows.length} pair(s) across ${ARMS.join(" and ")}, all >= APCA Lc ${FLOOR} (${display})`)
 console.log(`check-contrast: ${sources.length} source file(s) scanned, none paint text in ${NOT_TEXT.map((entry) => entry.token).join(", ")}`)
+console.log(`check-contrast: ${paintedInks.size} token(s) painted as text or a glyph stroke, all audited above; no surface is painted as an ink`)
 console.log(`check-contrast: ${inks.length} foreground token(s) all audited or named as a decorative fill; index.html theme-color matches --color-background in both arms`)

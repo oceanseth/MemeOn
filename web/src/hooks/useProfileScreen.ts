@@ -44,7 +44,8 @@ export interface ProfileScreenModel {
   settingsLabel: string
   settingsLinkProps: Pick<LinkProps, 'to'>
   followButtonVariant: ButtonVariant
-  followGlyph: string
+  /** the toggle's state, drawn: `star` while you do not follow, `star-filled` once you do */
+  followGlyph: IconName
   followText: string
   followButtonProps: Pick<
     ButtonHTMLAttributes<HTMLButtonElement>,
@@ -300,7 +301,10 @@ export function useProfileScreen({
     settingsLabel: copy.actions.settings,
     settingsLinkProps: { to: '/settings' },
     followButtonVariant: friendIsPrimary || followingByMe ? 'default' : 'primary',
-    followGlyph: followingByMe ? copy.actions.follow.glyphOn : copy.actions.follow.glyph,
+    /* was copy.actions.follow.glyph/glyphOn, a raw ☆/★ pair the emoji sweep never reached
+       because it lived in copy rather than in markup; `star-filled` shares `star`'s exact contour,
+       so following darkens the star in place instead of resizing the button */
+    followGlyph: followingByMe ? 'star-filled' : 'star',
     followText: busy
       ? followingByMe
         ? copy.actions.follow.busyOn

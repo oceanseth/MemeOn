@@ -12,7 +12,20 @@ describe('leaderboard row model', () => {
 
     expect(row).toMatchObject({ rankNumeral: '4', medal: null, profileLinkProps: { to: '/u/top-brain' }, avatarSrc: '/top-brain.png' })
     expect(noAvatar.avatarSrc).toBeNull()
-    expect(noAvatar.medal).toBe('medal')
+    expect(noAvatar.medal).toBe('gold')
+  })
+
+  /**
+   * The podium's three tiles draw one glyph, so the metal is the only thing that says which place
+   * each is — and the model has to name it. It said `'medal'` for all three once, which pushed the
+   * choice into the screen as a comparison against the rank *string* and let a surface token
+   * (`text-warning`, a chip fill) stand in for bronze without anything noticing.
+   */
+  it('hands the top three their own metal, in rank order, and nobody else one', () => {
+    const leader = { sub: 'user-any', name: 'any', picture: null, braincells: 1, collectionSize: 1, portfolioValue: 1 }
+    const metals = [0, 1, 2, 3, 4].map((index) => buildLeaderboardRowModel(leader, index).medal)
+
+    expect(metals).toEqual(['gold', 'silver', 'bronze', null, null])
   })
 
   it('names the whole row once so the emoji columns can stay decorative', () => {

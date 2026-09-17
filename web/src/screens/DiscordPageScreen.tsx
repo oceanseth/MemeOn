@@ -36,6 +36,10 @@ export function DiscordPageScreen({
         )}
         {showInstall && (
           <>
+            {/* the brain is MemeOn's own mark on MemeOn's own install CTA — a 1:1 swap of the 🧠
+                the design spells this button with, not a stand-in for Discord, which is text
+                everywhere by design. Rasterised at 16: the two lobes and the midline survive at
+                2x and still read at 1x, so it earns its size here. */}
             <a {...installLinkProps} className={buttonVariants({ variant: 'primary' })} aria-describedby="discord-cta-note">
               <span aria-hidden="true">
                 <Icon name="brain" size={16} />

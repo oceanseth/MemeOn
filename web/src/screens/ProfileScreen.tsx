@@ -176,11 +176,14 @@ export function ProfileScreen({
             </Button>
           )}
           <Button variant={followButtonVariant} {...followButtonProps}>
-            <span aria-hidden="true">{followGlyph}</span> {followText}
+            <span aria-hidden="true">
+              <Icon name={followGlyph} size={16} />
+            </span>{' '}
+            {followText}
           </Button>
           <Link className={buttonVariants()} {...tradeLinkProps}>
             <span aria-hidden="true">
-              <Icon name="refresh-cw" size={16} />
+              <Icon name="arrows-swap" size={16} />
             </span>{' '}
             {tradeLabel}
           </Link>

@@ -465,7 +465,12 @@ export function CreateMemeScreen({
                           </span>{' '}
                           Looks good — animate it
                         </Button>
-                        <Button {...rerunEditButtonProps}>↻ Re-run the edit</Button>
+                        <Button {...rerunEditButtonProps}>
+                          <span aria-hidden="true">
+                            <Icon name="rotate-cw" size={16} />
+                          </span>{' '}
+                          Re-run the edit
+                        </Button>
                       </Toolbar>
                     </Empty>
                   </div>

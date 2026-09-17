@@ -152,7 +152,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
             </span>
             <span className="inline-flex items-center gap-0.5">
               · <span aria-hidden="true">
-                <Icon name="refresh-cw" size={16} />
+                <Icon name="arrows-left-right" size={16} />
               </span>{' '}
               {detail.resharesLabel} {detail.resharesWord}
             </span>

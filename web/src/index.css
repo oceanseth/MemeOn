@@ -134,6 +134,20 @@
   --color-tier-shiny-chip: var(--color-primary);
   --color-tier-shiny-chip-text: var(--color-primary-foreground);
 
+  /* Podium metals: the stroke of the `medal` glyph on each of Top Brains' three tiles. They are
+     inks, not fills, and they exist because the status ramp cannot lend them one — the bronze
+     medal shipped as `text-warning`, which is the amber chip *fill* (`--color-tier-gold-chip` is
+     the same token), and a 94%-light hairline on the 99.5%-light card measured APCA Lc 8 in the
+     light arm and Lc 0 in the dark. A surface is guaranteed against inks, never the reverse.
+     Gold sits at hue 92 rather than the warning family's 70–85 so a medal cannot read as a status,
+     and bronze at 48 holds a 44° gap from it: the two warm metals are the same silhouette at the
+     same size, so they have to separate by hue and not only by lightness. Each arm is drawn against
+     `--color-card` and against `--color-accent` — tile #1 wears the framed accent fill and any tile
+     takes it under the pointer — and `scripts/check-contrast.mjs` audits all six pairs. */
+  --color-podium-gold: light-dark(oklch(54% 0.11 92), oklch(86% 0.145 92));
+  --color-podium-silver: light-dark(oklch(50% 0.018 285), oklch(84% 0.018 285));
+  --color-podium-bronze: light-dark(oklch(52% 0.129 48), oklch(83% 0.105 48));
+
   /* ── Radius: one base, five steps. Stock 2/4/6/8/12/16/24/32 are reset so `rounded-lg` can only
      mean this ladder. xs = checkbox box, skeleton line, thumb · sm = chip, badge, the 34px square
      control · md = field, avatar, segment · lg = card, control, nav row, well, public avatar ·

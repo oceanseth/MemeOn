@@ -6,7 +6,8 @@ export const marketplaceCopy = {
   pageTitle: 'Marketplace',
   intro: 'Find your next group-chat obsession.',
   sectionHeading: 'The good stuff',
-  mint: '＋ Mint a meme',
+  /** Words only; MarketplaceScreen draws the `circle-plus` the Mint tab and the shell's link wear. */
+  mint: 'Mint a meme',
   allMemesPill: 'All memes',
   allMemesPillA11y: 'All memes, clear every filter',
   allTiers: 'All tiers',

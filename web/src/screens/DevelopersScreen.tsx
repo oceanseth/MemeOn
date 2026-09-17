@@ -94,7 +94,10 @@ export function DevelopersScreen({
             {...labelInputProps}
           />
           <Button variant="primary" type="submit" className="shrink-0" {...createButtonProps}>
-            <span aria-hidden="true">＋</span> {createLabel}
+            <span aria-hidden="true">
+              <Icon name="circle-plus" size={16} />
+            </span>{' '}
+            {createLabel}
           </Button>
         </form>
         {quotaNote && <Hint>{quotaNote}</Hint>}
@@ -120,7 +123,12 @@ export function DevelopersScreen({
             <div className="mt-3.5 flex flex-wrap items-center gap-3">
               <Button {...copyButtonProps}>{copyLabel}</Button>
               {copyDone && (
-                <span className="text-sm font-semibold text-success-foreground">{copiedCaption}</span>
+                <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-success-foreground">
+                  {/* the tick is the screen's, not the caption's: `copyDone` already gates this
+                      span, so the state is drawn here and `copy/developers` spells only words */}
+                  <Icon name="circle-check" size={14} />
+                  {copiedCaption}
+                </span>
               )}
             </div>
           </Card>

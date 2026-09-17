@@ -28,14 +28,8 @@ export function SettingsScreen({
               data-slot="settings-account"
               className="mt-4 max-md:flex-col max-md:items-start"
             >
-              <ItemTitle>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span aria-hidden="true">
-                      <Icon name="brain" size={16} />
-                    </span>{' '}
-                    {account.nameLabel}
-                  </span>
-                </ItemTitle>
+              {/* the name stands alone: this row is an identity affordance, never MemeOn's mark */}
+              <ItemTitle>{account.nameLabel}</ItemTitle>
               <ItemDescription>{account.providerLabel}</ItemDescription>
               <ItemActions className="ms-auto max-md:ms-0">
                 <Button {...account.logoutButtonProps}>{account.logoutLabel}</Button>
@@ -65,12 +59,17 @@ export function SettingsScreen({
                 className="mt-4 max-md:flex-col max-md:items-start"
               >
                 <ItemTitle>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span aria-hidden="true">
-                      <Icon name="gamepad-2" size={16} />
-                    </span>{' '}
-                    {row.serviceLabel}
-                  </span>
+                  {/* whether a service gets a mark is the model's call — every row is text today */}
+                  {row.icon ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span aria-hidden="true">
+                        <Icon name={row.icon} size={16} />
+                      </span>{' '}
+                      {row.serviceLabel}
+                    </span>
+                  ) : (
+                    row.serviceLabel
+                  )}
                 </ItemTitle>
                 <ItemDescription>{row.stateLabel}</ItemDescription>
                 <ItemActions className="ms-auto max-md:ms-0">

@@ -11,12 +11,13 @@ const model: AvatarMenuModel = {
   name: meLou.name,
   src: null,
   triggerProps: { 'aria-label': 'Account menu' },
+  // the shell's slot map, as the shell hands it down: two decorated rows, three text-only ones
   items: [
-    { key: 'profile', label: 'Profile', to: `/u/${encodeURIComponent(meLou.sub)}` },
-    { key: 'leaderboard', label: 'Top Brains', to: '/leaderboard' },
-    { key: 'settings', label: 'Settings', to: '/settings' },
-    { key: 'developers', label: 'Developers', to: '/developers' },
-    { key: 'discord', label: 'Discord', to: '/discord' },
+    { key: 'profile', label: 'Profile', to: `/u/${encodeURIComponent(meLou.sub)}`, icon: null },
+    { key: 'leaderboard', label: 'Top Brains', to: '/leaderboard', icon: 'trophy' },
+    { key: 'settings', label: 'Settings', to: '/settings', icon: 'gear' },
+    { key: 'developers', label: 'Developers', to: '/developers', icon: null },
+    { key: 'discord', label: 'Discord', to: '/discord', icon: null },
   ],
   theme: { label: 'Theme', value: 'light', onChange: onThemeChange },
   logOut: { label: 'Log out', onSelect: onLogout },

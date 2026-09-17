@@ -43,7 +43,8 @@ export const binderCopy = {
     firstRun: 'Your binder is empty. Mint your first meme and start the grind to Shiny.',
     allPrivate: (count: number) =>
       `All ${count} of your memes are private. Turn on "Show private" to see them.`,
-    mintFirst: '＋ Mint your first meme',
+    /** Words only: `BinderScreen` draws the plus (`circle-plus`) on the `create` empty action. */
+    mintFirst: 'Mint your first meme',
   },
   errorState: {
     title: "Couldn't load your binder.",

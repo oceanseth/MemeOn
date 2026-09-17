@@ -171,13 +171,13 @@ export function MemeCard({ model, subTitle, footer, footerRight, size }: MemeCar
           {subTitle}
           <span data-slot="meme-stats" className={STATS}>
             <span aria-hidden="true" className="inline-flex items-center gap-0.5">
-                            {model.viewsLabel !== null && (
-                              <>
-                                <Icon name="eye" size={14} /> {model.viewsLabel} ·{' '}
-                              </>
-                            )}
-                            <Icon name="refresh-cw" size={14} /> {model.resharesLabel}
-                          </span>
+              {model.viewsLabel !== null && (
+                <>
+                  <Icon name="eye" size={14} /> {model.viewsLabel} ·{' '}
+                </>
+              )}
+              <Icon name="arrows-left-right" size={14} /> {model.resharesLabel}
+            </span>
             <span className="sr-only">{model.statsA11yLabel}</span>
           </span>
           <span data-slot="meme-sub" className={cn(memeSubVariants({ size: scale }))}>

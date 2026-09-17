@@ -17,8 +17,8 @@ export const developersCopy = {
   freshKey: {
     heading: 'Copy it now — shown once:',
     copy: 'Copy key',
-    /** Copy outcome beside the button, not inside its label. */
-    copied: '✓ Copied',
+    /** Copy outcome beside the button, not inside its label; the screen draws the `circle-check`. */
+    copied: 'Copied',
   },
   row: {
     created: (date: string) => `created ${date}`,

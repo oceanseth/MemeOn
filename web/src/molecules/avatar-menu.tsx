@@ -16,12 +16,17 @@ import { PortalAnchor } from '@/atoms/portal-anchor'
 import { portalAnchor } from '../lib/portalAnchor'
 import type { ThemePreference } from '../stores/themeStore'
 import { THEME_OPTIONS } from '@/molecules/theme-control'
-import { Icon } from '@/atoms/icon'
+import { Icon, type IconName } from '@/atoms/icon'
 
 export interface AvatarMenuItemModel {
   key: string
   label: string
   to: string
+  /**
+   * The row's glyph, or null where the design keeps the slot text-only (Profile, Developers,
+   * Discord). The shell hands these down from its one slot → glyph map; the molecule never picks.
+   */
+  icon: IconName | null
 }
 
 /**
@@ -33,7 +38,10 @@ export interface AvatarMenuModel {
   src: string | null
   /** an avatar disc names nothing, so the trigger's name is the model's */
   triggerProps: { 'aria-label': string }
-  /** The routes, in order: Profile · Top Brains · Settings · Developers · Discord. */
+  /**
+   * The routes, in order: Profile · Top Brains · Settings · Developers · Discord, each wearing the
+   * glyph its chrome slot wears elsewhere — Settings is the `gear` the bar has no room for.
+   */
   items: AvatarMenuItemModel[]
   /** Auto · Light · Dark, under the model's label; the same three the Settings page offers. */
   theme: { label: string; value: ThemePreference; onChange: (preference: ThemePreference) => void }
@@ -77,6 +85,13 @@ export function AvatarMenu({ model }: { model: AvatarMenuModel }) {
           {model.items.map((item) => (
             // the row is the link itself; Base UI keeps `menuitem` on the anchor and closes on click
             <DropdownMenuItem key={item.key} render={<Link to={item.to} />} data-slot="avatar-menu-item">
+              {/* The lane is 18px whether or not a glyph lands in it, which is what lets a menu
+                  the design only partly decorates still read as a column. The trailing space is
+                  not slop: it reproduces the theme radio's own `<Icon /> {label}` spacing below,
+                  so every label in the popup — routes and radio alike — starts on one vertical. */}
+              <span aria-hidden="true" className="flex size-4.5 shrink-0 items-center justify-center">
+                {item.icon && <Icon name={item.icon} size={18} />}
+              </span>{' '}
               {item.label}
             </DropdownMenuItem>
           ))}

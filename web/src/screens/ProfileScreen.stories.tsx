@@ -76,7 +76,7 @@ const emptyCreated: ProfileScreenModel = {
   },
   showActions: true,
   followButtonVariant: 'default',
-  followGlyph: '☆',
+  followGlyph: 'star',
   followText: 'Follow',
   showFriendButton: true,
   friendGlyph: 'hand',
@@ -294,7 +294,7 @@ export const Following: Story = {
   args: {
     ...oneCreatedCard,
     followButtonVariant: 'default',
-    followGlyph: '★',
+    followGlyph: 'star-filled',
     followText: 'Following',
     followButtonProps: { 'aria-pressed': true, 'aria-busy': false, disabled: false, onClick: fn() },
     showFriendButton: false,

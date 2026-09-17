@@ -48,7 +48,7 @@ export interface BuildSortChipsModelInput {
 const CHIP_OPTIONS: readonly { key: SortKey; label: string; icon: IconName | null }[] = [
   { key: 'new', label: copy.chips.new, icon: null },
   { key: 'views', label: copy.chips.views, icon: 'eye' },
-  { key: 'reshares', label: copy.chips.reshares, icon: 'refresh-cw' },
+  { key: 'reshares', label: copy.chips.reshares, icon: 'arrows-left-right' },
   { key: 'value', label: copy.chips.value, icon: 'brain' },
 ]
 

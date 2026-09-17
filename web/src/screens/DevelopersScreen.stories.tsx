@@ -84,7 +84,7 @@ const empty: DevelopersScreenModel = {
   createLabel: 'Create key',
   freshKeyHeading: 'Copy it now — shown once:',
   copyLabel: 'Copy key',
-  copiedCaption: '✓ Copied',
+  copiedCaption: 'Copied',
   copyDone: false,
   labelInputProps: {
     value: '',
@@ -252,9 +252,9 @@ export const Copied: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    // label stays "Copy key"; success is the caption beside the button
+    // label stays "Copy key"; success is the caption beside the button, tick drawn not spelled
     await expect(canvas.getByRole('button', { name: 'Copy key' })).toBeEnabled()
-    await expect(canvas.getByText('✓ Copied')).toBeInTheDocument()
+    await expect(canvas.getByText('Copied')).toBeInTheDocument()
   },
 }
 
