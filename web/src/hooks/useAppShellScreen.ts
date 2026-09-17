@@ -82,10 +82,11 @@ export interface ShellTabItem {
  * on `RouteFamily` puts it on the union the chrome's active-state already runs on, so a route
  * cannot take a nav slot without a glyph decision being made about it in one visible place.
  *
- * `developers` and `discord` are `null` on purpose rather than simply absent: spelling them out
- * is what makes them a decision instead of an oversight. Both are text-only in the design, and
- * Discord's mark is a filled brand logo, not a 1.5 stroke glyph — the atom deliberately has no
- * brand state to draw it with (see the icon.tsx docblock).
+ * Every slot now carries a glyph, so the type is `IconName` and `null` is not a state a route can
+ * be left in. `developers` and `discord` were the two holes — they, plus Profile below, left three
+ * of the account menu's five rows sitting in an empty icon lane, which is what a half-decorated
+ * column looks like. `code` is Developers; `discord` is the brand mark the atom now draws filled
+ * rather than stroked (see the icon.tsx docblock).
  */
 const CHROME_ICONS = {
   marketplace: 'storefront',
@@ -98,12 +99,12 @@ const CHROME_ICONS = {
   trade: 'arrows-swap',
   leaderboard: 'trophy',
   settings: 'gear',
-  developers: null,
-  discord: null,
-} as const satisfies Record<RouteFamily, IconName | null>
+  developers: 'code',
+  discord: 'discord',
+} as const satisfies Record<RouteFamily, IconName>
 
-/** The slots that carry a glyph; indexing `CHROME_ICONS` with one of these cannot be null. */
-type GlyphSlot = Exclude<RouteFamily, 'developers' | 'discord'>
+/** Every chrome slot carries a glyph; the alias is kept so the item tables read as before. */
+type GlyphSlot = RouteFamily
 
 const NAV_ITEMS: { slot: GlyphSlot; families: RouteFamily[]; to: string; label: string }[] = [
   { slot: 'marketplace', families: ['marketplace'], to: '/marketplace', label: copy.nav.marketplace },
@@ -115,9 +116,9 @@ const NAV_ITEMS: { slot: GlyphSlot; families: RouteFamily[]; to: string; label: 
 
 /**
  * The account menu's routes: the chrome slots the top bar has no room for, read off the same map.
- * Profile is not here because it has no slot — `/u/:sub` is not a `RouteFamily` — and the set has
- * no single-person glyph to give it either (`users` is Friends' and would collide), so it stays
- * text in the menu the way Developers and Discord do by design.
+ * Profile is not here because it has no slot — `/u/:sub` is not a `RouteFamily` — so the menu
+ * gives it `user`, the single-person mark drawn for exactly this row (`users` is Friends' and
+ * reusing it would collide).
  */
 const MENU_ROUTES: { slot: RouteFamily; label: string; to: string }[] = [
   { slot: 'leaderboard', label: copy.accountMenu.leaderboard, to: '/leaderboard' },
@@ -232,7 +233,7 @@ export function buildAppShellScreenModel({
           /* your own profile, then the slots off the same map the bar and the tabs read, so a
              route wears one glyph wherever in the chrome it is reachable from */
           items: [
-            { key: 'profile', label: copy.accountMenu.profile, to: profileTo, icon: null },
+            { key: 'profile', label: copy.accountMenu.profile, to: profileTo, icon: 'user' },
             ...MENU_ROUTES.map(({ slot, ...route }) => ({ key: slot, ...route, icon: CHROME_ICONS[slot] })),
           ],
           theme: { label: copy.accountMenu.theme, value: theme.value, onChange: theme.onChange },

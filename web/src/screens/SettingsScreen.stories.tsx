@@ -74,9 +74,9 @@ export const NotLinked: Story = {
     const row = canvasElement.querySelector('[data-slot="connection-row"]')!
     await expect(row.tagName).toBe('LI')
     await expect(row).toHaveAttribute('data-linked', 'false')
-    // Discord is text here as it is in the nav, the footer and the avatar menu — the row draws
-    // whatever mark the model names, and the model names none
-    await expect(row.querySelector('[data-slot="item-title"] [data-slot="icon"]')).toBeNull()
+    // the row draws whatever mark the model names, and for Discord that is the brand mark — the
+    // same one the account menu's row wears, filled rather than stroked into the 1.5 family
+    await expect(row.querySelector('[data-slot="item-title"] [data-slot="icon"]')).not.toBeNull()
   },
 }
 

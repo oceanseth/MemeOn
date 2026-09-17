@@ -23,10 +23,10 @@ export interface AvatarMenuItemModel {
   label: string
   to: string
   /**
-   * The row's glyph, or null where the design keeps the slot text-only (Profile, Developers,
-   * Discord). The shell hands these down from its one slot → glyph map; the molecule never picks.
+   * The row's glyph. Every row has one — the shell hands them down from its one slot → glyph map,
+   * and the molecule never picks.
    */
-  icon: IconName | null
+  icon: IconName
 }
 
 /**
@@ -85,12 +85,13 @@ export function AvatarMenu({ model }: { model: AvatarMenuModel }) {
           {model.items.map((item) => (
             // the row is the link itself; Base UI keeps `menuitem` on the anchor and closes on click
             <DropdownMenuItem key={item.key} render={<Link to={item.to} />} data-slot="avatar-menu-item">
-              {/* The lane is 18px whether or not a glyph lands in it, which is what lets a menu
-                  the design only partly decorates still read as a column. The trailing space is
-                  not slop: it reproduces the theme radio's own `<Icon /> {label}` spacing below,
-                  so every label in the popup — routes and radio alike — starts on one vertical. */}
+              {/* The 18px lane, held by a fixed-size box rather than by the glyph, so a mark with a
+                  narrower silhouette (`code`) still starts its label on the same vertical as a wide
+                  one (`trophy`). The trailing space is not slop: it reproduces the theme radio's own
+                  `<Icon /> {label}` spacing below, so every label in the popup — routes and radio
+                  alike — sits on one column. */}
               <span aria-hidden="true" className="flex size-4.5 shrink-0 items-center justify-center">
-                {item.icon && <Icon name={item.icon} size={18} />}
+                <Icon name={item.icon} size={18} />
               </span>{' '}
               {item.label}
             </DropdownMenuItem>
@@ -113,6 +114,12 @@ export function AvatarMenu({ model }: { model: AvatarMenuModel }) {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={model.logOut.onSelect} data-slot="avatar-menu-logout">
+          {/* the only row the shell's slot map has no route for, so the glyph is picked here, the
+              way the theme radio's are — and picked at all because one bare lane at the foot of a
+              decorated column reads as a row that failed to load */}
+          <span aria-hidden="true" className="flex size-4.5 shrink-0 items-center justify-center">
+            <Icon name="log-out" size={18} />
+          </span>{' '}
           {model.logOut.label}
         </DropdownMenuItem>
       </DropdownMenuContent>

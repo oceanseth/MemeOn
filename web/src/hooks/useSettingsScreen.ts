@@ -93,12 +93,11 @@ export function buildSettingsScreenModel({
       rows: [
         {
           key: 'discord',
-          /* Discord is text on all four surfaces it reaches — the nav link, the footer, the avatar
-             menu and this row — and the icon set deliberately has no `discord` glyph to reach for:
-             the mark is a filled logo, so stroking it at 1.5 to join the family both chokes its eye
-             holes at 16px and modifies a mark whose guidelines require it be reproduced unmodified.
-             See the PROVENANCE block in atoms/icon.tsx. */
-          icon: null,
+          /* The brand mark, the same one the account menu's Discord row now wears. It is filled
+             and never stroked — the objection that kept this row text is still the reason the atom
+             draws it that way rather than joining it to the 1.5 family. See the PROVENANCE block
+             in atoms/icon.tsx. */
+          icon: 'discord',
           serviceLabel: copy.connections.discord.service,
           /* `Me` carries no Discord field, so the app cannot know: it says the one thing it does
              know rather than guessing "Linked". See the receipt's Known gaps. */
