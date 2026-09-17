@@ -1,4 +1,4 @@
-import type { ChangeEvent, HTMLAttributes } from 'react'
+import type { HTMLAttributes } from 'react'
 import { glowStyleFor, tierFor } from '@memeon/shared/tiers'
 import { createMemeCopy as copy } from '../../copy/createMeme'
 import { tierFrameClasses } from '@/atoms/foil'
@@ -52,10 +52,6 @@ export function isRemixOutput(value: string): value is 'image' | 'video' {
 
 export function isVideoRemixStyle(value: string): value is 'edit' | 'restyle' {
   return value === 'edit' || value === 'restyle'
-}
-
-export function firstFile(event: ChangeEvent<HTMLInputElement>): File | null {
-  return event.currentTarget.files?.[0] ?? null
 }
 
 export function megabyteLabel(bytes: number): number {

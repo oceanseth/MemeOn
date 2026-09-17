@@ -10,6 +10,7 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "lint:ds": "oxlint src",
+    "test:lint-rules": "node --test lint/memeon.test.mjs",
     "check-docs": "node scripts/check-docs.mjs",
     "check-tiers": "node scripts/check-tiers.mjs src",
     "check-copy": "node scripts/check-copy.mjs src",
@@ -27,7 +28,7 @@
     "test:runtime": "vitest run --project=runtime",
     "test:stories": "vitest run --project=storybook",
     "test": "vitest run --project=unit --project=runtime",
-    "check": "pnpm run lint:ds && pnpm run check-docs && pnpm run check-tiers && pnpm run check-copy && pnpm run check-contrast && pnpm run check-tokens && pnpm run test:check-docs && pnpm run test:check-tiers && pnpm run test:check-copy && pnpm run test:check-layers && pnpm run test:check-contrast && pnpm run test:check-tokens && pnpm run test:proxy && pnpm run test:unit && pnpm run test:runtime && pnpm run test:stories"
+    "check": "pnpm run lint:ds && pnpm run test:lint-rules && pnpm run check-docs && pnpm run check-tiers && pnpm run check-copy && pnpm run check-contrast && pnpm run check-tokens && pnpm run test:check-docs && pnpm run test:check-tiers && pnpm run test:check-copy && pnpm run test:check-layers && pnpm run test:check-contrast && pnpm run test:check-tokens && pnpm run test:proxy && pnpm run test:unit && pnpm run test:runtime && pnpm run test:stories"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

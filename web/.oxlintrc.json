@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "jsPlugins": ["@shadcn/lint"],
+  "jsPlugins": ["@shadcn/lint", "./lint/memeon.js"],
   "plugins": [],
   "categories": { "correctness": "off" },
   "ignorePatterns": ["**/*.test.ts", "**/*.test.tsx"],
@@ -13,6 +13,7 @@
     }
   },
   "rules": {
+    "memeon/no-native-chrome": "error",
     "shadcn/no-raw-colors": "error",
     "shadcn/no-unknown-classes": [
       "error",
@@ -41,6 +42,10 @@
   },
   "overrides": [
     { "files": ["src/atoms/**"], "rules": { "shadcn/no-restyle": "off" } },
+    // atoms/file-drop.tsx is the picker itself: a real file input is the only thing that opens the
+    // OS dialog and the only control a Field label can name, so it stays — invisible, at the full
+    // size of the well, with every pixel and every word painted under it.
+    { "files": ["src/atoms/file-drop.tsx"], "rules": { "memeon/no-native-chrome": "off" } },
     { "files": ["**/*.stories.tsx"], "rules": { "shadcn/no-inline-styles": "off", "shadcn/no-restyle": "off" } }
   ]
 }

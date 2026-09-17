@@ -506,7 +506,7 @@
    Materials, the focus ring, the pointer halo, the motion recipes, the disabled look, the docked
    glass plate. A component composes these; a caller may not pass them (no-restyle files a custom
    utility as unclassified) and nothing spells the recipe out in TSX again. Variants apply as
-   usual: `aria-pressed:material-pressed`, `max-xl:glass`, `file:material-raised`. */
+   usual: `aria-pressed:material-pressed`, `max-xl:glass`, `data-dragging:inset-ring-2`. */
 
 /* Materials: the ceramic look, bg + relief in one class; the only way to paint the shadow vars.
    A single-property utility (`bg-primary`) sorts after a multi-property one, so a raised primary

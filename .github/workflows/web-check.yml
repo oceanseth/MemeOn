@@ -43,6 +43,8 @@ jobs:
       # the design-system gate first, as in `pnpm run check`: every @shadcn/lint rule is an error,
       # so a restyle, a raw colour or an arbitrary value fails here rather than in review
       - run: pnpm --filter web run lint:ds
+      # and the repo's own oxlint rule (lint/memeon.js) tested through that same config
+      - run: pnpm --filter web run test:lint-rules
       - run: pnpm --filter web run check-docs
       - run: pnpm --filter web run check-tiers
       - run: pnpm --filter web run check-copy

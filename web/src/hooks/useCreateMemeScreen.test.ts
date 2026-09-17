@@ -36,6 +36,8 @@ const baseContext: CreateMemeContext = {
   urlDraft: '',
   imageUrl: '',
   videoUrl: '',
+  imageFileName: null,
+  videoFileName: null,
   busy: null,
   busyElapsed: null,
   err: null,
@@ -248,18 +250,20 @@ describe('buildCreateMemeScreenModel', () => {
     expect(calls.resolvePageUrl).toHaveBeenCalledTimes(2)
   })
 
-  it('keeps upload MIME contracts and ignores empty file selections', () => {
+  it('keeps upload MIME contracts and spells the picker in the app\'s own words', () => {
     const calls = actions()
     const model = buildCreateMemeScreenModel('upload', { ...baseContext, mode: 'upload' }, calls)
     const image = { name: 'cat.png', type: 'image/png', size: 8 } as File
     const video = { name: 'cat.mp4', type: 'video/mp4', size: 50 } as File
 
-    expect(model.imageFileInputProps.accept).toBe('image/png,image/jpeg,image/gif,image/webp')
-    expect(model.videoFileInputProps.accept).toBe('video/mp4,video/quicktime,video/webm')
-    model.imageFileInputProps.onChange?.({ currentTarget: { files: null } } as ChangeEvent<HTMLInputElement>)
-    expect(calls.uploadImage).not.toHaveBeenCalled()
-    model.imageFileInputProps.onChange?.({ currentTarget: { files: [image, video] } } as unknown as ChangeEvent<HTMLInputElement>)
-    model.videoFileInputProps.onChange?.({ currentTarget: { files: [video] } } as unknown as ChangeEvent<HTMLInputElement>)
+    expect(model.imageFileDropProps.accept).toBe('image/png,image/jpeg,image/gif,image/webp')
+    expect(model.videoFileDropProps.accept).toBe('video/mp4,video/quicktime,video/webm')
+    // the words the browser used to write are the deck's now
+    expect(model.imageFileDropProps.chooseLabel).toBe('Choose an image')
+    expect(model.videoFileDropProps.chooseLabel).toBe('Choose a video')
+    expect(model.imageFileDropProps.emptyLabel).toBe('or drop one here')
+    model.imageFileDropProps.onFile(image)
+    model.videoFileDropProps.onFile(video)
     expect(calls.uploadImage).toHaveBeenCalledWith(image)
     expect(calls.uploadVideo).toHaveBeenCalledWith(video)
   })

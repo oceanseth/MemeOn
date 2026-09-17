@@ -1,12 +1,6 @@
 import { createMemeCopy as copy } from '../../copy/createMeme'
 import type { CreateMemeContext } from '../../stores/createMemeMachine'
-import {
-  firstFile,
-  HELP_IDS,
-  MAX_IMAGE_BYTES,
-  MAX_VIDEO_BYTES,
-  megabyteLabel,
-} from './shared'
+import { HELP_IDS, MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, megabyteLabel } from './shared'
 import type { CreateMemeScreenActions, CreateMemeScreenModel } from './types'
 
 type UploadModeSlice = Pick<
@@ -14,9 +8,9 @@ type UploadModeSlice = Pick<
   | 'showUploadPanel'
   | 'uploadImageHelpText'
   | 'uploadVideoHelpText'
-  | 'imageFileInputProps'
+  | 'imageFileDropProps'
   | 'uploadImageLabel'
-  | 'videoFileInputProps'
+  | 'videoFileDropProps'
   | 'uploadVideoLabel'
 >
 
@@ -28,24 +22,22 @@ export function buildUploadModeModel(
     showUploadPanel: ctx.mode === 'upload',
     uploadImageHelpText: copy.upload.imageHelp(megabyteLabel(MAX_IMAGE_BYTES)),
     uploadVideoHelpText: copy.upload.videoHelp(megabyteLabel(MAX_VIDEO_BYTES)),
-    imageFileInputProps: {
-      type: 'file',
+    imageFileDropProps: {
       accept: 'image/png,image/jpeg,image/gif,image/webp',
+      chooseLabel: copy.upload.chooseImage,
+      emptyLabel: copy.upload.dropHint,
+      fileName: ctx.imageFileName,
       'aria-describedby': HELP_IDS.uploadImage,
-      onChange: (event) => {
-        const file = firstFile(event)
-        if (file) void actions.uploadImage(file)
-      },
+      onFile: (file) => void actions.uploadImage(file),
     },
     uploadImageLabel: copy.upload.imageLabel,
-    videoFileInputProps: {
-      type: 'file',
+    videoFileDropProps: {
       accept: 'video/mp4,video/quicktime,video/webm',
+      chooseLabel: copy.upload.chooseVideo,
+      emptyLabel: copy.upload.dropHint,
+      fileName: ctx.videoFileName,
       'aria-describedby': HELP_IDS.uploadVideo,
-      onChange: (event) => {
-        const file = firstFile(event)
-        if (file) void actions.uploadVideo(file)
-      },
+      onFile: (file) => void actions.uploadVideo(file),
     },
     uploadVideoLabel: copy.upload.videoLabel,
   }

@@ -12,6 +12,7 @@ import {
   FieldLabel,
   Hint,
 } from '@/atoms/field'
+import { FileDrop } from '@/atoms/file-drop'
 import { Heading } from '@/atoms/heading'
 import { Input } from '@/atoms/input'
 /* the foil sheet and the chip, not the card atom: this screen paints a card frame out of its own
@@ -261,8 +262,8 @@ export function CreateMemeScreen({
   fetchUrlButtonProps,
   urlPromptTextareaProps,
   applyUrlEditButtonProps,
-  imageFileInputProps,
-  videoFileInputProps,
+  imageFileDropProps,
+  videoFileDropProps,
   generatePromptTextareaProps,
   generateButtonProps,
   mintButtonProps,
@@ -590,14 +591,14 @@ export function CreateMemeScreen({
               <>
                 <Field>
                   <FieldLabel>{uploadImageLabel}</FieldLabel>
-                  <Input {...imageFileInputProps} />
+                  <FileDrop {...imageFileDropProps} />
                   <FieldDescription className={CAPTION_OFFSET} id={helpIds.uploadImage}>
                     {uploadImageHelpText}
                   </FieldDescription>
                 </Field>
                 <Field>
                   <FieldLabel>{uploadVideoLabel}</FieldLabel>
-                  <Input {...videoFileInputProps} />
+                  <FileDrop {...videoFileDropProps} />
                   <FieldDescription className={CAPTION_OFFSET} id={helpIds.uploadVideo}>
                     {uploadVideoHelpText}
                   </FieldDescription>
