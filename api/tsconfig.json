@@ -4,17 +4,12 @@
     "module": "ES2022",
     "moduleResolution": "bundler",
     "esModuleInterop": true,
-    // The og cards are JSX that satori renders; `og/jsx.ts` is the whole runtime, so React is
-    // never imported and never lands in the lambda bundle. esbuild reads these on bundle too.
-    "jsx": "react",
-    "jsxFactory": "h",
-    "jsxFragmentFactory": "Fragment",
     "strict": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "../shared/**/*.ts"],
+  "include": ["src/**/*.ts", "../shared/**/*.ts"],
   "exclude": ["dist", "lambda.zip"]
 }
