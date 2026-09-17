@@ -57,12 +57,12 @@ export const Closed: Story = {
     await expect(within(canvasElement).queryByRole('alertdialog')).toBeNull()
   },
 }
-/** The danger frame: the ring inside the card, the ⚠️ in the name, the tinted destructive commit. */
+/** The danger frame: the ring inside the card, the warning icon in the name, the tinted destructive commit. */
 export const Danger: Story = {
   args: { model: buildConfirmDialogModel({ ...baseInput, danger: true }) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const dialog = canvas.getByRole('alertdialog', { name: '⚠️ Delete forever?' })
+    const dialog = canvas.getByRole('alertdialog', { name: 'Delete forever?' })
     await expect(dialog).toHaveAttribute('data-variant', 'danger')
     await expect(getComputedStyle(dialog).boxShadow).toContain('inset')
     await expect(canvas.getByRole('button', { name: 'Delete it' })).toHaveAttribute('data-slot', 'button')

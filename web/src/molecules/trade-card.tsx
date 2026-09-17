@@ -3,6 +3,7 @@ import { Button } from '@/atoms/button'
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from '@/atoms/card'
 import { cn } from '../lib/cn'
 import { SideSummary } from '@/molecules/side-summary'
+import { Icon } from '@/atoms/icon'
 import type { TradeCardModel } from '../lib/tradeCardModel'
 
 /** Give/get stay left/right regardless of proposer — "You give" is always the left plate. */
@@ -36,7 +37,14 @@ export function TradeCard({ model }: { model: TradeCardModel }) {
         </CardDescription>
         {model.showStatusBadge && (
           <CardAction>
-            <Badge>{model.statusLabel}</Badge>
+            <Badge>
+              <span className="inline-flex items-center gap-1">
+                <span aria-hidden="true">
+                  <Icon name={model.statusIcon} size={14} />
+                </span>{' '}
+                {model.statusLabel}
+              </span>
+            </Badge>
           </CardAction>
         )}
       </CardHeader>

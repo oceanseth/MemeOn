@@ -2,6 +2,7 @@ import { Button } from '@/atoms/button'
 import { DialogFooter } from '@/atoms/dialog'
 import { Field, FieldCounter, FieldDescription, FieldFooter, FieldLabel } from '@/atoms/field'
 import { Textarea } from '@/atoms/textarea'
+import { Icon } from '@/atoms/icon'
 import type { ConfirmDialogModel } from '../lib/confirmDialogModel'
 import { DialogFrame } from '@/molecules/dialog-frame'
 
@@ -26,7 +27,16 @@ export function ConfirmDialog({ model }: { model: ConfirmDialogModel }) {
       role="alertdialog"
       size="sm"
       danger={model.danger}
-      title={model.title}
+      title={
+        model.danger ? (
+          <span className="inline-flex items-center gap-2">
+            <Icon name="triangle-alert" size={18} />
+            {model.title}
+          </span>
+        ) : (
+          model.title
+        )
+      }
       titleId={model.titleId}
       description={model.message}
       descriptionId={model.messageId}

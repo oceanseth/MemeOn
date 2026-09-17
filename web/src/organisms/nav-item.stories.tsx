@@ -20,7 +20,7 @@ export const TopBarPills: Story = {
       <NavPill current render={<Link to="/marketplace" />}>Marketplace</NavPill>
       <NavPill render={<Link to="/binder" />}>My Binder</NavPill>
       <NavPill render={<Link to="/leaderboard" />}>
-        <span aria-hidden="true">🏆</span> Top Brains
+        <span aria-hidden="true"><Icon name="trophy" size={16} /></span> Top Brains
       </NavPill>
     </nav>
   ),
@@ -33,7 +33,7 @@ export const TopBarPills: Story = {
     await expect(getComputedStyle(current).height).toBe('36px')
     await expect(canvas.getByRole('link', { name: 'My Binder' })).not.toHaveAttribute('aria-current')
     /* the emoji leads the label and stays out of the name */
-    await expect(canvas.getByRole('link', { name: 'Top Brains' })).toHaveTextContent('🏆 Top Brains')
+    await expect(canvas.getByRole('link', { name: 'Top Brains' })).toHaveTextContent('Top Brains')
   },
 }
 

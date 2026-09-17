@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, within } from 'storybook/test'
 import { friendAccepted, giftablePaper, meLou, paperMeme } from '../../.storybook/fixtures'
-import type { ProfileScreenModel } from '../hooks/useProfileScreen'
+import type { ProfileScreenModel, ProfileStat } from '../hooks/useProfileScreen'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { ProfileScreen } from './ProfileScreen'
 
@@ -28,13 +28,13 @@ const louProfile = {
 const AVATAR_SRC =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"><rect width="96" height="96" fill="#7fd4ff"/><text x="48" y="62" font-size="44" text-anchor="middle" fill="#0b0e14">🎭</text></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"><rect width="96" height="96" fill="#7fd4ff"/><text x="48" y="62" font-size="44" text-anchor="middle" fill="#0b0e14">P</text></svg>',
   )
 
-const statsFor = (profile: typeof palProfile) => [
-  { id: 'collection', glyph: '📚', text: `${profile.collectionSize} memes` },
-  { id: 'portfolio', glyph: '🧠', text: `${profile.portfolioValue.toLocaleString()} held` },
-  { id: 'followers', glyph: '⭐', text: `${profile.followers} followers` },
+const statsFor = (profile: typeof palProfile): ProfileStat[] => [
+  { id: 'collection', glyph: 'book', text: `${profile.collectionSize} memes` },
+  { id: 'portfolio', glyph: 'brain', text: `${profile.portfolioValue.toLocaleString()} held` },
+  { id: 'followers', glyph: 'star', text: `${profile.followers} followers` },
 ]
 
 const handlers = {
@@ -61,7 +61,7 @@ const emptyCreated: ProfileScreenModel = {
   showBinderHero: false,
   tradeLabel: 'Trade',
   tradeLinkProps: { to: '/trade', 'aria-label': `Trade with ${palProfile.name}` },
-  shareLabel: '🔗 Share binder',
+  shareLabel: 'Share binder',
   showSelfActions: false,
   settingsLabel: 'Settings',
   settingsLinkProps: { to: '/settings' },
@@ -79,10 +79,10 @@ const emptyCreated: ProfileScreenModel = {
   followGlyph: '☆',
   followText: 'Follow',
   showFriendButton: true,
-  friendGlyph: '👋',
+  friendGlyph: 'hand',
   friendText: 'Add friend',
   showFriendChip: false,
-  friendChipGlyph: '🤝',
+  friendChipGlyph: 'handshake',
   friendChipText: 'Friends',
   showActionErr: false,
   actionErr: '',
@@ -258,7 +258,7 @@ export const LoggedOutVisitor: Story = {
     profile: {
       name: palProfile.name,
       avatarSrc: null,
-      stats: [{ id: 'braincells', glyph: '🧠', text: '90 braincells held' }],
+      stats: [{ id: 'braincells', glyph: 'brain', text: '90 braincells held' }],
     },
   },
 }
@@ -280,9 +280,9 @@ export const PublicBinder: Story = {
       name: palProfile.name,
       avatarSrc: null,
       stats: [
-        { id: 'minted', glyph: '', text: '1 meme' },
-        { id: 'binder', glyph: '', text: '1 in binder' },
-        { id: 'braincells', glyph: '🧠', text: '90 braincells' },
+        { id: 'minted', glyph: null, text: '1 meme' },
+        { id: 'binder', glyph: null, text: '1 in binder' },
+        { id: 'braincells', glyph: 'brain', text: '90 braincells' },
       ],
     },
     cards: [{ id: `binder-${giftablePaper.id}`, memeCard: buildMemeCardModel(giftablePaper), sharesLabel: 'holds 12/100' }],
@@ -308,13 +308,13 @@ export const RequestSent: Story = {
     ...oneCreatedCard,
     showFriendButton: false,
     showFriendChip: true,
-    friendChipGlyph: '⏳',
+    friendChipGlyph: 'hourglass',
     friendChipText: 'Request sent',
   },
 }
 
 export const IncomingRequest: Story = {
-  args: { friendGlyph: '✅', friendText: 'Accept request' },
+  args: { friendGlyph: 'circle-check', friendText: 'Accept request' },
 }
 
 /** in flight: both controls are inert and say what they are doing */

@@ -92,7 +92,7 @@ export function buildConfirmDialogModel({
     // read during the build that first reports open, while the opener still holds focus
     opener: trackDialogOpener(id, open),
     id,
-    title: danger ? `⚠️ ${title}` : title,
+    title,
     titleId,
     message,
     messageId,

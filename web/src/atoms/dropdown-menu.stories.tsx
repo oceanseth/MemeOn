@@ -41,7 +41,7 @@ function Demo({ defaultOpen, ...content }: DropdownMenuContentProps & { defaultO
           <DropdownMenuGroup>
             <DropdownMenuLabel>Signed in as Lou</DropdownMenuLabel>
             <DropdownMenuItem render={<Link to="/u/lou" />}>Profile</DropdownMenuItem>
-            <DropdownMenuItem render={<Link to="/leaderboard" />}>🏆 Top Brains</DropdownMenuItem>
+            <DropdownMenuItem render={<Link to="/leaderboard" />}>Top Brains</DropdownMenuItem>
             <DropdownMenuItem onClick={onSettings}>
               Settings
               <DropdownMenuShortcut>⌘,</DropdownMenuShortcut>
@@ -57,7 +57,7 @@ function Demo({ defaultOpen, ...content }: DropdownMenuContentProps & { defaultO
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>More</DropdownMenuSubTrigger>
             <DropdownMenuSubContent container={portalAnchor(ANCHOR)}>
-              <DropdownMenuItem render={<Link to="/developers" />}>🔧 Developers</DropdownMenuItem>
+              <DropdownMenuItem render={<Link to="/developers" />}>Developers</DropdownMenuItem>
               <DropdownMenuItem inset>Indented</DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
@@ -103,7 +103,7 @@ export const Open: Story = {
     await expect(profile).toHaveAttribute('href', '/u/lou')
     await expect(profile).toHaveAttribute('data-slot', 'dropdown-menu-item')
     await expect(profile.offsetHeight).toBeGreaterThanOrEqual(44)
-    await expect(within(menu).getByRole('menuitem', { name: '🏆 Top Brains' })).toHaveAttribute('href', '/leaderboard')
+    await expect(within(menu).getByRole('menuitem', { name: 'Top Brains' })).toHaveAttribute('href', '/leaderboard')
     await expect(within(menu).getByRole('menuitemcheckbox', { name: 'Show read alerts' })).toHaveAttribute('aria-checked', 'true')
     await expect(within(menu).getByRole('menuitemradio', { name: 'Light' })).toHaveAttribute('aria-checked', 'true')
     await expect(within(menu).getByRole('menuitem', { name: 'More' })).toHaveAttribute('aria-haspopup', 'menu')

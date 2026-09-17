@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
 import { cn } from './lib/cn'
+import { Icon, type IconName } from './atoms/icon'
 import '@/atoms/foil.css'
 
 /**
@@ -18,6 +19,12 @@ import '@/atoms/foil.css'
 /** A token's raw value on `:root`, as authored (a `light-dark()` pair stays a pair). */
 const token = (name: string) =>
   typeof document === 'undefined' ? '' : getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+
+/** The same token as a number (the `--text-*` steps end in px), so the Icon sample can match it. */
+const tokenPx = (name: string) => {
+  const value = parseFloat(token(name))
+  return Number.isFinite(value) ? value : 22
+}
 
 const SEMANTIC: ReadonlyArray<{ token: string; bg: string; text?: string }> = [
   { token: 'background', bg: 'bg-background', text: 'text-foreground' },
@@ -137,12 +144,12 @@ function stepSpec(step: Step): string {
   return `${face} ${weight} · ${size}/${leading} · ${tracking}`
 }
 
-/** Emoji sit on four of the steps with `leading-none`; the glyph roles are gone. */
-const GLYPHS: ReadonlyArray<{ step: Step; role: string; sample: string }> = [
-  { step: 'base', role: 'a glyph in a 32px square', sample: '🎨 🌙 ☀️' },
-  { step: 'xl', role: 'a row or item glyph', sample: '🧠 🔔 🏆' },
-  { step: '2xl', role: 'a podium medal', sample: '🥇 🥈 🥉' },
-  { step: '6xl', role: 'an empty state, a pack opening', sample: '🎉' },
+/** The Icon atom sits on four of the steps with `leading-none`; the size step is its sample. */
+const GLYPHS: ReadonlyArray<{ step: Step; role: string; icon: IconName }> = [
+  { step: 'base', role: 'a glyph in a 32px square', icon: 'palette' },
+  { step: 'xl', role: 'a row or item glyph', icon: 'bell' },
+  { step: '2xl', role: 'a podium medal', icon: 'medal' },
+  { step: '6xl', role: 'an empty state, a pack opening', icon: 'party-popper' },
 ]
 
 /* `--breakpoint-*`: six named cuts, no literals. Tailwind writes `bp:` as (width >= N) and
@@ -302,16 +309,16 @@ export function TokenSheet() {
         ))}
       </ul>
 
-      <Heading>Emoji on the scale</Heading>
+      <Heading>Icons on the scale</Heading>
       <ul className="flex flex-col gap-3">
-        {GLYPHS.map(({ step, role, sample }) => (
+        {GLYPHS.map(({ step, role, icon }) => (
           <li key={step} className="grid gap-x-4 gap-y-1 md:grid-cols-[300px_1fr] md:items-baseline">
             <code className="w-fit text-xs whitespace-normal">
               {step} + leading-none · {role}
             </code>
             {/* the size first: cn treats `text-<step>` and `leading-*` as one axis, later wins */}
             <p data-slot={`glyph-${step}`} className={cn('m-0', STEP_CLASS[step], 'leading-none')}>
-              {sample}
+              <Icon name={icon} size={tokenPx(`--text-${step}`)} />
             </p>
           </li>
         ))}
@@ -343,7 +350,11 @@ export function TokenSheet() {
           <a className="text-link underline underline-offset-3 decoration-1" href="#top">
             link
           </a>{' '}
-          wears <code>--color-link</code>; inline <code>code</code> sits on the muted surface. 🧠 2,480 · 👁️ 12 · 🔁 3
+          wears <code>--color-link</code>; inline <code>code</code> sits on the muted surface.{' '}
+          <span className="inline-flex items-center gap-1.5">
+            <Icon name="brain" size={16} /> 2,480 · <Icon name="eye" size={16} /> 12 ·{' '}
+            <Icon name="refresh-cw" size={16} /> 3
+          </span>
         </p>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { MemoryRouter, Link } from 'react-router-dom'
 import { expect, within } from 'storybook/test'
 import { Avatar } from '@/atoms/avatar'
 import { Button } from '@/atoms/button'
+import { Icon } from '@/atoms/icon'
 import {
   Item,
   ItemActions,
@@ -88,7 +89,7 @@ export const Variants: Story = {
       </Item>
       <Item size="sm">
         <ItemMedia variant="icon" aria-hidden="true">
-          🔔
+          <Icon name="bell" size={16} />
         </ItemMedia>
         <ItemContent>
           <ItemTitle>Small</ItemTitle>

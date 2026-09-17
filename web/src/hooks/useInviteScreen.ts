@@ -12,6 +12,7 @@ import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import type { ButtonHTMLAttributes } from 'react'
+import type { IconName } from '@/atoms/icon'
 
 export const INVITE_KEY = 'memeon_invite_from'
 
@@ -39,6 +40,8 @@ export interface InviteScreenModel {
   cards: readonly InviteCardModel[]
   acceptButtonProps: InviteButtonProps
   acceptLabel: string
+  /** the accept button's lead glyph: a friend wave when the reader is signed in, a mask while joining */
+  acceptIcon: IconName
 }
 
 type InviteButtonProps = Pick<
@@ -67,7 +70,7 @@ interface InviteSelfActions {
 
 export interface InviteStatModel {
   id: string
-  emoji: string
+  icon: IconName
   value: string
   label: string
 }
@@ -96,16 +99,16 @@ export function buildInviteStats(inviter: {
 }): readonly InviteStatModel[] {
   const stats = copy.stats
   return [
-    { id: 'binder', emoji: stats.binder.emoji, value: inviter.collectionSize.toLocaleString(), label: stats.binder.label },
+    { id: 'binder', icon: 'book', value: inviter.collectionSize.toLocaleString(), label: stats.binder.label },
     {
       id: 'braincells',
-      emoji: stats.braincells.emoji,
+      icon: 'brain',
       value: inviter.portfolioValue.toLocaleString(),
       label: stats.braincells.label(inviter.portfolioValue),
     },
     {
       id: 'followers',
-      emoji: stats.followers.emoji,
+      icon: 'star',
       value: inviter.followers.toLocaleString(),
       label: stats.followers.label(inviter.followers),
     },
@@ -227,5 +230,6 @@ export function useInviteScreen(): InviteScreenModel {
       : user
         ? copy.accept.befriend(inviter?.name ?? '')
         : copy.accept.join(inviter?.name ?? copy.accept.joinFallbackName),
+    acceptIcon: user ? 'handshake' : 'theater',
   }
 }

@@ -15,6 +15,7 @@ import { Toolbar } from '@/atoms/toolbar'
 import type { BinderScreenModel } from '../hooks/useBinderScreen'
 import { cn } from '../lib/cn'
 import { SortChips } from '@/molecules/sort-chips'
+import { Icon } from '@/atoms/icon'
 
 /** Skeleton tiles hold the grid geometry while the binder loads, so nothing jumps on arrival. */
 const SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6'] as const
@@ -184,7 +185,12 @@ export function BinderScreen({
                     <span data-slot="binder-card-note" className={binderCardFooterClasses}>
                       <span className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
                         {card.showCreator && <span>you minted this</span>}
-                        {card.showPrivate && <Badge>🙈 private</Badge>}
+                        {card.showPrivate && <Badge>
+                            <span aria-hidden="true">
+                              <Icon name="eye-off" size={14} />
+                            </span>{' '}
+                            private
+                          </Badge>}
                       </span>
                     </span>
                     {/* the ownership groove: how much of this meme the binder holds. `mt-auto` pins it

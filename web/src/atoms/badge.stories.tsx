@@ -31,7 +31,7 @@ export const Variants: Story = {
       <Badge variant="warning">Pending</Badge>
       <Badge variant="error">Failed</Badge>
       <Badge variant="info">Friends</Badge>
-      <Badge>🙈 private</Badge>
+      <Badge>private</Badge>
     </div>
   ),
   play: async ({ canvasElement }) => {

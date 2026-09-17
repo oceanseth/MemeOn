@@ -30,7 +30,7 @@ export const SearchRequestRespondAndGift: Story = {
     await userEvent.type(canvas.getByRole('searchbox', { name: 'Find people by name' }), 'first')
     const add = await canvas.findByRole('button', { name: /^Add friend — / })
     await userEvent.click(add)
-    await expect(await canvas.findByText('Friend request sent 👋')).toBeInTheDocument()
+    await expect(await canvas.findByText('Friend request sent')).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', { name: "Accept incoming pal's request" }))
     await waitFor(() => expect(canvas.queryByRole('heading', { name: 'Requests for you' })).not.toBeInTheDocument())
     await userEvent.click(canvas.getAllByRole('button', { name: /^Gift shares to / })[0]!)

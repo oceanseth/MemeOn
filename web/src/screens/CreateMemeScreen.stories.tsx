@@ -378,7 +378,7 @@ export const SuccessCopied: Story = {
   },
 }
 
-/** the mint studio with artwork in hand: the two columns, the tier frame and the ✨ Mint pill */
+/** the mint studio with artwork in hand: the two columns, the tier frame and the Mint pill */
 export const Ready: Story = {
   name: 'Ready to mint',
   args: model({

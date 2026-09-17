@@ -12,6 +12,7 @@ import { cn } from '@/lib/cn'
 import type { QuestBarModel } from '../lib/questBarModel'
 import { portalAnchor } from '../lib/portalAnchor'
 import { DialogFrame } from '@/molecules/dialog-frame'
+import { Icon } from '@/atoms/icon'
 import './quest-bar.css'
 
 /** One path, changed once when the asset lands under public/brand/. */
@@ -27,7 +28,7 @@ const TITLE_ID = 'questbar-title'
 const ANCHOR_ID = 'quest-pop-anchor'
 
 /**
- * The braincell pill: "🧠 2,480", 40 tall in the header, 36 in the phone cluster. Plain, it is a
+ * The braincell pill: "2,480", 40 tall in the header, 36 in the phone cluster. Plain, it is a
  * raised span. While the ladder is live it is the popover's trigger and wears the ring
  * (`quest-bar.css`): the Button's own raised recipe on a plain `<button>`, rounded to a true pill
  * so the ring's `border-radius: inherit` hugs it, `hit-44`'s `position: relative` anchoring the
@@ -110,7 +111,12 @@ export function QuestBar({ model, balance }: QuestBarProps) {
   const done = steps.filter((chip) => chip.done).length
   const popoverActions = useRef<PopoverPrimitive.Root.Actions | null>(null)
 
-  const figure = <span aria-hidden="true">{balance.text}</span>
+  const figure = (
+    <span className="inline-flex items-center gap-1" aria-hidden="true">
+      <Icon name="brain" size={18} />
+      {balance.text}
+    </span>
+  )
 
   return (
     <>
@@ -174,10 +180,15 @@ export function QuestBar({ model, balance }: QuestBarProps) {
                   {steps.map((chip) => {
                     const content = (
                       <span className={CHIP} data-slot="quest-chip">
-                        <span aria-hidden="true">{chip.done ? '✅' : '⬜'}</span>
+                        <span aria-hidden="true">
+                          {chip.done ? <Icon name="circle-check" size={18} /> : <Icon name="square" size={18} />}
+                        </span>
                         <span className="sr-only">{chip.statusLabel} </span>
                         <span className="min-w-0 flex-1">{chip.title}</span>
-                        <em className="text-sm not-italic tabular-nums" aria-hidden="true">{chip.rewardLabel}</em>
+                        <em className="inline-flex items-center gap-1 text-sm not-italic tabular-nums" aria-hidden="true">
+                          <Icon name="brain" size={14} />
+                          {chip.rewardLabel}
+                        </em>
                         <span className="sr-only">, {chip.rewardAriaLabel}</span>
                       </span>
                     )
@@ -206,7 +217,7 @@ export function QuestBar({ model, balance }: QuestBarProps) {
                       claim.buttonProps.onClick?.(event)
                     }}
                   >
-                    🎁 {claim.label}
+                    <Icon name="gift" size={16} /> {claim.label}
                   </Button>
                 )}
               </div>
@@ -229,7 +240,7 @@ export function QuestBar({ model, balance }: QuestBarProps) {
           finalFocus={model.pack.opener}
           title={
             <>
-              <img className={BRAINCELL_IMG} src={BRAINCELL_SRC} alt="" width={26} height={26} /> 🎁
+              <img className={BRAINCELL_IMG} src={BRAINCELL_SRC} alt="" width={26} height={26} /> <Icon name="gift" size={16} />
               Starter pack opened!
             </>
           }

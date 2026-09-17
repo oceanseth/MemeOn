@@ -159,9 +159,9 @@ Layered onto the tiers and rules above, not a replacement for them:
 
 - `AppShellScreenModel` (the shell's own engine, `hooks/useAppShellScreen.ts`) carries `theme` (a
   `ThemeControlModel`: the public header's button, and the arm the account menu's radio marks),
-  `avatarMenu` (a Base UI `Menu` model behind the header avatar at every width: Profile · 🏆 Top
-  Brains · Settings · 🔧 Developers · Discord, the theme radio, Log out), `alertsBell`, `questBar`
-  and `mint`; `navItems` are the bar's five text links (an emoji leads a label where the copy has
+  `avatarMenu` (a Base UI `Menu` model behind the header avatar at every width: Profile · Top
+  Brains · Settings · Developers · Discord, the theme radio, Log out), `alertsBell`, `questBar`
+  and `mint`; `navItems` are the bar's five text links (an icon leads a label where the copy has
   one) and `bottomNav` the phone's five icon tabs. Every chrome link carries `linkProps` — the
   route plus, from the live hook, the click handler that runs the navigation inside a View
   Transition (`lib/viewTransition.ts`; `organisms/app-shell.css` names what holds still and what
@@ -185,7 +185,8 @@ Layered onto the tiers and rules above, not a replacement for them:
 - `focus-ring` (an `@utility` in `index.css`) is the one focus contract every interactive atom,
   row and menu item composes; `focus-ring-within` is its `:has(:focus-visible)` sibling.
 - `hooks/useDocumentTitle.ts` sets `document.title` per route from the view (the hook layer, not the
-  screen); `lib/braincells.ts` formats braincell counts (thousands separators, the 🧠 spacing) so
+  screen); `lib/braincells.ts` formats braincell counts (thousands separators, the brain glyph is
+  drawn by the `Icon` atom beside them) so
   every screen prints them the same way.
 - `QuestBar` is the braincell pill: plain while no ladder is live, and while one is, the popover's
   trigger wearing a progress ring (`molecules/quest-bar.css`, a registered `--quest-angle` the

@@ -5,6 +5,7 @@ import { Heading } from '@/atoms/heading'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import type { DiscordPageScreenModel } from '../hooks/useDiscordPageScreen'
+import { Icon } from '@/atoms/icon'
 
 /** Command line uses link colour — focus token misses contrast on dark surfaces. */
 const FLOW_COMMAND = 'm-0 text-base font-semibold text-link'
@@ -36,7 +37,10 @@ export function DiscordPageScreen({
         {showInstall && (
           <>
             <a {...installLinkProps} className={buttonVariants({ variant: 'primary' })} aria-describedby="discord-cta-note">
-              🧠 Add MemeOn to Discord
+              <span aria-hidden="true">
+                <Icon name="brain" size={16} />
+              </span>{' '}
+              Add MemeOn to Discord
             </a>
             <span id="discord-cta-note" className="ms-3 text-sm font-medium text-muted-foreground max-md:ms-0">
               opens Discord in a new tab
@@ -64,7 +68,7 @@ export function DiscordPageScreen({
           <CardTitle render={<h3 />} size="card-title" className="mt-2">
             Search live cards
           </CardTitle>
-          <CardDescription className="mt-1">Your binder 💼 and friends' memes 🤝 rank first.</CardDescription>
+          <CardDescription className="mt-1">Your binder and friends' memes rank first.</CardDescription>
         </Card>
         <Card size="xs">
           <p className={FLOW_COMMAND}>/memeon-connect</p>
@@ -74,7 +78,7 @@ export function DiscordPageScreen({
           <CardDescription className="mt-1">A private link connects one Masky account.</CardDescription>
         </Card>
         <Card size="xs">
-          <p className={FLOW_COMMAND}>Paper → ✨Shiny✨</p>
+          <p className={FLOW_COMMAND}>Paper → Shiny</p>
           <CardTitle render={<h3 />} size="card-title" className="mt-2">
             Make every drop matter
           </CardTitle>
@@ -103,8 +107,9 @@ export function DiscordPageScreen({
         <CardTitle render={<h2 />}>MemeOn brain assets</CardTitle>
         <span className="flex flex-wrap items-center gap-2">
           <a className={buttonVariants()} href="/brand/memeon-logo-1024.png" download="memeon-logo-1024.png">
-            {/* no drawn download glyph exists in the Central set: the ⬇ text keeps its own slot */}
-            <span aria-hidden="true" className="inline-flex w-5 shrink-0 justify-center">⬇</span>
+            <span aria-hidden="true">
+              <Icon name="download" size={16} />
+            </span>{' '}
             Full size
           </a>
           <a
@@ -112,7 +117,9 @@ export function DiscordPageScreen({
             href="/brand/memeon-logo-circle-256.png"
             download="memeon-logo-256.png"
           >
-            <span aria-hidden="true" className="inline-flex w-5 shrink-0 justify-center">⬇</span>
+            <span aria-hidden="true">
+              <Icon name="download" size={16} />
+            </span>{' '}
             Round
           </a>
         </span>

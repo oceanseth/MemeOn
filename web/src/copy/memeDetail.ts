@@ -24,7 +24,7 @@ export const memeDetailCopy = {
   ladder: {
     current: (tierName: string) => `${tierName} is spreading`,
     next: (remaining: number, nextTierName: string) => `${remaining.toLocaleString()} more views → ${nextTierName}`,
-    top: (tierName: string) => `Top of the ladder — ${tierName} is as rare as it gets ✨`,
+    top: (tierName: string) => `Top of the ladder — ${tierName} is as rare as it gets`,
     meterLabel: 'Progress to the next tier',
     topValueText: (tierName: string) => `${tierName} is the top tier`,
   },
@@ -63,12 +63,12 @@ export const memeDetailCopy = {
     submitting: 'Listing…',
   },
   toasts: {
-    bought: 'Shares acquired 💼',
+    bought: 'Shares acquired',
     delisted: 'Delisted',
-    listed: 'Listed on the marketplace 🏷️',
-    madePublic: 'Back on the marketplace 🌐',
-    madePrivate: 'Hidden from the marketplace 🙈 (still in your binder)',
-    claimed: 'Claim filed 📼 — we’ll review it and transfer the card if it checks out.',
+    listed: 'Listed on the marketplace',
+    madePublic: 'Back on the marketplace',
+    madePrivate: 'Hidden from the marketplace (still in your binder)',
+    claimed: 'Claim filed — we’ll review it and transfer the card if it checks out.',
   },
   /** fallbacks when a failed request carries no message of its own */
   errors: {
@@ -77,14 +77,14 @@ export const memeDetailCopy = {
     delete: 'delete failed',
   },
   actions: {
-    remix: '🧬 Create a meme from this',
-    claim: '📼 This is my meme — claim it',
-    makePublic: '🌐 Make public',
-    makePrivate: '🙈 Make private',
-    delete: '🗑️ Delete forever',
+    remix: 'Create a meme from this',
+    claim: 'This is my meme — claim it',
+    makePublic: 'Make public',
+    makePrivate: 'Make private',
+    delete: 'Delete forever',
   },
   memeplex: {
-    added: 'Added to the memeplex 🕸️',
+    added: 'Added to the memeplex',
     alreadyLinked: 'Already in the memeplex.',
     isThisMeme: "That's this meme — already the center of its own memeplex.",
     addFailed: 'failed to add',

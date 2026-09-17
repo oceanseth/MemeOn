@@ -26,7 +26,7 @@ export const ReadsTheSignedInAvatar: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><SettingsView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await expect(await canvas.findByText('🧠 lou')).toBeInTheDocument()
+    await expect(await canvas.findByText('lou')).toBeInTheDocument()
     await expect(canvas.getByText('Masky avatar')).toBeInTheDocument()
     await expect(canvas.getByRole('link', { name: 'Connect Discord' })).toHaveAttribute('href', '/discord')
     // a settings page that fetched would be a second source of truth for the account
@@ -55,7 +55,7 @@ export const LogOutClearsTheAccountCard: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(await canvas.findByRole('button', { name: 'Log out' }))
-    await waitFor(() => expect(canvas.queryByText('🧠 lou')).not.toBeInTheDocument())
+    await waitFor(() => expect(canvas.queryByText('lou')).not.toBeInTheDocument())
     // the rest of the page survives: appearance is a device preference, not an account one
     await expect(canvas.getByRole('heading', { name: 'Appearance' })).toBeInTheDocument()
   },

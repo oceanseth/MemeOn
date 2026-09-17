@@ -7,6 +7,7 @@ import { PortalAnchor } from '@/atoms/portal-anchor'
 import { cn } from '@/lib/cn'
 import type { AlertsBellModel } from '../lib/alertsBellModel'
 import { portalAnchor } from '../lib/portalAnchor'
+import { Icon } from '@/atoms/icon'
 
 /**
  * There is one bell on a page — it lives in the shell's header — so one id is enough. The portal
@@ -56,7 +57,9 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
           data-slot="alerts-trigger"
           {...model.triggerProps}
         >
-          <span className={GLYPH}>🔔</span>
+          <span className={GLYPH} aria-hidden="true">
+            <Icon name="bell" size={20} />
+          </span>
           {model.unreadLabel && (
             <Badge
               variant="destructive"

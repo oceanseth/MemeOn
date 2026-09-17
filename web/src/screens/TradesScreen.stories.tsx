@@ -140,7 +140,7 @@ export const ConfirmingAccept: Story = {
       id: 'trade-confirm',
       open: true,
       title: copy.confirm.acceptTitle,
-      message: <><strong>{copy.confirm.give}</strong>2 shares of "group-chat silver" + 🧠 10{copy.confirm.betweenSides}<strong>{copy.confirm.get}</strong>5 shares of "fresh paper"{copy.confirm.end}</>,
+      message: <><strong>{copy.confirm.give}</strong>2 shares of "group-chat silver" + 10 braincells{copy.confirm.betweenSides}<strong>{copy.confirm.get}</strong>5 shares of "fresh paper"{copy.confirm.end}</>,
       confirmLabel: copy.confirm.acceptLabel,
       onConfirm: noop,
       onCancel: noop,

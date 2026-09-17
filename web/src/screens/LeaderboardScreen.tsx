@@ -11,6 +11,7 @@ import { PageHead } from '@/atoms/page-head'
 import { SkeletonRow } from '@/atoms/skeleton'
 import { cn } from '../lib/cn'
 import type { LeaderboardRowModel, LeaderboardScreenModel } from '../hooks/useLeaderboardScreen'
+import { Icon } from '@/atoms/icon'
 
 const skeletonRows = [0, 1, 2, 3, 4]
 
@@ -50,7 +51,14 @@ function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: 
           {youLabel}
         </Badge>
       ) : null}
-      <span className={cn(COUNT, 'shrink-0 text-base whitespace-nowrap')}>{leader.braincellsLabel}</span>
+      <span className={cn(COUNT, 'shrink-0 text-base whitespace-nowrap')}>
+        <span className="inline-flex items-center gap-0.5">
+          <span aria-hidden="true">
+            <Icon name="brain" size={15} />
+          </span>{' '}
+          {leader.braincellsLabel}
+        </span>
+      </span>
     </Item>
   )
 }
@@ -80,7 +88,16 @@ export function LeaderboardScreen({
 }: LeaderboardScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <PageHead level="h1" title="🏆 Top Brains" subtitle={subtitle} className="mb-5" />
+      <PageHead
+        level="h1"
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Icon name="trophy" size={22} /> Top Brains
+          </span>
+        }
+        subtitle={subtitle}
+        className="mb-5"
+      />
 
       {/* one small live region for every phase: the list itself never gets read back wholesale */}
       <div role="status" aria-live="polite" aria-busy={showLoading}>
@@ -140,7 +157,14 @@ export function LeaderboardScreen({
                     className={PODIUM}
                   >
                     <span aria-hidden="true" className="text-2xl leading-none max-md:text-xl">
-                      {l.medalLabel}
+                      {l.medal &&
+                        (l.rankNumeral === '1' ? (
+                          <Icon name="medal" size={28} className="text-warning-foreground" />
+                        ) : l.rankNumeral === '2' ? (
+                          <Icon name="medal" size={28} className="text-muted-foreground" />
+                        ) : (
+                          <Icon name="medal" size={28} className="text-warning" />
+                        ))}
                     </span>
                     <Avatar name={l.name} src={l.avatarSrc} size="podium" loading="lazy" />
                     <ItemTitle size="lg" truncate className="min-w-0 flex-1 md:w-full md:flex-none md:text-center">
@@ -152,7 +176,12 @@ export function LeaderboardScreen({
                       </Badge>
                     ) : null}
                     <span className={cn(COUNT, 'text-lg font-semibold max-md:text-base')}>
-                      {l.braincellsLabel}
+                      <span className="inline-flex items-center gap-0.5">
+                        <span aria-hidden="true">
+                          <Icon name="brain" size={16} />
+                        </span>{' '}
+                        {l.braincellsLabel}
+                      </span>
                     </span>
                   </Item>
                 </li>

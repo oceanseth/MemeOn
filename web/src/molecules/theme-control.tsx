@@ -1,6 +1,7 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import { buttonVariants } from '@/atoms/button'
 import { ToggleGroup, ToggleGroupItem } from '@/atoms/toggle-group'
+import { Icon, type IconName } from '@/atoms/icon'
 import { cn } from '../lib/cn'
 import type { ThemePreference } from '../stores/themeStore'
 
@@ -15,11 +16,11 @@ export interface ThemeControlModel {
   variant: 'segmented' | 'button'
 }
 
-/** The three states, in the order the button cycles them. Every glyph is an emoji and stays one. */
-export const THEME_OPTIONS: readonly { value: ThemePreference; emoji: string; label: string }[] = [
-  { value: 'auto', emoji: '🌗', label: 'Auto' },
-  { value: 'light', emoji: '☀️', label: 'Light' },
-  { value: 'dark', emoji: '🌙', label: 'Dark' },
+/** The three states, in the order the button cycles them. Every glyph is a drawn Icon, and stays one. */
+export const THEME_OPTIONS: readonly { value: ThemePreference; icon: IconName; label: string }[] = [
+  { value: 'auto', icon: 'contrast', label: 'Auto' },
+  { value: 'light', icon: 'sun', label: 'Light' },
+  { value: 'dark', icon: 'moon', label: 'Dark' },
 ]
 
 const optionFor = (value: ThemePreference) => THEME_OPTIONS.find((o) => o.value === value) ?? THEME_OPTIONS[0]!
@@ -67,7 +68,9 @@ export function ThemeControl({ model, size, className }: ThemeControlProps) {
         data-slot="theme-button"
         data-preference={model.value}
       >
-        <span aria-hidden="true">{current.emoji}</span>
+        <span aria-hidden="true">
+          <Icon name={current.icon} size={22} />
+        </span>
       </button>
     )
   }
@@ -89,7 +92,7 @@ export function ThemeControl({ model, size, className }: ThemeControlProps) {
     >
       {THEME_OPTIONS.map((option) => (
         <ToggleGroupItem<ThemePreference> key={option.value} value={option.value} data-slot="theme-segment">
-          {option.emoji}
+          <Icon name={option.icon} size={16} />
           {' '}
           {option.label}
         </ToggleGroupItem>

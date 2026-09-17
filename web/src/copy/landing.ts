@@ -23,7 +23,7 @@ export const landingCopy = {
   closing: {
     lineLoggedIn: 'Your binder is waiting.',
     lineLoggedOut: 'Your next group-chat classic is a card already.',
-    label: '🎭 Grab your pack with Masky',
+    label: 'Grab your pack with Masky',
     name: 'Grab your pack with Masky',
     busyLabel: sharedCopy.masky.redirecting,
     busyName: 'Redirecting to Masky for your pack',

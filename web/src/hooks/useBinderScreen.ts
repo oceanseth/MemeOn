@@ -138,7 +138,7 @@ export function useBinderScreen(): BinderScreenModel {
   const showGrid = !showLoading && !showError && matching.length > 0
   const firstRun = ctx.memes.length === 0
 
-  // Both the count and the 🧠 total come from the memes the grid is rendering, never from a
+  // Both the count and the braincell total come from the memes the grid is rendering, never from a
   // second source that can disagree with what is on screen.
   const visibleValue = visible.reduce((total, meme) => total + meme.value, 0)
   const heldShares = visible.reduce((total, meme) => total + (meme.myShares ?? 0), 0)

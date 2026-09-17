@@ -9,8 +9,6 @@ export const appShellCopy = {
     friends: 'Friends',
     trade: 'Trade',
     leaderboard: 'Top Brains',
-    /** The link's glyph: an emoji that stays an emoji, ahead of the label. */
-    leaderboardEmoji: '🏆',
   },
   /** The header's one primary, beside the braincell pill. */
   mint: 'Mint',
@@ -24,16 +22,16 @@ export const appShellCopy = {
   },
   /** The balance figure and the name it announces: a span takes no name from a title. */
   coins: {
-    text: (coins: number) => `🧠 ${coins.toLocaleString()}`,
+    text: (coins: number) => coins.toLocaleString(),
     label: (coins: number) => `${coins.toLocaleString()} braincells`,
   },
   /** The account menu behind the header avatar, at every width. */
   accountMenu: {
     trigger: 'Account menu',
     profile: 'Profile',
-    leaderboard: '🏆 Top Brains',
+    leaderboard: 'Top Brains',
     settings: 'Settings',
-    developers: '🔧 Developers',
+    developers: 'Developers',
     discord: 'Discord',
     theme: 'Theme',
     logOut: sharedCopy.logOut,

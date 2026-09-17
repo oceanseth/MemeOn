@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 import { Alert } from '@/atoms/alert'
 import { Button } from '@/atoms/button'
+import { Icon } from '@/atoms/icon'
 import {
   Empty,
   EmptyContent,
@@ -77,7 +78,7 @@ export const WithMedia: Story = {
   render: () => (
     <Empty variant="success">
       <EmptyHeader>
-        <EmptyMedia>🎁</EmptyMedia>
+        <EmptyMedia><Icon name="gift" size={28} /></EmptyMedia>
         <EmptyTitle>Starter pack opened!</EmptyTitle>
         <EmptyDescription>Your first cards are waiting in My Binder.</EmptyDescription>
       </EmptyHeader>
@@ -118,7 +119,7 @@ export const Inline: Story = {
   render: () => (
     <Empty variant="success" size="inline" role="none">
       <EmptyHeader>
-        <EmptyTitle>✅ Edit applied — happy with this frame?</EmptyTitle>
+        <EmptyTitle>Edit applied — happy with this frame?</EmptyTitle>
         <EmptyDescription>
           Keep it, then animate it or run another edit — check the card preview before you mint.
         </EmptyDescription>
@@ -162,7 +163,7 @@ export const Variants: Story = {
       </Empty>
       <Empty variant="success">
         <EmptyHeader>
-          <EmptyTitle>🎁 Starter pack opened!</EmptyTitle>
+          <EmptyTitle>Starter pack opened!</EmptyTitle>
           <EmptyDescription>Your first cards are waiting in My Binder.</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
@@ -171,7 +172,7 @@ export const Variants: Story = {
       </Empty>
       <Empty variant="info">
         <EmptyHeader>
-          <EmptyTitle>🔔 Your corner is moving</EmptyTitle>
+          <EmptyTitle>Your corner is moving</EmptyTitle>
           <EmptyDescription>Your card reached Holo · 2 minutes ago.</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>

@@ -19,7 +19,7 @@ const fresh = {
   onDismissSteps,
 }
 
-const balance = { text: `🧠 ${meLou.coins.toLocaleString()}`, label: `${meLou.coins.toLocaleString()} braincells` }
+const balance = { text: `${meLou.coins.toLocaleString()}`, label: `${meLou.coins.toLocaleString()} braincells` }
 
 /** The ladder mounted open, as the shell shows it after a press on the pill. */
 const open = (model: ReturnType<typeof buildQuestBarModel>) => ({ ...model, defaultOpen: true })
@@ -54,7 +54,7 @@ export const Fresh: Story = {
     const trigger = canvas.getByRole('button', { name: /braincells, quests 0 of 5/ })
     await expect(trigger).toHaveAttribute('data-slot', 'quest-trigger')
     await expect(trigger).toHaveAttribute('data-progress', '0')
-    await expect(trigger).toHaveTextContent('🧠 120')
+    await expect(trigger).toHaveTextContent('120')
     await expect(trigger.querySelector('[data-slot="quest-claim-dot"]')).not.toBeNull()
     /* the pill is a true pill, so the ring's `border-radius: inherit` hugs it */
     await expect(getComputedStyle(trigger).borderRadius).toBe('3.35544e+07px')

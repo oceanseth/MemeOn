@@ -57,8 +57,8 @@ export type ShellLinkProps = Pick<LinkProps, 'to' | 'onClick'>
 export interface ShellNavItem {
   to: string
   label: string
-  /** An emoji that is the link's glyph. It stays an emoji, ahead of the label, never a drawn twin. */
-  emoji: string | null
+  /** The link's glyph if it has one — drawn ahead of the label. */
+  icon: IconName | null
   current: boolean
   linkProps: ShellLinkProps
 }
@@ -73,12 +73,12 @@ export interface ShellTabItem {
   linkProps: ShellLinkProps
 }
 
-const NAV_ITEMS: { families: RouteFamily[]; to: string; label: string; emoji: string | null }[] = [
-  { families: ['marketplace'], to: '/marketplace', label: copy.nav.marketplace, emoji: null },
-  { families: ['binder', 'mint'], to: '/binder', label: copy.nav.binder, emoji: null },
-  { families: ['friends'], to: '/friends', label: copy.nav.friends, emoji: null },
-  { families: ['trade'], to: '/trade', label: copy.nav.trade, emoji: null },
-  { families: ['leaderboard'], to: '/leaderboard', label: copy.nav.leaderboard, emoji: copy.nav.leaderboardEmoji },
+const NAV_ITEMS: { families: RouteFamily[]; to: string; label: string; icon: IconName | null }[] = [
+  { families: ['marketplace'], to: '/marketplace', label: copy.nav.marketplace, icon: null },
+  { families: ['binder', 'mint'], to: '/binder', label: copy.nav.binder, icon: null },
+  { families: ['friends'], to: '/friends', label: copy.nav.friends, icon: null },
+  { families: ['trade'], to: '/trade', label: copy.nav.trade, icon: null },
+  { families: ['leaderboard'], to: '/leaderboard', label: copy.nav.leaderboard, icon: 'trophy' },
 ]
 
 const MINT_TO = '/binder/new'
@@ -113,8 +113,8 @@ export interface AppShellScreenModel {
   coins: { text: string; label: string } | null
   bottomNav: ShellTabItem[]
   /**
-   * The account menu behind the header avatar at every width: Profile · 🏆 Top Brains · Settings
-   * · 🔧 Developers · Discord, the theme radio, Log out. Third-party avatar hosts 404, so the
+   * The account menu behind the header avatar at every width: Profile · Top Brains · Settings
+   * · Developers · Discord, the theme radio, Log out. Third-party avatar hosts 404, so the
    * trigger keeps its shape and stays *your* monogram, never the MemeOn mark.
    */
   avatarMenu: AvatarMenuModel | null

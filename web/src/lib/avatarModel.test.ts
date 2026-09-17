@@ -6,6 +6,7 @@ describe('avatar model', () => {
     expect(avatarInitial('Issam Misto')).toBe('I')
     expect(avatarInitial('  pushrax ')).toBe('P')
     expect(avatarInitial('')).toBe('?')
-    expect(avatarInitial('🧠 brain')).toBe('🧠')
+    // a non-letter lead survives the uppercase pass — a plain symbol, no emoji
+    expect(avatarInitial(' @bandname ')).toBe('@')
   })
 })

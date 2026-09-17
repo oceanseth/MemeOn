@@ -12,6 +12,7 @@ import { PageHead } from '@/atoms/page-head'
 import { Spinner } from '@/atoms/spinner'
 import type { DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { ConfirmDialog } from '@/molecules/confirm-dialog'
+import { Icon } from '@/atoms/icon'
 
 const EXPLAINER = 'mt-0 mb-0 max-w-[65ch] text-base text-muted-foreground'
 
@@ -55,9 +56,20 @@ export function DevelopersScreen({
 }: DevelopersScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <PageHead level="h1" title="🔧 Developers" className="mb-5">
+      <PageHead
+        level="h1"
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Icon name="wrench" size={20} /> Developers
+          </span>
+        }
+        className="mb-5"
+      >
         <a className={buttonVariants()} href="/skill.md" target="_blank" rel="noreferrer">
-          📜 API skill.md
+          <span aria-hidden="true">
+            <Icon name="scroll-text" size={16} />
+          </span>{' '}
+          API skill.md
         </a>
       </PageHead>
       <p className={EXPLAINER}>

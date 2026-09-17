@@ -28,8 +28,11 @@ export function AppShellScreen({
   const nav = showNav
     ? navItems.map((item) => (
         <NavPill key={item.to} current={item.current} render={<Link {...item.linkProps} />}>
-          {/* an emoji stays an emoji: it leads the label instead of a drawn twin */}
-          {item.emoji && <span aria-hidden="true">{item.emoji}</span>}
+          {item.icon && (
+            <span aria-hidden="true">
+              <Icon name={item.icon} size={16} />
+            </span>
+          )}
           {item.label}
         </NavPill>
       ))

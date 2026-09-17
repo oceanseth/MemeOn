@@ -160,6 +160,9 @@ export function FriendsScreen({
             </InputGroup>
           </span>
           <Button variant="primary" className="max-sm:w-full" {...inviteButtonProps}>
+            <span aria-hidden="true">
+              <Icon name="mail" size={16} />
+            </span>{' '}
             {inviteLabel}
           </Button>
         </Toolbar>
@@ -254,10 +257,16 @@ export function FriendsScreen({
             {accepted.map((f) => (
               <PersonRow key={f.sub} {...f} online={f.isOnline} onlineLabel={f.onlineLabel}>
                 <Link className={cn(buttonVariants(), ROW_PILL)} {...f.tradeLinkProps}>
-                  <span aria-hidden="true">🔁</span> {f.tradeLabel}
+                  <span aria-hidden="true">
+                    <Icon name="refresh-cw" size={16} />
+                  </span>{' '}
+                  {f.tradeLabel}
                 </Link>
                 <Button variant="primary" className={ROW_PILL} {...f.giftButtonProps}>
-                  <span aria-hidden="true">🎁</span> {f.giftLabel}
+                  <span aria-hidden="true">
+                    <Icon name="gift" size={16} />
+                  </span>{' '}
+                  {f.giftLabel}
                 </Button>
                 {/* the quiet exit: link-coloured, the confirm dialog carries the weight */}
                 <Button variant="link" size="sm" className="shrink-0" {...f.removeButtonProps}>

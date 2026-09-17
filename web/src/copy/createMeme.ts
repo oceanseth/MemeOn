@@ -55,9 +55,9 @@ export const createMemeCopy = {
     success: {
       copied: 'Share link copied to your clipboard.',
       minted: 'Minted. Your card is live and the share link is ready.',
-      heading: '🧠 Minted. It is live.',
+      heading: 'Minted. It is live.',
       body: 'All 100 shares are yours. Send the link — every reshare pushes the card up the tier ladder.',
-      copyLink: '🔗 Copy share link',
+      copyLink: 'Copy share link',
       shareLink: 'Share link',
     },
     copied: sharedCopy.copied,

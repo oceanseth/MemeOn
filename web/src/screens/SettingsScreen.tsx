@@ -6,6 +6,7 @@ import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import type { SettingsScreenModel } from '../hooks/useSettingsScreen'
 import { ThemeControl } from '@/molecules/theme-control'
+import { Icon } from '@/atoms/icon'
 
 /** Account, Appearance, Connections as a function of the model. Pure props → markup. */
 export function SettingsScreen({
@@ -27,7 +28,14 @@ export function SettingsScreen({
               data-slot="settings-account"
               className="mt-4 max-md:flex-col max-md:items-start"
             >
-              <ItemTitle>{account.nameLabel}</ItemTitle>
+              <ItemTitle>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden="true">
+                      <Icon name="brain" size={16} />
+                    </span>{' '}
+                    {account.nameLabel}
+                  </span>
+                </ItemTitle>
               <ItemDescription>{account.providerLabel}</ItemDescription>
               <ItemActions className="ms-auto max-md:ms-0">
                 <Button {...account.logoutButtonProps}>{account.logoutLabel}</Button>
@@ -56,7 +64,14 @@ export function SettingsScreen({
                 data-linked={row.linked}
                 className="mt-4 max-md:flex-col max-md:items-start"
               >
-                <ItemTitle>{row.serviceLabel}</ItemTitle>
+                <ItemTitle>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden="true">
+                      <Icon name="gamepad-2" size={16} />
+                    </span>{' '}
+                    {row.serviceLabel}
+                  </span>
+                </ItemTitle>
                 <ItemDescription>{row.stateLabel}</ItemDescription>
                 <ItemActions className="ms-auto max-md:ms-0">
                   <Link className={buttonVariants()} {...row.actionLinkProps}>

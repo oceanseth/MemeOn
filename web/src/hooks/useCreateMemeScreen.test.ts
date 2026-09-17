@@ -135,9 +135,10 @@ describe('buildCreateMemeScreenModel', () => {
     model.generatePromptTextareaProps.onChange?.(textareaChange('draw a cat'))
     model.motionPromptTextareaProps.onChange?.(textareaChange('short loop'))
     expect(calls.setTitle).toHaveBeenCalledWith('12345678901234567890')
-    /* graphemes, not UTF-16 units: an emoji is never cut in half */
-    model.titleInputProps.onChange?.(inputChange('👩‍👩‍👧‍👦'.repeat(25)))
-    expect(calls.setTitle).toHaveBeenLastCalledWith('👩‍👩‍👧‍👦'.repeat(20))
+    /* graphemes, not UTF-16 units: a combining cluster is never cut in half (a + two accents) */
+    const cluster = 'a\u0301\u0301'
+    model.titleInputProps.onChange?.(inputChange(cluster.repeat(25)))
+    expect(calls.setTitle).toHaveBeenLastCalledWith(cluster.repeat(20))
     model.tagsInputProps.onChange?.(inputChange('a,b,c,d,e,f,g'))
     expect(calls.setTags).toHaveBeenLastCalledWith('a,b,c,d,e')
     expect(calls.setTags).toHaveBeenCalledWith('cats, chaos')

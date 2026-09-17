@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
+import { Icon } from '@/atoms/icon'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +34,7 @@ function Frame({ media, ...props }: AlertDialogContentProps & { media?: boolean 
       <AlertDialog open onOpenChange={onOpenChange}>
         <AlertDialogContent container={portalAnchor(ANCHOR)} {...props}>
           <AlertDialogHeader>
-            {media && <AlertDialogMedia aria-hidden="true">🗑️</AlertDialogMedia>}
+            {media && <AlertDialogMedia aria-hidden="true"><Icon name="trash-2" size={20} /></AlertDialogMedia>}
             <AlertDialogTitle>Delete forever?</AlertDialogTitle>
             <AlertDialogDescription>This can&apos;t be undone.</AlertDialogDescription>
           </AlertDialogHeader>

@@ -15,7 +15,7 @@ export const friendsCopy = {
     requestLabel: (name: string) => `Add friend — send ${name} a friend request`,
   },
   invite: {
-    button: '💌 Invite a friend',
+    button: 'Invite a friend',
     copied: 'Invite link copied ✓',
     /** the platform share sheet, when there is one */
     share: {
@@ -30,7 +30,7 @@ export const friendsCopy = {
   },
   row: {
     stats: (collectionSize: number, portfolioValue: number) =>
-      `📚 ${collectionSize} ${pluralWord(collectionSize, 'meme')} · ${braincells(portfolioValue)} held`,
+      `${collectionSize} ${pluralWord(collectionSize, 'meme')} · ${braincells(portfolioValue)} held`,
     accept: (name: string) => `Accept ${name}'s request`,
     decline: (name: string) => `Decline ${name}'s request`,
     pending: 'Pending',
@@ -43,9 +43,9 @@ export const friendsCopy = {
     removeName: (name: string) => `Remove ${name}`,
   },
   toasts: {
-    requestSent: 'Friend request sent 👋',
+    requestSent: 'Friend request sent',
     gifted: (shares: number, title: string, recipient: string) =>
-      `🎁 Gifted ${shares} ${pluralWord(shares, 'share')} of "${title}" to ${recipient}`,
+      `Gifted ${shares} ${pluralWord(shares, 'share')} of "${title}" to ${recipient}`,
   },
   errors: {
     request: "Couldn't send that friend request. Try again in a moment.",

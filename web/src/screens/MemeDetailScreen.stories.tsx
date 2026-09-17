@@ -19,7 +19,7 @@ const detail = (meme = paperMeme): MemeDetailModel => ({
   card: buildMemeCardModel(meme), creatorLinkProps: { to: `/u/${meme.creatorId}` }, creatorName: meme.creatorName, ownerLinkProps: { to: `/u/${meme.ownerId}` }, ownerName: meme.ownerName, tagsLabel: null, viewsLabel: String(meme.views ?? meme.reshares), resharesLabel: String(meme.reshareCount ?? 0), viewsWord: copy.stats.viewsWord(meme.views ?? meme.reshares), resharesWord: copy.stats.resharesWord(meme.reshareCount ?? 0), valueLabel: String(meme.value), statsSrLabel: copy.stats.srLabel(meme.views ?? meme.reshares, meme.reshareCount ?? 0), valueSrLabel: copy.stats.valueSrLabel(meme.value), holdingsLabel: '100/100', shareInputProps: { value: `https://memeon.ai/m/${meme.id}`, readOnly: true, 'aria-label': copy.share.inputLabel }, copyButtonLabel: copy.share.copy, copyButtonProps: { onClick: noop }, previewLinkProps: { href: `/api/memes/${meme.id}/og.png`, target: '_blank', rel: 'noreferrer' }, signedOut: null, actions: [], notice: null, noticeProps: { role: 'status', 'aria-live': 'polite' }, error: null, errorProps: { role: 'alert', 'aria-live': 'assertive' }, listing: null,
   list: { show: true, disabledReason: null, sharesInputProps: { value: 10, min: 1, max: 100, step: 1, onChange: noop }, priceInputProps: { value: 1, min: .01, step: .01, onChange: noop }, listButtonLabel: copy.list.submit, listButtonProps: { onClick: noop, disabled: false, 'aria-busy': false } }, sources: [], plex: buildMemeplexPanelModel({ meme, plex: memeplexFamily, canEdit: true, binder: [], pick: '', pasted: '', notice: null, error: null, onPickChange: noop, onPastedChange: noop, onAdd: noop }), capTableTitle: copy.capTable.title, capTableNote: null, capTable: [{ userId: 'me', label: copy.holder.you, sharesLabel: '100/100' }], deleteDialog: buildConfirmDialogModel({ open: false, id: 'delete-meme', title: copy.deleteDialog.title, message: 'This cannot be undone.', danger: true, onCancel: noop, onConfirm: noop }), buyDialog: closedDialog('buy-shares'), claimDialog: closedDialog('claim-meme'),
 })
-/** the mocked listing every listed story shares: 10 shares at 🧠 4, a viewer holding 🧠 240 */
+/** the mocked listing every listed story shares: 10 shares at 4 braincells, a viewer holding 240 braincells */
 const LISTED_SHARES = 10
 const LISTED_PRICE = 4
 const VIEWER_COINS = 240
@@ -39,7 +39,7 @@ const listed = (overrides: Partial<DetailListingModel> = {}): MemeDetailModel =>
     capTable: [{ userId: 'seller', label: 'lou', sharesLabel: '100/100' }],
     capTableNote: copy.capTable.note(LISTED_SHARES, 'lou'), listing,
     // the hero's "for sale" badge mirrors this mocked listing price, not listedHolo's own
-    card: { ...base.card, listing: { ...base.card.listing!, sharesLabel: '10 sh @ 🧠4' } },
+    card: { ...base.card, listing: { ...base.card.listing!, sharesLabel: '10 sh @ 4 braincells' } },
   }
 }
 /** the visitor block as the hook builds it for a card with no listing to lead with */
@@ -129,7 +129,7 @@ export const ClaimPrompt: Story = {
   args: {
     detail: {
       ...detail(),
-      actions: [{ label: copy.actions.claim, buttonProps: { onClick: noop } }],
+      actions: [{ label: copy.actions.claim, icon: 'film', buttonProps: { onClick: noop } }],
       claimDialog: buildConfirmDialogModel({
         open: true, id: 'claim-meme', title: copy.claimDialog.title,
         message: copy.claimDialog.body,
@@ -229,9 +229,9 @@ export const Owner: Story = {
     detail: {
       ...detail(), sources,
       actions: [
-        { label: '🧬 Create a meme from this', buttonProps: { onClick: noop } },
-        { label: '🙈 Make private', buttonProps: { onClick: noop } },
-        { label: '🗑️ Delete forever', variant: 'destructive', buttonProps: { onClick: noop } },
+        { label: 'Create a meme from this', icon: 'dna', buttonProps: { onClick: noop } },
+        { label: 'Make private', icon: 'eye-off', buttonProps: { onClick: noop } },
+        { label: 'Delete forever', icon: 'trash-2', variant: 'destructive', buttonProps: { onClick: noop } },
       ],
     },
   },
@@ -267,7 +267,7 @@ export const LoggedOut: Story = {
       signedOut: {
         title: 'Own a piece of this',
         body: copy.signedOut.body,
-        loginLabel: '🎭 Log in with Masky',
+        loginLabel: 'Log in with Masky',
         loginButtonProps: { onClick: noop, disabled: false, 'aria-busy': false, 'aria-label': 'Log in with Masky' },
         browseLinkProps: { to: '/marketplace' }, browseLabel: 'Browse the marketplace', error: null, errorProps: { role: 'alert' },
       },

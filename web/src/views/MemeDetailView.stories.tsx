@@ -34,7 +34,7 @@ export const OwnerActionsAndMalformedMemeplexUrl: Story = {
     const pasted = canvas.getByPlaceholderText('…or paste a meme link')
     await userEvent.type(pasted, 'https://memeon.ai/m/%E0%A4%A')
     await userEvent.click(canvas.getAllByRole('button', { name: 'Link' }).at(-1)!)
-    await expect(await canvas.findByText('Added to the memeplex 🕸️')).toBeInTheDocument()
+    await expect(await canvas.findByText('Added to the memeplex')).toBeInTheDocument()
     await expect(loaded.scenario.requests.find((request: { path: string; method: string }) => request.path === `/api/memes/${listedHolo.id}/memeplex` && request.method === 'POST')?.body).toEqual({ memeId: 'https://memeon.ai/m/%E0%A4%A' })
   },
 }
@@ -46,7 +46,7 @@ export const DeleteCancelAndConfirm: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><MemeDetailView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await expect(await canvas.findByText('🙈 private')).toBeInTheDocument()
+    await expect(await canvas.findByText('private')).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', { name: /Delete forever/ }))
     let dialog = await canvas.findByRole('alertdialog')
     await expect(within(dialog).getByRole('heading')).toHaveTextContent('Delete this meme forever')
@@ -69,7 +69,7 @@ export const BuyerFlow: Story = {
     await userEvent.clear(shares)
     await userEvent.type(shares, '2')
     await userEvent.click(canvas.getByRole('button', { name: /Buy for/ }))
-    await expect(await canvas.findByText('Shares acquired 💼')).toBeInTheDocument()
+    await expect(await canvas.findByText('Shares acquired')).toBeInTheDocument()
     await expect(loaded.scenario.requests.find((request: { path: string }) => request.path.endsWith('/buy'))?.body).toEqual({ shares: 2 })
   },
 }
@@ -111,7 +111,7 @@ export const ListShares: Story = {
   loaders: [connectedLoader({ overrides: { [`GET /api/memes/${listedHolo.id}`]: () => ({ body: { meme: { ...listedHolo, listing: null }, positions: [{ userId: meLou.sub, shares: 100 }] } }) } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><MemeDetailView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement); const inputs = await canvas.findAllByRole('spinbutton'); await userEvent.clear(inputs[0]!); await userEvent.type(inputs[0]!, '4'); await userEvent.clear(inputs[1]!); await userEvent.type(inputs[1]!, '2')
-    await userEvent.click(canvas.getByRole('button', { name: 'List' })); await expect(await canvas.findByText('Listed on the marketplace 🏷️')).toBeInTheDocument()
+    await userEvent.click(canvas.getByRole('button', { name: 'List' })); await expect(await canvas.findByText('Listed on the marketplace')).toBeInTheDocument()
     await expect(loaded.scenario.requests.find((request: { path: string }) => request.path.endsWith('/list'))?.body).toEqual({ shares: 4, pricePerShare: 2 })
   },
 }

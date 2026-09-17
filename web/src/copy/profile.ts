@@ -45,7 +45,6 @@ export const profileCopy = {
   },
   /** stat glyphs stay visible for wayfinding but never enter the accessible name */
   stats: {
-    glyphs: { collection: '📚', braincells: '🧠', followers: '⭐' },
     minted: (count: number) => `${count} minted`,
     inBinder: (count: number) => `${count} in binder`,
     braincells: (portfolioValue: number) => `${portfolioValue.toLocaleString()} braincells`,
@@ -57,7 +56,7 @@ export const profileCopy = {
   actions: {
     trade: 'Trade',
     tradeWith: (name: string) => `Trade with ${name}`,
-    share: '🔗 Share binder',
+    share: 'Share binder',
     settings: 'Settings',
     follow: {
       glyph: '☆',
@@ -68,16 +67,12 @@ export const profileCopy = {
       busyOn: 'Unfollowing…',
     },
     friend: {
-      addGlyph: '👋',
-      acceptGlyph: '✅',
       add: 'Add friend',
       accept: 'Accept request',
       adding: 'Sending…',
       accepting: 'Accepting…',
     },
     friendChip: {
-      friendsGlyph: '🤝',
-      pendingGlyph: '⏳',
       friends: 'Friends',
       pending: 'Request sent',
     },

@@ -13,6 +13,7 @@ import { cn } from '../lib/cn'
 import type { LandingScreenModel } from '../hooks/useLandingScreen'
 import { FaqItem } from '@/molecules/faq-item'
 import { HeroVideo } from '@/molecules/hero-video'
+import { Icon } from '@/atoms/icon'
 import './LandingScreen.css'
 
 const SECTION = 'mt-14 max-md:mt-10'
@@ -32,7 +33,7 @@ const PILE_LAYOUT = [
 const HOW_IT_WORKS = [
   { step: '01', title: 'Mint a moment', body: 'Turn an image, video, Giphy, or URL into a card.' },
   { step: '02', title: 'Drop the link', body: 'Every share unfurls with its live foil frame.' },
-  { step: '03', title: 'Go ✨Shiny✨', body: 'Reshares push Paper cards up the virality tiers.' },
+  { step: '03', title: 'Go Shiny', body: 'Reshares push Paper cards up the virality tiers.' },
 ] as const
 
 /** Landing as a function of its model. Every engine state is one set of args. */
@@ -55,7 +56,10 @@ export function LandingScreen({
 }: LandingScreenModel) {
   const marketplaceCta = (
     <Link className={buttonVariants({ variant: 'primary', size: 'login' })} to="/marketplace">
-      🃏 Enter the marketplace
+      <span aria-hidden="true">
+        <Icon name="playing-card" size={18} />
+      </span>{' '}
+      Enter the marketplace
     </Link>
   )
 
@@ -230,7 +234,7 @@ export function LandingScreen({
           <FaqItem question="How does a card level up?" defaultOpen>
             <p>
               Each unique share link and card unfurl counts as a reshare. Cross a threshold and the
-              meme tiers up: Paper → Silver → Holo → Chrome → Gold → Prismatic → ✨Shiny✨. The link
+              meme tiers up: Paper → Silver → Holo → Chrome → Gold → Prismatic → Shiny. The link
               preview card (the og image) upgrades its foil frame automatically, so a Gold meme
               flexes gold wherever it lands.
             </p>
@@ -248,7 +252,7 @@ export function LandingScreen({
               by real reshares of its unique link.
             </p>
           </FaqItem>
-          <FaqItem question="What are braincells? 🧠">
+          <FaqItem question="What are braincells?">
             <img
               src="/api/brand/braincell.png"
               alt="a braincell"
@@ -256,7 +260,7 @@ export function LandingScreen({
             />
             <p>
               Braincells are MemeOn's currency — you buy meme shares, fund trades, and flex on the
-              🏆 Top Brains leaderboard with them. Everyone starts at zero (smoothbrained, sorry) and
+              Top Brains leaderboard with them. Everyone starts at zero (smoothbrained, sorry) and
               earns their first braincells through the onboarding quests: claim your free starter
               pack, mint your first meme, get your first reshare, make a friend, close a trade. AI
               generation is separate — that runs on your own Masky credits.
@@ -267,7 +271,7 @@ export function LandingScreen({
               Every meme has a share URL (memeon.ai/m/…). Each time that link is loaded — a friend
               clicks it, Discord unfurls it, a bot scrapes it — the counter ticks up, and every new
               place it's shared is counted separately as a reshare. Seven tiers, from Paper at zero
-              to ✨Shiny✨ at 25,000.
+              to Shiny at 25,000.
             </p>
           </FaqItem>
           <FaqItem question="What's Masky got to do with it?">

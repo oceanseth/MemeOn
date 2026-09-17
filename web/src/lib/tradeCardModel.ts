@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes } from 'react'
 import { tradesCopy } from '../copy/trades'
 import { braincells } from './braincells'
+import type { IconName } from '@/atoms/icon'
 import type { Trade, TradeSide } from './types'
 
 const copy = tradesCopy.card
@@ -61,6 +62,8 @@ export interface TradeCardModel {
   /** the deal in one line, from where you are standing: "CyberSeth offered you a deal" */
   partiesLabel: string
   statusLabel: string
+  /** the drawn glyph leading the status badge */
+  statusIcon: IconName
   /** the badge only earns its place once the subline stops saying who is waiting */
   showStatusBadge: boolean
   /** "Waiting on you" / "Waiting on them" / the resolved word — the subline's first half */
@@ -80,7 +83,15 @@ export interface TradeCardModel {
   actions: readonly TradeActionModel[]
 }
 
-const STATUS_BADGE: Record<Trade['status'], string> = {
+const STATUS_BADGE: Record<Trade['status'], IconName> = {
+  proposed: 'hourglass',
+  accepted: 'circle-check',
+  declined: 'circle-x',
+  cancelled: 'ban',
+}
+
+/** The badge's words (the glyph is drawn by `statusIcon`). */
+const BADGE_LABEL: Record<Trade['status'], string> = {
   proposed: copy.badge.proposed,
   accepted: copy.badge.accepted,
   declined: copy.badge.declined,
@@ -245,7 +256,8 @@ export function buildTradeCardModel({
         ? copy.parties.youOffered(trade.toName)
         : copy.parties.offeredYou(trade.fromName)
       : copy.parties.yourDeal(mine ? trade.toName : trade.fromName),
-    statusLabel: STATUS_BADGE[trade.status],
+    statusLabel: BADGE_LABEL[trade.status],
+    statusIcon: STATUS_BADGE[trade.status],
     showStatusBadge: !open,
     waitingLabel: open
       ? mine

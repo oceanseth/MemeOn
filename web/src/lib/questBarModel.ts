@@ -134,7 +134,7 @@ export function buildQuestBarModel({
         done: step.done,
         title: step.title,
         statusLabel: step.done ? copy.status.done : copy.status.pending,
-        rewardLabel: `+${step.reward}🧠`,
+        rewardLabel: `+${step.reward}`,
         rewardAriaLabel: copy.rewardAria(step.reward),
         linkProps: to ? { to } : null,
       }

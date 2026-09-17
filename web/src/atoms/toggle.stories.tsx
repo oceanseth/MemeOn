@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { Toggle } from '@/atoms/toggle'
+import { Icon } from '@/atoms/icon'
 
 const onPressedChange = fn()
 
@@ -40,7 +41,7 @@ export const Pressed: Story = {
 
 /** Transparent at rest — a glyph in a toolbar; pressed, it sinks into the well. */
 export const Ghost: Story = {
-  args: { variant: 'ghost', children: '🔔' , 'aria-label': 'Mute alerts' },
+  args: { variant: 'ghost', children: <span aria-hidden="true"><Icon name="bell" size={16} /></span>, 'aria-label': 'Mute alerts' },
   play: async ({ canvasElement }) => {
     const toggle = within(canvasElement).getByRole('button', { name: 'Mute alerts' })
     await expect(getComputedStyle(toggle).backgroundColor).toBe('rgba(0, 0, 0, 0)')

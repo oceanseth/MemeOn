@@ -13,9 +13,9 @@ const model: AvatarMenuModel = {
   triggerProps: { 'aria-label': 'Account menu' },
   items: [
     { key: 'profile', label: 'Profile', to: `/u/${encodeURIComponent(meLou.sub)}` },
-    { key: 'leaderboard', label: '🏆 Top Brains', to: '/leaderboard' },
+    { key: 'leaderboard', label: 'Top Brains', to: '/leaderboard' },
     { key: 'settings', label: 'Settings', to: '/settings' },
-    { key: 'developers', label: '🔧 Developers', to: '/developers' },
+    { key: 'developers', label: 'Developers', to: '/developers' },
     { key: 'discord', label: 'Discord', to: '/discord' },
   ],
   theme: { label: 'Theme', value: 'light', onChange: onThemeChange },
@@ -89,9 +89,9 @@ export const Open: Story = {
     await expect(profile).toHaveAttribute('href', `/u/${encodeURIComponent(meLou.sub)}`)
     await expect(profile).toHaveAttribute('data-slot', 'avatar-menu-item')
     await expect(profile.offsetHeight).toBeGreaterThanOrEqual(44)
-    await expect(within(menu).getByRole('menuitem', { name: '🏆 Top Brains' })).toHaveAttribute('href', '/leaderboard')
+    await expect(within(menu).getByRole('menuitem', { name: 'Top Brains' })).toHaveAttribute('href', '/leaderboard')
     await expect(within(menu).getByRole('menuitem', { name: 'Settings' })).toHaveAttribute('href', '/settings')
-    await expect(within(menu).getByRole('menuitem', { name: '🔧 Developers' })).toHaveAttribute('href', '/developers')
+    await expect(within(menu).getByRole('menuitem', { name: 'Developers' })).toHaveAttribute('href', '/developers')
     await expect(within(menu).getByRole('menuitem', { name: 'Discord' })).toHaveAttribute('href', '/discord')
     const light = within(menu).getByRole('menuitemradio', { name: /Light/ })
     await expect(light).toHaveAttribute('aria-checked', 'true')

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { Button } from '@/atoms/button'
+import { Icon } from '@/atoms/icon'
 
 /** A token as `:root` declares it, so the assertion follows the scale rather than pinning a literal. */
 const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
@@ -28,7 +29,7 @@ export const Primary: Story = { args: { variant: 'primary' } }
 
 /** The ultraviolet companion — a second action on a card that must not spend the bubblegum. */
 export const Brand: Story = { args: { variant: 'brand', children: 'Show more brains' } }
-export const Destructive: Story = { args: { variant: 'destructive', children: '🗑️ Delete forever' } }
+export const Destructive: Story = { args: { variant: 'destructive', children: 'Delete forever' } }
 export const Ghost: Story = { args: { variant: 'ghost', children: 'Skip for now' } }
 export const LinkVariant: Story = { args: { variant: 'link', children: 'Read the rules' } }
 
@@ -66,7 +67,9 @@ export const Sizes: Story = {
       <Button size="sm">Small</Button>
       <Button size="xs">Chip</Button>
       <Button size="icon" aria-label="Settings">
-        ⚙️
+        <span aria-hidden="true">
+          <Icon name="gear" size={20} />
+        </span>
       </Button>
       <Button size="icon-sm" aria-label="Close">
         ✕
@@ -94,7 +97,7 @@ export const Variants: Story = {
       <Button>Load more</Button>
       <Button variant="primary">＋ Mint a meme</Button>
       <Button variant="brand">Show more brains</Button>
-      <Button variant="destructive">🗑️ Delete forever</Button>
+      <Button variant="destructive">Delete forever</Button>
       <Button variant="mint">＋ Mint</Button>
       <Button variant="ghost">Skip for now</Button>
       <Button variant="link">Read the rules</Button>
@@ -119,14 +122,17 @@ export const GlassCellAndSegment: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-3">
       <Button variant="glass" size="pill">
-        ▶ Play
+        <span aria-hidden="true">
+          <Icon name="play" size={16} />
+        </span>{' '}
+        Play
       </Button>
       <Button variant="glass" size="pill-sm">
         Sound on
       </Button>
-      <Button size="segment">🎨 Generate</Button>
+      <Button size="segment">Generate</Button>
       <Button variant="cell" size="cell" pressed aria-label="Pick this picture" className="w-20">
-        <span aria-hidden="true">🖼️</span>
+        
       </Button>
     </div>
   ),

@@ -4,6 +4,6 @@ import { useLeaderboardScreen } from '../hooks/useLeaderboardScreen'
 import { LeaderboardScreen } from '../screens/LeaderboardScreen'
 
 export const LeaderboardView = observer(function LeaderboardView() {
-  useDocumentTitle('🏆 Top Brains')
+  useDocumentTitle('Top Brains')
   return <LeaderboardScreen {...useLeaderboardScreen()} />
 })

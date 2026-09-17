@@ -22,7 +22,7 @@ export const sharedCopy = {
   checkConnection: 'Check your connection and try again.',
   masky: {
     logIn: 'Log in with Masky',
-    logInButton: '🎭 Log in with Masky',
+    logInButton: 'Log in with Masky',
     redirecting: 'Redirecting…',
     redirectingTo: 'Redirecting to Masky',
   },

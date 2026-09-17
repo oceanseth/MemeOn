@@ -3,9 +3,9 @@ export const sortChipsCopy = {
   group: 'Sort by',
   chips: {
     new: 'Newest',
-    views: '👁️ Views',
-    reshares: '🔁 Reshares',
-    value: '🧠 Value',
+    views: 'Views',
+    reshares: 'Reshares',
+    value: 'Value',
   },
   direction: {
     ascending: 'ascending' as const,

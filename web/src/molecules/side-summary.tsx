@@ -2,6 +2,7 @@ import { Item, ItemActions, ItemContent, ItemGroup, ItemMedia } from '@/atoms/it
 import { TierChip } from '@/atoms/tier-chip'
 import { cn } from '../lib/cn'
 import type { TradeSideSummaryModel } from '../lib/tradeCardModel'
+import { Icon } from '@/atoms/icon'
 
 /** Recessed well inside the raised proposal card. */
 const WELL = cn(
@@ -17,14 +18,16 @@ const THUMB = 'size-9 shrink-0 rounded-xs border-2 border-border bg-accent objec
 
 /** The line's own step: 14/500, a size under the row title the `Item` atom would set. */
 const MEME_LINE = 'font-sans text-sm font-medium text-foreground'
-const COINS = 'font-sans text-sm font-medium text-foreground tabular-nums'
 
 /** One side of a trade: the owner legend, then an `Item` row per meme, then the coins line. */
 export function SideSummary({ model }: { model: TradeSideSummaryModel }) {
   return (
     <div data-slot="trade-side" className={WELL}>
       <h3 className={LEGEND}>{model.ownerLabel}</h3>
-      {model.empty && <div className="text-muted-foreground">nothing 😶</div>}
+      {model.empty && <div className="inline-flex items-center gap-1.5 text-muted-foreground">
+        <Icon name="meh" size={15} />
+        <span>nothing</span>
+      </div>}
       <ItemGroup>
         {model.memeLines.map((meme) => (
           <Item key={meme.id} size="flush">
@@ -48,7 +51,12 @@ export function SideSummary({ model }: { model: TradeSideSummaryModel }) {
           </Item>
         ))}
         {model.coinsLabel && (
-          <div className={COINS}>{model.coinsLabel}</div>
+          <div className="inline-flex items-center gap-1 text-sm font-medium text-foreground tabular-nums">
+            <span aria-hidden="true">
+              <Icon name="brain" size={15} />
+            </span>{' '}
+            {model.coinsLabel}
+          </div>
         )}
       </ItemGroup>
     </div>

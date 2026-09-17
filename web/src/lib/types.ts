@@ -54,7 +54,7 @@ export interface Me {
   sub: string
   name: string
   picture: string | null
-  /** braincells 🧠 */
+  /** braincells — the plain number; the brain glyph is drawn by the Icon atom */
   coins: number
   portfolioValue: number
   collectionSize: number

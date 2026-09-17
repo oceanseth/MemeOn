@@ -10,6 +10,7 @@ import { Select, type SelectOption } from '@/atoms/select'
 import { Toolbar, ToolbarStart } from '@/atoms/toolbar'
 import { cn } from '../lib/cn'
 import type { MemeplexPanelModel } from '../lib/memeplexPanelModel'
+import { Icon } from '@/atoms/icon'
 
 const PICK_PLACEHOLDER: SelectOption = { value: '', label: 'Link from your binder…' }
 
@@ -25,7 +26,12 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
     /* The raised section card every panel on the page wears: `bg-card`, `rounded-lg`,
        `material-card`, the card inset, with its head at the shared intro step. */
     <Card className="mt-4">
-      <CardTitle size="intro" render={<h3 />} className="mb-1.5">🕸️ Memeplex</CardTitle>
+      <CardTitle size="intro" render={<h3 />} className="mb-1.5">
+        <span aria-hidden="true">
+          <Icon name="blocks" size={18} />
+        </span>{' '}
+        Memeplex
+      </CardTitle>
       {model.ancestors.length > 0 && (
         <p className={cn('my-2', LINE)}>
           Descended from{' '}

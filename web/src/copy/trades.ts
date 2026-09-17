@@ -41,7 +41,7 @@ export const tradesCopy = {
     offerCoinsHint: (available: number) => `${braincells(available)} available`,
   },
   toasts: {
-    executed: 'Trade executed 🤝',
+    executed: 'Trade executed',
   },
   errors: {
     load: "Couldn't load your trades. Try again.",
@@ -65,10 +65,10 @@ export const tradesCopy = {
   /** Strings each trade card row spells for status, actions and finality. */
   card: {
     badge: {
-      proposed: '⏳ proposed',
-      accepted: '✅ accepted',
-      declined: '❌ declined',
-      cancelled: '🚫 cancelled',
+      proposed: 'proposed',
+      accepted: 'accepted',
+      declined: 'declined',
+      cancelled: 'cancelled',
     },
     statusLine: {
       proposed: 'Waiting',
