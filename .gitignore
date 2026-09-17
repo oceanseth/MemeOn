@@ -37,5 +37,6 @@ mobile/dist/
 mobile/ios/
 mobile/android/
 
-# jimp fonts staged for lambda packaging
+# og fonts + resvg wasm staged for lambda packaging
 api/fonts/
+api/vendor/
