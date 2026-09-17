@@ -24,13 +24,14 @@ import { cn } from '@/lib/cn'
  * satellite, theater, brain, handshake, film and medal are all unreadable at 16px, which is exactly
  * how they got in here.
  *
- * DISCORD HAS NO GLYPH, ON PURPOSE - restating the note 9b1454b deleted along with NAV_ICONS.
- * Discord's own brand mark is a filled logo, not a Central stroke glyph; stroking it at 1.5 both
- * bloats the silhouette (the eye holes choke to pinpricks at 16px) and modifies a mark its brand
- * guidelines require be reproduced unmodified. The design renders every Discord surface as text -
- * the nav link, the footer, the avatar menu, and the Settings connections row - so the component
- * deliberately has no fill-without-stroke "brand" state and this set has no `discord`.
- * `developers` is omitted for the same reason: text-only in the design.
+ * DISCORD IS A BRAND MARK, NOT A GLYPH - superseding the note that kept it text-only. The
+ * objection there was sound and still is: stroking Discord's logo at 1.5 bloats the silhouette
+ * (the eye holes choke to pinpricks at 16px) and modifies a mark its guidelines require be
+ * reproduced unmodified. So `discord` is not stroked. It is the official mark, verbatim from
+ * simple-icons (CC0 icon data; the mark is Discord's trademark, reproduced unmodified and
+ * monochrome, which their brand guidelines permit), carried by the one `brand` PathDef flag:
+ * filled with `currentColor`, stroke off. That flag exists for brand marks and nothing else - a
+ * product glyph that wants weight uses `filled`, which keeps its outline twin's silhouette.
  * (`brain` on the DiscordPageScreen install CTA is MemeOn's own emoji, not a stand-in for Discord.)
  */
 export type IconName =
@@ -90,6 +91,15 @@ export type IconName =
   | 'x'
   | 'star-filled'
   | 'arrows-swap'
+  // The account menu's three undecorated rows (2026-09-17): Profile, Developers and Discord each
+  // sat in an empty 18px lane, so three of five rows read as unfinished beside Top Brains and
+  // Settings. `user` and `code` are Lucide v1.46 (ISC) verbatim, in the stand-in idiom the rest of
+  // this half already uses; `discord` is the brand mark (see the note above). All three rastered
+  // at 18px, the size the menu actually calls them at, before they landed.
+  | 'user'
+  | 'code'
+  | 'discord'
+  | 'log-out'
 
 export const ICON_NAMES: readonly IconName[] = [
   'storefront',
@@ -146,6 +156,10 @@ export const ICON_NAMES: readonly IconName[] = [
   'x',
   'star-filled',
   'arrows-swap',
+  'user',
+  'code',
+  'discord',
+  'log-out',
 ]
 
 /*
@@ -177,6 +191,9 @@ interface PathDef {
       filled member reuses its outline twin's exact `d`, so filling *and* stroking keeps both
       states on the same silhouette and the glyph does not jump when the toggle flips. */
   filled?: true
+  /** A brand mark: filled with `currentColor` and *not* stroked, because a logo is reproduced as
+      drawn or not at all. `discord` is the only one, and the header note says why. */
+  brand?: true
 }
 
 /**
@@ -587,6 +604,33 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
     { d: 'M7 11.75L3.75 15L7 18.25', linecap: 'round', linejoin: 'round' },
     { d: 'M4.25 15H20.25', linecap: 'round' },
   ],
+  // One person, for the account menu's own row. `users` is Friends' mark and reusing it there
+  // would recreate the one-glyph-two-meanings fault the icon audit existed to fix; this is the
+  // single-person mark that gap asked for. Lucide's circle is written as two arcs because this
+  // set renders `<path>` and nothing else.
+  user: [
+    { d: 'M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2', linecap: 'round', linejoin: 'round' },
+    { d: 'M8 7a4 4 0 1 0 8 0a4 4 0 1 0-8 0', linecap: 'round', linejoin: 'round' },
+  ],
+  // Developers: the angle brackets, not a wrench - `gear` is Settings and sits one row above, and
+  // two tool marks in a five-row menu read as two settings rows.
+  code: [
+    { d: 'M16 18L22 12L16 6', linecap: 'round', linejoin: 'round' },
+    { d: 'M8 6L2 12L8 18', linecap: 'round', linejoin: 'round' },
+  ],
+  // The way out of the account menu, so its last row is not the one bare lane in the column.
+  'log-out': [
+    { d: 'M16 17L21 12L16 7', linecap: 'round', linejoin: 'round' },
+    { d: 'M21 12H9', linecap: 'round', linejoin: 'round' },
+    { d: 'M9 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H9', linecap: 'round', linejoin: 'round' },
+  ],
+  // The official mark, unmodified: filled, never stroked (see the header note).
+  discord: [
+    {
+      d: 'M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z',
+      brand: true,
+    },
+  ],
 }
 
 export interface IconProps {
@@ -617,7 +661,8 @@ export function Icon({ name, size = 22, className, title }: IconProps) {
         <path
           key={index}
           d={path.d}
-          fill={path.filled ? 'currentColor' : 'none'}
+          fill={path.filled || path.brand ? 'currentColor' : 'none'}
+          stroke={path.brand ? 'none' : undefined}
           strokeLinecap={path.linecap}
           strokeLinejoin={path.linejoin}
         />

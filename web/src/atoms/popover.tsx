@@ -1,4 +1,5 @@
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
+import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
 import type { Styled } from '@/atoms/field'
@@ -29,15 +30,34 @@ export function PopoverPositioner({ className, ...props }: Styled<PopoverPrimiti
   )
 }
 
-/** The popup is a raised card of the pop material; it enters from the side it is placed on. */
-const POPUP = cn(
-  'flex w-72 origin-(--transform-origin) flex-col gap-2 rounded-lg material-pop p-2.5 text-base text-foreground',
-  'max-h-(--available-height) overflow-y-auto scrollbar-thin',
-  'outline-none focus-ring',
-  'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 motion-reduce:animate-none!',
-  'data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2',
-  'data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2',
-  'data-[side=inline-start]:slide-in-from-right-2 data-[side=inline-end]:slide-in-from-left-2',
+/**
+ * The popup is a raised card of the pop material; it enters from the side it is placed on.
+ *
+ * Two shapes. `default` is the padded card that scrolls as one thing — a form, a confirmation, a
+ * short ladder. `panel` is the banded one: a fixed title band, a list that scrolls on its own, a
+ * tail, each flush to the popup's edge. A panel therefore carries no padding and no row gap of
+ * its own and clips instead of scrolling, because the band inside it owns the scroll and has to
+ * be able to run hairlines and row tints the full width.
+ */
+const popoverPopupVariants = cva(
+  cn(
+    'flex w-72 origin-(--transform-origin) flex-col rounded-lg material-pop text-base text-foreground',
+    'max-h-(--available-height)',
+    'outline-none focus-ring',
+    'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 motion-reduce:animate-none!',
+    'data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2',
+    'data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2',
+    'data-[side=inline-start]:slide-in-from-right-2 data-[side=inline-end]:slide-in-from-left-2',
+  ),
+  {
+    variants: {
+      variant: {
+        default: 'gap-2 overflow-y-auto scrollbar-thin p-2.5',
+        panel: 'gap-0 overflow-hidden p-0',
+      },
+    },
+    defaultVariants: { variant: 'default' },
+  },
 )
 
 type PositionerPassthrough = Pick<
@@ -45,7 +65,10 @@ type PositionerPassthrough = Pick<
   'align' | 'alignOffset' | 'side' | 'sideOffset' | 'collisionPadding' | 'collisionAvoidance' | 'anchor'
 >
 
-export interface PopoverContentProps extends Styled<PopoverPrimitive.Popup.Props>, PositionerPassthrough {
+export interface PopoverContentProps
+  extends Styled<PopoverPrimitive.Popup.Props>,
+    PositionerPassthrough,
+    VariantProps<typeof popoverPopupVariants> {
   /** where the portal renders; pair `PortalAnchor` with `portalAnchor(id)` to stay inside the screen */
   container?: PopoverPrimitive.Portal.Props['container']
   /** the positioner's own classes — the one place a caller may pin the geometry (`max-xs:fixed!`) */
@@ -58,6 +81,7 @@ export interface PopoverContentProps extends Styled<PopoverPrimitive.Popup.Props
  */
 export function PopoverContent({
   className,
+  variant = 'default',
   align = 'center',
   alignOffset = 0,
   side = 'bottom',
@@ -82,7 +106,12 @@ export function PopoverContent({
         anchor={anchor}
         className={cn(POSITIONER, positionerClassName)}
       >
-        <PopoverPrimitive.Popup data-slot="popover-content" className={cn(POPUP, className)} {...props} />
+        <PopoverPrimitive.Popup
+          data-slot="popover-content"
+          data-variant={variant}
+          className={cn(popoverPopupVariants({ variant }), className)}
+          {...props}
+        />
       </PopoverPrimitive.Positioner>
     </PopoverPortal>
   )

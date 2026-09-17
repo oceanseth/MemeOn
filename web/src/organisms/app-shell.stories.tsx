@@ -38,7 +38,7 @@ const avatarMenu = (
       src: null,
       triggerProps: { 'aria-label': 'Account menu' },
       items: [
-        { key: 'profile', label: 'Profile', to: `/u/${meLou.sub}`, icon: null },
+        { key: 'profile', label: 'Profile', to: `/u/${meLou.sub}`, icon: 'user' },
         { key: 'settings', label: 'Settings', to: '/settings', icon: 'gear' },
       ],
       theme: { label: 'Theme', value: 'light', onChange: fn() },

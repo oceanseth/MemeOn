@@ -49,6 +49,14 @@ export const itemVariants = cva(
         sm: 'min-h-11 gap-2.5 px-2.5 py-2',
         /** the card-shaped row: a person, a rank, an API key, a settings line */
         row: 'min-h-11 gap-3 rounded-lg px-5 py-3.5',
+        /**
+         * The flush row of a scrolling panel list — the alerts popover's. Square and
+         * gutter-to-gutter, because a list of nine rows reads as one column only if nothing
+         * floats: the separation is the parent's hairline (`divide-y`), not a gap. The ring is
+         * inset for the same reason the dropdown's is — the list clips its own overflow, and an
+         * outset ring on the first or last row would be sliced by that edge.
+         */
+        notice: 'min-h-11 gap-3 rounded-none px-3.5 py-3 focus-ring-inset',
         /** a static line inside a well: no target floor, no inset, no hover */
         flush: 'min-h-0 gap-3 px-0 py-0',
       },
@@ -62,6 +70,13 @@ export const itemVariants = cva(
       tone: {
         none: '',
         info: 'bg-info text-info-foreground',
+        /**
+         * Unread, in a list where most rows are: the raised surface and nothing else. `info`
+         * paints a full-bleed blue slab, which at three rows in a row made the read alerts
+         * beneath them look disabled; the weight and the dot carry the state, and this only has
+         * to lift the row off the panel.
+         */
+        unread: 'bg-accent',
       },
     },
     defaultVariants: {
@@ -110,6 +125,13 @@ export const itemMediaVariants = cva(
         default: 'bg-transparent',
         icon: 'text-xl leading-none',
         image: 'size-10 overflow-hidden rounded-sm group-data-[size=sm]/item:size-8 *:size-full *:object-cover',
+        /**
+         * The mark's disc: a 32px well holding one emoji or one 18px glyph. Fixed, because what
+         * it buys is the column — an emoji is as wide as it likes, and without the disc every
+         * message in the list would start on a different vertical. Top-aligned: beside a message
+         * that wraps to two lines, a centred mark reads as floating.
+         */
+        disc: 'size-8 self-start rounded-full bg-muted text-base leading-none text-muted-foreground',
       },
     },
     defaultVariants: {

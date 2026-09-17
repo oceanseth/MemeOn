@@ -157,18 +157,22 @@ export const ManyUnread: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: copy.trigger(1284) })).toHaveTextContent('99+')
-    await expect(rows(canvasElement)).toHaveLength(21)
-    await expect(canvas.getByText(copy.overflow(20))).toBeInTheDocument()
+    // 20 rows and a tail: the tail is the panel's own band, not a twenty-first alert
+    await expect(rows(canvasElement)).toHaveLength(20)
+    await expect(canvas.getByText(copy.overflow(20))).toHaveAttribute('data-slot', 'alerts-foot')
+    // the list is capped and scrolls; the title band above it does not move with it
+    const list = canvasElement.querySelector('[data-slot="alerts-list"]')!
+    await expect(list.scrollHeight).toBeGreaterThan(list.clientHeight)
   },
 }
 
-/** A dead API is a problem, not an empty inbox. */
+/** A dead API is a problem, not an empty inbox: the same block, wearing the warning tone. */
 export const AlertsOffline: Story = {
   args: { model: buildAlertsBellModel({ alerts: [], open: true, onOpenChange, failed: true }) },
   play: async ({ canvasElement }) => {
     await expect(
       within(canvasElement).getByText(copy.offline),
-    ).toBeInTheDocument()
+    ).toHaveAttribute('data-slot', 'alerts-empty-label')
   },
 }
 
@@ -180,9 +184,48 @@ export const Empty: Story = {
   args: { model: buildAlertsBellModel({ alerts: [], open: true, onOpenChange }) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(rows(canvasElement)).toHaveLength(1)
-    await expect(canvas.getByText(copy.empty)).toHaveAttribute('data-slot', 'item-description')
+    await expect(rows(canvasElement)).toHaveLength(0)
+    await expect(canvasElement.querySelector('[data-slot="alerts-list"]')).toBeNull()
+    await expect(canvas.getByText(copy.empty)).toHaveAttribute('data-slot', 'alerts-empty-label')
     await expect(canvasElement.querySelector('[data-slot="bell-badge"]')).toBeNull()
+  },
+}
+
+/**
+ * The list as the API writes it: every message opens with an emoji, and one of them is the
+ * starter-pack sentence that runs to six lines at `text-base` in a 340 panel. The emoji is the
+ * row's mark, lifted out of the sentence, and the message is clamped to two lines under it.
+ */
+export const FromTheWire: Story = {
+  args: {
+    model: buildAlertsBellModel({
+      alerts: [
+        {
+          ...unreadSale,
+          id: 'wire-pack',
+          type: 'friend',
+          message:
+            '🎁 Starter pack opened: 10 shares of "Doomscroll Hamster", 10 shares of "Cat.exe Has Stopped", 10 shares of "Procrastination Sloth" and +20 braincells!',
+        },
+        { ...unreadSale, id: 'wire-tier', type: 'tierup', message: '🚀 "pushrax" tiered up to SILVER (Uncommon) at 10 views!' },
+        { ...readSale, id: 'wire-mint', type: 'friend', message: '🆕 CyberSeth minted "jim carey idea jobs"' },
+        { ...readSale, id: 'wire-quest', memeId: null, type: 'friend', message: '🧠 +25 braincells — make a friend ✅' },
+        { ...unreadFriend, id: 'wire-follow', message: '⭐ CyberSeth followed you' },
+        { ...unreadFriend, id: 'wire-request', read: true, message: '👋 CyberSeth sent you a friend request' },
+      ],
+      open: true,
+      onOpenChange,
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // the emoji is the mark, so the message itself no longer carries it
+    const pack = canvas.getByText(/^Starter pack opened/)
+    await expect(pack).toHaveAttribute('data-slot', 'alert-message')
+    const row = pack.closest('[data-slot="alert-row"]')!
+    await expect(row.querySelector('[data-slot="alert-mark"]')).toHaveTextContent('🎁')
+    // clamped: the row stays a row no matter how long the sentence the server wrote is
+    await expect(row.clientHeight).toBeLessThan(96)
   },
 }
 

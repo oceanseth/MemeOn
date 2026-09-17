@@ -67,7 +67,7 @@ describe('settings screen model', () => {
   it('states the Discord link as unknown-and-therefore-not-linked, pointing at the page that starts it', () => {
     expect(build().connections.rows).toEqual([
       expect.objectContaining({
-        icon: null,
+        icon: 'discord',
         serviceLabel: copy.connections.discord.service,
         stateLabel: copy.connections.discord.notLinked,
         linked: false,
@@ -77,16 +77,16 @@ describe('settings screen model', () => {
     ])
   })
 
-  it('decides each connection row\'s mark in the model, and gives Discord none', () => {
+  it("decides each connection row's mark in the model, and gives Discord the brand mark", () => {
     for (const row of build().connections.rows) {
       /* the field has to be there for the screen to read — a row whose mark is spelled into the
          markup instead is one every later connection inherits, which is how Discord got a gamepad */
       expect(row).toHaveProperty('icon')
-      // …and the answer for a Discord row is no mark at all, the treatment it gets on all four surfaces
-      expect(row.icon).toBeNull()
-      // whatever a second service eventually asks for has to be a glyph the set actually draws
+      // …and the mark a row names has to be one the set actually draws
       expect(row.icon === null || ICON_NAMES.includes(row.icon)).toBe(true)
     }
+    // Discord's own, the same mark the account menu's row wears: filled, never stroked
+    expect(build().connections.rows[0]?.icon).toBe('discord')
   })
 
 })
