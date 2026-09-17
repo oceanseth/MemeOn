@@ -65,9 +65,9 @@ export const WithParts: Story = {
 export const Variants: Story = {
   render: () => (
     <div style={{ display: 'grid', justifyItems: 'start', gap: 12, padding: 16 }}>
-      <Alert variant="success">🎉 Minted — it is in your binder.</Alert>
-      <Alert variant="info">🧠 Braincells are play money.</Alert>
-      <Alert variant="warning">⚠️ Trades are final.</Alert>
+      <Alert variant="success">Minted — it is in your binder.</Alert>
+      <Alert variant="info">Braincells are play money.</Alert>
+      <Alert variant="warning">Trades are final.</Alert>
       <Alert variant="error">Could not save.</Alert>
       <Alert variant="info" role="none" className="inline-flex items-center gap-2">
         <Spinner />

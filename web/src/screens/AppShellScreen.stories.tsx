@@ -244,7 +244,7 @@ export const Phone390: Story = {
     // the avatar opens the account menu that carries the routes the tab bar cannot, and the theme
     await userEvent.click(canvas.getByRole('button', { name: 'Account menu' }))
     const menu = await canvas.findByRole('menu')
-    await expect(within(menu).getByRole('menuitem', { name: '🏆 Top Brains' })).toHaveAttribute('href', '/leaderboard')
+    await expect(within(menu).getByRole('menuitem', { name: 'Top Brains' })).toHaveAttribute('href', '/leaderboard')
     await expect(within(menu).getByRole('menuitemradio', { name: /Dark/ })).toBeInTheDocument()
     await expect(within(menu).getByRole('menuitem', { name: 'Log out' })).toBeInTheDocument()
     await userEvent.keyboard('{Escape}')

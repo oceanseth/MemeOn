@@ -132,7 +132,7 @@ export const Error: Story = {
 export const Ready: Story = {
   args: {
     phase: 'ready',
-    statusMessage: '3 cards shown · newest first · 🧠 186',
+    statusMessage: '3 cards shown · newest first · 186',
     showEmpty: false,
     emptyAction: null,
     showGrid: true,
@@ -174,7 +174,7 @@ export const AllPrivate: Story = {
 export const ShowingPrivate: Story = {
   args: {
     phase: 'ready',
-    statusMessage: '1 card shown · newest first · 🧠 62 · private included',
+    statusMessage: '1 card shown · newest first · 62 · private included',
     showEmpty: false,
     emptyAction: null,
     showGrid: true,
@@ -195,7 +195,7 @@ export const Full: Story = {
     showPrivateToggle: true,
     privateCount: 1,
     privateToggleLabel: 'Show private (1)',
-    statusMessage: '3 of 15 cards shown · newest first · 🧠 186',
+    statusMessage: '3 of 15 cards shown · newest first · 186',
     showMore: { label: 'Show 12 more', onClick: fn() },
   },
   play: async ({ canvasElement }) => {

@@ -154,8 +154,8 @@ export const Ready: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // one control, one tab stop: the skill.md action is a link, never a link wrapping a button
-    await expect(canvas.getByRole('link', { name: '📜 API skill.md' })).toBeInTheDocument()
-    await expect(canvas.queryByRole('button', { name: '📜 API skill.md' })).toBeNull()
+    await expect(canvas.getByRole('link', { name: 'API skill.md' })).toBeInTheDocument()
+    await expect(canvas.queryByRole('button', { name: 'API skill.md' })).toBeNull()
     // the route's title is the page's one h1 (the wave-3 screens took the same step); sections are h3
     await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('Developers')
     await expect(canvas.getByRole('button', { name: 'Create key' })).toBeEnabled()

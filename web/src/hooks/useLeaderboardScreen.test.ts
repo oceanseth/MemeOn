@@ -10,9 +10,9 @@ describe('leaderboard row model', () => {
     }, 3)
     const noAvatar = buildLeaderboardRowModel({ ...row, picture: null, braincells: 42, collectionSize: 4, portfolioValue: 500 }, 0)
 
-    expect(row).toMatchObject({ rankNumeral: '4', medalLabel: '', profileLinkProps: { to: '/u/top-brain' }, avatarSrc: '/top-brain.png' })
+    expect(row).toMatchObject({ rankNumeral: '4', medal: null, profileLinkProps: { to: '/u/top-brain' }, avatarSrc: '/top-brain.png' })
     expect(noAvatar.avatarSrc).toBeNull()
-    expect(noAvatar.medalLabel).toBe(copy.row.medals[0])
+    expect(noAvatar.medal).toBe('medal')
   })
 
   it('names the whole row once so the emoji columns can stay decorative', () => {

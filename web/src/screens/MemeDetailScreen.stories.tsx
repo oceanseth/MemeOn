@@ -39,7 +39,7 @@ const listed = (overrides: Partial<DetailListingModel> = {}): MemeDetailModel =>
     capTable: [{ userId: 'seller', label: 'lou', sharesLabel: '100/100' }],
     capTableNote: copy.capTable.note(LISTED_SHARES, 'lou'), listing,
     // the hero's "for sale" badge mirrors this mocked listing price, not listedHolo's own
-    card: { ...base.card, listing: { ...base.card.listing!, sharesLabel: '10 sh @ 🧠4' } },
+    card: { ...base.card, listing: { ...base.card.listing!, sharesLabel: '10 sh @ 4 braincells' } },
   }
 }
 /** the visitor block as the hook builds it for a card with no listing to lead with */
@@ -129,7 +129,7 @@ export const ClaimPrompt: Story = {
   args: {
     detail: {
       ...detail(),
-      actions: [{ label: copy.actions.claim, buttonProps: { onClick: noop } }],
+      actions: [{ label: copy.actions.claim, icon: 'film', buttonProps: { onClick: noop } }],
       claimDialog: buildConfirmDialogModel({
         open: true, id: 'claim-meme', title: copy.claimDialog.title,
         message: copy.claimDialog.body,
@@ -229,9 +229,9 @@ export const Owner: Story = {
     detail: {
       ...detail(), sources,
       actions: [
-        { label: '🧬 Create a meme from this', buttonProps: { onClick: noop } },
-        { label: '🙈 Make private', buttonProps: { onClick: noop } },
-        { label: '🗑️ Delete forever', variant: 'destructive', buttonProps: { onClick: noop } },
+        { label: 'Create a meme from this', icon: 'dna', buttonProps: { onClick: noop } },
+        { label: 'Make private', icon: 'eye-off', buttonProps: { onClick: noop } },
+        { label: 'Delete forever', icon: 'trash-2', variant: 'destructive', buttonProps: { onClick: noop } },
       ],
     },
   },
@@ -267,7 +267,7 @@ export const LoggedOut: Story = {
       signedOut: {
         title: 'Own a piece of this',
         body: copy.signedOut.body,
-        loginLabel: '🎭 Log in with Masky',
+        loginLabel: 'Log in with Masky',
         loginButtonProps: { onClick: noop, disabled: false, 'aria-busy': false, 'aria-label': 'Log in with Masky' },
         browseLinkProps: { to: '/marketplace' }, browseLabel: 'Browse the marketplace', error: null, errorProps: { role: 'alert' },
       },

@@ -160,7 +160,7 @@ export const NoViews: Story = {
   args: { model: buildMemeCardModel(noViewsMeme) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.queryByText(/👁️/)).toBeNull()
+    await expect(canvas.queryByText(/views/)).toBeNull()
     await expect(canvas.getByText('60 reshares')).toBeInTheDocument()
   },
 }

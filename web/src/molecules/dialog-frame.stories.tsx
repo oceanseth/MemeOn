@@ -99,7 +99,7 @@ export const DangerAlert: Story = {
     size: 'sm',
     role: 'alertdialog',
     danger: true,
-    title: '⚠️ Delete forever?',
+    title: 'Delete forever?',
     description: "This can't be undone.",
   },
   play: async ({ canvasElement }) => {

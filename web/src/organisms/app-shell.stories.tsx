@@ -21,12 +21,15 @@ const nav = (
     <NavPill render={<Link to="/friends" />}>Friends</NavPill>
     <NavPill render={<Link to="/trade" />}>Trade</NavPill>
     <NavPill render={<Link to="/leaderboard" />}>
-      <span aria-hidden="true">🏆</span> Top Brains
+      <span aria-hidden="true">
+        <Icon name="trophy" size={16} />
+      </span>{' '}
+      Top Brains
     </NavPill>
   </>
 )
 
-const balance = { text: `🧠 ${meLou.coins.toLocaleString()}`, label: `${meLou.coins.toLocaleString()} braincells` }
+const balance = { text: `${meLou.coins.toLocaleString()}`, label: `${meLou.coins.toLocaleString()} braincells` }
 
 const avatarMenu = (
   <AvatarMenu

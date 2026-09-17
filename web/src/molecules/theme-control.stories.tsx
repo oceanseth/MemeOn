@@ -42,7 +42,7 @@ export const HeaderButton: Story = {
     const canvas = within(canvasElement)
     onChange.mockClear()
     const button = canvas.getByRole('button', { name: 'Theme: Auto. Switch to Light' })
-    await expect(button).toHaveTextContent('🌗')
+    await expect(button.querySelector('svg')).not.toBeNull()
     /* the Button atom's 34px square: the control the whole chrome uses */
     await expect(getComputedStyle(button).height).toBe('34px')
     await userEvent.click(button)
@@ -88,7 +88,7 @@ export const ButtonCycles: Story = {
     const canvas = within(canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: 'Theme: Auto. Switch to Light' }))
     await userEvent.click(canvas.getByRole('button', { name: 'Theme: Light. Switch to Dark' }))
-    await expect(canvas.getByRole('button', { name: 'Theme: Dark. Switch to Auto' })).toHaveTextContent('🌙')
+    await expect(canvas.getByRole('button', { name: 'Theme: Dark. Switch to Auto' }).querySelector('svg')).not.toBeNull()
     await userEvent.click(canvas.getByRole('button', { name: 'Theme: Dark. Switch to Auto' }))
     await expect(canvas.getByRole('button', { name: 'Theme: Auto. Switch to Light' })).toBeInTheDocument()
   },

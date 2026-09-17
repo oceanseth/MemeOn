@@ -24,7 +24,7 @@ export const EmptyReadOnly: Story = { args: { model: build({ plex: memeplexEmpty
 export const EmptyEditor: Story = { args: { model: build({ plex: memeplexEmpty, canEdit: true, binder: [giftablePaper, giftableSilver, listedHolo] }) } }
 export const EditorPicked: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper, listedHolo], pick: listedHolo.id }) } }
 export const PastedLink: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper], pasted: 'https://memeon.ai/m/meme-listed' }) } }
-export const Notice: Story = { args: { model: build({ notice: 'Added to the memeplex 🕸️' }) } }
+export const Notice: Story = { args: { model: build({ notice: 'Added to the memeplex' }) } }
 /** A failed link never wears success green. */
 export const ErrorNotice: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper], error: 'Already in the memeplex.' }) } }
 export const Loading: Story = { args: { model: build({ plex: null }) } }

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { ToggleGroup, ToggleGroupItem } from '@/atoms/toggle-group'
+import { Icon } from '@/atoms/icon'
 
 const onValueChange = fn()
 
@@ -63,9 +64,9 @@ export const Segmented: Story = {
   args: { 'aria-label': 'Theme', variant: 'segment', size: 'sm', defaultValue: ['auto'], className: 'w-46' },
   render: (args) => (
     <ToggleGroup {...args}>
-      <ToggleGroupItem value="auto">🌗 Auto</ToggleGroupItem>
-      <ToggleGroupItem value="light">☀️ Light</ToggleGroupItem>
-      <ToggleGroupItem value="dark">🌙 Dark</ToggleGroupItem>
+      <ToggleGroupItem value="auto"><span aria-hidden="true"><Icon name="contrast" size={16} /></span> Auto</ToggleGroupItem>
+      <ToggleGroupItem value="light"><span aria-hidden="true"><Icon name="sun" size={16} /></span> Light</ToggleGroupItem>
+      <ToggleGroupItem value="dark"><span aria-hidden="true"><Icon name="moon" size={16} /></span> Dark</ToggleGroupItem>
     </ToggleGroup>
   ),
   play: async ({ canvasElement }) => {
@@ -76,12 +77,12 @@ export const Segmented: Story = {
     await expect(well.offsetWidth).toBe(184)
     // the well is the pressed material
     await expect(getComputedStyle(well).boxShadow).toContain('inset')
-    const auto = canvas.getByRole('button', { name: '🌗 Auto', pressed: true })
+    const auto = canvas.getByRole('button', { name: 'Auto', pressed: true })
     await expect(auto).toHaveAttribute('data-variant', 'segment')
     await expect(auto.offsetHeight).toBe(34)
     // the current segment is raised out of the well; the others are transparent
     await expect(getComputedStyle(auto).backgroundColor).not.toBe('rgba(0, 0, 0, 0)')
-    const light = canvas.getByRole('button', { name: '☀️ Light', pressed: false })
+    const light = canvas.getByRole('button', { name: 'Light', pressed: false })
     await expect(getComputedStyle(light).backgroundColor).toBe('rgba(0, 0, 0, 0)')
     await userEvent.click(light)
     await expect(light).toHaveAttribute('aria-pressed', 'true')

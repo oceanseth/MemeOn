@@ -33,14 +33,14 @@ const empty: InviteScreenModel = {
   showAcceptSuccess: false,
   showHighlights: false,
   loadingLabel: 'Loading invite…',
-  inviteBody: 'Mint memes, share the link, and trade your friends’ bangers before they go ✨Shiny✨.',
+  inviteBody: 'Mint memes, share the link, and trade your friends’ bangers before they go Shiny.',
   climbNote: 'Every share makes the card climb.',
   acceptErrorMessage: "Couldn't accept this invite — try again.",
-  acceptSuccessMessage: 'You and pal are now friends 🤝',
+  acceptSuccessMessage: 'You and pal are now friends',
   highlightsTitle: "pal's binder highlights",
   fatalActions: {
     title: 'This invite link expired',
-    joinLabel: '🎭 Join MemeOn anyway',
+    joinLabel: 'Join MemeOn anyway',
     joinButtonProps: { onClick: fn() },
     homeLabel: 'Back to MemeOn',
     homeHref: '/',
@@ -49,7 +49,8 @@ const empty: InviteScreenModel = {
   inviter: null,
   cards: [],
   acceptButtonProps: { onClick: fn() },
-  acceptLabel: '🎭 Join pal on MemeOn',
+  acceptLabel: 'Join pal on MemeOn',
+  acceptIcon: 'theater',
 }
 
 const ready = {
@@ -106,7 +107,7 @@ export const ErrorJoining: Story = {
     showSpinner: false,
     fatalActions: {
       ...empty.fatalActions,
-      joinLabel: '🎭 Opening Masky…',
+      joinLabel: 'Opening Masky…',
       joinButtonProps: { onClick: fn(), 'aria-disabled': true, 'aria-busy': true },
     },
   },
@@ -120,7 +121,7 @@ export const WithAvatar: Story = {
 }
 
 export const LoggedIn: Story = {
-  args: { ...ready, acceptLabel: '🤝 Accept & befriend pal' },
+  args: { ...ready, acceptLabel: 'Accept & befriend pal' },
 }
 
 export const Accepting: Story = {
@@ -128,7 +129,7 @@ export const Accepting: Story = {
     ...ready,
     phase: 'accepting',
     acceptButtonProps: { onClick: fn(), 'aria-disabled': true, 'aria-busy': true },
-    acceptLabel: '🤝 Adding pal…',
+    acceptLabel: 'Adding pal…',
   },
 }
 
@@ -157,7 +158,7 @@ export const Accepted: Story = {
 
 const selfActions = {
   note: 'This is your own invite link — send it to a friend!',
-  copyLabel: '🔗 Copy invite link',
+  copyLabel: 'Copy invite link',
   copyStatusMessage: '',
   copyButtonProps: { onClick: fn() },
   friendsLabel: 'See your friends',
@@ -181,7 +182,7 @@ export const SelfCopied: Story = {
     ...Self.args,
     selfActions: {
       ...selfActions,
-      copyLabel: '✅ Link copied',
+      copyLabel: 'Link copied',
       copyStatusMessage: 'Invite link copied to your clipboard.',
     },
   },

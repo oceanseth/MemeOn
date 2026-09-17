@@ -69,7 +69,7 @@ export const Working: Story = {
 export const Done: Story = {
   args: {
     phase: 'done',
-    heading: '🎮 Connected!',
+    heading: 'Connected!',
     showConfirm: false,
     showDone: true,
   },

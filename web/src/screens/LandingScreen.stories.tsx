@@ -62,9 +62,9 @@ const empty: LandingScreenModel = {
   showMarketplaceCta: false,
   showLoginButton: true,
   showErr: false,
-  loginLabel: '🎭 Log in with Masky',
+  loginLabel: 'Log in with Masky',
   closingLine: 'Your next group-chat classic is a card already.',
-  closingLoginLabel: '🎭 Grab your pack with Masky',
+  closingLoginLabel: 'Grab your pack with Masky',
   heroCards: buildLandingHeroCards(),
   tiers: buildLandingTierModels(),
   heroVideo,
@@ -224,7 +224,7 @@ export const LoggedIn: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // both CTAs swap with the same state
-    await expect(canvas.getAllByRole('link', { name: '🃏 Enter the marketplace' })).toHaveLength(2)
+    await expect(canvas.getAllByRole('link', { name: 'Enter the marketplace' })).toHaveLength(2)
     await expect(canvas.queryByRole('button', { name: 'Log in with Masky' })).not.toBeInTheDocument()
     await expect(canvas.getByText('Your binder is waiting.')).toBeInTheDocument()
   },

@@ -58,7 +58,7 @@ export const Ready: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const cta = canvas.getByRole('link', { name: '🧠 Add MemeOn to Discord' })
+    const cta = canvas.getByRole('link', { name: 'Add MemeOn to Discord' })
     await expect(cta).toHaveAttribute('href', discordInstallUrl)
     // new-tab warning is visible copy, not screen-reader-only
     await expect(cta).toHaveAttribute('aria-describedby', 'discord-cta-note')
