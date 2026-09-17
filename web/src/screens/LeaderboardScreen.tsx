@@ -18,9 +18,6 @@ const skeletonRows = [0, 1, 2, 3, 4]
 /** Braincell count colour: bubblegum ramp flips with theme. */
 const COUNT = 'font-sans font-semibold text-braincell tabular-nums'
 
-/* Podium medals, tinted by existing tokens: gold = warning ink, silver = muted, bronze = warning. */
-const MEDAL_TINT = ['text-warning-foreground', 'text-muted-foreground', 'text-warning'] as const
-
 /**
  * Two lists, not one: the podium is inside the panel and the ladder continues beside it. Each row's
  * accessible name already states its rank (`rowLabel` in `useLeaderboardScreen`), so the split
@@ -160,9 +157,14 @@ export function LeaderboardScreen({
                     className={PODIUM}
                   >
                     <span aria-hidden="true" className="text-2xl leading-none max-md:text-xl">
-                      {l.medal && (
-                        <Icon name={l.medal} size={28} className={MEDAL_TINT[Number(l.rankNumeral) - 1]} />
-                      )}
+                      {l.medal &&
+                        (l.rankNumeral === '1' ? (
+                          <Icon name="medal" size={28} className="text-warning-foreground" />
+                        ) : l.rankNumeral === '2' ? (
+                          <Icon name="medal" size={28} className="text-muted-foreground" />
+                        ) : (
+                          <Icon name="medal" size={28} className="text-warning" />
+                        ))}
                     </span>
                     <Avatar name={l.name} src={l.avatarSrc} size="podium" loading="lazy" />
                     <ItemTitle size="lg" truncate className="min-w-0 flex-1 md:w-full md:flex-none md:text-center">
