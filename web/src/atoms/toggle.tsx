@@ -36,7 +36,7 @@ export const toggleVariants = cva(
           'data-pressed:material-pressed data-pressed:text-foreground',
         ),
         segment: cn(
-          'min-w-0 flex-1 rounded-md bg-transparent px-1 text-xs font-semibold text-muted-foreground',
+          'min-w-0 flex-1 rounded-md bg-transparent px-1 text-sm font-semibold text-muted-foreground',
           'hover:text-foreground',
           'data-pressed:material-raised data-pressed:font-semibold data-pressed:text-foreground',
         ),

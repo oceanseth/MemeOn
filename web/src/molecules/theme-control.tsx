@@ -86,8 +86,8 @@ export function ThemeControl({ model, size, className }: ThemeControlProps) {
       aria-label="Theme"
       variant="segment"
       size="sm"
-      /* 184: three ~58px segments plus the well's 3px inset, which is why `p-0.75` stays */
-      className={cn('w-46', className)}
+      /* 224: three ~70px segments breathing inside the well's 4px inset (`p-1`) */
+      className={cn('w-56', className)}
       data-slot="theme-segmented"
     >
       {THEME_OPTIONS.map((option) => (
