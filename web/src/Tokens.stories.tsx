@@ -149,7 +149,7 @@ const GLYPHS: ReadonlyArray<{ step: Step; role: string; icon: IconName }> = [
   { step: 'base', role: 'a glyph in a 32px square', icon: 'palette' },
   { step: 'xl', role: 'a row or item glyph', icon: 'bell' },
   { step: '2xl', role: 'a podium medal', icon: 'medal' },
-  { step: '6xl', role: 'an empty state, a pack opening', icon: 'party-popper' },
+  { step: '6xl', role: 'an empty state, a pack opening', icon: 'gift' },
 ]
 
 /* `--breakpoint-*`: six named cuts, no literals. Tailwind writes `bp:` as (width >= N) and
@@ -353,7 +353,7 @@ export function TokenSheet() {
           wears <code>--color-link</code>; inline <code>code</code> sits on the muted surface.{' '}
           <span className="inline-flex items-center gap-1.5">
             <Icon name="brain" size={16} /> 2,480 · <Icon name="eye" size={16} /> 12 ·{' '}
-            <Icon name="refresh-cw" size={16} /> 3
+            <Icon name="arrows-left-right" size={16} /> 3
           </span>
         </p>
       </div>

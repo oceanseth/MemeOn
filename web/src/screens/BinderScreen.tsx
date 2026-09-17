@@ -125,7 +125,7 @@ export function BinderScreen({
           {/* Mint is bubblegum under the shell cut and neutral once the header owns primary */}
           <Link className={cn(buttonVariants({ variant: 'mint' }), 'max-xl:w-full')} {...createLinkProps}>
             <span className="xl:hidden" aria-hidden="true">
-              ＋
+              <Icon name="circle-plus" size={16} />
             </span>
             {createLabel}
           </Link>
@@ -161,7 +161,12 @@ export function BinderScreen({
           {emptyAction && (
             <EmptyContent>
               {emptyAction.kind === 'create' ? (
+                /* `create` is only ever the first-run mint (`useBinderScreen`: the other kind is
+                   showPrivate), so the plus belongs to this branch and not to the label */
                 <Link className={buttonVariants({ variant: 'primary' })} {...emptyAction.linkProps}>
+                  <span aria-hidden="true">
+                    <Icon name="circle-plus" size={16} />
+                  </span>
                   {emptyAction.label}
                 </Link>
               ) : (

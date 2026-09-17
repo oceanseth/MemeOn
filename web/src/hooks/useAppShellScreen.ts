@@ -57,8 +57,8 @@ export type ShellLinkProps = Pick<LinkProps, 'to' | 'onClick'>
 export interface ShellNavItem {
   to: string
   label: string
-  /** The link's glyph if it has one — drawn ahead of the label. */
-  icon: IconName | null
+  /** The link's glyph, off `CHROME_ICONS` — every top-bar slot has one, so `null` is not a state. */
+  icon: IconName
   current: boolean
   linkProps: ShellLinkProps
 }
@@ -73,23 +73,68 @@ export interface ShellTabItem {
   linkProps: ShellLinkProps
 }
 
-const NAV_ITEMS: { families: RouteFamily[]; to: string; label: string; icon: IconName | null }[] = [
-  { families: ['marketplace'], to: '/marketplace', label: copy.nav.marketplace, icon: null },
-  { families: ['binder', 'mint'], to: '/binder', label: copy.nav.binder, icon: null },
-  { families: ['friends'], to: '/friends', label: copy.nav.friends, icon: null },
-  { families: ['trade'], to: '/trade', label: copy.nav.trade, icon: null },
-  { families: ['leaderboard'], to: '/leaderboard', label: copy.nav.leaderboard, icon: 'trophy' },
+/**
+ * Slot → glyph, restored. 8f07a8b shipped this map in the icon atom ("Sidebar 6UR-0 / bottom-nav
+ * 767-0 slot → Central icon"); 9b1454b deleted it with no replacement and left the chrome's
+ * glyphs as literals in arrays that promptly disagreed — every phone tab carried one while four
+ * of the five top-bar links sat at `icon: null`, the account menu had nowhere to put one at all,
+ * and `gear`, the design's own Settings glyph, went dead for want of a slot to live in. Keying it
+ * on `RouteFamily` puts it on the union the chrome's active-state already runs on, so a route
+ * cannot take a nav slot without a glyph decision being made about it in one visible place.
+ *
+ * `developers` and `discord` are `null` on purpose rather than simply absent: spelling them out
+ * is what makes them a decision instead of an oversight. Both are text-only in the design, and
+ * Discord's mark is a filled brand logo, not a 1.5 stroke glyph — the atom deliberately has no
+ * brand state to draw it with (see the icon.tsx docblock).
+ */
+const CHROME_ICONS = {
+  marketplace: 'storefront',
+  binder: 'book',
+  mint: 'circle-plus',
+  friends: 'users',
+  /* the open crossing arrows, not the rectangular repeat loop — `arrows-left-right` draws the
+     shape reshares wore before the sweep, so reshare keeps it and Trade takes the swap. At 16px
+     open-vs-closed is what the eye resolves first, long before it resolves arrowhead direction. */
+  trade: 'arrows-swap',
+  leaderboard: 'trophy',
+  settings: 'gear',
+  developers: null,
+  discord: null,
+} as const satisfies Record<RouteFamily, IconName | null>
+
+/** The slots that carry a glyph; indexing `CHROME_ICONS` with one of these cannot be null. */
+type GlyphSlot = Exclude<RouteFamily, 'developers' | 'discord'>
+
+const NAV_ITEMS: { slot: GlyphSlot; families: RouteFamily[]; to: string; label: string }[] = [
+  { slot: 'marketplace', families: ['marketplace'], to: '/marketplace', label: copy.nav.marketplace },
+  { slot: 'binder', families: ['binder', 'mint'], to: '/binder', label: copy.nav.binder },
+  { slot: 'friends', families: ['friends'], to: '/friends', label: copy.nav.friends },
+  { slot: 'trade', families: ['trade'], to: '/trade', label: copy.nav.trade },
+  { slot: 'leaderboard', families: ['leaderboard'], to: '/leaderboard', label: copy.nav.leaderboard },
+]
+
+/**
+ * The account menu's routes: the chrome slots the top bar has no room for, read off the same map.
+ * Profile is not here because it has no slot — `/u/:sub` is not a `RouteFamily` — and the set has
+ * no single-person glyph to give it either (`users` is Friends' and would collide), so it stays
+ * text in the menu the way Developers and Discord do by design.
+ */
+const MENU_ROUTES: { slot: RouteFamily; label: string; to: string }[] = [
+  { slot: 'leaderboard', label: copy.accountMenu.leaderboard, to: '/leaderboard' },
+  { slot: 'settings', label: copy.accountMenu.settings, to: '/settings' },
+  { slot: 'developers', label: copy.accountMenu.developers, to: '/developers' },
+  { slot: 'discord', label: copy.accountMenu.discord, to: '/discord' },
 ]
 
 const MINT_TO = '/binder/new'
 
 /** Phone tab bar; the labels are the 62px abbreviations. */
-const TAB_ITEMS: { family: RouteFamily; to: string; label: string; icon: IconName; primary: boolean }[] = [
-  { family: 'marketplace', to: '/marketplace', label: copy.tabs.market, icon: 'storefront', primary: false },
-  { family: 'binder', to: '/binder', label: copy.tabs.binder, icon: 'book', primary: false },
-  { family: 'mint', to: MINT_TO, label: copy.tabs.mint, icon: 'circle-plus', primary: true },
-  { family: 'friends', to: '/friends', label: copy.tabs.friends, icon: 'users', primary: false },
-  { family: 'trade', to: '/trade', label: copy.tabs.trade, icon: 'arrows-left-right', primary: false },
+const TAB_ITEMS: { family: GlyphSlot; to: string; label: string; primary: boolean }[] = [
+  { family: 'marketplace', to: '/marketplace', label: copy.tabs.market, primary: false },
+  { family: 'binder', to: '/binder', label: copy.tabs.binder, primary: false },
+  { family: 'mint', to: MINT_TO, label: copy.tabs.mint, primary: true },
+  { family: 'friends', to: '/friends', label: copy.tabs.friends, primary: false },
+  { family: 'trade', to: '/trade', label: copy.tabs.trade, primary: false },
 ]
 
 function allDone(user: Me | null): boolean {
@@ -159,8 +204,9 @@ export function buildAppShellScreenModel({
     phase,
     showNav: !!user,
     showToolbar: !!user,
-    navItems: NAV_ITEMS.map(({ families, ...item }) => ({
+    navItems: NAV_ITEMS.map(({ slot, families, ...item }) => ({
       ...item,
+      icon: CHROME_ICONS[slot],
       current: family !== null && families.includes(family),
       linkProps: link(item.to),
     })),
@@ -174,6 +220,7 @@ export function buildAppShellScreenModel({
       : null,
     bottomNav: TAB_ITEMS.map(({ family: own, ...item }) => ({
       ...item,
+      icon: CHROME_ICONS[own],
       current: family === own,
       linkProps: link(item.to),
     })),
@@ -182,12 +229,11 @@ export function buildAppShellScreenModel({
           name: user.name,
           src: user.picture,
           triggerProps: { 'aria-label': copy.accountMenu.trigger },
+          /* your own profile, then the slots off the same map the bar and the tabs read, so a
+             route wears one glyph wherever in the chrome it is reachable from */
           items: [
-            { key: 'profile', label: copy.accountMenu.profile, to: profileTo },
-            { key: 'leaderboard', label: copy.accountMenu.leaderboard, to: '/leaderboard' },
-            { key: 'settings', label: copy.accountMenu.settings, to: '/settings' },
-            { key: 'developers', label: copy.accountMenu.developers, to: '/developers' },
-            { key: 'discord', label: copy.accountMenu.discord, to: '/discord' },
+            { key: 'profile', label: copy.accountMenu.profile, to: profileTo, icon: null },
+            ...MENU_ROUTES.map(({ slot, ...route }) => ({ key: slot, ...route, icon: CHROME_ICONS[slot] })),
           ],
           theme: { label: copy.accountMenu.theme, value: theme.value, onChange: theme.onChange },
           logOut: { label: copy.accountMenu.logOut, onSelect: onLogout },

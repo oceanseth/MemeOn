@@ -39,7 +39,10 @@ export function DiscordLinkScreen({
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
       <div className={cn(COLUMN, 'pt-14 max-md:pt-6')}>
-        {/* the brain mark is the page's one ornament, drawn from the Central set */}
+        {/* the brain mark is the page's one ornament, and it is MemeOn's own, not Discord's — the
+            ritual belongs to the account being linked. It is one of the Lucide stand-ins rather
+            than a Paper-extracted Central glyph (see atoms/icon.tsx), so its eight lobe curves run
+            dense at small sizes; at 64 every one of them is fully drawn. */}
         <p aria-hidden="true" className="m-0 text-6xl leading-none">
           <Icon name="brain" size={64} />
         </p>

@@ -49,6 +49,8 @@ export const Default: Story = {
     // three Card sections, and every row is an Item
     await expect(canvasElement.querySelectorAll('[data-slot="card"]')).toHaveLength(3)
     await expect(canvasElement.querySelector('[data-slot="settings-account"]')).toHaveAttribute('data-variant', 'default')
+    // the name is an identity affordance: it wears no glyph, and never MemeOn's own brain
+    await expect(canvasElement.querySelector('[data-slot="settings-account"] [data-slot="icon"]')).toBeNull()
     await expect(canvasElement.querySelectorAll('[data-slot="item-title"]').length).toBeGreaterThan(0)
   },
 }
@@ -72,6 +74,9 @@ export const NotLinked: Story = {
     const row = canvasElement.querySelector('[data-slot="connection-row"]')!
     await expect(row.tagName).toBe('LI')
     await expect(row).toHaveAttribute('data-linked', 'false')
+    // Discord is text here as it is in the nav, the footer and the avatar menu — the row draws
+    // whatever mark the model names, and the model names none
+    await expect(row.querySelector('[data-slot="item-title"] [data-slot="icon"]')).toBeNull()
   },
 }
 

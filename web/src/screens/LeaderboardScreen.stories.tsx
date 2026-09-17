@@ -112,6 +112,28 @@ export const Ready: Story = {
   },
 }
 
+/**
+ * The podium's three tiles draw one `medal` glyph, so the metal and the numeral beside it are the
+ * whole of what says first from third. This pins both: the class names are literal so a surface
+ * token cannot slip back in (`text-warning`, the amber chip fill, was bronze and measured Lc 8),
+ * and the numeral is asserted because the glyph engraves a fixed "1" whatever rank it is drawn for.
+ */
+export const Podium: Story = {
+  args: { ...ready, leaders: rows(mixedAvatarRows), listSummary: copy.listSummary(4) },
+  play: async ({ canvasElement }) => {
+    const medals = canvasElement.querySelectorAll<HTMLElement>('[data-slot="podium-medal"]')
+
+    await expect(medals).toHaveLength(3)
+    await expect(medals[0]).toHaveClass('text-podium-gold')
+    await expect(medals[1]).toHaveClass('text-podium-silver')
+    await expect(medals[2]).toHaveClass('text-podium-bronze')
+    await expect(medals[2]).toHaveTextContent('3')
+    // decoration only: the rank is already inside the row's accessible name
+    await expect(medals[0]).toHaveAttribute('aria-hidden', 'true')
+    await expect(within(canvasElement).getByRole('link', { name: copy.row.label(1, 'pal', 240) })).toBeInTheDocument()
+  },
+}
+
 export const MixedAvatars: Story = {
   args: {
     ...ready,

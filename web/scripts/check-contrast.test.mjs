@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { spawnSync } from "node:child_process"
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join, resolve } from "node:path"
 import test from "node:test"
@@ -8,8 +8,9 @@ import test from "node:test"
 const checker = resolve(import.meta.dirname, "check-contrast.mjs")
 const appStylesheet = resolve(import.meta.dirname, "..", "src", "index.css")
 
-const run = (path) => {
-  const result = spawnSync(process.execPath, [checker, path], { encoding: "utf8" })
+const run = (path, srcDir) => {
+  const argv = srcDir ? [checker, path, srcDir] : [checker, path]
+  const result = spawnSync(process.execPath, argv, { encoding: "utf8" })
   return { status: result.status, output: result.stdout + result.stderr }
 }
 
@@ -76,6 +77,9 @@ const stylesheet = (overrides = {}) => {
     "--color-tier-prismatic-chip-text": "var(--color-foreground)",
     "--color-tier-shiny-chip": "var(--color-primary)",
     "--color-tier-shiny-chip-text": "var(--color-primary-foreground)",
+    "--color-podium-gold": "light-dark(oklch(54% 0.11 92), oklch(86% 0.145 92))",
+    "--color-podium-silver": "light-dark(oklch(50% 0.018 285), oklch(84% 0.018 285))",
+    "--color-podium-bronze": "light-dark(oklch(52% 0.129 48), oklch(83% 0.105 48))",
     ...overrides,
   }
   const declare = (entries, indent) => entries.map(([k, v]) => `${indent}${k}: ${v};`).join("\n")
@@ -87,12 +91,23 @@ const stylesheet = (overrides = {}) => {
   )
 }
 
-const withStylesheet = (css, assertions) => {
+/**
+ * A stylesheet, and — when one of the source scans is under test — a small tree of markup beside it.
+ * The guard reads what the app paints as well as what the palette declares, so a fixture made only
+ * of CSS cannot reach half of it.
+ */
+const withStylesheet = (css, assertions, markup) => {
   const dir = mkdtempSync(join(tmpdir(), "memeon-contrast-"))
   try {
     const path = join(dir, "index.css")
     writeFileSync(path, css)
-    assertions(run(path))
+    let src
+    if (markup) {
+      src = join(dir, "src")
+      mkdirSync(src)
+      for (const [name, text] of Object.entries(markup)) writeFileSync(join(src, name), text)
+    }
+    assertions(run(path, src))
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
@@ -145,6 +160,55 @@ test("follows var() into a light-dark() and lands on a different arm value each 
     assert.ok(parseFloat(light[1]) > 0, "light link is dark text on a light canvas")
     assert.ok(parseFloat(dark[1]) < 0, "dark link is light text on a dark canvas")
   })
+})
+
+/**
+ * The bug this scan was added for. `--color-warning` is the amber chip fill; stroked onto the
+ * leaderboard's third medal it measured Lc 8 in light and Lc 0 in dark, and nothing failed, because
+ * the completeness check above only ever asked after tokens *named* `*-foreground`.
+ */
+test("fails a glyph stroked in a surface token, and says a surface is not an ink", () => {
+  const markup = {
+    "Podium.tsx": `export const Bronze = () => <Icon name="medal" size={28} className="text-warning" />\n`,
+  }
+
+  withStylesheet(stylesheet(), (result) => {
+    assert.equal(result.status, 1, result.output)
+    assert.match(result.output, /Podium\.tsx:1 paints --color-warning/)
+    assert.match(result.output, /pairs above stand ON . a surface is not an ink/)
+  }, markup)
+})
+
+test("fails an ink no pair reads, even where the token is nobody's background", () => {
+  const markup = { "Rail.css": "  .rail-note { color: var(--color-border); }\n" }
+
+  withStylesheet(stylesheet(), (result) => {
+    assert.equal(result.status, 1, result.output)
+    assert.match(result.output, /Rail\.css:1 paints --color-border, which no pair above reads/)
+  }, markup)
+})
+
+/** The podium metals are the ink the medal actually wants, and each tile surface is audited. */
+test("passes a glyph stroked in an audited ink, on either surface a podium tile paints", () => {
+  const markup = {
+    "Podium.tsx":
+      "/* the third medal was `text-warning` once: a chip fill, Lc 8 in light and Lc 0 in dark */\n" +
+      `export const Bronze = () => <span className="text-podium-bronze"><Icon name="medal" /></span>\n`,
+  }
+
+  withStylesheet(stylesheet(), (result) => {
+    assert.equal(result.status, 0, result.output)
+    // the comment on line 1 quotes the utility that caused the bug; prose is not paint
+    assert.doesNotMatch(result.output, /Podium\.tsx/)
+    // dark ink in the light arm, light ink in the dark arm, and both clear of the floor
+    const row = (fg, bg, arm, sign) => new RegExp(`${fg}\\s+on\\s+${bg}\\s+${arm}\\s+Lc\\s+${sign}\\d+\\.\\d\\s+ok`)
+    for (const metal of ["gold", "silver", "bronze"]) {
+      for (const surface of ["--color-card", "--color-accent"]) {
+        assert.match(result.output, row(`--color-podium-${metal}`, surface, "light", ""))
+        assert.match(result.output, row(`--color-podium-${metal}`, surface, "dark", "-"))
+      }
+    }
+  }, markup)
 })
 
 test("says which token is missing rather than throwing a colour-parse error", () => {

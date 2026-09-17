@@ -38,8 +38,8 @@ const avatarMenu = (
       src: null,
       triggerProps: { 'aria-label': 'Account menu' },
       items: [
-        { key: 'profile', label: 'Profile', to: `/u/${meLou.sub}` },
-        { key: 'settings', label: 'Settings', to: '/settings' },
+        { key: 'profile', label: 'Profile', to: `/u/${meLou.sub}`, icon: null },
+        { key: 'settings', label: 'Settings', to: '/settings', icon: 'gear' },
       ],
       theme: { label: 'Theme', value: 'light', onChange: fn() },
       logOut: { label: 'Log out', onSelect: fn() },
@@ -50,7 +50,10 @@ const avatarMenu = (
 const headerEnd = (quest: boolean) => (
   <>
     <Link to="/binder/new" className={`${buttonVariants({ variant: 'primary', size: 'sm' })} max-xl:hidden`}>
-      <span aria-hidden="true">＋</span> Mint
+      <span aria-hidden="true">
+        <Icon name="circle-plus" size={16} />
+      </span>{' '}
+      Mint
     </Link>
     <QuestBar
       model={quest ? buildQuestBarModel({
@@ -74,7 +77,7 @@ const bottomNav = (
     <TabItem render={<Link to="/binder" />}><Icon name="book" />Binder</TabItem>
     <TabItem primary render={<Link to="/binder/new" />}><Icon name="circle-plus" />Mint</TabItem>
     <TabItem render={<Link to="/friends" />}><Icon name="users" />Friends</TabItem>
-    <TabItem render={<Link to="/trade" />}><Icon name="arrows-left-right" />Trade</TabItem>
+    <TabItem render={<Link to="/trade" />}><Icon name="arrows-swap" />Trade</TabItem>
   </>
 )
 

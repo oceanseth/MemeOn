@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import type { ButtonHTMLAttributes } from 'react'
 import type { LinkProps } from 'react-router-dom'
+import type { IconName } from '@/atoms/icon'
 import { settingsCopy } from '../copy/settings'
 import type { Me } from '../lib/types'
 import type { ThemeControlModel } from '@/molecules/theme-control'
@@ -10,7 +11,12 @@ import { useTheme } from './useTheme'
 /** Account card: name, provider, logout. */
 export interface SettingsAccountModel {
   heading: string
-  /** Brain mark is part of the name label, not a separate icon. */
+  /**
+   * The signed-in user's own display name, unadorned. The shell states the rule for every identity
+   * affordance — it "stays *your* monogram, never the MemeOn mark" (`avatarMenu` in
+   * useAppShellScreen) — and this row is that same affordance in card form, so nothing leads it.
+   * The brain that used to is MemeOn's mark, not Lou's: it read as the product claiming the name.
+   */
   nameLabel: string
   providerLabel: string
   logoutLabel: string
@@ -20,7 +26,14 @@ export interface SettingsAccountModel {
 /** One service row today; list-shaped for a second connection. */
 export interface SettingsConnectionModel {
   key: string
-  /** `Discord` — a drawn gamepad icon leads the row. */
+  /**
+   * The mark drawn ahead of the label, or `null` for a text-only row. It is the hook's call and not
+   * the screen's because the screen renders whatever rows it is handed: one glyph spelled into the
+   * markup is a glyph every future connection inherits, which is precisely how a gamepad came to
+   * label Discord. `null` on every row today — see the row itself for why Discord has no mark.
+   */
+  icon: IconName | null
+  /** `Discord`, spelled the way the design spells it everywhere: plain text. */
   serviceLabel: string
   stateLabel: string
   linked: boolean
@@ -80,6 +93,12 @@ export function buildSettingsScreenModel({
       rows: [
         {
           key: 'discord',
+          /* Discord is text on all four surfaces it reaches — the nav link, the footer, the avatar
+             menu and this row — and the icon set deliberately has no `discord` glyph to reach for:
+             the mark is a filled logo, so stroking it at 1.5 to join the family both chokes its eye
+             holes at 16px and modifies a mark whose guidelines require it be reproduced unmodified.
+             See the PROVENANCE block in atoms/icon.tsx. */
+          icon: null,
           serviceLabel: copy.connections.discord.service,
           /* `Me` carries no Discord field, so the app cannot know: it says the one thing it does
              know rather than guessing "Linked". See the receipt's Known gaps. */

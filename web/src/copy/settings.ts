@@ -6,7 +6,10 @@ export const settingsCopy = {
   intro: 'Make yourself at home.',
   account: {
     heading: 'Account',
-    /** a drawn brain icon leads the name label */
+    /**
+     * The display name, unadorned — no leading mark. It keeps its function shape because the label
+     * is the seam a future "Signed in as …" would be spelled at, not because anything prefixes it.
+     */
     name: (name: string) => `${name}`,
     provider: 'Masky avatar',
     logOut: sharedCopy.logOut,

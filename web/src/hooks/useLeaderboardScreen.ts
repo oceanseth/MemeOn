@@ -2,7 +2,6 @@ import { useProjectedActor } from './useProjectedActor'
 import { useAuth } from './useAuth'
 import { leaderboardCopy } from '../copy/leaderboard'
 import { apiFetch } from '../lib/api'
-import type { IconName } from '@/atoms/icon'
 import type { LeaderRow } from '../lib/types'
 import { leaderboardMachine, type LeaderboardPhase } from '../stores/leaderboardMachine'
 import { useMountEffect } from './useMountEffect'
@@ -43,8 +42,11 @@ export interface LeaderboardRowModel {
   /** `<Avatar>` draws the monogram fallback itself whenever there is no picture. */
   avatarSrc: string | null
   rankNumeral: string
-  /** a podium row's drawn medal, or null past the top three */
-  medal: IconName | null
+  /**
+   * The podium metal this row wears, or null past the top three. Rank picks the metal here because
+   * rank is the model's fact; what colour a metal is stays the screen's.
+   */
+  medal: PodiumMetal | null
   linkLabel: string
   collectionLabel: string
   portfolioLabel: string
@@ -53,6 +55,13 @@ export interface LeaderboardRowModel {
 }
 
 const copy = leaderboardCopy
+
+/**
+ * The three podium metals, in rank order. A metal rather than an `IconName`: all three tiles draw
+ * the one `medal` glyph, so the name the screen needs is which place it is, not which glyph.
+ */
+const METALS = ['gold', 'silver', 'bronze'] as const
+export type PodiumMetal = (typeof METALS)[number]
 
 /** The whole row as one utterance, so the emoji columns can stay decorative. */
 function rowLabel(leader: LeaderRow, rank: number, isMe: boolean): string {
@@ -72,7 +81,7 @@ export function buildLeaderboardRowModel(
     isMe,
     avatarSrc: leader.picture,
     rankNumeral: `${index + 1}`,
-    medal: index < 3 ? 'medal' : null,
+    medal: METALS[index] ?? null,
     linkLabel: rowLabel(leader, index + 1, isMe),
     collectionLabel: copy.row.collection(leader.collectionSize),
     portfolioLabel: copy.row.portfolio(leader.portfolioValue),

@@ -1,4 +1,5 @@
 import { Button } from '@/atoms/button'
+import { Icon } from '@/atoms/icon'
 import { cn } from '../lib/cn'
 import type { HeroVideoModel } from '../lib/heroVideoModel'
 
@@ -16,6 +17,12 @@ const SOUND_PLACEMENT = 'absolute right-3 bottom-3 max-md:top-2 max-md:right-2 m
 /**
  * The promo film in a raised frame, with the two pills as its only controls — never the UA's grey
  * bar. Pure: which pill shows, and what it says, comes from the model (`hooks/useHeroVideo`).
+ *
+ * The sound pill's glyph reads off its own `aria-pressed`, which the model sets from `muted`. The
+ * model has no `muted` field to hand out, and the other route — matching `soundLabel` against
+ * `copy/heroVideo` — would make a tier component import `copy/`, which the tier check forbids.
+ * Glyph and words deliberately say different things, as the pre-sweep pair did: the glyph is the
+ * state the film is in, the label is the press that changes it ("Sound on" while it is muted).
  */
 export function HeroVideo({ model, className }: { model: HeroVideoModel; className?: string }) {
   return (
@@ -36,7 +43,10 @@ export function HeroVideo({ model, className }: { model: HeroVideoModel; classNa
           className={PLAY_PLACEMENT}
           {...model.playButtonProps}
         >
-          <span aria-hidden="true">▶</span> {model.playLabel}
+          <span aria-hidden="true">
+            <Icon name="play" size={16} />
+          </span>{' '}
+          {model.playLabel}
         </Button>
       )}
       {model.showSoundPill && (
@@ -47,6 +57,14 @@ export function HeroVideo({ model, className }: { model: HeroVideoModel; classNa
           className={SOUND_PLACEMENT}
           {...model.soundButtonProps}
         >
+          {/* `=== true` on purpose: `aria-pressed` is typed Booleanish, and the string 'false' is
+              truthy — the model writes a boolean, and this keeps it that way if it ever stops */}
+          <span aria-hidden="true">
+            <Icon
+              name={model.soundButtonProps['aria-pressed'] === true ? 'volume-2' : 'volume-x'}
+              size={14}
+            />
+          </span>{' '}
           {model.soundLabel}
         </Button>
       )}

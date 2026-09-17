@@ -120,7 +120,12 @@ export function MarketplaceScreen({
               {filtersToggleLabel}
             </Button>
           </div>
-          <Link {...createLinkProps} className={mintLink}>{mintLabel}</Link>
+          <Link {...createLinkProps} className={mintLink}>
+            <span aria-hidden="true">
+              <Icon name="circle-plus" size={16} />
+            </span>
+            {mintLabel}
+          </Link>
         </Toolbar>
         {/* on phones the filter rows collapse behind the disclosure so the grid starts on the first screenful */}
         <div

@@ -58,9 +58,13 @@ export const profileCopy = {
     tradeWith: (name: string) => `Trade with ${name}`,
     share: 'Share binder',
     settings: 'Settings',
+    /**
+     * Words only. The off/on pair used to spell a raw ☆/★ here, which is how the emoji sweep
+     * walked past it — a character inside a copy string is not markup. It is `useProfileScreen`'s
+     * `followGlyph` now (`star`/`star-filled`), on the same footing as `friendGlyph` and the stat
+     * glyphs that left this file in 8165e4e.
+     */
     follow: {
-      glyph: '☆',
-      glyphOn: '★',
       label: 'Follow',
       labelOn: 'Following',
       busy: 'Following…',

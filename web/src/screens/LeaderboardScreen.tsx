@@ -31,6 +31,23 @@ const PODIUM = 'h-full text-center md:w-54.5 md:flex-col md:items-center max-md:
 
 const RANK_NUMERAL = 'w-7 shrink-0 text-center text-lg font-semibold text-muted-foreground tabular-nums'
 
+/**
+ * The podium ornament: one `medal` glyph in the rank's metal, with the rank numeral beside it.
+ *
+ * The numeral is not decoration. The 🥇🥈🥉 this replaced carried the place *inside* the disc; the
+ * glyph does not — it engraves a fixed "1" at every rank (`M12 18v-2h-.5` in `atoms/icon.tsx`), so
+ * the pip reads as an engraving and never as a place. Gold and bronze are then one silhouette at
+ * one size with nothing but hue between them, which is a thin thread to hang third place on and no
+ * thread at all in a monochrome print or a red-green eye. The numeral puts the place back on shape.
+ *
+ * The metal goes on the wrapper rather than on `Icon`: the glyph strokes in `currentColor`, so one
+ * class tints medal and numeral together and both class names stay literal for the linter.
+ * `linkLabel` already announces "Rank 2 …", so the whole cluster stays `aria-hidden` — this is a
+ * visual restatement of something already spoken, not a second voice.
+ */
+const PODIUM_MEDAL = 'inline-flex items-center gap-0.5 leading-none'
+const PODIUM_RANK = 'text-lg font-semibold tabular-nums max-md:text-base'
+
 function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: string }) {
   return (
     <Item
@@ -156,16 +173,23 @@ export function LeaderboardScreen({
                     frame={l.rankNumeral === '1' ? 'primary' : 'none'}
                     className={PODIUM}
                   >
-                    <span aria-hidden="true" className="text-2xl leading-none max-md:text-xl">
-                      {l.medal &&
-                        (l.rankNumeral === '1' ? (
-                          <Icon name="medal" size={28} className="text-warning-foreground" />
-                        ) : l.rankNumeral === '2' ? (
-                          <Icon name="medal" size={28} className="text-muted-foreground" />
-                        ) : (
-                          <Icon name="medal" size={28} className="text-warning" />
-                        ))}
-                    </span>
+                    {l.medal ? (
+                      <span
+                        aria-hidden="true"
+                        data-slot="podium-medal"
+                        className={cn(
+                          PODIUM_MEDAL,
+                          l.medal === 'gold'
+                            ? 'text-podium-gold'
+                            : l.medal === 'silver'
+                              ? 'text-podium-silver'
+                              : 'text-podium-bronze',
+                        )}
+                      >
+                        <Icon name="medal" size={28} />
+                        <span className={PODIUM_RANK}>{l.rankNumeral}</span>
+                      </span>
+                    ) : null}
                     <Avatar name={l.name} src={l.avatarSrc} size="podium" loading="lazy" />
                     <ItemTitle size="lg" truncate className="min-w-0 flex-1 md:w-full md:flex-none md:text-center">
                       {l.name}

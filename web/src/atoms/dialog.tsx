@@ -3,6 +3,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
 import type { Styled } from '@/atoms/field'
+import { Icon } from '@/atoms/icon'
 
 export function Dialog(props: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
@@ -75,7 +76,13 @@ export const dialogContentVariants = cva(
   },
 )
 
-/** The ✕ is a 40px neutral raised square in the card's corner — the glyph is the button. */
+/**
+ * The ✕ is a 40px neutral raised square in the card's corner — the glyph is the button. The mark
+ * itself is the drawn `x`, which is held to a 10.5u span inside its 24 box precisely so it reads
+ * as a mark sitting in the well rather than filling it; 22px of box puts ~10px of ink in the 40,
+ * which is what the character it replaces measured. The well, the hit area and the relief are
+ * unchanged — `text-base` now only sets the box's own metrics, not the glyph's size.
+ */
 const CLOSE_BUTTON = cn(
   'absolute top-6 right-6 inline-flex size-10 cursor-pointer items-center justify-center pointer-coarse:size-11',
   'rounded-sm material-raised p-0 text-base text-foreground',
@@ -132,7 +139,9 @@ export function DialogContent({
             disabled={closeDisabled}
             className={CLOSE_BUTTON}
           >
-            <span aria-hidden="true">✕</span>
+            <span aria-hidden="true">
+              <Icon name="x" size={22} />
+            </span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Popup>

@@ -50,7 +50,9 @@ export function AppShellScreen({
           className={cn(buttonVariants({ variant: 'primary', size: 'sm' }), 'max-xl:hidden')}
           data-slot="mint-link"
         >
-          <span aria-hidden="true">＋</span>
+          <span aria-hidden="true">
+            <Icon name="circle-plus" size={16} />
+          </span>
           <span className="xl:max-2xl:sr-only">{mint.label}</span>
         </Link>
       )}
