@@ -28,7 +28,7 @@ const TITLE_ID = 'questbar-title'
 const ANCHOR_ID = 'quest-pop-anchor'
 
 /**
- * The braincell pill: "🧠 2,480", 40 tall in the header, 36 in the phone cluster. Plain, it is a
+ * The braincell pill: "2,480", 40 tall in the header, 36 in the phone cluster. Plain, it is a
  * raised span. While the ladder is live it is the popover's trigger and wears the ring
  * (`quest-bar.css`): the Button's own raised recipe on a plain `<button>`, rounded to a true pill
  * so the ring's `border-radius: inherit` hugs it, `hit-44`'s `position: relative` anchoring the

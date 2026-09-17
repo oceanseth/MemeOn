@@ -16,7 +16,7 @@ describe('buildSortChipsModel', () => {
       arrow: '↑',
       directionLabel: 'ascending',
     })
-    expect(views?.buttonProps['aria-label']).toBe('👁️ Views, ascending')
+    expect(views?.buttonProps['aria-label']).toBe('Views, ascending')
     expect(newest).toMatchObject({ selected: false, direction: null, arrow: null, directionLabel: null })
     expect(newest?.buttonProps['aria-label']).toBe('Newest')
   })

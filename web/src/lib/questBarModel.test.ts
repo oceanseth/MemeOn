@@ -55,7 +55,7 @@ describe('buildQuestBarModel', () => {
     expect(model.chips[1]).toMatchObject({
       kind: 'step',
       statusLabel: copy.status.pending,
-      rewardLabel: '+100🧠',
+      rewardLabel: '+100',
       rewardAriaLabel: copy.rewardAria(100),
     })
     expect(model.dismissProps['aria-label']).toBe(copy.dismissA11y)

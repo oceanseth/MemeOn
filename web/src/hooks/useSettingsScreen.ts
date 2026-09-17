@@ -20,7 +20,7 @@ export interface SettingsAccountModel {
 /** One service row today; list-shaped for a second connection. */
 export interface SettingsConnectionModel {
   key: string
-  /** `🎭 Discord` — emoji stays emoji. */
+  /** `Discord` — a drawn gamepad icon leads the row. */
   serviceLabel: string
   stateLabel: string
   linked: boolean

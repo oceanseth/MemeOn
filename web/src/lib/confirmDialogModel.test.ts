@@ -75,7 +75,7 @@ describe('buildConfirmDialogModel', () => {
     model.onOpenChange(false)
 
     expect(onCancel).not.toHaveBeenCalled()
-    expect(model.title).toBe('⚠️ Delete forever?')
+    expect(model.title).toBe('Delete forever?')
     expect(model.confirmLabel).toBe('Working…')
     expect(model.busy).toBe(true)
     expect(model.cancelButtonProps.disabled).toBe(true)

@@ -108,8 +108,8 @@ describe('memeDetailMachine reloads during actions', () => {
 
   it('keeps the memeplex notice and error channels exclusive', () => {
     const actor = readyActor()
-    actor.send({ type: 'SET_PLEX_MSG', msg: 'Added to the memeplex 🕸️' })
-    expect(actor.getSnapshot().context).toMatchObject({ plexMsg: 'Added to the memeplex 🕸️', plexErr: null })
+    actor.send({ type: 'SET_PLEX_MSG', msg: 'Added to the memeplex' })
+    expect(actor.getSnapshot().context).toMatchObject({ plexMsg: 'Added to the memeplex', plexErr: null })
 
     actor.send({ type: 'SET_PLEX_ERR', err: 'Already in the memeplex.' })
     expect(actor.getSnapshot().context).toMatchObject({ plexMsg: null, plexErr: 'Already in the memeplex.' })

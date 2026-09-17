@@ -68,7 +68,7 @@ const sourceMeme = (id: string) => ({
   tierKey: 'paper',
   listing: null,
   createdAt: '2026-09-09T00:00:00.000Z',
-  tier: { key: 'paper', name: 'Paper', emoji: '📄', minViews: 0, color: '#fff' },
+  tier: { key: 'paper', name: 'Paper', minViews: 0, color: '#fff' },
   value: 1,
 })
 
