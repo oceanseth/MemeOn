@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Alert, AlertAction } from '@/atoms/alert'
 import { Button, buttonVariants } from '@/atoms/button'
 import { Card } from '@/atoms/card'
+import { Icon } from '@/atoms/icon'
 import { Item, ItemMedia, ItemTitle } from '@/atoms/item'
 import { PageContainer } from '@/atoms/page-container'
 import { Spinner } from '@/atoms/spinner'
@@ -38,16 +39,16 @@ export function DiscordLinkScreen({
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
       <div className={cn(COLUMN, 'pt-14 max-md:pt-6')}>
-        {/* the brain mark is the page's one ornament and stays an emoji */}
+        {/* the brain mark is the page's one ornament, drawn from the Central set */}
         <p aria-hidden="true" className="m-0 text-6xl leading-none">
-          🧠
+          <Icon name="brain" size={64} />
         </p>
         <h1 className={cn(TITLE, 'mt-2.5')}>{heading ?? errTitle}</h1>
         {showConfirm && (
           <>
             <p className="mx-auto mt-4 mb-0 max-w-[65ch] text-base text-muted-foreground">
               Your Discord name is never shown to other MemeOn users — <code>/memeon</code> just
-              ranks your own binder 💼 and your friends' memes 🤝 first.
+              ranks your own binder and your friends' memes first.
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
               <Button variant="primary" onClick={onConfirm}>
@@ -82,8 +83,8 @@ export function DiscordLinkScreen({
             {showDone && (
               <Alert variant="success" className="block w-full max-w-none">
                 <p className={ROW_LABEL}>
-                  Head back to Discord — <code>/memeon</code> now ranks your binder 💼 and friends'
-                  memes 🤝 first.
+                  Head back to Discord — <code>/memeon</code> now ranks your binder and friends'
+                  memes first.
                 </p>
                 <AlertAction>
                   <Link className={buttonVariants({ size: 'sm' })} to="/discord">

@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { TIERS } from '@memeon/shared/tiers'
 import { memeDetailCopy } from '../copy/memeDetail'
 import { apiFetch, post } from '../lib/api'
+import type { IconName } from '@/atoms/icon'
 import { beginMaskyLogin } from '../lib/auth'
 import { buildConfirmDialogModel, type ConfirmDialogModel } from '../lib/confirmDialogModel'
 import { createDetailBinderGate } from '../lib/detailBinderGate'
@@ -21,7 +22,7 @@ const CONFIRM_SPEND_OVER = 25
 const copy = memeDetailCopy
 
 export interface CapRow { userId: string; sharesLabel: string; label: string }
-export interface DetailActionModel { label: string; variant?: 'destructive' | undefined; buttonProps: { onClick: () => void } }
+export interface DetailActionModel { label: string; icon: IconName; variant?: 'destructive' | undefined; buttonProps: { onClick: () => void } }
 export type DetailLiveRegionProps = Pick<HTMLAttributes<HTMLDivElement>, 'role' | 'aria-live'>
 export interface DetailNotFoundModel {
   message: string
@@ -327,10 +328,10 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
   } : null
 
   const actions: DetailActionModel[] = []
-  if (user) actions.push({ label: copy.actions.remix, buttonProps: { onClick: () => navigate(`/binder/new?remix=${meme.id}`) } })
-  if (user && meme.creatorId === ARCHIVE_SUB) actions.push({ label: copy.actions.claim, buttonProps: { onClick: () => send({ type: 'SET_CONFIRMING_CLAIM', confirming: true }) } })
-  if (myShares === 100) actions.push({ label: meme.private ? copy.actions.makePublic : copy.actions.makePrivate, buttonProps: { onClick: () => void act(() => post(`/api/memes/${meme.id}/visibility`, { private: !meme.private }), meme.private ? copy.toasts.madePublic : copy.toasts.madePrivate) } })
-  if (myShares === 100 && meme.private) actions.push({ label: copy.actions.delete, variant: 'destructive', buttonProps: { onClick: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: true }) } })
+  if (user) actions.push({ label: copy.actions.remix, icon: 'dna', buttonProps: { onClick: () => navigate(`/binder/new?remix=${meme.id}`) } })
+  if (user && meme.creatorId === ARCHIVE_SUB) actions.push({ label: copy.actions.claim, icon: 'film', buttonProps: { onClick: () => send({ type: 'SET_CONFIRMING_CLAIM', confirming: true }) } })
+  if (myShares === 100) actions.push({ label: meme.private ? copy.actions.makePublic : copy.actions.makePrivate, icon: meme.private ? 'globe' : 'eye-off', buttonProps: { onClick: () => void act(() => post(`/api/memes/${meme.id}/visibility`, { private: !meme.private }), meme.private ? copy.toasts.madePublic : copy.toasts.madePrivate) } })
+  if (myShares === 100 && meme.private) actions.push({ label: copy.actions.delete, icon: 'trash-2', variant: 'destructive', buttonProps: { onClick: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: true }) } })
 
   /* Seller is a holder — resolve the name like cap-table rows. */
   const capTableNote: string | null = meme.listing && meme.listing.shares > 0

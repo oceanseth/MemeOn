@@ -18,6 +18,7 @@ import { cn } from '../lib/cn'
 import type { DetailTierLadderModel, MemeDetailScreenModel } from '../hooks/useMemeDetailScreen'
 import { ConfirmDialog } from '@/molecules/confirm-dialog'
 import { MemeplexPanel } from '@/organisms/memeplex-panel'
+import { Icon } from '@/atoms/icon'
 
 const PAGE_INTRO = 'A tiny piece of the internet. See who’s holding it.'
 const SHARE_CAPTION = 'Every load counts a view; every new place it travels counts as a reshare.'
@@ -108,7 +109,12 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
 
   /* share-link arrival: no session — meme name is the H1, no PageHead */
   const isPublic = !!detail.signedOut
-  const privateBadge = detail.private ? <Badge variant="info">🙈 private</Badge> : null
+  const privateBadge = detail.private ? <Badge variant="info">
+      <span aria-hidden="true">
+        <Icon name="eye-off" size={14} />
+      </span>{' '}
+      private
+    </Badge> : null
 
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
@@ -129,12 +135,33 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
             minted by <InlineLink render={<Link {...detail.creatorLinkProps} />}>{detail.creatorName}</InlineLink>
             {' · '}owned by <InlineLink render={<Link {...detail.ownerLinkProps} />}>{detail.ownerName}</InlineLink>
             {detail.tagsLabel && <> · {detail.tagsLabel}</>}
-            {detail.remixLinkProps && <> · <InlineLink render={<Link {...detail.remixLinkProps} />}>🧬 remix</InlineLink></>}
+            {detail.remixLinkProps && <> · <InlineLink render={<Link {...detail.remixLinkProps} />}>
+              <span aria-hidden="true">
+                <Icon name="dna" size={14} />
+              </span>{' '}
+              remix
+            </InlineLink></>}
             {detail.sourceLinkProps && <> · <InlineLink {...detail.sourceLinkProps}>{detail.sourceLabel}</InlineLink></>}
           </p>
           <p className="mt-4 mb-0 text-lg font-medium text-foreground tabular-nums">
-            👁️ {detail.viewsLabel} {detail.viewsWord} · 🔁 {detail.resharesLabel} {detail.resharesWord}
-            {' · '}🧠 {detail.valueLabel} card value
+            <span className="inline-flex items-center gap-0.5">
+              <span aria-hidden="true">
+                <Icon name="eye" size={16} />
+              </span>{' '}
+              {detail.viewsLabel} {detail.viewsWord}
+            </span>
+            <span className="inline-flex items-center gap-0.5">
+              · <span aria-hidden="true">
+                <Icon name="refresh-cw" size={16} />
+              </span>{' '}
+              {detail.resharesLabel} {detail.resharesWord}
+            </span>
+            <span className="inline-flex items-center gap-0.5">
+              · <span aria-hidden="true">
+                <Icon name="brain" size={16} />
+              </span>{' '}
+              {detail.valueLabel} card value
+            </span>
             {detail.holdingsLabel && <> · you hold {detail.holdingsLabel}</>}
           </p>
           {/* the page's two live regions: inside this ungapped column an empty one costs nothing,
@@ -227,7 +254,13 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
                 </Field>
                 <Field>
                   <FieldLabel>
-                    <span aria-hidden="true">🧠/share</span><span className="sr-only">braincells per share</span>
+                    <span className="inline-flex items-center gap-0.5">
+                      <span aria-hidden="true">
+                        <Icon name="brain" size={14} />
+                      </span>{' '}
+                      <span aria-hidden="true">/share</span>
+                    </span>
+                    <span className="sr-only">braincells per share</span>
                   </FieldLabel>
                   <Input type="number" className="w-25" {...detail.list.priceInputProps} />
                 </Field>
@@ -249,6 +282,9 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
                     className={cn(action.variant === 'destructive' && 'ml-auto')}
                     {...action.buttonProps}
                   >
+                    <span aria-hidden="true">
+                      <Icon name={action.icon} size={16} />
+                    </span>{' '}
                     {action.label}
                   </Button>
                 ))}
@@ -263,7 +299,12 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           >
             {detail.sources.length > 0 && (
               <Card>
-                <CardTitle render={<h3 />} className="mb-1.5">📡 Where it’s spreading</CardTitle>
+                <CardTitle render={<h3 />} className="mb-1.5">
+                  <span aria-hidden="true">
+                    <Icon name="satellite" size={16} />
+                  </span>{' '}
+                  Where it’s spreading
+                </CardTitle>
                 <div className={rowList}>
                   {detail.sources.map((source) => (
                     <div key={source.id} className={personRow}>
@@ -272,7 +313,12 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
                           ? <InlineLink {...source.linkProps}>{source.label}</InlineLink>
                           : source.label}
                       </span>
-                      <span className="ml-auto shrink-0 text-muted-foreground tabular-nums">👁️ {source.viewsLabel}</span>
+                      <span className="ml-auto inline-flex shrink-0 items-center gap-0.5 text-muted-foreground tabular-nums">
+                      <span aria-hidden="true">
+                        <Icon name="eye" size={14} />
+                      </span>{' '}
+                      {source.viewsLabel}
+                    </span>
                     </div>
                   ))}
                 </div>
