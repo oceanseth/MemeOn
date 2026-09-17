@@ -25,7 +25,7 @@ export interface AvatarMenuItemModel {
 
 /**
  * The account menu behind the header avatar, at every width: the routes the bar does not carry,
- * the appearance radio, the legal pair, and Log out — one press away, at every width.
+ * the appearance radio, and Log out — one press away, at every width.
  */
 export interface AvatarMenuModel {
   name: string
@@ -34,12 +34,6 @@ export interface AvatarMenuModel {
   triggerProps: { 'aria-label': string }
   /** The routes, in order: Profile · 🏆 Top Brains · Settings · 🔧 Developers · Discord. */
   items: AvatarMenuItemModel[]
-  /**
-   * Privacy Policy · Terms of Service, their own quiet group above Log out — where a phone app
-   * keeps them. Below the shell cut the tab bar replaces the site footer, and this is then the
-   * one place the legal pages are reachable.
-   */
-  legal: AvatarMenuItemModel[]
   /** 🌗 Auto · ☀️ Light · 🌙 Dark, under the model's label; the same three the Settings page offers. */
   theme: { label: string; value: ThemePreference; onChange: (preference: ThemePreference) => void }
   logOut: { label: string; onSelect: () => void }
@@ -100,14 +94,6 @@ export function AvatarMenu({ model }: { model: AvatarMenuModel }) {
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup data-slot="avatar-menu-legal">
-          {model.legal.map((item) => (
-            <DropdownMenuItem key={item.key} render={<Link to={item.to} />} data-slot="avatar-menu-item">
-              {item.label}
-            </DropdownMenuItem>
-          ))}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={model.logOut.onSelect} data-slot="avatar-menu-logout">

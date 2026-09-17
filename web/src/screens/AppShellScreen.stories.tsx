@@ -246,9 +246,6 @@ export const Phone390: Story = {
     const menu = await canvas.findByRole('menu')
     await expect(within(menu).getByRole('menuitem', { name: '🏆 Top Brains' })).toHaveAttribute('href', '/leaderboard')
     await expect(within(menu).getByRole('menuitemradio', { name: /Dark/ })).toBeInTheDocument()
-    // the site footer is gone under the tab bar, so the menu is the phone's door to the legal pages
-    await expect(within(menu).getByRole('menuitem', { name: 'Privacy Policy' })).toHaveAttribute('href', '/privacy')
-    await expect(within(menu).getByRole('menuitem', { name: 'Terms of Service' })).toHaveAttribute('href', '/terms')
     await expect(within(menu).getByRole('menuitem', { name: 'Log out' })).toBeInTheDocument()
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull())

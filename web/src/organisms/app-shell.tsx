@@ -100,8 +100,7 @@ const TAB_BAR = cn(
 /**
  * One quiet line: the name at the text step, the five links; a hairline above, the safe area below.
  * Where the tab bar is, it is not: a phone app has no site footer, so below the cut the signed-in
- * page ends at its last row and the account menu carries Privacy Policy and Terms of Service. The
- * public frame has no tab bar and keeps the footer at every width.
+ * page ends at its last row. The public frame has no tab bar and keeps the footer at every width.
  */
 const FOOTER = cn(
   'mt-12 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border',

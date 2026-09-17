@@ -18,10 +18,6 @@ const model: AvatarMenuModel = {
     { key: 'developers', label: '🔧 Developers', to: '/developers' },
     { key: 'discord', label: 'Discord', to: '/discord' },
   ],
-  legal: [
-    { key: 'privacy', label: 'Privacy Policy', to: '/privacy' },
-    { key: 'terms', label: 'Terms of Service', to: '/terms' },
-  ],
   theme: { label: 'Theme', value: 'light', onChange: onThemeChange },
   logOut: { label: 'Log out', onSelect: onLogout },
 }
@@ -77,9 +73,8 @@ export const Closed: Story = {
 }
 
 /**
- * Open: your name over the five routes, the theme radio under its label, the legal pair in their
- * own group, Log out last. Picking a theme reports the arm and keeps the menu open; Log out
- * reports to its handler.
+ * Open: your name over the five routes, the theme radio under its label, Log out last. Picking a
+ * theme reports the arm and keeps the menu open; Log out reports to its handler.
  */
 export const Open: Story = {
   args: { model: { ...model, defaultOpen: true } },
@@ -103,10 +98,6 @@ export const Open: Story = {
     await userEvent.click(within(menu).getByRole('menuitemradio', { name: /Dark/ }))
     await expect(onThemeChange).toHaveBeenCalledWith('dark')
     await expect(canvas.getByRole('menu')).toBeInTheDocument()
-    // the legal pair is its own group, so the phone (footer gone under the tab bar) still reaches them
-    const legal = menu.querySelector<HTMLElement>('[data-slot="avatar-menu-legal"]')!
-    await expect(within(legal).getByRole('menuitem', { name: 'Privacy Policy' })).toHaveAttribute('href', '/privacy')
-    await expect(within(legal).getByRole('menuitem', { name: 'Terms of Service' })).toHaveAttribute('href', '/terms')
     const logout = within(menu).getByRole('menuitem', { name: 'Log out' })
     await expect(logout).not.toHaveAttribute('href')
     await userEvent.click(logout)
