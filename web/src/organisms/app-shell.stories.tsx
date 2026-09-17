@@ -38,10 +38,6 @@ const avatarMenu = (
         { key: 'profile', label: 'Profile', to: `/u/${meLou.sub}` },
         { key: 'settings', label: 'Settings', to: '/settings' },
       ],
-      legal: [
-        { key: 'privacy', label: 'Privacy Policy', to: '/privacy' },
-        { key: 'terms', label: 'Terms of Service', to: '/terms' },
-      ],
       theme: { label: 'Theme', value: 'light', onChange: fn() },
       logOut: { label: 'Log out', onSelect: fn() },
     }}

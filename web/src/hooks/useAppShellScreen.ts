@@ -189,10 +189,6 @@ export function buildAppShellScreenModel({
             { key: 'developers', label: copy.accountMenu.developers, to: '/developers' },
             { key: 'discord', label: copy.accountMenu.discord, to: '/discord' },
           ],
-          legal: [
-            { key: 'privacy', label: copy.accountMenu.privacy, to: '/privacy' },
-            { key: 'terms', label: copy.accountMenu.terms, to: '/terms' },
-          ],
           theme: { label: copy.accountMenu.theme, value: theme.value, onChange: theme.onChange },
           logOut: { label: copy.accountMenu.logOut, onSelect: onLogout },
         }
