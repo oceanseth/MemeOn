@@ -55,7 +55,7 @@ const memeMetaVariants = cva('flex flex-1 flex-col', {
   defaultVariants: { size: 'default' },
 })
 
-const memeTitleVariants = cva('font-display font-normal text-foreground', {
+const memeTitleVariants = cva('m-0 font-display font-normal text-foreground', {
   variants: {
     size: {
       /** two lines are reserved (2 × 24, or 2 × 26 in the narrow text face), so a one-line title
@@ -127,10 +127,13 @@ export interface MemeCardProps {
   footerRight?: ReactNode | undefined
   /** `lg` is detail hero only (`MemeDetailScreen`). */
   size?: MemeCardSize | null | undefined
+  /** Detail hero only: the card title is the page's H1. */
+  titleAs?: 'h1' | undefined
 }
 
-export function MemeCard({ model, subTitle, footer, footerRight, size }: MemeCardProps) {
+export function MemeCard({ model, subTitle, footer, footerRight, size, titleAs }: MemeCardProps) {
   const scale = size ?? 'default'
+  const TitleTag = titleAs === 'h1' ? 'h1' : 'span'
   return (
     <article
       ref={model.cardRef}
@@ -165,9 +168,9 @@ export function MemeCard({ model, subTitle, footer, footerRight, size }: MemeCar
           )}
         </span>
         <div data-slot="meme-meta" className={cn(memeMetaVariants({ size: scale }))}>
-          <span data-slot="meme-title" className={cn(memeTitleVariants({ size: scale }))} id={model.titleId}>
+          <TitleTag data-slot="meme-title" className={cn(memeTitleVariants({ size: scale }))} id={model.titleId}>
             {model.title}
-          </span>
+          </TitleTag>
           {subTitle}
           <span data-slot="meme-stats" className={STATS}>
             <span aria-hidden="true" className="inline-flex items-center gap-0.5">

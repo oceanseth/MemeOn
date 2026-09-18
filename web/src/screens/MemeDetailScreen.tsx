@@ -1,26 +1,24 @@
 import { Link } from 'react-router-dom'
+import type { ReactNode } from 'react'
 import { Alert } from '@/atoms/alert'
 import { Badge } from '@/atoms/badge'
 import { Button, buttonVariants } from '@/atoms/button'
 import { Card, CardTitle } from '@/atoms/card'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
 import { Field, FieldLabel, Hint } from '@/atoms/field'
-import { Heading } from '@/atoms/heading'
 import { InlineLink } from '@/atoms/inline-link'
 import { Input } from '@/atoms/input'
 import { MemeCard } from '@/atoms/meme-card'
 import { PageContainer } from '@/atoms/page-container'
-import { PageHead } from '@/atoms/page-head'
 import { Progress } from '@/atoms/progress'
 import { Skeleton } from '@/atoms/skeleton'
 import { Spinner } from '@/atoms/spinner'
 import { cn } from '../lib/cn'
-import type { DetailTierLadderModel, MemeDetailScreenModel } from '../hooks/useMemeDetailScreen'
+import type { DetailTierLadderModel, MemeDetailModel, MemeDetailScreenModel } from '../hooks/useMemeDetailScreen'
 import { ConfirmDialog } from '@/molecules/confirm-dialog'
 import { MemeplexPanel } from '@/organisms/memeplex-panel'
 import { Icon } from '@/atoms/icon'
 
-const PAGE_INTRO = 'A tiny piece of the internet. See who’s holding it.'
 const SHARE_CAPTION = 'Every load counts a view; every new place it travels counts as a reshare.'
 
 /**
@@ -35,10 +33,9 @@ const detailGrid = cn(
 
 const rail = 'flex min-w-0 flex-col gap-4.5'
 
-/* one DOM order for both layouts: stacked = title → hero → rail; split = hero left, meta top-right */
-const heroPlacement = '2xl:col-start-1 2xl:row-start-1 2xl:row-span-2'
-const metaPlacement = '2xl:col-start-2 2xl:row-start-1'
-const railPlacement = '2xl:col-start-2 2xl:row-start-2'
+/* one DOM order for both layouts: stacked = hero → rail; split = hero left, rail right */
+const heroPlacement = '2xl:col-start-1 2xl:row-start-1'
+const railPlacement = '2xl:col-start-2 2xl:row-start-1'
 
 /** The caption under a panel heading: 13/16 on ink-muted. */
 const caption = 'mt-1.5 mb-0 text-sm text-muted-foreground'
@@ -55,6 +52,28 @@ const rowList = 'mt-3 flex flex-col gap-2'
 
 /** Tier line: success colour signed in, link colour on public card — one element, one swap. */
 const heroTierLine = 'm-0 text-sm font-semibold'
+
+/** Minted / owned / tags / remix — lives at the bottom of the rail so the card can lead. */
+function Provenance({ detail, badge }: { detail: MemeDetailModel; badge: ReactNode }) {
+  return (
+    <div data-slot="detail-provenance" className="flex min-w-0 flex-col gap-2">
+      {badge}
+      <p className="m-0 text-base font-medium text-muted-foreground">
+        minted by <InlineLink render={<Link {...detail.creatorLinkProps} />}>{detail.creatorName}</InlineLink>
+        {' · '}owned by <InlineLink render={<Link {...detail.ownerLinkProps} />}>{detail.ownerName}</InlineLink>
+        {detail.tagsLabel && <> · {detail.tagsLabel}</>}
+        {detail.remixLinkProps && <> · <InlineLink render={<Link {...detail.remixLinkProps} />}>
+          <span aria-hidden="true">
+            <Icon name="dna" size={14} />
+          </span>{' '}
+          remix
+        </InlineLink></>}
+        {detail.sourceLinkProps && <> · <InlineLink {...detail.sourceLinkProps}>{detail.sourceLabel}</InlineLink></>}
+        {detail.holdingsLabel && <> · you hold {detail.holdingsLabel}</>}
+      </p>
+    </div>
+  )
+}
 
 /** Where this card sits on the rarity ladder, and the tier's own line of hype under it. */
 function TierLadder({ model, hype }: { model: DetailTierLadderModel; hype: string }) {
@@ -96,7 +115,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
       >
         <Spinner />{loadingLabel}
       </div>
-      <div aria-hidden="true" className={detailGrid}>
+      <div aria-hidden="true" className={cn('mt-5', detailGrid)}>
         <Skeleton className="aspect-square" />
         <div className={rail}>
           <Skeleton className="h-22" />
@@ -107,7 +126,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
     </PageContainer>
   )
 
-  /* share-link arrival: no session — meme name is the H1, no PageHead */
+  /* share-link arrival: no session — the hero card title is the H1 */
   const isPublic = !!detail.signedOut
   const privateBadge = detail.private ? <Badge variant="info">
       <span aria-hidden="true">
@@ -118,63 +137,17 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
 
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      {!isPublic && (
-        <PageHead level="h1" title={detail.title} subtitle={PAGE_INTRO} className="mb-3.5">
-          {privateBadge}
-        </PageHead>
-      )}
+      <div className="mt-5">
+      {/* block flow: empty live regions collapse, so they cost no space above the card */}
+      <div {...detail.noticeProps}>{detail.notice && <Alert variant="success" role="none" className="mb-3">{detail.notice}</Alert>}</div>
+      <div {...detail.errorProps}>{detail.error && <Alert variant="error" role="none" className="mb-3">{detail.error}</Alert>}</div>
       <div className={detailGrid}>
-        <div data-slot="detail-metadata" className={cn('flex min-w-0 flex-col', metaPlacement)}>
-          {isPublic && (
-            <Heading as="h1" size="display" className="wrap-anywhere">
-              {/* the gap between the name and its seal is the row's, not the heading's */}
-              <span className="flex flex-wrap items-center gap-x-3">{detail.title}{privateBadge}</span>
-            </Heading>
-          )}
-          <p className={cn('mb-0 text-base font-medium text-muted-foreground', isPublic ? 'mt-2.5' : 'mt-0')}>
-            minted by <InlineLink render={<Link {...detail.creatorLinkProps} />}>{detail.creatorName}</InlineLink>
-            {' · '}owned by <InlineLink render={<Link {...detail.ownerLinkProps} />}>{detail.ownerName}</InlineLink>
-            {detail.tagsLabel && <> · {detail.tagsLabel}</>}
-            {detail.remixLinkProps && <> · <InlineLink render={<Link {...detail.remixLinkProps} />}>
-              <span aria-hidden="true">
-                <Icon name="dna" size={14} />
-              </span>{' '}
-              remix
-            </InlineLink></>}
-            {detail.sourceLinkProps && <> · <InlineLink {...detail.sourceLinkProps}>{detail.sourceLabel}</InlineLink></>}
-          </p>
-          <p className="mt-4 mb-0 text-lg font-medium text-foreground tabular-nums">
-            <span className="inline-flex items-center gap-0.5">
-              <span aria-hidden="true">
-                <Icon name="eye" size={16} />
-              </span>{' '}
-              {detail.viewsLabel} {detail.viewsWord}
-            </span>
-            <span className="inline-flex items-center gap-0.5">
-              · <span aria-hidden="true">
-                <Icon name="arrows-left-right" size={16} />
-              </span>{' '}
-              {detail.resharesLabel} {detail.resharesWord}
-            </span>
-            <span className="inline-flex items-center gap-0.5">
-              · <span aria-hidden="true">
-                <Icon name="brain" size={16} />
-              </span>{' '}
-              {detail.valueLabel} card value
-            </span>
-            {detail.holdingsLabel && <> · you hold {detail.holdingsLabel}</>}
-          </p>
-          {/* the page's two live regions: inside this ungapped column an empty one costs nothing,
-             so the rail keeps its 18px rhythm whether a message is showing or not */}
-          <div {...detail.noticeProps}>{detail.notice && <Alert variant="success" role="none" className="mt-3">{detail.notice}</Alert>}</div>
-          <div {...detail.errorProps}>{detail.error && <Alert variant="error" role="none" className="mt-3">{detail.error}</Alert>}</div>
-        </div>
-
         <div data-slot="detail-hero" className={cn('self-start', heroPlacement)}>
           {/* MemeCard lg with tier line + meter in footer so they sit inside the card padding */}
           <MemeCard
             model={detail.card}
             size="lg"
+            titleAs="h1"
             subTitle={
               <p
                 data-slot="detail-tier-line"
@@ -339,7 +312,10 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
             </div>
             {detail.capTableNote && <p className={caption}>{detail.capTableNote}</p>}
           </Card>
+
+          <Provenance detail={detail} badge={privateBadge} />
         </div>
+      </div>
       </div>
       <ConfirmDialog model={detail.deleteDialog} />
       <ConfirmDialog model={detail.buyDialog} />
