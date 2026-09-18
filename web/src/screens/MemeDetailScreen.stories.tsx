@@ -254,10 +254,16 @@ export const Owner: Story = {
     // every rail panel is a Card with a CardTitle, and the delete action is the destructive pill
     await expect(canvasElement.querySelectorAll('[data-slot="card-title"]').length).toBeGreaterThan(3)
     await expect(hero.querySelectorAll('[data-slot="meme-card"]')).toHaveLength(1)
+    await expect(canvasElement.querySelector('[data-slot="page-head"]')).toBeNull()
+    await expect(canvasElement.querySelector('[data-slot="detail-metadata"]')).toBeNull()
+    const provenance = canvasElement.querySelector('[data-slot="detail-provenance"]')
+    await expect(provenance).not.toBeNull()
+    await expect(provenance!.closest('[data-slot="detail-rail"]')).not.toBeNull()
+    await expect(canvas.getByRole('heading', { level: 1, name: paperMeme.title }).closest('[data-slot="meme-card"]')).not.toBeNull()
   },
 }
 
-/** The public share view: the meme's own name is the H1 and Masky is the single bubblegum. */
+/** The public share view: the card title is the H1 and Masky is the single bubblegum. */
 export const LoggedOut: Story = {
   args: {
     detail: {
@@ -276,6 +282,9 @@ export const LoggedOut: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('heading', { level: 1, name: listedHolo.title })).toBeVisible()
+    await expect(canvas.getByRole('heading', { level: 1, name: listedHolo.title }).closest('[data-slot="meme-card"]')).not.toBeNull()
+    await expect(canvasElement.querySelector('[data-slot="page-head"]')).toBeNull()
+    await expect(canvasElement.querySelector('[data-slot="detail-metadata"]')).toBeNull()
     await expect(canvas.getByRole('button', { name: 'Log in with Masky' })).toBeVisible()
     await expect(canvas.queryByText(/listed at/)).toBeNull()
     await expect(canvas.getByText('for sale')).toBeVisible()
@@ -283,12 +292,15 @@ export const LoggedOut: Story = {
     const lines = canvasElement.querySelectorAll('[data-slot="detail-tier-line"]')
     await expect(lines).toHaveLength(1)
     await expect(lines[0]!.closest('[data-slot="meme-card"]')).not.toBeNull()
+    const provenance = canvasElement.querySelector('[data-slot="detail-provenance"]')
+    await expect(provenance).not.toBeNull()
+    await expect(provenance!.closest('[data-slot="detail-rail"]')).not.toBeNull()
   },
 }
 
 export const Dark: Story = { args: Owner.args, globals: { theme: 'dark' } }
 
-/** 390×844: one column — hero and ladder, then the rail's cards at the 20px margin. */
+/** 390×844: one column — hero card first, then the rail, provenance at the bottom. */
 const phone = {
   parameters: {
     viewport: {

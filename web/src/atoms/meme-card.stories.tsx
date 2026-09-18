@@ -199,13 +199,13 @@ export const Focused: Story = {
  * a wrapping title at the `3xl` step, roomier meta, no hover lift.
  */
 export const Large: Story = {
-  args: { model: buildMemeCardModel(longTitleMeme), size: 'lg' },
+  args: { model: buildMemeCardModel(longTitleMeme), size: 'lg', titleAs: 'h1' },
   parameters: { cardWidth: 420 },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const card = canvas.getByRole('article', { name: longTitleMeme.title })
     await expect(card.dataset.size).toBe('lg')
-    const title = within(card).getByText(longTitleMeme.title)
+    const title = within(card).getByRole('heading', { level: 1, name: longTitleMeme.title })
     // the hero title wraps rather than ellipsizing: nothing about the meme is cropped away
     await expect(card.querySelector('[data-slot="meme-art"]')).toHaveStyle({ objectFit: 'contain' })
     await expect(title).toHaveStyle({ whiteSpace: 'normal' })
@@ -222,7 +222,7 @@ export const Large: Story = {
  * listing state in the footer's right slot. Same atom, one prop apart from a grid thumb.
  */
 export const Hero: Story = {
-  args: { model: buildMemeCardModel(listedHolo), size: 'lg' },
+  args: { model: buildMemeCardModel(listedHolo), size: 'lg', titleAs: 'h1' },
   parameters: { cardWidth: 420 },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
