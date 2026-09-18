@@ -1,0 +1,167 @@
+import type { ButtonHTMLAttributes, HTMLAttributes } from 'react'
+import type { LinkProps } from 'react-router-dom'
+import { questBarCopy as copy } from '../copy/questBar'
+import { trackDialogOpener, type DialogOpenerRef } from './dialogOpener'
+import { buildMemeCardModel, type MemeCardModel } from './memeCardModel'
+import type { Meme, QuestKey, QuestStep } from './types'
+
+const QUEST_LINKS: Partial<Record<QuestKey, string>> = {
+  mint: '/binder/new',
+  share: '/binder',
+  friend: '/friends',
+  trade: '/marketplace',
+}
+
+const PACK_ID = 'pack'
+const PACK_TITLE_ID = 'pack-title'
+
+type QuestButtonProps = Pick<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  'onClick' | 'disabled' | 'aria-busy'
+>
+
+export type QuestChipModel =
+  | {
+      kind: 'claim'
+      key: QuestKey
+      label: string
+      /** The one-shot claim is in flight: full opacity, progress cursor, no second press. */
+      busy: boolean
+      buttonProps: QuestButtonProps
+    }
+  | {
+      kind: 'step'
+      key: QuestKey
+      done: boolean
+      title: string
+      statusLabel: string
+      rewardLabel: string
+      rewardAriaLabel: string
+      linkProps: Pick<LinkProps, 'to'> | null
+    }
+
+export interface QuestPackModel {
+  /** The `DialogFrame` contract: the frame stays mounted and this is its whole truth. */
+  open: boolean
+  /**
+   * Every dismissal Base UI recognises lands here with `false` — Escape, a press on the scrim and
+   * the ✕ alike.
+   */
+  onOpenChange: (open: boolean) => void
+  /**
+   * Whatever was focused when the pack opened. A dialog opened from state has no trigger for Base
+   * UI to return to on its own, so the frame is handed the opener explicitly.
+   */
+  opener?: DialogOpenerRef | undefined
+  /** unique per dialog on the page; the frame builds its portal anchor and default ids from it */
+  id: string
+  titleId: string
+  description: string
+  cards: MemeCardModel[]
+  showCards: boolean
+  /** accessible name for the ✕; it is one of the dialog's two exits */
+  closeLabel: string
+  binderLinkProps: Pick<LinkProps, 'to' | 'onClick'>
+  exploreButtonProps: QuestButtonProps
+}
+
+export interface QuestBarModel {
+  visible: boolean
+  showSteps: boolean
+  completionLabel: string
+  /** The ladder in tens, 0–100: the braincell pill's ring reads it as `data-progress`. */
+  progressPercent: number
+  /** "quests 1 of 5" — the pill's sr-only suffix while the ladder is live. */
+  progressLabel: string
+  chips: QuestChipModel[]
+  /** Next step instructions for assistive tech — the rail has no hover title. */
+  hint: string | null
+  dismissLabel: string
+  dismissProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-label'>
+  errorMessage: string | null
+  errorProps: Pick<HTMLAttributes<HTMLSpanElement>, 'role'>
+  /** Always present, never conditional: the frame owns focus restoration and needs to outlive a dismissal. */
+  pack: QuestPackModel
+  /** stories only: mount the ladder's popover open. The app leaves Base UI to own the open state. */
+  defaultOpen?: boolean | undefined
+}
+
+export function buildQuestBarModel({
+  steps,
+  packMemes,
+  packReward,
+  busy,
+  claimError = null,
+  onClaimPack,
+  onDismissPack,
+  onDismissSteps = () => {},
+}: {
+  steps: QuestStep[]
+  packMemes: Meme[] | null
+  packReward: number
+  busy: boolean
+  claimError?: string | null
+  onClaimPack: () => void
+  onDismissPack: () => void
+  onDismissSteps?: () => void
+}): QuestBarModel {
+  const nextIndex = steps.findIndex((step) => !step.done)
+  const nextStep = nextIndex < 0 ? null : steps[nextIndex]!
+  const packOpen = packMemes !== null
+  const done = steps.filter((step) => step.done).length
+
+  return {
+    visible: steps.length > 0 || packOpen,
+    showSteps: steps.length > 0,
+    completionLabel: `${done}/${steps.length}`,
+    progressPercent: steps.length > 0 ? Math.round((done / steps.length) * 10) * 10 : 0,
+    progressLabel: copy.progress(done, steps.length),
+    /* All five quests always visible — no disclosure step. */
+    chips: steps.map((step): QuestChipModel => {
+      if (step.key === 'pack' && !step.done) {
+        return {
+          kind: 'claim',
+          key: step.key,
+          label: busy ? copy.claim.busy : copy.claim.label(step.title, step.reward),
+          busy,
+          buttonProps: { onClick: onClaimPack, disabled: busy, 'aria-busy': busy },
+        }
+      }
+      const to = step.done ? null : QUEST_LINKS[step.key]
+      return {
+        kind: 'step',
+        key: step.key,
+        done: step.done,
+        title: step.title,
+        statusLabel: step.done ? copy.status.done : copy.status.pending,
+        rewardLabel: `+${step.reward}`,
+        rewardAriaLabel: copy.rewardAria(step.reward),
+        linkProps: to ? { to } : null,
+      }
+    }),
+    /* one line of guidance at a time: a failed claim outranks the next step's instructions */
+    hint: claimError ? null : nextStep?.hint ?? null,
+    dismissLabel: copy.dismiss,
+    dismissProps: { onClick: onDismissSteps, 'aria-label': copy.dismissA11y },
+    errorMessage: claimError,
+    errorProps: { role: 'alert' },
+    pack: {
+      open: packOpen,
+      onOpenChange: (next: boolean) => {
+        if (!next) onDismissPack()
+      },
+      opener: trackDialogOpener(PACK_ID, packOpen),
+      id: PACK_ID,
+      titleId: PACK_TITLE_ID,
+      description:
+        packMemes && packMemes.length > 0
+          ? copy.pack.withMemes(packReward)
+          : copy.pack.emptyVault(packReward),
+      cards: (packMemes ?? []).map(buildMemeCardModel),
+      showCards: (packMemes?.length ?? 0) > 0,
+      closeLabel: copy.pack.close,
+      binderLinkProps: { to: '/binder', onClick: onDismissPack },
+      exploreButtonProps: { onClick: onDismissPack },
+    },
+  }
+}

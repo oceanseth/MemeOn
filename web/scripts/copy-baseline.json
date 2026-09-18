@@ -1,0 +1,11 @@
+{
+  "screens/BinderScreen.tsx": 2,
+  "screens/CreateMemeScreen.tsx": 20,
+  "screens/DevelopersScreen.tsx": 1,
+  "screens/DiscordPageScreen.tsx": 2,
+  "screens/FriendsScreen.tsx": 2,
+  "screens/InviteScreen.tsx": 1,
+  "screens/LandingScreen.tsx": 13,
+  "screens/MemeDetailScreen.tsx": 2,
+  "screens/ProfileScreen.tsx": 3
+}

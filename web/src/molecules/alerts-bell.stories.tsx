@@ -1,0 +1,232 @@
+import type { Meta, StoryObj } from '@storybook/react-vite'
+import { useState } from 'react'
+import { MemoryRouter } from 'react-router-dom'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
+import { readSale, unreadFriend, unreadSale } from '../../.storybook/fixtures'
+import { alertsBellCopy as copy } from '../copy/alertsBell'
+import { buildAlertsBellModel } from '../lib/alertsBellModel'
+import { AlertsBell } from '@/molecules/alerts-bell'
+
+const alerts = [unreadSale, unreadFriend, readSale]
+const onOpenChange = fn()
+
+/** A full inbox: the badge caps, the list caps, and the tail says so. */
+const flood = Array.from({ length: 1284 }, (_, index) => ({
+  ...unreadSale,
+  id: `alert-flood-${index}`,
+  message: `someone bought ${index + 1} shares`,
+}))
+
+const rows = (canvasElement: HTMLElement) =>
+  canvasElement.querySelectorAll<HTMLElement>('[data-slot="alert-row"]')
+
+const meta = {
+  title: 'Molecules/AlertsBell',
+  component: AlertsBell,
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <div className="flex min-h-55 justify-end p-6">
+          <Story />
+        </div>
+      </MemoryRouter>
+    ),
+  ],
+  args: { model: buildAlertsBellModel({ alerts, open: false, onOpenChange }) },
+} satisfies Meta<typeof AlertsBell>
+
+export default meta
+type Story = StoryObj<typeof meta>
+
+/** Closed: the ghost icon button carries the bell and the count bubble; a press asks to open. */
+export const ClosedUnread: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    onOpenChange.mockClear()
+    const trigger = canvas.getByRole('button', { name: copy.trigger(2) })
+    await expect(trigger).toHaveAttribute('data-slot', 'alerts-trigger')
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    await expect(trigger).toHaveTextContent('2')
+    await expect(trigger.querySelector('[data-slot="bell-badge"]')).toHaveAttribute('aria-hidden', 'true')
+    await expect(canvas.queryByRole('dialog')).toBeNull()
+    await userEvent.click(trigger)
+    await expect(onOpenChange).toHaveBeenCalledWith(true)
+  },
+}
+
+export const OpenUnread: Story = {
+  args: { model: buildAlertsBellModel({ alerts, open: true, onOpenChange }) },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const trigger = canvas.getByRole('button', { name: copy.trigger(2) })
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true')
+    // Base UI owns the popup's id and points the trigger at it
+    const popup = canvas.getByRole('dialog', { name: copy.title })
+    await expect(trigger).toHaveAttribute('aria-controls', popup.id)
+    // the popup stays inside the tree it was written in, under the atom's positioner
+    await expect(canvasElement.contains(popup)).toBe(true)
+    await expect(popup).toHaveAttribute('data-slot', 'alerts-pop')
+    await expect(popup.closest('[data-slot="popover-positioner"]')).not.toBeNull()
+    onOpenChange.mockClear()
+    await userEvent.click(trigger)
+    await expect(onOpenChange).toHaveBeenLastCalledWith(false)
+    onOpenChange.mockClear()
+
+    // the row is the link, so its name carries the unread cue, the message and the timestamp
+    const saleLink = canvas.getAllByText(unreadSale.message)[0]!.closest('a')!
+    await expect(saleLink).toHaveAttribute('data-slot', 'alert-row')
+    await expect(saleLink).toHaveAttribute('data-unread', 'true')
+    await expect(saleLink).toHaveAttribute('href', `/m/${unreadSale.memeId}`)
+    await expect(saleLink).toHaveAccessibleName(expect.stringContaining(copy.unreadRow))
+    await expect(saleLink.offsetHeight).toBeGreaterThanOrEqual(44)
+    await expect(saleLink.querySelector('[data-slot="alert-dot"]')).not.toBeNull()
+    await userEvent.click(saleLink)
+    await expect(onOpenChange).toHaveBeenCalledWith(false)
+    onOpenChange.mockClear()
+
+    const friendLink = canvas.getByText(unreadFriend.message).closest('a')!
+    await expect(friendLink).toHaveAttribute('href', `/u/${encodeURIComponent(unreadFriend.subjectSub!)}`)
+    await userEvent.click(friendLink)
+    await expect(onOpenChange).toHaveBeenCalledWith(false)
+
+    // a read row still links, but carries no cue: no dot, no weight (it repeats the sale's
+    // message, so it is the last match in document order)
+    const readMessage = canvas.getAllByText(readSale.message).at(-1)!
+    const readRow = readMessage.closest('[data-slot="alert-row"]')!
+    await expect(readRow).not.toHaveAttribute('data-unread')
+    await expect(readRow.querySelector('[data-slot="alert-dot"]')).toBeNull()
+    await expect(getComputedStyle(readMessage).fontWeight).not.toBe(getComputedStyle(saleLink.querySelector('[data-slot="alert-message"]')!).fontWeight)
+  },
+}
+
+/**
+ * Opened by keyboard, closed by keyboard: Escape dismisses and focus returns to the bell. The
+ * popover is controlled, so the story owns the state Base UI reports into.
+ */
+function StatefulBell() {
+  const [open, setOpen] = useState(true)
+  return (
+    <AlertsBell
+      model={buildAlertsBellModel({
+        alerts,
+        open,
+        onOpenChange: (next) => {
+          onOpenChange(next)
+          setOpen(next)
+        },
+      })}
+    />
+  )
+}
+
+export const OpenKeyboardDismiss: Story = {
+  args: { model: buildAlertsBellModel({ alerts, open: true, onOpenChange }) },
+  render: () => <StatefulBell />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    onOpenChange.mockClear()
+    const trigger = canvas.getByRole('button', { name: copy.trigger(2) })
+    trigger.focus()
+    await userEvent.keyboard('{Escape}')
+    await expect(onOpenChange).toHaveBeenCalledWith(false)
+    await waitFor(() => expect(canvas.queryByRole('dialog', { name: copy.title })).toBeNull())
+    await expect(trigger).toHaveFocus()
+  },
+}
+
+/** Reading the list must not erase what was new: the frozen ids keep their dot and weight. */
+export const OpenUnreadStaysMarked: Story = {
+  args: {
+    model: buildAlertsBellModel({
+      alerts: alerts.map((alert) => ({ ...alert, read: true })),
+      open: true,
+      onOpenChange,
+      wasUnread: [unreadSale.id, unreadFriend.id],
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: copy.title })).toBeInTheDocument()
+    await expect(canvasElement.querySelectorAll('[data-slot="alert-row"][data-unread]')).toHaveLength(2)
+    await expect(canvas.getAllByText(copy.unreadRow)).toHaveLength(2)
+  },
+}
+
+export const ManyUnread: Story = {
+  args: { model: buildAlertsBellModel({ alerts: flood, open: true, onOpenChange }) },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: copy.trigger(1284) })).toHaveTextContent('99+')
+    // 20 rows and a tail: the tail is the panel's own band, not a twenty-first alert
+    await expect(rows(canvasElement)).toHaveLength(20)
+    await expect(canvas.getByText(copy.overflow(20))).toHaveAttribute('data-slot', 'alerts-foot')
+    // the list is capped and scrolls; the title band above it does not move with it
+    const list = canvasElement.querySelector('[data-slot="alerts-list"]')!
+    await expect(list.scrollHeight).toBeGreaterThan(list.clientHeight)
+  },
+}
+
+/** A dead API is a problem, not an empty inbox: the same block, wearing the warning tone. */
+export const AlertsOffline: Story = {
+  args: { model: buildAlertsBellModel({ alerts: [], open: true, onOpenChange, failed: true }) },
+  play: async ({ canvasElement }) => {
+    await expect(
+      within(canvasElement).getByText(copy.offline),
+    ).toHaveAttribute('data-slot', 'alerts-empty-label')
+  },
+}
+
+export const AllRead: Story = {
+  args: { model: buildAlertsBellModel({ alerts: [readSale], open: true, onOpenChange }) },
+}
+/** Nothing yet: one quiet row says so, no bubble on the bell. */
+export const Empty: Story = {
+  args: { model: buildAlertsBellModel({ alerts: [], open: true, onOpenChange }) },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(rows(canvasElement)).toHaveLength(0)
+    await expect(canvasElement.querySelector('[data-slot="alerts-list"]')).toBeNull()
+    await expect(canvas.getByText(copy.empty)).toHaveAttribute('data-slot', 'alerts-empty-label')
+    await expect(canvasElement.querySelector('[data-slot="bell-badge"]')).toBeNull()
+  },
+}
+
+/**
+ * The list as the API writes it: every message opens with an emoji, and one of them is the
+ * starter-pack sentence that runs to six lines at `text-base` in a 340 panel. The emoji is the
+ * row's mark, lifted out of the sentence, and the message is clamped to two lines under it.
+ */
+export const FromTheWire: Story = {
+  args: {
+    model: buildAlertsBellModel({
+      alerts: [
+        {
+          ...unreadSale,
+          id: 'wire-pack',
+          type: 'friend',
+          message:
+            '🎁 Starter pack opened: 10 shares of "Doomscroll Hamster", 10 shares of "Cat.exe Has Stopped", 10 shares of "Procrastination Sloth" and +20 braincells!',
+        },
+        { ...unreadSale, id: 'wire-tier', type: 'tierup', message: '🚀 "pushrax" tiered up to SILVER (Uncommon) at 10 views!' },
+        { ...readSale, id: 'wire-mint', type: 'friend', message: '🆕 CyberSeth minted "jim carey idea jobs"' },
+        { ...readSale, id: 'wire-quest', memeId: null, type: 'friend', message: '🧠 +25 braincells — make a friend ✅' },
+        { ...unreadFriend, id: 'wire-follow', message: '⭐ CyberSeth followed you' },
+        { ...unreadFriend, id: 'wire-request', read: true, message: '👋 CyberSeth sent you a friend request' },
+      ],
+      open: true,
+      onOpenChange,
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    // the emoji is the mark, so the message itself no longer carries it
+    const pack = canvas.getByText(/^Starter pack opened/)
+    await expect(pack).toHaveAttribute('data-slot', 'alert-message')
+    const row = pack.closest('[data-slot="alert-row"]')!
+    await expect(row.querySelector('[data-slot="alert-mark"]')).toHaveTextContent('🎁')
+    // clamped: the row stays a row no matter how long the sentence the server wrote is
+    await expect(row.clientHeight).toBeLessThan(96)
+  },
+}
+
+export const Dark: Story = { ...OpenUnread, globals: { theme: 'dark' } }

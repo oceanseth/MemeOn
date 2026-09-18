@@ -14,24 +14,34 @@ builds). Masky login opens the system browser and returns via the
 
 ## Run it
 
+From the repository root:
+
 ```
-cd mobile
-npm install
-npx expo start        # scan QR with Expo Go, or press i / a for simulators
+corepack enable
+corepack pnpm install
+pnpm --filter mobile start        # scan QR with Expo Go, or press i / a for simulators
 ```
 
+Expo SDK 57 requires Node 22.13 or newer. Metro discovers this pnpm workspace
+automatically; after switching package-manager layouts, clear its cache with
+`pnpm --filter mobile start --clear`.
+
 Note: `memeon://` deep links don't resolve to Expo Go, so Masky login requires a
-dev build (`npx expo run:ios` / `run:android` or an EAS development build).
+dev build (`pnpm --filter mobile run ios` / `pnpm --filter mobile run android` or
+an EAS development build).
 
 ## Ship it to the stores
 
-One-time setup:
+One-time setup, starting from the repository root:
 
 ```
 npm i -g eas-cli
+cd mobile
 eas login                       # expo.dev account
 eas init                        # links the project (writes extra.eas.projectId)
 ```
+
+Run the following EAS commands from `mobile/`.
 
 **iOS (App Store):**
 

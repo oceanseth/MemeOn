@@ -9,7 +9,7 @@
 import { randomUUID } from 'node:crypto'
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm'
 import * as db from '../src/db'
-import { TIERS } from '../../shared/tiers'
+import { TIERS } from '@memeon/shared/tiers'
 import type { Meme } from '../src/types'
 
 const SEARCHES = ['classic meme', 'doge meme', 'cat meme', 'reaction meme', 'fail meme', 'dance meme']

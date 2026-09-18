@@ -1,0 +1,51 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "jsPlugins": ["@shadcn/lint", "./lint/memeon.js"],
+  "plugins": [],
+  "categories": { "correctness": "off" },
+  "ignorePatterns": ["**/*.test.ts", "**/*.test.tsx"],
+  "settings": {
+    "shadcn": {
+      "ui": "@/atoms",
+      "componentImports": ["(^|/)(molecules|organisms)/"],
+      "ignoreImports": ["react-router-dom"],
+      "note": "Tokens: src/index.css @theme. Appearance belongs in the component's variants. Exceptions live in web/.oxlintrc.json."
+    }
+  },
+  "rules": {
+    "memeon/no-native-chrome": "error",
+    "shadcn/no-raw-colors": "error",
+    "shadcn/no-unknown-classes": [
+      "error",
+      {
+        "allow": [
+          "foil-card", "foil-frame", "foil-media", "sheen", "sparkle", "tier-card",
+          "tier-paper", "tier-silver", "tier-holo", "tier-chrome", "tier-gold", "tier-prismatic", "tier-shiny"
+        ]
+      }
+    ],
+    "shadcn/no-inline-styles": "error",
+    "shadcn/no-restyle": [
+      "error",
+      {
+        "allow": ["layout"],
+        "contracts": [
+          { "pattern": "^Card$", "allow": ["layout", "gap", "gap-x", "gap-y"] },
+          { "pattern": "^(PageContainer|Empty)$", "allow": ["layout", "spacing"] },
+          { "pattern": "^(Skeleton|SkeletonBlock|SkeletonRow|SkeletonCard)$", "allow": ["layout", "h", "size"] },
+          { "pattern": "^Icon$", "allow": ["layout", "color"] }
+        ]
+      }
+    ],
+    "shadcn/no-arbitrary-values": ["error", { "allow": ["layout", "pointer-coarse:text-[length:max(16px,1em)]"] }],
+    "shadcn/require-static-classes": "error"
+  },
+  "overrides": [
+    { "files": ["src/atoms/**"], "rules": { "shadcn/no-restyle": "off" } },
+    // atoms/file-drop.tsx is the picker itself: a real file input is the only thing that opens the
+    // OS dialog and the only control a Field label can name, so it stays — invisible, at the full
+    // size of the well, with every pixel and every word painted under it.
+    { "files": ["src/atoms/file-drop.tsx"], "rules": { "memeon/no-native-chrome": "off" } },
+    { "files": ["**/*.stories.tsx"], "rules": { "shadcn/no-inline-styles": "off", "shadcn/no-restyle": "off" } }
+  ]
+}

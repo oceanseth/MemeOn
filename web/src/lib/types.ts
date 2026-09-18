@@ -1,4 +1,4 @@
-import type { Tier } from '../../../shared/tiers'
+import type { Tier } from '@memeon/shared/tiers'
 
 export interface Listing {
   sellerId: string
@@ -54,7 +54,7 @@ export interface Me {
   sub: string
   name: string
   picture: string | null
-  /** braincells 🧠 */
+  /** braincells — the plain number; the brain glyph is drawn by the Icon atom */
   coins: number
   portfolioValue: number
   collectionSize: number
@@ -114,4 +114,14 @@ export interface Alert {
   subjectSub?: string | null
   read: boolean
   createdAt: string
+}
+
+export interface GiphyResult {
+  id: string
+  title: string
+  stillUrl: string
+  gifUrl: string
+  mp4Url: string | null
+  author: string | null
+  url: string
 }

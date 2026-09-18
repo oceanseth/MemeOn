@@ -1,9 +1,11 @@
 # Node
 node_modules/
 *.log
+.turbo/
 
 # Frontend build
 web/dist/
+web/storybook-static/
 
 # API build artifacts
 api/dist/
@@ -24,6 +26,7 @@ terraform.tfvars
 # Environment
 .env
 .env.*
+localstorage.json
 
 
 # Expo

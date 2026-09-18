@@ -1,0 +1,275 @@
+import type { ButtonHTMLAttributes } from 'react'
+import { tradesCopy } from '../copy/trades'
+import { braincells } from './braincells'
+import type { IconName } from '@/atoms/icon'
+import type { Trade, TradeSide } from './types'
+
+const copy = tradesCopy.card
+
+export type TradeAction = 'accept' | 'decline' | 'cancel'
+
+/** What a trade list knows about a meme once its record has landed. */
+export interface TradeMemeInfo {
+  title: string
+  imageUrl: string
+  tierKey: string
+  /** the tier's product name on its own — what a `TierChip` prints */
+  tierName: string
+  tierLabel: string
+  reshares: number
+}
+
+export type TradeMemeInfoMap = Readonly<Record<string, TradeMemeInfo>>
+
+export interface TradeMemeLineModel {
+  id: string
+  sharesLabel: string
+  /** a neutral placeholder until the record lands — a raw id never reaches the DOM as prose */
+  title: string
+  thumbUrl: string | null
+  tierKey: string | null
+  /** the chip's label; null until the meme's record lands */
+  tierName: string | null
+  tierLabel: string | null
+  resharesLabel: string | null
+  detailHref: string
+}
+
+export interface TradeSideSummaryModel {
+  /** whose side this is, read from where you are standing: "You give" / "You get" */
+  ownerLabel: string
+  empty: boolean
+  memeLines: readonly TradeMemeLineModel[]
+  coinsLabel: string | null
+}
+
+export interface TradeActionModel {
+  kind: TradeAction
+  label: string
+  /**
+   * Which button the row wears: the constructive answer is the card's one bubblegum, declining is
+   * the neutral raised pill beside it, and withdrawing your own live offer is destructive.
+   */
+  variant: 'primary' | 'default' | 'destructive'
+  buttonProps: Pick<
+    ButtonHTMLAttributes<HTMLButtonElement>,
+    'onClick' | 'disabled' | 'aria-busy' | 'aria-label'
+  >
+}
+
+export interface TradeCardModel {
+  id: string
+  /** the deal in one line, from where you are standing: "CyberSeth offered you a deal" */
+  partiesLabel: string
+  statusLabel: string
+  /** the drawn glyph leading the status badge */
+  statusIcon: IconName
+  /** the badge only earns its place once the subline stops saying who is waiting */
+  showStatusBadge: boolean
+  /** "Waiting on you" / "Waiting on them" / the resolved word — the subline's first half */
+  waitingLabel: string
+  /** relative age — the scannable value */
+  createdLabel: string
+  /** machine-readable original, for <time dateTime> */
+  createdAtIso: string
+  /** exact local timestamp, kept on hover and for assistive tech */
+  createdTitle: string
+  /** What leaves your binder — always "You give". */
+  give: TradeSideSummaryModel
+  /** What you receive — always "You get". */
+  get: TradeSideSummaryModel
+  /** what leaves your binder the moment you accept; null when there is nothing to answer */
+  finalityLine: string | null
+  actions: readonly TradeActionModel[]
+}
+
+const STATUS_BADGE: Record<Trade['status'], IconName> = {
+  proposed: 'hourglass',
+  accepted: 'circle-check',
+  declined: 'circle-x',
+  cancelled: 'ban',
+}
+
+/** The badge's words (the glyph is drawn by `statusIcon`). */
+const BADGE_LABEL: Record<Trade['status'], string> = {
+  proposed: copy.badge.proposed,
+  accepted: copy.badge.accepted,
+  declined: copy.badge.declined,
+  cancelled: copy.badge.cancelled,
+}
+
+/** The subline's first half once a trade is settled. */
+const STATUS_LINE: Record<Trade['status'], string> = {
+  proposed: copy.statusLine.proposed,
+  accepted: copy.statusLine.accepted,
+  declined: copy.statusLine.declined,
+  cancelled: copy.statusLine.cancelled,
+}
+
+const MINUTE = 60_000
+const HOUR = 60 * MINUTE
+const DAY = 24 * HOUR
+
+/** stands in for a title still in flight, until the meme's record lands */
+const PENDING_TITLE = '…'
+
+const sharesPhrase = (shares: number): string => copy.sharesOf(shares)
+
+/** Relative age is what you scan when triaging proposals; the exact value rides on <time>. */
+function relativeAge(createdAt: string, now: number): string {
+  const then = new Date(createdAt).getTime()
+  if (!Number.isFinite(then)) return ''
+  const elapsed = now - then
+  if (elapsed < MINUTE) return copy.time.justNow
+  if (elapsed < HOUR) return copy.time.minutesAgo(Math.floor(elapsed / MINUTE))
+  if (elapsed < DAY) return copy.time.hoursAgo(Math.floor(elapsed / HOUR))
+  if (elapsed < 2 * DAY) return copy.time.yesterday
+  if (elapsed < 7 * DAY) return copy.time.daysAgo(Math.floor(elapsed / DAY))
+  return new Date(then).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+}
+
+/** One side of a deal as a sentence, for the confirmation dialog. */
+export function tradeSideSentence(side: TradeSide, memeNames: TradeMemeInfoMap): string {
+  const parts = side.memes.map(
+    (meme) => `${sharesPhrase(meme.shares)} "${memeNames[meme.memeId]?.title ?? copy.pendingMemeTitle}"`,
+  )
+  if (side.coins > 0) parts.push(braincells(side.coins))
+  return parts.length === 0 ? copy.sideSentence.nothing : parts.join(' + ')
+}
+
+/** Finality note under the wells for incoming proposals you can still answer. */
+function finalityLine(yours: TradeSide, memeNames: TradeMemeInfoMap): string | null {
+  const parts = yours.memes.map((meme) => {
+    const info = memeNames[meme.memeId]
+    const tier = info?.tierName ? `${info.tierName} ` : ''
+    return `${meme.shares} ${tier}share${meme.shares === 1 ? '' : 's'}`
+  })
+  if (yours.coins > 0) parts.push(braincells(yours.coins))
+  if (parts.length === 0) {
+    return copy.finality.nothingLeaves
+  }
+  const list =
+    parts.length === 1 ? parts[0]! : copy.finality.and(parts.slice(0, -1).join(', '), parts.at(-1)!)
+  return copy.finality.leaves(list)
+}
+
+function buildSideSummary(
+  side: TradeSide,
+  owner: string,
+  memeNames: TradeMemeInfoMap,
+): TradeSideSummaryModel {
+  return {
+    ownerLabel: owner,
+    empty: side.memes.length === 0 && side.coins === 0,
+    memeLines: side.memes.map((meme) => {
+      const info = memeNames[meme.memeId] ?? null
+      return {
+        id: meme.memeId,
+        sharesLabel: sharesPhrase(meme.shares),
+        title: info?.title ?? PENDING_TITLE,
+        thumbUrl: info?.imageUrl ?? null,
+        tierKey: info?.tierKey ?? null,
+        tierName: info?.tierName ?? null,
+        tierLabel: info?.tierLabel ?? null,
+        resharesLabel: info ? info.reshares.toLocaleString() : null,
+        detailHref: `/m/${meme.memeId}`,
+      }
+    }),
+    coinsLabel: side.coins > 0 ? braincells(side.coins) : null,
+  }
+}
+
+export function buildTradeCardModel({
+  trade,
+  meSub,
+  memeNames,
+  onRespond,
+  busyTradeId = null,
+  busyAction = null,
+  now = Date.now(),
+}: {
+  trade: Trade
+  meSub: string
+  memeNames: TradeMemeInfoMap
+  onRespond?: ((trade: Trade, action: TradeAction) => void) | undefined
+  /** the trade currently in flight; every action locks while one is */
+  busyTradeId?: string | null
+  /** which of that trade's actions is in flight, so only it reads as running */
+  busyAction?: TradeAction | null
+  /** injectable clock so stories and tests are deterministic */
+  now?: number
+}): TradeCardModel {
+  const mine = trade.fromId === meSub
+  const locked = busyTradeId !== null
+  const running = (kind: TradeAction): boolean => busyTradeId === trade.id && busyAction === kind
+  const open = trade.status === 'proposed'
+  const actions: TradeActionModel[] =
+    !open || !onRespond
+      ? []
+      : mine
+        ? [
+            {
+              kind: 'cancel',
+              label: running('cancel') ? copy.actions.withdrawing : copy.actions.withdraw,
+              variant: 'destructive',
+              buttonProps: {
+                onClick: () => onRespond(trade, 'cancel'),
+                disabled: locked,
+                'aria-busy': running('cancel'),
+                'aria-label': copy.actions.withdrawA11y(trade.toName),
+              },
+            },
+          ]
+        : /* Decline first, Accept last — only Accept is primary. */
+          [
+            {
+              kind: 'decline',
+              label: running('decline') ? copy.actions.declining : copy.actions.decline,
+              variant: 'default',
+              buttonProps: {
+                onClick: () => onRespond(trade, 'decline'),
+                disabled: locked,
+                'aria-busy': running('decline'),
+                'aria-label': copy.actions.declineA11y(trade.fromName),
+              },
+            },
+            {
+              kind: 'accept',
+              label: running('accept') ? copy.actions.accepting : copy.actions.accept,
+              variant: 'primary',
+              buttonProps: {
+                onClick: () => onRespond(trade, 'accept'),
+                disabled: locked,
+                'aria-busy': running('accept'),
+                'aria-label': copy.actions.acceptA11y(trade.fromName),
+              },
+            },
+          ]
+
+  /* Wells are keyed to your perspective: offer/ask swap by proposer, left=give right=get. */
+  const yours = mine ? trade.offer : trade.ask
+  const theirs = mine ? trade.ask : trade.offer
+  return {
+    id: trade.id,
+    partiesLabel: open
+      ? mine
+        ? copy.parties.youOffered(trade.toName)
+        : copy.parties.offeredYou(trade.fromName)
+      : copy.parties.yourDeal(mine ? trade.toName : trade.fromName),
+    statusLabel: BADGE_LABEL[trade.status],
+    statusIcon: STATUS_BADGE[trade.status],
+    showStatusBadge: !open,
+    waitingLabel: open
+      ? mine
+        ? copy.waiting.onThem
+        : copy.waiting.onYou
+      : STATUS_LINE[trade.status],
+    createdLabel: relativeAge(trade.createdAt, now),
+    createdAtIso: trade.createdAt,
+    createdTitle: new Date(trade.createdAt).toLocaleString(),
+    give: buildSideSummary(yours, copy.sides.give, memeNames),
+    get: buildSideSummary(theirs, copy.sides.get, memeNames),
+    finalityLine: actions.length > 0 && !mine ? finalityLine(yours, memeNames) : null,
+    actions,
+  }
+}

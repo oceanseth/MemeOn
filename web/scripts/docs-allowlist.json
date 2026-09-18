@@ -1,0 +1,64 @@
+{
+  "allow": [
+    {
+      "name": "hooks/useXScreen.ts",
+      "file": "web/src/Anatomy.mdx",
+      "why": "The naming pattern, not a file: every screen has its own `useBinderScreen.ts`, `useTradesScreen.ts`, … and the tree's vocabulary for the set is `useXScreen`."
+    },
+    {
+      "name": "npm run check-tiers",
+      "file": "docs/OX_UI_HANDOFF.md",
+      "why": "Quoted 2026-09-08 worker prompt, before the pnpm/Turborepo move (PR #46). The archive banner says so."
+    },
+    {
+      "name": "npm run dev",
+      "file": "docs/OX_UI_HANDOFF.md",
+      "why": "Same quoted prompt (see the archive banner)."
+    },
+    {
+      "name": "npm run dev:web",
+      "file": "docs/OX_UI_HANDOFF.md",
+      "why": "Same quoted prompt (see the archive banner)."
+    },
+    {
+      "name": "npx storybook",
+      "file": "docs/OX_UI_HANDOFF.md",
+      "why": "Same quoted prompt (see the archive banner)."
+    },
+    {
+      "name": "web/src/stories/",
+      "file": "docs/OX_UI_HANDOFF.md",
+      "why": "The CLI example folder as it stood on 2026-09-08; deleted with the ox/ui merge."
+    },
+    {
+      "name": "atoms/MemeCard",
+      "file": "docs/OX_UI_HANDOFF.md",
+      "why": "A PascalCase file name at `ox/ui` @ ddd05e6, before the kebab-case rename (mo-6ru); the atom is `atoms/meme-card.tsx` today."
+    },
+    {
+      "name": "npm run test:og",
+      "file": "docs/OG_TESTING.md",
+      "why": "The flagship OG CLI is not in this checkout; the banner at the top of the document says so and the commands are its record."
+    },
+    {
+      "name": "npm run dev",
+      "file": "docs/OG_TESTING.md",
+      "why": "Part of the same recorded CLI usage (see the banner)."
+    },
+    {
+      "name": "scripts/og-check.mjs",
+      "file": "docs/OG_TESTING.md",
+      "why": "The CLI the banner says is missing; the implementation map records where it belongs."
+    },
+    {
+      "name": "web/src/atoms/PrismaticHomeButton.tsx",
+      "file": "docs/PRISMATIC_HOME_BUTTON.md",
+      "why": "An unbuilt specification; the banner at the top of the document says nothing implements it."
+    },
+    {
+      "name": "npm run dev:web",
+      "file": "docs/PRISMATIC_HOME_BUTTON.md",
+      "why": "Part of the same unbuilt specification (see the banner)."
+    }
+  ]
+}

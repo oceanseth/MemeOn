@@ -1,0 +1,29 @@
+packages:
+  - api
+  - mobile
+  - shared
+  - web
+
+autoInstallPeers: false
+
+allowBuilds:
+  '@firebase/util': true
+  esbuild: true
+  msw: true
+  protobufjs: true
+
+resolvePeersFromWorkspaceRoot: false
+
+packageExtensions:
+  # lucide-react's d.ts imports `ReactNode` from 'react'; without a peer on @types/react TypeScript walks
+  # up to the virtual store's hoisted copy, which is mobile's @types/react 19 (bigint in ReactNode) and
+  # `<CheckIcon />` fails to typecheck in web. Declaring the peer links web's own @types/react 18 beside it.
+  lucide-react@*:
+    peerDependencies:
+      '@types/react': ^18.0.0
+  react-router@*:
+    peerDependencies:
+      '@types/react': ^18.0.0
+  react-router-dom@*:
+    peerDependencies:
+      '@types/react': ^18.0.0
