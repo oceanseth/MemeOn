@@ -90,6 +90,14 @@ export function buildLeaderboardRowModel(
   }
 }
 
+/** Signed-in row only when it is sliced out of the visible window. Rank stays the unsliced index. */
+export function pinYouRow(
+  ranked: readonly LeaderboardRowModel[],
+  visibleLimit: number,
+): LeaderboardRowModel | null {
+  return ranked.slice(visibleLimit).find((row) => row.isMe) ?? null
+}
+
 /** Everything `LeaderboardScreen` renders. The hook is the engine; the screen is the terminal. */
 export function useLeaderboardScreen(): LeaderboardScreenModel {
   const [snapshot, send] = useProjectedActor(leaderboardMachine)
@@ -111,8 +119,7 @@ export function useLeaderboardScreen(): LeaderboardScreenModel {
   const ranked = ctx.leaders.map((leader, index) => buildLeaderboardRowModel(leader, index, meSub))
   const leaders = ranked.slice(0, ctx.visibleLimit)
   const hidden = ranked.length - leaders.length
-  // the pinned row is only worth a line when the reader cannot already see themselves
-  const youRow = ranked.slice(ctx.visibleLimit).find((row) => row.isMe) ?? null
+  const youRow = pinYouRow(ranked, ctx.visibleLimit)
 
   return {
     phase,
