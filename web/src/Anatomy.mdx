@@ -48,7 +48,7 @@ Beside the tiers, four folders are the engine side:
 | `DiscordLinkScreen` | `useDiscordLinkScreen()` | `DiscordLinkScreenModel` | `working` \| `done` \| `error` |
 | `DevelopersScreen` | `useDevelopersScreen()` | `DevelopersScreenModel` | `loading` \| `ready` \| `empty` \| `error` |
 | `SettingsScreen` | `useSettingsScreen()` | `SettingsScreenModel` | — (no machine: reads `useAuth()` and `useTheme()` only) |
-| `AuthStatusScreen` | `useAuthCallbackScreen()` · `useMobileAuthForwardScreen()` | `AuthStatusScreenModel` | `working` \| `error` (no machine: one effect each — the OAuth code exchange, the `memeon://` forward) |
+| `AuthStatusScreen` | `useAuthCallbackScreen()` · `useMobileAuthForwardScreen()` | `AuthStatusScreenModel` | `working` \| `error` (no machine: callback is `useMountEffect` + one-exchange-per-code in `lib/auth`, not a ran ref; mobile forward is the `memeon://` effect) |
 | `PrivacyScreen` | `buildPrivacyScreenModel()` in `lib/privacyModel.ts` | `LegalDocumentModel` (`lib/legalDocumentModel.ts`: prose as `paragraph` / `list` blocks of plain inline segments; `LegalDocument` renders them) | — (static copy; no machine) |
 | `TermsScreen` | `buildTermsScreenModel()` in `lib/termsModel.ts` | `LegalDocumentModel` | — (static copy; no machine) |
 
@@ -222,6 +222,8 @@ Layered onto the tiers and rules above, not a replacement for them:
   fed by `useAuthCallbackScreen` and `useMobileAuthForwardScreen`; both cross-origin navigations
   (`navigateToAuthorization`, `forwardToDeepLink`) go through `lib/authNavigation.ts`, which
   Storybook aliases to a recorder so the stories can assert the URL instead of leaving the iframe.
+  The callback is `useMountEffect` plus one in-flight `completeMaskyLogin` Promise per Masky code
+  in `lib/auth.ts`, not a ran ref.
 
 ### New data-slots, by family
 
