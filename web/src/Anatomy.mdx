@@ -109,6 +109,7 @@ signed-in player can reach is a `lazy()` chunk behind `RequireAuth`.
 | `hooks/useMarketplaceCatalog` + `lib/marketplaceQuery` | marketplace catalogue IO: URL codec, 250ms search debounce, cursor paging, IntersectionObserver sentinel, filter/sort URL sync; labels from `copy/marketplace` | `useMarketplaceScreen` → `MarketplaceScreen` |
 | `lib/presence.ts` | Firebase online flag; hardcoded web config in `lib/firebase.ts` is expected public client config, not the SSM service account | `useAuthRuntime`, Friends watch |
 | `lib/sessionBus.ts` | tab-scoped sessionStorage: `PENDING_VIDEO_KEY` (`/binder/new` remix resume), `INVITE_KEY` (`/invite/:sub` → `/auth/callback`), `POST_LOGIN_KEY` (`/discord/link` → `/auth/callback`), `DISCORD_LINK_KEY` and `DISCORD_LINK_CONSENT_KEY` (`/discord/link`), `MASKY_OAUTH_STATE_KEY` (landing login → `/auth/callback`). JWT (`memeon_session`, `masky_access_token`) remains localStorage in `lib/api.ts`; theme remains `themeStore`. | `lib/createMemeModel/lifecycle.ts`, `useInviteScreen`, `useAuthCallbackScreen`, `useDiscordLinkScreen`, `lib/auth.ts` |
+| `lib/discordLink.ts` | in-flight `POST /api/discord/link` keyed by token: same token shares one Promise under StrictMode; a settled attempt drops the lock so Try again POSTs | `useDiscordLinkScreen` |
 
 `useProjectedActor` uses `useActorRef` to start and stop an actor with its mounted
 view. Its side-effect-free projection constructor retains the snapshot by reference
