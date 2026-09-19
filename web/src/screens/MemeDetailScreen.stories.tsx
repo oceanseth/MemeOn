@@ -115,12 +115,16 @@ export const ConfirmBuy: Story = {
   args: {
     detail: {
       ...listed({ buyInputProps: { value: LISTED_SHARES, min: 1, max: LISTED_SHARES, step: 1, onChange: noop }, buyButtonLabel: copy.listing.buyFor(LISTED_SHARES * LISTED_PRICE) }),
-      buyDialog: buildConfirmDialogModel({ open: true, id: 'buy-shares', title: copy.buyDialog.title(LISTED_SHARES * LISTED_PRICE), message: <>{copy.buyDialog.lead(LISTED_SHARES)}<strong>{copy.quotedTitle(listedHolo.title)}</strong>{copy.buyDialog.tail(LISTED_PRICE, VIEWER_COINS)}</>, confirmLabel: copy.buyDialog.confirm(LISTED_SHARES), onCancel: noop, onConfirm: noop }),
+      buyDialog: buildConfirmDialogModel({ open: true, id: 'buy-shares', title: copy.buyDialog.title(LISTED_SHARES * LISTED_PRICE), message: [copy.buyDialog.lead(LISTED_SHARES), { kind: 'strong' as const, text: copy.quotedTitle(listedHolo.title) }, copy.buyDialog.tail(LISTED_PRICE, VIEWER_COINS)], confirmLabel: copy.buyDialog.confirm(LISTED_SHARES), onCancel: noop, onConfirm: noop }),
     },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('alertdialog', { name: copy.buyDialog.title(LISTED_SHARES * LISTED_PRICE) })).toBeVisible()
+    const dialog = canvas.getByRole('alertdialog', { name: copy.buyDialog.title(LISTED_SHARES * LISTED_PRICE) })
+    await expect(dialog).toBeVisible()
+    await expect(dialog.querySelector('strong')).toHaveTextContent(copy.quotedTitle(listedHolo.title))
+    await expect(dialog).toHaveTextContent(copy.buyDialog.lead(LISTED_SHARES).trim())
+    await expect(dialog).toHaveTextContent(copy.buyDialog.tail(LISTED_PRICE, VIEWER_COINS).trim())
   },
 }
 
@@ -152,7 +156,7 @@ export const Deleting: Story = {
       phase: 'deleting' as const,
       detail: {
         ...detail(),
-        deleteDialog: buildConfirmDialogModel({ open: true, id: 'delete-meme', title: copy.deleteDialog.title, message: 'This cannot be undone.', danger: true, busy: true, onCancel, onConfirm: noop }),
+        deleteDialog: buildConfirmDialogModel({ open: true, id: 'delete-meme', title: copy.deleteDialog.title, message: [{ kind: 'strong' as const, text: copy.quotedTitle(paperMeme.title) }, copy.deleteDialog.body], danger: true, busy: true, onCancel, onConfirm: noop }),
       },
     }
   })(),
@@ -160,6 +164,8 @@ export const Deleting: Story = {
     const canvas = within(canvasElement)
     const dialog = canvas.getByRole('alertdialog')
     await expect(dialog).toBeVisible()
+    await expect(dialog.querySelector('strong')).toHaveTextContent(copy.quotedTitle(paperMeme.title))
+    await expect(dialog).toHaveTextContent(copy.deleteDialog.body.trim())
     // in flight: the label stays readable and the backdrop no longer dismisses behind the request
     const confirm = canvas.getByRole('button', { name: 'Working…' })
     await expect(confirm).toHaveAttribute('aria-busy', 'true')

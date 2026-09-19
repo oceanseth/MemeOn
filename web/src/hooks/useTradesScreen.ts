@@ -1,5 +1,5 @@
 import { useProjectedActor } from './useProjectedActor'
-import { Fragment, createElement, useCallback, useRef, type ChangeEventHandler, type FormEventHandler, type HTMLAttributes } from 'react'
+import { useCallback, useRef, type ChangeEventHandler, type FormEventHandler, type HTMLAttributes } from 'react'
 import { tradesCopy } from '../copy/trades'
 import { apiFetch, post } from '../lib/api'
 import { buildConfirmDialogModel, type ConfirmDialogModel } from '../lib/confirmDialogModel'
@@ -250,11 +250,19 @@ export function useTradesScreen(): TradesScreenModel {
     title: accepting ? copy.confirm.acceptTitle : copy.confirm.withdrawTitle,
     message: confirmingTrade
       ? accepting
-        ? createElement(Fragment, null,
-            createElement('strong', null, copy.confirm.give), tradeSideSentence(confirmingTrade.ask, context.memeNames), copy.confirm.betweenSides,
-            createElement('strong', null, copy.confirm.get), tradeSideSentence(confirmingTrade.offer, context.memeNames), copy.confirm.end)
-        : createElement(Fragment, null,
-            copy.confirm.withdraw(tradeSideSentence(confirmingTrade.offer, context.memeNames), tradeSideSentence(confirmingTrade.ask, context.memeNames), confirmingTrade.toName))
+        ? [
+            { kind: 'strong' as const, text: copy.confirm.give },
+            tradeSideSentence(confirmingTrade.ask, context.memeNames),
+            copy.confirm.betweenSides,
+            { kind: 'strong' as const, text: copy.confirm.get },
+            tradeSideSentence(confirmingTrade.offer, context.memeNames),
+            copy.confirm.end,
+          ]
+        : copy.confirm.withdraw(
+            tradeSideSentence(confirmingTrade.offer, context.memeNames),
+            tradeSideSentence(confirmingTrade.ask, context.memeNames),
+            confirmingTrade.toName,
+          )
       : '',
     confirmLabel: accepting ? copy.confirm.acceptLabel : copy.confirm.withdrawLabel,
     onCancel: () => send({ type: 'CANCEL_CONFIRM' }),

@@ -1,5 +1,5 @@
 import { useProjectedActor } from './useProjectedActor'
-import { createElement, Fragment, useCallback, useRef, type ChangeEventHandler, type HTMLAttributes } from 'react'
+import { useCallback, useRef, type ChangeEventHandler, type HTMLAttributes } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { TIERS } from '@memeon/shared/tiers'
 import { memeDetailCopy } from '../copy/memeDetail'
@@ -405,8 +405,8 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
       capTableTitle: copy.capTable.title,
       capTableNote,
       capTable: context.positions.map((position) => ({ userId: position.userId, sharesLabel: `${position.shares}/100`, label: holderLabel(position.userId, user?.sub ?? null, context.holderNames, holderNameCache.current) })),
-      deleteDialog: buildConfirmDialogModel({ open: context.confirmingDelete, id: 'delete-meme', danger: true, busy: context.deleting || phase === 'deleting', title: copy.deleteDialog.title, message: createElement(Fragment, null, createElement('strong', null, copy.quotedTitle(meme.title)), copy.deleteDialog.body), confirmLabel: copy.deleteDialog.confirm, onCancel: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: false }), onConfirm: () => { const live = actor.getSnapshot().context.meme; if (!live) return; send({ type: 'DELETE' }); void apiFetch(`/api/memes/${live.id}`, { method: 'DELETE' }).then(() => { send({ type: 'DONE' }); navigate('/binder') }).catch((error) => send({ type: 'FAIL', err: error instanceof Error ? error.message : copy.errors.delete })) } }),
-      buyDialog: buildConfirmDialogModel({ open: context.confirmingBuy, id: 'buy-shares', busy: phase === 'buying', title: copy.buyDialog.title(buyTotal), message: createElement(Fragment, null, copy.buyDialog.lead(buyShares), createElement('strong', null, copy.quotedTitle(meme.title)), copy.buyDialog.tail(pricePerShare, coins)), confirmLabel: copy.buyDialog.confirm(buyShares), onCancel: () => send({ type: 'SET_CONFIRMING_BUY', confirming: false }), onConfirm: runBuy }),
+      deleteDialog: buildConfirmDialogModel({ open: context.confirmingDelete, id: 'delete-meme', danger: true, busy: context.deleting || phase === 'deleting', title: copy.deleteDialog.title, message: [{ kind: 'strong' as const, text: copy.quotedTitle(meme.title) }, copy.deleteDialog.body], confirmLabel: copy.deleteDialog.confirm, onCancel: () => send({ type: 'SET_CONFIRMING_DELETE', confirming: false }), onConfirm: () => { const live = actor.getSnapshot().context.meme; if (!live) return; send({ type: 'DELETE' }); void apiFetch(`/api/memes/${live.id}`, { method: 'DELETE' }).then(() => { send({ type: 'DONE' }); navigate('/binder') }).catch((error) => send({ type: 'FAIL', err: error instanceof Error ? error.message : copy.errors.delete })) } }),
+      buyDialog: buildConfirmDialogModel({ open: context.confirmingBuy, id: 'buy-shares', busy: phase === 'buying', title: copy.buyDialog.title(buyTotal), message: [copy.buyDialog.lead(buyShares), { kind: 'strong' as const, text: copy.quotedTitle(meme.title) }, copy.buyDialog.tail(pricePerShare, coins)], confirmLabel: copy.buyDialog.confirm(buyShares), onCancel: () => send({ type: 'SET_CONFIRMING_BUY', confirming: false }), onConfirm: runBuy }),
       claimDialog: buildConfirmDialogModel({
         open: context.confirmingClaim, id: 'claim-meme',
         title: copy.claimDialog.title,

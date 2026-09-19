@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, within } from 'storybook/test'
-import { Alert } from '@/atoms/alert'
+import { developersCopy } from '../copy/developers'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
 import type { DeveloperKeyRowModel, DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { DevelopersScreen } from './DevelopersScreen'
@@ -45,21 +45,19 @@ const fullKeyRows = fixtureKeys.map(toRow)
 
 const confirmDialog = buildConfirmDialogModel({
   open: false,
-  title: 'Revoke this API key?',
-  message: 'This key will stop working immediately.',
+  title: developersCopy.revokeDialog.title,
+  message: '',
   danger: true,
-  confirmLabel: 'Revoke it',
+  confirmLabel: developersCopy.revokeDialog.confirm,
   onCancel: handlers.onRevokeCancel,
   onConfirm: handlers.onRevokeConfirm,
 })
 
-const revokeMessage = (extra?: string) => (
-  <>
-    <code>mk_3f9a2c…</code>
-    {' (my-trading-bot) will stop working immediately. Anything using it breaks.'}
-    {extra && <Alert variant="error" className="mt-3">{extra}</Alert>}
-  </>
-)
+const revokeKey = fixtureKeys[0]!
+const revokeInlines = [
+  { kind: 'code' as const, text: developersCopy.revokeDialog.prefix(revokeKey.prefix) },
+  developersCopy.revokeDialog.body(revokeKey.label),
+]
 
 const empty: DevelopersScreenModel = {
   phase: 'loading',
@@ -305,16 +303,19 @@ export const Revoking: Story = {
     ...ready,
     confirmDialog: buildConfirmDialogModel({
       open: true,
-      title: 'Revoke this API key?',
-      message: revokeMessage(),
+      title: developersCopy.revokeDialog.title,
+      message: revokeInlines,
       danger: true,
-      confirmLabel: 'Revoke it',
+      confirmLabel: developersCopy.revokeDialog.confirm,
       onCancel: handlers.onRevokeCancel,
       onConfirm: handlers.onRevokeConfirm,
     }),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    const dialog = canvas.getByRole('alertdialog', { name: developersCopy.revokeDialog.title })
+    await expect(dialog.querySelector('code')).toHaveTextContent(developersCopy.revokeDialog.prefix(revokeKey.prefix))
+    await expect(dialog).toHaveTextContent(developersCopy.revokeDialog.body(revokeKey.label).trim())
     await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }))
     await expect(handlers.onRevokeCancel).toHaveBeenCalled()
   },
@@ -327,10 +328,10 @@ export const RevokingBusy: Story = {
     confirmDialog: buildConfirmDialogModel({
       open: true,
       busy: true,
-      title: 'Revoke this API key?',
-      message: revokeMessage(),
+      title: developersCopy.revokeDialog.title,
+      message: revokeInlines,
       danger: true,
-      confirmLabel: 'Revoke it',
+      confirmLabel: developersCopy.revokeDialog.confirm,
       onCancel: handlers.onRevokeCancel,
       onConfirm: handlers.onRevokeConfirm,
     }),
@@ -347,18 +348,20 @@ export const RevokeFailed: Story = {
     ...ready,
     confirmDialog: buildConfirmDialogModel({
       open: true,
-      title: 'Revoke this API key?',
-      message: revokeMessage('Couldn’t revoke my-trading-bot — try again.'),
+      title: developersCopy.revokeDialog.title,
+      message: revokeInlines,
+      error: developersCopy.errors.revoke(revokeKey.label),
       danger: true,
-      confirmLabel: 'Revoke it',
+      confirmLabel: developersCopy.revokeDialog.confirm,
       onCancel: handlers.onRevokeCancel,
       onConfirm: handlers.onRevokeConfirm,
     }),
   },
   play: async ({ canvasElement }) => {
     const dialog = within(canvasElement).getByRole('alertdialog')
-    await expect(within(dialog).getByRole('alert')).toHaveTextContent('Couldn’t revoke my-trading-bot')
-    await expect(within(dialog).getByRole('button', { name: 'Revoke it' })).toBeInTheDocument()
+    await expect(dialog.querySelector('code')).toHaveTextContent(developersCopy.revokeDialog.prefix(revokeKey.prefix))
+    await expect(within(dialog).getByRole('alert')).toHaveTextContent(developersCopy.errors.revoke(revokeKey.label))
+    await expect(within(dialog).getByRole('button', { name: developersCopy.revokeDialog.confirm })).toBeInTheDocument()
   },
 }
 
