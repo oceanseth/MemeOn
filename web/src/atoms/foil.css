@@ -15,7 +15,7 @@
 
    ── Public effect API ─────────────────────────────────────────────────────────────────────────
    This file is the one owner of the foil, and it is deliberately class-based rather than
-   `data-slot`-only: surfaces that are not the `MemeCard` atom put the same frame on their own
+   `data-slot`-only: surfaces that are not the `MemeCard` molecule put the same frame on their own
    markup.
 
      `foil-card tier-<key> [sheen] [sparkle]`     on the card, paired with
@@ -33,8 +33,8 @@
    frame. Paper and silver are still by design — the rarity ladder starts quiet.
 
    `atoms/foil.ts` exports `tierFrameClasses(tierKey)`; it has no React import, so a code-split
-   route can pull in the classes without dragging the atom's module graph onto its critical path.
-   `atoms/meme-card.tsx`, `screens/LandingScreen.tsx` (the tier ladder) and
+   route can pull in the classes without dragging the card's module graph onto its critical path.
+   `molecules/meme-card.tsx`, `screens/LandingScreen.tsx` (the tier ladder) and
    `hooks/useCreateMemeScreen.ts` (the live mint preview) all write `tierFrameClasses`, and
    `molecules/gift-dialog.tsx` shows its tier with a `<TierChip>`. The legacy padding frame —
    `.glow-border`, `--glow-width`, `.tier-card-inner` — was the dead-code pass's first removal from
