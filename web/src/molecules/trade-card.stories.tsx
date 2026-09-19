@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, within } from 'storybook/test'
 import { holoMeme, paperMeme, proposedTrade, silverMeme } from '../../.storybook/fixtures'
+import { tradesCopy } from '../copy/trades'
 import { TradeCard } from '@/molecules/trade-card'
 import { buildTradeCardModel, type TradeMemeInfoMap } from '../lib/tradeCardModel'
 
@@ -36,7 +37,10 @@ export const Incoming: Story = {
     const canvas = within(canvasElement)
     /* orientation contract: "You give" left, "You get" right; Decline before Accept */
     const legends = [...canvasElement.querySelectorAll('[data-slot="trade-side"] h3')]
-    await expect(legends.map((legend) => legend.textContent)).toEqual(['You give', 'You get'])
+    await expect(legends.map((legend) => legend.textContent)).toEqual([
+      tradesCopy.card.sides.give,
+      tradesCopy.card.sides.get,
+    ])
     await expect(canvas.getAllByRole('button').map((button) => button.textContent)).toEqual([
       'Decline',
       'Accept',

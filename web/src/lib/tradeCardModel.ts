@@ -246,9 +246,10 @@ export function buildTradeCardModel({
             },
           ]
 
-  /* Wells are keyed to your perspective: offer/ask swap by proposer, left=give right=get. */
-  const yours = mine ? trade.offer : trade.ask
-  const theirs = mine ? trade.ask : trade.offer
+  /* Wells swap by proposer so left is always give (leaves your binder) and right is get.
+     Wire fields stay Trade.offer / Trade.ask; this remap is the UI adapter. */
+  const giveSide = mine ? trade.offer : trade.ask
+  const getSide = mine ? trade.ask : trade.offer
   return {
     id: trade.id,
     partiesLabel: open
@@ -267,9 +268,9 @@ export function buildTradeCardModel({
     createdLabel: relativeAge(trade.createdAt, now),
     createdAtIso: trade.createdAt,
     createdTitle: new Date(trade.createdAt).toLocaleString(),
-    give: buildSideSummary(yours, copy.sides.give, memeNames),
-    get: buildSideSummary(theirs, copy.sides.get, memeNames),
-    finalityLine: actions.length > 0 && !mine ? finalityLine(yours, memeNames) : null,
+    give: buildSideSummary(giveSide, copy.sides.give, memeNames),
+    get: buildSideSummary(getSide, copy.sides.get, memeNames),
+    finalityLine: actions.length > 0 && !mine ? finalityLine(giveSide, memeNames) : null,
     actions,
   }
 }

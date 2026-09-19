@@ -202,7 +202,7 @@ export const Grouped: Story = {
         </Field>
       </FieldSet>
       <FieldSet>
-        <FieldLegend>You want</FieldLegend>
+        <FieldLegend>You get</FieldLegend>
         <Field>
           <FieldLabel>Shares to get</FieldLabel>
           <Input type="number" defaultValue={1} />
@@ -244,7 +244,7 @@ export const LegendAsLabel: Story = {
 export const GroupDisabled: Story = {
   render: () => (
     <FieldSet disabled>
-      <FieldLegend>You want</FieldLegend>
+      <FieldLegend>You get</FieldLegend>
       <Field>
         <FieldLabel>Shares to get</FieldLabel>
         <Input type="number" defaultValue={1} />

@@ -22,7 +22,7 @@ const SKELETON_ROWS = ['a', 'b', 'c']
 /* One token per `cn` argument: a multi-word class string in a `screens/` file is counted as copy
    by `scripts/check-copy.mjs` (LEDGER L24). */
 
-/** Give and want side by side at 2xl, stacked below. */
+/** Give and get side by side at 2xl, stacked below. */
 const composeGrid = cn(
   'flex flex-col gap-5',
   'xl:grid xl:grid-cols-[repeat(2,minmax(0,1fr))] xl:gap-x-7 xl:gap-y-5',
@@ -93,17 +93,17 @@ export function TradesScreen({
               <FieldSet>
                 <FieldLegend>{compose.youGiveLegend}</FieldLegend>
                 <div className={columnFields}>
-                  <Field><FieldLabel>{compose.youGiveBinderLabel}</FieldLabel><Select aria-label={compose.youGiveBinderLabel} items={compose.offerMemeSelectItems} {...compose.offerMemeSelectProps} /></Field>
-                  {compose.showOfferShares && <Field><FieldLabel>{compose.sharesToGiveLabel}</FieldLabel><Input type="number" {...compose.offerSharesInputProps} /><FieldDescription>{compose.offerSharesHint}</FieldDescription></Field>}
-                  <Field><FieldLabel>{compose.braincellsAddLabel}</FieldLabel><Input type="number" {...compose.offerCoinsInputProps} /><FieldDescription>{compose.offerCoinsHint}</FieldDescription></Field>
+                  <Field><FieldLabel>{compose.youGiveBinderLabel}</FieldLabel><Select aria-label={compose.youGiveBinderLabel} items={compose.giveMemeSelectItems} {...compose.giveMemeSelectProps} /></Field>
+                  {compose.showGiveShares && <Field><FieldLabel>{compose.sharesToGiveLabel}</FieldLabel><Input type="number" {...compose.giveSharesInputProps} /><FieldDescription>{compose.giveSharesHint}</FieldDescription></Field>}
+                  <Field><FieldLabel>{compose.braincellsAddLabel}</FieldLabel><Input type="number" {...compose.giveCoinsInputProps} /><FieldDescription>{compose.giveCoinsHint}</FieldDescription></Field>
                 </div>
               </FieldSet>
               <FieldSet>
-                <FieldLegend>{compose.youWantLegend}</FieldLegend>
+                <FieldLegend>{compose.youGetLegend}</FieldLegend>
                 <div className={columnFields}>
-                  <Field><FieldLabel>{compose.youWantMemesLabel}</FieldLabel><Select aria-label={compose.youWantMemesLabel} items={compose.askMemeSelectItems} {...compose.askMemeSelectProps} /></Field>
-                  {compose.showAskShares && <Field><FieldLabel>{compose.sharesToWantLabel}</FieldLabel><Input type="number" {...compose.askSharesInputProps} /></Field>}
-                  <Field><FieldLabel>{compose.braincellsWantLabel}</FieldLabel><Input type="number" {...compose.askCoinsInputProps} /></Field>
+                  <Field><FieldLabel>{compose.youGetMemesLabel}</FieldLabel><Select aria-label={compose.youGetMemesLabel} items={compose.getMemeSelectItems} {...compose.getMemeSelectProps} /></Field>
+                  {compose.showGetShares && <Field><FieldLabel>{compose.sharesToGetLabel}</FieldLabel><Input type="number" {...compose.getSharesInputProps} /></Field>}
+                  <Field><FieldLabel>{compose.braincellsGetLabel}</FieldLabel><Input type="number" {...compose.getCoinsInputProps} /></Field>
                 </div>
               </FieldSet>
               {compose.error && <Alert variant="error" {...compose.errorNoticeProps}>{compose.error}</Alert>}
