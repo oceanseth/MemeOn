@@ -6,6 +6,7 @@
  *
  * Fails (exit 1) on:
  *   - a value import or re-export from a higher tier, or hooks/ or stores/, below views/
+ *   - a screens/ file that value-imports or re-exports another screens/ module
  *   - a value import from copy/ in any tier (strings reach components through the model)
  *   - a value import in copy/ that leaves copy/, other than lib/plural and lib/braincells
  *     (copy is plain data; the two formatting helpers are the one allowance)
@@ -36,7 +37,8 @@ const ALLOWED = {
   atoms: ["atoms"],
   molecules: ["atoms", "molecules"],
   organisms: ["atoms", "molecules", "organisms"],
-  screens: ["atoms", "molecules", "organisms", "screens"],
+  // Screens are route surfaces: they compose lower tiers, never another screens/ module.
+  screens: ["atoms", "molecules", "organisms"],
   views: [...TIERS, ...ENGINES],
 }
 const STATE_HOOKS = new Set(["useState", "useReducer", "useEffect", "useLayoutEffect", "useContext", "useSyncExternalStore"])
@@ -169,6 +171,9 @@ const reportModule = (file, tier, spec) => {
     return
   }
   if (folder !== undefined && (TIERS.includes(folder) || ENGINES.includes(folder)) && !ALLOWED[tier].includes(folder)) {
+    // Co-located assets (`./LandingScreen.css`) live in the tier folder but are not a screens/ module.
+    const moduleFile = relativeModuleFile(file, spec)
+    if (moduleFile && !isTierSourceFile(basename(moduleFile))) return
     report(file, `${tier} imports from ${folder}/ ("${spec}")`)
   }
 }
