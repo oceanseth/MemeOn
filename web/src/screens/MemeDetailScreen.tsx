@@ -19,8 +19,6 @@ import { ConfirmDialog } from '@/molecules/confirm-dialog'
 import { MemeplexPanel } from '@/organisms/memeplex-panel'
 import { Icon } from '@/atoms/icon'
 
-const SHARE_CAPTION = 'Every load counts a view; every new place it travels counts as a reshare.'
-
 /**
  * Hero 410 · gap 30 · rail 668 — exactly the 1108 column the shell gives `<main>` at 1440. The
  * pair only splits once the window can afford both (≥1100); below that the rail would be narrower
@@ -59,17 +57,19 @@ function Provenance({ detail, badge }: { detail: MemeDetailModel; badge: ReactNo
     <div data-slot="detail-provenance" className="flex min-w-0 flex-col gap-2">
       {badge}
       <p className="m-0 text-base font-medium text-muted-foreground">
-        minted by <InlineLink render={<Link {...detail.creatorLinkProps} />}>{detail.creatorName}</InlineLink>
-        {' · '}owned by <InlineLink render={<Link {...detail.ownerLinkProps} />}>{detail.ownerName}</InlineLink>
-        {detail.tagsLabel && <> · {detail.tagsLabel}</>}
-        {detail.remixLinkProps && <> · <InlineLink render={<Link {...detail.remixLinkProps} />}>
+        {detail.provenanceMintedBy}{' '}
+        <InlineLink render={<Link {...detail.creatorLinkProps} />}>{detail.creatorName}</InlineLink>
+        {detail.provenanceSeparator}{detail.provenanceOwnedBy}{' '}
+        <InlineLink render={<Link {...detail.ownerLinkProps} />}>{detail.ownerName}</InlineLink>
+        {detail.tagsLabel && <>{detail.provenanceSeparator}{detail.tagsLabel}</>}
+        {detail.remixLinkProps && <>{detail.provenanceSeparator}<InlineLink render={<Link {...detail.remixLinkProps} />}>
           <span aria-hidden="true">
             <Icon name="dna" size={14} />
           </span>{' '}
-          remix
+          {detail.provenanceRemix}
         </InlineLink></>}
-        {detail.sourceLinkProps && <> · <InlineLink {...detail.sourceLinkProps}>{detail.sourceLabel}</InlineLink></>}
-        {detail.holdingsLabel && <> · you hold {detail.holdingsLabel}</>}
+        {detail.sourceLinkProps && <>{detail.provenanceSeparator}<InlineLink {...detail.sourceLinkProps}>{detail.sourceLabel}</InlineLink></>}
+        {detail.holdingsLabel && <>{detail.provenanceSeparator}{detail.provenanceYouHold}{' '}{detail.holdingsLabel}</>}
       </p>
     </div>
   )
@@ -96,7 +96,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
     <PageContainer as="main" id="main" tabIndex={-1}>
       <Empty className="mt-15">
         <EmptyHeader>
-          <EmptyTitle render={<h2 />}>This card was pulled</EmptyTitle>
+          <EmptyTitle render={<h2 />}>{notFound.title}</EmptyTitle>
           <EmptyDescription>{notFound.message}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
@@ -132,7 +132,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
       <span aria-hidden="true">
         <Icon name="eye-off" size={14} />
       </span>{' '}
-      private
+      {detail.privateBadgeLabel}
     </Badge> : null
 
   return (
@@ -181,15 +181,15 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
           )}
 
           <Card>
-            <CardTitle size="title" render={<h2 />}>Share to go viral</CardTitle>
-            <p className={caption}>{SHARE_CAPTION}</p>
+            <CardTitle size="title" render={<h2 />}>{detail.shareTitle}</CardTitle>
+            <p className={caption}>{detail.shareCaption}</p>
             <div className={panelRow}>
               <Input className="min-w-50 flex-1 max-sm:w-full max-sm:flex-none" {...detail.shareInputProps} />
               {/* the ultraviolet companion: the card's one bubblegum belongs to the buy control */}
               <Button variant="brand" className="max-sm:flex-1" {...detail.copyButtonProps}>
                 {detail.copyButtonLabel}
               </Button>
-              <a className={cn(buttonVariants(), 'max-sm:flex-1')} {...detail.previewLinkProps}>Preview card</a>
+              <a className={cn(buttonVariants(), 'max-sm:flex-1')} {...detail.previewLinkProps}>{detail.previewLabel}</a>
             </div>
           </Card>
 
@@ -218,11 +218,11 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
             </Card>
           ) : detail.list.show ? (
             <Card>
-              <CardTitle render={<h3 />} className="mb-1.5">List shares for sale</CardTitle>
-              <p className={caption}>Name your price — anyone in the market can pick up a slice of the joke.</p>
+              <CardTitle render={<h3 />} className="mb-1.5">{detail.list.panelTitle}</CardTitle>
+              <p className={caption}>{detail.list.panelCaption}</p>
               <div className={cn(panelRow, 'items-end')}>
                 <Field>
-                  <FieldLabel>shares</FieldLabel>
+                  <FieldLabel>{detail.list.sharesFieldLabel}</FieldLabel>
                   <Input type="number" className="w-23" {...detail.list.sharesInputProps} />
                 </Field>
                 <Field>
@@ -231,9 +231,9 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
                       <span aria-hidden="true">
                         <Icon name="brain" size={14} />
                       </span>{' '}
-                      <span aria-hidden="true">/share</span>
+                      <span aria-hidden="true">{detail.list.perShareLabel}</span>
                     </span>
-                    <span className="sr-only">braincells per share</span>
+                    <span className="sr-only">{detail.list.priceSrLabel}</span>
                   </FieldLabel>
                   <Input type="number" className="w-25" {...detail.list.priceInputProps} />
                 </Field>
@@ -245,8 +245,8 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
 
           {detail.actions.length > 0 && (
             <Card>
-              <CardTitle render={<h3 />} className="mb-1.5">Card controls</CardTitle>
-              <p className={caption}>What you hold decides what you can do with this card.</p>
+              <CardTitle render={<h3 />} className="mb-1.5">{detail.controlsTitle}</CardTitle>
+              <p className={caption}>{detail.controlsCaption}</p>
               <div className={panelRow}>
                 {detail.actions.map((action) => (
                   <Button
@@ -276,7 +276,7 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
                   <span aria-hidden="true">
                     <Icon name="satellite" size={16} />
                   </span>{' '}
-                  Where it’s spreading
+                  {detail.spreadingTitle}
                 </CardTitle>
                 <div className={rowList}>
                   {detail.sources.map((source) => (

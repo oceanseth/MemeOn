@@ -47,6 +47,13 @@ const handlers = {
   showMoreButtonProps: { onClick: fn() },
 } satisfies Partial<ProfileScreenModel>
 
+const tabLabels = (createdCount: number, binderCount: number) => ({
+  createdCount,
+  binderCount,
+  createdTabLabel: profileCopy.tabs.trigger(profileCopy.tabs.created, createdCount),
+  binderTabLabel: profileCopy.tabs.trigger(profileCopy.tabs.binder, binderCount),
+})
+
 const emptyCreated: ProfileScreenModel = {
   showErr: false,
   errTitle: "Couldn't load this profile.",
@@ -89,9 +96,11 @@ const emptyCreated: ProfileScreenModel = {
   actionErr: '',
   showJoin: false,
   joinLabel: 'Log in to start your own binder',
+  joinAddFriendLabel: profileCopy.join.addFriend,
   joinLinkProps: { to: '/', state: { next: '/u/user-pal' } },
-  createdCount: 0,
-  binderCount: 0,
+  actionsGroupLabel: profileCopy.actions.groupLabel,
+  tabsListLabel: profileCopy.tabs.section,
+  ...tabLabels(0, 0),
   cards: [],
   showEmpty: true,
   emptyTitle: "pal hasn't minted anything yet.",
@@ -107,7 +116,7 @@ const emptyCreated: ProfileScreenModel = {
 const oneCreatedCard = {
   showEmpty: false,
   showGrid: true,
-  createdCount: 1,
+  ...tabLabels(1, 0),
   gridProps: { id: 'profile-cards', 'aria-live': 'polite', 'aria-label': 'Created memes, 1 card' },
   cards: [{ id: `created-${paperMeme.id}`, memeCard: buildMemeCardModel(paperMeme), sharesLabel: null }],
 } satisfies Partial<ProfileScreenModel>
@@ -180,7 +189,7 @@ export const BinderTab: Story = {
     tabsProps: { value: 'binder', onValueChange: fn() },
     showEmpty: false,
     showGrid: true,
-    binderCount: 1,
+    ...tabLabels(0, 1),
     gridProps: { id: 'profile-cards', 'aria-live': 'polite', 'aria-label': 'Binder memes, 1 card' },
     cards: [{ id: `binder-${giftablePaper.id}`, memeCard: buildMemeCardModel(giftablePaper), sharesLabel: 'holds 12/100' }],
   },
@@ -276,7 +285,7 @@ export const PublicBinder: Story = {
     showBinderHero: true,
     joinLabel: `Log in to trade with ${palProfile.name}`,
     tabsProps: { value: 'binder', onValueChange: fn() },
-    binderCount: 1,
+    ...tabLabels(1, 1),
     profile: {
       name: palProfile.name,
       avatarSrc: null,
@@ -363,7 +372,7 @@ export const LongName: Story = {
 export const Paged: Story = {
   args: {
     ...oneCreatedCard,
-    createdCount: 14,
+    ...tabLabels(14, 0),
     showMore: true,
     showMoreLabel: 'Show 2 more',
     gridCountLabel: 'Showing 12 of 14',

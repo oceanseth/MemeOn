@@ -18,6 +18,7 @@ export interface CapRow { userId: string; sharesLabel: string; label: string }
 export interface DetailActionModel { label: string; icon: IconName; variant?: 'destructive' | undefined; buttonProps: { onClick: () => void } }
 export type DetailLiveRegionProps = Pick<HTMLAttributes<HTMLDivElement>, 'role' | 'aria-live'>
 export interface DetailNotFoundModel {
+  title: string
   message: string
   linkProps: { to: string }
   linkLabel: string
@@ -61,6 +62,11 @@ export interface DetailListingModel {
 }
 export interface DetailListModel {
   show: boolean
+  panelTitle: string
+  panelCaption: string
+  sharesFieldLabel: string
+  perShareLabel: string
+  priceSrLabel: string
   disabledReason: string | null
   sharesInputProps: { value: number; min: number; max: number; step: 1; onChange: ChangeEventHandler<HTMLInputElement> }
   priceInputProps: { value: number; min: number; step: number; onChange: ChangeEventHandler<HTMLInputElement> }
@@ -100,12 +106,24 @@ export interface MemeDetailModel {
   statsSrLabel: string
   valueSrLabel: string
   holdingsLabel: string | null
+  shareTitle: string
+  shareCaption: string
+  previewLabel: string
   shareInputProps: { value: string; readOnly: true; 'aria-label': string }
   copyButtonLabel: string
   copyButtonProps: { onClick: () => void }
   previewLinkProps: { href: string; target: '_blank'; rel: 'noreferrer' }
   signedOut: DetailSignedOutModel | null
   actions: readonly DetailActionModel[]
+  controlsTitle: string
+  controlsCaption: string
+  spreadingTitle: string
+  provenanceMintedBy: string
+  provenanceOwnedBy: string
+  provenanceRemix: string
+  provenanceYouHold: string
+  provenanceSeparator: string
+  privateBadgeLabel: string
   notice: string | null
   noticeProps: DetailLiveRegionProps
   error: string | null
@@ -304,13 +322,20 @@ export function buildMemeDetailModel({
     statsSrLabel: copy.stats.srLabel(views, reshareCount),
     valueSrLabel: copy.stats.valueSrLabel(meme.value),
     holdingsLabel: myShares > 0 ? `${myShares}/100` : null,
+    shareTitle: copy.share.title, shareCaption: copy.share.caption, previewLabel: copy.share.preview,
     shareInputProps: { value: shareUrl, readOnly: true, 'aria-label': copy.share.inputLabel }, copyButtonLabel: context.copied ? copy.share.copied : context.copyFailed ? copy.share.copyFailed : copy.share.copy, copyButtonProps: { onClick: actions.onCopy }, previewLinkProps: { href: `/api/memes/${meme.id}/og.png`, target: '_blank', rel: 'noreferrer' },
     signedOut, actions: detailActions,
+    controlsTitle: copy.controls.title, controlsCaption: copy.controls.caption,
+    spreadingTitle: copy.spreading.title,
+    provenanceMintedBy: copy.provenance.mintedBy, provenanceOwnedBy: copy.provenance.ownedBy, provenanceRemix: copy.provenance.remix, provenanceYouHold: copy.provenance.youHold, provenanceSeparator: copy.provenance.separator,
+    privateBadgeLabel: copy.privateBadge,
     notice: context.msg, noticeProps: { role: 'status', 'aria-live': 'polite' },
     error: context.err, errorProps: { role: 'alert', 'aria-live': 'assertive' },
     listing,
     list: {
       show: !listing && myShares > 0,
+      panelTitle: copy.list.panelTitle, panelCaption: copy.list.panelCaption,
+      sharesFieldLabel: copy.list.sharesField, perShareLabel: copy.list.perShare, priceSrLabel: copy.list.priceSr,
       disabledReason: listReason,
       sharesInputProps: { value: sellShares, min: 1, max: Math.max(1, myShares), step: 1, onChange: actions.onSellSharesChange },
       priceInputProps: { value: context.price, min: 0.01, step: 0.01, onChange: actions.onPriceChange },

@@ -3,6 +3,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { listedHolo, meLou } from '../../.storybook/fixtures'
 import { connectedBeforeEach, connectedLoader, ConnectedStory, RemountStory } from '../../.storybook/connected-story'
+import { memeDetailCopy } from '../copy/memeDetail'
 import { MemeDetailView } from './MemeDetailView'
 
 const meta = {
@@ -46,7 +47,7 @@ export const DeleteCancelAndConfirm: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><MemeDetailView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await expect(await canvas.findByText('private')).toBeInTheDocument()
+    await expect(await canvas.findByText(memeDetailCopy.privateBadge)).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', { name: /Delete forever/ }))
     let dialog = await canvas.findByRole('alertdialog')
     await expect(within(dialog).getByRole('heading')).toHaveTextContent('Delete this meme forever')

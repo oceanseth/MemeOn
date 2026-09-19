@@ -21,4 +21,9 @@ describe('profile tab model props', () => {
     expect(created.gridProps['aria-label']).toBe(copy.grid.label(copy.tabs.created, 3))
     expect(binder.gridProps['aria-label']).toBe(copy.grid.label(copy.tabs.binder, 1))
   })
+
+  it('builds the full tab trigger from the tab name and count', () => {
+    expect(copy.tabs.trigger(copy.tabs.created, 3)).toBe('Created (3)')
+    expect(copy.tabs.trigger(copy.tabs.binder, 1)).toBe('Binder (1)')
+  })
 })

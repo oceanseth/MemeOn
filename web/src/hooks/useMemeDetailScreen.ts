@@ -29,6 +29,9 @@ export {
 
 const copy = memeDetailCopy
 
+/** Route name for the tab; views must not import copy/. Never the card title. */
+export const memeDetailDocumentTitle = copy.documentTitle
+
 function numberFromInput(event: React.ChangeEvent<HTMLInputElement>): number { return Number(event.target.value) }
 
 /** Detail loading, auth-aware binder access, user actions, and element props. */
@@ -122,7 +125,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
   const showLoading = !showNotFound && (phase === 'loading' || !meme)
   const screen = {
     phase, showNotFound, showLoading,
-    notFound: { message: copy.notFound.message, linkProps: { to: '/marketplace' }, linkLabel: copy.notFound.browse },
+    notFound: { title: copy.notFound.title, message: copy.notFound.message, linkProps: { to: '/marketplace' }, linkLabel: copy.notFound.browse },
     loadingLabel: copy.loading,
   }
   if (!meme) return { ...screen, detail: null }

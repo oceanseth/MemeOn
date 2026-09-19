@@ -76,10 +76,13 @@ export function ProfileScreen({
   actionErr,
   showJoin,
   joinLabel,
+  joinAddFriendLabel,
   joinLinkProps,
   reshareNote,
-  createdCount,
-  binderCount,
+  actionsGroupLabel,
+  tabsListLabel,
+  createdTabLabel,
+  binderTabLabel,
   cards,
   gridCountLabel,
   showMore,
@@ -166,7 +169,7 @@ export function ProfileScreen({
   const identityActions = (
     <>
       {showActions && (
-        <div className={ACTIONS} role="group" aria-label="Profile actions">
+        <div className={ACTIONS} role="group" aria-label={actionsGroupLabel}>
           {showFriendButton && (
             <Button variant="primary" {...friendButtonProps}>
               <span aria-hidden="true">
@@ -191,7 +194,7 @@ export function ProfileScreen({
       )}
 
       {showSelfActions && (
-        <div className={ACTIONS} role="group" aria-label="Profile actions">
+        <div className={ACTIONS} role="group" aria-label={actionsGroupLabel}>
           <Button {...shareButtonProps}>
             <span aria-hidden="true">
               <Icon name="link" size={16} />
@@ -214,7 +217,7 @@ export function ProfileScreen({
             {shareLabel}
           </Button>
           <Link className={buttonVariants()} {...joinLinkProps}>
-            Log in to add friend
+            {joinAddFriendLabel}
           </Link>
         </div>
       )}
@@ -270,12 +273,12 @@ export function ProfileScreen({
 
       <div className={TABS}>
         <Tabs {...tabsProps}>
-          <TabsList variant="pills" aria-label="Profile section">
+          <TabsList variant="pills" aria-label={tabsListLabel}>
             <TabsTrigger value="created" aria-controls={gridProps.id}>
-              Created ({createdCount})
+              {createdTabLabel}
             </TabsTrigger>
             <TabsTrigger value="binder" aria-controls={gridProps.id}>
-              Binder ({binderCount})
+              {binderTabLabel}
             </TabsTrigger>
           </TabsList>
         </Tabs>

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
+import { profileCopy } from '../copy/profile'
 import { ProfileView } from './ProfileView'
 
 const meta = {
@@ -26,7 +27,7 @@ export const TabsFollowAndFriend: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('heading', { name: 'pal' })).toBeInTheDocument()
-    const binder = canvas.getByRole('tab', { name: /Binder \(1\)/ })
+    const binder = canvas.getByRole('tab', { name: profileCopy.tabs.trigger(profileCopy.tabs.binder, 1) })
     await expect(binder).toHaveAttribute('aria-controls', 'profile-cards')
     await userEvent.click(binder)
     await expect(binder).toHaveAttribute('aria-selected', 'true')
