@@ -14,6 +14,7 @@
   },
   "rules": {
     "memeon/no-native-chrome": "error",
+    "memeon/no-use-effect": "error",
     "shadcn/no-raw-colors": "error",
     "shadcn/no-unknown-classes": [
       "error",
@@ -46,6 +47,9 @@
     // OS dialog and the only control a Field label can name, so it stays — invisible, at the full
     // size of the well, with every pixel and every word painted under it.
     { "files": ["src/atoms/file-drop.tsx"], "rules": { "memeon/no-native-chrome": "off" } },
+    // hooks/useMountEffect.ts is the mount-only wrapper: the one place useEffect may be named, so
+    // every other file has to say what it means (derive, handle, query, or call this).
+    { "files": ["src/hooks/useMountEffect.ts"], "rules": { "memeon/no-use-effect": "off" } },
     { "files": ["**/*.stories.tsx"], "rules": { "shadcn/no-inline-styles": "off", "shadcn/no-restyle": "off" } }
   ]
 }

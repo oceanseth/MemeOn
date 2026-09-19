@@ -84,4 +84,61 @@ test("src/atoms/file-drop.tsx keeps its scoped exception and the rest of src sta
   const output = result.stdout + result.stderr
   assert.equal(result.status, 0, output)
   assert.doesNotMatch(output, /no-native-chrome/)
+  assert.doesNotMatch(output, /no-use-effect/)
+})
+
+test("flags a useEffect call", () => {
+  lint("Sync.tsx", "import { useState } from 'react'\nexport const S = () => { useEffect(() => {}, []) }\n", ({ status, output }) => {
+    assert.equal(status, 1, output)
+    assert.match(output, /no-use-effect/)
+    assert.match(output, /useMountEffect/)
+  })
+})
+
+test("flags importing useEffect from react", () => {
+  lint("sync.ts", "import { useEffect } from 'react'\nexport const n = 1\n", ({ status, output }) => {
+    assert.equal(status, 1, output)
+    assert.match(output, /no-use-effect/)
+    assert.match(output, /import/)
+  })
+})
+
+test("flags an aliased useEffect import", () => {
+  lint("sync.ts", "import { useEffect as onMount } from 'react'\nexport const go = () => onMount(() => {})\n", ({ status, output }) => {
+    assert.equal(status, 1, output)
+    assert.match(output, /no-use-effect/)
+  })
+})
+
+test("flags React.useEffect and a computed access", () => {
+  lint(
+    "sync.ts",
+    "import React from 'react'\nexport const go = () => { React.useEffect(() => {}); React['useEffect'](() => {}) }\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /no-use-effect/)
+    },
+  )
+})
+
+test("flags useLayoutEffect", () => {
+  lint("sync.ts", "import { useLayoutEffect } from 'react'\nexport const go = () => useLayoutEffect(() => {})\n", ({ status, output }) => {
+    assert.equal(status, 1, output)
+    assert.match(output, /useLayoutEffect/)
+  })
+})
+
+test("flags destructuring useEffect off React", () => {
+  lint("sync.ts", "import React from 'react'\nconst { useEffect } = React\nexport const go = () => useEffect(() => {})\n", ({ status, output }) => {
+    assert.equal(status, 1, output)
+    assert.match(output, /no-use-effect/)
+  })
+})
+
+test("leaves a useMountEffect call alone", () => {
+  lint(
+    "sync.ts",
+    "import { useMountEffect } from './useMountEffect'\nexport const go = () => useMountEffect(() => {})\n",
+    ({ status, output }) => assert.equal(status, 0, output),
+  )
 })
