@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * After `pnpm dlx shadcn add <item>` (never `init`): registry files import `cn` from "cn", and this
- * app's merge function is `@/lib/cn` — the same engine with the role namespaces registered, so a
- * second copy would disagree about `h-control` vs `h-11`. Rewrites every `from "cn"` under src/ to
- * `@/lib/cn` and lists what it touched.
+ * After `pnpm dlx shadcn add <item>` (never `init`): registry files import stock `cn` from "cn",
+ * and this app's merge is `@/lib/cn` (`createCn` with the material class group and container
+ * `card-narrow`). A second copy typechecks and skips the merge. Rewrites every `from "cn"` under
+ * src/ to `@/lib/cn` and lists what it touched.
  *
  *   node scripts/shadcn-postadd.mjs [srcDir]
  *
