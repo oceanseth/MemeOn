@@ -8,7 +8,6 @@ import {
   assertActive,
   cancelVideoPollForOwner,
   isLifetimeCancellation,
-  POLL_TIMEOUT_MS,
   pollVideoStatus,
   type CreationLifetime,
   type VideoPollRun,
@@ -16,20 +15,18 @@ import {
 import { extractPoster } from '../lib/extractPoster'
 import {
   buildCreateMemeScreenModel,
-  draftOf,
+  createDraftPersister,
   elapsedLabel,
   MAX_IMAGE_BYTES,
   MAX_VIDEO_BYTES,
   overCapMessage,
-  pendingVideoMatchesRemix,
-  pendingVideoRecord,
+  persistPendingVideo,
+  takePendingVideoRestore,
   type CreateMemeScreenModel,
 } from '../lib/createMemeModel'
-import { clearPendingVideo, getPendingVideo, setPendingVideo } from '../lib/sessionBus'
 import type { GiphyResult, Meme } from '../lib/types'
 import {
   createMemeMachine,
-  type CreateMemeDraft,
   type CreateMemeEvent,
   type CreateMemeMode,
   type CreateMemePhase,
@@ -55,7 +52,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
   const ctx = snapshot.context
   const phase = snapshot.value as CreateMemePhase
   const tickerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const draftPersisterRef = useRef<ReturnType<typeof createDraftPersister> | null>(null)
 
   const stopElapsed = useCallback(() => {
     if (tickerRef.current) clearInterval(tickerRef.current)
@@ -84,38 +81,28 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     [send, stopElapsed],
   )
 
-  /** Keep the resume record in step with the form, but only while a render is actually pending. */
-  const persistDraft = useCallback(() => {
-    if (draftTimerRef.current) clearTimeout(draftTimerRef.current)
-    draftTimerRef.current = setTimeout(() => {
-      const raw = getPendingVideo()
-      if (!raw) return
-      try {
-        const pending = JSON.parse(raw) as { generationId: string; startedAt: number; draft?: CreateMemeDraft }
-        setPendingVideo(JSON.stringify({ ...pending, draft: draftOf(actor.getSnapshot().context) }))
-      } catch {
-        /* A malformed record is handled by the mount-time recovery path. */
-      }
-    }, 400)
-  }, [actor])
-
-  const persistPendingVideo = useCallback(
+  const persistPending = useCallback(
     (generationId: string, startedAt: number) => {
-      const live = actor.getSnapshot().context
-      setPendingVideo(JSON.stringify(pendingVideoRecord(live, generationId, startedAt)))
+      persistPendingVideo(actor.getSnapshot().context, generationId, startedAt)
     },
     [actor],
   )
 
   const pollVideo = useCallback(
     (generationId: string, startedAt: number, owner: CreationLifetime): Promise<string> =>
-      pollVideoStatus(pollRunRef, generationId, startedAt, owner, persistPendingVideo),
-    [persistPendingVideo],
+      pollVideoStatus(pollRunRef, generationId, startedAt, owner, persistPending),
+    [persistPending],
   )
+
+  const scheduleDraft = useCallback(() => {
+    draftPersisterRef.current?.schedule()
+  }, [])
 
   useMountEffect(() => {
     const owner: CreationLifetime = { active: true }
     lifetimeRef.current = owner
+    const persister = createDraftPersister(() => actor.getSnapshot().context)
+    draftPersisterRef.current = persister
     if (remixId) {
       apiFetch<{ meme: Meme }>(`/api/memes/${remixId}`)
         .then((r) => {
@@ -126,40 +113,30 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         })
     }
 
-    const raw = getPendingVideo()
-    if (raw) {
-      try {
-        const pending = JSON.parse(raw) as Partial<ReturnType<typeof pendingVideoRecord>> & {
-          generationId: string
-          startedAt: number
-        }
-        if (Date.now() - pending.startedAt > POLL_TIMEOUT_MS) {
-          clearPendingVideo()
-        } else if (pendingVideoMatchesRemix(pending.remixId, remixId)) {
-          if (pending.imageUrl) send({ type: 'SET_IMAGE_URL', imageUrl: pending.imageUrl })
-          if (pending.draft) send({ type: 'RESTORE_DRAFT', draft: pending.draft })
-          beginBusy(copy.busy.resumingRender, pending.startedAt)
-          void pollVideo(pending.generationId, pending.startedAt, owner)
-            .then((url) => {
-              assertActive(owner)
-              send({ type: 'SET_VIDEO_URL', videoUrl: url })
-              settleBusy({ type: 'DONE' })
-            })
-            .catch((e) => {
-              if (!owner.active || isLifetimeCancellation(e)) return
-              settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.renderFailed })
-            })
-        }
-      } catch {
-        clearPendingVideo()
-      }
+    const restore = takePendingVideoRestore(remixId, Date.now())
+    if (restore.kind === 'resume') {
+      const { record } = restore
+      if (record.imageUrl) send({ type: 'SET_IMAGE_URL', imageUrl: record.imageUrl })
+      if (record.draft) send({ type: 'RESTORE_DRAFT', draft: record.draft })
+      beginBusy(copy.busy.resumingRender, record.startedAt)
+      void pollVideo(record.generationId, record.startedAt, owner)
+        .then((url) => {
+          assertActive(owner)
+          send({ type: 'SET_VIDEO_URL', videoUrl: url })
+          settleBusy({ type: 'DONE' })
+        })
+        .catch((e) => {
+          if (!owner.active || isLifetimeCancellation(e)) return
+          settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.renderFailed })
+        })
     }
 
     return () => {
       owner.active = false
       if (lifetimeRef.current === owner) lifetimeRef.current = null
       stopElapsed()
-      if (draftTimerRef.current) clearTimeout(draftTimerRef.current)
+      persister.dispose()
+      if (draftPersisterRef.current === persister) draftPersisterRef.current = null
       cancelVideoPollForOwner(pollRunRef, owner)
     }
   })
@@ -470,21 +447,21 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     selectMode: onSelectMode,
     setTitle: (title) => {
       send({ type: 'SET_TITLE', title })
-      persistDraft()
+      scheduleDraft()
     },
     setTags: (tags) => {
       send({ type: 'SET_TAGS', tags })
-      persistDraft()
+      scheduleDraft()
     },
     setPrompt: (prompt) => {
       send({ type: 'SET_PROMPT', prompt })
-      persistDraft()
+      scheduleDraft()
     },
     setRemixOutput: (remixOutput) => send({ type: 'SET_REMIX_OUTPUT', remixOutput }),
     setVideoMode: (videoMode) => send({ type: 'SET_VIDEO_MODE', videoMode }),
     setMotionPrompt: (motionPrompt) => {
       send({ type: 'SET_MOTION_PROMPT', motionPrompt })
-      persistDraft()
+      scheduleDraft()
     },
     setGiphyQuery: (query) => send({ type: 'SET_GIPHY_QUERY', query }),
     searchGiphy: onGiphySearch,
