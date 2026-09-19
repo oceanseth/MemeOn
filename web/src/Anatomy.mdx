@@ -87,8 +87,13 @@ main.tsx ── StoresProvider + AuthRuntime + BrowserRouter
          └─ PrivacyView · TermsView
 ```
 
-Landing, legal, auth and the public share routes are eager; every route only a
-signed-in player can reach is a `lazy()` chunk behind `RequireAuth`.
+Landing, legal, auth and the public share routes are eager (`LandingView` stays
+in the entry). The eight `lazy()` views behind `RequireAuth` are `BinderView`,
+`CreateMemeView`, `DevelopersView`, `FriendsView`, `LeaderboardView`,
+`MarketplaceView`, `SettingsView`, and `TradesView` (plus any future
+`CreateMeme*View` mint split). `MemeCard` and `react-router-dom` already ride
+the entry via `AppShell` / `QuestBar` and the public share routes; that is
+accepted. Landing and Create must not import `MemeCard`.
 
 ## Where state lives
 

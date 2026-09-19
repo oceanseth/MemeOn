@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "pnpm run check-tiers && pnpm run typecheck && vite build && node scripts/check-layers.mjs dist && mkdir -p dist/.well-known && cp dist/skill.md dist/.well-known/skill.md",
+    "build": "pnpm run check-tiers && pnpm run typecheck && vite build && node scripts/check-layers.mjs dist && node scripts/check-chunks.mjs dist && mkdir -p dist/.well-known && cp dist/skill.md dist/.well-known/skill.md",
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -22,6 +22,7 @@
     "test:check-tiers": "node --test scripts/check-tiers.test.mjs",
     "test:check-copy": "node --test scripts/check-copy.test.mjs",
     "test:check-card-media": "node --test scripts/check-card-media.test.mjs",
+    "test:check-chunks": "node --test scripts/check-chunks.test.mjs",
     "test:check-layers": "node --test scripts/check-layers.test.mjs",
     "test:check-contrast": "node --test scripts/check-contrast.test.mjs",
     "test:check-tokens": "node --test scripts/check-tokens.test.mjs",
@@ -31,7 +32,7 @@
     "test:runtime": "vitest run --project=runtime",
     "test:stories": "vitest run --project=storybook",
     "test": "vitest run --project=unit --project=runtime",
-    "check": "pnpm run lint:ds && pnpm run test:lint-rules && pnpm run check-docs && pnpm run check-tiers && pnpm run check-copy && pnpm run check-card-media && pnpm run check-contrast && pnpm run check-tokens && pnpm run test:check-docs && pnpm run test:check-tiers && pnpm run test:check-copy && pnpm run test:check-card-media && pnpm run test:check-layers && pnpm run test:check-contrast && pnpm run test:check-tokens && pnpm run test:shadcn-postadd && pnpm run test:proxy && pnpm run test:unit && pnpm run test:runtime && pnpm run test:stories"
+    "check": "pnpm run lint:ds && pnpm run test:lint-rules && pnpm run check-docs && pnpm run check-tiers && pnpm run check-copy && pnpm run check-card-media && pnpm run check-contrast && pnpm run check-tokens && pnpm run test:check-docs && pnpm run test:check-tiers && pnpm run test:check-copy && pnpm run test:check-card-media && pnpm run test:check-chunks && pnpm run test:check-layers && pnpm run test:check-contrast && pnpm run test:check-tokens && pnpm run test:shadcn-postadd && pnpm run test:proxy && pnpm run test:unit && pnpm run test:runtime && pnpm run test:stories"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
