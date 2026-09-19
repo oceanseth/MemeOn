@@ -4,6 +4,7 @@ import { useCreateMemeScreen } from '../hooks/useCreateMemeScreen'
 import { CreateMemeScreen } from '../screens/CreateMemeScreen'
 
 export const CreateMemeView = observer(function CreateMemeView() {
-  useDocumentTitle('Mint a meme')
-  return <CreateMemeScreen {...useCreateMemeScreen()} />
+  const model = useCreateMemeScreen()
+  useDocumentTitle(model.pageTitle)
+  return <CreateMemeScreen {...model} />
 })

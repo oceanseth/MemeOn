@@ -8,6 +8,10 @@ type UrlModeSlice = Pick<
   | 'showUrlPanel'
   | 'urlPlaceholder'
   | 'urlHelpText'
+  | 'urlFieldLabel'
+  | 'urlOptionalPromptLabel'
+  | 'urlRemixPlaceholder'
+  | 'applyUrlEditLabel'
   | 'showUrlApplyEdit'
   | 'fetchUrlButtonLabel'
   | 'urlInputProps'
@@ -23,8 +27,12 @@ export function buildUrlModeModel(
 ): UrlModeSlice {
   return {
     showUrlPanel: ctx.mode === 'url',
-    urlPlaceholder: 'https://…/meme.png',
+    urlPlaceholder: copy.url.placeholder,
     urlHelpText: copy.url.help,
+    urlFieldLabel: copy.url.fieldLabel,
+    urlOptionalPromptLabel: copy.url.optionalPrompt,
+    urlRemixPlaceholder: copy.url.remixPlaceholder,
+    applyUrlEditLabel: copy.url.applyEdit,
     showUrlApplyEdit: !!ctx.prompt.trim() && !!ctx.imageUrl && !ctx.edited,
     fetchUrlButtonLabel: copy.url.fetch,
     urlInputProps: {

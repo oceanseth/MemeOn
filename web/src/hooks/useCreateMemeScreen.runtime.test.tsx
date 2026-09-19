@@ -134,19 +134,19 @@ describe('CreateMemeRoute settling requests', () => {
     await renderAt()
 
     await change(host.querySelector<HTMLInputElement>('#create-title')!, 'pending image')
-    await change(host.querySelector<HTMLTextAreaElement>('textarea[placeholder^="a capybara"]')!, 'draw it')
-    await click(button('Render the image'))
-    expect(button('Upload').disabled).toBe(true)
+    await change(host.querySelector<HTMLTextAreaElement>(`textarea[placeholder^="${copy.generate.promptPlaceholder}"]`)!, 'draw it')
+    await click(button(copy.generate.renderImage))
+    expect(button(copy.modes.upload).disabled).toBe(true)
     await act(async () => {
       image.resolve(Response.json({ imageUrl: '/finished.png' }))
       await settle()
     })
-    await click(button('Upload'))
+    await click(button(copy.modes.upload))
 
-    expect(button('Upload').getAttribute('aria-pressed')).toBe('true')
+    expect(button(copy.modes.upload).getAttribute('aria-pressed')).toBe('true')
     expect(host.querySelector<HTMLImageElement>('img[data-slot="meme-art"]')?.getAttribute('src')).toBe('/finished.png')
     expect(host.querySelector('[data-slot="form-grid"]')?.getAttribute('aria-busy')).toBe('false')
-    expect(button('Mint').disabled).toBe(false)
+    expect(button(copy.form.mint).disabled).toBe(false)
     expect(host.textContent).not.toContain(copy.busy.generatingImage)
   })
 
@@ -158,8 +158,8 @@ describe('CreateMemeRoute settling requests', () => {
     }))
     await renderAt()
 
-    await change(host.querySelector<HTMLTextAreaElement>('textarea[placeholder^="a capybara"]')!, 'draw it')
-    await click(button('Render the image'))
+    await change(host.querySelector<HTMLTextAreaElement>(`textarea[placeholder^="${copy.generate.promptPlaceholder}"]`)!, 'draw it')
+    await click(button(copy.generate.renderImage))
     await act(async () => {
       image.resolve(Response.json({ error: 'credits exhausted' }, { status: 402 }))
       await settle()
@@ -169,10 +169,10 @@ describe('CreateMemeRoute settling requests', () => {
     expect(host.querySelector('[role="alert"]')?.textContent).toContain('Top up Masky credits')
     expect(host.querySelector('[data-slot="form-grid"]')?.getAttribute('aria-busy')).toBe('false')
     expect(host.textContent).not.toContain(copy.busy.generatingImage)
-    await click(button('Upload'))
-    await click(button('Generate image'))
-    expect(button('Generate image').getAttribute('aria-pressed')).toBe('true')
-    expect(button('Render the image').disabled).toBe(false)
+    await click(button(copy.modes.upload))
+    await click(button(copy.modes.generate))
+    expect(button(copy.modes.generate).getAttribute('aria-pressed')).toBe('true')
+    expect(button(copy.generate.renderImage).disabled).toBe(false)
   })
 
   it('holds the minted card with its share link instead of navigating away', async () => {
@@ -190,10 +190,10 @@ describe('CreateMemeRoute settling requests', () => {
     await renderAt()
 
     await change(host.querySelector<HTMLInputElement>('#create-title')!, 'original title')
-    await change(host.querySelector<HTMLTextAreaElement>('textarea[placeholder^="a capybara"]')!, 'draw it')
-    await click(button('Render the image'))
-    await click(button('Mint'))
-    expect(button('Upload').disabled).toBe(true)
+    await change(host.querySelector<HTMLTextAreaElement>(`textarea[placeholder^="${copy.generate.promptPlaceholder}"]`)!, 'draw it')
+    await click(button(copy.generate.renderImage))
+    await click(button(copy.form.mint))
+    expect(button(copy.modes.upload).disabled).toBe(true)
     await act(async () => {
       mint.resolve(Response.json({ meme: { id: 'minted-original' } }))
       await settle()
@@ -207,7 +207,7 @@ describe('CreateMemeRoute settling requests', () => {
       .toBe(`${window.location.origin}/m/minted-original`)
     expect(host.querySelector('output[aria-label="Current route"]')?.textContent).toBe('/binder/new')
 
-    const open = [...host.querySelectorAll('a')].find((a) => a.textContent === 'Open the card')!
+    const open = [...host.querySelectorAll('a')].find((a) => a.textContent === copy.form.success.openCard)!
     await click(open)
     expect(host.querySelector('output[aria-label="Current route"]')?.textContent).toBe('/m/minted-original')
   })

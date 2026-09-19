@@ -17,6 +17,23 @@ type CommonSlice = Pick<
   CreateMemeScreenModel,
   | 'phase'
   | 'mode'
+  | 'pageTitle'
+  | 'pageSubtitle'
+  | 'formHeading'
+  | 'formDescription'
+  | 'titleLabel'
+  | 'tagsLabel'
+  | 'creditsNote'
+  | 'titleFooter'
+  | 'toMintPrefix'
+  | 'sharesToYou'
+  | 'mintLabel'
+  | 'shareLinkLabel'
+  | 'openCardLabel'
+  | 'busyHoldText'
+  | 'previewHeading'
+  | 'previewDescription'
+  | 'previewPlaceholder'
   | 'showRemixModeButton'
   | 'modeGroupProps'
   | 'busy'
@@ -66,6 +83,23 @@ export function buildCommonModel(
   return {
     phase,
     mode: ctx.mode,
+    pageTitle: copy.page.title,
+    pageSubtitle: copy.page.subtitle,
+    formHeading: copy.form.heading[ctx.mode],
+    formDescription: copy.form.description,
+    titleLabel: copy.form.titleLabel,
+    tagsLabel: copy.form.tagsLabel,
+    creditsNote: copy.form.creditsNote,
+    titleFooter: copy.form.titleFooter(TITLE_MAX),
+    toMintPrefix: copy.form.toMint,
+    sharesToYou: copy.form.sharesToYou,
+    mintLabel: copy.form.mint,
+    shareLinkLabel: copy.form.success.shareLink,
+    openCardLabel: copy.form.success.openCard,
+    busyHoldText: copy.preview.busyHold,
+    previewHeading: copy.preview.heading,
+    previewDescription: copy.preview.description,
+    previewPlaceholder: copy.preview.placeholder,
     showRemixModeButton: !!ctx.remixId,
     modeGroupProps: { role: 'group', 'aria-label': copy.form.sourceGroup },
     busy: ctx.busy,
@@ -89,6 +123,7 @@ export function buildCommonModel(
     formProps: { 'aria-busy': isBusy },
     getModeButtonProps: (candidate: CreateMemeMode) => ({
       selected: ctx.mode === candidate,
+      label: copy.modes[candidate],
       buttonProps: {
         type: 'button',
         'aria-pressed': ctx.mode === candidate,

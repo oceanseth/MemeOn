@@ -3,6 +3,7 @@ import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createMemeCopy as copy } from '../copy/createMeme'
 import { CreateMemeRoute } from '../views/AppView'
 import { POLL_TIMEOUT_MS } from '../lib/createMemeVideoPoll'
 import { PENDING_VIDEO_KEY } from '../lib/sessionBus'
@@ -188,19 +189,19 @@ type StartKind = 'generate-video' | 'restyle' | 'animate-edited'
 
 async function startVideo(kind: StartKind, prompt: string): Promise<void> {
   if (kind === 'generate-video') {
-    await click(button('Generate video'))
-    await change(host.querySelector<HTMLTextAreaElement>('textarea[placeholder^="a capybara"]')!, prompt)
-    await click(button('Render the video'))
+    await click(button(copy.modes.video))
+    await change(host.querySelector<HTMLTextAreaElement>(`textarea[placeholder^="${copy.generate.promptPlaceholder}"]`)!, prompt)
+    await click(button(copy.generate.renderVideo))
     return
   }
 
-  await pick('Output', 'New video')
-  if (kind === 'restyle') await pick('Video remix style', 'Restyle the whole video')
+  await pick(copy.remix.outputLabel, copy.remix.outputOptions.video)
+  if (kind === 'restyle') await pick(copy.remix.videoStyleLabel, copy.remix.videoStyleOptions.restyle)
   const promptControl = [...host.querySelectorAll<HTMLTextAreaElement>('textarea')]
     .find((candidate) => candidate.parentElement?.textContent?.includes('What to change') || candidate.parentElement?.textContent?.includes('Edit prompt'))!
   await change(promptControl, prompt)
-  await click(button('Remix into video'))
-  if (kind === 'animate-edited') await click(button('Looks good'))
+  await click(button(copy.remix.remixVideo))
+  if (kind === 'animate-edited') await click(button(copy.remix.animateIt))
 }
 
 describe('CreateMemeRoute video lifetime ownership', () => {
@@ -262,9 +263,9 @@ describe('CreateMemeRoute video lifetime ownership', () => {
       throw new Error(`Unexpected request: ${path}`)
     }))
     await renderAt()
-    await click(button('Generate video'))
-    await change(host.querySelector<HTMLTextAreaElement>('textarea[placeholder^="a capybara"]')!, 'held thumbnail')
-    await click(button('Render the video'))
+    await click(button(copy.modes.video))
+    await change(host.querySelector<HTMLTextAreaElement>(`textarea[placeholder^="${copy.generate.promptPlaceholder}"]`)!, 'held thumbnail')
+    await click(button(copy.generate.renderVideo))
     await click(link('Away'))
     await act(async () => {
       thumbnail.resolve(Response.json({ imageUrl: '/late-thumbnail.png' }))
