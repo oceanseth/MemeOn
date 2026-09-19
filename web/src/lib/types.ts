@@ -101,7 +101,9 @@ export interface Trade {
   fromName: string
   toId: string
   toName: string
+  /** Wire: proposer's give. UI remaps to TradeCardModel.give (mine ? offer : ask). */
   offer: TradeSide
+  /** Wire: proposer's get. UI remaps to TradeCardModel.get (mine ? ask : offer). */
   ask: TradeSide
   status: 'proposed' | 'accepted' | 'declined' | 'cancelled'
   createdAt: string
