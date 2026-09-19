@@ -8,6 +8,8 @@ import {
   createDraftPersister,
   draftOf,
   parsePendingVideo,
+  pendingVideoMatchesRemix,
+  pendingVideoRecord,
   persistPendingVideo,
   takePendingVideoRestore,
   writePendingVideo,
@@ -104,6 +106,19 @@ describe('parsePendingVideo', () => {
   })
 })
 
+describe('pendingVideoMatchesRemix', () => {
+  it('resumes a pending remix only from the route that started it', () => {
+    expect(pendingVideoMatchesRemix('remix-a', 'remix-b')).toBe(false)
+    expect(pendingVideoMatchesRemix('remix-a', 'remix-a')).toBe(true)
+  })
+
+  it('keeps non-remix video jobs resumable from the non-remix route', () => {
+    expect(pendingVideoMatchesRemix(null, 'remix-a')).toBe(false)
+    expect(pendingVideoMatchesRemix(undefined, null)).toBe(true)
+    expect(pendingVideoMatchesRemix(null, null)).toBe(true)
+  })
+})
+
 describe('pending video storage policy', () => {
   beforeEach(() => {
     stubSessionStorage()
@@ -183,6 +198,19 @@ describe('pending video storage policy', () => {
       remixId: null,
       draft: draftOf(baseCtx),
     })
+  })
+
+  it('carries the whole draft in the pending-render record', () => {
+    const record = pendingVideoRecord(
+      { ...baseCtx, mode: 'video', title: 'burning office', tags: 'chaos', prompt: 'a capybara', imageUrl: '/thumb.png' },
+      'render-a',
+      1_700_000_000_000,
+    )
+    expect(record).toMatchObject({ generationId: 'render-a', imageUrl: '/thumb.png' })
+    expect(record.draft).toEqual(
+      draftOf({ ...baseCtx, mode: 'video', title: 'burning office', tags: 'chaos', prompt: 'a capybara' }),
+    )
+    expect(record.draft?.title).toBe('burning office')
   })
 
   it('clearPendingVideoIfOwned removes only a matching generationId and startedAt', () => {
