@@ -1,15 +1,17 @@
 import { act } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { friendAccepted, giftablePaper, meLou } from '../../.storybook/fixtures'
 import { friendsCopy as copy } from '../copy/friends'
+import { profileCopy } from '../copy/profile'
 import type { Me } from '../lib/types'
 import { authMachine } from '../stores/authMachine'
 import { createStores, type AppStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
 import { FriendsView } from '../views/FriendsView'
+import { ProfileView } from '../views/ProfileView'
 
 vi.mock('../lib/firebase', () => ({ firebaseSignOut: vi.fn() }))
 vi.mock('../lib/presence', () => ({ watchPresence: () => () => {} }))
@@ -309,5 +311,129 @@ describe('FriendsView friend-request debounce ownership', () => {
     await advance(300)
     expect(api.userQueries).toEqual([])
     expect(host.textContent).toBe('')
+  })
+})
+
+function stubShare(share: ((data: ShareData) => Promise<void>) | undefined) {
+  Object.defineProperty(navigator, 'share', { configurable: true, writable: true, value: share })
+}
+
+function stubClipboardWrite(writeText: (text: string) => Promise<void>) {
+  try {
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, writable: true, value: { writeText } })
+  } catch {
+    vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeText)
+  }
+}
+
+describe('FriendsView invite share and clipboard', () => {
+  it('treats AbortError as a silent cancel and does not copy', async () => {
+    installSocialApi()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    stubShare(vi.fn().mockRejectedValue(new DOMException('Share canceled', 'AbortError')))
+    stubClipboardWrite(writeText)
+    await renderFriends()
+    await click(button(copy.invite.button))
+    await advance(0)
+    expect(writeText).not.toHaveBeenCalled()
+    expect(host.textContent).toContain(copy.invite.button)
+    expect(host.textContent).not.toContain(copy.invite.copyFailed)
+  })
+
+  it('shows invite.copyFailed when clipboard write rejects', async () => {
+    installSocialApi()
+    stubShare(undefined)
+    stubClipboardWrite(async () => { throw new Error('denied') })
+    await renderFriends()
+    await click(button(copy.invite.button))
+    await advance(0)
+    expect(host.textContent).toContain(copy.invite.copyFailed)
+  })
+
+  it('falls through to clipboard when share fails with a non-abort error', async () => {
+    installSocialApi()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    stubShare(vi.fn().mockRejectedValue(new Error('share unavailable')))
+    stubClipboardWrite(writeText)
+    await renderFriends()
+    await click(button(copy.invite.button))
+    await advance(0)
+    expect(writeText).toHaveBeenCalled()
+    expect(host.textContent).toContain(copy.invite.copied)
+  })
+})
+
+function installOwnProfileApi() {
+  vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
+    const request = details(input, init)
+    if (request.method === 'GET' && request.url.pathname === `/api/users/${encodeURIComponent(meLou.sub)}/profile`) {
+      return Promise.resolve(json({
+        profile: {
+          sub: meLou.sub,
+          name: meLou.name,
+          picture: meLou.picture,
+          followers: 2,
+          collectionSize: meLou.collectionSize,
+          portfolioValue: meLou.portfolioValue,
+        },
+        followingByMe: false,
+        friendStatus: null,
+        created: [],
+        binder: [],
+      }))
+    }
+    throw new Error(`Unexpected request: ${request.method} ${request.url.pathname}`)
+  }))
+}
+
+async function renderOwnProfile(): Promise<void> {
+  await act(async () => {
+    root.render(
+      <StoresProvider stores={stores}>
+        <MemoryRouter initialEntries={[`/u/${encodeURIComponent(meLou.sub)}`]}>
+          <Routes>
+            <Route path="/u/:sub" element={<ProfileView />} />
+          </Routes>
+        </MemoryRouter>
+      </StoresProvider>,
+    )
+    await settle()
+  })
+  expect(host.textContent).toContain(meLou.name)
+}
+
+describe('ProfileView share and clipboard', () => {
+  it('treats AbortError as a silent cancel and does not copy', async () => {
+    installOwnProfileApi()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    stubShare(vi.fn().mockRejectedValue(new DOMException('Share canceled', 'AbortError')))
+    stubClipboardWrite(writeText)
+    await renderOwnProfile()
+    await click(button(profileCopy.actions.share))
+    await advance(0)
+    expect(writeText).not.toHaveBeenCalled()
+    expect(host.querySelector('[data-slot="alert"]')).toBeNull()
+  })
+
+  it('puts copy.errors.copy in actionErr when clipboard write rejects', async () => {
+    installOwnProfileApi()
+    stubShare(undefined)
+    stubClipboardWrite(async () => { throw new Error('denied') })
+    await renderOwnProfile()
+    await click(button(profileCopy.actions.share))
+    await advance(0)
+    expect(host.querySelector('[data-slot="alert"]')?.textContent).toBe(profileCopy.errors.copy)
+  })
+
+  it('falls through to clipboard when share fails with a non-abort error', async () => {
+    installOwnProfileApi()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    stubShare(vi.fn().mockRejectedValue(new Error('share unavailable')))
+    stubClipboardWrite(writeText)
+    await renderOwnProfile()
+    await click(button(profileCopy.actions.share))
+    await advance(0)
+    expect(writeText).toHaveBeenCalled()
+    expect(host.querySelector('[data-slot="alert"]')).toBeNull()
   })
 })

@@ -29,6 +29,10 @@ const MSG_TTL_MS = 6000
 
 const copy = friendsCopy
 
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'AbortError'
+}
+
 const REMOVAL_COPY: Record<
   PendingRemoval['kind'],
   { title: (name: string) => string; body: string; confirm: string; cancel: string }
@@ -210,19 +214,30 @@ export function useFriendsScreen(): FriendsScreenModel {
   const onCopyInvite = useCallback(async () => {
     if (!inviteLink) return
     if (navigator.share) {
-      await navigator
-        .share({
+      try {
+        await navigator.share({
           title: copy.invite.share.title,
           text: copy.invite.share.text,
           url: inviteLink,
         })
-        .catch(() => {})
+        return
+      } catch (error) {
+        if (isAbortError(error)) return
+      }
+    }
+    const write = navigator.clipboard?.writeText
+    if (!write) {
+      send({ type: 'SET_COPIED', copied: false, failed: true })
       return
     }
-    await navigator.clipboard.writeText(inviteLink)
-    send({ type: 'SET_COPIED', copied: true })
-    if (copyTimer.current) clearTimeout(copyTimer.current)
-    copyTimer.current = setTimeout(() => send({ type: 'SET_COPIED', copied: false }), 2500)
+    try {
+      await write(inviteLink)
+      send({ type: 'SET_COPIED', copied: true })
+      if (copyTimer.current) clearTimeout(copyTimer.current)
+      copyTimer.current = setTimeout(() => send({ type: 'SET_COPIED', copied: false }), 2500)
+    } catch {
+      send({ type: 'SET_COPIED', copied: false, failed: true })
+    }
   }, [inviteLink, send])
 
   const onRequest = useCallback(
@@ -374,7 +389,7 @@ export function useFriendsScreen(): FriendsScreenModel {
     searchInputProps,
     msg: ctx.msg,
     err: ctx.actionErr,
-    inviteLabel: ctx.copied ? copy.invite.copied : copy.invite.button,
+    inviteLabel: ctx.copied ? copy.invite.copied : ctx.copyFailed ? copy.invite.copyFailed : copy.invite.button,
     inviteButtonProps: { onClick: onCopyInvite },
     onlineFriends: onlineFriends.map(friendLink),
     onlineCountLabel: copy.online.count(onlineFriends.length),

@@ -39,6 +39,7 @@ export const memeDetailCopy = {
     inputLabel: 'Share link for this meme',
     copy: 'Copy link',
     copied: sharedCopy.copied,
+    copyFailed: 'Copy failed — try again',
   },
   listing: {
     sale: (shares: number, pricePerShare: number) => `${plural(shares, 'share')} up for grabs · ${braincells(pricePerShare)} each`,
@@ -88,6 +89,7 @@ export const memeDetailCopy = {
     alreadyLinked: 'Already in the memeplex.',
     isThisMeme: "That's this meme — already the center of its own memeplex.",
     addFailed: 'failed to add',
+    loadFailed: "Couldn't load related memes.",
   },
   capTable: {
     title: 'Who holds this card · 100 shares',

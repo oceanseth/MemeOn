@@ -48,6 +48,7 @@ export const tradesCopy = {
     respond: "Couldn't send your answer — this trade may already have been answered. Try again.",
     propose: "Couldn't send that proposal. Check the numbers and try again.",
     friends: "Couldn't load your friends list. Close this and open it again.",
+    composeLoad: "Couldn't load the memes for this trade. Close this and open it again.",
   },
   confirm: {
     acceptTitle: 'Accept this trade?',

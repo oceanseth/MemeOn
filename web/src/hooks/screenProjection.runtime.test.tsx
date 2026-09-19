@@ -7,6 +7,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { invitePal, meLou, memeplexEmpty, paperMeme } from '../../.storybook/fixtures'
 import { TIERS } from '@memeon/shared/tiers'
 import { memeDetailCopy } from '../copy/memeDetail'
+import { tradesCopy } from '../copy/trades'
 import { authMachine } from '../stores/authMachine'
 import { createStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
@@ -195,6 +196,44 @@ it('Trades projects composer-open events', async () => {
   const probe = await mountHook(useTradesScreen, (m) => `${m.phase}:${!!m.compose}`)
   await act(() => probe.current().newTradeButtonProps.onClick())
   expect(probe.text()).toBe('composing:true')
+})
+
+it('Trades compose catalog failures surface composeLoad without FAIL', async () => {
+  fetchMock.mockImplementation(async (input, init) => {
+    const path = String(input)
+    requests.push({ path, init })
+    if (path === '/api/binder' || path === '/api/memes') {
+      return jsonResponse({ error: 'catalog down' }, { status: 503 })
+    }
+    return jsonResponse(response(path))
+  })
+  const probe = await mountHook(useTradesScreen, (m) => `${m.phase}:${m.compose?.error ?? ''}:${m.err ?? ''}`)
+  await act(() => probe.current().newTradeButtonProps.onClick())
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    if (probe.current().compose?.error === tradesCopy.errors.composeLoad) break
+    await act(async () => { await Promise.resolve() })
+  }
+  expect(probe.current().compose?.error).toBe(tradesCopy.errors.composeLoad)
+  expect(probe.current().err).toBeNull()
+  expect(probe.current().phase).toBe('composing')
+})
+
+it('Trades compose catalog failures do not overwrite an existing friends error', async () => {
+  fetchMock.mockImplementation(async (input, init) => {
+    const path = String(input)
+    requests.push({ path, init })
+    if (path === '/api/friends' || path === '/api/binder' || path === '/api/memes') {
+      return jsonResponse({ error: 'unavailable' }, { status: 503 })
+    }
+    return jsonResponse(response(path))
+  })
+  const probe = await mountHook(useTradesScreen, (m) => `${m.compose?.error ?? ''}`)
+  await act(() => probe.current().newTradeButtonProps.onClick())
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    if (probe.current().compose?.error === tradesCopy.errors.friends) break
+    await act(async () => { await Promise.resolve() })
+  }
+  expect(probe.current().compose?.error).toBe(tradesCopy.errors.friends)
 })
 
 it('Friends projects search input events', async () => {

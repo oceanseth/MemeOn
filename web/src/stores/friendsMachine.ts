@@ -36,6 +36,7 @@ export interface FriendsContext {
   giftBusy: boolean
   giftErr: string | null
   copied: boolean
+  copyFailed: boolean
   err: string | null
 }
 
@@ -60,7 +61,7 @@ export type FriendsEvent =
   | { type: 'SET_GIFT_SHARES_INPUT'; value: string | null }
   | { type: 'SET_GIFT_BUSY'; busy: boolean }
   | { type: 'SET_GIFT_ERR'; err: string | null }
-  | { type: 'SET_COPIED'; copied: boolean }
+  | { type: 'SET_COPIED'; copied: boolean; failed?: boolean }
 
 /**
  * Friends list source of truth. loading → ready|empty|error.
@@ -92,6 +93,7 @@ export const friendsMachine = setup({
     giftBusy: false,
     giftErr: null,
     copied: false,
+    copyFailed: false,
     err: null,
   },
   initial: 'loading',
@@ -129,7 +131,13 @@ export const friendsMachine = setup({
     SET_GIFT_SHARES_INPUT: { actions: assign({ giftSharesInput: ({ event }) => event.value }) },
     SET_GIFT_BUSY: { actions: assign({ giftBusy: ({ event }) => event.busy }) },
     SET_GIFT_ERR: { actions: assign({ giftErr: ({ event }) => event.err }) },
-    SET_COPIED: { actions: assign({ copied: ({ event }) => event.copied }) },
+    SET_COPIED: {
+      actions: assign({
+        copied: ({ event }) => event.copied,
+        /* a timer's {copied:false} must not clear or set copyFailed unless failed:true */
+        copyFailed: ({ context, event }) => (event.failed ? true : event.copied ? false : context.copyFailed),
+      }),
+    },
     DONE: [
       {
         guard: ({ event }) => event.friends.length === 0,

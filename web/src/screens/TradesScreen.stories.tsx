@@ -130,6 +130,17 @@ export const ComposingEmptyProposal: Story = {
 export const ComposingNoFriends: Story = {
   args: { phase: 'composing', newTradeButtonLabel: copy.closeComposer, newTradeButtonProps: { onClick: noop, 'aria-expanded': true, 'aria-controls': 'trade-composer' }, compose: { ...compose, noFriends: true, friendSelectItems: [{ value: '', label: copy.composer.pickFriend }] } },
 }
+export const ComposingLoadFailed: Story = {
+  args: {
+    phase: 'composing',
+    newTradeButtonLabel: copy.closeComposer,
+    newTradeButtonProps: { onClick: noop, 'aria-expanded': true, 'aria-controls': 'trade-composer' },
+    compose: { ...compose, error: copy.errors.composeLoad },
+  },
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(copy.errors.composeLoad)
+  },
+}
 export const Acting: Story = { args: { phase: 'acting', open: [buildTradeCardModel({ trade: proposedTrade, meSub: 'not-the-sender', memeNames, onRespond: noop, busyTradeId: proposedTrade.id, busyAction: 'accept', now: NOW })] } }
 /** the one irreversible action on the surface restates the deal before it fires */
 export const ConfirmingAccept: Story = {

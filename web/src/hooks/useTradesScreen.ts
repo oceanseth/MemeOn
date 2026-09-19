@@ -150,11 +150,17 @@ export function useTradesScreen(): TradesScreenModel {
       .catch(() => send({ type: 'SET_COMPOSE_ERR', err: copy.errors.friends, composeGeneration: generation }))
     apiFetch<{ memes: Meme[] }>('/api/binder')
       .then((result) => send({ type: 'SET_BINDER', binder: result.memes.filter((meme) => (meme.myShares ?? 0) > 0), composeGeneration: generation }))
-      .catch(() => {})
+      .catch(() => {
+        if (actor.getSnapshot().context.composeErr) return
+        send({ type: 'SET_COMPOSE_ERR', err: copy.errors.composeLoad, composeGeneration: generation })
+      })
     apiFetch<{ memes: Meme[] }>('/api/memes')
       .then((result) => send({ type: 'SET_ALL_MEMES', memes: result.memes, composeGeneration: generation }))
-      .catch(() => {})
-  }, [send])
+      .catch(() => {
+        if (actor.getSnapshot().context.composeErr) return
+        send({ type: 'SET_COMPOSE_ERR', err: copy.errors.composeLoad, composeGeneration: generation })
+      })
+  }, [actor, send])
   useMountEffect(() => { load() })
   const showNew = context.showNew || phase === 'composing'
   const theirMemes = context.allMemes.filter((meme) => meme.ownerId === context.toId || meme.creatorId === context.toId)

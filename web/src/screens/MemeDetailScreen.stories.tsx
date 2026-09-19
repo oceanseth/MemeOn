@@ -63,6 +63,28 @@ export const Empty: Story = { args: { phase: 'empty', showNotFound: true, detail
 export const Error: Story = { args: { phase: 'error', detail: { ...detail(), error: copy.errors.action } } }
 export const Ready: Story = {}
 export const Notice: Story = { args: { detail: { ...detail(), notice: copy.toasts.listed } } }
+export const CopyFailed: Story = {
+  args: { detail: { ...detail(), copyButtonLabel: copy.share.copyFailed } },
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('button', { name: copy.share.copyFailed })).toBeVisible()
+  },
+}
+export const PlexLoadFailed: Story = {
+  args: {
+    detail: {
+      ...detail(),
+      plex: buildMemeplexPanelModel({
+        meme: paperMeme, plex: null, canEdit: true, binder: [], pick: '', pasted: '',
+        notice: null, error: copy.memeplex.loadFailed, onPickChange: noop, onPastedChange: noop, onAdd: noop,
+      }),
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText(copy.memeplex.loadFailed)).toBeVisible()
+    await expect(canvas.queryByText(/No relatives yet/)).toBeNull()
+  },
+}
 
 /** The share-link arrival: no session, so the card sells the login instead of dead-ending. */
 export const Visitor: Story = {

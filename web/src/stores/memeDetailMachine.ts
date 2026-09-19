@@ -45,6 +45,7 @@ export interface MemeDetailContext {
   msg: string | null
   err: string | null
   copied: boolean
+  copyFailed: boolean
   confirmingDelete: boolean
   deleting: boolean
   price: number
@@ -84,7 +85,7 @@ export type MemeDetailEvent =
   | { type: 'SET_PRICE'; price: number }
   | { type: 'SET_SELL_SHARES'; shares: number }
   | { type: 'SET_BUY_SHARES'; shares: number }
-  | { type: 'SET_COPIED'; copied: boolean }
+  | { type: 'SET_COPIED'; copied: boolean; failed?: boolean }
   | { type: 'SET_CONFIRMING_DELETE'; confirming: boolean }
   | { type: 'SET_HOLDER_NAMES'; names: Record<string, string> }
   | { type: 'SET_MSG'; msg: string | null }
@@ -117,6 +118,7 @@ export const memeDetailMachine = setup({
     msg: null,
     err: null,
     copied: false,
+    copyFailed: false,
     confirmingDelete: false,
     deleting: false,
     price: 1,
@@ -156,7 +158,13 @@ export const memeDetailMachine = setup({
         buyShares: ({ context, event }) => clampShares(event.shares, context.meme?.listing?.shares ?? 100),
       }),
     },
-    SET_COPIED: { actions: assign({ copied: ({ event }) => event.copied }) },
+    SET_COPIED: {
+      actions: assign({
+        copied: ({ event }) => event.copied,
+        /* a timer's {copied:false} must not clear or set copyFailed unless failed:true */
+        copyFailed: ({ context, event }) => (event.failed ? true : event.copied ? false : context.copyFailed),
+      }),
+    },
     SET_CONFIRMING_DELETE: { actions: assign({ confirmingDelete: ({ event }) => event.confirming }) },
     SET_HOLDER_NAMES: {
       actions: assign({

@@ -206,6 +206,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
         }
         if (Object.keys(names).length > 0) send({ type: 'SET_HOLDER_NAMES', names })
       })
+      // keep clearing the in-flight flag so a later load can retry; the cap table stays copy.holder.unknown
       .catch(() => { holderNamesRequested.current = false })
   }, [send])
 
@@ -215,6 +216,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
     apiFetch<{ meme: Meme; positions: Position[] }>(`/api/memes/${memeId}`)
       .then((result) => { send({ type: 'LOADED', meme: result.meme, positions: result.positions }); resolveHolderNames(result.positions, auth.user?.sub ?? null) })
       .catch(() => send({ type: 'NOT_FOUND' }))
+    // sources are additive; the spreading card hides when sources.length===0 — do not FAIL the page
     apiFetch<MemeStats>(`/api/memes/${memeId}/stats`).then((stats) => send({ type: 'SET_STATS', stats })).catch(() => {})
   }, [actor, auth, resolveHolderNames, send])
 
@@ -233,6 +235,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
             send({ type: 'SET_PLEX_BINDER', binder: result.memes.filter((candidate) => candidate.id !== meme.id) })
           }
         })
+        // empty picker ≡ one-card binder; paste-a-link still works
         .catch(() => {})
     }
     const unsubscribeActor = actor.subscribe(loadBinderWhenEligible)
@@ -240,7 +243,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
     const disposeAuth = auth.subscribe(loadBinderWhenEligible)
     load()
     const memeId = actor.getSnapshot().context.id
-    if (memeId) apiFetch<Memeplex>(`/api/memes/${memeId}/memeplex`).then((plex) => send({ type: 'SET_PLEX', plex })).catch(() => {})
+    if (memeId) apiFetch<Memeplex>(`/api/memes/${memeId}/memeplex`).then((plex) => send({ type: 'SET_PLEX', plex })).catch(() => send({ type: 'SET_PLEX_ERR', err: copy.memeplex.loadFailed }))
     return () => { installed = false; unsubscribeActor.unsubscribe(); disposeAuth(); if (copyTimer.current) clearTimeout(copyTimer.current) }
   })
 
@@ -276,7 +279,16 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
   const priceChange: ChangeEventHandler<HTMLInputElement> = (event) => send({ type: 'SET_PRICE', price: numberFromInput(event) })
   const onCopy = () => {
     if (!shareUrl) return
-    void navigator.clipboard.writeText(shareUrl).then(() => { send({ type: 'SET_COPIED', copied: true }); if (copyTimer.current) clearTimeout(copyTimer.current); copyTimer.current = setTimeout(() => send({ type: 'SET_COPIED', copied: false }), 2000) })
+    const write = navigator.clipboard?.writeText
+    if (!write) {
+      send({ type: 'SET_COPIED', copied: false, failed: true })
+      return
+    }
+    void write(shareUrl).then(() => {
+      send({ type: 'SET_COPIED', copied: true })
+      if (copyTimer.current) clearTimeout(copyTimer.current)
+      copyTimer.current = setTimeout(() => send({ type: 'SET_COPIED', copied: false }), 2000)
+    }).catch(() => send({ type: 'SET_COPIED', copied: false, failed: true }))
   }
   const onPlexAdd = (memeId: string) => {
     const live = actor.getSnapshot().context
@@ -383,7 +395,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
       statsSrLabel: copy.stats.srLabel(views, reshareCount),
       valueSrLabel: copy.stats.valueSrLabel(meme.value),
       holdingsLabel: myShares > 0 ? `${myShares}/100` : null,
-      shareInputProps: { value: shareUrl, readOnly: true, 'aria-label': copy.share.inputLabel }, copyButtonLabel: context.copied ? copy.share.copied : copy.share.copy, copyButtonProps: { onClick: onCopy }, previewLinkProps: { href: `/api/memes/${meme.id}/og.png`, target: '_blank', rel: 'noreferrer' },
+      shareInputProps: { value: shareUrl, readOnly: true, 'aria-label': copy.share.inputLabel }, copyButtonLabel: context.copied ? copy.share.copied : context.copyFailed ? copy.share.copyFailed : copy.share.copy, copyButtonProps: { onClick: onCopy }, previewLinkProps: { href: `/api/memes/${meme.id}/og.png`, target: '_blank', rel: 'noreferrer' },
       signedOut, actions,
       notice: context.msg, noticeProps: { role: 'status', 'aria-live': 'polite' },
       error: context.err, errorProps: { role: 'alert', 'aria-live': 'assertive' },

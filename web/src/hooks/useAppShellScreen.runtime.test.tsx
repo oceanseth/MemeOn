@@ -309,3 +309,73 @@ it('polls every thirty seconds, resets only for a new user reference, and stops 
   await act(() => vi.advanceTimersByTime(60_000))
   expect(alerts).toHaveBeenCalledTimes(5)
 })
+
+it('still MARK_READs when alerts/read POST rejects and does not SET_ALERTS_FAIL', async () => {
+  const { stores, loads } = createControlledStores()
+  storesToDispose.push(stores)
+  const readPost = deferred<Response>()
+  vi.stubGlobal('fetch', vi.fn<typeof fetch>((input) => {
+    const path = pathOf(input)
+    if (path === '/api/alerts') {
+      return Promise.resolve(Response.json({ alerts: [alert('Unread sale', false)] }))
+    }
+    if (path === '/api/onboarding') {
+      return Promise.resolve(Response.json({ steps: [] }))
+    }
+    if (path === '/api/alerts/read') {
+      return readPost.promise
+    }
+    throw new Error(`Unexpected request: ${path}`)
+  }))
+  await refreshAs(stores, loads, allDoneUser('Mark-read account'))
+
+  const OpenAlertsProbe = observer(function OpenAlertsProbe() {
+    const model = useAppShellScreen()
+    return (
+      <section>
+        <output data-testid="unread">{model.alertsBell.unreadLabel ?? '0'}</output>
+        <output data-testid="tone">{model.alertsBell.emptyTone}</output>
+        <output data-testid="row-unread">{String(model.alertsBell.rows.filter((row) => row.unread).length)}</output>
+        <button type="button" data-testid="open-alerts" onClick={() => void model.alertsBell.onOpenChange(true)}>open</button>
+      </section>
+    )
+  })
+
+  await act(async () => {
+    root.render(mountedProbe(stores, <OpenAlertsProbe />))
+    await settle()
+  })
+  await act(async () => { await settle() })
+  expect(text(host, 'unread')).toBe('1')
+  expect(text(host, 'tone')).toBe('idle')
+
+  await act(async () => {
+    host.querySelector<HTMLButtonElement>('[data-testid="open-alerts"]')!.click()
+    await settle()
+  })
+  await act(async () => {
+    readPost.reject(new Error('offline'))
+    await settle()
+  })
+  expect(text(host, 'tone')).toBe('idle')
+  expect(text(host, 'unread')).toBe('0')
+  expect(text(host, 'row-unread')).toBe('1')
+})
+
+it('hides the quest bar when onboarding GET rejects', async () => {
+  const { stores, loads } = createControlledStores()
+  storesToDispose.push(stores)
+  const reads = controlledShellReads()
+  const user = { ...meLou, name: 'Quest skip', onboarding: { pack: 'todo' as const } }
+  await refreshAs(stores, loads, user)
+
+  await act(() => root.render(mountedProbe(stores)))
+  expect(reads.steps).toHaveLength(1)
+
+  await act(async () => {
+    reads.alerts[0]!.resolve(Response.json({ alerts: [] }))
+    reads.steps[0]!.reject(new Error('offline'))
+    await settle()
+  })
+  expect(text(host, 'quest')).toBe('none')
+})
