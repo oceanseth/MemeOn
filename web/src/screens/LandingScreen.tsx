@@ -25,13 +25,6 @@ const PILE_LAYOUT = [
   'left-[55.9%] top-[23.3%] w-[35.4%] rotate-[10deg]',
 ] as const
 
-/** How-it-works steps — emoji-free by design. */
-const HOW_IT_WORKS = [
-  { step: '01', title: 'Mint a moment', body: 'Turn an image, video, Giphy, or URL into a card.' },
-  { step: '02', title: 'Drop the link', body: 'Every share unfurls with its live foil frame.' },
-  { step: '03', title: 'Go Shiny', body: 'Reshares push Paper cards up the virality tiers.' },
-] as const
-
 /** Landing as a function of its model. Every engine state is one set of args. */
 export function LandingScreen({
   err,
@@ -39,10 +32,20 @@ export function LandingScreen({
   showLoginButton,
   showErr,
   loginLabel,
+  loginAside,
+  marketplaceCta,
   closingLine,
   closingLoginLabel,
+  heroTitle,
+  heroBody,
   heroCards,
+  howTitle,
+  howSteps,
+  tiersTitle,
   tiers,
+  filmTitle,
+  faqTitle,
+  faqItems,
   heroVideo,
   loginButtonProps,
   closingLoginButtonProps,
@@ -50,12 +53,12 @@ export function LandingScreen({
   frameSlotProps,
   errorNoticeProps,
 }: LandingScreenModel) {
-  const marketplaceCta = (
+  const marketplaceCtaLink = (
     <Link className={buttonVariants({ variant: 'primary', size: 'login' })} to="/marketplace">
       <span aria-hidden="true">
         <Icon name="playing-card" size={18} />
       </span>{' '}
-      Enter the marketplace
+      {marketplaceCta}
     </Link>
   )
 
@@ -74,21 +77,20 @@ export function LandingScreen({
                 'md:text-6xl',
               )}
             >
-              Memes are the new trading cards
+              {heroTitle}
             </h1>
             <p className="mt-5 mb-0 max-w-[65ch] text-pretty text-lg text-muted-foreground">
-              Mint the moment. Watch it spread. Trade the cards everyone sends each other anyway —
-              every meme gets a share link whose foil frame levels up as it travels.
+              {heroBody}
             </p>
             {showMarketplaceCta ? (
-              <div className="mt-7">{marketplaceCta}</div>
+              <div className="mt-7">{marketplaceCtaLink}</div>
             ) : showLoginButton ? (
               <div className="mt-7 flex flex-wrap items-center gap-3.5">
                 <Button variant="primary" size="login" {...loginButtonProps}>
                   {loginLabel}
                 </Button>
                 <p className="m-0 max-w-[24ch] text-sm text-muted-foreground">
-                  No email. No real name. Just your Masky avatar.
+                  {loginAside}
                 </p>
               </div>
             ) : null}
@@ -151,9 +153,9 @@ export function LandingScreen({
 
       {/* how it works */}
       <section data-slot="landing-how" className={SECTION}>
-        <Heading size="section">A card gets better when it gets around.</Heading>
+        <Heading size="section">{howTitle}</Heading>
         <ol className="mt-6 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-3">
-          {HOW_IT_WORKS.map((step) => (
+          {howSteps.map((step) => (
             <li key={step.step} className={CARD}>
               {/* step number in link colour — focus token misses contrast on dark surfaces */}
               <span className="block text-sm font-semibold text-link tabular-nums">
@@ -169,7 +171,7 @@ export function LandingScreen({
       {/* tier ladder */}
       <section data-slot="landing-tiers" className={SECTION}>
         <Heading size="section" id="tiers">
-          The Virality Tiers
+          {tiersTitle}
         </Heading>
         {/* an ordered climb, so the ladder is an <ol>: the sequence is the section's argument */}
         <ol className="mt-6 grid list-none grid-cols-[repeat(auto-fill,minmax(136px,1fr))] gap-3 p-0 max-sm:grid-cols-2 2xl:grid-cols-7">
@@ -210,71 +212,29 @@ export function LandingScreen({
         </ol>
       </section>
 
-      {/* The promo film: the whole loop in 50 seconds, framed like the cards above it, right
-          before the FAQ answers the questions it raises. */}
+      {/* The promo film: the whole loop, framed like the cards above it, right
+          before the questions it raises. */}
       <section data-slot="landing-film" className={SECTION}>
-        <Heading size="section">MemeOn in 50 seconds</Heading>
+        <Heading size="section">{filmTitle}</Heading>
         <HeroVideo model={heroVideo} className="mt-6 max-w-220" />
       </section>
 
-      {/* FAQ */}
+      {/* questions */}
       <section data-slot="landing-faq" className={SECTION}>
-        <Heading size="section" className="mb-6">FAQ</Heading>
+        <Heading size="section" className="mb-6">{faqTitle}</Heading>
         <div className="max-w-[65ch]">
-          <FaqItem question="How does a card level up?" defaultOpen>
-            <p>
-              Each unique share link and card unfurl counts as a reshare. Cross a threshold and the
-              meme tiers up: Paper → Silver → Holo → Chrome → Gold → Prismatic → Shiny. The link
-              preview card (the og image) upgrades its foil frame automatically, so a Gold meme
-              flexes gold wherever it lands.
-            </p>
-          </FaqItem>
-          <FaqItem question="Can I keep a meme private?">
-            <p>
-              Only a meme’s sole owner can make it private — that pulls it off every public surface.
-              Once shares are split between holders it stays in the market.
-            </p>
-          </FaqItem>
-          <FaqItem question="WTF is MemeOn?">
-            <p>
-              A meme trading card market. You mint memes (upload or generate them with your Masky
-              credits), each one becomes a 100-share collectible card, and its rarity tier is driven
-              by real reshares of its unique link.
-            </p>
-          </FaqItem>
-          <FaqItem question="What are braincells?">
-            <img
-              src="/api/brand/braincell.png"
-              alt="a braincell"
-              className="mt-1.5 mb-1.5 ml-3 size-18 float-right rounded-full object-cover align-middle"
-            />
-            <p>
-              Braincells are MemeOn's currency — you buy meme shares, fund trades, and flex on the
-              Top Brains leaderboard with them. Everyone starts at zero (smoothbrained, sorry) and
-              earns their first braincells through the onboarding quests: claim your free starter
-              pack, mint your first meme, get your first reshare, make a friend, close a trade. AI
-              generation is separate — that runs on your own Masky credits.
-            </p>
-          </FaqItem>
-          <FaqItem question="How do tiers work?">
-            <p>
-              Every meme has a share URL (memeon.ai/m/…). Each time that link is loaded — a friend
-              clicks it, Discord unfurls it, a bot scrapes it — the counter ticks up, and every new
-              place it's shared is counted separately as a reshare. Seven tiers, from Paper at zero
-              to Shiny at 25,000.
-            </p>
-          </FaqItem>
-          <FaqItem question="What's Masky got to do with it?">
-            <p>
-              Login is "Log in with Masky" — your Masky avatar is your identity here, and meme
-              generation (images and videos) runs on your own Masky credits. Your real identity
-              stays protected: MemeOn only ever sees your avatar, never who's behind the mask. And
-              your avatar can do more than represent you — configure an agentic harness for it on
-              Masky and it runs as an agent on your behalf: auto-approving or proposing trades,
-              minting new memes with AI, watching for memes catching reshare momentum, and generally
-              maximizing your braincells while you sleep.
-            </p>
-          </FaqItem>
+          {faqItems.map((item) => (
+            <FaqItem key={item.id} question={item.question} defaultOpen={item.defaultOpen}>
+              {item.imageSrc ? (
+                <img
+                  src={item.imageSrc}
+                  alt={item.imageAlt}
+                  className="mt-1.5 mb-1.5 ml-3 size-18 float-right rounded-full object-cover align-middle"
+                />
+              ) : null}
+              <p>{item.body}</p>
+            </FaqItem>
+          ))}
         </div>
       </section>
 
@@ -297,7 +257,7 @@ export function LandingScreen({
             {closingLine}
           </p>
           {showMarketplaceCta ? (
-            marketplaceCta
+            marketplaceCtaLink
           ) : (
             <Button variant="primary" size="login" {...closingLoginButtonProps}>
               {closingLoginLabel}
