@@ -45,7 +45,12 @@ export async function completeMaskyLogin(
 
   setSessionToken(res.sessionToken)
   setMaskyAccessToken(res.maskyAccessToken)
-  // join the Firebase project too (RTDB presence); non-fatal if it fails
-  if (res.firebaseToken) await firebaseSignIn(res.firebaseToken).catch(() => {})
+  // join the Firebase project too (RTDB presence); non-fatal if it fails.
+  // null firebaseToken: API mint skipped — skip sign-in, no log.
+  if (res.firebaseToken) {
+    await firebaseSignIn(res.firebaseToken).catch((err) => {
+      console.error('[memeon firebase] sign-in failed', err)
+    })
+  }
   return res.profile
 }
