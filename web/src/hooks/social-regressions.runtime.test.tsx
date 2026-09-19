@@ -88,6 +88,7 @@ interface RecordedRequest {
 interface SocialApiOptions {
   gifts?: Array<ReturnType<typeof deferred<Response>>>
   friendRequests?: Array<ReturnType<typeof deferred<Response>>>
+  users?: (query: string) => Promise<Response>
 }
 
 function installSocialApi(options: SocialApiOptions = {}) {
@@ -117,6 +118,7 @@ function installSocialApi(options: SocialApiOptions = {}) {
     if (request.method === 'GET' && request.url.pathname === '/api/users') {
       const query = request.url.searchParams.get('q') ?? ''
       userQueries.push(query)
+      if (options.users) return options.users(query)
       return Promise.resolve(json({
         users: [{ sub: query.toLocaleLowerCase(), name: query, picture: null }],
       }))
@@ -325,6 +327,38 @@ function stubClipboardWrite(writeText: (text: string) => Promise<void>) {
     vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeText)
   }
 }
+
+describe('FriendsView search failure vs empty hits', () => {
+  it('shows copy.search.failed when GET /api/users rejects, not noHits', async () => {
+    installSocialApi({ users: async () => Promise.reject(new Error('offline')) })
+    await renderFriends()
+    await search('pal')
+    await advance(250)
+    expect(host.textContent).toContain(copy.search.failed)
+    expect(host.textContent).not.toContain(copy.search.noHits('pal'))
+    expect(host.textContent).toContain(friendAccepted.name)
+    expect(host.querySelector('[data-slot="empty"][data-variant="error"]')).toBeNull()
+  })
+
+  it('shows copy.search.failed when GET /api/users returns 500, not noHits', async () => {
+    installSocialApi({ users: async () => json({ error: 'search unavailable' }, 500) })
+    await renderFriends()
+    await search('pal')
+    await advance(250)
+    expect(host.textContent).toContain(copy.search.failed)
+    expect(host.textContent).not.toContain('search unavailable')
+    expect(host.textContent).not.toContain(copy.search.noHits('pal'))
+  })
+
+  it('empty 200 stays no-hits', async () => {
+    installSocialApi({ users: async () => json({ users: [] }) })
+    await renderFriends()
+    await search('pal')
+    await advance(250)
+    expect(host.textContent).toContain(copy.search.noHits('pal'))
+    expect(host.textContent).not.toContain(copy.search.failed)
+  })
+})
 
 describe('FriendsView invite share and clipboard', () => {
   it('treats AbortError as a silent cancel and does not copy', async () => {

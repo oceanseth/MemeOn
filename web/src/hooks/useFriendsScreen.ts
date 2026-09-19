@@ -67,6 +67,7 @@ export interface FriendsScreenModel {
   showSearching: boolean
   showHits: boolean
   showNoHits: boolean
+  showSearchFailed: boolean
   showIncoming: boolean
   showOutgoing: boolean
   showLoading: boolean
@@ -76,6 +77,7 @@ export interface FriendsScreenModel {
   showCircleHint: boolean
   searchingLabel: string
   noHitsMessage: string
+  searchFailedMessage: string
   loadingLabel: string
   errorTitle: string
   errorMessage: string
@@ -200,11 +202,12 @@ export function useFriendsScreen(): FriendsScreenModel {
         return
       }
       send({ type: 'SET_SEARCHING', searching: true })
+      send({ type: 'SET_SEARCH_ERR', err: null })
       searchTimer.current = setTimeout(() => {
         searchTimer.current = null
         apiFetch<{ users: UserHit[] }>(`/api/users?q=${encodeURIComponent(value)}`)
           .then((r) => send({ type: 'SET_HITS', hits: r.users }))
-          .catch(() => send({ type: 'SET_HITS', hits: [] }))
+          .catch(() => send({ type: 'SET_SEARCH_ERR', err: copy.search.failed }))
           .finally(() => send({ type: 'SET_SEARCHING', searching: false }))
       }, 250)
     },
@@ -456,8 +459,9 @@ export function useFriendsScreen(): FriendsScreenModel {
     showSearchPanel,
     // results stay clickable while the next query debounces; only an empty list swaps to a state line
     showSearching: showSearchPanel && ctx.searching && ctx.hits.length === 0,
-    showHits: showSearchPanel && ctx.hits.length > 0,
-    showNoHits: showSearchPanel && !ctx.searching && ctx.hits.length === 0,
+    showHits: showSearchPanel && ctx.hits.length > 0 && !ctx.searchErr,
+    showNoHits: showSearchPanel && !ctx.searching && ctx.hits.length === 0 && !ctx.searchErr,
+    showSearchFailed: showSearchPanel && !ctx.searching && !!ctx.searchErr,
     showIncoming: incoming.length > 0,
     showOutgoing: outgoing.length > 0,
     showLoading,
@@ -467,6 +471,7 @@ export function useFriendsScreen(): FriendsScreenModel {
     showCircleHint,
     searchingLabel: copy.search.searching,
     noHitsMessage: copy.search.noHits(trimmedQuery),
+    searchFailedMessage: copy.search.failed,
     loadingLabel: copy.loading,
     errorTitle: copy.loadError.title,
     errorMessage: ctx.err ?? copy.loadError.body,

@@ -120,6 +120,7 @@ export function FriendsScreen({
   showSearching,
   showHits,
   showNoHits,
+  showSearchFailed,
   showIncoming,
   showOutgoing,
   showLoading,
@@ -129,6 +130,7 @@ export function FriendsScreen({
   showCircleHint,
   searchingLabel,
   noHitsMessage,
+  searchFailedMessage,
   loadingLabel,
   errorTitle,
   errorMessage,
@@ -177,6 +179,7 @@ export function FriendsScreen({
           <div role="status">
             {showSearching && <p className="m-0 text-base text-muted-foreground">{searchingLabel}</p>}
             {showNoHits && <p className="m-0 text-base text-muted-foreground">{noHitsMessage}</p>}
+            {showSearchFailed && <p className="m-0 text-base text-muted-foreground">{searchFailedMessage}</p>}
           </div>
           {showHits && (
             <div className={cn(SECTION, 'mt-3.5')}>

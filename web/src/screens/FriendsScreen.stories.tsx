@@ -69,6 +69,7 @@ const empty: FriendsScreenModel = {
   showSearching: false,
   showHits: false,
   showNoHits: false,
+  showSearchFailed: false,
   showIncoming: false,
   showOutgoing: false,
   showLoading: false,
@@ -78,6 +79,7 @@ const empty: FriendsScreenModel = {
   showCircleHint: false,
   searchingLabel: copy.search.searching,
   noHitsMessage: copy.search.noHits('pal'),
+  searchFailedMessage: copy.search.failed,
   loadingLabel: copy.loading,
   errorTitle: copy.loadError.title,
   errorMessage: copy.loadError.body,
@@ -192,6 +194,19 @@ export const NoSearchResults: Story = {
     searchInputProps: searchInput('pal'),
     showSearchPanel: true,
     showNoHits: true,
+  },
+}
+
+export const SearchFailed: Story = {
+  args: {
+    searchInputProps: searchInput('pal'),
+    showSearchPanel: true,
+    showSearchFailed: true,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByText(copy.search.failed)).toBeVisible()
+    await expect(canvas.queryByText(copy.search.noHits('pal'))).toBeNull()
   },
 }
 

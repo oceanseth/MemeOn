@@ -21,6 +21,8 @@ export interface FriendsContext {
   msg: string | null
   /** mutation failures; `err` stays reserved for the load failure that owns the error phase */
   actionErr: string | null
+  /** GET /api/users?q= failure; not actionErr and not the load `err` */
+  searchErr: string | null
   /** sub whose accept / decline / remove / cancel request is in flight */
   pendingSub: string | null
   pendingRemoval: PendingRemoval | null
@@ -45,6 +47,7 @@ export type FriendsEvent =
   | { type: 'FAIL'; err: string }
   | { type: 'SET_QUERY'; query: string }
   | { type: 'SET_HITS'; hits: UserHit[] }
+  | { type: 'SET_SEARCH_ERR'; err: string | null }
   | { type: 'SET_MSG'; msg: string | null }
   | { type: 'SET_ACTION_ERR'; err: string | null }
   | { type: 'SET_PENDING'; sub: string | null }
@@ -80,6 +83,7 @@ export const friendsMachine = setup({
     hits: [],
     msg: null,
     actionErr: null,
+    searchErr: null,
     pendingSub: null,
     pendingRemoval: null,
     searching: false,
@@ -99,7 +103,8 @@ export const friendsMachine = setup({
   initial: 'loading',
   on: {
     SET_QUERY: { actions: assign({ query: ({ event }) => event.query }) },
-    SET_HITS: { actions: assign({ hits: ({ event }) => event.hits }) },
+    SET_HITS: { actions: assign({ hits: ({ event }) => event.hits, searchErr: null }) },
+    SET_SEARCH_ERR: { actions: assign({ searchErr: ({ event }) => event.err }) },
     SET_MSG: { actions: assign({ msg: ({ event }) => event.msg }) },
     SET_ACTION_ERR: { actions: assign({ actionErr: ({ event }) => event.err }) },
     SET_PENDING: { actions: assign({ pendingSub: ({ event }) => event.sub }) },
