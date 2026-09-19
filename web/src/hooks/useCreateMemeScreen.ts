@@ -3,6 +3,7 @@ import { useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { createMemeCopy } from '../copy/createMeme'
 import { apiFetch, post } from '../lib/api'
+import { mintDeskError } from '../lib/createMemeMintError'
 import { uploadCreateMemeFile } from '../lib/createMemeUpload'
 import {
   assertActive,
@@ -127,7 +128,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         })
         .catch((e) => {
           if (!owner.active || isLifetimeCancellation(e)) return
-          settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.renderFailed })
+          settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.renderFailed) })
         })
     }
 
@@ -168,7 +169,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         send({ type: 'SET_GIPHY_RESULTS', results: r.results })
         settleBusy({ type: 'DONE' })
       } catch (e) {
-        settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.giphySearchFailed })
+        settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.giphySearchFailed) })
       }
     },
     [beginBusy, send, settleBusy],
@@ -205,7 +206,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       })
       settleBusy({ type: 'DONE' })
     } catch (e) {
-      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.resolveFailed })
+      settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.resolveFailed) })
     }
   }, [actor, beginBusy, send, settleBusy])
 
@@ -220,7 +221,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         send({ type: 'SET_IMAGE_URL', imageUrl: out.imageUrl, edited: true })
         settleBusy({ type: 'DONE' })
       } catch (e) {
-        settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.editFailed })
+        settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.editFailed) })
       }
     },
     [actor, beginBusy, send, settleBusy],
@@ -279,7 +280,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       settleBusy({ type: 'DONE' })
     } catch (e) {
       if (!owner.active || isLifetimeCancellation(e)) return
-      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.remixFailed })
+      settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.remixFailed) })
     }
   }, [actor, beginBusy, pollVideo, send, settleBusy])
 
@@ -306,7 +307,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         settleBusy({ type: 'DONE' })
       } catch (e) {
         if (!owner.active || isLifetimeCancellation(e)) return
-        settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.videoGenerationFailed })
+        settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.videoGenerationFailed) })
       }
       return
     }
@@ -321,7 +322,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       settleBusy({ type: 'DONE' })
     } catch (e) {
       if (!owner.active || isLifetimeCancellation(e)) return
-      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.generationFailed })
+      settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.generationFailed) })
     }
   }, [actor, beginBusy, pollVideo, send, settleBusy])
 
@@ -351,7 +352,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       settleBusy({ type: 'DONE' })
     } catch (e) {
       if (!owner.active || isLifetimeCancellation(e)) return
-      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.animationFailed })
+      settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.animationFailed) })
     }
   }, [actor, beginBusy, pollVideo, send, settleBusy])
 
@@ -381,7 +382,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         shareUrl: `${window.location.origin}/m/${out.meme.id}`,
       })
     } catch (e) {
-      settleBusy({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.mintFailed })
+      settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.mintFailed) })
     }
   }, [actor, beginBusy, settleBusy])
 
@@ -410,7 +411,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         })
         settleBusy({ type: 'DONE' })
       } catch (er) {
-        settleBusy({ type: 'FAIL', err: er instanceof Error ? er.message : copy.errors.uploadFailed })
+        settleBusy({ type: 'FAIL', err: mintDeskError(er, copy.errors.uploadFailed) })
       }
     },
     [beginBusy, send, settleBusy],
@@ -437,7 +438,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         }
         settleBusy({ type: 'DONE' })
       } catch (er) {
-        settleBusy({ type: 'FAIL', err: er instanceof Error ? er.message : copy.errors.uploadFailed })
+        settleBusy({ type: 'FAIL', err: mintDeskError(er, copy.errors.uploadFailed) })
       }
     },
     [actor, beginBusy, send, settleBusy],

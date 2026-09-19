@@ -102,7 +102,7 @@ export function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
 
 export function nextStepFor(err: string | null): string | null {
   if (!err) return null
-  if (/credit|402|quota|balance/i.test(err)) {
+  if (err === copy.errors.creditsExhausted || /credit|402|quota|balance/i.test(err)) {
     return copy.preview.nextStep.credits
   }
   const rejectedStatus = err.match(/\((\d+)\)/)?.[1]

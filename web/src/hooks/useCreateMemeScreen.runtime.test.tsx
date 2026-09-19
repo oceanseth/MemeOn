@@ -165,14 +165,36 @@ describe('CreateMemeRoute settling requests', () => {
       await settle()
     })
 
-    expect(host.querySelector('[role="alert"]')?.textContent).toContain('credits exhausted')
-    expect(host.querySelector('[role="alert"]')?.textContent).toContain('Top up Masky credits')
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain(copy.errors.creditsExhausted)
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain(copy.preview.nextStep.credits)
     expect(host.querySelector('[data-slot="form-grid"]')?.getAttribute('aria-busy')).toBe('false')
     expect(host.textContent).not.toContain(copy.busy.generatingImage)
     await click(button('Upload'))
     await click(button('Generate image'))
     expect(button('Generate image').getAttribute('aria-pressed')).toBe('true')
     expect(button('Render the image').disabled).toBe(false)
+  })
+
+  it('maps a 500 generate failure onto copy.errors.generationFailed, not the POST template', async () => {
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>((input) => {
+      if (pathOf(input) === '/api/aigen/image') {
+        return Promise.resolve(new Response('', { status: 500 }))
+      }
+      throw new Error(`Unexpected request: ${pathOf(input)}`)
+    }))
+    await renderAt()
+
+    await change(host.querySelector<HTMLTextAreaElement>('textarea[placeholder^="a capybara"]')!, 'draw it')
+    await click(button('Render the image'))
+    for (let attempt = 0; attempt < 20 && !host.querySelector('[role="alert"]'); attempt += 1) {
+      await act(async () => {
+        await settle()
+      })
+    }
+
+    const alert = host.querySelector('[role="alert"]')?.textContent ?? ''
+    expect(alert).toContain(copy.errors.generationFailed)
+    expect(alert).not.toContain('POST /api/aigen/image failed (500)')
   })
 
   it('holds the minted card with its share link instead of navigating away', async () => {

@@ -348,12 +348,13 @@ export const ResumedRender: Story = {
 
 export const Error: Story = {
   args: model(
-    { prompt: 'a capybara in a business suit', err: 'credits exhausted' },
+    { prompt: 'a capybara in a business suit', err: copy.errors.creditsExhausted },
     'error',
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('alert')).toHaveTextContent('Top up Masky credits')
+    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.errors.creditsExhausted)
+    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.preview.nextStep.credits)
   },
 }
 
