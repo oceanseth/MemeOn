@@ -11,7 +11,7 @@ import { Skeleton, SkeletonBlock, SkeletonCard } from '@/atoms/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/atoms/tabs'
 import { cn } from '../lib/cn'
 import type { ProfileScreenModel } from '../hooks/useProfileScreen'
-import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
+import { binderCardSlotClasses, binderGridClasses } from '../lib/binderChrome'
 import { Icon } from '@/atoms/icon'
 
 const SKELETON_CARDS = ['a', 'b', 'c', 'd']

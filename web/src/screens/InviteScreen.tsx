@@ -11,7 +11,7 @@ import { PageHead } from '@/atoms/page-head'
 import { Spinner } from '@/atoms/spinner'
 import { cn } from '../lib/cn'
 import type { InviteScreenModel } from '../hooks/useInviteScreen'
-import { binderCardSlotClasses, binderGridClasses } from './BinderScreen'
+import { binderCardSlotClasses, binderGridClasses } from '../lib/binderChrome'
 import { Icon } from '@/atoms/icon'
 
 /* The name is the page's own step (5xl, 4xl on a phone); the verb line is one rung down. */
