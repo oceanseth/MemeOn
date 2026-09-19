@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { onFirebaseUser } from '../lib/firebase'
 import { startPresence } from '../lib/presence'
 import { useStores } from '../stores/StoresContext'
@@ -12,7 +11,7 @@ export function useAuthRuntime(): void {
     if (auth.snapshot.matches('idle')) void auth.refresh()
   })
 
-  useEffect(() => {
+  useMountEffect(() => {
     let stop: (() => void) | null = null
     const unsub = onFirebaseUser((fbUser) => {
       stop?.()
@@ -22,5 +21,5 @@ export function useAuthRuntime(): void {
       unsub()
       stop?.()
     }
-  }, [])
+  })
 }

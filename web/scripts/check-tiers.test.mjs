@@ -73,6 +73,21 @@ test("rejects AST-recognized nested state, value edges, state libraries, missing
   assert.match(result.output, /components\/Forgotten\.tsx: component outside a tier folder/)
 })
 
+test("allows useRef in a molecule as an imperative handle and still rejects useState", () => {
+  const withRef = runChecker({
+    "molecules/Handle.tsx": "import { useRef } from 'react'\nexport function Handle() { const node = useRef(null); return <div ref={node} /> }\n",
+    "molecules/Handle.stories.tsx": story,
+  })
+  assert.equal(withRef.status, 0, withRef.output)
+
+  const withState = runChecker({
+    "molecules/Handle.tsx": "import { useState } from 'react'\nexport function Handle() { const [value] = useState(0); return <div>{value}</div> }\n",
+    "molecules/Handle.stories.tsx": story,
+  })
+  assert.equal(withState.status, 1, withState.output)
+  assert.match(withState.output, /molecules\/Handle\.tsx: React state hook below views/)
+})
+
 test("allows nested tier components, type-only imports, exact integration files, and JSX-free domain modules", () => {
   const result = runChecker({
     "atoms/nested/Good.tsx": component,
@@ -184,6 +199,47 @@ test("keeps copy/ plain data: tiers never import it, and it imports only copy/",
   assert.doesNotMatch(result.output, /hooks\/useSettingsScreen\.ts/)
   assert.doesNotMatch(result.output, /SettingsScreen\.stories\.tsx/)
   assert.doesNotMatch(result.output, /atoms\/TypedLabel\.tsx/)
+})
+
+test("rejects a screens/ file that value-imports or re-exports another screens/ module", () => {
+  const result = runChecker({
+    "screens/PeerScreen.tsx": "export function PeerScreen() { return <div /> }\nexport const shared = 'x'\n",
+    "screens/PeerScreen.stories.tsx": story,
+    "screens/HostScreen.tsx": "import { shared } from './PeerScreen'\nexport function HostScreen() { return <div>{shared}</div> }\n",
+    "screens/HostScreen.stories.tsx": story,
+    "screens/HostReexport.tsx": "export { PeerScreen } from './PeerScreen'\nexport function HostReexport() { return <div /> }\n",
+    "screens/HostReexport.stories.tsx": story,
+  })
+
+  assert.equal(result.status, 1, result.output)
+  assert.match(result.output, /screens\/HostScreen\.tsx: screens imports from screens/)
+  assert.match(result.output, /screens\/HostReexport\.tsx: screens imports from screens/)
+})
+
+test("allows type-only imports between screens/ and views/ that value-import screens/", () => {
+  const result = runChecker({
+    "screens/PeerScreen.tsx": "export type PeerModel = { label: string }\nexport function PeerScreen(_props: PeerModel) { return <div /> }\n",
+    "screens/PeerScreen.stories.tsx": story,
+    "screens/HostScreen.tsx": "import type { PeerModel } from './PeerScreen'\nimport './HostScreen.css'\nexport function HostScreen(_props: PeerModel) { return <div /> }\n",
+    "screens/HostScreen.css": "/* co-located layout; not a screens/ module */\n",
+    "screens/HostScreen.stories.tsx": story,
+    "views/PeerView.tsx": "import { PeerScreen } from '../screens/PeerScreen'\nexport function PeerView() { return <PeerScreen label='x' /> }\n",
+    "views/PeerView.stories.tsx": story,
+    "atoms/Good.tsx": component,
+    "atoms/Good.stories.tsx": story,
+    "atoms/Sibling.tsx": "import { Example as Good } from './Good'\nexport function Sibling() { return <Good /> }\n",
+    "atoms/Sibling.stories.tsx": story,
+    "molecules/Mol.tsx": "import { Example as Good } from '../atoms/Good'\nexport function Mol() { return <Good /> }\n",
+    "molecules/Mol.stories.tsx": story,
+    "molecules/OtherMol.tsx": "import { Mol } from './Mol'\nexport function OtherMol() { return <Mol /> }\n",
+    "molecules/OtherMol.stories.tsx": story,
+    "organisms/Org.tsx": "import { Mol } from '../molecules/Mol'\nexport function Org() { return <Mol /> }\n",
+    "organisms/Org.stories.tsx": story,
+    "organisms/OtherOrg.tsx": "import { Org } from './Org'\nexport function OtherOrg() { return <Org /> }\n",
+    "organisms/OtherOrg.stories.tsx": story,
+  })
+
+  assert.equal(result.status, 0, result.output)
 })
 
 test("rejects new components adjacent to an exact exception and retired folders", () => {

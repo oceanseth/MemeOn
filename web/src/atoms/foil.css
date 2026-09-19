@@ -11,7 +11,7 @@
 
 /* The foil system: animated `--glow-angle`, the conic ring that *is* a foil tier's 3px border,
    its bloom, per-tier stop sets, sheen sweep and sparkle twinkle. Class-based (not `data-slot`-only)
-   so surfaces that are not the `MemeCard` atom can reuse the frame.
+   so surfaces that are not the `MemeCard` molecule can reuse the frame.
 
      `foil-card tier-<key> [sheen] [sparkle]` on the card, paired with
      `data-glow-style="<stop set>"`           on the same element (`shared/tiers`), plus

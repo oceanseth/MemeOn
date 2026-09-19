@@ -7,7 +7,7 @@ import type { MemeCardModel } from '../lib/memeCardModel'
 import { tierFrameClasses } from '@/atoms/foil'
 import { TierChip } from '@/atoms/tier-chip'
 import { Icon } from '@/atoms/icon'
-import './foil.css'
+import '@/atoms/foil.css'
 
 /* The card is a container for its own meta row (`@max-card-narrow:` fires under 220px). The ring
    is the card's, for the link inside it: `has-[a:focus-visible]` rather than `focus-ring`, because

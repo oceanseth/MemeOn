@@ -62,6 +62,9 @@ Tier frame art is generated with the Masky image API (`api/scripts/generate-fram
   `x-masky-token` on aigen endpoints so generation bills the user's credits.
 - `firebaseToken` — custom token for the memeon Firebase project (RTDB presence).
 
+The web client stores both `sessionToken` and `maskyAccessToken` in `localStorage`
+(`memeon_session`, `masky_access_token`); they are not cookies.
+
 The OAuth client (`mkc_…`) is registered for `memeon.ai`, `dev.memeon.ai`, and
 `localhost` with scopes `profile avatars:read generate`.
 
