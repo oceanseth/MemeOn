@@ -219,3 +219,122 @@ test("refuses to raise the baseline when JsxText would grow a file", () => {
     assert.deepEqual(JSON.parse(readFileSync(baseline, "utf8")), { "screens/LandingScreen.tsx": 0 })
   })
 })
+
+test("counts quoted literals and JsxText in molecules/, views/, and organisms/; skips stories and runtime tests", () => {
+  withSrc({
+    "molecules/quest-bar.tsx": [
+      "export const title = 'Earn your braincells'",
+      "export const QuestBar = () => <h2>Starter pack opened!</h2>",
+      "",
+    ].join("\n"),
+    "molecules/quest-bar.stories.tsx": "export const title = 'Never counted: molecule stories'\n",
+    "views/AppView.tsx": [
+      "export const title = 'My Binder'",
+      "export const AppView = () => <p>Checking your session…</p>",
+      "",
+    ].join("\n"),
+    "views/AppView.stories.tsx": "export const title = 'Never counted: view stories'\n",
+    "views/AppView.runtime.test.tsx": "export const title = 'Never counted: runtime tests'\n",
+    "organisms/app-shell.tsx": [
+      "export const label = 'Main'",
+      "export const AppShell = () => <a>Skip to content</a>",
+      "",
+    ].join("\n"),
+    "organisms/app-shell.stories.tsx": "export const title = 'Never counted: organism stories'\n",
+  }, ({ check, baseline }) => {
+    writeFileSync(baseline, JSON.stringify({
+      "molecules/quest-bar.tsx": 2,
+      "views/AppView.tsx": 2,
+      "organisms/app-shell.tsx": 2,
+    }))
+
+    const result = check()
+    assert.equal(result.status, 0, result.output)
+
+    const listed = check("--list")
+    assert.match(listed.output, /molecules\/quest-bar\.tsx \(2\)/)
+    assert.match(listed.output, /Earn your braincells/)
+    assert.match(listed.output, /Starter pack opened!/)
+    assert.match(listed.output, /views\/AppView\.tsx \(2\)/)
+    assert.match(listed.output, /My Binder/)
+    assert.match(listed.output, /Checking your session/)
+    assert.match(listed.output, /organisms\/app-shell\.tsx \(2\)/)
+    assert.match(listed.output, /Skip to content/)
+    assert.doesNotMatch(listed.output, /stories/)
+    assert.doesNotMatch(listed.output, /Never counted/)
+  })
+})
+
+test("drop on a new-engine file requires --update; --update still refuses to raise", () => {
+  withSrc({
+    "molecules/quest-bar.tsx": "export const title = 'Earn your braincells'\nexport const extra = 'Keep exploring'\n",
+    "views/AppView.tsx": "export const title = 'My Binder'\n",
+  }, ({ check, baseline, src }) => {
+    writeFileSync(baseline, JSON.stringify({
+      "molecules/quest-bar.tsx": 2,
+      "views/AppView.tsx": 1,
+    }))
+    writeFileSync(join(src, "molecules/quest-bar.tsx"), "export const title = 'Earn your braincells'\n")
+
+    const dropped = check()
+    assert.equal(dropped.status, 1, dropped.output)
+    assert.match(dropped.output, /molecules\/quest-bar\.tsx: 2 → 1/)
+    assert.match(dropped.output, /--update/)
+
+    const lowered = check("--update")
+    assert.equal(lowered.status, 0, lowered.output)
+    assert.deepEqual(JSON.parse(readFileSync(baseline, "utf8")), {
+      "molecules/quest-bar.tsx": 1,
+      "views/AppView.tsx": 1,
+    })
+
+    writeFileSync(join(src, "views/AppView.tsx"), "export const title = 'My Binder'\nexport const extra = 'Brand new copy'\n")
+    const forced = check("--update")
+    assert.equal(forced.status, 1, forced.output)
+    assert.match(forced.output, /views\/AppView\.tsx: 1 → 2/)
+    assert.deepEqual(JSON.parse(readFileSync(baseline, "utf8")), {
+      "molecules/quest-bar.tsx": 1,
+      "views/AppView.tsx": 1,
+    })
+  })
+})
+
+test("does not count JSX rel or target attributes; still counts aria-label", () => {
+  withSrc({
+    "molecules/legal-document.tsx": [
+      "export const Doc = () => (",
+      "  <a href=\"https://example.com\" target=\"_blank\" rel=\"noopener noreferrer\" aria-label=\"Read the terms\" />",
+      ")",
+    ].join("\n"),
+  }, ({ check, baseline }) => {
+    writeFileSync(baseline, JSON.stringify({ "molecules/legal-document.tsx": 1 }))
+
+    const result = check()
+    assert.equal(result.status, 0, result.output)
+    const listed = check("--list")
+    assert.match(listed.output, /Read the terms/)
+    assert.doesNotMatch(listed.output, /noopener/)
+    assert.doesNotMatch(listed.output, /_blank/)
+  })
+})
+
+test("does not count atoms/ even when copy-like", () => {
+  withSrc({
+    "atoms/icon.tsx": [
+      "export const d = 'M 10 10 the long path that looks like copy'",
+      "export const Icon = () => <title>Settings</title>",
+      "",
+    ].join("\n"),
+    "molecules/quest-bar.tsx": "export const title = 'Earn your braincells'\n",
+    "stores/session.ts": "export const title = 'Out of scope store copy'\n",
+  }, ({ check, baseline }) => {
+    writeFileSync(baseline, JSON.stringify({ "molecules/quest-bar.tsx": 1 }))
+    assert.equal(check().status, 0, check().output)
+    const listed = check("--list")
+    assert.match(listed.output, /Earn your braincells/)
+    assert.doesNotMatch(listed.output, /atoms\//)
+    assert.doesNotMatch(listed.output, /stores\//)
+    assert.doesNotMatch(listed.output, /Settings/)
+    assert.doesNotMatch(listed.output, /Out of scope/)
+  })
+})
