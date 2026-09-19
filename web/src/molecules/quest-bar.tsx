@@ -5,7 +5,13 @@ import { Alert } from '@/atoms/alert'
 import { Button, buttonVariants } from '@/atoms/button'
 import { DialogFooter } from '@/atoms/dialog'
 import { MemeCard } from '@/molecules/meme-card'
-import { Popover, PopoverContent, PopoverTrigger } from '@/atoms/popover'
+import {
+  headerPopoverPopupClassName,
+  headerPopoverPositionerClassName,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/atoms/popover'
 import { PortalAnchor } from '@/atoms/portal-anchor'
 import { Progress } from '@/atoms/progress'
 import { cn } from '@/lib/cn'
@@ -55,19 +61,6 @@ const CLAIM_DOT = cn(
   'absolute -top-0.5 -right-0.5 size-3 rounded-full bg-braincell ring-2 ring-background',
   'motion-safe:animate-pulse',
 )
-
-/**
- * ≤480 the panel leaves the anchor and pins itself under the whole header, gutter to gutter, as
- * the alerts panel does; Base UI writes the anchored geometry into the positioner's `style` and
- * an author `!important` declaration is the one thing that outranks it.
- */
-const POSITIONER = cn(
-  'max-xs:fixed! max-xs:top-(--topbar-h)! max-xs:right-3! max-xs:left-3!',
-  'max-xs:w-auto! max-xs:transform-none!',
-)
-
-/** The ladder's card: 380 wide; the atom's popup owns the scroll and the available height. */
-const PANEL = 'w-[min(380px,calc(100vw-24px))] max-xs:w-auto'
 
 /** The panel's title: Onest lg at 600 (a popover, not a band, so not the display face), the mascot ahead of it. */
 const TITLE = cn(
@@ -139,8 +132,10 @@ export function QuestBar({ model, balance }: QuestBarProps) {
               align="end"
               /* a panel that flipped above the header would leave the viewport, so it never flips */
               collisionAvoidance={{ side: 'none', align: 'shift' }}
-              positionerClassName={POSITIONER}
-              className={PANEL}
+              // oxlint-disable-next-line shadcn/require-static-classes -- literal lives on the popover export
+              positionerClassName={headerPopoverPositionerClassName}
+              // oxlint-disable-next-line shadcn/require-static-classes -- literal lives on the popover export
+              className={headerPopoverPopupClassName}
               aria-labelledby={TITLE_ID}
               data-slot="quest-panel"
             >

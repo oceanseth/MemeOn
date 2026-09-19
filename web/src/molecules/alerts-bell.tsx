@@ -2,7 +2,14 @@ import { Link } from 'react-router-dom'
 import { Badge } from '@/atoms/badge'
 import { Button } from '@/atoms/button'
 import { Item, ItemContent, ItemMedia } from '@/atoms/item'
-import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '@/atoms/popover'
+import {
+  headerPopoverPopupClassName,
+  headerPopoverPositionerClassName,
+  Popover,
+  PopoverContent,
+  PopoverTitle,
+  PopoverTrigger,
+} from '@/atoms/popover'
 import { PortalAnchor } from '@/atoms/portal-anchor'
 import { cn } from '@/lib/cn'
 import type { AlertsBellModel } from '../lib/alertsBellModel'
@@ -23,25 +30,6 @@ const GLYPH = 'text-xl leading-none xl:text-2xl'
 
 /** The unread count rides the trigger's corner; the disc itself is `Badge size="count"`. */
 const BUBBLE = 'absolute -top-1 -right-1'
-
-/**
- * ≤480 the panel leaves the anchor and pins itself under the whole header, gutter to gutter: at
- * 420px a real seven-alert queue was sliced mid-row with 300px of empty page beneath it. Base UI
- * writes the anchored geometry into the positioner's `style` attribute, and an author `!important`
- * declaration is the one thing that outranks it.
- */
-const POSITIONER = cn(
-  'max-xs:fixed! max-xs:top-(--topbar-h)! max-xs:right-3! max-xs:left-3!',
-  'max-xs:w-auto! max-xs:transform-none!',
-)
-
-/**
- * The panel: 380 like the quest ladder's, because 340 of `text-base` is what turned one starter-
- * pack sentence into six lines. Three bands — title, list, tail — so the atom's own padding and
- * row gap come off: the list is flush to the edges and the hairlines run the full width. The popup
- * itself no longer scrolls; `LIST` does, which is what keeps the title in place past row one.
- */
-const PANEL = 'w-[min(380px,calc(100vw-24px))] max-xs:w-auto'
 
 /** Title band: the name, then the count of what is new in it. */
 const HEAD = 'flex items-baseline gap-2 px-3.5 pt-3 pb-2.5'
@@ -122,9 +110,11 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
           /* opening a notification list must not move the caret: the popup is the next tab stop
              after the bell, exactly as the legacy panel was */
           initialFocus={false}
-          positionerClassName={POSITIONER}
+          // oxlint-disable-next-line shadcn/require-static-classes -- literal lives on the popover export
+          positionerClassName={headerPopoverPositionerClassName}
           variant="panel"
-          className={PANEL}
+          // oxlint-disable-next-line shadcn/require-static-classes -- literal lives on the popover export
+          className={headerPopoverPopupClassName}
           data-slot="alerts-pop"
           {...model.popupProps}
         >

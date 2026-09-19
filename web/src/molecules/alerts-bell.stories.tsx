@@ -20,6 +20,24 @@ const flood = Array.from({ length: 1284 }, (_, index) => ({
 const rows = (canvasElement: HTMLElement) =>
   canvasElement.querySelectorAll<HTMLElement>('[data-slot="alert-row"]')
 
+/** 390×844: the same viewport globals Organisms/AppShell Phone390 uses. */
+const phone = {
+  parameters: {
+    viewport: {
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+    },
+    /* padded layout adds gutters the pin's left-3/right-3 would then miss */
+    layout: 'fullscreen' as const,
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
+}
+
+function positionerStyle(popup: Element) {
+  const positioner = popup.closest('[data-slot="popover-positioner"]')
+  if (!(positioner instanceof HTMLElement)) throw new Error('missing popover-positioner')
+  return getComputedStyle(positioner)
+}
+
 const meta = {
   title: 'Molecules/AlertsBell',
   component: AlertsBell,
@@ -67,6 +85,7 @@ export const OpenUnread: Story = {
     await expect(canvasElement.contains(popup)).toBe(true)
     await expect(popup).toHaveAttribute('data-slot', 'alerts-pop')
     await expect(popup.closest('[data-slot="popover-positioner"]')).not.toBeNull()
+    await waitFor(() => expect(positionerStyle(popup).position).toBe('absolute'))
     onOpenChange.mockClear()
     await userEvent.click(trigger)
     await expect(onOpenChange).toHaveBeenLastCalledWith(false)
@@ -226,6 +245,23 @@ export const FromTheWire: Story = {
     await expect(row.querySelector('[data-slot="alert-mark"]')).toHaveTextContent('🎁')
     // clamped: the row stays a row no matter how long the sentence the server wrote is
     await expect(row.clientHeight).toBeLessThan(96)
+  },
+}
+
+/** Open at 390: the shared header pin, not the desktop absolute measure. */
+export const OpenUnreadPhone390: Story = {
+  ...OpenUnread,
+  ...phone,
+  play: async ({ canvasElement }) => {
+    const popup = within(canvasElement).getByRole('dialog', { name: copy.title })
+    await waitFor(() => {
+      const style = positionerStyle(popup)
+      expect(style.position).toBe('fixed')
+      expect(style.top).toBe('64px')
+      expect(style.transform).toBe('none')
+      expect(style.left).toBe('12px')
+      expect(style.right).toBe('12px')
+    })
   },
 }
 
