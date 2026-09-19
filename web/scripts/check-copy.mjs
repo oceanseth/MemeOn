@@ -4,8 +4,8 @@
  *
  *   node scripts/check-copy.mjs [srcDir] [--update] [--list] [--baseline=<file>]
  *
- * Counts copy-like string literals per engine file (hooks/, screens/, lib/*Model.ts,
- * lib/createMemeModel/) and compares them with scripts/copy-baseline.json.
+ * Counts copy-like quoted literals and JsxText per engine file (hooks/, screens/,
+ * lib/*Model.ts, lib/createMemeModel/) and compares them with scripts/copy-baseline.json.
  * A file may only match or drop below its baseline; a new file starts at 0.
  * `--update` rewrites the baseline after a drop and refuses to raise any count,
  * so the only way up is to move the string into copy/<surface>.ts.
@@ -125,6 +125,9 @@ const countCopyLiterals = (file) => {
     } else if (ts.isTemplateExpression(node) && !isNotCopyPosition(node)) {
       const text = [node.head.text, ...node.templateSpans.map((span) => span.literal.text)].join("")
       if (isCopyLike(text) && !looksLikeClassList(text)) hits.push(text)
+    } else if (ts.isJsxText(node) && !node.containsOnlyTriviaWhiteSpaces) {
+      const text = node.text.replace(/\s+/g, " ").trim()
+      if (text && isCopyLike(text) && !looksLikeClassList(text)) hits.push(text)
     }
     ts.forEachChild(node, visit)
   }
