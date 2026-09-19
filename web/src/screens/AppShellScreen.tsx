@@ -19,7 +19,7 @@ export function AppShellScreen({
   navItems,
   mint,
   theme,
-  coins,
+  braincells,
   bottomNav,
   avatarMenu,
   alertsBell,
@@ -56,7 +56,7 @@ export function AppShellScreen({
           <span className="xl:max-2xl:sr-only">{mint.label}</span>
         </Link>
       )}
-      {showToolbar && coins && <QuestBar model={questBar} balance={coins} />}
+      {showToolbar && braincells && <QuestBar model={questBar} balance={braincells} />}
       {showToolbar && <AlertsBell model={alertsBell} />}
       {showToolbar && avatarMenu && <AvatarMenu model={avatarMenu} />}
     </>

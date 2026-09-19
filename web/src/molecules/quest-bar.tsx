@@ -24,7 +24,7 @@ import './quest-bar.css'
 /** One path, changed once when the asset lands under public/brand/. */
 const BRAINCELL_SRC = '/api/brand/braincell.png'
 
-/** `inline-block` is load-bearing in the dialog heading: preflight would drop the coin onto its own line. */
+/** `inline-block` is load-bearing in the dialog heading: preflight would drop the braincell mascot onto its own line. */
 const BRAINCELL_IMG = 'inline-block size-6.5 rounded-full object-cover align-middle'
 
 /** One ladder per page (it lives in the header), so the meter can name itself by the title's id. */
@@ -220,7 +220,7 @@ export function QuestBar({ model, balance }: QuestBarProps) {
           </Popover>
         </div>
       ) : (
-        <span className={PILL_STATIC} data-slot="coins">
+        <span className={PILL_STATIC} data-slot="braincells">
           {figure}
           <span className="sr-only">{balance.label}</span>
         </span>

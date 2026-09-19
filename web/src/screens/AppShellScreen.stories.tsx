@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { meLou, paperMeme, questStepsFresh, questStepsPackDone, unreadSale } from '../../.storybook/fixtures'
 import { PageContainer } from '@/atoms/page-container'
+import { appShellCopy } from '../copy/appShell'
 import { buildAppShellScreenModel } from '../hooks/useAppShellScreen'
 import type { AppShellContext } from '../stores/appShellMachine'
 import { AppShellScreen } from './AppShellScreen'
@@ -92,7 +93,7 @@ export const LoggedIn: Story = {
     await expect(within(nav).getByRole('link', { name: 'Top Brains' })).toHaveAttribute('href', '/leaderboard')
     await expect(canvas.getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
     // the ladder is not live, so the pill is a plain balance: no ring, no button
-    await expect(canvas.getByText(`${meLou.coins.toLocaleString()} braincells`)).toBeInTheDocument()
+    await expect(canvas.getByText(appShellCopy.braincells.label(meLou.coins))).toBeInTheDocument()
     await expect(canvas.queryByRole('button', { name: /quests/ })).toBeNull()
     // no theme button in the signed-in bar: the account menu's radio marks the arm and reports a change
     await expect(canvas.queryByRole('button', { name: /^Theme:/ })).toBeNull()
@@ -124,7 +125,7 @@ export const WithAvatar: Story = {
     await waitFor(() =>
       expect(trigger.querySelector('img')).toHaveAttribute('src', '/brand/memeon-logo-circle-64.png'),
     )
-    await expect(canvas.getByText(`${meLou.coins.toLocaleString()} braincells`)).toBeInTheDocument()
+    await expect(canvas.getByText(appShellCopy.braincells.label(meLou.coins))).toBeInTheDocument()
     await userEvent.click(trigger)
     const menu = await canvas.findByRole('menu')
     await expect(within(menu).getByRole('menuitem', { name: 'Profile' })).toHaveAttribute('href', '/u/mask%2Favatar%20%2B%20one')

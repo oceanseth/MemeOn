@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { meLou, paperMeme, questStepsFresh, questStepsPackDone, silverMeme } from '../../.storybook/fixtures'
+import { appShellCopy } from '../copy/appShell'
 import { buildQuestBarModel } from '../lib/questBarModel'
 import { QuestBar } from '@/molecules/quest-bar'
 
@@ -19,7 +20,7 @@ const fresh = {
   onDismissSteps,
 }
 
-const balance = { text: `${meLou.coins.toLocaleString()}`, label: `${meLou.coins.toLocaleString()} braincells` }
+const balance = { text: appShellCopy.braincells.text(meLou.coins), label: appShellCopy.braincells.label(meLou.coins) }
 
 /** The ladder mounted open, as the shell shows it after a press on the pill. */
 const open = (model: ReturnType<typeof buildQuestBarModel>) => ({ ...model, defaultOpen: true })
@@ -238,8 +239,8 @@ export const Hidden: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.queryByRole('button')).toBeNull()
-    const pill = canvas.getByText(`${meLou.coins.toLocaleString()} braincells`).parentElement!
-    await expect(pill).toHaveAttribute('data-slot', 'coins')
+    const pill = canvas.getByText(appShellCopy.braincells.label(meLou.coins)).parentElement!
+    await expect(pill).toHaveAttribute('data-slot', 'braincells')
     await expect(pill.tagName).toBe('SPAN')
   },
 }

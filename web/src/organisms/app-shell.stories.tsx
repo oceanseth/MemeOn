@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Link, MemoryRouter } from 'react-router-dom'
 import { expect, fn, waitFor, within } from 'storybook/test'
 import { meLou, questStepsFresh, unreadSale } from '../../.storybook/fixtures'
+import { appShellCopy } from '../copy/appShell'
 import { buttonVariants } from '@/atoms/button'
 import { Icon } from '@/atoms/icon'
 import { PageContainer } from '@/atoms/page-container'
@@ -29,7 +30,7 @@ const nav = (
   </>
 )
 
-const balance = { text: `${meLou.coins.toLocaleString()}`, label: `${meLou.coins.toLocaleString()} braincells` }
+const balance = { text: appShellCopy.braincells.text(meLou.coins), label: appShellCopy.braincells.label(meLou.coins) }
 
 const avatarMenu = (
   <AvatarMenu
@@ -132,7 +133,7 @@ export const LoggedIn: Story = {
     await expect(getComputedStyle(bar).position).toBe('sticky')
     await expect(canvas.getByRole('link', { name: 'Marketplace' })).toHaveAttribute('aria-current', 'page')
     await expect(canvas.getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
-    await expect(canvas.getByText(`${meLou.coins.toLocaleString()} braincells`)).toBeInTheDocument()
+    await expect(canvas.getByText(appShellCopy.braincells.label(meLou.coins))).toBeInTheDocument()
     /* from the cut the footer is the page's end, tab bar or not */
     await expect(canvas.getByRole('navigation', { name: 'Footer' })).toBeVisible()
   },
