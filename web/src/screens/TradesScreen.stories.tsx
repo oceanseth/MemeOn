@@ -6,7 +6,7 @@ import { friendAccepted, giftablePaper, meLou, paperMeme, proposedTrade, silverM
 import { tradesCopy as copy } from '../copy/trades'
 import type { TradeComposerModel, TradesScreenModel } from '../hooks/useTradesScreen'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
-import { buildTradeCardModel, type TradeMemeInfoMap } from '../lib/tradeCardModel'
+import { buildTradeCardModel, tradeSideSentence, type TradeMemeInfoMap } from '../lib/tradeCardModel'
 import { TradesScreen } from './TradesScreen'
 
 const noop = fn()
@@ -151,11 +151,59 @@ export const ConfirmingAccept: Story = {
       id: 'trade-confirm',
       open: true,
       title: copy.confirm.acceptTitle,
-      message: <><strong>{copy.confirm.give}</strong>2 shares of "group-chat silver" + 10 braincells{copy.confirm.betweenSides}<strong>{copy.confirm.get}</strong>5 shares of "fresh paper"{copy.confirm.end}</>,
+      message: [
+        { kind: 'strong' as const, text: copy.confirm.give },
+        tradeSideSentence(proposedTrade.ask, memeNames),
+        copy.confirm.betweenSides,
+        { kind: 'strong' as const, text: copy.confirm.get },
+        tradeSideSentence(proposedTrade.offer, memeNames),
+        copy.confirm.end,
+      ],
       confirmLabel: copy.confirm.acceptLabel,
       onConfirm: noop,
       onCancel: noop,
     }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const dialog = canvas.getByRole('alertdialog', { name: copy.confirm.acceptTitle })
+    const strongs = dialog.querySelectorAll('strong')
+    await expect(strongs[0]).toHaveTextContent(copy.confirm.give.trim())
+    await expect(strongs[1]).toHaveTextContent(copy.confirm.get.trim())
+    await expect(dialog).toHaveTextContent(tradeSideSentence(proposedTrade.ask, memeNames))
+    await expect(dialog).toHaveTextContent(tradeSideSentence(proposedTrade.offer, memeNames))
+  },
+}
+
+export const ConfirmingWithdraw: Story = {
+  args: {
+    phase: 'ready',
+    open: [openTrade],
+    confirmDialog: buildConfirmDialogModel({
+      id: 'trade-confirm',
+      open: true,
+      danger: true,
+      title: copy.confirm.withdrawTitle,
+      message: copy.confirm.withdraw(
+        tradeSideSentence(proposedTrade.offer, memeNames),
+        tradeSideSentence(proposedTrade.ask, memeNames),
+        proposedTrade.toName,
+      ),
+      confirmLabel: copy.confirm.withdrawLabel,
+      onConfirm: noop,
+      onCancel: noop,
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const dialog = canvas.getByRole('alertdialog', { name: copy.confirm.withdrawTitle })
+    await expect(dialog).toHaveAccessibleDescription(
+      copy.confirm.withdraw(
+        tradeSideSentence(proposedTrade.offer, memeNames),
+        tradeSideSentence(proposedTrade.ask, memeNames),
+        proposedTrade.toName,
+      ),
+    )
   },
 }
 

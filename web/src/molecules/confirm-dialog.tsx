@@ -1,10 +1,27 @@
+import { Alert } from '@/atoms/alert'
 import { Button } from '@/atoms/button'
 import { DialogFooter } from '@/atoms/dialog'
 import { Field, FieldCounter, FieldDescription, FieldFooter, FieldLabel } from '@/atoms/field'
 import { Textarea } from '@/atoms/textarea'
 import { Icon } from '@/atoms/icon'
-import type { ConfirmDialogModel } from '../lib/confirmDialogModel'
+import type { ConfirmDialogInline, ConfirmDialogModel } from '../lib/confirmDialogModel'
 import { DialogFrame } from '@/molecules/dialog-frame'
+
+function ConfirmInline({ inline }: { inline: ConfirmDialogInline }) {
+  if (typeof inline === 'string') return inline
+  switch (inline.kind) {
+    case 'strong':
+      return <strong>{inline.text}</strong>
+    case 'code':
+      return <code>{inline.text}</code>
+  }
+}
+
+/** Adjacent parts; order is the only identity. Do not insert spaces — copy already has them. */
+const confirmInlines = (message: ConfirmDialogModel['message']) =>
+  typeof message === 'string'
+    ? message
+    : message.map((inline, index) => <ConfirmInline key={index} inline={inline} />)
 
 /**
  * The app's confirmation modal: an `alertdialog` whose message is its description, so a screen
@@ -38,7 +55,16 @@ export function ConfirmDialog({ model }: { model: ConfirmDialogModel }) {
         )
       }
       titleId={model.titleId}
-      description={model.message}
+      description={
+        <>
+          {confirmInlines(model.message)}
+          {model.error ? (
+            <Alert variant="error" className="mt-3">
+              {model.error}
+            </Alert>
+          ) : null}
+        </>
+      }
       descriptionId={model.messageId}
       // the message carries block content on some screens (a failure notice); a <p> could not hold it
       descriptionAs="div"

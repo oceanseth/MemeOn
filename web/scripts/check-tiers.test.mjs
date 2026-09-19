@@ -291,3 +291,37 @@ test("resolves the @/ alias like the relative form and lets only atoms use the c
   assert.match(result.output, /molecules\/Reader\.tsx: React context below views/)
   assert.match(result.output, /molecules\/AliasHook\.tsx: React state hook below views/)
 })
+
+test("rejects React trees and value-imported tiers in hooks/*.ts and lib/*Model.ts", () => {
+  const result = runChecker({
+    "hooks/useCreateElement.ts": "import { createElement } from 'react'\nexport const node = createElement('div')\n",
+    "hooks/useFragment.ts": "import { Fragment } from 'react'\nexport const node = Fragment\n",
+    "hooks/useAlert.ts": "import { Alert } from '@/atoms/alert'\nexport const node = Alert\n",
+    "hooks/useJsx.ts": "export const node = <div />\n",
+    "hooks/useReactCreate.ts": "import React from 'react'\nexport const node = React.createElement('div')\n",
+    "hooks/useJsxs.ts": "import React from 'react'\nexport const node = React.jsxs('div', {})\n",
+    "hooks/useTyped.ts": "import type { IconName } from '@/atoms/icon'\nexport type Name = IconName\nexport const label = 'ok'\n",
+    "hooks/useCopy.ts": "import { label } from '../copy/thing'\nexport const text = label\n",
+    "copy/thing.ts": "export const label = 'Label'\n",
+    "lib/confirmDialogModel.ts": "import { Fragment } from 'react'\nexport const node = Fragment\n",
+    "lib/domain.ts": "export const el = document.createElement('div')\n",
+    "lib/createMemeModel/shared.ts": "import { Alert } from '@/atoms/alert'\nexport const node = Alert\n",
+    "atoms/alert.tsx": "export function Alert() { return <div /> }\n",
+    "atoms/alert.stories.tsx": story,
+    "atoms/icon.tsx": "export type IconName = 'x'\nexport function Icon() { return <div /> }\n",
+    "atoms/icon.stories.tsx": story,
+  })
+
+  assert.equal(result.status, 1, result.output)
+  assert.match(result.output, /hooks\/useCreateElement\.ts: value import of createElement from react/)
+  assert.match(result.output, /hooks\/useFragment\.ts: value import of Fragment from react/)
+  assert.match(result.output, /hooks\/useAlert\.ts: value import from atoms\/ \("@\/atoms\/alert"\)/)
+  assert.match(result.output, /hooks\/useJsx\.ts: JSX in hooks\/ or \*Model\.ts/)
+  assert.match(result.output, /hooks\/useReactCreate\.ts: React\.createElement/)
+  assert.match(result.output, /hooks\/useJsxs\.ts: React\.jsxs/)
+  assert.match(result.output, /lib\/confirmDialogModel\.ts: value import of Fragment from react/)
+  assert.doesNotMatch(result.output, /hooks\/useTyped\.ts/)
+  assert.doesNotMatch(result.output, /hooks\/useCopy\.ts/)
+  assert.doesNotMatch(result.output, /lib\/domain\.ts/)
+  assert.doesNotMatch(result.output, /lib\/createMemeModel\/shared\.ts/)
+})

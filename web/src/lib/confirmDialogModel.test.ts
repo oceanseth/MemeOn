@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { confirmDialogCopy as copy } from '../copy/confirmDialog'
+import { developersCopy } from '../copy/developers'
+import { memeDetailCopy } from '../copy/memeDetail'
 import { buildConfirmDialogModel } from './confirmDialogModel'
 
 describe('buildConfirmDialogModel', () => {
@@ -23,6 +25,27 @@ describe('buildConfirmDialogModel', () => {
     expect(model.id).toBe('delete-meme')
     expect(model.titleId).toBe('delete-meme-title')
     expect(model.messageId).toBe('delete-meme-message')
+    expect(model.message).toBe('This cannot be undone.')
+    expect(model.error).toBeNull()
+  })
+
+  it('passes inline parts and error through without rendering', () => {
+    const message = [
+      { kind: 'strong' as const, text: memeDetailCopy.quotedTitle('fresh paper') },
+      memeDetailCopy.deleteDialog.body,
+    ]
+    const error = developersCopy.errors.revoke('my-trading-bot')
+    const model = buildConfirmDialogModel({
+      open: true,
+      title: memeDetailCopy.deleteDialog.title,
+      message,
+      error,
+      onConfirm: vi.fn(),
+      onCancel: vi.fn(),
+    })
+
+    expect(model.message).toBe(message)
+    expect(model.error).toBe(error)
   })
 
   it('records the opener, so the frame can hand focus back on the way out', () => {

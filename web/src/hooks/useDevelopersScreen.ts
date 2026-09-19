@@ -1,12 +1,11 @@
 import { useProjectedActor } from './useProjectedActor'
-import { createElement, Fragment, useCallback, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 import type {
   ButtonHTMLAttributes,
   FormHTMLAttributes,
   HTMLAttributes,
   InputHTMLAttributes,
 } from 'react'
-import { Alert } from '@/atoms/alert'
 import { developersCopy } from '../copy/developers'
 import { apiFetch, post } from '../lib/api'
 import {
@@ -193,14 +192,12 @@ export function useDevelopersScreen(): DevelopersScreenModel {
     danger: true,
     busy: ctx.revokeBusy,
     title: copy.revokeDialog.title,
-    message: createElement(
-      Fragment,
-      null,
-      createElement('code', null, copy.revokeDialog.prefix(String(ctx.revoking?.prefix))),
+    message: [
+      { kind: 'code' as const, text: copy.revokeDialog.prefix(String(ctx.revoking?.prefix)) },
       copy.revokeDialog.body(String(ctx.revoking?.label)),
-      // the page behind an open modal is inert, so the failure has to land inside the dialog
-      ctx.revokeErr ? createElement(Alert, { variant: 'error', className: 'mt-3' }, ctx.revokeErr) : null,
-    ),
+    ],
+    // the page behind an open modal is inert, so the failure has to land inside the dialog
+    error: ctx.revokeErr,
     confirmLabel: copy.revokeDialog.confirm,
     onCancel: onRevokeCancel,
     onConfirm: () => void onRevokeConfirm(),
