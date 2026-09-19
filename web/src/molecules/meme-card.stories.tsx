@@ -16,7 +16,7 @@ import {
 import type { Meme } from '../lib/types'
 import { memeCardCopy as copy } from '../copy/memeCard'
 import { buildMemeCardModel, buildReducedMotionMemeCardModel } from '../lib/memeCardModel'
-import { MemeCard } from '@/atoms/meme-card'
+import { MemeCard } from '@/molecules/meme-card'
 
 /** Story-local fixtures: tier ladder uses real dev art; ids stay stable for link assertions. */
 function localMeme(partial: Pick<Meme, 'id' | 'title' | 'reshares'> & Partial<Meme>): Meme {
@@ -84,7 +84,7 @@ const allTiers = TIERS.map((tier, index) =>
 )
 
 const meta = {
-  title: 'Atoms/MemeCard',
+  title: 'Molecules/MemeCard',
   component: MemeCard,
   decorators: [
     /* a card is sized by its grid track: 280px is the marketplace column, and `cardWidth` lets the
@@ -219,7 +219,7 @@ export const Large: Story = {
 
 /**
  * The detail hero as `MemeDetailScreen` renders it: square contained art, the 13px tier chip, the
- * listing state in the footer's right slot. Same atom, one prop apart from a grid thumb.
+ * listing state in the footer's right slot. Same molecule, one prop apart from a grid thumb.
  */
 export const Hero: Story = {
   args: { model: buildMemeCardModel(listedHolo), size: 'lg', titleAs: 'h1' },
