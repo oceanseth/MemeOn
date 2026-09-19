@@ -1,7 +1,5 @@
-import type { HTMLAttributes } from 'react'
-import { glowStyleFor, tierFor } from '@memeon/shared/tiers'
+import { tierFor } from '@memeon/shared/tiers'
 import { createMemeCopy as copy } from '../../copy/createMeme'
-import { tierFrameClasses } from '@/atoms/foil'
 import {
   boundTitle,
   countTitle,
@@ -67,18 +65,13 @@ function originLabelFor(source: CreateMemeContext['artworkSource']): string | nu
 }
 
 /**
- * One card recipe for both the live preview and the minted hold. The only presentation this engine
- * names is the foil effect API (`atoms/foil.css`, `atoms/foil.ts`): which tier frame to paint, and
- * the stop set that drives its ring. The box model around it belongs to `CreateMemeScreen`.
+ * One card recipe for both the live preview and the minted hold. The box model and foil host
+ * belong to `CreateMemeScreen`; this engine names the media, title, and labels.
  */
 export function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
   const title = ctx.title.trim()
   const label = title ? `"${title}"` : copy.preview.yourMeme
   return {
-    cardProps: {
-      className: tierFrameClasses(FRESH_TIER.key),
-      'data-glow-style': glowStyleFor(FRESH_TIER.key),
-    } as HTMLAttributes<HTMLDivElement>,
     media: ctx.videoUrl
       ? {
           kind: 'video',
@@ -101,7 +94,6 @@ export function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
     titleIsPlaceholder: !title,
     tierName: FRESH_TIER.name,
     tierLabel: copy.preview.freshlyMinted(FRESH_TIER.name),
-    tierColor: FRESH_TIER.color,
     statsLabel: '0 · 0',
     valueLabel: '0',
     originLabel: originLabelFor(ctx.artworkSource),

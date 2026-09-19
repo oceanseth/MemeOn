@@ -1,11 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Alert } from '@/atoms/alert'
 import { Button, buttonVariants } from '@/atoms/button'
-import { tierFrameClasses } from '@/atoms/foil'
-/* the foil sheet, imported directly (not by way of `atoms/meme-card`'s side effect): this screen
-   assembles the hero pile and the tier ladder from its own markup, on the dependency-free half of
-   the seam */
-import '@/atoms/foil.css'
+import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
 import { Heading } from '@/atoms/heading'
 import { PageContainer } from '@/atoms/page-container'
 import { TierChip } from '@/atoms/tier-chip'
@@ -113,17 +109,14 @@ export function LandingScreen({
             {heroCards.map((card, index) => {
               const image = frameImageProps[card.tierKey]
               return (
-                <li
+                <FoilCard
+                  as="li"
                   key={card.tierKey}
                   data-slot="hero-card"
-                  data-glow-style={card.glowStyle}
-                  className={cn(
-                    PILE_CARD,
-                    PILE_LAYOUT[index] ?? PILE_LAYOUT[0],
-                    tierFrameClasses(card.tierKey),
-                  )}
+                  tierKey={card.tierKey}
+                  className={cn(PILE_CARD, PILE_LAYOUT[index] ?? PILE_LAYOUT[0])}
                 >
-                  <span className="foil-frame foil-media relative block overflow-hidden rounded-md bg-muted">
+                  <FoilMedia className="block overflow-hidden">
                     <span
                       data-slot="hero-card-slot"
                       className="relative block aspect-4/3 w-full"
@@ -137,7 +130,7 @@ export function LandingScreen({
                         />
                       ) : null}
                     </span>
-                  </span>
+                  </FoilMedia>
                   <span
                     className="mx-1 mt-1.5 mb-1.5 block pr-13 font-sans text-sm font-medium text-foreground md:text-base"
                   >
@@ -149,7 +142,7 @@ export function LandingScreen({
                     /* pile seal at the grid thumb's own step (`size="sm"`), pinned to the corner */
                     className="absolute right-2.5 bottom-2.5"
                   />
-                </li>
+                </FoilCard>
               )
             })}
           </ul>
@@ -181,19 +174,16 @@ export function LandingScreen({
         {/* an ordered climb, so the ladder is an <ol>: the sequence is the section's argument */}
         <ol className="mt-6 grid list-none grid-cols-[repeat(auto-fill,minmax(136px,1fr))] gap-3 p-0 max-sm:grid-cols-2 2xl:grid-cols-7">
           {tiers.map((t) => (
-            <li
+            <FoilCard
+              as="li"
               key={t.key}
               data-slot="tier-card"
-              data-glow-style={t.glowStyle}
-              /* `tier-card` is part of the foil effect API (`atoms/foil.css`): it is what the
-                 forced-colors rarity border keys off. The box model around it is this screen's. */
-              className={cn(
-                'tier-card flex flex-col rounded-lg material-raised p-3',
-                tierFrameClasses(t.key),
-              )}
+              rarityLadder
+              tierKey={t.key}
+              className="flex flex-col rounded-lg material-raised p-3"
             >
               {/* the slot is permanent, so loading, ready and failed all keep the same box */}
-              <span className="foil-frame foil-media relative block overflow-hidden rounded-md bg-muted">
+              <FoilMedia className="block overflow-hidden">
                 <span
                   data-slot="tier-frame-slot"
                   className="relative block aspect-4/3 min-h-26 w-full"
@@ -207,7 +197,7 @@ export function LandingScreen({
                     />
                   ) : null}
                 </span>
-              </span>
+              </FoilMedia>
               <Heading as="h3" size="card-title-phone" className="mt-3">
                 {t.name}
               </Heading>
@@ -215,7 +205,7 @@ export function LandingScreen({
                 {t.resharesLabel}
               </span>
               <span className="mt-1 text-xs text-muted-foreground">{t.rarityLabel}</span>
-            </li>
+            </FoilCard>
           ))}
         </ol>
       </section>

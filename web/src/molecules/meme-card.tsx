@@ -1,13 +1,11 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { glowStyleFor } from '@memeon/shared/tiers'
 import { cn } from '@/lib/cn'
 import type { MemeCardModel } from '../lib/memeCardModel'
-import { tierFrameClasses } from '@/atoms/foil'
+import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
 import { TierChip } from '@/atoms/tier-chip'
 import { Icon } from '@/atoms/icon'
-import '@/atoms/foil.css'
 
 /* The card is a container for its own meta row (`@max-card-narrow:` fires under 220px). The ring
    is the card's, for the link inside it: `has-[a:focus-visible]` rather than `focus-ring`, because
@@ -75,8 +73,6 @@ export type MemeCardSize = NonNullable<VariantProps<typeof memeCardVariants>['si
 
 const INNER = 'relative flex h-full flex-col'
 
-const FRAME = 'foil-frame foil-media relative rounded-md bg-muted'
-
 const ART = 'block aspect-square w-full bg-muted object-contain'
 
 /* 32px raised square over the art's corner; the coarse-pointer form is the full 44px target */
@@ -135,17 +131,18 @@ export function MemeCard({ model, subTitle, footer, footerRight, size, titleAs }
   const scale = size ?? 'default'
   const TitleTag = titleAs === 'h1' ? 'h1' : 'span'
   return (
-    <article
+    <FoilCard
+      as="article"
       ref={model.cardRef}
+      tierKey={model.tierKey}
       data-slot="meme-card"
       data-size={scale}
-      className={cn(memeCardVariants({ size: scale }), tierFrameClasses(model.tierKey))}
+      className={cn(memeCardVariants({ size: scale }))}
       aria-labelledby={model.titleId}
-      data-glow-style={glowStyleFor(model.tierKey)}
       data-media-autoplay={model.mediaAutoplay}
     >
       <div data-slot="meme-card-inner" className={INNER}>
-        <span data-slot="foil-media" className={FRAME}>
+        <FoilMedia>
           <Link {...model.detailLinkProps} className="block focus-visible:outline-none">
             {model.media.kind === 'video' ? (
               <video data-slot="meme-art" className={ART} {...model.media.videoProps} />
@@ -166,7 +163,7 @@ export function MemeCard({ model, subTitle, footer, footerRight, size, titleAs }
               </span>
             </button>
           )}
-        </span>
+        </FoilMedia>
         <div data-slot="meme-meta" className={cn(memeMetaVariants({ size: scale }))}>
           <TitleTag data-slot="meme-title" className={cn(memeTitleVariants({ size: scale }))} id={model.titleId}>
             {model.title}
@@ -207,7 +204,7 @@ export function MemeCard({ model, subTitle, footer, footerRight, size, titleAs }
           {footer}
         </div>
       </div>
-    </article>
+    </FoilCard>
   )
 }
 

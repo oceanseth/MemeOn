@@ -13,13 +13,9 @@ import {
   Hint,
 } from '@/atoms/field'
 import { FileDrop } from '@/atoms/file-drop'
+import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
 import { Heading } from '@/atoms/heading'
 import { Input } from '@/atoms/input'
-/* the foil sheet and the chip, not the card atom: this screen paints a card frame out of its own
-   markup, and the mint route is code-split — pulling `meme-card.tsx` in would put its `react-router`
-   and model imports on the critical path of a `lazy()` route that renders none of them.
-   `atoms/foil.css` and `atoms/tier-chip` are the dependency-free halves of that seam. */
-import '@/atoms/foil.css'
 import { LiveRegion } from '@/atoms/live-region'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
@@ -107,12 +103,9 @@ function ModeChip({
 }
 
 /* The mint preview's box model, spelled out here because the meme has no id, no link and no
-   `MemeCardModel` until it is minted: the card is `atoms/meme-card`'s recipe (raised surface, 8px of
-   padding, `rounded-lg`) and the frame carries the 3px tier border `atoms/foil.css` paints on
-   `.foil-frame` off the variables `cardProps.className` sets. */
+   `MemeCardModel` until it is minted. FoilCard hosts the paper frame; the raised surface stays here. */
 const PREVIEW_CARD = 'group relative isolate rounded-lg material-card p-2 @container'
 const PREVIEW_INNER = 'relative flex h-full flex-col'
-const PREVIEW_FRAME = 'foil-frame foil-media relative rounded-md bg-muted'
 /* same plate the marketplace card uses: a square, the whole meme contained */
 const PREVIEW_ART = 'block aspect-square w-full bg-muted object-contain'
 const PREVIEW_META = 'flex flex-col px-1.5 pt-3.5 pb-1.5'
@@ -141,13 +134,9 @@ function PreviewCard({ card }: { card: CreateMemeCardModel }) {
     : card.tierLabel
 
   return (
-    <div
-      {...card.cardProps}
-      data-slot="meme-card"
-      className={cn(PREVIEW_CARD, card.cardProps.className)}
-    >
+    <FoilCard data-slot="meme-card" tierKey="paper" className={PREVIEW_CARD}>
       <div data-slot="meme-card-inner" className={PREVIEW_INNER}>
-        <span data-slot="foil-media" className={PREVIEW_FRAME}>
+        <FoilMedia>
           {card.media.kind === 'video' ? (
             <video
               data-slot="meme-art"
@@ -157,7 +146,7 @@ function PreviewCard({ card }: { card: CreateMemeCardModel }) {
           ) : (
             <img data-slot="meme-art" className={PREVIEW_ART} {...card.media.imageProps} />
           )}
-        </span>
+        </FoilMedia>
         <div data-slot="meme-meta" className={PREVIEW_META}>
           <span data-slot="meme-title" className={PREVIEW_TITLE}>
             {card.title}
@@ -182,7 +171,7 @@ function PreviewCard({ card }: { card: CreateMemeCardModel }) {
           </span>
         </div>
       </div>
-    </div>
+    </FoilCard>
   )
 }
 
