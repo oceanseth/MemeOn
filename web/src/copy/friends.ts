@@ -11,6 +11,7 @@ export const friendsCopy = {
     inputLabel: 'Find people by name',
     searching: 'Searching…',
     noHits: (query: string) => `No one goes by "${query}" — check the spelling, or invite them.`,
+    failed: "Couldn't find people right now. Try again.",
     /** WCAG 2.5.3: the button's visible words lead its accessible name */
     requestLabel: (name: string) => `Add friend — send ${name} a friend request`,
   },
