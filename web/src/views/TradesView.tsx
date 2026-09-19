@@ -4,6 +4,7 @@ import { useTradesScreen } from '../hooks/useTradesScreen'
 import { TradesScreen } from '../screens/TradesScreen'
 
 export const TradesView = observer(function TradesView() {
-  useDocumentTitle('Trade')
-  return <TradesScreen {...useTradesScreen()} />
+  const model = useTradesScreen()
+  useDocumentTitle(model.pageTitle)
+  return <TradesScreen {...model} />
 })

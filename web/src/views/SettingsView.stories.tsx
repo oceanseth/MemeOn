@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
+import { settingsCopy } from '../copy/settings'
+import { sharedCopy } from '../copy/shared'
 import { SettingsView } from './SettingsView'
 
 const meta = {
@@ -27,6 +29,7 @@ export const ReadsTheSignedInAvatar: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByText('lou')).toBeInTheDocument()
+    await expect(document.title).toBe(`${settingsCopy.title} — ${sharedCopy.brand}`)
     await expect(canvas.getByText('Masky avatar')).toBeInTheDocument()
     await expect(canvas.getByRole('link', { name: 'Connect Discord' })).toHaveAttribute('href', '/discord')
     // a settings page that fetched would be a second source of truth for the account

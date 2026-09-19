@@ -8,6 +8,7 @@ import { AuthStatusScreen } from './AuthStatusScreen'
 
 const completing: AuthStatusScreenModel = {
   phase: 'working',
+  documentTitle: authStatusCopy.callback.documentTitle,
   title: 'Completing Masky login…',
   subtitle: 'Taking you back to MemeOn.',
   error: null,
@@ -83,6 +84,7 @@ export const InviteFailed: Story = {
 /** The mobile forward: the deep link is the page's one primary; the web is the quiet fallback. */
 export const ReturningToApp: Story = {
   args: {
+    documentTitle: authStatusCopy.mobileForward.documentTitle,
     title: 'Returning to the MemeOn app…',
     subtitle: 'Open the MemeOn app, or keep going on the web.',
     primaryAction: { label: 'Open MemeOn', href: 'memeon://auth?code=abc&state=xyz', icon: 'arrow-right' },

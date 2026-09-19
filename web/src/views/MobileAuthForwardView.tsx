@@ -5,6 +5,7 @@ import { AuthStatusScreen } from '../screens/AuthStatusScreen'
 
 /** `/auth/mobile` — the https redirect the native app registers with Masky; forwards into `memeon://`. */
 export const MobileAuthForwardView = observer(function MobileAuthForwardView() {
-  useDocumentTitle('Returning to the app')
-  return <AuthStatusScreen {...useMobileAuthForwardScreen()} />
+  const model = useMobileAuthForwardScreen()
+  useDocumentTitle(model.documentTitle)
+  return <AuthStatusScreen {...model} />
 })

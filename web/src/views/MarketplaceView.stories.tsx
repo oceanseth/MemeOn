@@ -4,6 +4,7 @@ import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
 import type { ConnectedScenario } from '../../.storybook/connected-scenario'
 import { marketplaceCopy as copy } from '../copy/marketplace'
+import { sharedCopy } from '../copy/shared'
 import { MarketplaceView } from './MarketplaceView'
 
 const meta = {
@@ -57,6 +58,7 @@ export const FiltersSortAndStyles: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('link', { name: /fresh paper/i })).toBeInTheDocument()
+    await expect(document.title).toBe(`${copy.pageTitle} — ${sharedCopy.brand}`)
     const search = canvas.getByRole('searchbox', { name: copy.search.label })
     await userEvent.type(search, 'holo')
     await waitFor(() => expect(canvas.queryByRole('link', { name: /fresh paper/i })).not.toBeInTheDocument())

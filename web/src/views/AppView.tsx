@@ -41,10 +41,10 @@ function BinderOwnRedirect() {
 /** /binder/:sub — owner gets the management binder; anyone else gets the public profile binder. */
 function BinderRoute() {
   const { sub } = useParams<{ sub: string }>()
-  const { user } = useAuth()
+  const { user, checkingSessionLabel } = useAuth()
   if (user && sub === user.sub)
     return (
-      <Suspense fallback={<AuthSpinner />}>
+      <Suspense fallback={<AuthSpinner label={checkingSessionLabel} />}>
         <BinderView />
       </Suspense>
     )
@@ -76,7 +76,7 @@ export function InviteRoute() {
 }
 
 /** The one named waiting state for a guarded route: auth resolving, then the chunk arriving. */
-function AuthSpinner() {
+function AuthSpinner({ label }: { label: string }) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
       {/* a labelled spinner row, never a bare spinner */}
@@ -86,17 +86,17 @@ function AuthSpinner() {
         role="status"
       >
         <Spinner />
-        Checking your session…
+        {label}
       </div>
     </PageContainer>
   )
 }
 
 function RequireAuth({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth()
-  if (loading) return <AuthSpinner />
+  const { user, loading, checkingSessionLabel } = useAuth()
+  if (loading) return <AuthSpinner label={checkingSessionLabel} />
   if (!user) return <Navigate to="/" replace />
-  return <Suspense fallback={<AuthSpinner />}>{children}</Suspense>
+  return <Suspense fallback={<AuthSpinner label={checkingSessionLabel} />}>{children}</Suspense>
 }
 
 export const AppView = observer(function AppView() {

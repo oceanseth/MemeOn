@@ -15,6 +15,8 @@ const copy = authStatusCopy.callback
 export interface AuthStatusScreenModel {
   /** `working` draws the ring; `error` swaps it for the failure title and an `Alert`. */
   phase: 'working' | 'error'
+  /** Tab title; distinct from on-screen `title` (no ellipsis / “MemeOn app”). */
+  documentTitle: string
   title: string
   /** the line under the title while working; `null` hides it */
   subtitle: string | null
@@ -115,6 +117,7 @@ export function useAuthCallbackScreen(): AuthStatusScreenModel {
 
   return {
     phase: err ? 'error' : 'working',
+    documentTitle: copy.documentTitle,
     title: err ? (inviteFailed ? copy.inviteFailed.title : copy.failed.title) : copy.working.title,
     subtitle: err ? null : copy.working.subtitle,
     error: err,
