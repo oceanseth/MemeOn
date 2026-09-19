@@ -16,7 +16,7 @@ or moving a component. `pnpm --filter web run check-tiers` runs recursively and 
 
 | Tier | Folder | What lives there | Owns state? |
 |---|---|---|---|
-| **Atoms** | `src/atoms/` | `Alert`, `AlertDialog`, `Avatar`, `Badge`, `Button`, `Card`, `Checkbox`, `Collapsible`, `Dialog`, `DropdownMenu`, `Empty` (+ `PageState`), `Field`, `FileDrop`, `Heading`, `Icon`, `InlineLink`, `Input`, `InputGroup`, `Item`, `Label`, `LiveRegion`, `PageContainer`, `PageHead`, `Popover`, `PortalAnchor`, `Progress`, `Select`, `Separator`, `Skeleton`, `Spinner`, `Tabs`, `Textarea`, `TierChip`, `Toggle`, `ToggleGroup`, `Toolbar` | No |
+| **Atoms** | `src/atoms/` | `Alert`, `AlertDialog`, `Avatar`, `Badge`, `Button`, `Card`, `Checkbox`, `Collapsible`, `Dialog`, `DropdownMenu`, `Empty` (+ `PageState`), `Field`, `FileDrop`, `FoilCard` (+ `FoilMedia`), `Heading`, `Icon`, `InlineLink`, `Input`, `InputGroup`, `Item`, `Label`, `LiveRegion`, `PageContainer`, `PageHead`, `Popover`, `PortalAnchor`, `Progress`, `Select`, `Separator`, `Skeleton`, `Spinner`, `Tabs`, `Textarea`, `TierChip`, `Toggle`, `ToggleGroup`, `Toolbar` | No |
 | **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `HeroVideo`, `LegalDocument`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `MemeCard`, `TradeCard` (`give`/`get`, not `offer`/`ask`) | No |
 | **Organisms** | `src/organisms/` | `AppShell` (slots `nav` / `headerEnd` / `bottomNav`), `MemeplexPanel`, the `nav-item.tsx` links `NavPill` / `TabItem` / `FooterLink` | No |
 | **Screens** | `src/screens/` | One model object per route/chrome surface | No |
@@ -70,11 +70,11 @@ main.tsx ── StoresProvider + AuthRuntime + BrowserRouter
       │   ├─ AlertsBell
       │   └─ AvatarMenu
       └─ Routes
-         ├─ LandingView ── useLandingScreen (+ useHeroVideo) → LandingScreen ── HeroVideo · FaqItem
+         ├─ LandingView ── useLandingScreen (+ useHeroVideo) → LandingScreen ── FoilCard · HeroVideo · FaqItem
          ├─ AuthCallbackView ── useAuthCallbackScreen → AuthStatusScreen
          ├─ MobileAuthForwardView ── useMobileAuthForwardScreen → AuthStatusScreen
-         ├─ CreateMemeView ── useCreateMemeScreen → CreateMemeScreen
-         ├─ MarketplaceView ── useMarketplaceScreen (+ useMarketplaceCatalog) → MarketplaceScreen ── SortChips · MemeCard*
+         ├─ CreateMemeView ── useCreateMemeScreen → CreateMemeScreen ── FoilCard
+         ├─ MarketplaceView ── useMarketplaceScreen (+ useMarketplaceCatalog) → MarketplaceScreen ── SortChips · MemeCard* ── FoilCard
          ├─ MemeDetailView ── useMemeDetailScreen → MemeDetailScreen ── ConfirmDialog · MemeplexPanel ── MemeCard*
          ├─ TradesView ── useTradesScreen → TradesScreen ── ConfirmDialog · TradeCard ── SideSummary
          ├─ FriendsView ── useFriendsScreen → FriendsScreen ── GiftDialog · ConfirmDialog
@@ -245,16 +245,16 @@ Probe these instead of a class name or copy string:
   constant. No tier imports `copy/`, and `copy/` imports nothing but `copy/`, `lib/plural` and
   `lib/braincells`.
 - Presentation is Tailwind utilities on the component, in `@layer utilities`. Only effects no
-  utility can express get a co-located `.css` file — today the card foil (`atoms/foil.css`), the
-  spinner turn (`atoms/spinner.css`), the landing frame-slot shimmer (`screens/LandingScreen.css`)
-  and the shell's `--topbar-h` rule (`organisms/app-shell.css`) — and each restates the layer
-  order at the top.
+  utility can express get a co-located `.css` file — today the card foil (`atoms/foil.css`,
+  side-effect owned by `atoms/foil-frame.tsx`), the spinner turn (`atoms/spinner.css`), the landing
+  frame-slot shimmer (`screens/LandingScreen.css`) and the shell's `--topbar-h` rule
+  (`organisms/app-shell.css`) — and each restates the layer order at the top.
   The cascade contract itself is the header comment of `src/index.css`.
 - Shared code (`shared/tiers.ts`) is imported as `@memeon/shared/tiers`, never by relative path.
 
 ## Talking about it
 
-Name the tier and the piece: *"the `MemeCard` molecule"*, *"the `GiftDialog` molecule"*,
+Name the tier and the piece: *"the `FoilCard` atom"*, *"the `MemeCard` molecule"*, *"the `GiftDialog` molecule"*,
 *"the `CreateMemeScreen` › `Error` story"*, *"`useMarketplaceScreen` should hide the grid on empty"*.
 
 ## Checker exceptions
