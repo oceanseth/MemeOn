@@ -26,4 +26,12 @@ export const sharedCopy = {
     redirecting: 'Redirecting…',
     redirectingTo: 'Redirecting to Masky',
   },
+  /** Auto · Light · Dark — Settings, the public header button, and the account-menu radio. */
+  theme: {
+    group: 'Theme',
+    auto: 'Auto',
+    light: 'Light',
+    dark: 'Dark',
+    cycle: (current: string, next: string) => `Theme: ${current}. Switch to ${next}`,
+  },
 } as const

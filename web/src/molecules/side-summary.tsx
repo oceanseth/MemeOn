@@ -26,7 +26,7 @@ export function SideSummary({ model }: { model: TradeSideSummaryModel }) {
       <h3 className={LEGEND}>{model.ownerLabel}</h3>
       {model.empty && <div className="inline-flex items-center gap-1.5 text-muted-foreground">
         <Icon name="meh" size={15} />
-        <span>nothing</span>
+        <span>{model.emptyLabel}</span>
       </div>}
       <ItemGroup>
         {model.memeLines.map((meme) => (

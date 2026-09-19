@@ -39,6 +39,7 @@ export interface TradeSideSummaryModel {
   /** whose side this is, read from where you are standing: "You give" / "You get" */
   ownerLabel: string
   empty: boolean
+  emptyLabel: string
   memeLines: readonly TradeMemeLineModel[]
   braincellsLabel: string | null
 }
@@ -161,6 +162,7 @@ function buildSideSummary(
   return {
     ownerLabel: owner,
     empty: side.memes.length === 0 && side.coins === 0,
+    emptyLabel: copy.sideSentence.nothing,
     memeLines: side.memes.map((meme) => {
       const info = memeNames[meme.memeId] ?? null
       return {

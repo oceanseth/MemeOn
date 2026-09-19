@@ -2,6 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { meLou } from '../../.storybook/fixtures'
+import { appShellCopy } from '../copy/appShell'
+import { sharedCopy } from '../copy/shared'
+import { THEME_OPTIONS } from '../lib/themeControlModel'
 import { AvatarMenu, type AvatarMenuModel } from '@/molecules/avatar-menu'
 
 const onLogout = fn()
@@ -19,7 +22,12 @@ const model: AvatarMenuModel = {
     { key: 'developers', label: 'Developers', to: '/developers', icon: 'code' },
     { key: 'discord', label: 'Discord', to: '/discord', icon: 'discord' },
   ],
-  theme: { label: 'Theme', value: 'light', onChange: onThemeChange },
+  theme: {
+    label: appShellCopy.accountMenu.theme,
+    value: 'light',
+    onChange: onThemeChange,
+    options: THEME_OPTIONS,
+  },
   logOut: { label: 'Log out', onSelect: onLogout },
 }
 
@@ -94,9 +102,9 @@ export const Open: Story = {
     await expect(within(menu).getByRole('menuitem', { name: 'Settings' })).toHaveAttribute('href', '/settings')
     await expect(within(menu).getByRole('menuitem', { name: 'Developers' })).toHaveAttribute('href', '/developers')
     await expect(within(menu).getByRole('menuitem', { name: 'Discord' })).toHaveAttribute('href', '/discord')
-    const light = within(menu).getByRole('menuitemradio', { name: /Light/ })
+    const light = within(menu).getByRole('menuitemradio', { name: new RegExp(sharedCopy.theme.light) })
     await expect(light).toHaveAttribute('aria-checked', 'true')
-    await userEvent.click(within(menu).getByRole('menuitemradio', { name: /Dark/ }))
+    await userEvent.click(within(menu).getByRole('menuitemradio', { name: new RegExp(sharedCopy.theme.dark) }))
     await expect(onThemeChange).toHaveBeenCalledWith('dark')
     await expect(canvas.getByRole('menu')).toBeInTheDocument()
     const logout = within(menu).getByRole('menuitem', { name: 'Log out' })

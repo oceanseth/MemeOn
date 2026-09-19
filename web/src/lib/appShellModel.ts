@@ -7,7 +7,7 @@ import { buildAppShellChrome, type AppShellChromeModel } from './appShellChromeM
 import { buildQuestBarModel, type QuestBarModel } from './questBarModel'
 import type { Me, QuestKey } from './types'
 import type { AvatarMenuModel } from '@/molecules/avatar-menu'
-import type { ThemeControlModel } from '@/molecules/theme-control'
+import { buildThemeControlModel, type ThemeControlModel } from './themeControlModel'
 import type { AppShellContext, AppShellPhase } from '../stores/appShellMachine'
 
 const QUEST_KEYS: QuestKey[] = ['pack', 'mint', 'share', 'friend', 'trade']
@@ -193,6 +193,11 @@ export function buildAppShellScreenModel({
   const family = routeFamily(pathname, user?.sub ?? null)
   const profileTo = user ? `/u/${encodeURIComponent(user.sub)}` : '/'
   const link = (to: string): ShellLinkProps => (onNavigate ? { to, onClick: onNavigate(to) } : { to })
+  const themeModel = buildThemeControlModel({
+    value: theme.value,
+    onChange: theme.onChange,
+    variant: 'button',
+  })
 
   return {
     phase,
@@ -206,7 +211,7 @@ export function buildAppShellScreenModel({
       linkProps: link(item.to),
     })),
     mint: { label: copy.mint, linkProps: link(MINT_TO) },
-    theme: { value: theme.value, onChange: theme.onChange, variant: 'button' },
+    theme: themeModel,
     braincells: user
       ? {
           text: copy.braincells.text(user.coins),
@@ -230,7 +235,12 @@ export function buildAppShellScreenModel({
             { key: 'profile', label: copy.accountMenu.profile, to: profileTo, icon: 'user' },
             ...MENU_ROUTES.map(({ slot, ...route }) => ({ key: slot, ...route, icon: CHROME_ICONS[slot] })),
           ],
-          theme: { label: copy.accountMenu.theme, value: theme.value, onChange: theme.onChange },
+          theme: {
+            label: copy.accountMenu.theme,
+            value: themeModel.value,
+            onChange: themeModel.onChange,
+            options: themeModel.options,
+          },
           logOut: { label: copy.accountMenu.logOut, onSelect: onLogout },
         }
       : null,

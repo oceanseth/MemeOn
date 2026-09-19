@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { meLou, paperMeme, questStepsFresh, questStepsPackDone, silverMeme } from '../../.storybook/fixtures'
 import { appShellCopy } from '../copy/appShell'
+import { questBarCopy } from '../copy/questBar'
 import { buildQuestBarModel } from '../lib/questBarModel'
 import { QuestBar } from '@/molecules/quest-bar'
 
@@ -78,10 +79,10 @@ export const Fresh: Story = {
     /* the pill is a true pill, so the ring's `border-radius: inherit` hugs it */
     await expect(getComputedStyle(trigger).borderRadius).toBe('3.35544e+07px')
     await userEvent.click(trigger)
-    await expect(await canvas.findByText('Earn your braincells')).toBeInTheDocument()
+    await expect(await canvas.findByText(questBarCopy.title)).toBeInTheDocument()
     await expect(canvas.getByText('0/5')).toBeInTheDocument()
     /* the meter is named by the title beside it and counts the same ladder the rows list */
-    const meter = canvas.getByRole('progressbar', { name: /Earn your braincells/ })
+    const meter = canvas.getByRole('progressbar', { name: new RegExp(questBarCopy.title) })
     await expect(meter).toHaveAttribute('data-slot', 'questbar-progress')
     await expect(meter).toHaveAttribute('aria-valuenow', '0')
     await expect(meter).toHaveAttribute('aria-valuemax', String(questStepsFresh.length))
@@ -101,7 +102,7 @@ export const Fresh: Story = {
     await userEvent.click(claim)
     await expect(onClaimPack).toHaveBeenCalledTimes(1)
     /* close before the pack dialog opens so the positioner cannot drift off-screen */
-    await waitFor(() => expect(canvas.queryByText('Earn your braincells')).toBeNull())
+    await waitFor(() => expect(canvas.queryByText(questBarCopy.title)).toBeNull())
   },
 }
 
@@ -142,11 +143,11 @@ export const Opening: Story = {
 /** A one-shot claim that fails silently is the worst state this panel can be in. */
 export const ClaimFailed: Story = {
   args: {
-    model: open(buildQuestBarModel({ ...fresh, claimError: "Pack didn't open — tap to try again." })),
+    model: open(buildQuestBarModel({ ...fresh, claimError: questBarCopy.pack.claimError })),
   },
   play: async ({ canvasElement }) => {
     const alert = within(canvasElement).getByRole('alert')
-    await expect(alert).toHaveTextContent("Pack didn't open — tap to try again.")
+    await expect(alert).toHaveTextContent(questBarCopy.pack.claimError)
     await expect(alert).toHaveAttribute('data-slot', 'questbar-error')
     await expect(alert).toHaveAttribute('data-variant', 'error')
   },
@@ -164,7 +165,7 @@ export const PackOpened: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     onDismissPack.mockClear()
-    const modal = canvas.getByRole('dialog', { name: /Starter pack opened/ })
+    const modal = canvas.getByRole('dialog', { name: questBarCopy.pack.title })
     // the atom fades in, so visibility is a wait, not a read
     await waitFor(() => expect(modal).toBeVisible())
     await expect(modal.querySelector('[data-slot="pack-grid"]')).not.toBeNull()
@@ -175,14 +176,14 @@ export const PackOpened: Story = {
     await userEvent.click(within(modal).getByRole('button', { name: 'Close' }))
     await expect(onDismissPack).toHaveBeenCalledTimes(1)
     onDismissPack.mockClear()
-    await userEvent.click(within(modal).getByRole('button', { name: 'Keep exploring' }))
+    await userEvent.click(within(modal).getByRole('button', { name: questBarCopy.pack.explore }))
     await expect(onDismissPack).toHaveBeenCalledTimes(1)
     onDismissPack.mockClear()
     /* one element, one tab stop: the binder exit is a link wearing the pill, not a button inside a link */
-    await expect(within(modal).queryByRole('button', { name: 'View in My Binder' })).toBeNull()
-    const binderLink = within(modal).getByRole('link', { name: 'View in My Binder' })
+    await expect(within(modal).queryByRole('button', { name: questBarCopy.pack.viewInBinder })).toBeNull()
+    const binderLink = within(modal).getByRole('link', { name: questBarCopy.pack.viewInBinder })
     await expect(binderLink).toHaveAttribute('href', '/binder')
-    await expect(binderLink.offsetHeight).toBe(within(modal).getByRole('button', { name: 'Keep exploring' }).offsetHeight)
+    await expect(binderLink.offsetHeight).toBe(within(modal).getByRole('button', { name: questBarCopy.pack.explore }).offsetHeight)
     await userEvent.click(binderLink)
     await expect(onDismissPack).toHaveBeenCalledTimes(1)
   },
@@ -219,7 +220,7 @@ export const PackOpenedKeyboard: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     onDismissPack.mockClear()
-    const modal = canvas.getByRole('dialog', { name: /Starter pack opened/ })
+    const modal = canvas.getByRole('dialog', { name: questBarCopy.pack.title })
     await expect(within(modal).getByRole('button', { name: 'Close' })).toBeInTheDocument()
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(onDismissPack).toHaveBeenCalledTimes(1))

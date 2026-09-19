@@ -57,7 +57,7 @@ export interface GiftDialogModel {
   cancelButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'disabled'>
   searchInputProps: Pick<
     InputHTMLAttributes<HTMLInputElement>,
-    'value' | 'onChange' | 'aria-label' | 'disabled'
+    'value' | 'onChange' | 'aria-label' | 'placeholder' | 'disabled'
   >
   rows: readonly GiftDialogRowModel[]
   showEmpty: boolean
@@ -185,6 +185,7 @@ export function buildGiftDialogModel({
       value: query,
       onChange: onSearchChange,
       'aria-label': copy.search,
+      placeholder: copy.searchPlaceholder,
       disabled: busy,
     },
     rows,

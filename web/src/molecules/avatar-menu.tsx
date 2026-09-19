@@ -15,7 +15,7 @@ import {
 import { PortalAnchor } from '@/atoms/portal-anchor'
 import { portalAnchor } from '../lib/portalAnchor'
 import type { ThemePreference } from '../stores/themeStore'
-import { THEME_OPTIONS } from '@/molecules/theme-control'
+import type { ThemeOption } from '../lib/themeControlModel'
 import { Icon, type IconName } from '@/atoms/icon'
 
 export interface AvatarMenuItemModel {
@@ -44,7 +44,12 @@ export interface AvatarMenuModel {
    */
   items: AvatarMenuItemModel[]
   /** Auto · Light · Dark, under the model's label; the same three the Settings page offers. */
-  theme: { label: string; value: ThemePreference; onChange: (preference: ThemePreference) => void }
+  theme: {
+    label: string
+    value: ThemePreference
+    onChange: (preference: ThemePreference) => void
+    options: readonly ThemeOption[]
+  }
   logOut: { label: string; onSelect: () => void }
   /** stories only: mount the menu open. The app leaves Base UI to own the open state. */
   defaultOpen?: boolean | undefined
@@ -105,7 +110,7 @@ export function AvatarMenu({ model }: { model: AvatarMenuModel }) {
             onValueChange={(value) => model.theme.onChange(value as ThemePreference)}
             data-slot="avatar-menu-theme"
           >
-            {THEME_OPTIONS.map((option) => (
+            {model.theme.options.map((option) => (
               <DropdownMenuRadioItem key={option.value} value={option.value} data-slot="avatar-menu-theme-option">
                 <Icon name={option.icon} size={18} /> {option.label}
               </DropdownMenuRadioItem>

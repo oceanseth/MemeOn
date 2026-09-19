@@ -4,7 +4,7 @@ import type { LinkProps } from 'react-router-dom'
 import type { IconName } from '@/atoms/icon'
 import { settingsCopy } from '../copy/settings'
 import type { Me } from '../lib/types'
-import type { ThemeControlModel } from '@/molecules/theme-control'
+import { buildThemeControlModel, type ThemeControlModel } from '../lib/themeControlModel'
 import { useAuth } from './useAuth'
 import { useTheme } from './useTheme'
 
@@ -86,7 +86,11 @@ export function buildSettingsScreenModel({
     appearance: {
       heading: copy.appearance.heading,
       caption: copy.appearance.caption,
-      theme: { value: theme.value, onChange: theme.onChange, variant: 'segmented' },
+      theme: buildThemeControlModel({
+        value: theme.value,
+        onChange: theme.onChange,
+        variant: 'segmented',
+      }),
     },
     connections: {
       heading: copy.connections.heading,

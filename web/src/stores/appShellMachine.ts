@@ -1,4 +1,5 @@
 import { assign, setup } from 'xstate'
+import { questBarCopy } from '../copy/questBar'
 import type { Alert, Meme, QuestStep } from '../lib/types'
 
 export type AppShellPhase = 'loggedOut' | 'loggedIn'
@@ -126,7 +127,7 @@ export const appShellMachine = setup({
         CLAIM_FAIL: {
           actions: assign({
             packBusy: false,
-            claimError: "Pack didn't open — tap to try again.",
+            claimError: questBarCopy.pack.claimError,
           }),
         },
         DISMISS_PACK: { actions: assign({ packMemes: null }) },

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ICON_NAMES } from '@/atoms/icon'
 import { settingsCopy as copy } from '../copy/settings'
+import { sharedCopy } from '../copy/shared'
 import type { Me } from '../lib/types'
 import { buildSettingsScreenModel } from './useSettingsScreen'
 
@@ -59,6 +60,10 @@ describe('settings screen model', () => {
     const model = build({ theme: { value: 'dark', onChange } })
 
     expect(model.appearance.theme).toMatchObject({ value: 'dark', variant: 'segmented' })
+    expect(model.appearance.theme.groupLabel).toBe(sharedCopy.theme.group)
+    expect(model.appearance.theme.cycleLabel).toBe(
+      sharedCopy.theme.cycle(sharedCopy.theme.dark, sharedCopy.theme.auto),
+    )
     expect(model.appearance.caption).toBe(copy.appearance.caption)
     model.appearance.theme.onChange('light')
     expect(onChange).toHaveBeenCalledWith('light')
