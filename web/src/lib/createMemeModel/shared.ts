@@ -113,7 +113,14 @@ export function nextStepFor(err: string | null): string | null {
   if (/credit|402|quota|balance/i.test(err)) {
     return copy.preview.nextStep.credits
   }
-  if (/upload failed|413|too large/i.test(err)) return copy.preview.nextStep.tooLarge
+  const rejectedStatus = err.match(/\((\d+)\)/)?.[1]
+  if (
+    err === copy.errors.uploadFailed ||
+    (rejectedStatus !== undefined && err === copy.errors.uploadRejected(Number(rejectedStatus))) ||
+    /413|too large/i.test(err)
+  ) {
+    return copy.preview.nextStep.tooLarge
+  }
   return null
 }
 
