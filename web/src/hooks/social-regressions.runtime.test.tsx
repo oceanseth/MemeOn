@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { friendAccepted, giftablePaper, meLou } from '../../.storybook/fixtures'
 import { friendsCopy as copy } from '../copy/friends'
 import { profileCopy } from '../copy/profile'
-import type { Me } from '../lib/types'
+import type { FriendEntry, Me } from '../lib/types'
 import { authMachine } from '../stores/authMachine'
 import { createStores, type AppStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
@@ -89,18 +89,20 @@ interface SocialApiOptions {
   gifts?: Array<ReturnType<typeof deferred<Response>>>
   friendRequests?: Array<ReturnType<typeof deferred<Response>>>
   users?: (query: string) => Promise<Response>
+  friends?: FriendEntry[]
 }
 
 function installSocialApi(options: SocialApiOptions = {}) {
   const requests: RecordedRequest[] = []
   const userQueries: string[] = []
+  let friends = [...(options.friends ?? [friendAccepted])]
   let giftIndex = 0
   let requestIndex = 0
   vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
     const request = details(input, init)
     requests.push({ method: request.method, path: request.url.pathname, body: request.body })
     if (request.method === 'GET' && request.url.pathname === '/api/friends') {
-      return Promise.resolve(json({ friends: [friendAccepted] }))
+      return Promise.resolve(json({ friends }))
     }
     if (request.method === 'GET' && request.url.pathname === '/api/binder') {
       return Promise.resolve(json({ memes: [giftablePaper] }))
@@ -114,6 +116,18 @@ function installSocialApi(options: SocialApiOptions = {}) {
       const pending = options.friendRequests?.[requestIndex++]
       if (!pending) throw new Error('Unexpected friend request')
       return pending.promise
+    }
+    if (request.method === 'POST' && request.url.pathname === '/api/friends/respond') {
+      const body = request.body as { userId: string; accept: boolean }
+      friends = body.accept
+        ? friends.map((friend) => friend.sub === body.userId ? { ...friend, status: 'accepted' } : friend)
+        : friends.filter((friend) => friend.sub !== body.userId)
+      return Promise.resolve(json({ ok: true }))
+    }
+    if (request.method === 'POST' && request.url.pathname === '/api/friends/remove') {
+      const userId = (request.body as { userId: string }).userId
+      friends = friends.filter((friend) => friend.sub !== userId)
+      return Promise.resolve(json({ ok: true }))
     }
     if (request.method === 'GET' && request.url.pathname === '/api/users') {
       const query = request.url.searchParams.get('q') ?? ''
@@ -327,6 +341,44 @@ function stubClipboardWrite(writeText: (text: string) => Promise<void>) {
     vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeText)
   }
 }
+
+const incomingPal: FriendEntry = { ...friendAccepted, sub: 'user-incoming', name: 'incoming pal', status: 'incoming' }
+
+describe('FriendsView unfriend and decline confirm', () => {
+  it('POSTs /api/friends/remove after confirming unfriend', async () => {
+    const api = installSocialApi()
+    await renderFriends()
+    await click(host.querySelector<HTMLElement>(`[aria-label="${copy.row.removeName(friendAccepted.name)}"]`)!)
+    const dialog = host.querySelector<HTMLElement>('[role="alertdialog"]')!
+    expect(dialog.textContent).toContain(copy.removeDialog.remove.title(friendAccepted.name))
+    await click(button(copy.removeDialog.remove.confirm, dialog))
+    await settle()
+    expect(api.requests).toContainEqual({
+      method: 'POST',
+      path: '/api/friends/remove',
+      body: { userId: friendAccepted.sub },
+    })
+    expect(host.querySelector('[role="alertdialog"]')).toBeNull()
+    expect(host.textContent).not.toContain(copy.row.remove)
+  })
+
+  it('POSTs /api/friends/respond {accept:false} after confirming decline', async () => {
+    const api = installSocialApi({ friends: [friendAccepted, incomingPal] })
+    await renderFriends()
+    expect(host.textContent).toContain(incomingPal.name)
+    await click(host.querySelector<HTMLElement>(`[aria-label="${copy.row.decline(incomingPal.name)}"]`)!)
+    const dialog = host.querySelector<HTMLElement>('[role="alertdialog"]')!
+    expect(dialog.textContent).toContain(copy.removeDialog.decline.title(incomingPal.name))
+    await click(button(copy.removeDialog.decline.confirm, dialog))
+    await settle()
+    expect(api.requests).toContainEqual({
+      method: 'POST',
+      path: '/api/friends/respond',
+      body: { userId: incomingPal.sub, accept: false },
+    })
+    expect(host.textContent).not.toContain(incomingPal.name)
+  })
+})
 
 describe('FriendsView search failure vs empty hits', () => {
   it('shows copy.search.failed when GET /api/users rejects, not noHits', async () => {

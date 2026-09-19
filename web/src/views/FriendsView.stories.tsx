@@ -62,6 +62,41 @@ export const LoadingThenReady: Story = {
   play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('[data-slot="spinner"]')).not.toBeNull()); loaded.scenario.release('friends'); await expect(await canvas.findByText('incoming pal')).toBeInTheDocument() },
 }
 
+export const UnfriendConfirmPostsRemove: Story = {
+  loaders: [connectedLoader()], beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><FriendsView /></ConnectedStory>,
+  play: async ({ canvasElement, loaded }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(await canvas.findByRole('button', { name: copy.row.removeName('pal') }))
+    const dialog = await canvas.findByRole('alertdialog')
+    await userEvent.click(within(dialog).getByRole('button', { name: copy.removeDialog.remove.confirm }))
+    await waitFor(() => {
+      expect(loaded.scenario.requests.find((request: { method: string; path: string; body: unknown }) => (
+        request.method === 'POST' && request.path === '/api/friends/remove'
+        && (request.body as { userId: string }).userId === 'user-pal'
+      ))).toBeTruthy()
+    })
+  },
+}
+
+export const DeclineConfirmPostsRespond: Story = {
+  loaders: [connectedLoader()], beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><FriendsView /></ConnectedStory>,
+  play: async ({ canvasElement, loaded }) => {
+    const canvas = within(canvasElement)
+    await userEvent.click(await canvas.findByRole('button', { name: copy.row.decline('incoming pal') }))
+    const dialog = await canvas.findByRole('alertdialog')
+    await userEvent.click(within(dialog).getByRole('button', { name: copy.removeDialog.decline.confirm }))
+    await waitFor(() => {
+      expect(loaded.scenario.requests.find((request: { method: string; path: string; body: unknown }) => (
+        request.method === 'POST' && request.path === '/api/friends/respond'
+        && (request.body as { userId: string; accept: boolean }).userId === 'user-incoming'
+        && (request.body as { accept: boolean }).accept === false
+      ))).toBeTruthy()
+    })
+  },
+}
+
 export const GiftFailureStaysInOverlay: Story = {
   loaders: [connectedLoader({ failures: { 'POST /api/gift': { error: 'gift unavailable' } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><FriendsView /></ConnectedStory>,
   play: async ({ canvasElement }) => { const canvas = within(canvasElement); await userEvent.click((await canvas.findAllByRole('button', { name: /^Gift shares to / }))[0]!); const dialog = await canvas.findByRole('dialog', { name: /Gift to pal/ }); await userEvent.click(await within(dialog).findByRole('button', { name: /fresh paper/ })); await userEvent.click(within(dialog).getByRole('button', { name: /Gift 1 of/ })); await expect(await within(dialog).findByText('gift unavailable')).toBeInTheDocument()
