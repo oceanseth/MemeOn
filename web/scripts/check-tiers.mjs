@@ -39,6 +39,9 @@ const ALLOWED = {
   screens: ["atoms", "molecules", "organisms", "screens"],
   views: [...TIERS, ...ENGINES],
 }
+// useRef, useId, useCallback, useMemo, useImperativeHandle, and forwardRef are omitted on
+// purpose: a molecule may hold useRef as an imperative handle to a primitive it composes.
+// The omit is not an excuse for useState (or any name in this set).
 const STATE_HOOKS = new Set(["useState", "useReducer", "useEffect", "useLayoutEffect", "useContext", "useSyncExternalStore"])
 // The context API is component-local wiring, not state: a shadcn-style compound atom creates a
 // context for its variant and its parts read it. Allowed in atoms/ only; everywhere else below

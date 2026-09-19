@@ -191,7 +191,8 @@ Layered onto the tiers and rules above, not a replacement for them:
 - `QuestBar` is the braincell pill: plain while no ladder is live, and while one is, the popover's
   trigger wearing a progress ring (`molecules/quest-bar.css`, a registered `--quest-angle` the
   model feeds in tens as `data-progress`). The panel lists every quest, the meter, the claim pill
-  and Later; nothing waits behind a further disclosure.
+  and Later; nothing waits behind a further disclosure. Claim uses `actionsRef.close()` before the
+  pack dialog.
 - The token sheet lives outside the tiers, at `src/Tokens.stories.tsx` (titled `Anatomy/Tokens`):
   every semantic colour, both static ramps, the seven tier chips, the materials, the radius steps
   and the type scale, painted from nothing but the utilities `index.css` emits, each specimen
@@ -221,7 +222,12 @@ Probe these instead of a class name or copy string:
 
 ## Rules
 
-- Below Views, no hooks and no state library.
+- Below Views, no state hooks (`useState` / `useReducer` / `useEffect` / `useLayoutEffect` /
+  `useContext` / `useSyncExternalStore`) and no state library. `useRef` is allowed only as an
+  imperative handle to a primitive that component composes — today that is `QuestBar` closing the
+  Base UI popover via `actionsRef` before the pack dialog (`molecules/quest-bar.tsx`). Do not add
+  `useMemo` / `useCallback` / `useId` below views even though `scripts/check-tiers.mjs` does not
+  yet ban them.
 - The model type is exported by the hook, not the screen.
 - A new state starts as a Screen story.
 - Every component has a sibling `*.stories.tsx` titled `"<Tier>/<Name>"`.

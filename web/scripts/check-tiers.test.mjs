@@ -73,6 +73,21 @@ test("rejects AST-recognized nested state, value edges, state libraries, missing
   assert.match(result.output, /components\/Forgotten\.tsx: component outside a tier folder/)
 })
 
+test("allows useRef in a molecule as an imperative handle and still rejects useState", () => {
+  const withRef = runChecker({
+    "molecules/Handle.tsx": "import { useRef } from 'react'\nexport function Handle() { const node = useRef(null); return <div ref={node} /> }\n",
+    "molecules/Handle.stories.tsx": story,
+  })
+  assert.equal(withRef.status, 0, withRef.output)
+
+  const withState = runChecker({
+    "molecules/Handle.tsx": "import { useState } from 'react'\nexport function Handle() { const [value] = useState(0); return <div>{value}</div> }\n",
+    "molecules/Handle.stories.tsx": story,
+  })
+  assert.equal(withState.status, 1, withState.output)
+  assert.match(withState.output, /molecules\/Handle\.tsx: React state hook below views/)
+})
+
 test("allows nested tier components, type-only imports, exact integration files, and JSX-free domain modules", () => {
   const result = runChecker({
     "atoms/nested/Good.tsx": component,
