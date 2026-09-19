@@ -82,7 +82,7 @@ export const Fresh: Story = {
     await expect(await canvas.findByText(questBarCopy.title)).toBeInTheDocument()
     await expect(canvas.getByText('0/5')).toBeInTheDocument()
     /* the meter is named by the title beside it and counts the same ladder the rows list */
-    const meter = canvas.getByRole('progressbar', { name: questBarCopy.title })
+    const meter = canvas.getByRole('progressbar', { name: new RegExp(questBarCopy.title) })
     await expect(meter).toHaveAttribute('data-slot', 'questbar-progress')
     await expect(meter).toHaveAttribute('aria-valuenow', '0')
     await expect(meter).toHaveAttribute('aria-valuemax', String(questStepsFresh.length))
