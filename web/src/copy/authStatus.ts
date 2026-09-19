@@ -14,6 +14,10 @@ export const authStatusCopy = {
     failed: {
       title: 'Masky login didn’t finish',
     },
+    /** Masky finished; POST /api/invites/accept did not. Stay on the callback card. */
+    inviteFailed: {
+      title: 'Invite didn’t go through',
+    },
     /** What the notice says when Masky sent no code, or the exchange threw nothing readable. */
     errors: {
       missingCode: 'missing authorization code',

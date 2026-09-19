@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { IconName } from '@/atoms/icon'
 import { authStatusCopy } from '../copy/authStatus'
+import { inviteCopy } from '../copy/invite'
 import { beginMaskyLogin, completeMaskyLogin } from '../lib/auth'
 import { post } from '../lib/api'
 import { clearInviteFrom, clearPostLogin, getInviteFrom, getPostLogin } from '../lib/sessionBus'
@@ -41,7 +42,10 @@ export function useAuthCallbackScreen(): AuthStatusScreenModel {
   const navigate = useNavigate()
   const { refresh } = useAuth()
   const [err, setErr] = useState<string | null>(null)
+  const [inviteFailed, setInviteFailed] = useState(false)
   const ran = useRef(false)
+  const pendingInviterId = useRef<string | null>(null)
+  const pendingPostLogin = useRef<string | null>(null)
 
   useEffect(() => {
     if (ran.current) return // StrictMode double-mount; codes are single-use
@@ -56,26 +60,52 @@ export function useAuthCallbackScreen(): AuthStatusScreenModel {
         // finish an invite if this login started from an invite link
         const inviterId = getInviteFrom()
         clearInviteFrom()
-        if (inviterId) {
-          await post('/api/invites/accept', { inviterId }).catch(() => {})
-        }
         const postLogin = getPostLogin()
         clearPostLogin()
+        pendingInviterId.current = inviterId
+        pendingPostLogin.current = postLogin
+        if (inviterId) {
+          try {
+            await post('/api/invites/accept', { inviterId })
+          } catch {
+            await refresh()
+            setInviteFailed(true)
+            setErr(inviteCopy.errors.accept)
+            return
+          }
+        }
         await refresh()
         navigate(postLogin ?? (inviterId ? '/friends' : '/marketplace'), { replace: true })
       })
       .catch((e) => setErr(e instanceof Error ? e.message : copy.errors.loginFailed))
   }, [params, navigate, refresh])
 
-  /* Failed hand-off offers retry instead of an endless spinner. */
+  /* Failed hand-off offers retry instead of an endless spinner. Invite-fail retry re-POSTs accept. */
   const retry = () => {
+    if (inviteFailed) {
+      const inviterId = pendingInviterId.current
+      const postLogin = pendingPostLogin.current
+      setInviteFailed(false)
+      setErr(null)
+      void (async () => {
+        try {
+          if (inviterId) await post('/api/invites/accept', { inviterId })
+          await refresh()
+          navigate(postLogin ?? (inviterId ? '/friends' : '/marketplace'), { replace: true })
+        } catch {
+          setInviteFailed(true)
+          setErr(inviteCopy.errors.accept)
+        }
+      })()
+      return
+    }
     setErr(null)
     void beginMaskyLogin().catch((e) => setErr(e instanceof Error ? e.message : copy.errors.loginFailed))
   }
 
   return {
     phase: err ? 'error' : 'working',
-    title: err ? copy.failed.title : copy.working.title,
+    title: err ? (inviteFailed ? copy.inviteFailed.title : copy.failed.title) : copy.working.title,
     subtitle: err ? null : copy.working.subtitle,
     error: err,
     primaryAction: null,

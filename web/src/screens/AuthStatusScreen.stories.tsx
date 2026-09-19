@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, within } from 'storybook/test'
+import { authStatusCopy } from '../copy/authStatus'
+import { inviteCopy } from '../copy/invite'
 import type { AuthStatusScreenModel } from '../hooks/useAuthCallbackScreen'
 import { AuthStatusScreen } from './AuthStatusScreen'
 
@@ -55,6 +57,26 @@ export const LoginFailed: Story = {
     await expect(canvasElement.querySelector('[data-slot="auth-status"]')).toHaveAttribute('data-size', 'lg')
     await expect(canvasElement.querySelector('[data-slot="auth-ring"]')).toBeNull()
     await expect(canvas.queryByText('Taking longer than usual?')).not.toBeInTheDocument()
+  },
+}
+
+/** Masky finished; the invite accept failed. Same card, different title and alert. */
+export const InviteFailed: Story = {
+  args: {
+    phase: 'error',
+    title: authStatusCopy.callback.inviteFailed.title,
+    subtitle: null,
+    error: inviteCopy.errors.accept,
+    fallback: { ...completing.fallback, prompt: null },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { name: authStatusCopy.callback.inviteFailed.title })).toBeInTheDocument()
+    await expect(canvas.queryByRole('heading', { name: authStatusCopy.callback.failed.title })).not.toBeInTheDocument()
+    await expect(canvas.getByRole('alert')).toHaveTextContent(inviteCopy.errors.accept)
+    await expect(canvas.getByRole('alert')).toHaveAttribute('data-variant', 'error')
+    await expect(canvasElement.querySelector('[data-slot="auth-status"]')).toHaveAttribute('data-phase', 'error')
+    await expect(canvasElement.querySelector('[data-slot="auth-ring"]')).toBeNull()
   },
 }
 
