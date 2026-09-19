@@ -24,6 +24,24 @@ const balance = { text: `${meLou.coins.toLocaleString()}`, label: `${meLou.coins
 /** The ladder mounted open, as the shell shows it after a press on the pill. */
 const open = (model: ReturnType<typeof buildQuestBarModel>) => ({ ...model, defaultOpen: true })
 
+/** 390×844: the same viewport globals Organisms/AppShell Phone390 uses. */
+const phone = {
+  parameters: {
+    viewport: {
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+    },
+    /* padded layout adds gutters the pin's left-3/right-3 would then miss */
+    layout: 'fullscreen' as const,
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
+}
+
+function positionerStyle(popup: Element) {
+  const positioner = popup.closest('[data-slot="popover-positioner"]')
+  if (!(positioner instanceof HTMLElement)) throw new Error('missing popover-positioner')
+  return getComputedStyle(positioner)
+}
+
 const meta = {
   title: 'Molecules/QuestBar',
   component: QuestBar,
@@ -91,6 +109,9 @@ export const Expanded: Story = {
   args: { model: open(buildQuestBarModel({ ...fresh, steps: questStepsPackDone })) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    const popup = canvasElement.querySelector('[data-slot="quest-panel"]')
+    await expect(popup).not.toBeNull()
+    await waitFor(() => expect(positionerStyle(popup!).position).toBe('absolute'))
     const trigger = canvas.getByRole('button', { name: /quests 1 of 5/ })
     await expect(trigger).toHaveAttribute('data-progress', '20')
     /* the pack is claimed: no dot */
@@ -226,6 +247,24 @@ export const Hidden: Story = {
 /** The same plain pill the shell renders once every quest is done, or before the ladder loads. */
 export const Balance: Story = {
   args: { model: null },
+}
+
+/** Open at 390: the shared header pin, not the desktop absolute measure. */
+export const ExpandedPhone390: Story = {
+  ...Expanded,
+  ...phone,
+  play: async ({ canvasElement }) => {
+    const popup = canvasElement.querySelector('[data-slot="quest-panel"]')
+    await expect(popup).not.toBeNull()
+    await waitFor(() => {
+      const style = positionerStyle(popup!)
+      expect(style.position).toBe('fixed')
+      expect(style.top).toBe('64px')
+      expect(style.transform).toBe('none')
+      expect(style.left).toBe('12px')
+      expect(style.right).toBe('12px')
+    })
+  },
 }
 
 export const Dark: Story = { ...Expanded, globals: { theme: 'dark' } }

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { Link, MemoryRouter } from 'react-router-dom'
-import { expect, fn, within } from 'storybook/test'
+import { expect, fn, waitFor, within } from 'storybook/test'
 import { meLou, questStepsFresh, unreadSale } from '../../.storybook/fixtures'
 import { buttonVariants } from '@/atoms/button'
 import { Icon } from '@/atoms/icon'
@@ -47,7 +47,7 @@ const avatarMenu = (
   />
 )
 
-const headerEnd = (quest: boolean) => (
+const headerEnd = (quest: boolean, alertsOpen = false) => (
   <>
     <Link to="/binder/new" className={`${buttonVariants({ variant: 'primary', size: 'sm' })} max-xl:hidden`}>
       <span aria-hidden="true">
@@ -66,7 +66,7 @@ const headerEnd = (quest: boolean) => (
       }) : null}
       balance={balance}
     />
-    <AlertsBell model={buildAlertsBellModel({ alerts: [unreadSale], open: false, onOpenChange: fn() })} />
+    <AlertsBell model={buildAlertsBellModel({ alerts: [unreadSale], open: alertsOpen, onOpenChange: fn() })} />
     {avatarMenu}
   </>
 )
@@ -168,6 +168,27 @@ export const Phone390: Story = {
     await expect(getComputedStyle(content).paddingBottom).toBe('80px')
     /* a phone app has no site footer: where the tab bar is, the footer is not */
     await expect(canvasElement.querySelector('[data-slot="site-footer"]')).not.toBeVisible()
+  },
+}
+
+/** 390 with the bell open: the pin sits under HEADER glass (`backdrop-filter` containing block). */
+export const Phone390AlertsOpen: Story = {
+  ...LoggedIn,
+  ...phone,
+  args: { nav, headerEnd: headerEnd(false, true), bottomNav },
+  play: async ({ canvasElement }) => {
+    const popup = canvasElement.querySelector('[data-slot="alerts-pop"]')
+    await expect(popup).not.toBeNull()
+    await waitFor(() => {
+      const positioner = popup!.closest('[data-slot="popover-positioner"]')
+      expect(positioner).not.toBeNull()
+      const style = getComputedStyle(positioner as HTMLElement)
+      expect(style.position).toBe('fixed')
+      expect(style.top).toBe('64px')
+      expect(style.transform).toBe('none')
+      expect(style.left).toBe('12px')
+      expect(style.right).toBe('12px')
+    })
   },
 }
 
