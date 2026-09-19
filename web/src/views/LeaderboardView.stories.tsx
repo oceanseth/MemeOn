@@ -28,6 +28,7 @@ export const RowsAndLinks: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('link', { name: /pal/ })).toHaveAttribute('href', '/u/user-pal')
+    await expect(canvas.getByRole('heading', { name: copy.pageTitle })).toBeInTheDocument()
     await expect(canvas.getByText(copy.row.braincells(240))).toBeInTheDocument()
     await expect(loaded.scenario.unexpected).toEqual([])
   },

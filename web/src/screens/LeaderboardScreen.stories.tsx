@@ -28,6 +28,7 @@ const rows = (source: LeaderRow[], meSub: string | null = null) =>
 
 const empty: LeaderboardScreenModel = {
   phase: 'empty',
+  pageTitle: copy.pageTitle,
   subtitle: copy.subtitle,
   podiumTitle: copy.podium.title,
   podiumSubtitle: copy.podium.subtitle,
@@ -86,7 +87,11 @@ export const Loading: Story = {
   },
 }
 
-export const Empty: Story = {}
+export const Empty: Story = {
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('heading', { name: copy.pageTitle })).toBeInTheDocument()
+  },
+}
 
 export const Error: Story = {
   name: 'Error',

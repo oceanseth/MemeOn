@@ -12,6 +12,7 @@ export type { LeaderboardPhase }
 
 export interface LeaderboardScreenModel {
   phase: LeaderboardPhase
+  pageTitle: string
   subtitle: string
   podiumTitle: string
   podiumSubtitle: string
@@ -123,6 +124,7 @@ export function useLeaderboardScreen(): LeaderboardScreenModel {
 
   return {
     phase,
+    pageTitle: copy.pageTitle,
     subtitle: copy.subtitle,
     podiumTitle: copy.podium.title,
     podiumSubtitle: copy.podium.subtitle,
