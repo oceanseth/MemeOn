@@ -206,6 +206,19 @@ export const RequestFailed: Story = {
   },
 }
 
+export const InviteCopyFailed: Story = {
+  args: {
+    phase: 'ready',
+    showEmpty: false,
+    showCircle: true,
+    accepted: [acceptedRow()],
+    inviteLabel: copy.invite.copyFailed,
+  },
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('button', { name: copy.invite.copyFailed })).toBeVisible()
+  },
+}
+
 export const RowBusy: Story = {
   name: 'Row busy (mutation in flight)',
   args: {

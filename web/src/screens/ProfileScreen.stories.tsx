@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, within } from 'storybook/test'
 import { friendAccepted, giftablePaper, meLou, paperMeme } from '../../.storybook/fixtures'
+import { profileCopy } from '../copy/profile'
 import type { ProfileScreenModel, ProfileStat } from '../hooks/useProfileScreen'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { ProfileScreen } from './ProfileScreen'
@@ -336,6 +337,13 @@ export const ActionFailed: Story = {
     await expect(alert).toHaveAttribute('data-variant', 'error')
     // the identity block is the Card atom now, not a hand-spelled band
     await expect(canvasElement.querySelector('[data-slot="profile-identity"]')).toHaveAttribute('data-size', 'sm')
+  },
+}
+
+export const CopyFailed: Story = {
+  args: { ...oneCreatedCard, showActionErr: true, actionErr: profileCopy.errors.copy },
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(profileCopy.errors.copy)
   },
 }
 

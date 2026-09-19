@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { listedHolo, meLou, memeplexEmpty, paperMeme, silverMeme } from '../../.storybook/fixtures'
 import { marketplaceCopy } from '../copy/marketplace'
 import { memeDetailCopy } from '../copy/memeDetail'
+import { memeplexPanelCopy } from '../copy/memeplexPanel'
 import type { Me, Meme } from '../lib/types'
 import { authMachine } from '../stores/authMachine'
 import { createStores, type AppStores } from '../stores/createStores'
@@ -391,5 +392,141 @@ describe('MarketplaceView continuously visible pagination', () => {
     })
     expect(host.textContent).toBe('')
     expect(requests).toEqual(['initial', 'cursor-a'])
+  })
+})
+
+function jsonError(): Response {
+  return Response.json({ error: 'unavailable' }, { status: 503 })
+}
+
+function installDetailApi(options: {
+  meme: Meme
+  positions?: { userId: string; shares: number }[]
+  stats?: 'ok' | 'fail'
+  plex?: 'ok' | 'fail'
+  binder?: 'ok' | 'fail'
+  holders?: 'ok' | 'fail'
+}) {
+  const id = options.meme.id
+  const positions = options.positions ?? [{ userId: meLou.sub, shares: 100 }]
+  const requests: Array<{ method: string; path: string }> = []
+  vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
+    const { url, method } = requestDetails(input, init)
+    const path = url.pathname
+    requests.push({ method, path })
+    if (method === 'GET' && path === `/api/memes/${id}`) {
+      return Promise.resolve(Response.json({ meme: options.meme, positions }))
+    }
+    if (method === 'GET' && path === `/api/memes/${id}/stats`) {
+      return options.stats === 'fail'
+        ? Promise.resolve(jsonError())
+        : Promise.resolve(Response.json({ views: 0, reshares: 0, sources: [] }))
+    }
+    if (method === 'GET' && path === `/api/memes/${id}/memeplex`) {
+      return options.plex === 'fail' ? Promise.resolve(jsonError()) : Promise.resolve(Response.json(memeplexEmpty))
+    }
+    if (method === 'GET' && path === '/api/binder') {
+      return options.binder === 'fail' ? Promise.resolve(jsonError()) : Promise.resolve(Response.json({ memes: [] }))
+    }
+    if (method === 'GET' && path === '/api/users') {
+      return options.holders === 'fail' ? Promise.resolve(jsonError()) : Promise.resolve(Response.json({ users: [] }))
+    }
+    if (method === 'POST' && path === `/api/memes/${id}/memeplex`) {
+      return Promise.resolve(Response.json({ ok: true }))
+    }
+    throw new Error(`Unexpected request: ${method} ${path}`)
+  }))
+  return requests
+}
+
+async function renderDetail(id: string): Promise<void> {
+  await act(async () => {
+    root.render(
+      <StoresProvider stores={stores}>
+        <MemoryRouter initialEntries={[`/m/${id}`]}>
+          <Routes>
+            <Route path="/m/:id" element={<MemeDetailView />} />
+          </Routes>
+        </MemoryRouter>
+      </StoresProvider>,
+    )
+    await settle()
+  })
+}
+
+function stubClipboardWrite(writeText: (text: string) => Promise<void>) {
+  try {
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, writable: true, value: { writeText } })
+  } catch {
+    vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeText)
+  }
+}
+
+describe('MemeDetailView secondary failures', () => {
+  const ownerMeme: Meme = {
+    ...paperMeme,
+    id: 'detail-swallows',
+    title: 'swallow owner meme',
+    creatorId: meLou.sub,
+    creatorName: meLou.name,
+    ownerId: meLou.sub,
+    ownerName: meLou.name,
+  }
+
+  it('keeps the page ready when stats fail and hides the spreading card', async () => {
+    installDetailApi({ meme: ownerMeme, stats: 'fail' })
+    await renderDetail(ownerMeme.id)
+    await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
+    expect(host.textContent).not.toContain('Where it’s spreading')
+    expect(host.querySelector('[data-slot="alert"]')).toBeNull()
+  })
+
+  it('keeps paste-a-link working when the plex binder picker fails', async () => {
+    const requests = installDetailApi({ meme: ownerMeme, binder: 'fail' })
+    await renderDetail(ownerMeme.id)
+    await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
+    const pasted = host.querySelector<HTMLInputElement>(`input[aria-label="${memeplexPanelCopy.pasted}"]`)
+    expect(pasted).not.toBeNull()
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(pasted, silverMeme.id)
+      pasted!.dispatchEvent(new Event('input', { bubbles: true }))
+      await settle()
+    })
+    const linkButton = [...host.querySelectorAll('button')].find((candidate) => candidate.textContent?.trim() === 'Link')
+    if (!linkButton) throw new Error('Missing memeplex Link button')
+    await click(linkButton)
+    await eventually(() => expect(requests.some((request) => request.method === 'POST' && request.path === `/api/memes/${ownerMeme.id}/memeplex`)).toBe(true))
+  })
+
+  it('falls back to holder.unknown when holder names fail', async () => {
+    installDetailApi({
+      meme: ownerMeme,
+      holders: 'fail',
+      positions: [
+        { userId: meLou.sub, shares: 60 },
+        { userId: 'user-pal', shares: 40 },
+      ],
+    })
+    await renderDetail(ownerMeme.id)
+    await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
+    await eventually(() => expect(host.textContent).toContain(memeDetailCopy.holder.unknown))
+    expect(host.textContent).toContain(memeDetailCopy.holder.you)
+  })
+
+  it('shows share.copyFailed when clipboard write rejects', async () => {
+    installDetailApi({ meme: ownerMeme })
+    stubClipboardWrite(async () => { throw new Error('denied') })
+    await renderDetail(ownerMeme.id)
+    await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
+    await click(button(memeDetailCopy.share.copy))
+    await eventually(() => expect(button(memeDetailCopy.share.copyFailed)).toBeTruthy())
+  })
+
+  it('surfaces memeplex.loadFailed without FAILing the page', async () => {
+    installDetailApi({ meme: ownerMeme, plex: 'fail' })
+    await renderDetail(ownerMeme.id)
+    await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
+    await eventually(() => expect(host.querySelector('[data-slot="alert"]')?.textContent).toContain(memeDetailCopy.memeplex.loadFailed))
+    expect(host.textContent).not.toContain('No relatives yet')
   })
 })

@@ -44,6 +44,21 @@ it('reaches the error phase when a load actually fails, instead of reporting an 
   expect(actor.getSnapshot().context.err).toBe('Check your connection and try again.')
 })
 
+it('keeps copyFailed across a copied:false timer unless failed:true', () => {
+  const actor = createActor(friendsMachine).start()
+  actor.send({ type: 'SET_COPIED', copied: false, failed: true })
+  expect(actor.getSnapshot().context).toMatchObject({ copied: false, copyFailed: true })
+
+  actor.send({ type: 'SET_COPIED', copied: false })
+  expect(actor.getSnapshot().context.copyFailed).toBe(true)
+
+  actor.send({ type: 'SET_COPIED', copied: true })
+  expect(actor.getSnapshot().context).toMatchObject({ copied: true, copyFailed: false })
+
+  actor.send({ type: 'SET_COPIED', copied: false })
+  expect(actor.getSnapshot().context).toMatchObject({ copied: false, copyFailed: false })
+})
+
 it('holds raw share text while typing and drops it when the pick changes', () => {
   const actor = createActor(friendsMachine).start()
 

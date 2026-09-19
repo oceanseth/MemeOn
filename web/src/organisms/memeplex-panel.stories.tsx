@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
-import { fn } from 'storybook/test'
+import { expect, fn, within } from 'storybook/test'
 import { giftablePaper, giftableSilver, holoMeme, listedHolo, memeplexEmpty, memeplexFamily } from '../../.storybook/fixtures'
+import { memeDetailCopy } from '../copy/memeDetail'
+import { memeplexPanelCopy } from '../copy/memeplexPanel'
 import { MemeplexPanel } from '@/organisms/memeplex-panel'
 import { buildMemeplexPanelModel } from '../lib/memeplexPanelModel'
 
@@ -27,6 +29,16 @@ export const PastedLink: Story = { args: { model: build({ canEdit: true, binder:
 export const Notice: Story = { args: { model: build({ notice: 'Added to the memeplex' }) } }
 /** A failed link never wears success green. */
 export const ErrorNotice: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper], error: 'Already in the memeplex.' }) } }
+/** A failed GET must not hide the panel as empty relatives. */
+export const LoadFailed: Story = {
+  args: { model: build({ plex: null, canEdit: true, binder: [giftablePaper], error: memeDetailCopy.memeplex.loadFailed }) },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('alert')).toHaveTextContent(memeDetailCopy.memeplex.loadFailed)
+    await expect(canvas.queryByText(/No relatives yet/)).toBeNull()
+    await expect(canvas.getByLabelText(memeplexPanelCopy.pasted)).toBeVisible()
+  },
+}
 export const Loading: Story = { args: { model: build({ plex: null }) } }
 /** Two columns at 390px: the relatives grid no longer eats the page before the cap table. */
 export const NarrowFamily: Story = {
