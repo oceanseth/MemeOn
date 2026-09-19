@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
+import { clearDiscordLinkConsent, setDiscordLinkConsent } from '../lib/sessionBus'
 import { DiscordLinkView } from './DiscordLinkView'
 
 const meta = {
@@ -31,6 +32,26 @@ export const ConsentGateUsesLatestTokenOnce: Story = {
     await expect(await canvas.findByRole('heading', { name: /Connected/ })).toBeInTheDocument()
     await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/discord/link')).toHaveLength(1))
     await expect(loaded.scenario.requests.find((request: { path: string }) => request.path === '/api/discord/link')?.body).toEqual({ token: 'latest-story-token' })
+  },
+}
+
+export const AutoLinksOnceWhenConsentAlreadyStashed: Story = {
+  loaders: [connectedLoader()],
+  beforeEach: async (context) => {
+    const cleanup = await connectedBeforeEach(context)
+    setDiscordLinkConsent('1')
+    return () => {
+      clearDiscordLinkConsent()
+      return cleanup()
+    }
+  },
+  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DiscordLinkView /></ConnectedStory>,
+  play: async ({ canvasElement, loaded }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByRole('heading', { name: /Connected/ })).toBeInTheDocument()
+    await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/discord/link')).toHaveLength(1))
+    await expect(loaded.scenario.requests.find((request: { path: string }) => request.path === '/api/discord/link')?.body).toEqual({ token: 'latest-story-token' })
+    await expect(canvas.queryByRole('button', { name: 'Connect Discord' })).not.toBeInTheDocument()
   },
 }
 
