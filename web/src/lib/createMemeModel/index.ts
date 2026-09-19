@@ -2,7 +2,6 @@ export { buildCreateMemeScreenModel } from './buildCreateMemeScreenModel'
 export {
   draftOf,
   elapsedLabel,
-  PENDING_VIDEO_KEY,
   pendingVideoMatchesRemix,
   pendingVideoRecord,
   type PendingVideoRecord,

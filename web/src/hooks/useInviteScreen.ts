@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { inviteCopy } from '../copy/invite'
 import { apiFetch, post } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
+import { setInviteFrom } from '../lib/sessionBus'
 import {
   inviteMachine,
   type InviteData,
@@ -13,8 +14,6 @@ import { useMountEffect } from './useMountEffect'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import type { ButtonHTMLAttributes } from 'react'
 import type { IconName } from '@/atoms/icon'
-
-export const INVITE_KEY = 'memeon_invite_from'
 
 const copy = inviteCopy
 
@@ -146,7 +145,7 @@ export function useInviteScreen(): InviteScreenModel {
         navigate('/friends', { state: { invitedBy: inviter?.name ?? null } })
         return
       }
-      sessionStorage.setItem(INVITE_KEY, sub)
+      setInviteFrom(sub)
       await beginMaskyLogin()
     }
     void run().catch((e) => {

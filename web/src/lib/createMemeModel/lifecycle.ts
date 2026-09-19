@@ -1,7 +1,5 @@
 import type { CreateMemeContext, CreateMemeDraft } from '../../stores/createMemeMachine'
 
-export const PENDING_VIDEO_KEY = 'memeon_pending_video'
-
 export function pendingVideoMatchesRemix(
   pendingRemixId: string | null | undefined,
   remixId: string | null,

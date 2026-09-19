@@ -4,7 +4,15 @@ import { useSearchParams } from 'react-router-dom'
 import { discordLinkCopy } from '../copy/discordLink'
 import { ApiError, post } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
-import { POST_LOGIN_KEY } from './useAuthCallbackScreen'
+import {
+  clearDiscordLinkConsent,
+  clearDiscordLinkToken,
+  getDiscordLinkConsent,
+  getDiscordLinkToken,
+  setDiscordLinkConsent,
+  setDiscordLinkToken,
+  setPostLogin,
+} from '../lib/sessionBus'
 import {
   discordLinkMachine,
   type DiscordLinkFailure,
@@ -12,10 +20,6 @@ import {
 } from '../stores/discordLinkMachine'
 import { useStores } from '../stores/StoresContext'
 import { useMountEffect } from './useMountEffect'
-
-export const DISCORD_LINK_KEY = 'memeon_discord_link_token'
-/** Consent survives the Masky round trip, so nobody is asked to agree to the same join twice. */
-export const DISCORD_LINK_CONSENT_KEY = 'memeon_discord_link_consent'
 
 const copy = discordLinkCopy
 
@@ -62,13 +66,13 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
      auth, so the newest token wins until the flow settles — then it is kept, because the POST
      clears the stashed copy and Try again still needs the token it consumed. */
   if (!settled.current) {
-    tokenRef.current = params.get('token') ?? sessionStorage.getItem(DISCORD_LINK_KEY)
+    tokenRef.current = params.get('token') ?? getDiscordLinkToken()
   }
   const ctx = snapshot.context
   const phase = snapshot.value as DiscordLinkPhase
 
   const link = (token: string): void => {
-    sessionStorage.removeItem(DISCORD_LINK_KEY)
+    clearDiscordLinkToken()
     post('/api/discord/link', { token })
       .then(() => send({ type: 'DONE' }))
       .catch((e) => send({ type: 'FAIL', failure: failureOf(e) }))
@@ -84,8 +88,8 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
         return
       }
       // consent already given before the SSO bounce: finish the job instead of re-asking
-      if (auth.user && sessionStorage.getItem(DISCORD_LINK_CONSENT_KEY)) {
-        sessionStorage.removeItem(DISCORD_LINK_CONSENT_KEY)
+      if (auth.user && getDiscordLinkConsent()) {
+        clearDiscordLinkConsent()
         send({ type: 'LINK' })
         link(token)
         return
@@ -103,9 +107,9 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
       return
     }
     if (!auth.user) {
-      sessionStorage.setItem(DISCORD_LINK_KEY, token)
-      sessionStorage.setItem(DISCORD_LINK_CONSENT_KEY, '1')
-      sessionStorage.setItem(POST_LOGIN_KEY, '/discord/link')
+      setDiscordLinkToken(token)
+      setDiscordLinkConsent('1')
+      setPostLogin('/discord/link')
       send({ type: 'LOGIN' })
       void beginMaskyLogin().catch(() => send({ type: 'FAIL', failure: 'login' }))
       return

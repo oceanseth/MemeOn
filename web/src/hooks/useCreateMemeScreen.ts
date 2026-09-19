@@ -21,11 +21,11 @@ import {
   MAX_IMAGE_BYTES,
   MAX_VIDEO_BYTES,
   overCapMessage,
-  PENDING_VIDEO_KEY,
   pendingVideoMatchesRemix,
   pendingVideoRecord,
   type CreateMemeScreenModel,
 } from '../lib/createMemeModel'
+import { clearPendingVideo, getPendingVideo, setPendingVideo } from '../lib/sessionBus'
 import type { GiphyResult, Meme } from '../lib/types'
 import {
   createMemeMachine,
@@ -40,7 +40,7 @@ export type { CreateMemeScreenModel } from '../lib/createMemeModel'
 
 const copy = createMemeCopy
 
-export { PENDING_VIDEO_KEY, pendingVideoMatchesRemix, pendingVideoRecord, draftOf } from '../lib/createMemeModel'
+export { pendingVideoMatchesRemix, pendingVideoRecord, draftOf } from '../lib/createMemeModel'
 export { MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, overCapMessage } from '../lib/createMemeModel'
 
 /** Everything `CreateMemeScreen` renders. The hook is the engine; the screen is the terminal. */
@@ -88,14 +88,11 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
   const persistDraft = useCallback(() => {
     if (draftTimerRef.current) clearTimeout(draftTimerRef.current)
     draftTimerRef.current = setTimeout(() => {
-      const raw = sessionStorage.getItem(PENDING_VIDEO_KEY)
+      const raw = getPendingVideo()
       if (!raw) return
       try {
         const pending = JSON.parse(raw) as { generationId: string; startedAt: number; draft?: CreateMemeDraft }
-        sessionStorage.setItem(
-          PENDING_VIDEO_KEY,
-          JSON.stringify({ ...pending, draft: draftOf(actor.getSnapshot().context) }),
-        )
+        setPendingVideo(JSON.stringify({ ...pending, draft: draftOf(actor.getSnapshot().context) }))
       } catch {
         /* A malformed record is handled by the mount-time recovery path. */
       }
@@ -105,10 +102,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
   const persistPendingVideo = useCallback(
     (generationId: string, startedAt: number) => {
       const live = actor.getSnapshot().context
-      sessionStorage.setItem(
-        PENDING_VIDEO_KEY,
-        JSON.stringify(pendingVideoRecord(live, generationId, startedAt)),
-      )
+      setPendingVideo(JSON.stringify(pendingVideoRecord(live, generationId, startedAt)))
     },
     [actor],
   )
@@ -132,7 +126,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         })
     }
 
-    const raw = sessionStorage.getItem(PENDING_VIDEO_KEY)
+    const raw = getPendingVideo()
     if (raw) {
       try {
         const pending = JSON.parse(raw) as Partial<ReturnType<typeof pendingVideoRecord>> & {
@@ -140,7 +134,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
           startedAt: number
         }
         if (Date.now() - pending.startedAt > POLL_TIMEOUT_MS) {
-          sessionStorage.removeItem(PENDING_VIDEO_KEY)
+          clearPendingVideo()
         } else if (pendingVideoMatchesRemix(pending.remixId, remixId)) {
           if (pending.imageUrl) send({ type: 'SET_IMAGE_URL', imageUrl: pending.imageUrl })
           if (pending.draft) send({ type: 'RESTORE_DRAFT', draft: pending.draft })
@@ -157,7 +151,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
             })
         }
       } catch {
-        sessionStorage.removeItem(PENDING_VIDEO_KEY)
+        clearPendingVideo()
       }
     }
 
