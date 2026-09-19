@@ -18,6 +18,7 @@ export interface Meme {
   creatorName: string
   ownerId: string
   ownerName: string
+  /** legacy name of the share-link load counter (`views`); same metric, not uniqueRefs */
   reshares: number
   tierKey: string
   listing: Listing | null
@@ -26,7 +27,7 @@ export interface Meme {
   value: number
   /** total share-link loads (drives the tier ladder) */
   views?: number
-  /** distinct external sources — true reshares */
+  /** distinct external sources (uniqueRefs) — true reshares */
   reshareCount?: number
   myShares?: number
   isCreator?: boolean

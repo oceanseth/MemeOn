@@ -24,7 +24,7 @@ function meme(partial: Pick<Meme, 'id' | 'title' | 'reshares'> & Partial<Meme>):
     tierKey: tier.key,
     value: memeValue(partial.reshares),
     views: partial.reshares,
-    reshareCount: partial.reshares,
+    reshareCount: 0,
     remixOf: null,
     private: false,
     source: null,
