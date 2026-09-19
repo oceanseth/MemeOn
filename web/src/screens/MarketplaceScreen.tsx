@@ -12,7 +12,7 @@ import {
 import { Heading } from '@/atoms/heading'
 import { Icon } from '@/atoms/icon'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/atoms/input-group'
-import { MemeCard } from '@/atoms/meme-card'
+import { MemeCard } from '@/molecules/meme-card'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Select } from '@/atoms/select'
