@@ -28,7 +28,8 @@
  * skipped when missing rather than failing, so the same command passes in a fresh clone and on a
  * local checkout that has them. `scripts/docs-allowlist.json` holds the deliberate exceptions —
  * an archive quoting a 2026-09-08 prompt, a specification for something unbuilt — and every entry
- * carries the document it is scoped to and the reason it is there.
+ * carries the document it is scoped to and the reason it is there. A row whose `name` no longer
+ * appears in that file is itself a failure (exit 2).
  */
 import { existsSync, readFileSync, readdirSync } from "node:fs"
 import { join, resolve } from "node:path"
@@ -44,7 +45,7 @@ const DOCUMENTS = [
   "CLAUDE.md",
   "DESIGN.md",
   "PRODUCT.md",
-  "docs/*.md",
+  "docs/**/*.md",
   "web/src/Anatomy.mdx",
   "web/public/skill.md",
   "mobile/README.md",
@@ -52,22 +53,6 @@ const DOCUMENTS = [
   "mobile/CLAUDE.md",
   "discord/README.md",
 ]
-
-const expand = (pattern) => {
-  if (!pattern.includes("*")) return existsSync(join(ROOT, pattern)) ? [pattern] : []
-  const [dir, glob] = [pattern.slice(0, pattern.lastIndexOf("/")), pattern.slice(pattern.lastIndexOf("/") + 1)]
-  if (!existsSync(join(ROOT, dir))) return []
-  const probe = new RegExp(`^${glob.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`)
-  return readdirSync(join(ROOT, dir))
-    .filter((name) => probe.test(name))
-    .sort()
-    .map((name) => `${dir}/${name}`)
-}
-
-// ── What the code actually holds ───────────────────────────────────────────────────────────────
-
-const read = (path) => (existsSync(path) ? readFileSync(path, "utf8") : "")
-const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, "")
 
 const SKIP = new Set(["node_modules", ".git", "dist", "storybook-static", ".turbo", "coverage"])
 const walk = (dir, test, found = []) => {
@@ -79,6 +64,36 @@ const walk = (dir, test, found = []) => {
   }
   return found
 }
+
+const globProbe = (glob) => new RegExp(`^${glob.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`)
+
+const expand = (pattern) => {
+  if (!pattern.includes("*")) return existsSync(join(ROOT, pattern)) ? [pattern] : []
+  // `docs/**/*.md`: a naive lastIndexOf("/") split yields dir `docs/**`, which does not exist, so
+  // every document would be skipped. Recurse with walk() instead. Missing dir → [] (CI/fresh clone).
+  if (pattern.includes("/**/")) {
+    const star = pattern.indexOf("/**/")
+    const dir = pattern.slice(0, star)
+    const glob = pattern.slice(star + 4)
+    if (!existsSync(join(ROOT, dir))) return []
+    const probe = globProbe(glob)
+    return walk(join(ROOT, dir), (name) => probe.test(name))
+      .map((abs) => abs.slice(ROOT.length + 1).replaceAll("\\", "/"))
+      .sort()
+  }
+  const [dir, glob] = [pattern.slice(0, pattern.lastIndexOf("/")), pattern.slice(pattern.lastIndexOf("/") + 1)]
+  if (!existsSync(join(ROOT, dir))) return []
+  const probe = globProbe(glob)
+  return readdirSync(join(ROOT, dir))
+    .filter((name) => probe.test(name))
+    .sort()
+    .map((name) => `${dir}/${name}`)
+}
+
+// ── What the code actually holds ───────────────────────────────────────────────────────────────
+
+const read = (path) => (existsSync(path) ? readFileSync(path, "utf8") : "")
+const stripComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, "")
 
 const stylesheets = walk(join(WEB, "src"), (name) => name.endsWith(".css"))
 const css = stripComments(stylesheets.map(read).join("\n"))
@@ -144,6 +159,27 @@ for (const entry of allowed) {
     console.error(`check-docs: every docs-allowlist.json entry needs a \`name\` and a \`why\`: ${JSON.stringify(entry)}`)
     process.exit(2)
   }
+}
+const hasDocs = existsSync(join(ROOT, "docs"))
+const unused = []
+for (const entry of allowed) {
+  if (!entry.file) continue
+  const target = join(ROOT, entry.file)
+  if (existsSync(target)) {
+    if (!read(target).includes(entry.name)) {
+      unused.push(`  ${entry.file}  unused allowlist name \`${entry.name}\` does not appear in the file`)
+    }
+  } else if (hasDocs && (entry.file === "docs" || entry.file.startsWith("docs/"))) {
+    unused.push(`  ${entry.file}  unused allowlist file is missing`)
+  }
+}
+if (unused.length) {
+  console.error(
+    `check-docs: ${unused.length} unused allowlist row(s) — the name is absent from the scoped file (or the file is missing):\n` +
+      unused.join("\n") +
+      `\n  drop the row, or point it at the document that still writes the name.`,
+  )
+  process.exit(2)
 }
 const allows = (file, name) => allowed.some((entry) => entry.name === name && (!entry.file || entry.file === file))
 

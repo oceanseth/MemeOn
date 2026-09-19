@@ -176,6 +176,41 @@ test("an allowlist entry without a reason is itself an error", () => {
   )
 })
 
+test("nested docs are scanned, not skipped by a one-level glob", () => {
+  withRepo(
+    { "docs/reviews/archive.md": "Then `npm run build:web`.\n" },
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /docs\/reviews\/archive\.md/)
+      assert.match(output, /npm run build:web/)
+    },
+  )
+})
+
+test("a nested archive accepts a scoped allowlist row", () => {
+  const allow = JSON.stringify({
+    allow: [{ name: "npm run build:web", file: "docs/reviews/archive.md", why: "Quoted 2026-09-08 review; pre-pnpm." }],
+  })
+  withRepo(
+    { "web/scripts/docs-allowlist.json": allow, "docs/reviews/archive.md": "Then `npm run build:web`.\n" },
+    ({ status, output }) => assert.equal(status, 0, output),
+  )
+})
+
+test("an allowlist name that does not appear in its file is unused", () => {
+  const allow = JSON.stringify({
+    allow: [{ name: "npm run vanished", file: "README.md", why: "stale exception that no document still writes" }],
+  })
+  withRepo(
+    { "web/scripts/docs-allowlist.json": allow, "README.md": "The button is `web/src/atoms/button.tsx`.\n" },
+    ({ status, output }) => {
+      assert.equal(status, 2, output)
+      assert.match(output, /unused allowlist/)
+      assert.match(output, /npm run vanished/)
+    },
+  )
+})
+
 test("finishes well inside its budget", () => {
   const started = Date.now()
   const result = spawnSync(process.execPath, [checker], { encoding: "utf8" })
