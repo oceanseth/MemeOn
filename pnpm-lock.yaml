@@ -4,7 +4,7 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
-packageExtensionsChecksum: sha256-dtvYj4tpOlMR3lBpKIKPEqJMPzS8OuvGna6U2BazfNQ=
+packageExtensionsChecksum: sha256-JSwoZssCOLKk15A4gwMKP+j8oy5/sBshvJYvq4joJe4=
 
 importers:
 
@@ -182,9 +182,6 @@ importers:
       firebase:
         specifier: ^12.15.0
         version: 12.15.0(@react-native-async-storage/async-storage@2.2.0(react-native@0.86.0(@types/react@18.3.31)(react@18.3.1)(supports-color@8.1.1)))
-      lucide-react:
-        specifier: ^1.46.0
-        version: 1.46.0(@types/react@18.3.31)(react@18.3.1)
       mobx:
         specifier: ^7.0.3
         version: 7.0.3
@@ -4520,12 +4517,6 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
-
-  lucide-react@1.46.0:
-    resolution: {integrity: sha512-Bv+FZXgZPrxc/NCl1e7JJVQFLdiCxYgxNVhqoV7X0p6I8ADJo8DxBnK1auH0fZz4AmqOJ3jgneL4f1i8LJQRAA==}
-    peerDependencies:
-      '@types/react': ^18.0.0
-      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
@@ -10782,11 +10773,6 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
-
-  lucide-react@1.46.0(@types/react@18.3.31)(react@18.3.1):
-    dependencies:
-      '@types/react': 18.3.31
-      react: 18.3.1
 
   lz-string@1.5.0: {}
 
