@@ -5,7 +5,8 @@ import { marketplacePage } from '../../.storybook/fixtures'
 import { marketplaceCopy as copy } from '../copy/marketplace'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { buildSortChipsModel } from '../lib/sortChipsModel'
-import { buildMarketFilterTabs, TIER_SELECT_ITEMS, type MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
+import type { MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
+import { buildMarketFilterTabs, TIER_SELECT_ITEMS } from '../lib/marketplaceQuery'
 import { MarketplaceScreen } from './MarketplaceScreen'
 
 const empty: MarketplaceScreenModel = {
