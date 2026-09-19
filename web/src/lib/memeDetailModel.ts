@@ -222,13 +222,13 @@ export function buildMemeDetailModel({
 }: BuildMemeDetailModelInput): MemeDetailModel {
   const myShares = context.positions.find((position) => position.userId === user?.sub)?.shares ?? 0
   const isSeller = meme.listing?.sellerId === user?.sub
-  const coins = user?.coins ?? 0
+  const held = user?.coins ?? 0
   const views = memeViewCount(meme)
   const reshareCount = memeReshareCount(meme)
   const pricePerShare = meme.listing?.pricePerShare ?? 0
   const buyShares = context.buyShares
   const buyTotal = Math.ceil(buyShares * pricePerShare)
-  const shortBy = Math.max(0, buyTotal - coins)
+  const shortBy = Math.max(0, buyTotal - held)
   const buyReason = buyShares < 1 ? copy.listing.pickAtLeastOne : shortBy > 0 ? copy.listing.short(shortBy) : null
   const sellShares = context.sellShares
   const listReason = sellShares < 1
@@ -243,7 +243,7 @@ export function buildMemeDetailModel({
     saleLabel: copy.listing.sale(meme.listing.shares, meme.listing.pricePerShare),
     sharesLabel: copy.listing.shares(meme.listing.shares), priceLabel: copy.listing.price(meme.listing.pricePerShare), showBuy: !!user && !isSeller, showUnlist: !!isSeller,
     buyLabel: copy.listing.buyInputLabel,
-    balanceLabel: user ? copy.listing.balance(coins) : null,
+    balanceLabel: user ? copy.listing.balance(held) : null,
     disabledReason: buyReason,
     buyInputProps: { value: buyShares, min: 1, max: meme.listing.shares, step: 1, onChange: actions.onBuySharesChange },
     buyButtonLabel: phase === 'buying' ? copy.listing.buying : buyShares < 1 ? copy.listing.buy : copy.listing.buyFor(buyTotal),
@@ -326,7 +326,7 @@ export function buildMemeDetailModel({
     capTableNote,
     capTable: context.positions.map((position) => ({ userId: position.userId, sharesLabel: `${position.shares}/100`, label: holderLabel(position.userId, user?.sub ?? null, context.holderNames, holderNameCache) })),
     deleteDialog: buildConfirmDialogModel({ open: context.confirmingDelete, id: 'delete-meme', danger: true, busy: context.deleting || phase === 'deleting', title: copy.deleteDialog.title, message: [{ kind: 'strong' as const, text: copy.quotedTitle(meme.title) }, copy.deleteDialog.body], confirmLabel: copy.deleteDialog.confirm, onCancel: actions.onDeleteCancel, onConfirm: actions.onDeleteConfirm }),
-    buyDialog: buildConfirmDialogModel({ open: context.confirmingBuy, id: 'buy-shares', busy: phase === 'buying', title: copy.buyDialog.title(buyTotal), message: [copy.buyDialog.lead(buyShares), { kind: 'strong' as const, text: copy.quotedTitle(meme.title) }, copy.buyDialog.tail(pricePerShare, coins)], confirmLabel: copy.buyDialog.confirm(buyShares), onCancel: actions.onBuyCancel, onConfirm: actions.runBuy }),
+    buyDialog: buildConfirmDialogModel({ open: context.confirmingBuy, id: 'buy-shares', busy: phase === 'buying', title: copy.buyDialog.title(buyTotal), message: [copy.buyDialog.lead(buyShares), { kind: 'strong' as const, text: copy.quotedTitle(meme.title) }, copy.buyDialog.tail(pricePerShare, held)], confirmLabel: copy.buyDialog.confirm(buyShares), onCancel: actions.onBuyCancel, onConfirm: actions.runBuy }),
     claimDialog: buildConfirmDialogModel({
       open: context.confirmingClaim, id: 'claim-meme',
       title: copy.claimDialog.title,
