@@ -299,15 +299,17 @@ export const TitleAtLimit: Story = {
   },
 }
 
+const submittingArgs = model(
+  {
+    prompt: 'a capybara in a business suit',
+    busy: copy.busy.generatingImage,
+    busyElapsed: '12s',
+  },
+  'submitting',
+)
+
 export const Submitting: Story = {
-  args: model(
-    {
-      prompt: 'a capybara in a business suit',
-      busy: copy.busy.generatingImage,
-      busyElapsed: '12s',
-    },
-    'submitting',
-  ),
+  args: submittingArgs,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     /* the mode row locks with the rest of the form: no reshaping a running request */
@@ -443,7 +445,7 @@ export const DarkPhone390: Story = {
 
 export const SubmittingDark: Story = {
   name: 'Rendering dark (state card)',
-  args: Submitting.args,
+  args: submittingArgs,
   globals: { theme: 'dark' },
 }
 

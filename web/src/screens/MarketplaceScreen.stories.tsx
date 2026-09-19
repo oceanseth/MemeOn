@@ -173,13 +173,15 @@ export const Dark: Story = {
 }
 
 /** 390: search, "All memes" pressed beside "Filters", the primary Mint pill, a 2-up grid. */
+const phone390Args = { ...ready, showMore: true }
+
 export const Phone390: Story = {
-  args: { ...ready, showMore: true },
+  args: phone390Args,
   ...phone,
 }
 
 export const DarkPhone390: Story = {
-  args: Phone390.args,
+  args: phone390Args,
   ...phone,
   globals: { ...phone.globals, theme: 'dark' },
 }

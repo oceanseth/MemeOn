@@ -87,7 +87,10 @@ export const DelayedFramesLoginErrorAndRetry: Story = {
     loaded.scenario.release('frames')
     await waitFor(() => expect(frameImages(canvasElement)).toHaveLength(TIERS.length))
     // the ladder paints the bare foil frame the API handed back, first try
-    await expect(frameImages(canvasElement)[0].getAttribute('src')).toMatch(/frames\/paper\.png/)
+    const images = frameImages(canvasElement)
+    const first = images[0]
+    if (!first) throw new Error('expected first frame image')
+    await expect(first.getAttribute('src')).toMatch(/frames\/paper\.png/)
     await expect(canvas.getByRole('alert')).toHaveTextContent(copy.errors.login)
     await userEvent.click(canvas.getByRole('button', { name: copy.login.name }))
     await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/auth/masky/config')).toHaveLength(2))

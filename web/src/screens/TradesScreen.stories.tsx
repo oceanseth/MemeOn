@@ -150,8 +150,15 @@ export const Composing: Story = {
   },
 }
 /** nothing on either side: the button cannot post a nothing-for-nothing proposal */
+const composingEmptyProposalArgs = {
+  phase: 'composing' as const,
+  newTradeButtonLabel: copy.closeComposer,
+  newTradeButtonProps: { onClick: noop, 'aria-expanded': true, 'aria-controls': 'trade-composer' },
+  compose: { ...compose, showGiveShares: false, showGetShares: false, proposeButtonProps: { onClick: composerActions.propose, disabled: true } },
+}
+
 export const ComposingEmptyProposal: Story = {
-  args: { phase: 'composing', newTradeButtonLabel: copy.closeComposer, newTradeButtonProps: { onClick: noop, 'aria-expanded': true, 'aria-controls': 'trade-composer' }, compose: { ...compose, showGiveShares: false, showGetShares: false, proposeButtonProps: { onClick: composerActions.propose, disabled: true } } },
+  args: composingEmptyProposalArgs,
 }
 /** no accepted friends: the form has nothing to work with, so it says so */
 export const ComposingNoFriends: Story = {
@@ -248,6 +255,6 @@ export const DarkPhone390: Story = {
 /** composer on phone: two columns, one submit, one caption */
 export const ComposingPhone390: Story = {
   name: 'Composing phone 390',
-  args: ComposingEmptyProposal.args,
+  args: composingEmptyProposalArgs,
   ...phone,
 }

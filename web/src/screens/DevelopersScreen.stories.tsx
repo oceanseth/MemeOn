@@ -231,13 +231,15 @@ export const AtQuota: Story = {
   },
 }
 
+const freshKeyArgs = {
+  ...ready,
+  freshKey: 'mk_3f9a2c8b1d7e4a05c6f9b2d3e4a5b6c7',
+  copyButtonProps: { ...empty.copyButtonProps, disabled: false },
+  showFreshKey: true,
+}
+
 export const FreshKey: Story = {
-  args: {
-    ...ready,
-    freshKey: 'mk_3f9a2c8b1d7e4a05c6f9b2d3e4a5b6c7',
-    copyButtonProps: { ...empty.copyButtonProps, disabled: false },
-    showFreshKey: true,
-  },
+  args: freshKeyArgs,
   play: async ({ canvasElement, args }) => {
     const button = within(canvasElement).getByRole('button', { name: 'Copy key' })
     await expect(button).toBeEnabled()
@@ -384,8 +386,7 @@ export const DarkPhone390: Story = {
 
 /** The one-time secret on the phone, dark: the key wraps, the copy row stays inside the card. */
 export const FreshKeyPhone390: Story = {
-  ...FreshKey,
+  args: freshKeyArgs,
   name: 'Fresh key phone 390',
   ...phone,
-  play: undefined,
 }
