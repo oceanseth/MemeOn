@@ -63,6 +63,7 @@ const emptyCreated: ProfileScreenModel = {
   errorLinkProps: { to: '/marketplace' },
   showLoading: false,
   loadingLabel: 'Loading profile',
+  documentTitle: profileCopy.documentTitle,
   title: palProfile.name,
   intro: null,
   identityLine: `Binder of ${palProfile.name}`,
@@ -273,33 +274,6 @@ export const LoggedOutVisitor: Story = {
   },
 }
 
-/** `/binder/:sub` seen by anyone but its owner: the title is the binder, the grid is the shelf. */
-export const PublicBinder: Story = {
-  args: {
-    ...oneCreatedCard,
-    showActions: false,
-    showJoin: true,
-    title: `${palProfile.name}'s binder`,
-    intro: 'A collection worth passing around.',
-    identityLine: null,
-    showBinderHero: true,
-    joinLabel: `Log in to trade with ${palProfile.name}`,
-    tabsProps: { value: 'binder', onValueChange: fn() },
-    ...tabLabels(1, 1),
-    profile: {
-      name: palProfile.name,
-      avatarSrc: null,
-      stats: [
-        { id: 'minted', glyph: null, text: '1 meme' },
-        { id: 'binder', glyph: null, text: '1 in binder' },
-        { id: 'braincells', glyph: 'brain', text: '90 braincells' },
-      ],
-    },
-    cards: [{ id: `binder-${giftablePaper.id}`, memeCard: buildMemeCardModel(giftablePaper), sharesLabel: 'holds 12/100' }],
-    gridProps: { id: 'profile-cards', 'aria-live': 'polite', 'aria-label': 'Binder memes, 1 card' },
-  },
-}
-
 export const Following: Story = {
   args: {
     ...oneCreatedCard,
@@ -393,16 +367,4 @@ export const DarkPhone390: Story = {
   name: 'Ready dark phone 390',
   ...phone,
   globals: { ...phone.globals, theme: 'dark' },
-}
-
-export const PublicBinderDark: Story = {
-  ...PublicBinder,
-  name: 'Public binder dark',
-  globals: { theme: 'dark' },
-}
-
-export const PublicBinderPhone390: Story = {
-  ...PublicBinder,
-  name: 'Public binder phone 390',
-  ...phone,
 }

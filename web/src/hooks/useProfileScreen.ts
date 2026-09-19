@@ -26,6 +26,8 @@ export interface ProfileScreenModel {
   errorLinkProps: Pick<LinkProps, 'to'>
   showLoading: boolean
   loadingLabel: string
+  /** Route family for `document.title` (`Binder` vs `Profile`); never the fetched name. */
+  documentTitle: string
   /** the page title: the player's name, or "<name>'s binder" on a shared binder link */
   title: string
   /** Public-profile intro under the title; null inside the app. */
@@ -132,9 +134,6 @@ interface ProfileViewModel {
 }
 
 const copy = profileCopy
-
-/** Route name for the tab; views must not import copy/. */
-export const profileDocumentTitle = copy.documentTitle
 
 function isAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === 'AbortError'
@@ -309,6 +308,7 @@ export function useProfileScreen({
     errorLinkProps: { to: '/marketplace' },
     showLoading: !err && !data,
     loadingLabel: copy.loading,
+    documentTitle: initialTab === 'binder' ? copy.documentTitleBinder : copy.documentTitle,
     title: isPublicBinder && profile ? copy.hero.binderTitle(profile.name) : (profile?.name ?? ''),
     intro: isPublicBinder
       ? copy.hero.publicIntro

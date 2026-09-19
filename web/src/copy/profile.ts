@@ -5,6 +5,8 @@ import { sharedCopy } from './shared'
 export const profileCopy = {
   /** Route name for `document.title`; never the player's display name. */
   documentTitle: 'Profile',
+  /** `/binder/:sub` public binder (route family, not `${name}'s binder`). */
+  documentTitleBinder: 'Binder',
   /** tab names; the grid's accessible name leads with the current one */
   tabs: {
     created: 'Created',

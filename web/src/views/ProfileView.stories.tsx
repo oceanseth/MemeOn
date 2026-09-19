@@ -79,7 +79,12 @@ export const FollowFailure: Story = {
 export const BinderTab: Story = {
   args: { initialTab: 'binder' }, loaders: [connectedLoader()], beforeEach: async (context) => connectedBeforeEach(context),
   render: (args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><ProfileView {...args} /></ConnectedStory>,
-  play: async ({ canvasElement }) => { await expect(await within(canvasElement).findByRole('tab', { name: /Binder/ })).toHaveAttribute('aria-selected', 'true') },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByRole('heading', { name: profileCopy.hero.binderTitle('pal') })).toBeInTheDocument()
+    await expect(canvasElement.querySelector('[data-slot="public-binder-hero"]')).toBeInTheDocument()
+    await expect(canvas.getByRole('tab', { name: /Binder/ })).toHaveAttribute('aria-selected', 'true')
+  },
 }
 
 export const LoadingThenReady: Story = {
