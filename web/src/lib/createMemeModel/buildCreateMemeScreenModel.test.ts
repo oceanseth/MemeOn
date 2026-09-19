@@ -1,17 +1,11 @@
 import type { ChangeEvent, FocusEvent, KeyboardEvent, MouseEvent } from 'react'
 import { describe, expect, it, vi } from 'vitest'
-import { createMemeCopy as copy } from '../copy/createMeme'
-import type { GiphyResult } from '../lib/types'
-import type { CreateMemeContext } from '../stores/createMemeMachine'
-import {
-  buildCreateMemeScreenModel,
-  draftOf,
-  MAX_VIDEO_BYTES,
-  overCapMessage,
-  pendingVideoMatchesRemix,
-  pendingVideoRecord,
-  type CreateMemeScreenActions,
-} from '../lib/createMemeModel'
+import { createMemeCopy as copy } from '../../copy/createMeme'
+import type { CreateMemeContext } from '../../stores/createMemeMachine'
+import type { GiphyResult } from '../types'
+import { buildCreateMemeScreenModel } from './buildCreateMemeScreenModel'
+import { MAX_VIDEO_BYTES, overCapMessage } from './shared'
+import type { CreateMemeScreenActions } from './types'
 
 const giphyResult: GiphyResult = {
   id: 'cat-1',
@@ -95,19 +89,6 @@ function keyEvent(key: string) {
 function clickEvent() {
   return {} as MouseEvent<HTMLButtonElement>
 }
-
-describe('pendingVideoMatchesRemix', () => {
-  it('resumes a pending remix only from the route that started it', () => {
-    expect(pendingVideoMatchesRemix('remix-a', 'remix-b')).toBe(false)
-    expect(pendingVideoMatchesRemix('remix-a', 'remix-a')).toBe(true)
-  })
-
-  it('keeps non-remix video jobs resumable from the non-remix route', () => {
-    expect(pendingVideoMatchesRemix(null, 'remix-a')).toBe(false)
-    expect(pendingVideoMatchesRemix(undefined, null)).toBe(true)
-    expect(pendingVideoMatchesRemix(null, null)).toBe(true)
-  })
-})
 
 describe('buildCreateMemeScreenModel', () => {
   it('decodes mode, bounded title, text, and select events into domain actions', () => {
@@ -402,19 +383,6 @@ describe('buildCreateMemeScreenModel', () => {
       const failed = buildCreateMemeScreenModel('error', { ...baseContext, err }, actions())
       expect(failed.errorNextStep).toBe(copy.preview.nextStep.tooLarge)
     }
-  })
-
-  it('carries the whole draft in the pending-render record', () => {
-    const record = pendingVideoRecord(
-      { ...baseContext, mode: 'video', title: 'burning office', tags: 'chaos', prompt: 'a capybara', imageUrl: '/thumb.png' },
-      'render-a',
-      1_700_000_000_000,
-    )
-    expect(record).toMatchObject({ generationId: 'render-a', imageUrl: '/thumb.png' })
-    expect(record.draft).toEqual(
-      draftOf({ ...baseContext, mode: 'video', title: 'burning office', tags: 'chaos', prompt: 'a capybara' }),
-    )
-    expect(record.draft?.title).toBe('burning office')
   })
 
   it('wires each creation action bundle to its domain action', () => {
