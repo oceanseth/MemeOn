@@ -4,11 +4,9 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
 import { tierFrames } from '../../.storybook/fixtures'
 import { TIERS } from '@memeon/shared/tiers'
+import { landingCopy as copy } from '../copy/landing'
 import { getMaskyOauthState } from '../lib/sessionBus'
 import { LandingView } from './LandingView'
-
-/** The one authored login-failure sentence; thrown strings never reach the page. */
-const LOGIN_ERROR = "Masky didn't answer. Tap Log in with Masky to try again."
 
 /** Frames are decorative now, so the slot's state — not an alt string — is the assertion. */
 const frameSlots = (canvasElement: HTMLElement, state: 'loading' | 'ready' | 'error') =>
@@ -75,27 +73,27 @@ export const DelayedFramesLoginErrorAndRetry: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><LandingView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    const login = canvas.getByRole('button', { name: 'Log in with Masky' })
+    const login = canvas.getByRole('button', { name: copy.login.name })
     await userEvent.click(login)
     await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/auth/masky/config')).toHaveLength(1))
-    await expect(canvas.getByRole('button', { name: 'Redirecting to Masky' })).toBeDisabled()
-    invokeRenderedLogin(canvas.getByRole('button', { name: 'Redirecting to Masky' }))
-    invokeRenderedLogin(canvas.getByRole('button', { name: 'Redirecting to Masky' }))
+    await expect(canvas.getByRole('button', { name: copy.login.busyName })).toBeDisabled()
+    invokeRenderedLogin(canvas.getByRole('button', { name: copy.login.busyName }))
+    invokeRenderedLogin(canvas.getByRole('button', { name: copy.login.busyName }))
     await expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/auth/masky/config')).toHaveLength(1)
     loaded.scenario.release('first-login')
-    await expect(await canvas.findByRole('alert')).toHaveTextContent(LOGIN_ERROR)
+    await expect(await canvas.findByRole('alert')).toHaveTextContent(copy.errors.login)
     await expect(frameSlots(canvasElement, 'loading')).toHaveLength(TIERS.length)
     await expect(frameImages(canvasElement)).toHaveLength(0)
     loaded.scenario.release('frames')
     await waitFor(() => expect(frameImages(canvasElement)).toHaveLength(TIERS.length))
     // the ladder paints the bare foil frame the API handed back, first try
     await expect(frameImages(canvasElement)[0].getAttribute('src')).toMatch(/frames\/paper\.png/)
-    await expect(canvas.getByRole('alert')).toHaveTextContent(LOGIN_ERROR)
-    await userEvent.click(canvas.getByRole('button', { name: 'Log in with Masky' }))
+    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.errors.login)
+    await userEvent.click(canvas.getByRole('button', { name: copy.login.name }))
     await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/auth/masky/config')).toHaveLength(2))
-    await expect(canvas.getByRole('button', { name: 'Redirecting to Masky' })).toBeDisabled()
+    await expect(canvas.getByRole('button', { name: copy.login.busyName })).toBeDisabled()
     await expect(canvas.queryByRole('alert')).not.toBeInTheDocument()
-    invokeRenderedLogin(canvas.getByRole('button', { name: 'Redirecting to Masky' }))
+    invokeRenderedLogin(canvas.getByRole('button', { name: copy.login.busyName }))
     await expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/auth/masky/config')).toHaveLength(2)
     loaded.scenario.release('retry-login')
     await waitFor(() => expect(loaded.scenario.authorizationNavigations).toHaveLength(1))
@@ -110,11 +108,11 @@ export const FrameFailureStillReady: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><LandingView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await expect(await canvas.findByRole('button', { name: 'Log in with Masky' })).toBeEnabled()
+    await expect(await canvas.findByRole('button', { name: copy.login.name })).toBeEnabled()
     // no payload and no composite: the slots still hold the ladder's height
     await waitFor(() => expect(frameSlots(canvasElement, 'loading')).toHaveLength(0))
     await expect(canvasElement.querySelectorAll('[data-slot="tier-frame-slot"]')).toHaveLength(TIERS.length)
-    await userEvent.click(canvas.getByRole('button', { name: 'Log in with Masky' }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.login.name }))
     await waitFor(() => expect(loaded.scenario.authorizationNavigations).toHaveLength(1))
     expectAuthorizationUrl(loaded.scenario.authorizationNavigations[0])
   },
@@ -135,16 +133,16 @@ export const FramesReadyBeforeLoginFailure: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><LandingView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: 'Log in with Masky' }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.login.name }))
     await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/auth/masky/config')).toHaveLength(1))
-    await expect(canvas.getByRole('button', { name: 'Redirecting to Masky' })).toBeDisabled()
+    await expect(canvas.getByRole('button', { name: copy.login.busyName })).toBeDisabled()
     await expect(frameSlots(canvasElement, 'loading')).toHaveLength(TIERS.length)
     loaded.scenario.release('frames-before-login-failure')
     await waitFor(() => expect(frameImages(canvasElement)).toHaveLength(TIERS.length))
-    await expect(canvas.getByRole('button', { name: 'Redirecting to Masky' })).toBeDisabled()
+    await expect(canvas.getByRole('button', { name: copy.login.busyName })).toBeDisabled()
     await expect(canvas.queryByRole('alert')).not.toBeInTheDocument()
     loaded.scenario.release('login-after-frames')
-    await expect(await canvas.findByRole('alert')).toHaveTextContent(LOGIN_ERROR)
+    await expect(await canvas.findByRole('alert')).toHaveTextContent(copy.errors.login)
     await expect(frameImages(canvasElement)).toHaveLength(TIERS.length)
   },
 }

@@ -4,8 +4,11 @@ import { expect, fn, userEvent, within } from 'storybook/test'
 import { TIERS } from '@memeon/shared/tiers'
 import { tierFrames } from '../../.storybook/fixtures'
 import { heroVideoCopy } from '../copy/heroVideo'
+import { landingCopy as copy } from '../copy/landing'
 import {
+  buildLandingFaqItems,
   buildLandingHeroCards,
+  buildLandingHowSteps,
   buildLandingTierModels,
   type LandingFrameSlotState,
   type LandingScreenModel,
@@ -62,23 +65,33 @@ const empty: LandingScreenModel = {
   showMarketplaceCta: false,
   showLoginButton: true,
   showErr: false,
-  loginLabel: 'Log in with Masky',
-  closingLine: 'Your next group-chat classic is a card already.',
-  closingLoginLabel: 'Grab your pack with Masky',
+  loginLabel: copy.login.label,
+  loginAside: copy.hero.loginAside,
+  marketplaceCta: copy.marketplaceCta,
+  closingLine: copy.closing.lineLoggedOut,
+  closingLoginLabel: copy.closing.label,
+  heroTitle: copy.hero.title,
+  heroBody: copy.hero.body,
   heroCards: buildLandingHeroCards(),
+  howTitle: copy.how.title,
+  howSteps: buildLandingHowSteps(),
+  tiersTitle: copy.tiers.title,
   tiers: buildLandingTierModels(),
+  filmTitle: copy.film.title,
+  faqTitle: copy.faq.title,
+  faqItems: buildLandingFaqItems(),
   heroVideo,
   loginButtonProps: {
     onClick: handlers.onLogin,
     disabled: false,
     'aria-busy': false,
-    'aria-label': 'Log in with Masky',
+    'aria-label': copy.login.name,
   },
   closingLoginButtonProps: {
     onClick: handlers.onLogin,
     disabled: false,
     'aria-busy': false,
-    'aria-label': 'Grab your pack with Masky',
+    'aria-label': copy.closing.name,
   },
   frameImageProps: {},
   frameSlotProps: slots('loading'),
@@ -86,19 +99,19 @@ const empty: LandingScreenModel = {
 }
 
 const busyLogin = {
-  loginLabel: 'Redirecting…',
-  closingLoginLabel: 'Redirecting…',
+  loginLabel: copy.login.busyLabel,
+  closingLoginLabel: copy.closing.busyLabel,
   loginButtonProps: {
     onClick: handlers.onLogin,
     disabled: true,
     'aria-busy': true,
-    'aria-label': 'Redirecting to Masky',
+    'aria-label': copy.login.busyName,
   },
   closingLoginButtonProps: {
     onClick: handlers.onLogin,
     disabled: true,
     'aria-busy': true,
-    'aria-label': 'Redirecting to Masky for your pack',
+    'aria-label': copy.closing.busyName,
   },
 } satisfies Partial<LandingScreenModel>
 
@@ -135,22 +148,22 @@ export const Ready: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // each tier card shows reshare threshold then rarity
-    await expect(canvas.getByText('0 reshares')).toBeInTheDocument()
-    await expect(canvas.getByText('1,000 reshares')).toBeInTheDocument()
-    await expect(canvas.getByText('25,000 reshares')).toBeInTheDocument()
+    await expect(canvas.getByText(copy.tier.reshares(0))).toBeInTheDocument()
+    await expect(canvas.getByText(copy.tier.reshares(1_000))).toBeInTheDocument()
+    await expect(canvas.getByText(copy.tier.reshares(25_000))).toBeInTheDocument()
     await expect(canvas.getByText('Mythic Shiny')).toBeInTheDocument()
     // the ladder is an ordered list of headed cards, not seven anonymous boxes
     const ladder = within(canvasElement.querySelector<HTMLElement>('[data-slot="landing-tiers"]')!)
     await expect(ladder.getAllByRole('listitem')).toHaveLength(TIERS.length)
     await expect(canvas.getByRole('heading', { level: 3, name: 'Shiny' })).toBeInTheDocument()
-    await expect(canvas.getByRole('heading', { level: 3, name: 'How do tiers work?' })).toBeInTheDocument()
+    await expect(canvas.getByRole('heading', { level: 3, name: copy.faq.items[4].question })).toBeInTheDocument()
     // three how-it-works steps, in order
     const how = within(canvasElement.querySelector<HTMLElement>('[data-slot="landing-how"]')!)
     await expect(how.getAllByRole('listitem')).toHaveLength(3)
-    await expect(how.getByRole('heading', { level: 3, name: 'Mint a moment' })).toBeInTheDocument()
+    await expect(how.getByRole('heading', { level: 3, name: copy.how.steps[0].title })).toBeInTheDocument()
     // section titles are the Heading atom at its section step; the step owns the phone swap
     await expect(canvasElement.querySelector('[data-slot="heading"]')).toHaveAttribute('data-size', 'section')
-    await expect(how.getByRole('heading', { level: 3, name: 'Mint a moment' })).toHaveAttribute('data-size', 'card-title')
+    await expect(how.getByRole('heading', { level: 3, name: copy.how.steps[0].title })).toHaveAttribute('data-size', 'card-title')
     // the hero pile is three tilted specimens with their own tier seals
     const pile = canvasElement.querySelector<HTMLElement>('[data-slot="hero-pile"]')!
     await expect(pile.querySelectorAll('[data-slot="hero-card"]')).toHaveLength(3)
@@ -161,7 +174,7 @@ export const Ready: Story = {
     await expect(seal.paddingLeft).toBe('8px')
     // the film sits after the ladder and right before the FAQ, in its own headed section
     const film = canvasElement.querySelector<HTMLElement>('[data-slot="landing-film"]')!
-    await expect(within(film).getByRole('heading', { level: 2, name: 'MemeOn in 50 seconds' })).toBeInTheDocument()
+    await expect(within(film).getByRole('heading', { level: 2, name: copy.film.title })).toBeInTheDocument()
     await expect(film.querySelector('video')).toHaveAttribute('poster', '/promo/memeon-promo-poster.jpg')
     await expect(
       within(film).getByRole('button', { name: heroVideoCopy.play }),
@@ -169,14 +182,14 @@ export const Ready: Story = {
     const faq = canvasElement.querySelector<HTMLElement>('[data-slot="landing-faq"]')!
     await expect(film.nextElementSibling).toBe(faq)
     await expect(film.previousElementSibling).toBe(canvasElement.querySelector('[data-slot="landing-tiers"]'))
-    const login = canvas.getByRole('button', { name: 'Log in with Masky' })
+    const login = canvas.getByRole('button', { name: copy.login.name })
     // the Button atom omits aria-busy entirely when idle rather than writing "false"
     await expect(login).not.toHaveAttribute('aria-busy')
     await expect(login).toBeEnabled()
-    await expect(canvas.getByText('No email. No real name. Just your Masky avatar.')).toBeInTheDocument()
+    await expect(canvas.getByText(copy.hero.loginAside)).toBeInTheDocument()
     // the FAQ no longer ends the page: the CTA repeats under it
-    const closing = canvas.getByRole('button', { name: 'Grab your pack with Masky' })
-    await expect(canvas.getByText('Your next group-chat classic is a card already.')).toBeInTheDocument()
+    const closing = canvas.getByRole('button', { name: copy.closing.name })
+    await expect(canvas.getByText(copy.closing.lineLoggedOut)).toBeInTheDocument()
     const page = document.scrollingElement as HTMLElement
     await expect(page.scrollWidth).toBe(page.clientWidth)
     await userEvent.click(login)
@@ -217,16 +230,16 @@ export const LoggedIn: Story = {
     phase: 'ready',
     showMarketplaceCta: true,
     showLoginButton: false,
-    closingLine: 'Your binder is waiting.',
+    closingLine: copy.closing.lineLoggedIn,
     frameImageProps: readyFrames,
     frameSlotProps: slots('ready'),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // both CTAs swap with the same state
-    await expect(canvas.getAllByRole('link', { name: 'Enter the marketplace' })).toHaveLength(2)
-    await expect(canvas.queryByRole('button', { name: 'Log in with Masky' })).not.toBeInTheDocument()
-    await expect(canvas.getByText('Your binder is waiting.')).toBeInTheDocument()
+    await expect(canvas.getAllByRole('link', { name: copy.marketplaceCta })).toHaveLength(2)
+    await expect(canvas.queryByRole('button', { name: copy.login.name })).not.toBeInTheDocument()
+    await expect(canvas.getByText(copy.closing.lineLoggedIn)).toBeInTheDocument()
   },
 }
 
@@ -245,8 +258,8 @@ export const LoggingIn: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Redirecting to Masky' })).toBeDisabled()
-    await expect(canvas.getByRole('button', { name: 'Redirecting to Masky for your pack' })).toBeDisabled()
+    await expect(canvas.getByRole('button', { name: copy.login.busyName })).toBeDisabled()
+    await expect(canvas.getByRole('button', { name: copy.closing.busyName })).toBeDisabled()
   },
 }
 
@@ -264,15 +277,13 @@ export const LoginError: Story = {
     phase: 'loginError',
     frameImageProps: readyFrames,
     frameSlotProps: slots('ready'),
-    err: "Masky didn't answer. Tap Log in with Masky to try again.",
+    err: copy.errors.login,
     showErr: true,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // the raw thrown string never reaches the page; the sentence names the retry
-    await expect(canvas.getByRole('alert')).toHaveTextContent(
-      "Masky didn't answer. Tap Log in with Masky to try again.",
-    )
+    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.errors.login)
   },
 }
 
@@ -287,7 +298,7 @@ export const LoginErrorWhileFramesLoad: Story = {
     phase: 'loginError',
     frameImageProps: {},
     frameSlotProps: slots('loading'),
-    err: "Masky didn't answer. Tap Log in with Masky to try again.",
+    err: copy.errors.login,
     showErr: true,
   },
 }

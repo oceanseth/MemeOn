@@ -58,7 +58,25 @@ export interface LandingHeroCardModel extends Pick<Tier, 'glowStyle'> {
   caption: string
 }
 
+/** One how-it-works step. Step numbers are copy, not layout. */
+export interface LandingHowStepModel {
+  step: string
+  title: string
+  body: string
+}
+
+/** One FAQ row. Bodies stay strings so the hook does not build trees. */
+export interface LandingFaqItemModel {
+  id: string
+  question: string
+  body: string
+  defaultOpen: boolean
+  imageSrc?: string
+  imageAlt?: string
+}
+
 const copy = landingCopy
+const BRAINCELL_IMAGE_SRC = '/api/brand/braincell.png'
 
 /** Tier thresholds are reshare counts from the db `reshares` field. */
 export function buildLandingTierModels(): LandingTierModel[] {
@@ -86,6 +104,27 @@ export function buildLandingHeroCards(): LandingHeroCardModel[] {
       tierName: tier?.name ?? tierKey,
       glowStyle: tier?.glowStyle ?? 'graphite-gradient-still',
       caption,
+    }
+  })
+}
+
+export function buildLandingHowSteps(): LandingHowStepModel[] {
+  return copy.how.steps.map((step) => ({
+    step: step.step,
+    title: step.title,
+    body: step.body,
+  }))
+}
+
+export function buildLandingFaqItems(): LandingFaqItemModel[] {
+  return copy.faq.items.map((item, index) => {
+    const imageAlt = 'imageAlt' in item ? item.imageAlt : undefined
+    return {
+      id: item.id,
+      question: item.question,
+      body: item.body,
+      defaultOpen: index === 0,
+      ...(imageAlt ? { imageSrc: BRAINCELL_IMAGE_SRC, imageAlt } : {}),
     }
   })
 }
@@ -119,12 +158,22 @@ export interface LandingScreenModel {
   showLoginButton: boolean
   showErr: boolean
   loginLabel: string
+  loginAside: string
+  marketplaceCta: string
   /** the closing card's line; the page finishes convincing there, so the CTA repeats under it */
   closingLine: string
   closingLoginLabel: string
+  heroTitle: string
+  heroBody: string
   /** the hero's trading-card pile */
   heroCards: LandingHeroCardModel[]
+  howTitle: string
+  howSteps: readonly LandingHowStepModel[]
+  tiersTitle: string
   tiers: LandingTierModel[]
+  filmTitle: string
+  faqTitle: string
+  faqItems: readonly LandingFaqItemModel[]
   /** the promo film, between the ladder and the FAQ */
   heroVideo: HeroVideoModel
   loginButtonProps: LandingLoginButtonProps
@@ -196,10 +245,20 @@ export function useLandingScreen(): LandingScreenModel {
     showLoginButton: !user,
     showErr: !!ctx.err,
     loginLabel: ctx.busy ? copy.login.busyLabel : copy.login.label,
+    loginAside: copy.hero.loginAside,
+    marketplaceCta: copy.marketplaceCta,
     closingLine: user ? copy.closing.lineLoggedIn : copy.closing.lineLoggedOut,
     closingLoginLabel: ctx.busy ? copy.closing.busyLabel : copy.closing.label,
+    heroTitle: copy.hero.title,
+    heroBody: copy.hero.body,
     heroCards: buildLandingHeroCards(),
+    howTitle: copy.how.title,
+    howSteps: buildLandingHowSteps(),
+    tiersTitle: copy.tiers.title,
     tiers: buildLandingTierModels(),
+    filmTitle: copy.film.title,
+    faqTitle: copy.faq.title,
+    faqItems: buildLandingFaqItems(),
     heroVideo,
     loginButtonProps: {
       onClick: onLogin,
