@@ -13,32 +13,13 @@ import { Progress } from '@/atoms/progress'
 import { SkeletonCard } from '@/atoms/skeleton'
 import { Toolbar } from '@/atoms/toolbar'
 import type { BinderScreenModel } from '../hooks/useBinderScreen'
+import { binderCardSlotClasses, binderGridClasses } from '../lib/binderChrome'
 import { cn } from '../lib/cn'
 import { SortChips } from '@/molecules/sort-chips'
 import { Icon } from '@/atoms/icon'
 
 /** Skeleton tiles hold the grid geometry while the binder loads, so nothing jumps on arrival. */
 const SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6'] as const
-
-/* shared binder grid — exported for ProfileScreen's binder tab */
-
-/** Same `minmax(230px, 1fr)` the production `.card-grid` used; 2 × 166 + 18 = 350 at the phone margin.
- *  No `items-start`: every slot takes its row, so every card in the row is one size. */
-export const binderGridClasses = cn(
-  'm-0 grid list-none grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5 p-0',
-  'max-sm:grid-cols-2 max-sm:gap-4.5',
-)
-
-/**
- * Skip-rendering box around a card. `content-visibility` must not sit on the card itself — it would
- * clip the blurred glow bloom, which the padding / negative-margin pair contains without moving the
- * grid track. A one-cell grid, so the card stretches to the slot as the slot does to its row.
- */
-export const binderCardSlotClasses = cn(
-  'skip-render grid',
-  'pointer-events-none p-7.5 -m-7.5 *:pointer-events-auto',
-  'max-sm:p-5 max-sm:-m-5',
-)
 
 /** The creator/private row under a binder card: the atom's own footer rhythm, one line lower. It is
  *  always there, at the badge's 24px, so a card that has nothing to say here is still the same

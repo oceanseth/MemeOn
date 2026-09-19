@@ -21,6 +21,7 @@ import { Toggle } from '@/atoms/toggle'
 import { ToggleGroup, ToggleGroupItem } from '@/atoms/toggle-group'
 import { Toolbar, ToolbarStart } from '@/atoms/toolbar'
 import type { MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
+import { binderGridClasses as cardGrid, binderCardSlotClasses as cardSlot } from '../lib/binderChrome'
 import { cn } from '../lib/cn'
 import { SortChips } from '@/molecules/sort-chips'
 
@@ -40,24 +41,6 @@ const marketControls = cn(
 
 /** The search well grows into the toolbar's slack and stops at the reading width. */
 const searchWell = 'min-w-0 flex-1 lg:max-w-135'
-
-/** The pre-ox/ui grid: 4-up ~262 at the 1108 column (`minmax(230px, 1fr)`), 2-up 166 on the phone.
- *  No `items-start`: every slot takes its row, so every card in the row is one size. */
-const cardGrid = cn(
-  'm-0 grid list-none gap-5 p-0',
-  'grid-cols-[repeat(auto-fill,minmax(230px,1fr))]',
-  'max-sm:grid-cols-2 max-sm:gap-4.5',
-)
-
-/**
- * Skip-rendering box around a card. `content-visibility` must not sit on the card itself — it
- * would clip the foil bloom, which the padding / negative-margin pair contains without moving the
- * grid track. A one-cell grid, so the card stretches to the slot as the slot does to its row.
- */
-const cardSlot = cn(
-  'skip-render grid pointer-events-none p-7.5 -m-7.5 *:pointer-events-auto',
-  'max-sm:p-5 max-sm:-m-5',
-)
 
 /** Results / Count: the section heading left, the live count right, on one baseline. */
 const resultsRow = 'mt-1 mb-4.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2'
