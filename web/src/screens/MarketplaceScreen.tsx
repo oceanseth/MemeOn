@@ -158,7 +158,7 @@ export function MarketplaceScreen({
             <EmptyDescription>{errorMessage}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button {...retryButtonProps}>{retryLabel}</Button>
+            <Button variant="primary" {...retryButtonProps}>{retryLabel}</Button>
           </EmptyContent>
         </Empty>
       ) : showEmpty ? (

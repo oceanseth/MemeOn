@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
+import { friendsCopy as copy } from '../copy/friends'
 import { FriendsView } from './FriendsView'
 
 const meta = {
@@ -50,9 +51,9 @@ export const InitialFailureShowsError: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><FriendsView /></ConnectedStory>,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(await canvas.findByText(/Couldn't load your friends/)).toBeInTheDocument()
-    await expect(canvas.queryByText(/No friends yet/)).not.toBeInTheDocument()
-    await expect(canvas.getByRole('button', { name: 'Retry' })).toBeInTheDocument()
+    await expect(await canvas.findByText(copy.loadError.title)).toBeInTheDocument()
+    await expect(canvas.queryByText(copy.empty.title)).not.toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: copy.loadError.retry })).toBeInTheDocument()
   },
 }
 

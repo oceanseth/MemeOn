@@ -31,7 +31,10 @@ export const leaderboardCopy = {
   showMore: 'Show more brains',
   loading: 'Loading Top Brains…',
   empty: "Nobody's earned a braincell yet. The throne is empty.",
-  loadError: "Couldn't load Top Brains.",
+  loadError: {
+    title: "Couldn't load Top Brains.",
+    body: sharedCopy.checkConnection,
+  },
   retry: sharedCopy.tryAgain,
   listSummary: (count: number) => `${count} ${pluralWord(count, 'brain')} on the board`,
 } as const

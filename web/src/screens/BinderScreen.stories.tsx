@@ -117,20 +117,25 @@ export const Empty: Story = {
 export const Error: Story = {
   args: {
     phase: 'error',
-    statusMessage: 'No cards loaded',
+    statusMessage: copy.status.failed,
     showEmpty: false,
     emptyAction: null,
     showError: true,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const alert = canvas.getByRole('alert')
-    await expect(alert).toHaveAttribute('data-slot', 'empty')
-    await expect(alert).toHaveAttribute('data-variant', 'error')
-    await expect(alert).toHaveTextContent("Couldn't load your binder.")
-    await expect(alert).toHaveTextContent('Your cards are safe')
-    await expect(canvas.getByRole('button', { name: copy.retry })).toBeInTheDocument()
-    await expect(canvas.queryByText(/binder is empty/i)).not.toBeInTheDocument()
+    const empty = canvas.getByRole('alert')
+    await expect(empty).toHaveAttribute('data-slot', 'empty')
+    await expect(empty).toHaveAttribute('data-variant', 'error')
+    const title = empty.querySelector('[data-slot="empty-title"]')
+    await expect(title?.tagName).toBe('H2')
+    await expect(title).toHaveTextContent(copy.errorState.title)
+    await expect(empty.querySelector('[data-slot="empty-description"]')).toHaveTextContent(copy.errorState.message)
+    const retry = canvas.getByRole('button', { name: copy.retry })
+    await expect(retry).toHaveClass('bg-primary')
+    await expect(canvas.queryByRole('listitem')).not.toBeInTheDocument()
+    await expect(canvas.queryByText(copy.emptyState.firstRun)).not.toBeInTheDocument()
+    await expect(canvas.queryByText(copy.emptyState.mintFirst)).not.toBeInTheDocument()
   },
 }
 

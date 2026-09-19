@@ -28,6 +28,7 @@ export interface LeaderboardScreenModel {
   showEmpty: boolean
   emptyMessage: string
   showError: boolean
+  errorTitle: string
   errorMessage: string
   retryLabel: string
   retry: () => void
@@ -110,7 +111,7 @@ export function useLeaderboardScreen(): LeaderboardScreenModel {
   const load = () => {
     apiFetch<{ leaders: LeaderRow[] }>('/api/leaderboard')
       .then((r) => send({ type: 'DONE', leaders: r.leaders }))
-      .catch(() => send({ type: 'FAIL', err: copy.loadError }))
+      .catch(() => send({ type: 'FAIL', err: copy.loadError.title }))
   }
 
   useMountEffect(() => {
@@ -139,7 +140,8 @@ export function useLeaderboardScreen(): LeaderboardScreenModel {
     showEmpty: phase === 'empty',
     emptyMessage: copy.empty,
     showError: phase === 'error',
-    errorMessage: ctx.err ?? copy.loadError,
+    errorTitle: copy.loadError.title,
+    errorMessage: copy.loadError.body,
     retryLabel: copy.retry,
     retry: () => {
       send({ type: 'RETRY' })

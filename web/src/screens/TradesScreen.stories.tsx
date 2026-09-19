@@ -32,7 +32,8 @@ const empty: TradesScreenModel = {
   compose: null, open: [], openCountLabel: null, history: [],
   msg: null, noticeProps: { role: 'status', 'aria-live': 'polite' },
   err: null, errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' }, showErrorNotice: false,
-  showError: false, retryButtonProps: { onClick: noop }, retryLabel: copy.retry,
+  showError: false, errorTitle: copy.loadError.title, errorMessage: copy.loadError.body,
+  retryButtonProps: { onClick: noop }, retryLabel: copy.retry,
   showLoading: false, loadingProps: { role: 'status', 'aria-live': 'polite' }, loadingLabel: copy.loading,
   showLists: true, openHeading: copy.lists.openHeading, openEmptyMessage: copy.lists.openEmpty,
   historyHeading: copy.lists.historyHeading, historyEmptyMessage: copy.lists.historyEmpty,
@@ -96,9 +97,36 @@ type Story = StoryObj<typeof meta>
 export const Loading: Story = { args: { phase: 'loading', showLoading: true, showLists: false } }
 export const Empty: Story = {}
 /** an action failed: red, announced, and the lists stay usable */
-export const ActionError: Story = { args: { phase: 'error', err: copy.errors.respond, showErrorNotice: true, open: [openTrade] } }
+export const ActionError: Story = {
+  args: { phase: 'error', err: copy.errors.respond, showErrorNotice: true, open: [openTrade] },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.errors.respond)
+    await expect(canvas.queryByText(copy.loadError.title)).not.toBeInTheDocument()
+    await expect(canvas.getByRole('heading', { name: copy.lists.openHeading })).toBeInTheDocument()
+    await expect(canvas.queryByRole('button', { name: copy.retry })).not.toBeInTheDocument()
+  },
+}
 /** the list itself never arrived: a retry, not a fake empty state */
-export const LoadError: Story = { args: { phase: 'error', err: copy.errors.load, showError: true, showLists: false } }
+export const LoadError: Story = {
+  args: { phase: 'error', err: 'offline', showError: true, showLists: false },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const empty = canvas.getByRole('alert')
+    await expect(empty).toHaveAttribute('data-slot', 'empty')
+    await expect(empty).toHaveAttribute('data-variant', 'error')
+    const title = empty.querySelector('[data-slot="empty-title"]')
+    await expect(title?.tagName).toBe('H2')
+    await expect(title).toHaveTextContent(copy.loadError.title)
+    await expect(empty.querySelector('[data-slot="empty-description"]')).toHaveTextContent(copy.loadError.body)
+    const retry = canvas.getByRole('button', { name: copy.retry })
+    await expect(retry).toHaveClass('bg-primary')
+    await expect(empty).not.toHaveTextContent('offline')
+    await expect(canvas.queryByText(copy.lists.openEmpty)).not.toBeInTheDocument()
+    await expect(canvas.queryByText(copy.lists.historyEmpty)).not.toBeInTheDocument()
+    await expect(canvas.queryByRole('heading', { name: copy.lists.openHeading })).not.toBeInTheDocument()
+  },
+}
 export const Ready: Story = {
   args: { phase: 'ready', open: [openTrade], openCountLabel: copy.openCount(1), history: [pastTrade] },
   play: async ({ canvasElement }) => {

@@ -39,7 +39,7 @@ export const InitialFailureShowsError: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><LeaderboardView /></ConnectedStory>,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(await canvas.findByRole('alert')).toHaveTextContent(copy.loadError)
+    await expect(await canvas.findByRole('alert')).toHaveTextContent(copy.loadError.title)
     await expect(canvas.getByRole('button', { name: copy.retry })).toBeInTheDocument()
     await expect(canvas.queryByText(copy.empty)).toBeNull()
   },

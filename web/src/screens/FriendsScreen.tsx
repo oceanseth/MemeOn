@@ -171,7 +171,7 @@ export function FriendsScreen({
       </PageHead>
 
       {showMsg && <Alert variant="success" className="mt-3">{msg}</Alert>}
-      {showErr && <Alert variant="error" className="mt-3">{err}</Alert>}
+      {showErr && !showError && <Alert variant="error" className="mt-3">{err}</Alert>}
 
       {showSearchPanel && (
         <Card className="mb-5">
@@ -195,7 +195,7 @@ export function FriendsScreen({
         </Card>
       )}
 
-      {showOnline ? (
+      {showOnline && !showError ? (
         <div className={ONLINE_STRIP} data-slot="online-now">
           <span className={ONLINE_TITLE}>Online now</span>
           <div className="flex min-w-0 flex-wrap items-center gap-3">
@@ -251,7 +251,7 @@ export function FriendsScreen({
         </Empty>
       ) : null}
 
-      {showCircle && (
+      {showCircle && !showError && (
         <>
           <Heading as="h2" className="mt-8 mb-3">
             Your circle
@@ -281,7 +281,7 @@ export function FriendsScreen({
         </>
       )}
 
-      {showIncoming && (
+      {showIncoming && !showError && (
         <>
           <Heading as="h2" className="mt-8 mb-3">
             Requests for you
@@ -301,7 +301,7 @@ export function FriendsScreen({
         </>
       )}
 
-      {showOutgoing && (
+      {showOutgoing && !showError && (
         <>
           <Heading as="h2" className="mt-8 mb-3">
             Sent requests
@@ -319,7 +319,7 @@ export function FriendsScreen({
         </>
       )}
 
-      {showCircleHint ? <p className="mt-6 text-base text-muted-foreground">{circleHintMessage}</p> : null}
+      {showCircleHint && !showError ? <p className="mt-6 text-base text-muted-foreground">{circleHintMessage}</p> : null}
 
       <GiftDialog model={giftDialog} />
       <ConfirmDialog model={removeDialog} />

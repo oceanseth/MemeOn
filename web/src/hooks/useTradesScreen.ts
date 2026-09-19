@@ -68,6 +68,8 @@ export interface TradesScreenModel {
   showErrorNotice: boolean
   /** the list itself could not be fetched: offer the retry, hide the lists */
   showError: boolean
+  errorTitle: string
+  errorMessage: string
   retryButtonProps: { onClick: () => void }
   retryLabel: string
   showLoading: boolean
@@ -139,7 +141,7 @@ export function useTradesScreen(): TradesScreenModel {
         send({ type: 'LOADED', trades: result.trades })
         resolveMemeNames(result.trades)
       })
-      .catch((error) => send({ type: 'FAIL', err: errorText(error, copy.errors.load) }))
+      .catch((error) => send({ type: 'FAIL', err: errorText(error, copy.loadError.title) }))
   }, [resolveMemeNames, send])
   const retry = useCallback(() => {
     send({ type: 'RETRY' })
@@ -296,6 +298,8 @@ export function useTradesScreen(): TradesScreenModel {
     errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' },
     showErrorNotice: !!context.err && !showError,
     showError,
+    errorTitle: copy.loadError.title,
+    errorMessage: copy.loadError.body,
     retryButtonProps: { onClick: retry },
     retryLabel: copy.retry,
     showLoading: phase === 'loading',

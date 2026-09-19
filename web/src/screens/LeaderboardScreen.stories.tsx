@@ -43,7 +43,8 @@ const empty: LeaderboardScreenModel = {
   showEmpty: true,
   emptyMessage: copy.empty,
   showError: false,
-  errorMessage: copy.loadError,
+  errorTitle: copy.loadError.title,
+  errorMessage: copy.loadError.body,
   retryLabel: copy.retry,
   retry: () => {},
   showList: false,
@@ -95,13 +96,30 @@ export const Empty: Story = {
 
 export const Error: Story = {
   name: 'Error',
-  args: { phase: 'error', showEmpty: false, showError: true, retry: fn() },
+  args: {
+    phase: 'error',
+    showEmpty: false,
+    showError: true,
+    showList: true,
+    leaders: rows(leaderboardRows),
+    retry: fn(),
+  },
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.loadError)
-    await expect(canvasElement.querySelector('[data-slot="empty"]')).toHaveAttribute('data-variant', 'error')
+    const empty = canvas.getByRole('alert')
+    await expect(empty).toHaveAttribute('data-slot', 'empty')
+    await expect(empty).toHaveAttribute('data-variant', 'error')
+    const title = empty.querySelector('[data-slot="empty-title"]')
+    await expect(title?.tagName).toBe('H2')
+    await expect(title).toHaveTextContent(copy.loadError.title)
+    await expect(empty.querySelector('[data-slot="empty-description"]')).toHaveTextContent(copy.loadError.body)
+    const retry = canvas.getByRole('button', { name: copy.retry })
+    await expect(retry).toHaveClass('bg-primary')
+    await expect(canvasElement.querySelector('[data-slot="podium"]')).toBeNull()
+    await expect(canvasElement.querySelector('[data-slot="leaderboard"]')).toBeNull()
+    await expect(canvasElement.querySelector('[data-slot="your-rank"]')).toBeNull()
     await expect(canvas.queryByText(copy.empty)).toBeNull()
-    await userEvent.click(canvas.getByRole('button', { name: copy.retry }))
+    await userEvent.click(retry)
     await expect(args.retry).toHaveBeenCalled()
   },
 }

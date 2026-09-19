@@ -60,7 +60,7 @@ export const friendsCopy = {
   loadError: {
     title: "Couldn't load your friends.",
     body: sharedCopy.checkConnection,
-    retry: sharedCopy.retry,
+    retry: sharedCopy.tryAgain,
   },
   empty: {
     title: 'No friends yet',

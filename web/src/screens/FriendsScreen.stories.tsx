@@ -121,13 +121,36 @@ export const Loading: Story = {
 export const Empty: Story = {}
 
 export const Error: Story = {
-  args: { phase: 'error', showEmpty: false, showError: true },
+  args: {
+    phase: 'error',
+    showEmpty: false,
+    showError: true,
+    showCircle: true,
+    showIncoming: true,
+    showOutgoing: true,
+    showOnline: true,
+    showErr: true,
+    err: copy.errors.request,
+    accepted: [acceptedRow()],
+    incoming: [incomingRow()],
+    outgoing: [outgoingRow()],
+    onlineFriends: [friendLink(friendAccepted)],
+  },
   play: async ({ canvasElement }) => {
-    // the error card is `Empty variant="error"`: its title keeps the h2 the outline had
-    const empty = canvasElement.querySelector('[data-slot="empty"]')!
+    const canvas = within(canvasElement)
+    const empty = canvas.getByRole('alert')
+    await expect(empty).toHaveAttribute('data-slot', 'empty')
     await expect(empty).toHaveAttribute('data-variant', 'error')
-    await expect(empty.querySelector('[data-slot="empty-title"]')?.tagName).toBe('H2')
-    await expect(empty).toHaveAttribute('role', 'alert')
+    const title = empty.querySelector('[data-slot="empty-title"]')
+    await expect(title?.tagName).toBe('H2')
+    await expect(title).toHaveTextContent(copy.loadError.title)
+    await expect(empty.querySelector('[data-slot="empty-description"]')).toHaveTextContent(copy.loadError.body)
+    const retry = canvas.getByRole('button', { name: copy.loadError.retry })
+    await expect(retry).toHaveClass('bg-primary')
+    await expect(canvasElement.querySelector('[data-slot="person-row"]')).toBeNull()
+    await expect(canvasElement.querySelector('[data-slot="online-now"]')).toBeNull()
+    await expect(canvas.queryByText(copy.empty.title)).not.toBeInTheDocument()
+    await expect(canvas.queryByText(copy.errors.request)).not.toBeInTheDocument()
   },
 }
 

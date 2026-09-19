@@ -8,6 +8,10 @@ export const tradesCopy = {
   closeComposer: sharedCopy.close,
   loading: 'Loading trades…',
   retry: sharedCopy.tryAgain,
+  loadError: {
+    title: "Couldn't load your trades.",
+    body: sharedCopy.checkConnection,
+  },
   noMeme: '— braincells only, no meme —',
   lists: {
     openHeading: 'Open proposals',
@@ -44,7 +48,6 @@ export const tradesCopy = {
     executed: 'Trade executed',
   },
   errors: {
-    load: "Couldn't load your trades. Try again.",
     respond: "Couldn't send your answer — this trade may already have been answered. Try again.",
     propose: "Couldn't send that proposal. Check the numbers and try again.",
     friends: "Couldn't load your friends list. Close this and open it again.",

@@ -193,8 +193,12 @@ export const InitialFailureOffersRetry: Story = {
   loaders: [connectedLoader({ failures: { 'GET /api/trades': { error: 'offline' } } })], beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><TradesView /></ConnectedStory>,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(await canvas.findByRole('button', { name: 'Try again' })).toBeInTheDocument()
-    await expect(canvas.queryByText(/Nothing pending/)).not.toBeInTheDocument()
+    const alert = await canvas.findByRole('alert')
+    await expect(alert).toHaveTextContent(copy.loadError.title)
+    await expect(alert).toHaveTextContent(copy.loadError.body)
+    await expect(alert).not.toHaveTextContent('offline')
+    await expect(canvas.getByRole('button', { name: copy.retry })).toBeInTheDocument()
+    await expect(canvas.queryByText(copy.lists.openEmpty)).not.toBeInTheDocument()
   },
 }
 
