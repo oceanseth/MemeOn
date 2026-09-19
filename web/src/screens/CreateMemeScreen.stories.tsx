@@ -450,3 +450,182 @@ export const SubmittingDark: Story = {
 }
 
 export const SuccessPhone390: Story = { ...Success, name: 'Success phone 390', ...phone }
+
+export const VideoReady: Story = {
+  name: 'Video ready to mint',
+  args: model({
+    mode: 'video',
+    title: 'burning office',
+    imageUrl: paperMeme.imageUrl,
+    videoUrl: videoMeme.videoUrl ?? '/clip.mp4',
+  }),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('button', { name: copy.form.mint })).toBeEnabled()
+  },
+}
+
+export const VideoError: Story = {
+  name: 'Video error',
+  args: model(
+    {
+      mode: 'video',
+      prompt: 'a capybara in a business suit',
+      err: copy.errors.videoGenerationFailed,
+    },
+    'error',
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(
+      copy.errors.videoGenerationFailed,
+    )
+  },
+}
+
+export const UrlResolved: Story = {
+  name: 'URL resolved, ready to mint',
+  args: model({
+    mode: 'url',
+    urlDraft: 'https://www.reddit.com/r/memes/comments/abc',
+    imageUrl: paperMeme.imageUrl,
+    title: 'group chat energy',
+  }),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('button', { name: copy.form.mint })).toBeEnabled()
+  },
+}
+
+export const UrlResolveError: Story = {
+  name: 'URL resolve error',
+  args: model(
+    {
+      mode: 'url',
+      urlDraft: 'https://www.reddit.com/r/memes/comments/abc',
+      err: copy.errors.resolveFailed,
+    },
+    'error',
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(copy.errors.resolveFailed)
+  },
+}
+
+export const ResolvingPage: Story = {
+  name: 'Resolving page',
+  args: model(
+    {
+      mode: 'url',
+      urlDraft: 'https://www.reddit.com/r/memes/comments/abc',
+      busy: copy.busy.resolvingPage,
+    },
+    'submitting',
+  ),
+  play: async ({ canvasElement }) => {
+    const busyNotice = within(canvasElement)
+      .getByText(copy.busy.resolvingPage)
+      .closest('[data-slot="live-region"]')
+    await expect(busyNotice).toHaveAttribute('role', 'status')
+  },
+}
+
+export const UploadingImage: Story = {
+  name: 'Uploading image',
+  args: model(
+    {
+      mode: 'upload',
+      imageFileName: 'cursed-capybara.png',
+      busy: copy.busy.uploadingImage,
+    },
+    'submitting',
+  ),
+  play: async ({ canvasElement }) => {
+    const busyNotice = within(canvasElement)
+      .getByText(copy.busy.uploadingImage)
+      .closest('[data-slot="live-region"]')
+    await expect(busyNotice).toHaveAttribute('role', 'status')
+  },
+}
+
+export const RemixSourceMissing: Story = {
+  name: 'Remix source missing',
+  args: model({
+    mode: 'remix',
+    remixId: paperMeme.id,
+    remixSource: null,
+    err: 'source meme not found',
+  }),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent('source meme not found')
+  },
+}
+
+export const RemixVideoReady: Story = {
+  name: 'Remix video ready to mint',
+  args: model({
+    mode: 'remix',
+    remixId: videoMeme.id,
+    remixSource: videoMeme,
+    remixOutput: 'video',
+    imageUrl: videoMeme.imageUrl,
+    videoUrl: videoMeme.videoUrl ?? '/animated.mp4',
+    title: 'moving paper',
+  }),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('button', { name: copy.form.mint })).toBeEnabled()
+  },
+}
+
+export const RemixBusy: Story = {
+  name: 'Remix busy',
+  args: model(
+    {
+      mode: 'remix',
+      remixId: paperMeme.id,
+      remixSource: paperMeme,
+      busy: copy.busy.remixImage,
+    },
+    'submitting',
+  ),
+  play: async ({ canvasElement }) => {
+    const busyNotice = within(canvasElement)
+      .getByText(copy.busy.remixImage)
+      .closest('[data-slot="live-region"]')
+    await expect(busyNotice).toHaveAttribute('role', 'status')
+  },
+}
+
+export const GiphySearchFailed: Story = {
+  name: 'Giphy search failed',
+  args: model(
+    {
+      mode: 'giphy',
+      giphyCategories,
+      giphyQuery: 'cat',
+      err: copy.errors.giphySearchFailed,
+    },
+    'error',
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(
+      copy.errors.giphySearchFailed,
+    )
+  },
+}
+
+export const SearchingGiphy: Story = {
+  name: 'Searching Giphy',
+  args: model(
+    {
+      mode: 'giphy',
+      giphyCategories,
+      giphyQuery: 'cat',
+      busy: copy.busy.searchingGiphy,
+    },
+    'submitting',
+  ),
+  play: async ({ canvasElement }) => {
+    const busyNotice = within(canvasElement)
+      .getByText(copy.busy.searchingGiphy)
+      .closest('[data-slot="live-region"]')
+    await expect(busyNotice).toHaveAttribute('role', 'status')
+  },
+}
