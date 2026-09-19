@@ -38,6 +38,7 @@ export const createMemeCopy = {
     generationFailed: "That Masky image didn't finish. Try again.",
     animationFailed: "That Masky animation didn't finish. Try again.",
     mintFailed: "The card didn't mint. Try again.",
+    creditsExhausted: 'Not enough Masky credits.',
     uploadFailed: "That file didn't upload. Try a smaller file, or try again.",
     /** The storage PUT answered with a status the user then reads in the alert. */
     uploadRejected: (status: number) =>

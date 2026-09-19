@@ -374,11 +374,18 @@ describe('buildCreateMemeScreenModel', () => {
     )
     const failed = buildCreateMemeScreenModel(
       'error',
-      { ...baseContext, err: 'credits exhausted' },
+      { ...baseContext, err: copy.errors.creditsExhausted },
       actions(),
     )
-    expect(failed.errorNextStep).toContain('Top up Masky credits')
+    expect(failed.errorNextStep).toBe(copy.preview.nextStep.credits)
     expect(failed.uploadVideoHelpText).toContain('max 50MB')
+  })
+
+  it('hints Masky top-up from leftover credit phrases, not only the authored key', () => {
+    for (const err of ['credits exhausted', '402', 'quota', 'balance']) {
+      const failed = buildCreateMemeScreenModel('error', { ...baseContext, err }, actions())
+      expect(failed.errorNextStep).toBe(copy.preview.nextStep.credits)
+    }
   })
 
   it('hints a smaller file from copy.errors upload fallbacks, including a non-413 rejection', () => {

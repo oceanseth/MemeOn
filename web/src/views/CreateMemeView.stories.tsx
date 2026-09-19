@@ -3,6 +3,7 @@ import { MemoryRouter, useLocation } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
 import { giphyCat } from '../../.storybook/fixtures'
+import { createMemeCopy as copy } from '../copy/createMeme'
 import { CreateMemeView } from './CreateMemeView'
 
 function CurrentRoute() {
@@ -98,7 +99,7 @@ export const GenerationFailure: Story = {
     await userEvent.type(canvas.getByRole('textbox', { name: /^Prompt/ }), 'fail')
     await userEvent.click(canvas.getByRole('button', { name: 'Render the image' }))
     const alert = await canvas.findByRole('alert')
-    await waitFor(() => expect(alert).toHaveTextContent('credits exhausted'))
-    await expect(alert).toHaveTextContent('Top up Masky credits')
+    await waitFor(() => expect(alert).toHaveTextContent(copy.errors.creditsExhausted))
+    await expect(alert).toHaveTextContent(copy.preview.nextStep.credits)
   },
 }
