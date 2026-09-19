@@ -27,6 +27,7 @@ export const profileCopy = {
     update: "Couldn't update — try again.",
     /** Fallback when the profile fetch throws without a message. */
     loadFailed: 'profile load failed',
+    copy: 'Copy failed — try again',
   },
   /** stands in for the name while the profile has not loaded */
   fallbackName: 'this player',
