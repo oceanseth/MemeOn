@@ -12,6 +12,7 @@ export type MemeDetailPhase =
 
 export interface MemeStats {
   views: number
+  /** uniqueRefs from GET /api/memes/:id/stats — not `Meme.reshares` (the load counter) */
   reshares: number
   sources: { source: string; url: string | null; views: number; firstSeen: string | null }[]
 }

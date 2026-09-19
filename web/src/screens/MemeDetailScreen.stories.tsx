@@ -5,20 +5,25 @@ import { listedHolo, memeplexFamily, paperMeme } from '../../.storybook/fixtures
 import { memeDetailCopy as copy } from '../copy/memeDetail'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
 import { buildMemeCardModel } from '../lib/memeCardModel'
+import { memeReshareCount, memeViewCount } from '../lib/memeMetrics'
 import { buildMemeplexPanelModel } from '../lib/memeplexPanelModel'
 import { buildTierLadderModel, type DetailListingModel, type DetailSignedOutModel, type MemeDetailModel, type MemeDetailScreenModel } from '../hooks/useMemeDetailScreen'
 import { MemeDetailScreen } from './MemeDetailScreen'
 
 const noop = fn()
 const closedDialog = (id: string) => buildConfirmDialogModel({ open: false, id, title: 'Confirm', message: '', onCancel: noop, onConfirm: noop })
-const detail = (meme = paperMeme): MemeDetailModel => ({
+const detail = (meme = paperMeme): MemeDetailModel => {
+  const views = memeViewCount(meme)
+  const reshareCount = memeReshareCount(meme)
+  return {
   id: meme.id, title: meme.title, private: !!meme.private, tierKey: meme.tier.key, tierName: meme.tier.name,
-  tierLine: copy.hero.tierLine(meme.tier.name, meme.reshareCount ?? 0),
+  tierLine: copy.hero.tierLine(meme.tier.name, reshareCount),
   tierLabel: copy.hero.tierLabel(meme.tier.name, meme.tier.rarity), tierHype: meme.tier.hype,
-  tierLadder: buildTierLadderModel(meme.tier.key, meme.views ?? meme.reshares),
-  card: buildMemeCardModel(meme), creatorLinkProps: { to: `/u/${meme.creatorId}` }, creatorName: meme.creatorName, ownerLinkProps: { to: `/u/${meme.ownerId}` }, ownerName: meme.ownerName, tagsLabel: null, viewsLabel: String(meme.views ?? meme.reshares), resharesLabel: String(meme.reshareCount ?? 0), viewsWord: copy.stats.viewsWord(meme.views ?? meme.reshares), resharesWord: copy.stats.resharesWord(meme.reshareCount ?? 0), valueLabel: String(meme.value), statsSrLabel: copy.stats.srLabel(meme.views ?? meme.reshares, meme.reshareCount ?? 0), valueSrLabel: copy.stats.valueSrLabel(meme.value), holdingsLabel: '100/100', shareInputProps: { value: `https://memeon.ai/m/${meme.id}`, readOnly: true, 'aria-label': copy.share.inputLabel }, copyButtonLabel: copy.share.copy, copyButtonProps: { onClick: noop }, previewLinkProps: { href: `/api/memes/${meme.id}/og.png`, target: '_blank', rel: 'noreferrer' }, signedOut: null, actions: [], notice: null, noticeProps: { role: 'status', 'aria-live': 'polite' }, error: null, errorProps: { role: 'alert', 'aria-live': 'assertive' }, listing: null,
+  tierLadder: buildTierLadderModel(meme.tier.key, views),
+  card: buildMemeCardModel(meme), creatorLinkProps: { to: `/u/${meme.creatorId}` }, creatorName: meme.creatorName, ownerLinkProps: { to: `/u/${meme.ownerId}` }, ownerName: meme.ownerName, tagsLabel: null, viewsLabel: String(views), resharesLabel: String(reshareCount), viewsWord: copy.stats.viewsWord(views), resharesWord: copy.stats.resharesWord(reshareCount), valueLabel: String(meme.value), statsSrLabel: copy.stats.srLabel(views, reshareCount), valueSrLabel: copy.stats.valueSrLabel(meme.value), holdingsLabel: '100/100', shareInputProps: { value: `https://memeon.ai/m/${meme.id}`, readOnly: true, 'aria-label': copy.share.inputLabel }, copyButtonLabel: copy.share.copy, copyButtonProps: { onClick: noop }, previewLinkProps: { href: `/api/memes/${meme.id}/og.png`, target: '_blank', rel: 'noreferrer' }, signedOut: null, actions: [], notice: null, noticeProps: { role: 'status', 'aria-live': 'polite' }, error: null, errorProps: { role: 'alert', 'aria-live': 'assertive' }, listing: null,
   list: { show: true, disabledReason: null, sharesInputProps: { value: 10, min: 1, max: 100, step: 1, onChange: noop }, priceInputProps: { value: 1, min: .01, step: .01, onChange: noop }, listButtonLabel: copy.list.submit, listButtonProps: { onClick: noop, disabled: false, 'aria-busy': false } }, sources: [], plex: buildMemeplexPanelModel({ meme, plex: memeplexFamily, canEdit: true, binder: [], pick: '', pasted: '', notice: null, error: null, onPickChange: noop, onPastedChange: noop, onAdd: noop }), capTableTitle: copy.capTable.title, capTableNote: null, capTable: [{ userId: 'me', label: copy.holder.you, sharesLabel: '100/100' }], deleteDialog: buildConfirmDialogModel({ open: false, id: 'delete-meme', title: copy.deleteDialog.title, message: 'This cannot be undone.', danger: true, onCancel: noop, onConfirm: noop }), buyDialog: closedDialog('buy-shares'), claimDialog: closedDialog('claim-meme'),
-})
+  }
+}
 /** the mocked listing every listed story shares: 10 shares at 4 braincells, a viewer holding 240 braincells */
 const LISTED_SHARES = 10
 const LISTED_PRICE = 4

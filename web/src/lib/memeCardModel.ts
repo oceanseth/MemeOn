@@ -1,6 +1,7 @@
 import type { ImgHTMLAttributes, MouseEvent, RefCallback, VideoHTMLAttributes } from 'react'
 import { memeCardCopy as copy } from '../copy/memeCard'
 import { cardMediaRef, toggleCardMedia } from './cardMedia'
+import { memeReshareCount } from './memeMetrics'
 import type { Meme } from './types'
 
 export interface MemeCardMediaToggleProps {
@@ -123,8 +124,7 @@ function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
         }
 
   const viewsLabel = meme.views === undefined ? null : meme.views.toLocaleString()
-  // the reshare count drives the tier ladder, so it is never stood in for by another number
-  const resharesLabel = (meme.reshareCount ?? meme.reshares).toLocaleString()
+  const resharesLabel = memeReshareCount(meme).toLocaleString()
   const valueLabel = meme.value.toLocaleString()
 
   const listing =

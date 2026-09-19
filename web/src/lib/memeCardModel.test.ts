@@ -50,8 +50,8 @@ describe('buildMemeCardModel', () => {
     const thin = buildMemeCardModel(imageMeme)
 
     expect(thin.viewsLabel).toBeNull()
-    expect(thin.resharesLabel).toBe('1,234')
-    expect(thin.statsA11yLabel).toBe(copy.stats(null, '1,234'))
+    expect(thin.resharesLabel).toBe('0')
+    expect(thin.statsA11yLabel).toBe(copy.stats(null, '0'))
 
     const full = buildMemeCardModel({ ...imageMeme, views: 9876, reshareCount: 60 })
 

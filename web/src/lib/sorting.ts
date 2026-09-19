@@ -1,3 +1,4 @@
+import { memeReshareCount, memeViewCount } from './memeMetrics'
 import type { Meme } from './types'
 
 export type SortKey = 'new' | 'views' | 'reshares' | 'value'
@@ -12,9 +13,9 @@ export function sortMemes<T extends Meme>(
   const value = (meme: Meme): number | string => {
     switch (key) {
       case 'views':
-        return meme.views ?? meme.reshares
+        return memeViewCount(meme)
       case 'reshares':
-        return meme.reshareCount ?? 0
+        return memeReshareCount(meme)
       case 'value':
         return meme.value
       default:
