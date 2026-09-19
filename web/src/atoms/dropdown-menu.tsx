@@ -1,9 +1,28 @@
 import { Menu as MenuPrimitive } from '@base-ui/react/menu'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { CheckIcon, ChevronRightIcon } from 'lucide-react'
 import type { ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
 import type { Styled } from '@/atoms/field'
+import { Icon } from '@/atoms/icon'
+
+/** House tick, duplicated in the three primitives so they do not share a check atom. Chrome matches Icon. */
+function HouseTick() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={16}
+      height={16}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M7.757 12L10.409 14.652L16.243 8.818" />
+    </svg>
+  )
+}
 
 export function DropdownMenu(props: MenuPrimitive.Root.Props) {
   return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />
@@ -171,7 +190,7 @@ export function DropdownMenuSubTrigger({
       {...props}
     >
       {children}
-      <ChevronRightIcon aria-hidden="true" className="ml-auto size-4 rtl:rotate-180" />
+      <Icon name="chevron-down" size={16} className="ml-auto -rotate-90 rtl:rotate-90" />
     </MenuPrimitive.SubmenuTrigger>
   )
 }
@@ -217,7 +236,7 @@ export function DropdownMenuCheckboxItem({
     >
       <span className={INDICATOR} data-slot="dropdown-menu-checkbox-item-indicator">
         <MenuPrimitive.CheckboxItemIndicator>
-          <CheckIcon aria-hidden="true" className="size-4" />
+          <HouseTick />
         </MenuPrimitive.CheckboxItemIndicator>
       </span>
       {children}
@@ -244,7 +263,7 @@ export function DropdownMenuRadioItem({
     >
       <span className={INDICATOR} data-slot="dropdown-menu-radio-item-indicator">
         <MenuPrimitive.RadioItemIndicator>
-          <CheckIcon aria-hidden="true" className="size-4" />
+          <HouseTick />
         </MenuPrimitive.RadioItemIndicator>
       </span>
       {children}

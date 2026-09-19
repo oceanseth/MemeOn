@@ -1,10 +1,28 @@
 import { Checkbox as BaseCheckbox } from '@base-ui/react/checkbox'
 import type { CheckboxRootProps } from '@base-ui/react/checkbox'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { CheckIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { Styled } from '@/atoms/field'
 import { cn } from '@/lib/cn'
+
+/** House tick, duplicated in the three primitives so they do not share a check atom. Chrome matches Icon. */
+function HouseTick() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={16}
+      height={16}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M7.757 12L10.409 14.652L16.243 8.818" />
+    </svg>
+  )
+}
 
 /** The 22px raised box; checked fills it with the action colour. `hit-44` halos it on a coarse pointer. */
 const boxChrome = cn(
@@ -50,7 +68,7 @@ export function Checkbox({ label, variant, className, ...props }: CheckboxProps)
       {...props}
     >
       <BaseCheckbox.Indicator data-slot="checkbox-indicator" className="flex">
-        <CheckIcon className="size-4" />
+        <HouseTick />
       </BaseCheckbox.Indicator>
     </BaseCheckbox.Root>
   )

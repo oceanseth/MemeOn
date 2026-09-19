@@ -96,7 +96,9 @@ export const Open: Story = {
     const holo = within(listbox).getByRole('option', { name: 'Holo' })
     await expect(holo).toHaveAttribute('data-selected')
     await expect(holo).toHaveAttribute('data-slot', 'select-item')
-    await expect(holo.querySelector('[data-slot="select-item-indicator"]')).not.toBeNull()
+    const indicator = holo.querySelector('[data-slot="select-item-indicator"]')
+    await expect(indicator).not.toBeNull()
+    await expect(indicator!.querySelector('svg')).not.toBeNull()
     await expect(within(listbox).getAllByRole('option')).toHaveLength(tiers.length)
   },
 }
