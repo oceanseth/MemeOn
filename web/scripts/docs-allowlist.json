@@ -54,6 +54,26 @@
       "name": "npm run dev:web",
       "file": "docs/PRISMATIC_HOME_BUTTON.md",
       "why": "Part of the same unbuilt specification (see the banner)."
+    },
+    {
+      "name": "npm run build:web",
+      "file": "docs/reviews/OX_UI_REVIEW_2026-09-08.md",
+      "why": "Quoted 2026-09-08 review; pre-pnpm. Do not rewrite the archive."
+    },
+    {
+      "name": "npm run build-storybook",
+      "file": "docs/reviews/OX_UI_REVIEW_2026-09-08.md",
+      "why": "Quoted 2026-09-08 review; pre-pnpm. Do not rewrite the archive."
+    },
+    {
+      "name": ".impeccable/design.json",
+      "file": "docs/reviews/OX_UI_REVIEW_2026-09-08.md",
+      "why": "Archive notes it is absent; .impeccable/ exists on this laptop so the span is a claim."
+    },
+    {
+      "name": "prompt.md",
+      "file": "docs/research/GASCITY_CODEX_RESEARCH.md",
+      "why": "Gas City convention filename; bare .md is always pathish; no prompt.md in this tree."
     }
   ]
 }
