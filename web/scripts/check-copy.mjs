@@ -5,7 +5,8 @@
  *   node scripts/check-copy.mjs [srcDir] [--update] [--list] [--baseline=<file>]
  *
  * Counts copy-like quoted literals and JsxText per engine file (hooks/, screens/,
- * lib/*Model.ts, lib/createMemeModel/) and compares them with scripts/copy-baseline.json.
+ * views/, molecules/, organisms/, lib/*Model.ts, lib/createMemeModel/) and compares
+ * them with scripts/copy-baseline.json.
  * A file may only match or drop below its baseline; a new file starts at 0.
  * `--update` rewrites the baseline after a drop and refuses to raise any count,
  * so the only way up is to move the string into copy/<surface>.ts.
@@ -42,6 +43,9 @@ const inScope = (sourcePath) => {
   if (!/\.tsx?$/.test(sourcePath) || isTestLike(sourcePath)) return false
   if (sourcePath.startsWith("hooks/")) return true
   if (sourcePath.startsWith("screens/")) return true
+  if (sourcePath.startsWith("views/")) return true
+  if (sourcePath.startsWith("molecules/")) return true
+  if (sourcePath.startsWith("organisms/")) return true
   if (/^lib\/[^/]*Model\.ts$/.test(sourcePath)) return true
   return sourcePath.startsWith("lib/createMemeModel/")
 }
@@ -105,6 +109,17 @@ const isKeyboardKeyCheck = (node) => {
   return KEYBOARD_KEYS.has(node.text)
 }
 
+const isRelOrTargetAttribute = (node) => {
+  for (let parent = node.parent; parent; parent = parent.parent) {
+    if (ts.isJsxAttribute(parent)) {
+      return ts.isIdentifier(parent.name) && (parent.name.text === "rel" || parent.name.text === "target")
+    }
+    if (ts.isJsxExpression(parent)) continue
+    return false
+  }
+  return false
+}
+
 const isNotCopyPosition = (node) => {
   const parent = node.parent
   if (!parent) return false
@@ -113,6 +128,7 @@ const isNotCopyPosition = (node) => {
   if (ts.isCallExpression(parent) && parent.expression.kind === ts.SyntaxKind.ImportKeyword) return true
   if (isKeyboardKeyCheck(node)) return true
   if (isClassPosition(node)) return true
+  if (isRelOrTargetAttribute(node)) return true
   return isDeveloperMessage(node)
 }
 
@@ -136,7 +152,14 @@ const countCopyLiterals = (file) => {
 }
 
 const counts = {}
-for (const file of [...walk(join(src, "hooks")), ...walk(join(src, "lib")), ...walk(join(src, "screens"))]) {
+for (const file of [
+  ...walk(join(src, "hooks")),
+  ...walk(join(src, "lib")),
+  ...walk(join(src, "screens")),
+  ...walk(join(src, "views")),
+  ...walk(join(src, "molecules")),
+  ...walk(join(src, "organisms")),
+]) {
   const sourcePath = toSourcePath(file)
   if (!inScope(sourcePath)) continue
   const hits = countCopyLiterals(file)
