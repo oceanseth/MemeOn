@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { FooterLink } from '@/organisms/nav-item'
 import { cn } from '../lib/cn'
+import type { AppShellChromeModel } from '../lib/appShellChromeModel'
 import './app-shell.css'
 
 /**
@@ -66,10 +67,10 @@ const WORDMARK = cn(
   FOCUS,
 )
 
-function Wordmark({ compact }: { compact: boolean }) {
+function Wordmark({ compact, brand }: { compact: boolean; brand: string }) {
   return (
     /* the name is on the link itself: the mark alone is what the app bar shows between 900 and 1100 */
-    <Link to="/" className={WORDMARK} aria-label="MemeOn" data-slot="logo">
+    <Link to="/" className={WORDMARK} aria-label={brand} data-slot="logo">
       {/* the circle mark: hidden on the phone, where the 350px header fits wordmark + cluster only */}
       <img
         src="/brand/memeon-logo-circle-64.png"
@@ -78,7 +79,7 @@ function Wordmark({ compact }: { compact: boolean }) {
         width={30}
         height={30}
       />
-      <span className={compact ? 'xl:max-2xl:hidden' : undefined}>MemeOn</span>
+      <span className={compact ? 'xl:max-2xl:hidden' : undefined}>{brand}</span>
     </Link>
   )
 }
@@ -110,6 +111,8 @@ const FOOTER = cn(
 )
 
 export interface AppShellProps {
+  /** Skip, wordmark, landmarks, footer labels — built off `copy/appShell`. */
+  chrome: AppShellChromeModel
   /** The signed-in bar's links (`NavPill`s). Their presence selects the app layout. */
   nav?: ReactNode | undefined
   /** The header's right cluster: Mint, the braincell pill, the bell, the avatar menu — or the public theme button. */
@@ -123,18 +126,18 @@ export interface AppShellProps {
  * App chrome: skip link, the sticky bar, the column with the route's `<main>` and the footer, the
  * phone tab bar. Parent fills slots — this organism does not read auth.
  */
-export function AppShell({ nav, headerEnd, bottomNav, children }: AppShellProps) {
+export function AppShell({ chrome, nav, headerEnd, bottomNav, children }: AppShellProps) {
   const app = nav !== undefined && nav !== null && nav !== false
   return (
     <>
       <a className={SKIP_LINK} href="#main" data-slot="skip-link">
-        Skip to content
+        {chrome.skipLabel}
       </a>
       <header className={HEADER} data-slot="header">
         <div className={HEADER_ROW} data-slot="header-row">
-          <Wordmark compact={app} />
+          <Wordmark compact={app} brand={chrome.brand} />
           {app && (
-            <nav className={NAV} aria-label="Main" data-slot="top-nav">
+            <nav className={NAV} aria-label={chrome.navAria} data-slot="top-nav">
               {nav}
             </nav>
           )}
@@ -147,20 +150,20 @@ export function AppShell({ nav, headerEnd, bottomNav, children }: AppShellProps)
         <div className={CONTENT} data-slot="content">
           {children}
           <footer className={cn(FOOTER, bottomNav && 'max-xl:hidden')} data-slot="site-footer">
-            <span className="font-semibold text-foreground">MemeOn</span>
-            <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 xl:ml-auto" aria-label="Footer">
-              <FooterLink render={<NavLink to="/privacy" />}>Privacy</FooterLink>
-              <FooterLink render={<NavLink to="/terms" />}>Terms</FooterLink>
-              <FooterLink render={<NavLink to="/developers" />}>Developers</FooterLink>
-              <FooterLink render={<NavLink to="/discord" />}>Discord</FooterLink>
+            <span className="font-semibold text-foreground">{chrome.brand}</span>
+            <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 xl:ml-auto" aria-label={chrome.footerAria}>
+              <FooterLink render={<NavLink to="/privacy" />}>{chrome.footer.privacy}</FooterLink>
+              <FooterLink render={<NavLink to="/terms" />}>{chrome.footer.terms}</FooterLink>
+              <FooterLink render={<NavLink to="/developers" />}>{chrome.footer.developers}</FooterLink>
+              <FooterLink render={<NavLink to="/discord" />}>{chrome.footer.discord}</FooterLink>
               {/* a real static file in public/, not a route: it must leave the SPA */}
-              <FooterLink href="/skill.md">API</FooterLink>
+              <FooterLink href="/skill.md">{chrome.footer.api}</FooterLink>
             </nav>
           </footer>
         </div>
       </div>
       {bottomNav && (
-        <nav className={TAB_BAR} aria-label="Main" data-slot="bottom-nav">
+        <nav className={TAB_BAR} aria-label={chrome.navAria} data-slot="bottom-nav">
           {bottomNav}
         </nav>
       )}

@@ -6,13 +6,11 @@ import { InlineLink } from '@/atoms/inline-link'
 import { Input } from '@/atoms/input'
 import { LiveRegion } from '@/atoms/live-region'
 import { MemeCard } from '@/molecules/meme-card'
-import { Select, type SelectOption } from '@/atoms/select'
+import { Select } from '@/atoms/select'
 import { Toolbar, ToolbarStart } from '@/atoms/toolbar'
 import { cn } from '../lib/cn'
 import type { MemeplexPanelModel } from '../lib/memeplexPanelModel'
 import { Icon } from '@/atoms/icon'
-
-const PICK_PLACEHOLDER: SelectOption = { value: '', label: 'Link from your binder…' }
 
 /* The strip's own copy scale: 14/18 on ink-muted, which is the smallest the ladder goes before
    the micro line the cards themselves use. */
@@ -30,11 +28,11 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
         <span aria-hidden="true">
           <Icon name="blocks" size={18} />
         </span>{' '}
-        Memeplex
+        {model.heading}
       </CardTitle>
       {model.ancestors.length > 0 && (
         <p className={cn('my-2', LINE)}>
-          Descended from{' '}
+          {model.descendedFrom}{' '}
           {model.ancestors.map((ancestor, index) => (
             <span key={ancestor.id}>
               {index > 0 && ' → '}
@@ -59,7 +57,7 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
         </div>
       ) : model.error ? null : (
         <p className={LINE}>
-          No relatives yet — remix this meme or link related ones.
+          {model.empty}
         </p>
       )}
 
@@ -67,18 +65,17 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
         <Toolbar className="mt-3">
           <ToolbarStart>
             <Select
-              items={[PICK_PLACEHOLDER, ...model.linkable.map((candidate) => ({ value: candidate.id, label: candidate.title }))]}
+              items={[model.pickPlaceholder, ...model.linkable.map((candidate) => ({ value: candidate.id, label: candidate.title }))]}
               {...model.pickerProps}
             />
             <Input
               className="min-w-45"
-              placeholder="…or paste a meme link"
               {...model.pastedProps}
             />
             {/* one primary per card: the model already chose which of the two inputs this submits */}
             {model.showLink && (
               <Button variant="primary" {...model.linkButtonProps}>
-                Link
+                {model.linkLabel}
               </Button>
             )}
           </ToolbarStart>

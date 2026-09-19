@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { tierFor } from '@memeon/shared/tiers'
 import { memeDetailCopy as copy } from '../copy/memeDetail'
+import { memeplexPanelCopy } from '../copy/memeplexPanel'
 import { buildMemeplexPanelModel } from './memeplexPanelModel'
 import type { Meme } from './types'
 
@@ -60,5 +61,27 @@ describe('buildMemeplexPanelModel', () => {
       ...handlers,
     })
     expect(model.show).toBe(false)
+  })
+
+  it('fills heading, empty, placeholders, and link label from copy', () => {
+    const model = buildMemeplexPanelModel({
+      meme,
+      plex: { original: null, ancestors: [], remixes: [], related: [] },
+      canEdit: true,
+      binder: [],
+      pick: '',
+      pasted: '',
+      notice: null,
+      error: null,
+      ...handlers,
+    })
+    expect(model.heading).toBe(memeplexPanelCopy.heading)
+    expect(model.descendedFrom).toBe(memeplexPanelCopy.descendedFrom)
+    expect(model.empty).toBe(memeplexPanelCopy.empty)
+    expect(model.linkLabel).toBe(memeplexPanelCopy.link)
+    expect(model.pickPlaceholder).toEqual({ value: '', label: memeplexPanelCopy.pickerPlaceholder })
+    expect(model.pastedProps.placeholder).toBe(memeplexPanelCopy.pastedPlaceholder)
+    expect(model.pastedProps['aria-label']).toBe(memeplexPanelCopy.pasted)
+    expect(model.pickerProps['aria-label']).toBe(memeplexPanelCopy.picker)
   })
 })
