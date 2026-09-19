@@ -9,5 +9,5 @@ export const ProfileView = observer(function ProfileView({
   initialTab?: ProfileTab
 }) {
   useDocumentTitle('Profile')
-  return <ProfileScreen {...useProfileScreen({ initialTab })} />
+  return <ProfileScreen {...useProfileScreen(initialTab === undefined ? {} : { initialTab })} />
 })

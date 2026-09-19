@@ -22,8 +22,6 @@ const imageMeme: Meme = {
   createdAt: '2026-09-08T00:00:00.000Z',
   tier: tierFor(50),
   value: 5678,
-  views: undefined,
-  reshareCount: undefined,
 }
 
 describe('buildMemeCardModel', () => {
