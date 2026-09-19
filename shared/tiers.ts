@@ -109,20 +109,24 @@ export const TIERS: Tier[] = [
 /** Index into TIERS for a given view counter (DB `reshares`). */
 export function tierIndexFor(reshares: number): number {
   let idx = 0
-  for (let i = 0; i < TIERS.length; i++) {
-    if (reshares >= TIERS[i].minReshares) idx = i
+  for (const [i, tier] of TIERS.entries()) {
+    if (reshares >= tier.minReshares) idx = i
   }
   return idx
 }
 
 /** Tier for a given view counter (DB `reshares`). Do not pass uniqueRefs. */
 export function tierFor(reshares: number): Tier {
-  return TIERS[tierIndexFor(reshares)]
+  const tier = TIERS[tierIndexFor(reshares)]
+  if (!tier) throw new Error('TIERS is empty')
+  return tier
 }
 
 /** Named glow-border profile for a tier key, with a safe Paper fallback. */
 export function glowStyleFor(tierKey: string): GlowBorderStyle {
-  return TIERS.find((tier) => tier.key === tierKey)?.glowStyle ?? TIERS[0].glowStyle
+  const paper = TIERS[0]
+  if (!paper) throw new Error('TIERS is empty')
+  return TIERS.find((tier) => tier.key === tierKey)?.glowStyle ?? paper.glowStyle
 }
 
 /**
@@ -133,6 +137,7 @@ export function glowStyleFor(tierKey: string): GlowBorderStyle {
 export function memeValue(reshares: number): number {
   const idx = tierIndexFor(reshares)
   const tier = TIERS[idx]
+  if (!tier) throw new Error('TIERS is empty')
   const next = TIERS[idx + 1]
   if (!next) return tier.baseValue + Math.floor(Math.sqrt(Math.max(0, reshares - tier.minReshares)))
   const span = next.minReshares - tier.minReshares

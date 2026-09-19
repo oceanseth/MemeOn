@@ -223,13 +223,15 @@ export const SkipLinkFocused: Story = {
   },
 }
 
+const phone390Args = buildAppShellScreenModel({
+  phase: 'loggedIn', user: meLou,
+  context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
+  pathname: '/marketplace', theme: light,
+  ...actions,
+})
+
 export const Phone390: Story = {
-  args: buildAppShellScreenModel({
-    phase: 'loggedIn', user: meLou,
-    context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
-    pathname: '/marketplace', theme: light,
-    ...actions,
-  }),
+  args: phone390Args,
   ...phone,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -256,22 +258,24 @@ export const Phone390: Story = {
 
 /** Kept under its historical name; `Phone390` is the same chrome with its assertions. */
 export const Mobile390: Story = {
-  args: Phone390.args,
+  args: phone390Args,
   ...phone,
 }
 
+const darkArgs = buildAppShellScreenModel({
+  phase: 'loggedIn', user: meLou,
+  context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
+  pathname: '/marketplace', theme: dark,
+  ...actions,
+})
+
 export const Dark: Story = {
-  args: buildAppShellScreenModel({
-    phase: 'loggedIn', user: meLou,
-    context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
-    pathname: '/marketplace', theme: dark,
-    ...actions,
-  }),
+  args: darkArgs,
   globals: { theme: 'dark' },
 }
 
 export const DarkPhone390: Story = {
-  args: Dark.args,
+  args: darkArgs,
   ...phone,
   globals: { ...phone.globals, theme: 'dark' },
 }

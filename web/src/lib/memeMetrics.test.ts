@@ -9,7 +9,7 @@ describe('memeViewCount', () => {
 
   it('falls back to the legacy load-counter name, not uniqueRefs', () => {
     expect(memeViewCount({ reshares: 3 })).toBe(3)
-    expect(memeViewCount({ views: undefined, reshares: 8 })).toBe(8)
+    expect(memeViewCount({ reshares: 8 })).toBe(8)
   })
 })
 
@@ -21,6 +21,5 @@ describe('memeReshareCount', () => {
 
   it('is 0 when uniqueRefs is missing — never the view counter', () => {
     expect(memeReshareCount({})).toBe(0)
-    expect(memeReshareCount({ reshareCount: undefined })).toBe(0)
   })
 })

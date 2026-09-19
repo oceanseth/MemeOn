@@ -221,7 +221,11 @@ export const FrameFailed: Story = {
     await expect(failed).toHaveLength(TIERS.length)
     await expect(canvasElement.querySelectorAll('[data-slot="tier-frame-img"]')).toHaveLength(0)
     const frames = canvasElement.querySelectorAll<HTMLElement>('[data-slot="tier-frame-slot"]')
-    await expect(frames[0].offsetHeight).toBe(frames[6].offsetHeight)
+    await expect(frames).toHaveLength(TIERS.length)
+    const first = frames[0]
+    const last = frames[frames.length - 1]
+    if (!first || !last) throw new Error('expected first and last tier-frame slots')
+    await expect(first.offsetHeight).toBe(last.offsetHeight)
   },
 }
 

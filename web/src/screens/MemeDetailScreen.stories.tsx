@@ -257,17 +257,19 @@ const sources = [
 ]
 
 /** Everything a holder of all 100 shares can do: list, make private, delete forever. */
-export const Owner: Story = {
-  args: {
-    detail: {
-      ...detail(), sources,
-      actions: [
-        { label: 'Create a meme from this', icon: 'dna', buttonProps: { onClick: noop } },
-        { label: 'Make private', icon: 'eye-off', buttonProps: { onClick: noop } },
-        { label: 'Delete forever', icon: 'trash-2', variant: 'destructive', buttonProps: { onClick: noop } },
-      ],
-    },
+const ownerArgs: Story['args'] = {
+  detail: {
+    ...detail(), sources,
+    actions: [
+      { label: 'Create a meme from this', icon: 'dna', buttonProps: { onClick: noop } },
+      { label: 'Make private', icon: 'eye-off', buttonProps: { onClick: noop } },
+      { label: 'Delete forever', icon: 'trash-2', variant: 'destructive', buttonProps: { onClick: noop } },
+    ],
   },
+}
+
+export const Owner: Story = {
+  args: ownerArgs,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: /Delete forever/ })).toBeVisible()
@@ -297,21 +299,23 @@ export const Owner: Story = {
 }
 
 /** The public share view: the card title is the H1 and Masky is the single bubblegum. */
-export const LoggedOut: Story = {
-  args: {
-    detail: {
-      ...listed({ showBuy: false, balanceLabel: null }), holdingsLabel: null, sources,
-      plex: buildMemeplexPanelModel({ meme: listedHolo, plex: memeplexFamily, canEdit: false, binder: [], pick: '', pasted: '', notice: null, error: null, onPickChange: noop, onPastedChange: noop, onAdd: noop }),
-      capTable: [{ userId: 'a', label: 'oxfern', sharesLabel: '48/100' }, { userId: 'b', label: 'masky.moth', sharesLabel: '28/100' }, { userId: 'c', label: 'meme.custodian', sharesLabel: '24/100' }],
-      signedOut: {
-        title: 'Own a piece of this',
-        body: copy.signedOut.body,
-        loginLabel: 'Log in with Masky',
-        loginButtonProps: { onClick: noop, disabled: false, 'aria-busy': false, 'aria-label': 'Log in with Masky' },
-        browseLinkProps: { to: '/marketplace' }, browseLabel: 'Browse the marketplace', error: null, errorProps: { role: 'alert' },
-      },
+const loggedOutArgs = {
+  detail: {
+    ...listed({ showBuy: false, balanceLabel: null }), holdingsLabel: null, sources,
+    plex: buildMemeplexPanelModel({ meme: listedHolo, plex: memeplexFamily, canEdit: false, binder: [], pick: '', pasted: '', notice: null, error: null, onPickChange: noop, onPastedChange: noop, onAdd: noop }),
+    capTable: [{ userId: 'a', label: 'oxfern', sharesLabel: '48/100' }, { userId: 'b', label: 'masky.moth', sharesLabel: '28/100' }, { userId: 'c', label: 'meme.custodian', sharesLabel: '24/100' }],
+    signedOut: {
+      title: 'Own a piece of this',
+      body: copy.signedOut.body,
+      loginLabel: 'Log in with Masky',
+      loginButtonProps: { onClick: noop, disabled: false, 'aria-busy': false, 'aria-label': 'Log in with Masky' },
+      browseLinkProps: { to: '/marketplace' }, browseLabel: 'Browse the marketplace', error: null, errorProps: { role: 'alert' },
     },
   },
+}
+
+export const LoggedOut: Story = {
+  args: loggedOutArgs,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('heading', { level: 1, name: listedHolo.title })).toBeVisible()
@@ -331,7 +335,7 @@ export const LoggedOut: Story = {
   },
 }
 
-export const Dark: Story = { args: Owner.args, globals: { theme: 'dark' } }
+export const Dark: Story = { args: ownerArgs, globals: { theme: 'dark' } }
 
 /** 390×844: one column — hero card first, then the rail, provenance at the bottom. */
 const phone = {
@@ -343,12 +347,12 @@ const phone = {
   globals: { viewport: { value: 'phone390', isRotated: false } },
 }
 
-export const Phone390: Story = { args: Owner.args, ...phone }
+export const Phone390: Story = { args: ownerArgs, ...phone }
 
 export const DarkPhone390: Story = {
-  args: Owner.args,
+  args: ownerArgs,
   ...phone,
   globals: { ...phone.globals, theme: 'dark' },
 }
 
-export const LoggedOutPhone390: Story = { args: LoggedOut.args, ...phone }
+export const LoggedOutPhone390: Story = { args: loggedOutArgs, ...phone }

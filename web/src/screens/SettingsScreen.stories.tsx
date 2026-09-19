@@ -82,19 +82,23 @@ export const NotLinked: Story = {
 
 /** The shape the row takes the day the API reports a link; the screen needs no change. */
 export const Linked: Story = {
-  args: {
-    connections: {
-      ...model.connections,
-      rows: [
-        {
-          ...model.connections.rows[0],
-          stateLabel: copy.connections.discord.linkedAs('oxfern#4417'),
-          linked: true,
-          actionLabel: copy.connections.discord.open,
-        },
-      ],
-    },
-  },
+  args: (() => {
+    const discordRow = model.connections.rows[0]
+    if (!discordRow) throw new Error('expected discord connection row')
+    return {
+      connections: {
+        ...model.connections,
+        rows: [
+          {
+            ...discordRow,
+            stateLabel: copy.connections.discord.linkedAs('oxfern#4417'),
+            linked: true,
+            actionLabel: copy.connections.discord.open,
+          },
+        ],
+      },
+    }
+  })(),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByText(copy.connections.discord.linkedAs('oxfern#4417'))).toBeInTheDocument()
   },

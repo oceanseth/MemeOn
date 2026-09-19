@@ -53,7 +53,9 @@ describe('presence', () => {
     sdk.ref.mockImplementation((_db: unknown, path: string) => ({ path }))
     sdk.onValue.mockImplementation(
       (query: { path: string }, success: Listener['success'], cancel?: Listener['cancel']) => {
-        listeners.push({ path: query.path, success, cancel })
+        const entry: Listener = { path: query.path, success }
+        if (cancel !== undefined) entry.cancel = cancel
+        listeners.push(entry)
         return vi.fn()
       },
     )

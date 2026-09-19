@@ -31,8 +31,10 @@ export function parseMemeRef(raw: string): string {
   const trimmed = raw.trim()
   const match = trimmed.match(/\/(?:m|meme)\/([^/?#]+)/)
   if (!match) return trimmed
+  const id = match[1]
+  if (id === undefined) return trimmed
   try {
-    return decodeURIComponent(match[1])
+    return decodeURIComponent(id)
   } catch {
     return trimmed
   }

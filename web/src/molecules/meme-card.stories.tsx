@@ -71,9 +71,9 @@ const noViewsMeme = localMeme({
   id: 'meme-no-views',
   title: 'quiet classic',
   reshares: 60,
-  views: undefined,
   reshareCount: 60,
 })
+delete noViewsMeme.views
 
 const allTiers = TIERS.map((tier, index) =>
   localMeme({
