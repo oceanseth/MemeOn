@@ -25,24 +25,24 @@ export interface TradeComposerModel {
   friendSelectItems: readonly SelectOption[]
   youGiveLegend: string
   youGiveBinderLabel: string
-  offerMemeSelectProps: { value: string; onValueChange: (value: string | null) => void }
-  offerMemeSelectItems: readonly SelectOption[]
-  showOfferShares: boolean
+  giveMemeSelectProps: { value: string; onValueChange: (value: string | null) => void }
+  giveMemeSelectItems: readonly SelectOption[]
+  showGiveShares: boolean
   sharesToGiveLabel: string
-  offerSharesInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }
-  offerSharesHint: string
+  giveSharesInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }
+  giveSharesHint: string
   braincellsAddLabel: string
-  offerCoinsInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }
-  offerCoinsHint: string
-  youWantLegend: string
-  youWantMemesLabel: string
-  askMemeSelectProps: { value: string; onValueChange: (value: string | null) => void }
-  askMemeSelectItems: readonly SelectOption[]
-  showAskShares: boolean
-  sharesToWantLabel: string
-  askSharesInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }
-  braincellsWantLabel: string
-  askCoinsInputProps: { value: number; min: number; onChange: ChangeEventHandler<HTMLInputElement> }
+  giveCoinsInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }
+  giveCoinsHint: string
+  youGetLegend: string
+  youGetMemesLabel: string
+  getMemeSelectProps: { value: string; onValueChange: (value: string | null) => void }
+  getMemeSelectItems: readonly SelectOption[]
+  showGetShares: boolean
+  sharesToGetLabel: string
+  getSharesInputProps: { value: number; min: number; max: number; onChange: ChangeEventHandler<HTMLInputElement> }
+  braincellsGetLabel: string
+  getCoinsInputProps: { value: number; min: number; onChange: ChangeEventHandler<HTMLInputElement> }
   proposeCaption: string
   error: string | null
   errorNoticeProps: HTMLAttributes<HTMLParagraphElement>
@@ -218,24 +218,24 @@ export function useTradesScreen(): TradesScreenModel {
     friendSelectItems: [{ value: '', label: copy.composer.pickFriend }, ...context.friends.map((friend) => ({ value: friend.sub, label: friend.name }))],
     youGiveLegend: copy.composer.youGiveLegend,
     youGiveBinderLabel: copy.composer.youGiveBinder,
-    offerMemeSelectProps: { value: context.offerMeme, onValueChange: (value) => send({ type: 'SET_OFFER_MEME', memeId: value ?? '' }) },
-    offerMemeSelectItems: [noMemeOption, ...binderOptions],
-    showOfferShares: !!context.offerMeme,
+    giveMemeSelectProps: { value: context.offerMeme, onValueChange: (value) => send({ type: 'SET_OFFER_MEME', memeId: value ?? '' }) },
+    giveMemeSelectItems: [noMemeOption, ...binderOptions],
+    showGiveShares: !!context.offerMeme,
     sharesToGiveLabel: copy.composer.sharesToGive,
-    offerSharesInputProps: { value: context.offerShares, min: 1, max: offerSharesMax, onChange: (event) => send({ type: 'SET_OFFER_SHARES', shares: clampInt(event.target.value, 0, offerSharesMax) }) },
-    offerSharesHint: copy.composer.offerSharesHint(heldShares),
+    giveSharesInputProps: { value: context.offerShares, min: 1, max: offerSharesMax, onChange: (event) => send({ type: 'SET_OFFER_SHARES', shares: clampInt(event.target.value, 0, offerSharesMax) }) },
+    giveSharesHint: copy.composer.giveSharesHint(heldShares),
     braincellsAddLabel: copy.composer.braincellsAdd,
-    offerCoinsInputProps: { value: context.offerCoins, min: 0, max: availableCoins, onChange: (event) => send({ type: 'SET_OFFER_COINS', coins: clampInt(event.target.value, 0, availableCoins) }) },
-    offerCoinsHint: copy.composer.offerCoinsHint(availableCoins),
-    youWantLegend: copy.composer.youWantLegend,
-    youWantMemesLabel: copy.composer.youWantMemes,
-    askMemeSelectProps: { value: context.askMeme, onValueChange: (value) => send({ type: 'SET_ASK_MEME', memeId: value ?? '' }) },
-    askMemeSelectItems: [noMemeOption, ...theirMemeOptions],
-    showAskShares: !!context.askMeme,
-    sharesToWantLabel: copy.composer.sharesToWant,
-    askSharesInputProps: { value: context.askShares, min: 1, max: 100, onChange: (event) => send({ type: 'SET_ASK_SHARES', shares: clampInt(event.target.value, 0, 100) }) },
-    braincellsWantLabel: copy.composer.braincellsWant,
-    askCoinsInputProps: { value: context.askCoins, min: 0, onChange: (event) => send({ type: 'SET_ASK_COINS', coins: clampInt(event.target.value, 0, MAX_COINS) }) },
+    giveCoinsInputProps: { value: context.offerCoins, min: 0, max: availableCoins, onChange: (event) => send({ type: 'SET_OFFER_COINS', coins: clampInt(event.target.value, 0, availableCoins) }) },
+    giveCoinsHint: copy.composer.giveCoinsHint(availableCoins),
+    youGetLegend: copy.composer.youGetLegend,
+    youGetMemesLabel: copy.composer.youGetMemes,
+    getMemeSelectProps: { value: context.askMeme, onValueChange: (value) => send({ type: 'SET_ASK_MEME', memeId: value ?? '' }) },
+    getMemeSelectItems: [noMemeOption, ...theirMemeOptions],
+    showGetShares: !!context.askMeme,
+    sharesToGetLabel: copy.composer.sharesToGet,
+    getSharesInputProps: { value: context.askShares, min: 1, max: 100, onChange: (event) => send({ type: 'SET_ASK_SHARES', shares: clampInt(event.target.value, 0, 100) }) },
+    braincellsGetLabel: copy.composer.braincellsGet,
+    getCoinsInputProps: { value: context.askCoins, min: 0, onChange: (event) => send({ type: 'SET_ASK_COINS', coins: clampInt(event.target.value, 0, MAX_COINS) }) },
     proposeCaption: copy.composer.proposeCaption,
     error: context.composeErr,
     errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' },
@@ -249,25 +249,28 @@ export function useTradesScreen(): TradesScreenModel {
   const confirming = context.confirming
   const confirmingTrade = confirming ? context.trades.find((trade) => trade.id === confirming.tradeId) ?? null : null
   const accepting = confirming?.action === 'accept'
+  const confirmingMine = !!confirmingTrade && confirmingTrade.fromId === (user?.sub ?? '')
+  const giveSide = confirmingTrade ? (confirmingMine ? confirmingTrade.offer : confirmingTrade.ask) : null
+  const getSide = confirmingTrade ? (confirmingMine ? confirmingTrade.ask : confirmingTrade.offer) : null
   const confirmDialog = buildConfirmDialogModel({
     id: 'trade-confirm',
     open: !!confirmingTrade,
     danger: !accepting,
     busy: phase === 'acting',
     title: accepting ? copy.confirm.acceptTitle : copy.confirm.withdrawTitle,
-    message: confirmingTrade
+    message: confirmingTrade && giveSide && getSide
       ? accepting
         ? [
             { kind: 'strong' as const, text: copy.confirm.give },
-            tradeSideSentence(confirmingTrade.ask, context.memeNames),
+            tradeSideSentence(giveSide, context.memeNames),
             copy.confirm.betweenSides,
             { kind: 'strong' as const, text: copy.confirm.get },
-            tradeSideSentence(confirmingTrade.offer, context.memeNames),
+            tradeSideSentence(getSide, context.memeNames),
             copy.confirm.end,
           ]
         : copy.confirm.withdraw(
-            tradeSideSentence(confirmingTrade.offer, context.memeNames),
-            tradeSideSentence(confirmingTrade.ask, context.memeNames),
+            tradeSideSentence(giveSide, context.memeNames),
+            tradeSideSentence(getSide, context.memeNames),
             confirmingTrade.toName,
           )
       : '',

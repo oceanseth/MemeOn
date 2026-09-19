@@ -31,14 +31,14 @@ export const tradesCopy = {
     youGiveBinder: 'You give (from your binder)',
     sharesToGive: 'Shares to give',
     braincellsAdd: 'Braincells you add',
-    youWantLegend: 'You want',
-    youWantMemes: 'You want (their memes)',
-    sharesToWant: 'Shares you want',
-    braincellsWant: 'Braincells you want',
+    youGetLegend: 'You get',
+    youGetMemes: 'You get (their memes)',
+    sharesToGet: 'Shares to get',
+    braincellsGet: 'Braincells you get',
     proposeCaption: 'They get a notification — nothing moves until they accept.',
     binderOption: (title: string, held: number) => `${title} (you hold ${held})`,
-    offerSharesHint: (held: number) => `you hold ${held}`,
-    offerCoinsHint: (available: number) => `${braincells(available)} available`,
+    giveSharesHint: (held: number) => `you hold ${held}`,
+    giveCoinsHint: (available: number) => `${braincells(available)} available`,
   },
   toasts: {
     executed: 'Trade executed',
@@ -53,13 +53,13 @@ export const tradesCopy = {
   confirm: {
     acceptTitle: 'Accept this trade?',
     withdrawTitle: 'Withdraw this proposal?',
-    /** the accept restatement: `<strong>You give </strong>{ask}. <strong>You get </strong>{offer}.` */
+    /** the accept restatement from where you stand: You give {give}. You get {get}. */
     give: 'You give ',
     get: 'You get ',
     betweenSides: '. ',
     end: '.',
-    withdraw: (offer: string, ask: string, toName: string) =>
-      `You offered ${offer} for ${ask}. Withdrawing takes it off ${toName}'s table.`,
+    withdraw: (give: string, get: string, toName: string) =>
+      `You offered ${give} for ${get}. Withdrawing takes it off ${toName}'s table.`,
     acceptLabel: sharedCopy.accept,
     withdrawLabel: 'Withdraw',
   },
