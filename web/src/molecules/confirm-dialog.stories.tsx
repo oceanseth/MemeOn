@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { Button } from '@/atoms/button'
+import { developersCopy } from '../copy/developers'
+import { memeDetailCopy } from '../copy/memeDetail'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
 import { ConfirmDialog } from '@/molecules/confirm-dialog'
 
@@ -157,6 +159,50 @@ export const Prompt: Story = {
       await expect(canvasElement.querySelector(`[data-slot="${slot}"]`)).not.toBeNull()
     }
     await expect(canvas.getByText('0/400')).toHaveAttribute('data-slot', 'field-counter')
+  },
+}
+
+/** Adjacent strong/code parts — copy already carries the spaces, the molecule does not insert any. */
+export const RichInlines: Story = {
+  args: {
+    model: buildConfirmDialogModel({
+      ...baseInput,
+      title: memeDetailCopy.deleteDialog.title,
+      message: [
+        { kind: 'strong' as const, text: memeDetailCopy.quotedTitle('fresh paper') },
+        memeDetailCopy.deleteDialog.body,
+      ],
+      confirmLabel: memeDetailCopy.deleteDialog.confirm,
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const dialog = canvas.getByRole('alertdialog', { name: memeDetailCopy.deleteDialog.title })
+    await expect(dialog.querySelector('strong')).toHaveTextContent(memeDetailCopy.quotedTitle('fresh paper'))
+    await expect(dialog).toHaveTextContent(memeDetailCopy.deleteDialog.body.trim())
+  },
+}
+
+/** Developers revoke-fail lives inside the open dialog because the page behind it is inert. */
+export const WithError: Story = {
+  args: {
+    model: buildConfirmDialogModel({
+      ...baseInput,
+      title: developersCopy.revokeDialog.title,
+      message: [
+        { kind: 'code' as const, text: developersCopy.revokeDialog.prefix('mk_3f9a2c') },
+        developersCopy.revokeDialog.body('my-trading-bot'),
+      ],
+      error: developersCopy.errors.revoke('my-trading-bot'),
+      danger: true,
+      confirmLabel: developersCopy.revokeDialog.confirm,
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const dialog = canvas.getByRole('alertdialog', { name: developersCopy.revokeDialog.title })
+    await expect(dialog.querySelector('code')).toHaveTextContent(developersCopy.revokeDialog.prefix('mk_3f9a2c'))
+    await expect(within(dialog).getByRole('alert')).toHaveTextContent(developersCopy.errors.revoke('my-trading-bot'))
   },
 }
 
