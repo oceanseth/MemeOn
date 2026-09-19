@@ -3,8 +3,12 @@ import { sharedCopy } from './shared'
 
 /** Every string the Profile screen spells itself; the cards read `lib/memeCardModel`. */
 export const profileCopy = {
-  /** Route name for `document.title`; never the player's display name. */
-  documentTitle: 'Profile',
+  /** Route names for `document.title`; never the player's display name. */
+  documentTitle: {
+    profile: 'Profile',
+    /** `/binder/:sub` public binder — not `My Binder`, not the fetched name. */
+    binder: 'Binder',
+  },
   /** tab names; the grid's accessible name leads with the current one */
   tabs: {
     created: 'Created',
