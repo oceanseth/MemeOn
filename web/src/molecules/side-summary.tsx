@@ -19,7 +19,7 @@ const THUMB = 'size-9 shrink-0 rounded-xs border-2 border-border bg-accent objec
 /** The line's own step: 14/500, a size under the row title the `Item` atom would set. */
 const MEME_LINE = 'font-sans text-sm font-medium text-foreground'
 
-/** One side of a trade: the owner legend, then an `Item` row per meme, then the coins line. */
+/** One side of a trade: the owner legend, then an `Item` row per meme, then the braincells line. */
 export function SideSummary({ model }: { model: TradeSideSummaryModel }) {
   return (
     <div data-slot="trade-side" className={WELL}>
@@ -50,12 +50,12 @@ export function SideSummary({ model }: { model: TradeSideSummaryModel }) {
             )}
           </Item>
         ))}
-        {model.coinsLabel && (
+        {model.braincellsLabel && (
           <div className="inline-flex items-center gap-1 text-sm font-medium text-foreground tabular-nums">
             <span aria-hidden="true">
               <Icon name="brain" size={15} />
             </span>{' '}
-            {model.coinsLabel}
+            {model.braincellsLabel}
           </div>
         )}
       </ItemGroup>

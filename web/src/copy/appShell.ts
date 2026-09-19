@@ -1,3 +1,4 @@
+import { braincells } from '../lib/braincells'
 import { sharedCopy } from './shared'
 
 /** Every string the signed-in chrome shows. Keys name the role of the string, not its content. */
@@ -21,9 +22,9 @@ export const appShellCopy = {
     trade: 'Trade',
   },
   /** The balance figure and the name it announces: a span takes no name from a title. */
-  coins: {
-    text: (coins: number) => coins.toLocaleString(),
-    label: (coins: number) => `${coins.toLocaleString()} braincells`,
+  braincells: {
+    text: (amount: number) => braincells(amount),
+    label: (amount: number) => `${braincells(amount)} braincells`,
   },
   /** The account menu behind the header avatar, at every width. */
   accountMenu: {

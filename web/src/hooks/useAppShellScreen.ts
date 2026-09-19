@@ -156,7 +156,7 @@ export interface AppShellScreenModel {
    * The balance figure and the name it announces: a span takes no name from a title. While the
    * quest ladder is live the pill is `QuestBar`'s trigger and wears its ring.
    */
-  coins: { text: string; label: string } | null
+  braincells: { text: string; label: string } | null
   bottomNav: ShellTabItem[]
   /**
    * The account menu behind the header avatar at every width: Profile · Top Brains · Settings
@@ -213,10 +213,10 @@ export function buildAppShellScreenModel({
     })),
     mint: { label: copy.mint, linkProps: link(MINT_TO) },
     theme: { value: theme.value, onChange: theme.onChange, variant: 'button' },
-    coins: user
+    braincells: user
       ? {
-          text: copy.coins.text(user.coins),
-          label: copy.coins.label(user.coins),
+          text: copy.braincells.text(user.coins),
+          label: copy.braincells.label(user.coins),
         }
       : null,
     bottomNav: TAB_ITEMS.map(({ family: own, ...item }) => ({

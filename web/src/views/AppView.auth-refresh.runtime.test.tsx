@@ -125,7 +125,7 @@ it('keeps the legacy mint draft mounted while a post-pack refresh replaces an ol
     await nextTick()
   })
   // the pill is the quest trigger while the ladder is live, the plain balance once it is not
-  expect(host.querySelector('[data-slot="quest-trigger"], [data-slot="coins"]')?.textContent).toContain('52')
+  expect(host.querySelector('[data-slot="quest-trigger"], [data-slot="braincells"]')?.textContent).toContain('52')
   expect(host.querySelector<HTMLInputElement>('input#create-title')).toBe(title)
   expect(title.value).toBe('Keep my draft')
   expect(prompt.value).toBe('Draft prompt survives account refresh')

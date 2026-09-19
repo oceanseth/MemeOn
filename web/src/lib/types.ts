@@ -55,7 +55,7 @@ export interface Me {
   sub: string
   name: string
   picture: string | null
-  /** braincells — the plain number; the brain glyph is drawn by the Icon atom */
+  /** braincells — the plain number; the brain glyph is drawn by the Icon atom. Field name kept for wire compatibility. */
   coins: number
   portfolioValue: number
   collectionSize: number
@@ -91,6 +91,7 @@ export interface FriendEntry {
 
 export interface TradeSide {
   memes: { memeId: string; shares: number }[]
+  /** braincells — the plain number; field name kept for wire compatibility */
   coins: number
 }
 
