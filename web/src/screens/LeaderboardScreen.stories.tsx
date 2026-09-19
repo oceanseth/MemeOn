@@ -180,6 +180,7 @@ export const SelfInTopTen: Story = {
     await expect(rows[0]).toHaveAttribute('data-variant', 'raised')
     await expect(rows[0]).toHaveAttribute('data-frame', 'primary')
     await expect(rows[1]).toHaveAttribute('data-frame', 'none')
+    await expect(canvasElement.querySelector('[data-slot="your-rank"]')).toBeNull()
   },
 }
 
@@ -195,6 +196,9 @@ export const Full: Story = {
       'user-me',
     ),
     showMore: true,
+  },
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector('[data-slot="your-rank"]')).not.toBeNull()
   },
 }
 

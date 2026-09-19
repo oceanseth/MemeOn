@@ -1,6 +1,9 @@
+import { createActor } from 'xstate'
 import { describe, expect, it } from 'vitest'
 import { leaderboardCopy as copy } from '../copy/leaderboard'
-import { buildLeaderboardRowModel } from './useLeaderboardScreen'
+import type { LeaderRow } from '../lib/types'
+import { LEADERBOARD_PAGE_SIZE, leaderboardMachine } from '../stores/leaderboardMachine'
+import { buildLeaderboardRowModel, pinYouRow } from './useLeaderboardScreen'
 
 describe('leaderboard row model', () => {
   it('supplies a profile link and nullable avatar source before rendering', () => {
@@ -50,5 +53,65 @@ describe('leaderboard row model', () => {
       linkLabel: copy.row.youLabel(copy.row.label(2, 'lou', 1)),
     })
     expect(buildLeaderboardRowModel(leader, 1, 'user-pal').isMe).toBe(false)
+  })
+})
+
+const stub = (sub: string): LeaderRow => ({
+  sub, name: sub, picture: null, braincells: 1, collectionSize: 1, portfolioValue: 1,
+})
+
+function rankedWithMeAt(meIndex: number, count: number) {
+  return Array.from({ length: count }, (_, index) =>
+    buildLeaderboardRowModel(stub(index === meIndex ? 'me' : `u${index}`), index, 'me'),
+  )
+}
+
+describe('pinYouRow', () => {
+  it('does not pin when isMe is already inside the visible window', () => {
+    const ranked = rankedWithMeAt(1, 3)
+
+    expect(pinYouRow(ranked, LEADERBOARD_PAGE_SIZE)).toBeNull()
+    expect(pinYouRow(ranked, 2)).toBeNull()
+  })
+
+  it('pins isMe past the window with the unsliced rank numeral', () => {
+    const ranked = rankedWithMeAt(9, 10)
+    const you = pinYouRow(ranked, LEADERBOARD_PAGE_SIZE)
+
+    expect(you).toMatchObject({ isMe: true, sub: 'me', rankNumeral: '10' })
+  })
+
+  it('clears the pin once the window grows past isMe', () => {
+    const ranked = rankedWithMeAt(9, 10)
+
+    expect(pinYouRow(ranked, LEADERBOARD_PAGE_SIZE)).not.toBeNull()
+    expect(pinYouRow(ranked, LEADERBOARD_PAGE_SIZE * 2)).toBeNull()
+  })
+})
+
+describe('leaderboardMachine wrapper', () => {
+  it('SHOW_MORE grows visibleLimit 8 → 16', () => {
+    const actor = createActor(leaderboardMachine).start()
+
+    expect(LEADERBOARD_PAGE_SIZE).toBe(8)
+    expect(actor.getSnapshot().context.visibleLimit).toBe(8)
+    actor.send({ type: 'SHOW_MORE' })
+    expect(actor.getSnapshot().context.visibleLimit).toBe(16)
+    actor.stop()
+  })
+
+  it('FAIL then RETRY resets visibleLimit to 8', () => {
+    const actor = createActor(leaderboardMachine).start()
+
+    actor.send({ type: 'SHOW_MORE' })
+    actor.send({ type: 'FAIL', err: 'offline' })
+    expect(actor.getSnapshot().value).toBe('error')
+    actor.send({ type: 'RETRY' })
+
+    const snap = actor.getSnapshot()
+    expect(snap.value).toBe('loading')
+    expect(snap.context.err).toBeNull()
+    expect(snap.context.visibleLimit).toBe(LEADERBOARD_PAGE_SIZE)
+    actor.stop()
   })
 })
