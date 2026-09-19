@@ -116,7 +116,12 @@ export const UrlTyped: Story = {
     await expect(canvas.getByRole('button', { name: copy.url.fetch })).toBeEnabled()
     /* nothing is resolved yet, so the terminal action stays shut */
     await expect(canvas.getByRole('button', { name: copy.form.mint })).toBeDisabled()
-    await expect(canvas.getByText(`${copy.preview.toMint} ${copy.preview.mintHint.artwork}`)).toBeVisible()
+    /* url is typed but neither title nor artwork exist yet — hints join with · */
+    await expect(
+      canvas.getByText(
+        `${copy.preview.toMint} ${copy.preview.mintHint.title} · ${copy.preview.mintHint.artwork}`,
+      ),
+    ).toBeVisible()
   },
 }
 
