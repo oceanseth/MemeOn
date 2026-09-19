@@ -7,7 +7,7 @@ import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { memeReshareCount, memeViewCount } from '../lib/memeMetrics'
 import { buildMemeplexPanelModel } from '../lib/memeplexPanelModel'
-import { buildTierLadderModel, type DetailListingModel, type DetailSignedOutModel, type MemeDetailModel, type MemeDetailScreenModel } from '../hooks/useMemeDetailScreen'
+import { buildTierLadderModel, type DetailListingModel, type DetailSignedOutModel, type MemeDetailModel, type MemeDetailScreenModel } from '../lib/memeDetailModel'
 import { MemeDetailScreen } from './MemeDetailScreen'
 
 const noop = fn()
