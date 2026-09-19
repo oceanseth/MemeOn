@@ -125,6 +125,10 @@ interface ProfileViewModel {
 
 const copy = profileCopy
 
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'AbortError'
+}
+
 export function buildProfileTabProps(
   tab: ProfileTab,
   itemCount: number,
@@ -210,17 +214,28 @@ export function useProfileScreen({
     }
   }, [busy, friendStatus, load, profile, send])
 
-  /** Share via platform sheet when available, else clipboard. */
+  /** Share via platform sheet when available, else clipboard. AbortError is a dismissed sheet. */
   const onShare = useCallback(async () => {
     const url = window.location.href
     if (navigator.share) {
-      await navigator
-        .share({ title: profile ? copy.share.title(profile.name) : copy.share.fallbackTitle, url })
-        .catch(() => {})
+      try {
+        await navigator.share({ title: profile ? copy.share.title(profile.name) : copy.share.fallbackTitle, url })
+        return
+      } catch (error) {
+        if (isAbortError(error)) return
+      }
+    }
+    const write = navigator.clipboard?.writeText
+    if (!write) {
+      send({ type: 'FAIL_ACTION', err: copy.errors.copy })
       return
     }
-    await navigator.clipboard?.writeText(url).catch(() => {})
-  }, [profile])
+    try {
+      await write(url)
+    } catch {
+      send({ type: 'FAIL_ACTION', err: copy.errors.copy })
+    }
+  }, [profile, send])
 
   const isEmpty = !!data && memes.length === 0
   const ownName = profile?.name ?? copy.fallbackName

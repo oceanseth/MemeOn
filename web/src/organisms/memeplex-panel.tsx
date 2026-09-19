@@ -57,7 +57,7 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
             <MemeCard key={card.id} model={card} />
           ))}
         </div>
-      ) : (
+      ) : model.error ? null : (
         <p className={LINE}>
           No relatives yet — remix this meme or link related ones.
         </p>

@@ -298,6 +298,7 @@ export function useAppShellScreen(): AppShellScreenModel {
         if (!live) return
         void apiFetch<{ steps: QuestStep[] }>('/api/onboarding')
           .then((r) => { if (live) send({ type: 'SET_STEPS', steps: r.steps }) })
+          // steps stay null → quest bar stays hidden
           .catch(() => {})
       }
       /* a hidden tab is not a reader: skip its ticks and catch up when it comes back */
@@ -347,6 +348,7 @@ export function useAppShellScreen(): AppShellScreenModel {
       const unread = actor.getSnapshot().context.alerts.filter((a) => !a.read)
       if (next && unread.length > 0) {
         const ids = unread.map((a) => a.id)
+        // keep MARK_READ after a failed POST; do not SET_ALERTS_FAIL — session unread cue must survive open
         await post('/api/alerts/read', { ids }).catch(() => {})
         /* the ids stay marked in this session so the gesture that reveals them does not erase them */
         send({ type: 'MARK_READ', ids })

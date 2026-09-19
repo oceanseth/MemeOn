@@ -75,7 +75,7 @@ export function buildMemeplexPanelModel({
   const linkTarget = pick || pastedId
 
   return {
-    show: !!plex && (family.length > 0 || plex.ancestors.length > 0 || canEdit),
+    show: !!error || (!!plex && (family.length > 0 || plex.ancestors.length > 0 || canEdit)),
     ancestors: (plex?.ancestors ?? []).map((ancestor) => ({
       id: ancestor.id,
       title: ancestor.title,
