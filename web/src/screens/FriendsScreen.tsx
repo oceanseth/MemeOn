@@ -104,6 +104,12 @@ function PersonRow({
 
 /** Friends list as a function of its model. Every engine state is one set of args. */
 export function FriendsScreen({
+  pageTitle,
+  resultsHeading,
+  onlineHeading,
+  circleHeading,
+  incomingHeading,
+  outgoingHeading,
   hits,
   msg,
   err,
@@ -145,18 +151,14 @@ export function FriendsScreen({
 }: FriendsScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <PageHead level="h1" title="Friends">
+      <PageHead level="h1" title={pageTitle}>
         <Toolbar className="w-full lg:justify-start!">
           <span className={SEARCH_LANE}>
             <InputGroup>
               <InputGroupAddon>
                 <Icon name="magnifying-glass" size={20} />
               </InputGroupAddon>
-              <InputGroupInput
-                type="search"
-                placeholder="Find people by name…"
-                {...searchInputProps}
-              />
+              <InputGroupInput type="search" {...searchInputProps} />
             </InputGroup>
           </span>
           <Button variant="primary" className="max-sm:w-full" {...inviteButtonProps}>
@@ -173,7 +175,7 @@ export function FriendsScreen({
 
       {showSearchPanel && (
         <Card className="mb-5">
-          <CardTitle render={<h2 />}>Search results</CardTitle>
+          <CardTitle render={<h2 />}>{resultsHeading}</CardTitle>
           <div role="status">
             {showSearching && <p className="m-0 text-base text-muted-foreground">{searchingLabel}</p>}
             {showNoHits && <p className="m-0 text-base text-muted-foreground">{noHitsMessage}</p>}
@@ -183,7 +185,7 @@ export function FriendsScreen({
               {hits.map((u) => (
                 <PersonRow key={u.sub} {...u}>
                   <Button variant="primary" className={ROW_PILL} {...u.requestButtonProps}>
-                    Add friend
+                    {u.addFriendLabel}
                   </Button>
                 </PersonRow>
               ))}
@@ -194,7 +196,7 @@ export function FriendsScreen({
 
       {showOnline ? (
         <div className={ONLINE_STRIP} data-slot="online-now">
-          <span className={ONLINE_TITLE}>Online now</span>
+          <span className={ONLINE_TITLE}>{onlineHeading}</span>
           <div className="flex min-w-0 flex-wrap items-center gap-3">
             {onlineFriends.map((f) => (
               <Link
@@ -251,7 +253,7 @@ export function FriendsScreen({
       {showCircle && (
         <>
           <Heading as="h2" className="mt-8 mb-3">
-            Your circle
+            {circleHeading}
           </Heading>
           <div className={SECTION}>
             {accepted.map((f) => (
@@ -281,16 +283,16 @@ export function FriendsScreen({
       {showIncoming && (
         <>
           <Heading as="h2" className="mt-8 mb-3">
-            Requests for you
+            {incomingHeading}
           </Heading>
           <div className={SECTION}>
             {incoming.map((f) => (
               <PersonRow key={f.sub} {...f}>
                 <Button variant="primary" className={ROW_PILL} {...f.acceptButtonProps}>
-                  Accept
+                  {f.acceptLabel}
                 </Button>
                 <Button variant="link" size="sm" className="shrink-0" {...f.declineButtonProps}>
-                  Decline
+                  {f.declineLabel}
                 </Button>
               </PersonRow>
             ))}
@@ -301,14 +303,14 @@ export function FriendsScreen({
       {showOutgoing && (
         <>
           <Heading as="h2" className="mt-8 mb-3">
-            Sent requests
+            {outgoingHeading}
           </Heading>
           <div className={SECTION}>
             {outgoing.map((f) => (
               <PersonRow key={f.sub} {...f}>
                 <span className={cn(PENDING_PILL, 'max-sm:flex-1')}>{f.pendingLabel}</span>
                 <Button variant="link" size="sm" className="shrink-0" {...f.cancelButtonProps}>
-                  Cancel
+                  {f.cancelLabel}
                 </Button>
               </PersonRow>
             ))}

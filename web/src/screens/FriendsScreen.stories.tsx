@@ -14,10 +14,17 @@ const searchHit = { sub: friendAccepted.sub, name: friendAccepted.name, picture:
 
 const friendLink = buildFriendLinkModel
 const statsLabel = copy.row.stats(friendAccepted.collectionSize, friendAccepted.portfolioValue)
-const searchInput = (value: string) => ({ value, onChange: fn(), 'aria-label': copy.search.inputLabel })
+const searchInput = (value: string) => ({
+  value,
+  onChange: fn(),
+  'aria-label': copy.search.inputLabel,
+  placeholder: copy.search.placeholder,
+})
 const incomingRow = () => ({
   ...friendLink(friendIncoming),
   statsLabel,
+  acceptLabel: copy.actions.accept,
+  declineLabel: copy.actions.decline,
   acceptButtonProps: { onClick: fn(), 'aria-label': copy.row.accept(friendIncoming.name) },
   declineButtonProps: { onClick: fn(), 'aria-label': copy.row.decline(friendIncoming.name) },
 })
@@ -25,6 +32,7 @@ const outgoingRow = () => ({
   ...friendLink(friendOutgoing),
   statsLabel,
   pendingLabel: copy.row.pending,
+  cancelLabel: copy.actions.cancel,
   cancelButtonProps: { onClick: fn(), 'aria-label': copy.row.cancelRequest(friendOutgoing.name) },
 })
 
@@ -39,9 +47,9 @@ const removeDialog = buildConfirmDialogModel({
 const acceptedRow = (overrides: Partial<FriendsScreenModel['accepted'][number]> = {}) => ({
   ...friendLink(friendAccepted),
   isOnline: false,
-  onlineLabel: 'Online now',
+  onlineLabel: copy.online.label,
   statsLabel,
-  tradeLabel: 'Trade',
+  tradeLabel: copy.row.trade,
   tradeLinkProps: { to: '/trade', 'aria-label': copy.row.tradeWith(friendAccepted.name) },
   giftLabel: copy.row.gift,
   giftButtonProps: { onClick: fn(), 'aria-label': copy.row.giftTo(friendAccepted.name) },
@@ -52,6 +60,12 @@ const acceptedRow = (overrides: Partial<FriendsScreenModel['accepted'][number]> 
 
 const empty: FriendsScreenModel = {
   phase: 'empty',
+  pageTitle: copy.pageTitle,
+  resultsHeading: copy.search.resultsHeading,
+  onlineHeading: copy.online.label,
+  circleHeading: copy.sections.circle,
+  incomingHeading: copy.sections.incoming,
+  outgoingHeading: copy.sections.outgoing,
   searchInputProps: searchInput(''),
   hits: [],
   msg: null,
@@ -174,6 +188,7 @@ export const SearchHits: Story = {
     showHits: true,
     hits: [{
       ...buildFriendLinkModel(searchHit),
+      addFriendLabel: copy.search.addFriend,
       requestButtonProps: { onClick: fn(), 'aria-label': copy.search.requestLabel(searchHit.name) },
     }],
   },
@@ -226,8 +241,8 @@ export const RowBusy: Story = {
     showEmpty: false,
     showCircle: true,
     accepted: [acceptedRow({
-      giftButtonProps: { onClick: fn(), 'aria-label': `Gift shares to ${friendAccepted.name}`, disabled: true },
-      removeButtonProps: { onClick: fn(), 'aria-label': `Remove ${friendAccepted.name}`, disabled: true, 'aria-busy': true },
+      giftButtonProps: { onClick: fn(), 'aria-label': copy.row.giftTo(friendAccepted.name), disabled: true },
+      removeButtonProps: { onClick: fn(), 'aria-label': copy.row.removeName(friendAccepted.name), disabled: true, 'aria-busy': true },
     })],
   },
 }
@@ -240,7 +255,7 @@ export const Online: Story = {
     showOnline: true,
     accepted: [acceptedRow({ isOnline: true })],
     onlineFriends: [friendLink(friendAccepted)],
-    onlineCountLabel: '1 friend online',
+    onlineCountLabel: copy.online.count(1),
   },
 }
 
@@ -267,10 +282,10 @@ export const ConfirmRemove: Story = {
     removeDialog: buildConfirmDialogModel({
       open: true,
       danger: true,
-      title: `Remove ${friendAccepted.name}?`,
-      message: "You'll drop out of each other's circles and lose the shortcut to trade and gift. You can send a new request later.",
-      confirmLabel: 'Remove',
-      cancelLabel: 'Keep friend',
+      title: copy.removeDialog.remove.title(friendAccepted.name),
+      message: copy.removeDialog.remove.body,
+      confirmLabel: copy.removeDialog.remove.confirm,
+      cancelLabel: copy.removeDialog.remove.cancel,
       onConfirm: fn(),
       onCancel: fn(),
     }),
@@ -288,18 +303,21 @@ export const Full: Story = {
     showOutgoing: true,
     accepted: [acceptedRow({ isOnline: true })],
     onlineFriends: [friendLink(friendAccepted)],
-    onlineCountLabel: '1 friend online',
+    onlineCountLabel: copy.online.count(1),
     incoming: [{
       ...friendLink(friendIncoming),
       statsLabel,
-      acceptButtonProps: { onClick: fn(), 'aria-label': `Accept ${friendIncoming.name}'s request` },
-      declineButtonProps: { onClick: fn(), 'aria-label': `Decline ${friendIncoming.name}'s request` },
+      acceptLabel: copy.actions.accept,
+      declineLabel: copy.actions.decline,
+      acceptButtonProps: { onClick: fn(), 'aria-label': copy.row.accept(friendIncoming.name) },
+      declineButtonProps: { onClick: fn(), 'aria-label': copy.row.decline(friendIncoming.name) },
     }],
     outgoing: [{
       ...friendLink(friendOutgoing),
       statsLabel,
-      pendingLabel: 'Pending',
-      cancelButtonProps: { onClick: fn(), 'aria-label': `Cancel your request to ${friendOutgoing.name}` },
+      pendingLabel: copy.row.pending,
+      cancelLabel: copy.actions.cancel,
+      cancelButtonProps: { onClick: fn(), 'aria-label': copy.row.cancelRequest(friendOutgoing.name) },
     }],
   },
   play: async ({ canvasElement }) => {

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
+import { friendsCopy as copy } from '../copy/friends'
 import { FriendsView } from './FriendsView'
 
 const meta = {
@@ -27,12 +28,12 @@ export const SearchRequestRespondAndGift: Story = {
     const canvas = within(canvasElement)
     await expect(await canvas.findByText('incoming pal')).toBeInTheDocument()
     await expect(canvas.getByRole('link', { name: 'pal' })).toHaveAttribute('href', '/u/user-pal')
-    await userEvent.type(canvas.getByRole('searchbox', { name: 'Find people by name' }), 'first')
-    const add = await canvas.findByRole('button', { name: /^Add friend — / })
+    await userEvent.type(canvas.getByRole('searchbox', { name: copy.search.inputLabel }), 'first')
+    const add = await canvas.findByRole('button', { name: new RegExp(`^${copy.search.addFriend} — `) })
     await userEvent.click(add)
-    await expect(await canvas.findByText('Friend request sent')).toBeInTheDocument()
-    await userEvent.click(canvas.getByRole('button', { name: "Accept incoming pal's request" }))
-    await waitFor(() => expect(canvas.queryByRole('heading', { name: 'Requests for you' })).not.toBeInTheDocument())
+    await expect(await canvas.findByText(copy.toasts.requestSent)).toBeInTheDocument()
+    await userEvent.click(canvas.getByRole('button', { name: copy.row.accept('incoming pal') }))
+    await waitFor(() => expect(canvas.queryByRole('heading', { name: copy.sections.incoming })).not.toBeInTheDocument())
     await userEvent.click(canvas.getAllByRole('button', { name: /^Gift shares to / })[0]!)
     const dialog = await canvas.findByRole('dialog', { name: /Gift to pal/ })
     await userEvent.click(await within(dialog).findByRole('button', { name: /fresh paper/ }))
@@ -40,7 +41,7 @@ export const SearchRequestRespondAndGift: Story = {
     await userEvent.click(within(dialog).getByRole('button', { name: /Gift 1 of/ }))
     await expect(await canvas.findByText(/Gifted 1 share/)).toBeInTheDocument()
     await expect(loaded.scenario.requests.find((request: { path: string }) => request.path === '/api/gift')?.body).toEqual({ memeId: 'meme-paper', toSub: 'user-pal', shares: 1 })
-    await userEvent.click(canvas.getByRole('button', { name: /Invite a friend/ }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.invite.button }))
     await waitFor(() => expect(loaded.scenario.shared).toHaveLength(1))
   },
 }
@@ -50,9 +51,9 @@ export const InitialFailureShowsError: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><FriendsView /></ConnectedStory>,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(await canvas.findByText(/Couldn't load your friends/)).toBeInTheDocument()
-    await expect(canvas.queryByText(/No friends yet/)).not.toBeInTheDocument()
-    await expect(canvas.getByRole('button', { name: 'Retry' })).toBeInTheDocument()
+    await expect(await canvas.findByText(copy.loadError.title)).toBeInTheDocument()
+    await expect(canvas.queryByText(copy.empty.title)).not.toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: copy.loadError.retry })).toBeInTheDocument()
   },
 }
 

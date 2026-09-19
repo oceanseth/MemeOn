@@ -2,23 +2,24 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, within } from 'storybook/test'
 import { discordInstallUrl } from '../../.storybook/fixtures'
+import { discordPageCopy as copy } from '../copy/discordPage'
 import type { DiscordPageScreenModel } from '../hooks/useDiscordPageScreen'
 import { DiscordPageScreen } from './DiscordPageScreen'
 
-const pendingSteps = 'The button above goes live the moment the app is registered.'
-
 const empty: DiscordPageScreenModel = {
   phase: 'loading',
+  pageTitle: copy.pageTitle,
   showLoading: true,
   showInstall: false,
   showPending: false,
   showError: false,
-  installSteps: pendingSteps,
+  installSteps: copy.installSteps.pending,
   installLinkProps: {
     href: undefined,
     target: '_blank',
     rel: 'noreferrer',
   },
+  copy,
 }
 
 /** Storybook's viewport global; the vitest storybook project renders at the story's own width. */
@@ -49,7 +50,7 @@ export const Ready: Story = {
     showLoading: false,
     showInstall: true,
     showPending: false,
-    installSteps: 'Hit the button above.',
+    installSteps: copy.installSteps.live,
     installLinkProps: {
       href: discordInstallUrl,
       target: '_blank',
@@ -58,16 +59,16 @@ export const Ready: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const cta = canvas.getByRole('link', { name: 'Add MemeOn to Discord' })
+    const cta = canvas.getByRole('link', { name: copy.cta.label })
     await expect(cta).toHaveAttribute('href', discordInstallUrl)
     // new-tab warning is visible copy, not screen-reader-only
     await expect(cta).toHaveAttribute('aria-describedby', 'discord-cta-note')
-    await expect(canvas.getByText('opens Discord in a new tab')).toBeVisible()
-    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('MemeOn for Discord')
+    await expect(canvas.getByText(copy.cta.newTabNote)).toBeVisible()
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(copy.pageTitle)
     // five Cards: three flow steps, the FAQ band and the asset row; each flow title is a CardTitle
     await expect(canvasElement.querySelectorAll('[data-slot="card"]')).toHaveLength(5)
     await expect(canvasElement.querySelectorAll('[data-slot="card-title"][data-size="card-title"]')).toHaveLength(3)
-    await expect(canvas.getByRole('heading', { name: 'Tiny FAQ' })).toHaveAttribute('data-slot', 'heading')
+    await expect(canvas.getByRole('heading', { name: copy.faq.heading })).toHaveAttribute('data-slot', 'heading')
   },
 }
 

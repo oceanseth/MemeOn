@@ -7,8 +7,13 @@ import { sharedCopy } from './shared'
  * `lib/giftDialogModel` and `lib/confirmDialogModel`; only what this screen hands them lives here.
  */
 export const friendsCopy = {
+  pageTitle: 'Friends',
   search: {
     inputLabel: 'Find people by name',
+    /** visible placeholder; keep the ellipsis. inputLabel stays without it. */
+    placeholder: 'Find people by name…',
+    resultsHeading: 'Search results',
+    addFriend: 'Add friend',
     searching: 'Searching…',
     noHits: (query: string) => `No one goes by "${query}" — check the spelling, or invite them.`,
     /** WCAG 2.5.3: the button's visible words lead its accessible name */
@@ -28,6 +33,17 @@ export const friendsCopy = {
     /** trailing caption on the online strip */
     count: (count: number) => `${count} ${pluralWord(count, 'friend')} online`,
     label: 'Online now',
+  },
+  sections: {
+    circle: 'Your circle',
+    incoming: 'Requests for you',
+    outgoing: 'Sent requests',
+  },
+  /** visible row actions; long `row.accept(name)` / `row.decline` / `row.cancelRequest` stay a11y */
+  actions: {
+    accept: sharedCopy.accept,
+    decline: sharedCopy.decline,
+    cancel: sharedCopy.cancel,
   },
   row: {
     stats: (collectionSize: number, portfolioValue: number) =>

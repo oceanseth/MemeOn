@@ -45,9 +45,15 @@ type RowButtonProps = Pick<
 
 export interface FriendsScreenModel {
   phase: FriendsPhase
+  pageTitle: string
+  resultsHeading: string
+  onlineHeading: string
+  circleHeading: string
+  incomingHeading: string
+  outgoingHeading: string
   searchInputProps: Pick<
     InputHTMLAttributes<HTMLInputElement>,
-    'value' | 'onChange' | 'aria-label'
+    'value' | 'onChange' | 'aria-label' | 'placeholder'
   >
   msg: string | null
   err: string | null
@@ -99,11 +105,14 @@ export interface FriendLinkModel {
 }
 
 interface FriendHitModel extends FriendLinkModel {
+  addFriendLabel: string
   requestButtonProps: RowButtonProps
 }
 
 interface IncomingFriendModel extends FriendLinkModel {
   statsLabel: string
+  acceptLabel: string
+  declineLabel: string
   acceptButtonProps: RowButtonProps
   declineButtonProps: RowButtonProps
 }
@@ -111,6 +120,7 @@ interface IncomingFriendModel extends FriendLinkModel {
 interface OutgoingFriendModel extends FriendLinkModel {
   statsLabel: string
   pendingLabel: string
+  cancelLabel: string
   cancelButtonProps: RowButtonProps
 }
 
@@ -342,11 +352,12 @@ export function useFriendsScreen(): FriendsScreenModel {
 
   const searchInputProps: Pick<
     InputHTMLAttributes<HTMLInputElement>,
-    'value' | 'onChange' | 'aria-label'
+    'value' | 'onChange' | 'aria-label' | 'placeholder'
   > = {
     value: ctx.query,
     onChange: ((event) => onQueryChange(event.target.value)) as ChangeEventHandler<HTMLInputElement>,
     'aria-label': copy.search.inputLabel,
+    placeholder: copy.search.placeholder,
   }
   const friendLink = buildFriendLinkModel
   const giftMaxShares = Math.max(1, ctx.giftPick?.myShares ?? 1)
@@ -386,6 +397,12 @@ export function useFriendsScreen(): FriendsScreenModel {
 
   return {
     phase,
+    pageTitle: copy.pageTitle,
+    resultsHeading: copy.search.resultsHeading,
+    onlineHeading: copy.online.label,
+    circleHeading: copy.sections.circle,
+    incomingHeading: copy.sections.incoming,
+    outgoingHeading: copy.sections.outgoing,
     searchInputProps,
     msg: ctx.msg,
     err: ctx.actionErr,
@@ -395,6 +412,7 @@ export function useFriendsScreen(): FriendsScreenModel {
     onlineCountLabel: copy.online.count(onlineFriends.length),
     hits: ctx.hits.map((hit) => ({
       ...friendLink(hit),
+      addFriendLabel: copy.search.addFriend,
       requestButtonProps: {
         onClick: () => onRequest(hit.sub),
         'aria-label': copy.search.requestLabel(hit.name),
@@ -405,6 +423,8 @@ export function useFriendsScreen(): FriendsScreenModel {
     incoming: incoming.map((friend) => ({
       ...friendLink(friend),
       statsLabel: statsLine(friend),
+      acceptLabel: copy.actions.accept,
+      declineLabel: copy.actions.decline,
       acceptButtonProps: {
         onClick: () => onRespond(friend.sub, true),
         'aria-label': copy.row.accept(friend.name),
@@ -422,6 +442,7 @@ export function useFriendsScreen(): FriendsScreenModel {
       ...friendLink(friend),
       statsLabel: statsLine(friend),
       pendingLabel: copy.row.pending,
+      cancelLabel: copy.actions.cancel,
       cancelButtonProps: {
         onClick: () => onRemove(friend.sub),
         'aria-label': copy.row.cancelRequest(friend.name),
