@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, within } from 'storybook/test'
+import { paperMeme } from '../../.storybook/fixtures'
 import { createMemeCopy as copy } from '../copy/createMeme'
 import {
   buildCreateMemeScreenModel,
@@ -111,5 +112,20 @@ export const Typed: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: copy.url.fetch })).toBeEnabled()
     await expect(canvas.queryByRole('button', { name: copy.url.applyEdit })).toBeNull()
+  },
+}
+
+/** Companion to Screens/CreateMemeScreen `URL resolved, ready to mint` — panel chrome only. */
+export const Resolved: Story = {
+  args: panel({
+    urlDraft: 'https://www.reddit.com/r/memes/comments/abc',
+    imageUrl: paperMeme.imageUrl,
+    title: 'group chat energy',
+    prompt: copy.url.remixPlaceholder,
+  }),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: copy.url.fetch })).toBeEnabled()
+    await expect(canvas.getByRole('button', { name: copy.url.applyEdit })).toBeEnabled()
   },
 }

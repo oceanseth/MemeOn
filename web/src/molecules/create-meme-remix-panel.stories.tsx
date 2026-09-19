@@ -151,3 +151,21 @@ export const EditedFrame: Story = {
     await expect(canvas.queryByRole('button', { name: copy.remix.remixVideo })).toBeNull()
   },
 }
+
+/** Companion to Screens/CreateMemeScreen `Remix video ready to mint` — panel chrome only. */
+export const VideoReady: Story = {
+  args: panel({
+    remixId: videoMeme.id,
+    remixSource: videoMeme,
+    remixOutput: 'video',
+    imageUrl: videoMeme.imageUrl,
+    videoUrl: videoMeme.videoUrl ?? '/animated.mp4',
+    title: 'moving paper',
+    prompt: 'add a claude icon',
+  }),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('button', { name: copy.remix.remixVideo })).toBeEnabled()
+    await expect(canvas.queryByRole('button', { name: copy.remix.animateIt })).toBeNull()
+  },
+}
