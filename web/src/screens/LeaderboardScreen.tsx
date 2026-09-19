@@ -3,7 +3,7 @@ import { Avatar } from '@/atoms/avatar'
 import { Badge } from '@/atoms/badge'
 import { Button } from '@/atoms/button'
 import { Card } from '@/atoms/card'
-import { Empty, EmptyContent, EmptyDescription } from '@/atoms/empty'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
 import { Heading } from '@/atoms/heading'
 import { Item, ItemTitle } from '@/atoms/item'
 import { PageContainer } from '@/atoms/page-container'
@@ -97,6 +97,7 @@ export function LeaderboardScreen({
   showEmpty,
   emptyMessage,
   showError,
+  errorTitle,
   errorMessage,
   retryLabel,
   retry,
@@ -129,10 +130,10 @@ export function LeaderboardScreen({
             </div>
           </>
         ) : null}
-        {showList ? <span className="sr-only">{listSummary}</span> : null}
+        {showList && !showError ? <span className="sr-only">{listSummary}</span> : null}
       </div>
 
-      {showEmpty ? (
+      {showEmpty && !showError ? (
         <Empty>
           <EmptyDescription>{emptyMessage}</EmptyDescription>
         </Empty>
@@ -140,14 +141,17 @@ export function LeaderboardScreen({
 
       {showError ? (
         <Empty variant="error">
-          <EmptyDescription>{errorMessage}</EmptyDescription>
+          <EmptyHeader>
+            <EmptyTitle render={<h2 />}>{errorTitle}</EmptyTitle>
+            <EmptyDescription>{errorMessage}</EmptyDescription>
+          </EmptyHeader>
           <EmptyContent>
-            <Button onClick={retry}>{retryLabel}</Button>
+            <Button variant="primary" onClick={retry}>{retryLabel}</Button>
           </EmptyContent>
         </Empty>
       ) : null}
 
-      {showList ? (
+      {showList && !showError ? (
         <>
           {/* podium: head + top three; ranks 4+ continue in the list below */}
           <Card

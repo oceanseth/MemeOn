@@ -4,7 +4,7 @@ import { Badge } from '@/atoms/badge'
 import { Button, buttonVariants } from '@/atoms/button'
 import { Card } from '@/atoms/card'
 import { Checkbox } from '@/atoms/checkbox'
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader } from '@/atoms/empty'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
 import { Heading } from '@/atoms/heading'
 import { MemeCard } from '@/molecules/meme-card'
 import { PageContainer } from '@/atoms/page-container'
@@ -127,9 +127,7 @@ export function BinderScreen({
       ) : showError ? (
         <Empty variant="error">
           <EmptyHeader>
-            <EmptyDescription>
-              <strong>{errorTitle}</strong>
-            </EmptyDescription>
+            <EmptyTitle render={<h2 />}>{errorTitle}</EmptyTitle>
             <EmptyDescription>{errorMessage}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>

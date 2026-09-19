@@ -83,12 +83,18 @@ export const Error: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.loadError)
-    // the error state is the Empty card's own error variant, title and description included
-    const state = canvasElement.querySelector('[data-slot="empty"]')!
-    await expect(state).toHaveAttribute('data-variant', 'error')
-    await expect(state.querySelector('[data-slot="empty-title"]')?.tagName).toBe('H2')
-    await expect(canvas.getByRole('button', { name: copy.retry })).toBeInTheDocument()
+    const empty = canvas.getByRole('alert')
+    await expect(empty).toHaveAttribute('data-slot', 'empty')
+    await expect(empty).toHaveAttribute('data-variant', 'error')
+    const title = empty.querySelector('[data-slot="empty-title"]')
+    await expect(title?.tagName).toBe('H2')
+    await expect(title).toHaveTextContent(copy.errorHeading)
+    await expect(empty.querySelector('[data-slot="empty-description"]')).toHaveTextContent(copy.loadError)
+    const retry = canvas.getByRole('button', { name: copy.retry })
+    await expect(retry).toHaveClass('bg-primary')
+    await expect(canvasElement.querySelector('[data-slot="market-grid"]')).toBeNull()
+    await expect(canvas.queryByText(copy.empty.heading)).not.toBeInTheDocument()
+    await expect(canvas.queryByText(copy.empty.body)).not.toBeInTheDocument()
   },
 }
 export const Ready: Story = {

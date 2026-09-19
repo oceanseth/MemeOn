@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { Alert } from '@/atoms/alert'
 import { Button, buttonVariants } from '@/atoms/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/atoms/card'
-import { Empty, EmptyContent, EmptyDescription } from '@/atoms/empty'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
 import { Field, FieldDescription, FieldLabel, FieldLegend, FieldSet } from '@/atoms/field'
 import { Heading } from '@/atoms/heading'
 import { Input } from '@/atoms/input'
@@ -50,6 +50,8 @@ export function TradesScreen({
   errorNoticeProps,
   showErrorNotice,
   showError,
+  errorTitle,
+  errorMessage,
   retryButtonProps,
   retryLabel,
   showLoading,
@@ -117,9 +119,14 @@ export function TradesScreen({
         <span className="sr-only">{loadingLabel}</span>
         {SKELETON_ROWS.map((row) => <SkeletonRow key={row} className="min-h-45" />)}
       </div>}
-      {showError && <Empty variant="error" {...errorNoticeProps}>
-        <EmptyDescription><strong>{err}</strong></EmptyDescription>
-        <EmptyContent><Button variant="primary" {...retryButtonProps}>{retryLabel}</Button></EmptyContent>
+      {showError && <Empty variant="error">
+        <EmptyHeader>
+          <EmptyTitle render={<h2 />}>{errorTitle}</EmptyTitle>
+          <EmptyDescription>{errorMessage}</EmptyDescription>
+        </EmptyHeader>
+        <EmptyContent>
+          <Button variant="primary" {...retryButtonProps}>{retryLabel}</Button>
+        </EmptyContent>
       </Empty>}
       {showLists && <>
         <section aria-labelledby="trades-open">

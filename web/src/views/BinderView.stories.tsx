@@ -76,7 +76,7 @@ export const InitialFailureShowsRetry: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const alert = await canvas.findByRole('alert')
-    await expect(alert).toHaveTextContent("Couldn't load your binder.")
+    await expect(alert).toHaveTextContent(copy.errorState.title)
     await expect(canvas.queryByText(/binder is empty/i)).not.toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', { name: copy.retry }))
     await expect(await canvas.findByRole('link', { name: /fresh paper/i })).toBeInTheDocument()

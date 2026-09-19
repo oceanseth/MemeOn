@@ -53,10 +53,13 @@ Beside the tiers, four folders are the engine side:
 | `TermsScreen` | `buildTermsScreenModel()` in `lib/termsModel.ts` | `LegalDocumentModel` | — (static copy; no machine) |
 
 The table lists declared machine phases, including transient phases and states
-represented only by prop fixtures. In the reachable flows, initial list failures
-for Friends, Binder, and Leaderboard retain their existing empty presentation;
-Marketplace errors also present as empty. Detail, trades, and developer errors
-include mutation failures. A successful creation navigates away from its screen.
+represented only by prop fixtures. In the reachable flows, Marketplace, Binder,
+Trades, Friends, and Leaderboard present initial list load failure as Empty
+variant="error" with an h2 title, authored body, and a primary Try again
+control; the collection is hidden and Empty owns the alert. DiscordPage,
+Profile, and Developers error UX is not this list-load contract. Detail,
+trades, and developer errors include mutation failures. A successful
+creation navigates away from its screen.
 
 ## Composition tree
 
