@@ -150,7 +150,7 @@ test("does not count class lists: className, a merge call, or a string that read
       "const PLATE = cn('flex flex-col gap-3.5', 'lg:docked lg:-mx-5', 'max-lg:data-[collapsed=true]:hidden')",
       "export const Screen = () => (",
       "  <div className=\"grid list-none gap-5 grid-cols-[repeat(auto-fill,minmax(230px,1fr))]\">",
-      "    <p className={cn(ROW, PLATE)}>Build a fair deal.</p>",
+      "    <p className={cn(ROW, PLATE)}>{title}</p>",
       "  </div>",
       ")",
     ].join("\n"),
@@ -159,5 +159,63 @@ test("does not count class lists: className, a merge call, or a string that read
 
     // only the title counts; every class list is skipped by position or by shape
     assert.equal(check().status, 0, check().output)
+  })
+})
+
+test("counts copy-like JsxText in screens/", () => {
+  withSrc({
+    "screens/LandingScreen.tsx": "export const Screen = () => <h1>Memes are the new trading cards</h1>\n",
+  }, ({ check, baseline }) => {
+    writeFileSync(baseline, JSON.stringify({}))
+
+    const result = check()
+    assert.equal(result.status, 1, result.output)
+    assert.match(result.output, /screens\/LandingScreen\.tsx: 0 → 1/)
+    assert.match(result.output, /move the string into copy\//)
+
+    const listed = check("--list")
+    assert.match(listed.output, /Memes are the new trading cards/)
+  })
+})
+
+test("ignores trivia-only JsxText and still counts a quoted copy literal", () => {
+  withSrc({
+    "screens/SettingsScreen.tsx": [
+      "export const label = 'Settings'",
+      "export const Screen = () => (",
+      "  <div>",
+      "    <span />",
+      "  </div>",
+      ")",
+    ].join("\n"),
+  }, ({ check, baseline }) => {
+    writeFileSync(baseline, JSON.stringify({ "screens/SettingsScreen.tsx": 1 }))
+    assert.equal(check().status, 0, check().output)
+  })
+})
+
+test("does not count copy/ even for JsxText", () => {
+  withSrc({
+    "copy/x.tsx": "export const Screen = () => <h1>Memes are the new trading cards</h1>\n",
+    "hooks/useSettingsScreen.ts": "export const a = 'Settings'\n",
+  }, ({ check, baseline }) => {
+    writeFileSync(baseline, JSON.stringify({ "hooks/useSettingsScreen.ts": 1 }))
+    assert.equal(check().status, 0, check().output)
+    const listed = check("--list")
+    assert.doesNotMatch(listed.output, /copy\/x\.tsx/)
+    assert.doesNotMatch(listed.output, /Memes are the new trading cards/)
+  })
+})
+
+test("refuses to raise the baseline when JsxText would grow a file", () => {
+  withSrc({
+    "screens/LandingScreen.tsx": "export const Screen = () => <h1>Memes are the new trading cards</h1>\n",
+  }, ({ check, baseline }) => {
+    writeFileSync(baseline, JSON.stringify({ "screens/LandingScreen.tsx": 0 }))
+
+    const forced = check("--update")
+    assert.equal(forced.status, 1, forced.output)
+    assert.match(forced.output, /screens\/LandingScreen\.tsx: 0 → 1/)
+    assert.deepEqual(JSON.parse(readFileSync(baseline, "utf8")), { "screens/LandingScreen.tsx": 0 })
   })
 })
