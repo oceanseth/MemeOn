@@ -65,13 +65,28 @@ type PositionerPassthrough = Pick<
   'align' | 'alignOffset' | 'side' | 'sideOffset' | 'collisionPadding' | 'collisionAvoidance' | 'anchor'
 >
 
+/**
+ * Header popover pin (alerts, quest). Base UI @base-ui/react 1.8.0 `usePositioner`
+ * applies `useAnchorPositioning` positionerStyles as the positioner's inline style
+ * (position, top/left, transform, width). Default positionMethod is `absolute`
+ * once positioned (`fixed` only before the first measure). Author `!important`
+ * is the one thing that outranks it. Do not fork Base UI.
+ */
+export const headerPopoverPositionerClassName = cn(
+  'max-xs:fixed! max-xs:top-(--topbar-h)! max-xs:right-3! max-xs:left-3!',
+  'max-xs:w-auto! max-xs:transform-none!',
+)
+
+/** Companion width: 380 on desktop, stretch with the pinned gutters at ≤480. */
+export const headerPopoverPopupClassName = 'w-[min(380px,calc(100vw-24px))] max-xs:w-auto'
+
 export interface PopoverContentProps
   extends Styled<PopoverPrimitive.Popup.Props>,
     PositionerPassthrough,
     VariantProps<typeof popoverPopupVariants> {
   /** where the portal renders; pair `PortalAnchor` with `portalAnchor(id)` to stay inside the screen */
   container?: PopoverPrimitive.Portal.Props['container']
-  /** the positioner's own classes — the one place a caller may pin the geometry (`max-xs:fixed!`) */
+  /** the positioner's own classes — pin header popovers with `headerPopoverPositionerClassName` */
   positionerClassName?: string | undefined
 }
 
