@@ -95,6 +95,7 @@ signed-in player can reach is a `lazy()` chunk behind `RequireAuth`.
 | Engine | Holds | Read by |
 |---|---|---|
 | `stores/authMachine` + `AuthStore` | session: `idle → loading → ready \| unauthenticated \| error`; refresh retains the current user on transient failure | `useAuth`, `useAuthRuntime`, screen hooks |
+| `lib/api.ts` | web session credentials: `memeon_session` and `masky_access_token` in `localStorage` (not cookies, not `sessionStorage`). `apiFetch` sends `Authorization: Bearer` and `x-masky-token`. XSS can steal both (HS256 JWT TTL 30d). Logout is this-tab `clearSession()` only — no `storage` event, other tabs stay authed until refresh/401. Agent-browser injects the same keys: `agent-browser --state ./localstorage.json open http://localhost:5173`. | `completeMaskyLogin`, `authMachine`, `apiFetch` |
 | `stores/createStores` + `StoresContext` | inert app store bag; committed or imperative owners retain/dispose it | views via hooks |
 | `stores/themeStore` + `hooks/useTheme` | preference `auto`/`light`/`dark`, resolved arm, per-avatar persistence; paints `data-theme` on `<html>` | observer views, `ThemeControl` (the public header button, the Settings well), the `AvatarMenu` radio, `SettingsScreen` |
 | `stores/*Machine.ts` (one per flow) | XState source of truth for that screen | matching `useXScreen()` |
