@@ -14,6 +14,7 @@ import { NavPill, TabItem } from '@/organisms/nav-item'
 /** App chrome as a function of its model. QuestBar, AlertsBell, ThemeControl and AvatarMenu take model props. */
 export function AppShellScreen({
   children,
+  chrome,
   showNav,
   showToolbar,
   navItems,
@@ -77,7 +78,7 @@ export function AppShellScreen({
     : undefined
 
   return (
-    <AppShell nav={nav} headerEnd={headerEnd} bottomNav={tabs}>
+    <AppShell chrome={chrome} nav={nav} headerEnd={headerEnd} bottomNav={tabs}>
       {children}
     </AppShell>
   )

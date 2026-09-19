@@ -72,8 +72,8 @@ export const LoggedOut: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     onThemeChange.mockClear()
-    await expect(canvas.getByRole('link', { name: 'MemeOn' })).toBeVisible()
-    await expect(canvas.queryByRole('navigation', { name: 'Main' })).toBeNull()
+    await expect(canvas.getByRole('link', { name: appShellCopy.brand })).toBeVisible()
+    await expect(canvas.queryByRole('navigation', { name: appShellCopy.navAria })).toBeNull()
     // the public header carries the one theme control; it names where it is and where it goes
     await userEvent.click(canvas.getByRole('button', { name: 'Theme: Light. Switch to Dark' }))
     await expect(onThemeChange).toHaveBeenCalledWith('dark')
@@ -86,7 +86,7 @@ export const LoggedIn: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     onThemeChange.mockClear()
-    const nav = canvas.getByRole('navigation', { name: 'Main' })
+    const nav = canvas.getByRole('navigation', { name: appShellCopy.navAria })
     await expect(nav).toHaveAttribute('data-slot', 'top-nav')
     await expect(within(nav).getByRole('link', { name: 'Marketplace' })).toHaveAttribute('aria-current', 'page')
     await expect(within(nav).getByRole('link', { name: 'My Binder' })).not.toHaveAttribute('aria-current')
@@ -216,7 +216,7 @@ export const SkipLinkFocused: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.tab()
-    const skip = canvas.getByRole('link', { name: 'Skip to content' })
+    const skip = canvas.getByRole('link', { name: appShellCopy.skip })
     await expect(skip).toHaveFocus()
     await expect(skip).toHaveAttribute('href', '#main')
     await expect(canvasElement.querySelector('#main')).toBeInTheDocument()
@@ -236,7 +236,7 @@ export const Phone390: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // the bar's links are display:none on the phone: the tab bar is the one main navigation
-    const tabs = canvas.getByRole('navigation', { name: 'Main' })
+    const tabs = canvas.getByRole('navigation', { name: appShellCopy.navAria })
     await expect(tabs).toHaveAttribute('data-slot', 'bottom-nav')
     await expect(within(tabs).getByRole('link', { name: 'Market' })).toHaveAttribute('aria-current', 'page')
     await expect(within(tabs).getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')

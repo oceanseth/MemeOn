@@ -3,6 +3,7 @@ import type { LinkProps } from 'react-router-dom'
 import type { IconName } from '@/atoms/icon'
 import { appShellCopy } from '../copy/appShell'
 import { buildAlertsBellModel, type AlertsBellModel } from './alertsBellModel'
+import { buildAppShellChrome, type AppShellChromeModel } from './appShellChromeModel'
 import { buildQuestBarModel, type QuestBarModel } from './questBarModel'
 import type { Me, QuestKey } from './types'
 import type { AvatarMenuModel } from '@/molecules/avatar-menu'
@@ -135,6 +136,7 @@ export function allDone(user: Me | null): boolean {
 
 export interface AppShellScreenModel {
   phase: AppShellPhase
+  chrome: AppShellChromeModel
   showNav: boolean
   showToolbar: boolean
   /** The top bar's links, from the shell cut up; the tab bar carries the phone. */
@@ -194,6 +196,7 @@ export function buildAppShellScreenModel({
 
   return {
     phase,
+    chrome: buildAppShellChrome(),
     showNav: !!user,
     showToolbar: !!user,
     navItems: NAV_ITEMS.map(({ slot, families, ...item }) => ({

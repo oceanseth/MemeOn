@@ -21,9 +21,22 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const Family: Story = {}
+export const Family: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { name: memeplexPanelCopy.heading })).toBeVisible()
+  },
+}
 export const EmptyReadOnly: Story = { args: { model: build({ plex: memeplexEmpty }) } }
-export const EmptyEditor: Story = { args: { model: build({ plex: memeplexEmpty, canEdit: true, binder: [giftablePaper, giftableSilver, listedHolo] }) } }
+export const EmptyEditor: Story = {
+  args: { model: build({ plex: memeplexEmpty, canEdit: true, binder: [giftablePaper, giftableSilver, listedHolo] }) },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { name: memeplexPanelCopy.heading })).toBeVisible()
+    await expect(canvas.getByText(memeplexPanelCopy.empty)).toBeVisible()
+    await expect(canvas.getByPlaceholderText(memeplexPanelCopy.pastedPlaceholder)).toBeVisible()
+  },
+}
 export const EditorPicked: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper, listedHolo], pick: listedHolo.id }) } }
 export const PastedLink: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper], pasted: 'https://memeon.ai/m/meme-listed' }) } }
 export const Notice: Story = { args: { model: build({ notice: 'Added to the memeplex' }) } }
@@ -35,7 +48,7 @@ export const LoadFailed: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('alert')).toHaveTextContent(memeDetailCopy.memeplex.loadFailed)
-    await expect(canvas.queryByText(/No relatives yet/)).toBeNull()
+    await expect(canvas.queryByText(memeplexPanelCopy.empty)).toBeNull()
     await expect(canvas.getByLabelText(memeplexPanelCopy.pasted)).toBeVisible()
   },
 }

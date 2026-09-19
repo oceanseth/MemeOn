@@ -3,6 +3,18 @@ import { sharedCopy } from './shared'
 
 /** Every string the signed-in chrome shows. Keys name the role of the string, not its content. */
 export const appShellCopy = {
+  brand: sharedCopy.brand,
+  /** Bypass block: first Tab past the chrome onto `#main`. */
+  skip: 'Skip to content',
+  /** Landmark name for the top-bar links and the phone tab bar. */
+  navAria: 'Main',
+  footerAria: 'Footer',
+  /** Short footer labels — not the legal-page titles. */
+  footer: {
+    privacy: 'Privacy',
+    terms: 'Terms',
+    api: 'API',
+  },
   /** The top bar's five links. */
   nav: {
     marketplace: 'Marketplace',

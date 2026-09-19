@@ -5,6 +5,10 @@ import type { Meme, Memeplex } from './types'
 
 export interface MemeplexPanelModel {
   show: boolean
+  heading: string
+  descendedFrom: string
+  empty: string
+  linkLabel: string
   ancestors: readonly { id: string; title: string; linkProps: { to: string } }[]
   showOriginalLabel: boolean
   family: readonly MemeCardModel[]
@@ -14,8 +18,14 @@ export interface MemeplexPanelModel {
     'aria-label': string
     onValueChange: (value: string | null) => void
   }
+  pickPlaceholder: { value: string; label: string }
   linkable: readonly { id: string; title: string }[]
-  pastedProps: { value: string; 'aria-label': string; onChange: ChangeEventHandler<HTMLInputElement> }
+  pastedProps: {
+    value: string
+    placeholder: string
+    'aria-label': string
+    onChange: ChangeEventHandler<HTMLInputElement>
+  }
   /** One Link button for picker or pasted URL — picker wins when both are set. */
   linkButtonProps: { onClick: MouseEventHandler<HTMLButtonElement>; disabled: boolean }
   showLink: boolean
@@ -78,6 +88,10 @@ export function buildMemeplexPanelModel({
 
   return {
     show: !!error || (!!plex && (family.length > 0 || plex.ancestors.length > 0 || canEdit)),
+    heading: copy.heading,
+    descendedFrom: copy.descendedFrom,
+    empty: copy.empty,
+    linkLabel: copy.link,
     ancestors: (plex?.ancestors ?? []).map((ancestor) => ({
       id: ancestor.id,
       title: ancestor.title,
@@ -91,8 +105,14 @@ export function buildMemeplexPanelModel({
       'aria-label': copy.picker,
       onValueChange: (value) => onPickChange(value ?? ''),
     },
+    pickPlaceholder: { value: '', label: copy.pickerPlaceholder },
     linkable: linkable.map((candidate) => ({ id: candidate.id, title: candidate.title })),
-    pastedProps: { value: pasted, 'aria-label': copy.pasted, onChange: (event) => onPastedChange(event.target.value) },
+    pastedProps: {
+      value: pasted,
+      placeholder: copy.pastedPlaceholder,
+      'aria-label': copy.pasted,
+      onChange: (event) => onPastedChange(event.target.value),
+    },
     linkButtonProps: { onClick: () => onAdd(linkTarget), disabled: !linkTarget },
     showLink: !!linkTarget,
     notice,

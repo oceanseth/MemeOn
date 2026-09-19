@@ -11,7 +11,5 @@
   "views/TradesView.tsx": 1,
   "molecules/gift-dialog.tsx": 1,
   "molecules/quest-bar.tsx": 4,
-  "molecules/theme-control.tsx": 5,
-  "organisms/app-shell.tsx": 8,
-  "organisms/memeplex-panel.tsx": 6
+  "molecules/theme-control.tsx": 5
 }
