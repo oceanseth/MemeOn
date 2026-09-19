@@ -79,7 +79,6 @@ export type CreateMemeMediaModel =
 
 /** The meme as it will ship: the same card the marketplace renders, assembled while you type. */
 export interface CreateMemeCardModel {
-  cardProps: HTMLAttributes<HTMLDivElement>
   media: CreateMemeMediaModel
   title: string
   titleIsPlaceholder: boolean
@@ -87,7 +86,6 @@ export interface CreateMemeCardModel {
   tierName: string
   /** the tier and what it means for a card this new: "Paper · freshly minted" */
   tierLabel: string
-  tierColor: string
   statsLabel: string
   valueLabel: string
   originLabel: string | null
