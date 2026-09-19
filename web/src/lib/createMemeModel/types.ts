@@ -8,6 +8,7 @@ import type {
   VideoHTMLAttributes,
 } from 'react'
 import type { LinkProps } from 'react-router-dom'
+import type { SelectOption } from '@/atoms/select'
 import type { GiphyResult } from '../types'
 import type {
   CreateMemeMode,
@@ -23,13 +24,14 @@ type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement>
 
 /**
  * The `Select` atom is controlled by value rather than by a change event, so a picker's model is a
- * value plus the callback that receives the next one. The option copy stays in the screen with the
- * rest of the words.
+ * value plus the callback that receives the next one. Option labels live in `copy/createMeme.ts`
+ * and reach the screen as `items`.
  */
 export interface CreateMemeSelectModel {
   value: string
   disabled?: boolean
   onValueChange: (value: string | null) => void
+  items: readonly SelectOption[]
 }
 
 /**
@@ -67,10 +69,11 @@ export interface GiphyCellModel {
   picked: boolean
 }
 
-/** One source chip. The engine names the state; the screen picks the chrome for it. */
+/** One source chip. The engine names the state and label; the screen picks the icon. */
 export interface CreateMemeModeButtonModel {
   buttonProps: ButtonProps
   selected: boolean
+  label: string
 }
 
 export type CreateMemeMediaModel =
@@ -94,6 +97,24 @@ export interface CreateMemeCardModel {
 export interface CreateMemeScreenModel {
   phase: CreateMemePhase
   mode: CreateMemeMode
+  pageTitle: string
+  pageSubtitle: string
+  formHeading: string
+  formDescription: string
+  titleLabel: string
+  tagsLabel: string
+  promptLabel: string
+  creditsNote: string
+  titleFooter: string
+  toMintPrefix: string
+  sharesToYou: string
+  mintLabel: string
+  shareLinkLabel: string
+  openCardLabel: string
+  busyHoldText: string
+  previewHeading: string
+  previewDescription: string
+  previewPlaceholder: string
   showRemixModeButton: boolean
   modeGroupProps: HTMLAttributes<HTMLDivElement>
   busy: string | null
@@ -102,10 +123,30 @@ export interface CreateMemeScreenModel {
   errorNextStep: string | null
   remixSource: CreateMemeSourceModel | null
   remixSourceLoadingText: string
+  remixingPrefix: string
+  remixingBy: string
+  remixOutputLabel: string
+  videoRemixStyleLabel: string
+  approvalTitle: string
+  approvalBody: string
+  motionLabel: string
+  motionPromptPlaceholder: string
+  animateEditedLabel: string
+  rerunEditLabel: string
   giphyCategories: string[]
   giphyResults: GiphyResult[]
   giphyPick: SelectedGiphyModel | null
   giphyStatusText: string
+  giphyCategoryLabel: string
+  giphySearchLabel: string
+  giphyQueryPlaceholder: string
+  giphySearchButtonLabel: string
+  giphyPoweredBy: string
+  giphySelectedPrefix: string
+  giphyPickSuffix: string
+  giphyOptionalPromptLabel: string
+  giphyRemixPlaceholder: string
+  giphyRemixButtonLabel: string
   remixPromptLabel: string
   remixPromptPlaceholder: string
   generatePromptPlaceholder: string
@@ -113,6 +154,10 @@ export interface CreateMemeScreenModel {
   remixButtonLabel: string
   generateButtonLabel: string
   fetchUrlButtonLabel: string
+  urlFieldLabel: string
+  urlOptionalPromptLabel: string
+  urlRemixPlaceholder: string
+  applyUrlEditLabel: string
   mintHint: string
   titlePlaceholder: string
   titleHelpText: string

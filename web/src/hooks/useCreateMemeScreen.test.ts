@@ -119,9 +119,18 @@ describe('buildCreateMemeScreenModel', () => {
       prompt: 'current prompt',
     }, calls)
 
-    /* the chip's chrome is the screen's business: the model only names the state */
+    /* the chip's chrome is the screen's business: the model names the state and the label */
     const selectedMode = model.getModeButtonProps('remix')
-    expect(selectedMode).toMatchObject({ selected: true, buttonProps: { 'aria-pressed': true } })
+    expect(selectedMode).toMatchObject({
+      selected: true,
+      label: copy.modes.remix,
+      buttonProps: { 'aria-pressed': true },
+    })
+    expect(model.pageTitle).toBe(copy.page.title)
+    expect(model.remixOutputSelectProps.items).toEqual([
+      { value: 'image', label: copy.remix.outputOptions.image },
+      { value: 'video', label: copy.remix.outputOptions.video },
+    ])
     expect(selectedMode.buttonProps).not.toHaveProperty('className')
     selectedMode.buttonProps.onClick?.(clickEvent())
     expect(calls.selectMode).toHaveBeenCalledWith('remix')
@@ -314,7 +323,7 @@ describe('buildCreateMemeScreenModel', () => {
     }
     const awaiting = buildCreateMemeScreenModel('remix', frameOnly, actions())
     expect(awaiting.mintButtonProps.disabled).toBe(true)
-    expect(awaiting.mintHint).toBe('animate the frame')
+    expect(awaiting.mintHint).toBe(copy.preview.mintHint.animate)
     /* the approval panel owns the only remix control while the question is open */
     expect(awaiting.showEditedFrameApproval).toBe(true)
     expect(awaiting.showRemixButton).toBe(false)

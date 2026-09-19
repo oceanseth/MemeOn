@@ -113,10 +113,12 @@ export const UrlTyped: Story = {
   args: model({ mode: 'url', urlDraft: 'https://www.reddit.com/r/memes/comments/abc' }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Fetch image' })).toBeEnabled()
+    await expect(canvas.getByRole('button', { name: copy.url.fetch })).toBeEnabled()
     /* nothing is resolved yet, so the terminal action stays shut */
-    await expect(canvas.getByRole('button', { name: /Mint/ })).toBeDisabled()
-    await expect(canvas.getByText(/To mint:/)).toHaveTextContent('add artwork')
+    await expect(canvas.getByRole('button', { name: copy.form.mint })).toBeDisabled()
+    await expect(canvas.getByText(copy.form.toMint, { exact: false })).toHaveTextContent(
+      copy.preview.mintHint.artwork,
+    )
   },
 }
 
@@ -181,12 +183,14 @@ export const RemixEditedFrame: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     /* exactly one primary and one secondary: the frame-destroying remix button is gone */
-    await expect(canvas.getByRole('button', { name: /animate it/ })).toBeEnabled()
-    await expect(canvas.getByRole('button', { name: /Re-run the edit/ })).toBeEnabled()
-    await expect(canvas.queryByRole('button', { name: 'Remix into video' })).toBeNull()
+    await expect(canvas.getByRole('button', { name: copy.remix.animateIt })).toBeEnabled()
+    await expect(canvas.getByRole('button', { name: copy.remix.rerunEdit })).toBeEnabled()
+    await expect(canvas.queryByRole('button', { name: copy.remix.remixVideo })).toBeNull()
     /* "New video" was chosen, so a still frame is not mintable yet */
-    await expect(canvas.getByRole('button', { name: /Mint/ })).toBeDisabled()
-    await expect(canvas.getByText(/To mint:/)).toHaveTextContent('animate the frame')
+    await expect(canvas.getByRole('button', { name: copy.form.mint })).toBeDisabled()
+    await expect(canvas.getByText(copy.form.toMint, { exact: false })).toHaveTextContent(
+      copy.preview.mintHint.animate,
+    )
   },
 }
 
@@ -204,7 +208,7 @@ export const GiphyResults: Story = {
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const search = canvas.getByRole('searchbox', { name: 'Search GIPHY' })
+    const search = canvas.getByRole('searchbox', { name: copy.giphy.searchLabel })
     search.focus()
     await userEvent.keyboard('{Enter}')
     await expect(actions.searchGiphy).toHaveBeenCalledWith('cat')
@@ -307,7 +311,7 @@ export const Submitting: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     /* the mode row locks with the rest of the form: no reshaping a running request */
-    await expect(canvas.getByRole('button', { name: /Upload/ })).toBeDisabled()
+    await expect(canvas.getByRole('button', { name: copy.modes.upload })).toBeDisabled()
     /* the busy text lands in a region that was already mounted and silent, not one inserted with it */
     const busyNotice = canvas
       .getByText(copy.busy.generatingImage)
@@ -386,7 +390,7 @@ export const Success: Story = {
     // the render can run minutes: the outcome takes focus and announces itself
     await expect(canvas.getByRole('heading', { name: /Minted/ })).toHaveFocus()
     await expect(canvas.getByRole('status')).toHaveTextContent('Minted. Your card is live')
-    await userEvent.click(canvas.getByRole('button', { name: /Copy share link/ }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.form.success.copyLink }))
     await expect(actions.copyShareLink).toHaveBeenCalled()
   },
 }
@@ -419,7 +423,7 @@ export const Ready: Story = {
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: /Mint/ })).toBeEnabled()
+    await expect(canvas.getByRole('button', { name: copy.form.mint })).toBeEnabled()
     const tierNote = canvasElement.querySelector('[data-slot="tier-note"]') as HTMLElement
     await expect(within(tierNote).getByText('Paper')).toBeVisible()
     await expect(within(tierNote).getByText('freshly minted')).toBeVisible()

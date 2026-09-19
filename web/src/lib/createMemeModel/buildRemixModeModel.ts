@@ -3,11 +3,31 @@ import type { CreateMemeContext } from '../../stores/createMemeMachine'
 import { isRemixOutput, isVideoRemixStyle } from './shared'
 import type { CreateMemeScreenActions, CreateMemeScreenModel } from './types'
 
+const REMIX_OUTPUT_ITEMS = [
+  { value: 'image', label: copy.remix.outputOptions.image },
+  { value: 'video', label: copy.remix.outputOptions.video },
+] as const
+
+const VIDEO_REMIX_STYLE_ITEMS = [
+  { value: 'edit', label: copy.remix.videoStyleOptions.edit },
+  { value: 'restyle', label: copy.remix.videoStyleOptions.restyle },
+] as const
+
 type RemixModeSlice = Pick<
   CreateMemeScreenModel,
   | 'showRemixPanel'
   | 'remixSource'
   | 'remixSourceLoadingText'
+  | 'remixingPrefix'
+  | 'remixingBy'
+  | 'remixOutputLabel'
+  | 'videoRemixStyleLabel'
+  | 'approvalTitle'
+  | 'approvalBody'
+  | 'motionLabel'
+  | 'motionPromptPlaceholder'
+  | 'animateEditedLabel'
+  | 'rerunEditLabel'
   | 'remixPromptLabel'
   | 'remixPromptPlaceholder'
   | 'remixButtonLabel'
@@ -42,6 +62,16 @@ export function buildRemixModeModel(
         }
       : null,
     remixSourceLoadingText: copy.remix.loadingSource,
+    remixingPrefix: copy.remix.remixing,
+    remixingBy: copy.remix.by,
+    remixOutputLabel: copy.remix.outputLabel,
+    videoRemixStyleLabel: copy.remix.videoStyleLabel,
+    approvalTitle: copy.remix.approvalTitle,
+    approvalBody: copy.remix.approvalBody,
+    motionLabel: copy.remix.motionLabel,
+    motionPromptPlaceholder: copy.remix.motionPlaceholder,
+    animateEditedLabel: copy.remix.animateIt,
+    rerunEditLabel: copy.remix.rerunEdit,
     remixPromptLabel: remixPromptIsPrecise
       ? copy.remix.promptLabelPrecise
       : copy.remix.promptLabelEdit,
@@ -57,12 +87,14 @@ export function buildRemixModeModel(
     showRemixButton: !showEditedFrameApproval,
     remixOutputSelectProps: {
       value: ctx.remixOutput,
+      items: REMIX_OUTPUT_ITEMS,
       onValueChange: (value) => {
         if (value && isRemixOutput(value)) actions.setRemixOutput(value)
       },
     },
     videoModeSelectProps: {
       value: ctx.videoMode,
+      items: VIDEO_REMIX_STYLE_ITEMS,
       onValueChange: (value) => {
         if (value && isVideoRemixStyle(value)) actions.setVideoMode(value)
       },
