@@ -45,13 +45,23 @@ type RowButtonProps = Pick<
 
 export interface FriendsScreenModel {
   phase: FriendsPhase
+  pageTitle: string
   searchInputProps: Pick<
     InputHTMLAttributes<HTMLInputElement>,
-    'value' | 'onChange' | 'aria-label'
+    'value' | 'onChange' | 'aria-label' | 'placeholder'
   >
   msg: string | null
   err: string | null
   inviteLabel: string
+  searchResultsHeading: string
+  addFriendLabel: string
+  onlineHeading: string
+  circleHeading: string
+  incomingHeading: string
+  outgoingHeading: string
+  acceptLabel: string
+  declineLabel: string
+  cancelLabel: string
   inviteButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
   onlineFriends: readonly FriendLinkModel[]
   /** Trailing caption on the online strip. */
@@ -345,11 +355,12 @@ export function useFriendsScreen(): FriendsScreenModel {
 
   const searchInputProps: Pick<
     InputHTMLAttributes<HTMLInputElement>,
-    'value' | 'onChange' | 'aria-label'
+    'value' | 'onChange' | 'aria-label' | 'placeholder'
   > = {
     value: ctx.query,
     onChange: ((event) => onQueryChange(event.target.value)) as ChangeEventHandler<HTMLInputElement>,
     'aria-label': copy.search.inputLabel,
+    placeholder: copy.search.placeholder,
   }
   const friendLink = buildFriendLinkModel
   const giftMaxShares = Math.max(1, ctx.giftPick?.myShares ?? 1)
@@ -389,10 +400,20 @@ export function useFriendsScreen(): FriendsScreenModel {
 
   return {
     phase,
+    pageTitle: copy.pageTitle,
     searchInputProps,
     msg: ctx.msg,
     err: ctx.actionErr,
     inviteLabel: ctx.copied ? copy.invite.copied : ctx.copyFailed ? copy.invite.copyFailed : copy.invite.button,
+    searchResultsHeading: copy.search.resultsHeading,
+    addFriendLabel: copy.search.addFriend,
+    onlineHeading: copy.online.label,
+    circleHeading: copy.sections.circle,
+    incomingHeading: copy.sections.incoming,
+    outgoingHeading: copy.sections.outgoing,
+    acceptLabel: copy.row.acceptLabel,
+    declineLabel: copy.row.declineLabel,
+    cancelLabel: copy.row.cancelLabel,
     inviteButtonProps: { onClick: onCopyInvite },
     onlineFriends: onlineFriends.map(friendLink),
     onlineCountLabel: copy.online.count(onlineFriends.length),

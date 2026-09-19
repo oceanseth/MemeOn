@@ -71,7 +71,7 @@ async function click(element: HTMLElement): Promise<void> {
 }
 
 async function search(value: string): Promise<void> {
-  const input = host.querySelector<HTMLInputElement>('input[placeholder^="Find people"]')!
+  const input = host.querySelector<HTMLInputElement>(`input[placeholder="${copy.search.placeholder}"]`)!
   await act(async () => {
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, value)
     input.dispatchEvent(new Event('input', { bubbles: true }))
@@ -264,17 +264,17 @@ describe('FriendsView friend-request debounce ownership', () => {
     expect(host.textContent).toContain('Alice')
 
     await search('Bob')
-    await click(button('Add friend'))
+    await click(button(copy.search.addFriend))
     await act(async () => {
       request.resolve(json({ ok: true }))
       await settle()
     })
     await advance(300)
 
-    expect(host.querySelector<HTMLInputElement>('input[placeholder^="Find people"]')?.value).toBe('')
+    expect(host.querySelector<HTMLInputElement>(`input[placeholder="${copy.search.placeholder}"]`)?.value).toBe('')
     expect(api.userQueries).toEqual(['Alice'])
     expect(host.textContent).not.toContain('Bob')
-    expect([...host.querySelectorAll('button')].some((candidate) => candidate.textContent === 'Add friend')).toBe(false)
+    expect([...host.querySelectorAll('button')].some((candidate) => candidate.textContent === copy.search.addFriend)).toBe(false)
   })
 
   it('preserves a scheduled Bob search when the visible Alice request fails', async () => {
@@ -284,20 +284,20 @@ describe('FriendsView friend-request debounce ownership', () => {
     await search('Alice')
     await advance(250)
     await search('Bob')
-    await click(button('Add friend'))
+    await click(button(copy.search.addFriend))
     await act(async () => {
       request.resolve(json({ error: 'request unavailable' }, 503))
       await settle()
     })
     await advance(300)
 
-    expect(host.querySelector<HTMLInputElement>('input[placeholder^="Find people"]')?.value).toBe('Bob')
+    expect(host.querySelector<HTMLInputElement>(`input[placeholder="${copy.search.placeholder}"]`)?.value).toBe('Bob')
     expect(api.userQueries).toEqual(['Alice', 'Bob'])
     // the raw API string never reaches the user; the surface names the problem and the recovery
     expect(host.textContent).toContain(copy.errors.request)
     expect(host.querySelector('[data-slot="alert"]')).not.toBeNull()
     expect(host.textContent).toContain('Bob')
-    expect(button('Add friend')).toBeTruthy()
+    expect(button(copy.search.addFriend)).toBeTruthy()
   })
 
   it('cancels scheduled searches on manual clear and true unmount', async () => {

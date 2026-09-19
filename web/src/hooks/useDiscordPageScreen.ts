@@ -22,6 +22,7 @@ export interface DiscordPageScreenModel {
   /** first sentence of the install steps: the FAQ may not point at a button that is not there */
   installSteps: string
   installLinkProps: DiscordInstallLinkProps
+  copy: typeof discordPageCopy
 }
 
 /** Everything `DiscordPageScreen` renders. The hook is the engine; the screen is the terminal. */
@@ -50,5 +51,6 @@ export function useDiscordPageScreen(): DiscordPageScreenModel {
       target: '_blank',
       rel: 'noreferrer',
     },
+    copy: discordPageCopy,
   }
 }
