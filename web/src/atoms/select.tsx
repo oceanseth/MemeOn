@@ -1,10 +1,29 @@
 import { Select as BaseSelect } from '@base-ui/react/select'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
 import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 import type { Styled } from '@/atoms/field'
+import { Icon } from '@/atoms/icon'
 import { inputVariants } from '@/atoms/input'
 import { cn } from '@/lib/cn'
+
+/** House tick, duplicated in the three primitives so they do not share a check atom. Chrome matches Icon. */
+function HouseTick() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={16}
+      height={16}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M7.757 12L10.409 14.652L16.243 8.818" />
+    </svg>
+  )
+}
 
 /** The primitive root; `Select` below is the items-array convenience the screens use. */
 export const SelectRoot = BaseSelect.Root
@@ -53,7 +72,7 @@ export function SelectTrigger({
         data-slot="select-icon"
         className="pointer-events-none flex shrink-0 text-muted-foreground"
       >
-        <ChevronDownIcon className="size-4" />
+        <Icon name="chevron-down" size={16} />
       </BaseSelect.Icon>
     </BaseSelect.Trigger>
   )
@@ -183,7 +202,7 @@ export function SelectItem({ className, children, ...props }: Styled<BaseSelect.
     >
       <span className="flex size-5 shrink-0 items-center justify-center">
         <BaseSelect.ItemIndicator data-slot="select-item-indicator">
-          <CheckIcon className="size-4" />
+          <HouseTick />
         </BaseSelect.ItemIndicator>
       </span>
       <BaseSelect.ItemText className="min-w-0 flex-1">{children}</BaseSelect.ItemText>
@@ -208,7 +227,7 @@ export function SelectScrollUpButton({ className, ...props }: Styled<BaseSelect.
       className={cn('top-0 z-10 flex w-full cursor-default items-center justify-center bg-popover py-1', className)}
       {...props}
     >
-      <ChevronUpIcon className="size-4" />
+      <Icon name="chevron-down" size={16} className="rotate-180" />
     </BaseSelect.ScrollUpArrow>
   )
 }
@@ -220,7 +239,7 @@ export function SelectScrollDownButton({ className, ...props }: Styled<BaseSelec
       className={cn('bottom-0 z-10 flex w-full cursor-default items-center justify-center bg-popover py-1', className)}
       {...props}
     >
-      <ChevronDownIcon className="size-4" />
+      <Icon name="chevron-down" size={16} />
     </BaseSelect.ScrollDownArrow>
   )
 }
