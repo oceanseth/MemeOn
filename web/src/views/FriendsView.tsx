@@ -4,6 +4,7 @@ import { useFriendsScreen } from '../hooks/useFriendsScreen'
 import { FriendsScreen } from '../screens/FriendsScreen'
 
 export const FriendsView = observer(function FriendsView() {
-  useDocumentTitle('Friends')
-  return <FriendsScreen {...useFriendsScreen()} />
+  const model = useFriendsScreen()
+  useDocumentTitle(model.pageTitle)
+  return <FriendsScreen {...model} />
 })

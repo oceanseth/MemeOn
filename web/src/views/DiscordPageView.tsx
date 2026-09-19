@@ -4,6 +4,7 @@ import { useDiscordPageScreen } from '../hooks/useDiscordPageScreen'
 import { DiscordPageScreen } from '../screens/DiscordPageScreen'
 
 export const DiscordPageView = observer(function DiscordPageView() {
-  useDocumentTitle('MemeOn for Discord')
-  return <DiscordPageScreen {...useDiscordPageScreen()} />
+  const model = useDiscordPageScreen()
+  useDocumentTitle(model.copy.pageTitle)
+  return <DiscordPageScreen {...model} />
 })

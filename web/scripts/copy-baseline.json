@@ -1,10 +1,6 @@
 {
-  "screens/DiscordPageScreen.tsx": 25,
-  "screens/FriendsScreen.tsx": 11,
   "views/AppView.tsx": 1,
   "views/AuthCallbackView.tsx": 1,
-  "views/DiscordPageView.tsx": 1,
-  "views/FriendsView.tsx": 1,
   "views/MarketplaceView.tsx": 1,
   "views/MobileAuthForwardView.tsx": 1,
   "views/SettingsView.tsx": 1,
