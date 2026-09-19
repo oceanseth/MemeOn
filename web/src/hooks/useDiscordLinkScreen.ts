@@ -43,6 +43,7 @@ const failureOf = (e: unknown): DiscordLinkFailure =>
 export interface DiscordLinkScreenModel {
   phase: DiscordLinkPhase
   heading: string | null
+  documentTitle: string
   showConfirm: boolean
   showBusy: boolean
   showDone: boolean
@@ -51,6 +52,16 @@ export interface DiscordLinkScreenModel {
   errTitle: string | null
   errBody: string | null
   canRetry: boolean
+  connectLabel: string
+  notNowLabel: string
+  nextHeading: string
+  command: string
+  privacyLead: string
+  privacyRest: string
+  successLead: string
+  successRest: string
+  retryLabel: string
+  homeLabel: string
   onConfirm: () => void
   onRetry: () => void
 }
@@ -134,6 +145,7 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
   return {
     phase,
     heading: showError ? null : showDone ? copy.done : copy.heading,
+    documentTitle: copy.documentTitle,
     showConfirm: phase === 'confirm',
     showBusy: phase === 'checking' || phase === 'redirecting' || phase === 'working',
     showDone,
@@ -142,6 +154,16 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
     errTitle: showError ? copy.error.title : null,
     errBody: showError && ctx.failure ? FAILURE_BODY[ctx.failure] : null,
     canRetry: showError && !!ctx.failure && RETRYABLE[ctx.failure],
+    connectLabel: copy.connect,
+    notNowLabel: copy.notNow,
+    nextHeading: copy.nextHeading,
+    command: copy.command,
+    privacyLead: copy.privacy.lead,
+    privacyRest: copy.privacy.rest,
+    successLead: copy.success.lead,
+    successRest: copy.success.rest,
+    retryLabel: copy.retry,
+    homeLabel: copy.home,
     onConfirm,
     onRetry,
   }

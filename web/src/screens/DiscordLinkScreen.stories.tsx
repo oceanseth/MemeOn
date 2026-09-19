@@ -1,12 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
-import { expect } from 'storybook/test'
+import { expect, within } from 'storybook/test'
+import { discordLinkCopy as copy } from '../copy/discordLink'
 import type { DiscordLinkScreenModel } from '../hooks/useDiscordLinkScreen'
 import { DiscordLinkScreen } from './DiscordLinkScreen'
 
 const empty: DiscordLinkScreenModel = {
   phase: 'confirm',
-  heading: 'Connect Discord to MemeOn',
+  heading: copy.heading,
+  documentTitle: copy.documentTitle,
   showConfirm: true,
   showBusy: false,
   showDone: false,
@@ -15,6 +17,16 @@ const empty: DiscordLinkScreenModel = {
   errTitle: null,
   errBody: null,
   canRetry: false,
+  connectLabel: copy.connect,
+  notNowLabel: copy.notNow,
+  nextHeading: copy.nextHeading,
+  command: copy.command,
+  privacyLead: copy.privacy.lead,
+  privacyRest: copy.privacy.rest,
+  successLead: copy.success.lead,
+  successRest: copy.success.rest,
+  retryLabel: copy.retry,
+  homeLabel: copy.home,
   onConfirm: () => {},
   onRetry: () => {},
 }
@@ -39,14 +51,21 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const Confirm: Story = {}
+export const Confirm: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('heading', { name: copy.heading })).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: copy.connect })).toBeInTheDocument()
+    await expect(canvas.getByRole('link', { name: copy.notNow })).toBeInTheDocument()
+  },
+}
 
 export const Redirecting: Story = {
   args: {
     phase: 'redirecting',
     showConfirm: false,
     showBusy: true,
-    busyMessage: 'Taking you to Masky to log in…',
+    busyMessage: copy.busy.redirecting,
   },
 }
 
@@ -55,21 +74,21 @@ export const Working: Story = {
     phase: 'working',
     showConfirm: false,
     showBusy: true,
-    busyMessage: 'Connecting your Discord…',
+    busyMessage: copy.busy.working,
   },
   play: async ({ canvasElement }) => {
     // the waiting row is a muted Item with the 24px ring, not a restyled Spinner in a hand-made well
     const row = canvasElement.querySelector('[data-slot="item"]')!
     await expect(row).toHaveAttribute('data-variant', 'muted')
     await expect(row.querySelector('[data-slot="spinner"]')).toHaveAttribute('data-size', 'md')
-    await expect(row.querySelector('[data-slot="item-title"]')).toHaveTextContent('Connecting your Discord…')
+    await expect(row.querySelector('[data-slot="item-title"]')).toHaveTextContent(copy.busy.working)
   },
 }
 
 export const Done: Story = {
   args: {
     phase: 'done',
-    heading: 'Connected!',
+    heading: copy.done,
     showConfirm: false,
     showDone: true,
   },
@@ -89,8 +108,8 @@ export const ErrorRetryable: Story = {
     heading: null,
     showConfirm: false,
     showError: true,
-    errTitle: "Couldn't connect Discord",
-    errBody: "MemeOn couldn't reach the linker. Try again in a moment.",
+    errTitle: copy.error.title,
+    errBody: copy.error.body.unreachable,
     canRetry: true,
   },
   play: async ({ canvasElement }) => {
@@ -106,8 +125,8 @@ export const ErrorNoToken: Story = {
     heading: null,
     showConfirm: false,
     showError: true,
-    errTitle: "Couldn't connect Discord",
-    errBody: 'This link is missing its code. Run /memeon-connect in Discord for a fresh one.',
+    errTitle: copy.error.title,
+    errBody: copy.error.body['missing-token'],
     canRetry: false,
   },
 }

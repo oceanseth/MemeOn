@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
+import { discordLinkCopy as copy } from '../copy/discordLink'
 import { DiscordLinkView } from './DiscordLinkView'
 
 const meta = {
@@ -25,10 +26,10 @@ export const ConsentGateUsesLatestTokenOnce: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DiscordLinkView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    const connect = await canvas.findByRole('button', { name: 'Connect Discord' })
+    const connect = await canvas.findByRole('button', { name: copy.connect })
     await expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/discord/link')).toHaveLength(0)
     await userEvent.click(connect)
-    await expect(await canvas.findByRole('heading', { name: /Connected/ })).toBeInTheDocument()
+    await expect(await canvas.findByRole('heading', { name: copy.done })).toBeInTheDocument()
     await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/discord/link')).toHaveLength(1))
     await expect(loaded.scenario.requests.find((request: { path: string }) => request.path === '/api/discord/link')?.body).toEqual({ token: 'latest-story-token' })
   },
@@ -39,10 +40,10 @@ export const LinkExpired: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DiscordLinkView /></ConnectedStory>,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(await canvas.findByRole('button', { name: 'Connect Discord' }))
+    await userEvent.click(await canvas.findByRole('button', { name: copy.connect }))
     await expect(await canvas.findByText(/already got used or expired/)).toBeInTheDocument()
-    await expect(canvas.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
-    await expect(canvas.getByRole('link', { name: 'Back to MemeOn' })).toBeInTheDocument()
+    await expect(canvas.queryByRole('button', { name: copy.retry })).not.toBeInTheDocument()
+    await expect(canvas.getByRole('link', { name: copy.home })).toBeInTheDocument()
   },
 }
 
@@ -51,9 +52,9 @@ export const UnreachableThenRetried: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DiscordLinkView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(await canvas.findByRole('button', { name: 'Connect Discord' }))
+    await userEvent.click(await canvas.findByRole('button', { name: copy.connect }))
     await expect(await canvas.findByText(/couldn't reach the linker/)).toBeInTheDocument()
-    await userEvent.click(await canvas.findByRole('button', { name: 'Try again' }))
+    await userEvent.click(await canvas.findByRole('button', { name: copy.retry }))
     await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/discord/link')).toHaveLength(2))
   },
 }
@@ -63,9 +64,9 @@ export const WorkingThenDone: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DiscordLinkView /></ConnectedStory>,
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(await canvas.findByRole('button', { name: 'Connect Discord' }))
-    await expect(await canvas.findByText('Connecting your Discord…')).toBeInTheDocument()
+    await userEvent.click(await canvas.findByRole('button', { name: copy.connect }))
+    await expect(await canvas.findByText(copy.busy.working)).toBeInTheDocument()
     loaded.scenario.release('discord-link')
-    await expect(await canvas.findByRole('heading', { name: /Connected/ })).toBeInTheDocument()
+    await expect(await canvas.findByRole('heading', { name: copy.done })).toBeInTheDocument()
   },
 }

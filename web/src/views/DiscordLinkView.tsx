@@ -4,6 +4,7 @@ import { useDiscordLinkScreen } from '../hooks/useDiscordLinkScreen'
 import { DiscordLinkScreen } from '../screens/DiscordLinkScreen'
 
 export const DiscordLinkView = observer(function DiscordLinkView() {
-  useDocumentTitle('Connect Discord')
-  return <DiscordLinkScreen {...useDiscordLinkScreen()} />
+  const model = useDiscordLinkScreen()
+  useDocumentTitle(model.documentTitle)
+  return <DiscordLinkScreen {...model} />
 })
