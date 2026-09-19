@@ -1,7 +1,6 @@
 import { act, StrictMode, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { MemoryRouter, Route, Routes, useNavigate, type NavigateFunction } from 'react-router-dom'
-import { observer } from 'mobx-react-lite'
 import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { invitePal, meLou, memeplexEmpty, paperMeme } from '../../.storybook/fixtures'
@@ -116,12 +115,12 @@ function tree(child: ReactNode, path = '/test/user-pal/meme-paper?token=projecti
 async function mountHook<Model>(useModel: () => Model, read: (model: Model) => string) {
   let model!: Model
   const renders: string[] = []
-  const Probe = observer(function Probe() {
+  function Probe() {
     model = useModel()
     const value = read(model)
     renders.push(value)
     return <output>{value}</output>
-  })
+  }
   await act(() => root.render(tree(<Probe />)))
   return { current: () => model, renders, text: () => host.textContent }
 }
