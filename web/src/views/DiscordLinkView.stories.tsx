@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
 import { discordLinkCopy as copy } from '../copy/discordLink'
+import { setDiscordLinkConsent } from '../lib/sessionBus'
 import { DiscordLinkView } from './DiscordLinkView'
 
 const meta = {
@@ -56,6 +57,22 @@ export const UnreachableThenRetried: Story = {
     await expect(await canvas.findByText(/couldn't reach the linker/)).toBeInTheDocument()
     await userEvent.click(await canvas.findByRole('button', { name: copy.retry }))
     await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/discord/link')).toHaveLength(2))
+  },
+}
+
+export const ConsentAlreadyGivenPostsOnce: Story = {
+  loaders: [connectedLoader()],
+  beforeEach: async (context) => {
+    const cleanup = await connectedBeforeEach(context)
+    setDiscordLinkConsent('1')
+    return cleanup
+  },
+  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DiscordLinkView /></ConnectedStory>,
+  play: async ({ canvasElement, loaded }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByRole('heading', { name: copy.done })).toBeInTheDocument()
+    await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/discord/link')).toHaveLength(1))
+    await expect(loaded.scenario.requests.find((request: { path: string }) => request.path === '/api/discord/link')?.body).toEqual({ token: 'latest-story-token' })
   },
 }
 

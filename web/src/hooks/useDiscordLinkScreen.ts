@@ -2,8 +2,9 @@ import { useProjectedActor } from './useProjectedActor'
 import { useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { discordLinkCopy } from '../copy/discordLink'
-import { ApiError, post } from '../lib/api'
+import { ApiError } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
+import { hasDiscordLinkInFlight, postDiscordLink } from '../lib/discordLink'
 import {
   clearDiscordLinkConsent,
   clearDiscordLinkToken,
@@ -71,44 +72,53 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
   const [params] = useSearchParams()
   const { auth } = useStores()
   const [snapshot, send] = useProjectedActor(discordLinkMachine)
-  const settled = useRef(false)
   const tokenRef = useRef<string | null>(null)
-  /* A fresh /memeon-connect link can land on this screen while the first one is still waiting on
-     auth, so the newest token wins until the flow settles — then it is kept, because the POST
-     clears the stashed copy and Try again still needs the token it consumed. */
-  if (!settled.current) {
-    tokenRef.current = params.get('token') ?? getDiscordLinkToken()
-  }
   const ctx = snapshot.context
   const phase = snapshot.value as DiscordLinkPhase
+  /* Newest /memeon-connect token wins while auth is still loading (checking). After READY/LINK
+     the token is frozen so Try again still has the one the POST consumed. */
+  if (phase === 'checking') {
+    tokenRef.current = params.get('token') ?? getDiscordLinkToken()
+  }
 
-  const link = (token: string): void => {
-    clearDiscordLinkToken()
-    post('/api/discord/link', { token })
-      .then(() => send({ type: 'DONE' }))
-      .catch((e) => send({ type: 'FAIL', failure: failureOf(e) }))
+  const followLink = (token: string, live: () => boolean): void => {
+    void postDiscordLink(token).then(
+      () => {
+        if (!live()) return
+        clearDiscordLinkToken()
+        send({ type: 'DONE' })
+      },
+      (e) => {
+        if (!live()) return
+        send({ type: 'FAIL', failure: failureOf(e) })
+      },
+    )
   }
 
   useMountEffect(() => {
+    let cancelled = false
     const settle = () => {
-      if (auth.loading || settled.current) return
-      settled.current = true
+      if (cancelled || auth.loading) return
       const token = tokenRef.current
       if (!token) {
         send({ type: 'FAIL', failure: 'missing-token' })
         return
       }
       // consent already given before the SSO bounce: finish the job instead of re-asking
-      if (auth.user && getDiscordLinkConsent()) {
+      if (auth.user && (getDiscordLinkConsent() || hasDiscordLinkInFlight(token))) {
         clearDiscordLinkConsent()
         send({ type: 'LINK' })
-        link(token)
+        followLink(token, () => !cancelled)
         return
       }
       send({ type: 'READY' })
     }
     settle()
-    return auth.subscribe(settle)
+    const unsubscribe = auth.subscribe(settle)
+    return () => {
+      cancelled = true
+      unsubscribe()
+    }
   })
 
   const onConfirm = (): void => {
@@ -126,7 +136,7 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
       return
     }
     send({ type: 'LINK' })
-    link(token)
+    followLink(token, () => true)
   }
 
   const onRetry = (): void => {
@@ -136,7 +146,7 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
       return
     }
     send({ type: 'RETRY' })
-    link(token)
+    followLink(token, () => true)
   }
 
   const showError = phase === 'error'

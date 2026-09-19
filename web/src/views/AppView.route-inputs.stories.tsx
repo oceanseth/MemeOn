@@ -5,7 +5,7 @@ import { Link, MemoryRouter, Route, Routes } from "react-router-dom";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { meLou } from "../../.storybook/fixtures";
 import { createRequestGuard } from "../../.storybook/request-accounting";
-import { PENDING_VIDEO_KEY } from "../lib/sessionBus";
+import { PENDING_VIDEO_KEY, setDiscordLinkConsent } from "../lib/sessionBus";
 import { clearSession, setSessionToken } from "../lib/api";
 import { authMachine } from "../stores/authMachine";
 import { createStores } from "../stores/createStores";
@@ -479,6 +479,60 @@ export const PendingDiscordLinkUsesLatestTokenOnce: Story = {
       await canvas.findByRole("heading", { name: /Connected/ }),
     ).toBeInTheDocument();
 
+    await userEvent.click(canvas.getByRole("link", { name: "Token C" }));
+    await expect(loaded.linkBodies).toEqual([{ token: "token-b" }]);
+  },
+};
+
+export const PendingDiscordLinkConsentPostsLatestTokenOnce: Story = {
+  parameters: { initialEntries: ["/discord/link?token=token-a"] },
+  loaders: [
+    () => {
+      const stores = createStores(createActor(authMachine));
+      let resolveMe!: (response: Response) => void;
+      const me = new Promise<Response>((resolve) => {
+        resolveMe = resolve;
+      });
+      return { stores, resolveMe, me, linkBodies: [] as unknown[], requestGuard: createRequestGuard() };
+    },
+  ],
+  beforeEach: ({ loaded }) => {
+    const originalFetch = window.fetch;
+    setSessionToken("route-input-session");
+    setDiscordLinkConsent("1");
+    window.fetch = async (input, init) => {
+      const path = pathOf(input);
+      if (path === "/api/me") return loaded.me;
+      if (path === "/api/discord/link") {
+        loaded.linkBodies.push(JSON.parse(String(init?.body)));
+        return Response.json({});
+      }
+      return loaded.requestGuard.record(init?.method ?? "GET", path);
+    };
+    loaded.stores.retain();
+    return () => {
+      loaded.stores.dispose();
+      window.fetch = originalFetch;
+      clearSession();
+    };
+  },
+  render: (_args, { loaded }) => (
+    <StoresProvider stores={loaded.stores}>
+      <DiscordLinkRoutes />
+    </StoresProvider>
+  ),
+  play: async ({ canvasElement, loaded }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("link", { name: "Token B" }));
+    const refresh = loaded.stores.auth.refresh();
+    loaded.resolveMe(Response.json(meLou));
+    await refresh;
+    await waitFor(() =>
+      expect(loaded.linkBodies).toEqual([{ token: "token-b" }]),
+    );
+    await expect(
+      await canvas.findByRole("heading", { name: /Connected/ }),
+    ).toBeInTheDocument();
     await userEvent.click(canvas.getByRole("link", { name: "Token C" }));
     await expect(loaded.linkBodies).toEqual([{ token: "token-b" }]);
   },
