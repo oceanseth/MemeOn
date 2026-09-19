@@ -5,6 +5,12 @@ import type { Meme, Memeplex } from './types'
 
 export interface MemeplexPanelModel {
   show: boolean
+  heading: string
+  descendedFrom: string
+  empty: string
+  linkLabel: string
+  pickPlaceholder: { value: string; label: string }
+  pastedPlaceholder: string
   ancestors: readonly { id: string; title: string; linkProps: { to: string } }[]
   showOriginalLabel: boolean
   family: readonly MemeCardModel[]
@@ -78,6 +84,12 @@ export function buildMemeplexPanelModel({
 
   return {
     show: !!error || (!!plex && (family.length > 0 || plex.ancestors.length > 0 || canEdit)),
+    heading: copy.heading,
+    descendedFrom: copy.descendedFrom,
+    empty: copy.empty,
+    linkLabel: copy.link,
+    pickPlaceholder: { value: '', label: copy.pickerPlaceholder },
+    pastedPlaceholder: copy.pastedPlaceholder,
     ancestors: (plex?.ancestors ?? []).map((ancestor) => ({
       id: ancestor.id,
       title: ancestor.title,

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { routeFamily } from './appShellModel'
+import { appShellCopy } from '../copy/appShell'
+import { buildAppShellChrome, routeFamily } from './appShellModel'
 
 describe('routeFamily', () => {
   it('maps chrome routes, including /m/ also matching /marketplace/…', () => {
@@ -24,5 +25,15 @@ describe('routeFamily', () => {
     expect(routeFamily('/', null)).toBe(null)
     expect(routeFamily('/u/user-lou', 'user-lou')).toBe(null)
     expect(routeFamily('/auth/callback', null)).toBe(null)
+  })
+
+  it('builds skip/footer/brand chrome from copy', () => {
+    expect(buildAppShellChrome()).toEqual({
+      skip: appShellCopy.skip,
+      brand: appShellCopy.brand,
+      navAria: appShellCopy.navAria,
+      footerAria: appShellCopy.footerAria,
+      footer: appShellCopy.footer,
+    })
   })
 })

@@ -35,7 +35,7 @@ export const LoadFailed: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('alert')).toHaveTextContent(memeDetailCopy.memeplex.loadFailed)
-    await expect(canvas.queryByText(/No relatives yet/)).toBeNull()
+    await expect(canvas.queryByText(memeplexPanelCopy.empty)).toBeNull()
     await expect(canvas.getByLabelText(memeplexPanelCopy.pasted)).toBeVisible()
   },
 }

@@ -1,8 +1,17 @@
 import { braincells } from '../lib/braincells'
 import { sharedCopy } from './shared'
 
+const developers = 'Developers'
+const discord = 'Discord'
+
 /** Every string the signed-in chrome shows. Keys name the role of the string, not its content. */
 export const appShellCopy = {
+  /** Skip link: visible text and the accessible name stories query. */
+  skip: 'Skip to content',
+  brand: sharedCopy.brand,
+  /** Top nav and the phone tab bar. */
+  navAria: 'Main',
+  footerAria: 'Footer',
   /** The top bar's five links. */
   nav: {
     marketplace: 'Marketplace',
@@ -32,9 +41,17 @@ export const appShellCopy = {
     profile: 'Profile',
     leaderboard: 'Top Brains',
     settings: 'Settings',
-    developers: 'Developers',
-    discord: 'Discord',
+    developers,
+    discord,
     theme: 'Theme',
     logOut: sharedCopy.logOut,
+  },
+  /** Short footer labels — not the legal-page titles. */
+  footer: {
+    privacy: 'Privacy',
+    terms: 'Terms',
+    developers,
+    discord,
+    api: 'API',
   },
 } as const

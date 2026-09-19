@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { tierFor } from '@memeon/shared/tiers'
 import { memeDetailCopy as copy } from '../copy/memeDetail'
+import { memeplexPanelCopy } from '../copy/memeplexPanel'
 import { buildMemeplexPanelModel } from './memeplexPanelModel'
 import type { Meme } from './types'
 
@@ -45,6 +46,11 @@ describe('buildMemeplexPanelModel', () => {
     })
     expect(model.show).toBe(true)
     expect(model.error).toBe(copy.memeplex.loadFailed)
+    expect(model.heading).toBe(memeplexPanelCopy.heading)
+    expect(model.empty).toBe(memeplexPanelCopy.empty)
+    expect(model.pickPlaceholder).toEqual({ value: '', label: memeplexPanelCopy.pickerPlaceholder })
+    expect(model.pastedPlaceholder).toBe(memeplexPanelCopy.pastedPlaceholder)
+    expect(model.linkLabel).toBe(memeplexPanelCopy.link)
   })
 
   it('stays hidden when plex and error are both missing', () => {

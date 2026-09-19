@@ -99,6 +99,13 @@ const meta = {
   parameters: { layout: 'fullscreen' },
   decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
   args: {
+    chrome: {
+      skip: appShellCopy.skip,
+      brand: appShellCopy.brand,
+      navAria: appShellCopy.navAria,
+      footerAria: appShellCopy.footerAria,
+      footer: appShellCopy.footer,
+    },
     children: <PageContainer as="main" id="main" tabIndex={-1}><p>page body</p></PageContainer>,
   },
 } satisfies Meta<typeof AppShell>
@@ -113,10 +120,10 @@ export const LoggedOut: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('link', { name: 'MemeOn' })).toHaveAttribute('href', '/')
-    await expect(canvas.queryByRole('navigation', { name: 'Main' })).toBeNull()
+    await expect(canvas.getByRole('link', { name: appShellCopy.brand })).toHaveAttribute('href', '/')
+    await expect(canvas.queryByRole('navigation', { name: appShellCopy.navAria })).toBeNull()
     await expect(canvasElement.querySelector('[data-slot="app-frame"]')).toHaveAttribute('data-layout', 'public')
-    await expect(canvas.getByRole('navigation', { name: 'Footer' })).toBeInTheDocument()
+    await expect(canvas.getByRole('navigation', { name: appShellCopy.footerAria })).toBeInTheDocument()
   },
 }
 
@@ -135,7 +142,7 @@ export const LoggedIn: Story = {
     await expect(canvas.getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
     await expect(canvas.getByText(appShellCopy.braincells.label(meLou.coins))).toBeInTheDocument()
     /* from the cut the footer is the page's end, tab bar or not */
-    await expect(canvas.getByRole('navigation', { name: 'Footer' })).toBeVisible()
+    await expect(canvas.getByRole('navigation', { name: appShellCopy.footerAria })).toBeVisible()
   },
 }
 
@@ -153,10 +160,10 @@ export const Phone390: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // the bar's links are display:none on the phone; the tab bar is the one main navigation
-    const tabs = canvas.getByRole('navigation', { name: 'Main' })
+    const tabs = canvas.getByRole('navigation', { name: appShellCopy.navAria })
     await expect(tabs).toHaveAttribute('data-slot', 'bottom-nav')
     await expect(within(tabs).getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
-    await expect(canvas.getByRole('link', { name: 'MemeOn' })).toBeVisible()
+    await expect(canvas.getByRole('link', { name: appShellCopy.brand })).toBeVisible()
     /* the bar is the phone's: fixed to the viewport's bottom edge and spanning it, no gap */
     const box = tabs.getBoundingClientRect()
     await expect(getComputedStyle(tabs).position).toBe('fixed')

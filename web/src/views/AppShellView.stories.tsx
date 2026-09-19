@@ -5,6 +5,7 @@ import { createActor, fromPromise } from 'xstate'
 import { meLou, paperMeme, questStepsFresh, questStepsPackDone, unreadFriend, unreadSale } from '../../.storybook/fixtures'
 import { createRequestGuard } from '../../.storybook/request-accounting'
 import { PageContainer } from '@/atoms/page-container'
+import { appShellCopy } from '../copy/appShell'
 import type { Me } from '../lib/types'
 import { authMachine } from '../stores/authMachine'
 import { createStores } from '../stores/createStores'
@@ -45,7 +46,7 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('link', { name: 'MemeOn' })).toBeInTheDocument()
+    await expect(canvas.getByRole('link', { name: appShellCopy.brand })).toBeInTheDocument()
     await expect(canvas.queryByRole('link', { name: 'My Binder' })).not.toBeInTheDocument()
   },
 }
@@ -200,7 +201,7 @@ export const LogoutClearsConnectedChrome: Story = {
     await userEvent.click(await canvas.findByRole('menuitem', { name: 'Log out' }))
     await waitFor(() => expect(canvas.queryByRole('button', { name: 'Account menu' })).not.toBeInTheDocument())
     await expect(canvas.queryByRole('link', { name: 'My Binder' })).not.toBeInTheDocument()
-    await expect(canvas.getByRole('link', { name: 'MemeOn' })).toBeInTheDocument()
+    await expect(canvas.getByRole('link', { name: appShellCopy.brand })).toBeInTheDocument()
     await expect(loaded.shellStores.auth.user).toBeNull()
     await expect(loaded.requests.readIds).toEqual([])
   },

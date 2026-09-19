@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { createActor } from 'xstate'
 import { meLou, unreadSale } from '../../.storybook/fixtures'
+import { appShellCopy } from '../copy/appShell'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
 import { createRequestGuard } from '../../.storybook/request-accounting'
 import { clearSession, maskyAccessToken, sessionToken, setMaskyAccessToken, setSessionToken } from '../lib/api'
@@ -43,7 +44,7 @@ export const PublicLandingRoute: Story = {
     await expect(loaded.scenario.stores.auth.snapshot.matches('unauthenticated')).toBe(true)
     await expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/me')).toHaveLength(0)
     /* the bypass block has to land on the route's own <main>, not on a story-supplied wrapper */
-    await expect(canvas.getByRole('link', { name: 'Skip to content' })).toHaveAttribute('href', '#main')
+    await expect(canvas.getByRole('link', { name: appShellCopy.skip })).toHaveAttribute('href', '#main')
     const skipTarget = canvasElement.querySelector<HTMLElement>('#main')
     await expect(skipTarget?.tagName).toBe('MAIN')
     skipTarget?.focus()

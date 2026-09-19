@@ -527,6 +527,6 @@ describe('MemeDetailView secondary failures', () => {
     await renderDetail(ownerMeme.id)
     await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
     await eventually(() => expect(host.querySelector('[data-slot="alert"]')?.textContent).toContain(memeDetailCopy.memeplex.loadFailed))
-    expect(host.textContent).not.toContain('No relatives yet')
+    expect(host.textContent).not.toContain(memeplexPanelCopy.empty)
   })
 })

@@ -7,6 +7,7 @@ import { buildQuestBarModel, type QuestBarModel } from './questBarModel'
 import type { Me, QuestKey } from './types'
 import type { AvatarMenuModel } from '@/molecules/avatar-menu'
 import type { ThemeControlModel } from '@/molecules/theme-control'
+import type { AppShellChrome } from '@/organisms/app-shell'
 import type { AppShellContext, AppShellPhase } from '../stores/appShellMachine'
 
 const QUEST_KEYS: QuestKey[] = ['pack', 'mint', 'share', 'friend', 'trade']
@@ -133,8 +134,20 @@ export function allDone(user: Me | null): boolean {
   return !!user && !!user.onboarding && QUEST_KEYS.every((k) => user.onboarding?.[k])
 }
 
+/** Skip, wordmark, nav/footer names — public and signed-in shells share this. */
+export function buildAppShellChrome(): AppShellChrome {
+  return {
+    skip: copy.skip,
+    brand: copy.brand,
+    navAria: copy.navAria,
+    footerAria: copy.footerAria,
+    footer: copy.footer,
+  }
+}
+
 export interface AppShellScreenModel {
   phase: AppShellPhase
+  chrome: AppShellChrome
   showNav: boolean
   showToolbar: boolean
   /** The top bar's links, from the shell cut up; the tab bar carries the phone. */
@@ -194,6 +207,7 @@ export function buildAppShellScreenModel({
 
   return {
     phase,
+    chrome: buildAppShellChrome(),
     showNav: !!user,
     showToolbar: !!user,
     navItems: NAV_ITEMS.map(({ slot, families, ...item }) => ({

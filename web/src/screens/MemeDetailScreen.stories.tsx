@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { listedHolo, memeplexFamily, paperMeme } from '../../.storybook/fixtures'
 import { memeDetailCopy as copy } from '../copy/memeDetail'
+import { memeplexPanelCopy } from '../copy/memeplexPanel'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { memeReshareCount, memeViewCount } from '../lib/memeMetrics'
@@ -99,7 +100,7 @@ export const PlexLoadFailed: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText(copy.memeplex.loadFailed)).toBeVisible()
-    await expect(canvas.queryByText(/No relatives yet/)).toBeNull()
+    await expect(canvas.queryByText(memeplexPanelCopy.empty)).toBeNull()
   },
 }
 

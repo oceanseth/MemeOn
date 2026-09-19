@@ -18,6 +18,7 @@ import { useMountEffect } from './useMountEffect'
 import { useTheme } from './useTheme'
 
 export {
+  buildAppShellChrome,
   buildAppShellScreenModel,
   routeFamily,
   type AppShellScreenModel,
