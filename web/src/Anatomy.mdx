@@ -252,8 +252,18 @@ file other than stories and tests. Components in a tier need a sibling story;
 components elsewhere fail unless their exact source-relative path is listed
 below. This is an allowlist, not a folder exemption: a new `.tsx` file beside
 one of these paths must join a tier. JSX-free `.ts` domain modules outside
-the tiers remain outside the checker; tier-local `.ts` helpers are checked for
-state and import boundaries but do not need stories.
+the tiers remain outside the checker, except `hooks/**/*.ts` and
+`lib/**/*Model.ts` (stories and tests skipped; a `.tsx` in those folders still
+fails as a component outside a tier). `scripts/check-tiers.mjs` walks
+`hooks/useTradesScreen.ts` and `lib/confirmDialogModel.ts` (and every other
+file of those shapes) and fails a value import of `createElement` or
+`Fragment` from `react`, `React.createElement` / `jsxs`, JSX, or a value
+import from `atoms/` / `molecules/` / `organisms/` / `screens/` / `views/`.
+Type-only imports stay legal. `document.createElement` is not this rule, and
+the walk does not cover all of `lib/` (`lib/createMemeModel/shared.ts` still
+value-imports foil). STATE_HOOKS and the copy-import ban do not apply to
+hooks. Tier-local `.ts` helpers are checked for state and import boundaries
+but do not need stories.
 
 | Path | Why it stays |
 |---|---|

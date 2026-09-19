@@ -13,6 +13,11 @@
  *   - React context (createContext / useContext) below views/, except inside atoms/, where a
  *     compound atom (toggle group, tabs) hands its variant to its parts through a context
  *   - a state-library import below views/
+ *   - a value import of createElement / Fragment from react, React.createElement / jsxs,
+ *     JSX, or a value import from a markup tier, in hooks/ .ts files or lib/ *Model.ts
+ *     files (recursive; stories/tests skipped; .tsx in those folders is already
+ *     "component outside a tier folder"; type-only tier imports stay legal;
+ *     document.createElement is not this rule; the walk does not cover all of lib/)
  *   - a component in a tier folder without a sibling story
  *   - a .tsx or .jsx component outside a tier folder, except the listed
  *     source-relative integration files below
@@ -32,6 +37,9 @@ const COPY = "copy"
 // The formatting primitives copy/ may call, so a noun stays beside its sentence
 // (`${plural(n, 'card')} shown`). Pure functions with no React and no strings of their own.
 const COPY_HELPERS = new Set(["lib/plural", "lib/braincells"])
+// Markup factories engines and *Model builders must not value-import or call.
+const TREE_NAMES = new Set(["createElement", "Fragment", "jsxs", "jsx", "jsxDEV"])
+const REACT_MODULES = new Set(["react", "react/jsx-runtime"])
 const ALLOWED = {
   atoms: ["atoms"],
   molecules: ["atoms", "molecules"],
@@ -74,6 +82,13 @@ const isStoryFile = (name) => /\.stories\.(tsx|jsx)$/.test(name)
 const isTestFile = (name) => /\.(test|spec)\.(ts|tsx|jsx)$/.test(name)
 const isComponentFile = (name) => /\.(tsx|jsx)$/.test(name) && !isStoryFile(name) && !isTestFile(name)
 const isTierSourceFile = (name) => /\.(ts|tsx|jsx)$/.test(name) && !isStoryFile(name) && !isTestFile(name)
+/** hooks/*.ts and lib/*Model.ts (nested) — data only. Skip tests/stories; skip .tsx. */
+const isEngineDataFile = (sourcePath, name) => {
+  if (isTestFile(name) || isStoryFile(name) || !/\.ts$/.test(name)) return false
+  const [top] = sourcePath.split("/")
+  if (top === "hooks") return true
+  return top === "lib" && name.endsWith("Model.ts")
+}
 
 /** The absolute file an alias or relative specifier names, before extension probing; undefined for a package. */
 const specifierTarget = (fromFile, spec) => {
@@ -157,6 +172,7 @@ const report = (file, message) => problems.push(`${toSourcePath(file)}: ${messag
 let components = 0
 let stories = 0
 const tierSources = []
+const engineSources = []
 
 const reportModule = (file, tier, spec) => {
   if (tier !== "views" && STATE_LIBS.test(spec)) {
@@ -196,6 +212,92 @@ const inspectCopySource = (file) => {
     if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
       const spec = staticModuleSpecifier(node.arguments[0])
       if (spec) check(spec)
+    }
+    ts.forEachChild(node, visit)
+  }
+  ts.forEachChild(sourceFile, visit)
+}
+
+/**
+ * Hooks and *Model builders pass data, not markup. Type-only atom types stay legal.
+ * STATE_HOOKS and the copy-import ban do not apply here.
+ */
+const inspectEngineSource = (file) => {
+  const text = readFileSync(file, "utf8")
+  const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
+
+  if ((sourceFile.parseDiagnostics ?? []).length > 0) {
+    const tsx = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
+    let reportedJsx = false
+    const visitJsx = (node) => {
+      if (reportedJsx) return
+      if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node) || ts.isJsxFragment(node)) {
+        reportedJsx = true
+        report(file, "JSX in hooks/ or *Model.ts (pass data, not markup)")
+        return
+      }
+      ts.forEachChild(node, visitJsx)
+    }
+    ts.forEachChild(tsx, visitJsx)
+  }
+
+  const reactNamespaces = new Set()
+
+  for (const statement of sourceFile.statements) {
+    if (ts.isImportDeclaration(statement)) {
+      const spec = staticModuleSpecifier(statement.moduleSpecifier)
+      if (!spec || isTypeOnlyImport(statement.importClause)) continue
+
+      const folder = folderOf(file, spec)
+      if (folder && TIERS.includes(folder)) {
+        report(file, `value import from ${folder}/ ("${spec}")`)
+      }
+
+      if (!REACT_MODULES.has(spec) || !statement.importClause) continue
+      if (statement.importClause.name) reactNamespaces.add(statement.importClause.name.text)
+      const bindings = statement.importClause.namedBindings
+      if (bindings && ts.isNamespaceImport(bindings)) reactNamespaces.add(bindings.name.text)
+      if (bindings && ts.isNamedImports(bindings)) {
+        for (const binding of bindings.elements) {
+          if (binding.isTypeOnly) continue
+          const importedName = binding.propertyName?.text ?? binding.name.text
+          if (importedName === "default") reactNamespaces.add(binding.name.text)
+          if (TREE_NAMES.has(importedName)) report(file, `value import of ${importedName} from ${spec}`)
+        }
+      }
+      continue
+    }
+
+    if (ts.isExportDeclaration(statement) && statement.moduleSpecifier && !isTypeOnlyExport(statement)) {
+      const spec = staticModuleSpecifier(statement.moduleSpecifier)
+      if (!spec) continue
+      const folder = folderOf(file, spec)
+      if (folder && TIERS.includes(folder)) {
+        report(file, `value import from ${folder}/ ("${spec}")`)
+      }
+      if (REACT_MODULES.has(spec) && statement.exportClause && ts.isNamedExports(statement.exportClause)) {
+        for (const element of statement.exportClause.elements) {
+          if (element.isTypeOnly) continue
+          const exportedName = element.propertyName?.text ?? element.name.text
+          if (TREE_NAMES.has(exportedName)) report(file, `value import of ${exportedName} from ${spec}`)
+        }
+      }
+    }
+  }
+
+  const visit = (node) => {
+    if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
+      const spec = staticModuleSpecifier(node.arguments[0])
+      if (spec) {
+        const folder = folderOf(file, spec)
+        if (folder && TIERS.includes(folder)) report(file, `value import from ${folder}/ ("${spec}")`)
+      }
+    }
+    if (ts.isPropertyAccessExpression(node) && TREE_NAMES.has(node.name.text)) {
+      const expr = unwrapExpression(node.expression)
+      if (ts.isIdentifier(expr) && reactNamespaces.has(expr.text)) {
+        report(file, `${expr.text}.${node.name.text}`)
+      }
     }
     ts.forEachChild(node, visit)
   }
@@ -336,6 +438,7 @@ for (const file of walk(src)) {
   if (!tier) {
     if (isComponentFile(name)) report(file, "component outside a tier folder")
     else if (topLevel === COPY && isTierSourceFile(name)) inspectCopySource(file)
+    else if (isEngineDataFile(sourcePath, name)) engineSources.push(file)
     continue
   }
 
@@ -353,6 +456,7 @@ if (typeof ts.createSourceFile !== "function" || typeof ts.createProgram !== "fu
     problems.push("check-tiers: TypeScript compiler API is unavailable")
   }
 } else {
+  for (const file of engineSources) inspectEngineSource(file)
   const program = ts.createProgram(tierSources.map(({ file }) => file), {
     allowJs: true,
     baseUrl: webRoot,
