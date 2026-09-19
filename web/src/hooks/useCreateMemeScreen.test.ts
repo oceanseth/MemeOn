@@ -398,7 +398,7 @@ describe('buildCreateMemeScreenModel', () => {
     expect(record.draft).toEqual(
       draftOf({ ...baseContext, mode: 'video', title: 'burning office', tags: 'chaos', prompt: 'a capybara' }),
     )
-    expect(record.draft.title).toBe('burning office')
+    expect(record.draft?.title).toBe('burning office')
   })
 
   it('wires each creation action bundle to its domain action', () => {

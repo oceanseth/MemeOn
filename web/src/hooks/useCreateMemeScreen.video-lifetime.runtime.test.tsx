@@ -4,6 +4,7 @@ import { createRoot, type Root } from 'react-dom/client'
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { CreateMemeRoute } from '../views/AppView'
+import { POLL_TIMEOUT_MS } from '../lib/createMemeVideoPoll'
 import { PENDING_VIDEO_KEY } from '../lib/sessionBus'
 
 function deferred<T>() {
@@ -348,5 +349,56 @@ describe('CreateMemeRoute video lifetime ownership', () => {
     })
     expect(host.textContent).toContain('current-source')
     expect(host.textContent).not.toContain('stale-source')
+  })
+
+  it('clears an expired pending record on mount', async () => {
+    sessionStorage.setItem(PENDING_VIDEO_KEY, JSON.stringify({
+      generationId: 'render-old',
+      startedAt: Date.now() - POLL_TIMEOUT_MS - 1,
+      imageUrl: '/old.png',
+      remixId: 'remix-a',
+    }))
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>((input) => {
+      const path = pathOf(input)
+      if (path === '/api/memes/remix-a') return Promise.resolve(Response.json({ meme: sourceMeme('remix-a') }))
+      throw new Error(`Unexpected request: ${path}`)
+    }))
+    await renderAt('/binder/new?remix=remix-a')
+    expect(sessionStorage.getItem(PENDING_VIDEO_KEY)).toBeNull()
+  })
+
+  it('leaves a pending record whose remix does not match the route', async () => {
+    const startedAt = Date.now()
+    sessionStorage.setItem(PENDING_VIDEO_KEY, JSON.stringify({
+      generationId: 'render-a', startedAt, imageUrl: '/pending-a.png', remixId: 'remix-a',
+    }))
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>((input) => {
+      const path = pathOf(input)
+      if (path === '/api/memes/remix-b') return Promise.resolve(Response.json({ meme: sourceMeme('remix-b') }))
+      throw new Error(`Unexpected request: ${path}`)
+    }))
+    await renderAt('/binder/new?remix=remix-b')
+    expect(sessionStorage.getItem(PENDING_VIDEO_KEY)).toContain('render-a')
+  })
+
+  it('resumes a non-remix pending job on /binder/new', async () => {
+    vi.useFakeTimers()
+    const startedAt = Date.now()
+    sessionStorage.setItem(PENDING_VIDEO_KEY, JSON.stringify({
+      generationId: 'render-fresh', startedAt, imageUrl: '/pending-fresh.png', remixId: null,
+    }))
+    vi.stubGlobal('fetch', vi.fn<typeof fetch>((input) => {
+      const path = pathOf(input)
+      if (path === '/api/aigen/video/render-fresh') {
+        return Promise.resolve(Response.json({ status: 'video', videoUrl: '/finished-fresh.mp4' }))
+      }
+      throw new Error(`Unexpected request: ${path}`)
+    }))
+    await renderAt('/binder/new')
+    await act(async () => { await vi.advanceTimersByTimeAsync(5000); await settle() })
+
+    expect(host.querySelector<HTMLVideoElement>('video[data-slot="meme-art"]')?.getAttribute('src')).toBe('/finished-fresh.mp4')
+    expect(host.querySelector('[data-slot="form-grid"]')?.getAttribute('aria-busy')).toBe('false')
+    expect(sessionStorage.getItem(PENDING_VIDEO_KEY)).toBeNull()
   })
 })
