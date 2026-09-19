@@ -65,11 +65,19 @@ export interface ProfileScreenModel {
   actionErr: string
   showJoin: boolean
   joinLabel: string
+  /** Identity-card CTA on a public profile; footer keeps `joinLabel`. */
+  joinAddFriendLabel: string
   joinLinkProps: Pick<LinkProps, 'to' | 'state'>
   /** Closing line under the join CTA on public profiles. */
   reshareNote: string
+  /** Accessible name for both relationship action groups. */
+  actionsGroupLabel: string
   createdCount: number
   binderCount: number
+  /** TabsList accessible name. */
+  tabsListLabel: string
+  createdTabLabel: string
+  binderTabLabel: string
   cards: readonly ProfileCardModel[]
   /** Grid count label ("Showing 6 of 12"). */
   gridCountLabel: string
@@ -124,6 +132,9 @@ interface ProfileViewModel {
 }
 
 const copy = profileCopy
+
+/** Route name for the tab; views must not import copy/. */
+export const profileDocumentTitle = copy.documentTitle
 
 function isAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === 'AbortError'
@@ -351,10 +362,15 @@ export function useProfileScreen({
     actionErr: actionErr ?? '',
     showJoin: !user && !!profile,
     joinLabel: isPublicBinder && profile ? copy.join.trade(profile.name) : copy.join.binder,
+    joinAddFriendLabel: copy.join.addFriend,
     joinLinkProps: { to: '/', state: { next: pathname } },
     reshareNote: copy.join.reshareNote,
+    actionsGroupLabel: copy.actions.groupLabel,
     createdCount,
     binderCount,
+    tabsListLabel: copy.tabs.section,
+    createdTabLabel: copy.tabs.trigger(copy.tabs.created, createdCount),
+    binderTabLabel: copy.tabs.trigger(copy.tabs.binder, binderCount),
     cards: visible.map((meme) => ({
       id: `${tab}-${meme.id}`,
       memeCard: buildMemeCardModel(meme),

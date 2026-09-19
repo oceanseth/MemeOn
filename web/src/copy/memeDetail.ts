@@ -4,11 +4,15 @@ import { sharedCopy } from './shared'
 
 /** Every string the Meme detail screen shows. Keys name the role, not the content. */
 export const memeDetailCopy = {
+  /** Route name for `document.title`; never the card's title. */
+  documentTitle: 'Meme',
   loading: 'Pulling the card…',
   notFound: {
+    title: 'This card was pulled',
     message: "This meme isn't here — it may have been deleted or made private.",
     browse: sharedCopy.browseMarketplace,
   },
+  privateBadge: 'private',
   /** cap-table and seller names when the holder is the reader, or not yet resolved */
   holder: {
     you: 'You',
@@ -36,6 +40,9 @@ export const memeDetailCopy = {
     valueSrLabel: (value: number) => `${value.toLocaleString()} braincells card value`,
   },
   share: {
+    title: 'Share to go viral',
+    caption: 'Every load counts a view; every new place it travels counts as a reshare.',
+    preview: 'Preview card',
     inputLabel: 'Share link for this meme',
     copy: 'Copy link',
     copied: sharedCopy.copied,
@@ -58,10 +65,30 @@ export const memeDetailCopy = {
     unlisting: 'Removing…',
   },
   list: {
+    panelTitle: 'List shares for sale',
+    panelCaption: 'Name your price — anyone in the market can pick up a slice of the joke.',
+    sharesField: 'shares',
+    perShare: '/share',
+    priceSr: 'braincells per share',
     onlyHold: (shares: number) => `You only hold ${shares} shares.`,
     minPrice: `Set a price of at least ${braincells('0.01')} per share.`,
     submit: 'List',
     submitting: 'Listing…',
+  },
+  controls: {
+    title: 'Card controls',
+    caption: 'What you hold decides what you can do with this card.',
+  },
+  spreading: {
+    title: 'Where it’s spreading',
+  },
+  provenance: {
+    mintedBy: 'minted by',
+    ownedBy: 'owned by',
+    remix: 'remix',
+    youHold: 'you hold',
+    /** U+00B7 glue between minted / owned / tags / remix / source / holdings */
+    separator: ' · ',
   },
   toasts: {
     bought: 'Shares acquired',

@@ -7,6 +7,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { invitePal, meLou, memeplexEmpty, paperMeme } from '../../.storybook/fixtures'
 import { TIERS } from '@memeon/shared/tiers'
 import { memeDetailCopy } from '../copy/memeDetail'
+import { profileCopy } from '../copy/profile'
 import { tradesCopy } from '../copy/trades'
 import { authMachine } from '../stores/authMachine'
 import { createStores } from '../stores/createStores'
@@ -385,7 +386,7 @@ it('ProfileView shows initial load failure', async () => {
   // the failure is named and recoverable; no profile identity or actions are invented
   expect(host.querySelector('[role="alert"]')?.textContent).toContain("Couldn't load this profile.")
   expect(button('Retry').disabled).toBe(false)
-  expect(host.querySelector('[aria-label="Profile actions"]')).toBeNull()
+  expect(host.querySelector(`[aria-label="${profileCopy.actions.groupLabel}"]`)).toBeNull()
 })
 
 it('actual profile route keys reject late results and reset the selected tab for the next profile', async () => {
