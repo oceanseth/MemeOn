@@ -43,6 +43,7 @@ const failureOf = (e: unknown): DiscordLinkFailure =>
 export interface DiscordLinkScreenModel {
   phase: DiscordLinkPhase
   heading: string | null
+  documentTitle: string
   showConfirm: boolean
   showBusy: boolean
   showDone: boolean
@@ -53,6 +54,14 @@ export interface DiscordLinkScreenModel {
   canRetry: boolean
   onConfirm: () => void
   onRetry: () => void
+  connect: string
+  notNow: string
+  nextSteps: string
+  command: string
+  privacyLede: { before: string; after: string }
+  doneBody: { before: string; after: string }
+  tryAgain: string
+  backToBrand: string
 }
 
 /** Everything `DiscordLinkScreen` renders. The hook is the engine; the screen is the terminal. */
@@ -134,6 +143,7 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
   return {
     phase,
     heading: showError ? null : showDone ? copy.done : copy.heading,
+    documentTitle: copy.documentTitle,
     showConfirm: phase === 'confirm',
     showBusy: phase === 'checking' || phase === 'redirecting' || phase === 'working',
     showDone,
@@ -144,5 +154,13 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
     canRetry: showError && !!ctx.failure && RETRYABLE[ctx.failure],
     onConfirm,
     onRetry,
+    connect: copy.connect,
+    notNow: copy.notNow,
+    nextSteps: copy.nextSteps,
+    command: copy.command,
+    privacyLede: copy.privacyLede,
+    doneBody: copy.doneBody,
+    tryAgain: copy.tryAgain,
+    backToBrand: copy.backToBrand,
   }
 }

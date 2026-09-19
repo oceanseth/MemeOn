@@ -80,8 +80,9 @@ function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: 
   )
 }
 
-/** Top Brains as a function of its model. Every engine state is one set of args. */
+/** The ranked board as a function of its model. Every engine state is one set of args. */
 export function LeaderboardScreen({
+  pageTitle,
   subtitle,
   podiumTitle,
   podiumSubtitle,
@@ -109,7 +110,7 @@ export function LeaderboardScreen({
         level="h1"
         title={
           <span className="inline-flex items-center gap-2">
-            <Icon name="trophy" size={22} /> Top Brains
+            <Icon name="trophy" size={22} /> {pageTitle}
           </span>
         }
         subtitle={subtitle}

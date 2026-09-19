@@ -2,12 +2,10 @@
   "screens/BinderScreen.tsx": 4,
   "screens/CreateMemeScreen.tsx": 59,
   "screens/DevelopersScreen.tsx": 9,
-  "screens/DiscordLinkScreen.tsx": 11,
   "screens/DiscordPageScreen.tsx": 25,
   "screens/FriendsScreen.tsx": 11,
   "screens/InviteScreen.tsx": 2,
   "screens/LandingScreen.tsx": 26,
-  "screens/LeaderboardScreen.tsx": 1,
   "screens/MemeDetailScreen.tsx": 13,
   "screens/ProfileScreen.tsx": 6
 }

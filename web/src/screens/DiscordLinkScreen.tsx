@@ -35,6 +35,14 @@ export function DiscordLinkScreen({
   canRetry,
   onConfirm,
   onRetry,
+  connect,
+  notNow,
+  nextSteps,
+  command,
+  privacyLede,
+  doneBody,
+  tryAgain,
+  backToBrand,
 }: DiscordLinkScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
@@ -50,15 +58,14 @@ export function DiscordLinkScreen({
         {showConfirm && (
           <>
             <p className="mx-auto mt-4 mb-0 max-w-[65ch] text-base text-muted-foreground">
-              Your Discord name is never shown to other MemeOn users — <code>/memeon</code> just
-              ranks your own binder and your friends' memes first.
+              {privacyLede.before}<code>{command}</code>{privacyLede.after}
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
               <Button variant="primary" onClick={onConfirm}>
-                Connect Discord
+                {connect}
               </Button>
               <Link className={buttonVariants()} to="/discord">
-                Not now
+                {notNow}
               </Link>
             </div>
           </>
@@ -74,7 +81,7 @@ export function DiscordLinkScreen({
       >
         {(showBusy || showDone) && (
           <Card size="sm">
-            <p className={CARD_LEDE}>What happens next</p>
+            <p className={CARD_LEDE}>{nextSteps}</p>
             {showBusy && (
               <Item variant="muted">
                 <ItemMedia>
@@ -86,12 +93,11 @@ export function DiscordLinkScreen({
             {showDone && (
               <Alert variant="success" className="block w-full max-w-none">
                 <p className={ROW_LABEL}>
-                  Head back to Discord — <code>/memeon</code> now ranks your binder and friends'
-                  memes first.
+                  {doneBody.before}<code>{command}</code>{doneBody.after}
                 </p>
                 <AlertAction>
                   <Link className={buttonVariants({ size: 'sm' })} to="/discord">
-                    Back to MemeOn
+                    {backToBrand}
                   </Link>
                 </AlertAction>
               </Alert>
@@ -103,17 +109,17 @@ export function DiscordLinkScreen({
       {showError && (
         <div className={cn(COLUMN, 'mt-8 text-left')}>
           <Card size="sm">
-            <p className={CARD_LEDE}>What happens next</p>
+            <p className={CARD_LEDE}>{nextSteps}</p>
             <Alert variant="error" className="block w-full max-w-none">
               <p className={ROW_LABEL}>{errBody}</p>
               <AlertAction>
                 {canRetry && (
                   <Button variant="primary" size="sm" onClick={onRetry}>
-                    Try again
+                    {tryAgain}
                   </Button>
                 )}
                 <Link className={buttonVariants({ size: 'sm' })} to="/discord">
-                  Back to MemeOn
+                  {backToBrand}
                 </Link>
               </AlertAction>
             </Alert>

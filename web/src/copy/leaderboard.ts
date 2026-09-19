@@ -1,9 +1,12 @@
 import { braincells } from '../lib/braincells'
 import { plural, pluralWord } from '../lib/plural'
+import { appShellCopy } from './appShell'
 import { sharedCopy } from './shared'
 
 /** Every string the Leaderboard (Top Brains) screen shows. Keys name the role, not the content. */
 export const leaderboardCopy = {
+  /** Same words as the nav item; the trophy sits beside this in PageHead. */
+  pageTitle: appShellCopy.nav.leaderboard,
   subtitle: 'Collect, trade, climb.',
   podium: {
     title: 'Podium',

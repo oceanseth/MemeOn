@@ -1,6 +1,26 @@
+import { sharedCopy } from './shared'
+
+const connectDiscord = 'Connect Discord' as const
+
 /** Every string the Discord link ritual spells itself. */
 export const discordLinkCopy = {
   heading: 'Connect Discord to MemeOn',
+  /** Tab title; `heading` stays the longer on-screen H1. */
+  documentTitle: connectDiscord,
+  connect: connectDiscord,
+  notNow: 'Not now',
+  nextSteps: 'What happens next',
+  command: '/memeon',
+  privacyLede: {
+    before: 'Your Discord name is never shown to other MemeOn users — ',
+    after: " just ranks your own binder and your friends' memes first.",
+  },
+  doneBody: {
+    before: 'Head back to Discord — ',
+    after: " now ranks your binder and friends' memes first.",
+  },
+  tryAgain: sharedCopy.tryAgain,
+  backToBrand: sharedCopy.backToBrand,
   done: 'Connected!',
   /** keyed by the busy phases of `discordLinkMachine` */
   busy: {
