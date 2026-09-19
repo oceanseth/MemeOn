@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, waitFor, within } from 'storybook/test'
 import { friendAccepted, giftablePaper, giftableSilver, holoMeme, listedHolo } from '../../.storybook/fixtures'
+import { giftDialogCopy as copy } from '../copy/giftDialog'
 import type { Meme } from '../lib/types'
 import { buildGiftDialogModel, type BuildGiftDialogModelInput } from '../lib/giftDialogModel'
 import { GiftDialog } from '@/molecules/gift-dialog'
@@ -50,7 +51,8 @@ export const Search: Story = {
     const dialog = canvas.getByRole('dialog', { name: /Gift to/ })
     await expect(dialog).toHaveAccessibleDescription(/Pick a meme you hold shares in/)
     // Base UI would park focus on the first tab stop (the ✕); the binder search is the task
-    await waitFor(() => expect(canvas.getByRole('searchbox', { name: 'Search your binder' })).toHaveFocus())
+    await waitFor(() => expect(canvas.getByRole('searchbox', { name: copy.search })).toHaveFocus())
+    await expect(canvas.getByRole('searchbox', { name: copy.search })).toHaveAttribute('placeholder', copy.searchPlaceholder)
     await expect(rows(canvasElement)).toHaveLength(4)
     for (const row of rows(canvasElement)) {
       await expect(row.tagName).toBe('BUTTON')
@@ -107,7 +109,7 @@ export const Busy: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: 'Close gift dialog' })).toBeDisabled()
     await expect(canvas.getByRole('button', { name: 'Cancel' })).toBeDisabled()
-    await expect(canvas.getByRole('searchbox', { name: 'Search your binder' })).toBeDisabled()
+    await expect(canvas.getByRole('searchbox', { name: copy.search })).toBeDisabled()
     await expect(canvas.getByRole('spinbutton', { name: /Shares to gift/ })).toBeDisabled()
     await expect(canvas.getByRole('button', { name: /Gifting/ })).toBeDisabled()
     await expect(rows(canvasElement)).toHaveLength(4)

@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { meLou } from '../../.storybook/fixtures'
 import { settingsCopy as copy } from '../copy/settings'
+import { sharedCopy } from '../copy/shared'
 import { buildSettingsScreenModel } from '../hooks/useSettingsScreen'
 import { SettingsScreen } from './SettingsScreen'
 
@@ -45,7 +46,7 @@ export const Default: Story = {
     await expect(canvas.getByRole('heading', { name: copy.connections.heading })).toBeInTheDocument()
     await expect(canvas.queryByRole('heading', { name: /Typography|Icon style/ })).toBeNull()
     // the one segmented well, bound to the theme store
-    await expect(canvas.getByRole('group', { name: 'Theme' })).toBeInTheDocument()
+    await expect(canvas.getByRole('group', { name: sharedCopy.theme.group })).toBeInTheDocument()
     // three Card sections, and every row is an Item
     await expect(canvasElement.querySelectorAll('[data-slot="card"]')).toHaveLength(3)
     await expect(canvasElement.querySelector('[data-slot="settings-account"]')).toHaveAttribute('data-variant', 'default')

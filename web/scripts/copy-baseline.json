@@ -4,8 +4,5 @@
   "views/MarketplaceView.tsx": 1,
   "views/MobileAuthForwardView.tsx": 1,
   "views/SettingsView.tsx": 1,
-  "views/TradesView.tsx": 1,
-  "molecules/gift-dialog.tsx": 1,
-  "molecules/quest-bar.tsx": 4,
-  "molecules/theme-control.tsx": 5
+  "views/TradesView.tsx": 1
 }

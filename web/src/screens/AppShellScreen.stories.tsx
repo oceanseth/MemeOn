@@ -4,6 +4,8 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { meLou, paperMeme, questStepsFresh, questStepsPackDone, unreadSale } from '../../.storybook/fixtures'
 import { PageContainer } from '@/atoms/page-container'
 import { appShellCopy } from '../copy/appShell'
+import { questBarCopy } from '../copy/questBar'
+import { sharedCopy } from '../copy/shared'
 import { buildAppShellScreenModel } from '../hooks/useAppShellScreen'
 import type { AppShellContext } from '../stores/appShellMachine'
 import { AppShellScreen } from './AppShellScreen'
@@ -75,7 +77,7 @@ export const LoggedOut: Story = {
     await expect(canvas.getByRole('link', { name: appShellCopy.brand })).toBeVisible()
     await expect(canvas.queryByRole('navigation', { name: appShellCopy.navAria })).toBeNull()
     // the public header carries the one theme control; it names where it is and where it goes
-    await userEvent.click(canvas.getByRole('button', { name: 'Theme: Light. Switch to Dark' }))
+    await userEvent.click(canvas.getByRole('button', { name: sharedCopy.theme.cycle(sharedCopy.theme.light, sharedCopy.theme.dark) }))
     await expect(onThemeChange).toHaveBeenCalledWith('dark')
   },
 }
@@ -101,8 +103,8 @@ export const LoggedIn: Story = {
     const menu = await canvas.findByRole('menu')
     await expect(within(menu).getByRole('menuitem', { name: 'Settings' })).toHaveAttribute('href', '/settings')
     await expect(within(menu).getByRole('menuitem', { name: 'Discord' })).toHaveAttribute('href', '/discord')
-    await expect(within(menu).getByRole('menuitemradio', { name: /Light/ })).toHaveAttribute('aria-checked', 'true')
-    await userEvent.click(within(menu).getByRole('menuitemradio', { name: /Dark/ }))
+    await expect(within(menu).getByRole('menuitemradio', { name: new RegExp(sharedCopy.theme.light) })).toHaveAttribute('aria-checked', 'true')
+    await userEvent.click(within(menu).getByRole('menuitemradio', { name: new RegExp(sharedCopy.theme.dark) }))
     await expect(onThemeChange).toHaveBeenCalledWith('dark')
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull())
@@ -150,11 +152,11 @@ export const WithQuests: Story = {
     await expect(trigger.querySelector('[data-slot="quest-claim-dot"]')).not.toBeNull()
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
     await userEvent.click(trigger)
-    await expect(await canvas.findByText('Earn your braincells')).toBeInTheDocument()
+    await expect(await canvas.findByText(questBarCopy.title)).toBeInTheDocument()
     await expect(canvas.getByRole('button', { name: /claim your starter pack/i })).toBeInTheDocument()
     await expect(canvas.getByRole('link', { name: /Mint your first meme/ })).toHaveAttribute('href', '/binder/new')
     await userEvent.keyboard('{Escape}')
-    await waitFor(() => expect(canvas.queryByText('Earn your braincells')).toBeNull())
+    await waitFor(() => expect(canvas.queryByText(questBarCopy.title)).toBeNull())
   },
 }
 
@@ -206,7 +208,7 @@ export const PackOpened: Story = {
     const canvas = within(canvasElement)
     // one step in: the ring reads a fifth (probed by slot — the modal pack dialog makes the bar inert), and the dialog is up
     await expect(canvasElement.querySelector('[data-slot="quest-trigger"]')).toHaveAttribute('data-progress', '20')
-    await expect(await canvas.findByRole('dialog', { name: /Starter pack opened/ })).toBeInTheDocument()
+    await expect(await canvas.findByRole('dialog', { name: questBarCopy.pack.title })).toBeInTheDocument()
   },
 }
 
@@ -248,7 +250,7 @@ export const Phone390: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Account menu' }))
     const menu = await canvas.findByRole('menu')
     await expect(within(menu).getByRole('menuitem', { name: 'Top Brains' })).toHaveAttribute('href', '/leaderboard')
-    await expect(within(menu).getByRole('menuitemradio', { name: /Dark/ })).toBeInTheDocument()
+    await expect(within(menu).getByRole('menuitemradio', { name: new RegExp(sharedCopy.theme.dark) })).toBeInTheDocument()
     await expect(within(menu).getByRole('menuitem', { name: 'Log out' })).toBeInTheDocument()
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull())

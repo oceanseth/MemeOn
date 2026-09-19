@@ -21,6 +21,8 @@ describe('buildTradeCardModel perspective', () => {
     expect(model.get.braincellsLabel).toBeNull()
     expect(model.give.ownerLabel).toBe(tradesCopy.card.sides.give)
     expect(model.get.ownerLabel).toBe(tradesCopy.card.sides.get)
+    expect(model.give.emptyLabel).toBe(tradesCopy.card.sideSentence.nothing)
+    expect(model.get.emptyLabel).toBe(tradesCopy.card.sideSentence.nothing)
   })
 
   it('outgoing: give is wire offer, get is wire ask', () => {

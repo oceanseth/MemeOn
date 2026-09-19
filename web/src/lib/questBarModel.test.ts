@@ -74,8 +74,8 @@ describe('buildQuestBarModel', () => {
   })
 
   it('surfaces a failed one-shot claim instead of returning to the button', () => {
-    const failed = buildQuestBarModel({ ...fresh, claimError: "Pack didn't open — tap to try again." })
-    expect(failed.errorMessage).toBe("Pack didn't open — tap to try again.")
+    const failed = buildQuestBarModel({ ...fresh, claimError: copy.pack.claimError })
+    expect(failed.errorMessage).toBe(copy.pack.claimError)
     expect(failed.errorProps.role).toBe('alert')
     expect(buildQuestBarModel(fresh).errorMessage).toBeNull()
   })
@@ -107,6 +107,10 @@ describe('buildQuestBarModel', () => {
     expect(model.pack.id).toBe('pack')
     expect(model.pack.titleId).toBe('pack-title')
     expect(model.pack.closeLabel).toBe(copy.pack.close)
+    expect(model.title).toBe(copy.title)
+    expect(model.pack.title).toBe(copy.pack.title)
+    expect(model.pack.binderLabel).toBe(copy.pack.viewInBinder)
+    expect(model.pack.exploreLabel).toBe(copy.pack.explore)
   })
 
   it('reports every Base UI dismissal as one call to the parent, and never a re-open', () => {

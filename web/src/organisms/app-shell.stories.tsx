@@ -3,6 +3,7 @@ import { Link, MemoryRouter } from 'react-router-dom'
 import { expect, fn, waitFor, within } from 'storybook/test'
 import { meLou, questStepsFresh, unreadSale } from '../../.storybook/fixtures'
 import { appShellCopy } from '../copy/appShell'
+import { buildThemeControlModel, THEME_OPTIONS } from '../lib/themeControlModel'
 import { buttonVariants } from '@/atoms/button'
 import { Icon } from '@/atoms/icon'
 import { PageContainer } from '@/atoms/page-container'
@@ -45,7 +46,12 @@ const avatarMenu = (
         { key: 'profile', label: 'Profile', to: `/u/${meLou.sub}`, icon: 'user' },
         { key: 'settings', label: 'Settings', to: '/settings', icon: 'gear' },
       ],
-      theme: { label: 'Theme', value: 'light', onChange: fn() },
+      theme: {
+        label: appShellCopy.accountMenu.theme,
+        value: 'light',
+        onChange: fn(),
+        options: THEME_OPTIONS,
+      },
       logOut: { label: 'Log out', onSelect: fn() },
     }}
   />
@@ -113,7 +119,7 @@ type Story = StoryObj<typeof meta>
 /** The public frame: wordmark, the theme button, the page, the footer. */
 export const LoggedOut: Story = {
   args: {
-    headerEnd: <ThemeControl model={{ value: 'auto', onChange: fn(), variant: 'button' }} size="lg" />,
+    headerEnd: <ThemeControl model={buildThemeControlModel({ value: 'auto', onChange: fn(), variant: 'button' })} size="lg" />,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)

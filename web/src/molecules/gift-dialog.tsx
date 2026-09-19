@@ -46,7 +46,6 @@ export function GiftDialog({ model }: { model: GiftDialogModel }) {
       <Input
         id={searchId}
         type="search"
-        placeholder="Search your binder…"
         className="w-full"
         {...model.searchInputProps}
       />

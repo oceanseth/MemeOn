@@ -34,6 +34,7 @@ describe('gift dialog model', () => {
     model.searchInputProps.onChange?.({ target: { value: 'paper' } } as never)
     expect(onQueryChange).toHaveBeenCalledWith('paper')
     expect(model.searchInputProps['aria-label']).toBe(copy.search)
+    expect(model.searchInputProps.placeholder).toBe(copy.searchPlaceholder)
   })
 
   it('keeps the raw share text while typing and clamps only on blur and submit', () => {

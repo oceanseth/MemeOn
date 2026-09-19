@@ -143,7 +143,7 @@ export function QuestBar({ model, balance }: QuestBarProps) {
                 <div className="flex items-center gap-x-3">
                   <span id={TITLE_ID} className={TITLE} data-slot="questbar-title">
                     <img className={BRAINCELL_IMG} src={BRAINCELL_SRC} alt="" width={26} height={26} />
-                    <span className="truncate">Earn your braincells</span>
+                    <span className="truncate">{model.title}</span>
                     <span className="text-sm font-medium text-muted-foreground tabular-nums" data-slot="questbar-count">
                       {model.completionLabel}
                     </span>
@@ -236,7 +236,7 @@ export function QuestBar({ model, balance }: QuestBarProps) {
           title={
             <>
               <img className={BRAINCELL_IMG} src={BRAINCELL_SRC} alt="" width={26} height={26} /> <Icon name="gift" size={16} />
-              Starter pack opened!
+              {model.pack.title}
             </>
           }
           titleId={model.pack.titleId}
@@ -257,10 +257,10 @@ export function QuestBar({ model, balance }: QuestBarProps) {
               className={buttonVariants({ variant: 'primary' })}
               data-slot="pack-binder-link"
             >
-              View in My Binder
+              {model.pack.binderLabel}
             </Link>
             <Button data-slot="pack-explore" {...model.pack.exploreButtonProps}>
-              Keep exploring
+              {model.pack.exploreLabel}
             </Button>
           </DialogFooter>
         </DialogFrame>

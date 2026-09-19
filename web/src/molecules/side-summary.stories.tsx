@@ -1,17 +1,29 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
 import { paperMeme } from '../../.storybook/fixtures'
+import { tradesCopy } from '../copy/trades'
 import { SideSummary } from '@/molecules/side-summary'
 import type { TradeSideSummaryModel } from '../lib/tradeCardModel'
 
-const empty: TradeSideSummaryModel = { ownerLabel: 'You give', empty: true, memeLines: [], braincellsLabel: null }
+const emptyLabel = tradesCopy.card.sideSentence.nothing
+const empty: TradeSideSummaryModel = {
+  ownerLabel: 'You give',
+  empty: true,
+  emptyLabel,
+  memeLines: [],
+  braincellsLabel: null,
+}
 const meta = { title: 'Molecules/SideSummary', component: SideSummary, args: { model: empty } } satisfies Meta<typeof SideSummary>
 export default meta
 type Story = StoryObj<typeof meta>
-export const Empty: Story = {}
+export const Empty: Story = {
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement).toHaveTextContent(emptyLabel)
+  },
+}
 /** the record has not landed: a placeholder title, never the raw id */
-export const PendingMeme: Story = { args: { model: { ownerLabel: 'You get', empty: false, memeLines: [{ id: 'meme-2', sharesLabel: '3 shares of', title: '…', thumbUrl: null, tierKey: null, tierName: null, tierLabel: null, resharesLabel: null, detailHref: '/m/meme-2' }], braincellsLabel: null } } }
-export const SharesAndBraincells: Story = { args: { model: { ownerLabel: 'You get', empty: false, memeLines: [{ id: 'meme-1', sharesLabel: '10 shares of', title: 'Receipt dog', thumbUrl: paperMeme.imageUrl, tierKey: 'paper', tierName: 'Paper', tierLabel: 'Paper · common', resharesLabel: '0', detailHref: '/m/meme-1' }], braincellsLabel: '120' } } }
+export const PendingMeme: Story = { args: { model: { ownerLabel: 'You get', empty: false, emptyLabel, memeLines: [{ id: 'meme-2', sharesLabel: '3 shares of', title: '…', thumbUrl: null, tierKey: null, tierName: null, tierLabel: null, resharesLabel: null, detailHref: '/m/meme-2' }], braincellsLabel: null } } }
+export const SharesAndBraincells: Story = { args: { model: { ownerLabel: 'You get', empty: false, emptyLabel, memeLines: [{ id: 'meme-1', sharesLabel: '10 shares of', title: 'Receipt dog', thumbUrl: paperMeme.imageUrl, tierKey: 'paper', tierName: 'Paper', tierLabel: 'Paper · common', resharesLabel: '0', detailHref: '/m/meme-1' }], braincellsLabel: '120' } } }
 /** Every meme line is an `Item` row: thumb in the media slot, tier chip in the actions slot. */
 export const Rows: Story = {
   ...SharesAndBraincells,

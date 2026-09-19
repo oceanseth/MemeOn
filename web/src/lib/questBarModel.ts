@@ -41,6 +41,10 @@ export type QuestChipModel =
     }
 
 export interface QuestPackModel {
+  /** Dialog heading: braincell img + gift icon wrap this string. */
+  title: string
+  binderLabel: string
+  exploreLabel: string
   /** The `DialogFrame` contract: the frame stays mounted and this is its whole truth. */
   open: boolean
   /**
@@ -68,6 +72,7 @@ export interface QuestPackModel {
 export interface QuestBarModel {
   visible: boolean
   showSteps: boolean
+  title: string
   completionLabel: string
   /** The ladder in tens, 0–100: the braincell pill's ring reads it as `data-progress`. */
   progressPercent: number
@@ -113,6 +118,7 @@ export function buildQuestBarModel({
   return {
     visible: steps.length > 0 || packOpen,
     showSteps: steps.length > 0,
+    title: copy.title,
     completionLabel: `${done}/${steps.length}`,
     progressPercent: steps.length > 0 ? Math.round((done / steps.length) * 10) * 10 : 0,
     progressLabel: copy.progress(done, steps.length),
@@ -146,6 +152,9 @@ export function buildQuestBarModel({
     errorMessage: claimError,
     errorProps: { role: 'alert' },
     pack: {
+      title: copy.pack.title,
+      binderLabel: copy.pack.viewInBinder,
+      exploreLabel: copy.pack.explore,
       open: packOpen,
       onOpenChange: (next: boolean) => {
         if (!next) onDismissPack()

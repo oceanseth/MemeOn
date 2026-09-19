@@ -7,6 +7,7 @@ export const giftDialogCopy = {
   close: 'Close gift dialog',
   cancel: sharedCopy.cancel,
   search: 'Search your binder',
+  searchPlaceholder: 'Search your binder…',
   listed: 'Listed',
   sharesHeld: (held: number) => `you hold ${held} of 100`,
   emptyBinder: 'Nothing to gift here — you need shares in a meme first.',
