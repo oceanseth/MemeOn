@@ -52,6 +52,7 @@ export const friendsCopy = {
     request: "Couldn't send that friend request. Try again in a moment.",
     respond: "Couldn't update that request. Try again.",
     remove: "Couldn't remove that friend. Try again.",
+    search: "Couldn't search for people. Try again.",
     /** the gift dialog shows the API's own message when it has one; this is the fallback */
     gift: 'That gift did not go through. Try again.',
   },

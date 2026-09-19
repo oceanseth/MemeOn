@@ -139,6 +139,8 @@ export function useFriendsScreen(): FriendsScreenModel {
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const msgTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const presence = useRef<PresenceWatch | null>(null)
+  /** Bumped on empty-query clear, a superseding query, and each fired fetch so stale then/catch/finally cannot land. */
+  const searchGen = useRef(0)
   const ctx = snapshot.context
   const phase = snapshot.value as FriendsPhase
 
@@ -194,18 +196,31 @@ export function useFriendsScreen(): FriendsScreenModel {
         clearTimeout(searchTimer.current)
         searchTimer.current = null
       }
+      searchGen.current += 1
       if (!value.trim()) {
         send({ type: 'SET_SEARCHING', searching: false })
         send({ type: 'SET_HITS', hits: [] })
+        send({ type: 'SET_ACTION_ERR', err: null })
         return
       }
+      send({ type: 'SET_ACTION_ERR', err: null })
       send({ type: 'SET_SEARCHING', searching: true })
       searchTimer.current = setTimeout(() => {
         searchTimer.current = null
+        const gen = ++searchGen.current
         apiFetch<{ users: UserHit[] }>(`/api/users?q=${encodeURIComponent(value)}`)
-          .then((r) => send({ type: 'SET_HITS', hits: r.users }))
-          .catch(() => send({ type: 'SET_HITS', hits: [] }))
-          .finally(() => send({ type: 'SET_SEARCHING', searching: false }))
+          .then((r) => {
+            if (gen !== searchGen.current) return
+            send({ type: 'SET_HITS', hits: r.users })
+          })
+          .catch(() => {
+            if (gen !== searchGen.current) return
+            send({ type: 'SET_ACTION_ERR', err: copy.errors.search })
+          })
+          .finally(() => {
+            if (gen !== searchGen.current) return
+            send({ type: 'SET_SEARCHING', searching: false })
+          })
       }, 250)
     },
     [send],
@@ -457,7 +472,7 @@ export function useFriendsScreen(): FriendsScreenModel {
     // results stay clickable while the next query debounces; only an empty list swaps to a state line
     showSearching: showSearchPanel && ctx.searching && ctx.hits.length === 0,
     showHits: showSearchPanel && ctx.hits.length > 0,
-    showNoHits: showSearchPanel && !ctx.searching && ctx.hits.length === 0,
+    showNoHits: showSearchPanel && !ctx.searching && ctx.hits.length === 0 && !ctx.actionErr,
     showIncoming: incoming.length > 0,
     showOutgoing: outgoing.length > 0,
     showLoading,

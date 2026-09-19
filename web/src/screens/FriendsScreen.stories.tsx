@@ -195,6 +195,16 @@ export const NoSearchResults: Story = {
   },
 }
 
+export const SearchFailed: Story = {
+  args: {
+    searchInputProps: searchInput('pal'),
+    showSearchPanel: true,
+    showErr: true,
+    err: copy.errors.search,
+    showNoHits: false,
+  },
+}
+
 export const RequestFailed: Story = {
   args: {
     phase: 'ready',

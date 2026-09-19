@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
+import { friendsCopy as copy } from '../copy/friends'
 import { FriendsView } from './FriendsView'
 
 const meta = {
@@ -68,5 +69,31 @@ export const GiftFailureStaysInOverlay: Story = {
        synthetic key event reaches it and the wiring is proved for real rather than simulated. */
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull())
+  },
+}
+
+export const SearchFailureDoesNotLookLikeNoHits: Story = {
+  loaders: [connectedLoader({ failures: { 'GET /api/users': { error: 'offline' } } })],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><FriendsView /></ConnectedStory>,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByText('incoming pal')).toBeInTheDocument()
+    await userEvent.type(canvas.getByRole('searchbox', { name: copy.search.inputLabel }), 'pal')
+    await expect(await canvas.findByText(copy.errors.search)).toBeInTheDocument()
+    await expect(canvas.queryByText(copy.search.noHits('pal'))).not.toBeInTheDocument()
+  },
+}
+
+export const EmptySearchStillShowsNoHits: Story = {
+  loaders: [connectedLoader()],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><FriendsView /></ConnectedStory>,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByText('incoming pal')).toBeInTheDocument()
+    await userEvent.type(canvas.getByRole('searchbox', { name: copy.search.inputLabel }), 'zzz')
+    await expect(await canvas.findByText(copy.search.noHits('zzz'))).toBeInTheDocument()
+    await expect(canvas.queryByText(copy.errors.search)).not.toBeInTheDocument()
   },
 }
