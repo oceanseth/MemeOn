@@ -35,6 +35,8 @@ const HERO_ACTIONS = 'mt-4.5 flex flex-wrap items-center justify-center gap-2.5'
 
 /** Invite landing as a function of its model. Every engine state is one set of args. */
 export function InviteScreen({
+  pageTitle,
+  heroVerb,
   err,
   showFatalError,
   showSpinner,
@@ -94,13 +96,13 @@ export function InviteScreen({
 
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <PageHead level="h1" title="You’re invited" className="mb-5" />
+      <PageHead level="h1" title={pageTitle} className="mb-5" />
 
       <Card size="sm" data-slot="invite-hero" className="flex flex-col items-center gap-2 text-center">
         <Avatar name={inviter.name} src={inviter.avatarSrc} size="hero" loading="eager" />
         <h2 className="m-0 mt-3.5">
           <span className={HERO_NAME}>{inviter.name}</span>{' '}
-          <span className={HERO_VERB}>invited you to MemeOn</span>
+          <span className={HERO_VERB}>{heroVerb}</span>
         </h2>
         <p className={HERO_STATS}>
           {inviter.stats.map((stat, index) => (

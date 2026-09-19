@@ -30,13 +30,25 @@ export interface DeveloperKeyRowModel {
   /** raw ISO for <time dateTime>, so the date is machine-readable as well as legible */
   createdAt: string
   createdLabel: string
+  revokeLabel: string
   revokeButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-label'>
 }
 
 export type DeveloperLabelInputProps = Pick<
   InputHTMLAttributes<HTMLInputElement>,
-  'value' | 'onChange' | 'maxLength' | 'aria-label'
+  'value' | 'onChange' | 'maxLength' | 'aria-label' | 'placeholder'
 >
+
+/** Security explainer text nodes; the screen owns `<strong>` / `<InlineLink>` / `<code>`. */
+export interface DevelopersExplainerModel {
+  lede: string
+  account: string
+  powers: string
+  skill: string
+  alsoAt: string
+  wellKnown: string
+  close: string
+}
 
 export type DeveloperActionButtonProps = Pick<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -54,6 +66,9 @@ export type DeveloperLiveRegionProps = Pick<HTMLAttributes<HTMLDivElement>, 'rol
 
 export interface DevelopersScreenModel {
   phase: DevelopersPhase
+  pageTitle: string
+  skillButtonLabel: string
+  explainer: DevelopersExplainerModel
   keys: DeveloperKeyRowModel[] | null
   freshKey: string | null
   err: string | null
@@ -83,6 +98,7 @@ export interface DevelopersScreenModel {
   createFormProps: Pick<FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>
   createButtonProps: DeveloperSubmitButtonProps
   copyButtonProps: DeveloperActionButtonProps
+  retryLabel: string
   retryButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
   freshKeyProps: Pick<HTMLAttributes<HTMLDivElement>, 'tabIndex'>
   freshKeyRegionProps: DeveloperLiveRegionProps
@@ -182,6 +198,7 @@ export function useDevelopersScreen(): DevelopersScreenModel {
         year: 'numeric',
       }),
     ),
+    revokeLabel: copy.row.revokeLabel,
     revokeButtonProps: {
       onClick: () => send({ type: 'REVOKE', row }),
       'aria-label': copy.row.revoke(row.label),
@@ -205,6 +222,9 @@ export function useDevelopersScreen(): DevelopersScreenModel {
 
   return {
     phase,
+    pageTitle: copy.pageTitle,
+    skillButtonLabel: copy.skillButton,
+    explainer: copy.explainer,
     keys: keyRows ?? null,
     freshKey: ctx.freshKey,
     err: ctx.err,
@@ -233,6 +253,7 @@ export function useDevelopersScreen(): DevelopersScreenModel {
       onChange: (event) => send({ type: 'SET_LABEL', label: event.currentTarget.value }),
       maxLength: 60,
       'aria-label': copy.labelInput,
+      placeholder: copy.labelPlaceholder,
     },
     createFormProps: {
       onSubmit: (event) => {
@@ -249,6 +270,7 @@ export function useDevelopersScreen(): DevelopersScreenModel {
       disabled: !ctx.freshKey,
       'aria-busy': false,
     },
+    retryLabel: copy.retry,
     retryButtonProps: { onClick: retry },
     freshKeyProps: { tabIndex: 0 },
     freshKeyRegionProps: { role: 'status', 'aria-live': 'polite' },

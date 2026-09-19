@@ -29,6 +29,7 @@ export interface BinderIdentityModel {
 
 export interface BinderScreenModel {
   phase: BinderPhase
+  pageTitle: string
   /** the page's introduction, under the title */
   intro: string
   identity: BinderIdentityModel | null
@@ -37,6 +38,7 @@ export interface BinderScreenModel {
   /** Counted result line: what the grid is showing right now, and why. */
   statusMessage: string
   collectionHeading: string
+  toolbarAriaLabel: string
   showPrivateToggle: boolean
   privateCount: number
   privateToggleLabel: string
@@ -54,6 +56,7 @@ export interface BinderScreenModel {
   showError: boolean
   errorTitle: string
   errorMessage: string
+  retryLabel: string
   retryProps: { onClick: () => void }
   showGrid: boolean
 }
@@ -68,6 +71,8 @@ interface BinderCardModel {
   sharesPct: number
   showCreator: boolean
   showPrivate: boolean
+  mintedLabel: string
+  privateLabel: string
 }
 
 const copy = binderCopy
@@ -166,6 +171,7 @@ export function useBinderScreen(): BinderScreenModel {
 
   return {
     phase,
+    pageTitle: copy.pageTitle,
     intro: copy.intro,
     identity: user
       ? {
@@ -177,6 +183,7 @@ export function useBinderScreen(): BinderScreenModel {
     statusProps: { role: 'status', 'aria-live': 'polite' },
     statusMessage,
     collectionHeading: copy.collection.heading,
+    toolbarAriaLabel: copy.toolbarAria,
     showPrivateToggle: privateCount > 0,
     privateCount,
     privateToggleLabel: copy.collection.showPrivate(privateCount),
@@ -214,6 +221,8 @@ export function useBinderScreen(): BinderScreenModel {
         sharesPct: Math.max(0, Math.min(100, shares)),
         showCreator: !!meme.isCreator,
         showPrivate: !!meme.private,
+        mintedLabel: copy.card.minted,
+        privateLabel: copy.card.private,
       }
     }),
     showMore:
@@ -242,6 +251,7 @@ export function useBinderScreen(): BinderScreenModel {
     showError,
     errorTitle: copy.errorState.title,
     errorMessage: copy.errorState.message,
+    retryLabel: copy.retry,
     retryProps: {
       onClick: () => {
         send({ type: 'RETRY' })

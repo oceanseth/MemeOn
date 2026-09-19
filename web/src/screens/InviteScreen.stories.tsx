@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn } from 'storybook/test'
 import { inviteLou, invitePal } from '../../.storybook/fixtures'
+import { inviteCopy as copy } from '../copy/invite'
 import { buildInviteStats, type InviteScreenModel } from '../hooks/useInviteScreen'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { InviteScreen } from './InviteScreen'
@@ -26,6 +27,8 @@ const cardsOf = (data: typeof invitePal) =>
 
 const empty: InviteScreenModel = {
   phase: 'loading',
+  pageTitle: copy.pageTitle,
+  heroVerb: copy.heroVerb,
   err: null,
   showFatalError: false,
   showSpinner: true,

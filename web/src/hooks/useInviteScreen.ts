@@ -19,6 +19,8 @@ const copy = inviteCopy
 
 export interface InviteScreenModel {
   phase: InvitePhase
+  pageTitle: string
+  heroVerb: string
   err: string | null
   showFatalError: boolean
   showSpinner: boolean
@@ -173,6 +175,8 @@ export function useInviteScreen(): InviteScreenModel {
 
   return {
     phase,
+    pageTitle: copy.pageTitle,
+    heroVerb: copy.heroVerb,
     err: ctx.err,
     showFatalError: !!ctx.err && !ctx.data,
     showSpinner: !ctx.data && !ctx.err,

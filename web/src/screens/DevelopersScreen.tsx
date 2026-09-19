@@ -18,6 +18,9 @@ const EXPLAINER = 'mt-0 mb-0 max-w-[65ch] text-base text-muted-foreground'
 
 /** Developers API-key page as a function of its model. Every engine state is one set of args. */
 export function DevelopersScreen({
+  pageTitle,
+  skillButtonLabel,
+  explainer,
   keys,
   freshKey,
   err,
@@ -45,6 +48,7 @@ export function DevelopersScreen({
   createFormProps,
   createButtonProps,
   copyButtonProps,
+  retryLabel,
   retryButtonProps,
   freshKeyProps,
   freshKeyRegionProps,
@@ -60,7 +64,7 @@ export function DevelopersScreen({
         level="h1"
         title={
           <span className="inline-flex items-center gap-2">
-            <Icon name="wrench" size={20} /> Developers
+            <Icon name="wrench" size={20} /> {pageTitle}
           </span>
         }
         className="mb-5"
@@ -69,17 +73,11 @@ export function DevelopersScreen({
           <span aria-hidden="true">
             <Icon name="scroll-text" size={16} />
           </span>{' '}
-          API skill.md
+          {skillButtonLabel}
         </a>
       </PageHead>
       <p className={EXPLAINER}>
-        API keys act as <strong className="font-semibold text-foreground">your account</strong>: they can mint
-        memes, gift shares (including to users your own site knows only by Masky avatar id), trade,
-        and read everything you can. Full endpoint reference lives in{' '}
-        <InlineLink href="/skill.md" target="_blank" rel="noreferrer">
-          skill.md
-        </InlineLink>{' '}
-        (also at <code>/.well-known/skill.md</code> for agents). Treat keys like passwords.
+        {explainer.lede}<strong className="font-semibold text-foreground">{explainer.account}</strong>{explainer.powers}<InlineLink href="/skill.md" target="_blank" rel="noreferrer">{explainer.skill}</InlineLink>{explainer.alsoAt}<code>{explainer.wellKnown}</code>{explainer.close}
       </p>
 
       <Card size="sm" className="mt-5">
@@ -88,7 +86,6 @@ export function DevelopersScreen({
           {...createFormProps}
         >
           <Input
-            placeholder="Key label (e.g. my-trading-bot)"
             /* the phone stacks the form, where `flex-basis` would size the well's *height* */
             className="min-w-60 flex-[1_1_240px] max-md:w-full max-md:min-w-0 max-md:flex-none"
             {...labelInputProps}
@@ -165,7 +162,7 @@ export function DevelopersScreen({
             </EmptyDescription>
             <EmptyContent>
               <Button variant="primary" {...retryButtonProps}>
-                Try again
+                {retryLabel}
               </Button>
             </EmptyContent>
           </Empty>
@@ -192,7 +189,7 @@ export function DevelopersScreen({
                 {/* the destructive act is tinted, never the page's primary plate */}
                 <ItemActions>
                   <Button variant="destructive" className="shrink-0" {...k.revokeButtonProps}>
-                    Revoke
+                    {k.revokeLabel}
                   </Button>
                 </ItemActions>
               </Item>
