@@ -12,7 +12,6 @@ import {
   FieldLabel,
   Hint,
 } from '@/atoms/field'
-import { FileDrop } from '@/atoms/file-drop'
 import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
 import { Heading } from '@/atoms/heading'
 import { Input } from '@/atoms/input'
@@ -20,12 +19,14 @@ import { LiveRegion } from '@/atoms/live-region'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Progress } from '@/atoms/progress'
-import { Select } from '@/atoms/select'
 import { SkeletonCard } from '@/atoms/skeleton'
-import { Spinner } from '@/atoms/spinner'
-import { Textarea } from '@/atoms/textarea'
 import { TierChip } from '@/atoms/tier-chip'
 import { Toolbar } from '@/atoms/toolbar'
+import { CreateMemeGeneratePanel } from '@/molecules/create-meme-generate-panel'
+import { CreateMemeGiphyPanel } from '@/molecules/create-meme-giphy-panel'
+import { CreateMemeRemixPanel } from '@/molecules/create-meme-remix-panel'
+import { CreateMemeUploadPanel } from '@/molecules/create-meme-upload-panel'
+import { CreateMemeUrlPanel } from '@/molecules/create-meme-url-panel'
 import type {
   CreateMemeCardModel,
   CreateMemeModeButtonModel,
@@ -52,12 +53,7 @@ const CAPTION_OFFSET = '-mt-0.5'
 
 const MODE_ROW = 'mb-5 flex flex-wrap items-center gap-2'
 
-/** Cost caption beside a render action. */
-const COST_NOTE = 'text-sm font-semibold text-muted-foreground'
 const FORM_NOTE = 'mt-1 text-xs font-medium text-muted-foreground'
-
-const GIPHY_MARK = 'text-xs font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase'
-const LOADING_STATE = 'flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-muted-foreground'
 
 /** One source chip. The engine names the state and label; the icon stays here. */
 function ModeChip({
@@ -367,219 +363,106 @@ export function CreateMemeScreen({
             </Field>
 
             {showRemixPanel ? (
-              <>
-                {remixSource ? (
-                  <Toolbar>
-                    <img
-                      {...remixSource.imageProps}
-                      className="size-21 rounded-md object-cover"
-                    />
-                    <Hint as="span">
-                      {remixingPrefix}{' '}
-                      <Link {...remixSource.linkProps}>"{remixSource.title}"</Link>
-                      {remixingBy}
-                      {remixSource.creatorName}
-                    </Hint>
-                  </Toolbar>
-                ) : (
-                  <div className={LOADING_STATE} role="status">
-                    <Spinner />
-                    {remixSourceLoadingText}
-                  </div>
-                )}
-                <Field>
-                  <FieldLabel>{remixOutputLabel}</FieldLabel>
-                  <Select aria-label={remixOutputLabel} {...remixOutputSelectProps} />
-                </Field>
-                {showVideoRemixStyle && (
-                  <Field>
-                    <FieldLabel>{videoRemixStyleLabel}</FieldLabel>
-                    <Select aria-label={videoRemixStyleLabel} {...videoModeSelectProps} />
-                  </Field>
-                )}
-                <Field>
-                  <FieldLabel>{remixPromptLabel}</FieldLabel>
-                  <Textarea
-                    {...remixPromptTextareaProps}
-                    rows={3}
-                    placeholder={remixPromptPlaceholder}
-                  />
-                </Field>
-                {showEditedFrameApproval && (
-                  /* wrapper keeps the named slot the atom would otherwise own.
-                     role="none" — panel live region already announces this turn */
-                  <div data-slot="approval-card">
-                    <Empty variant="success" size="inline" role="none">
-                      <EmptyHeader>
-                        <EmptyTitle>
-                          <span aria-hidden="true">
-                            <Icon name="circle-check" size={18} />
-                          </span>{' '}
-                          {approvalTitle}
-                        </EmptyTitle>
-                        <EmptyDescription>{approvalBody}</EmptyDescription>
-                      </EmptyHeader>
-                      <Field className="w-full">
-                        <FieldLabel>{motionLabel}</FieldLabel>
-                        <Textarea
-                          {...motionPromptTextareaProps}
-                          rows={3}
-                          placeholder={motionPromptPlaceholder}
-                        />
-                      </Field>
-                      <Toolbar>
-                        <Button variant="primary" {...animateEditedButtonProps}>
-                          <span aria-hidden="true">
-                            <Icon name="clapperboard" size={16} />
-                          </span>{' '}
-                          {animateEditedLabel}
-                        </Button>
-                        <Button {...rerunEditButtonProps}>
-                          <span aria-hidden="true">
-                            <Icon name="rotate-cw" size={16} />
-                          </span>{' '}
-                          {rerunEditLabel}
-                        </Button>
-                      </Toolbar>
-                    </Empty>
-                  </div>
-                )}
-                {showRemixButton && (
-                  <Toolbar className="mt-1">
-                    <Button variant="primary" {...remixButtonProps}>
-                      {remixButtonLabel}
-                    </Button>
-                    <span className={COST_NOTE}>{creditsNote}</span>
-                  </Toolbar>
-                )}
-              </>
+              <CreateMemeRemixPanel
+                remixSource={remixSource}
+                remixSourceLoadingText={remixSourceLoadingText}
+                remixingPrefix={remixingPrefix}
+                remixingBy={remixingBy}
+                sourceLink={
+                  remixSource ? (
+                    <Link {...remixSource.linkProps}>"{remixSource.title}"</Link>
+                  ) : null
+                }
+                remixOutputLabel={remixOutputLabel}
+                remixOutputSelectProps={remixOutputSelectProps}
+                showVideoRemixStyle={showVideoRemixStyle}
+                videoRemixStyleLabel={videoRemixStyleLabel}
+                videoModeSelectProps={videoModeSelectProps}
+                remixPromptLabel={remixPromptLabel}
+                remixPromptTextareaProps={remixPromptTextareaProps}
+                remixPromptPlaceholder={remixPromptPlaceholder}
+                showEditedFrameApproval={showEditedFrameApproval}
+                approvalTitle={approvalTitle}
+                approvalBody={approvalBody}
+                motionLabel={motionLabel}
+                motionPromptTextareaProps={motionPromptTextareaProps}
+                motionPromptPlaceholder={motionPromptPlaceholder}
+                animateEditedButtonProps={animateEditedButtonProps}
+                animateEditedLabel={animateEditedLabel}
+                rerunEditButtonProps={rerunEditButtonProps}
+                rerunEditLabel={rerunEditLabel}
+                showRemixButton={showRemixButton}
+                remixButtonProps={remixButtonProps}
+                remixButtonLabel={remixButtonLabel}
+                creditsNote={creditsNote}
+              />
             ) : showGiphyPanel ? (
-              <>
-                <Field>
-                  <FieldLabel>{giphyCategoryLabel}</FieldLabel>
-                  <Select aria-label={giphyCategoryLabel} {...giphyCategorySelectProps} />
-                </Field>
-                <Field>
-                  <FieldLabel>{giphySearchLabel}</FieldLabel>
-                  <Input {...giphyQueryInputProps} placeholder={giphyQueryPlaceholder} />
-                </Field>
-                <Toolbar>
-                  <Button {...giphySearchButtonProps}>{giphySearchButtonLabel}</Button>
-                  <span className={GIPHY_MARK}>{giphyPoweredBy}</span>
-                </Toolbar>
-
-                {showGiphyResults && (
-                  <div className="grid grid-cols-[repeat(auto-fill,minmax(130px,1fr))] gap-2.5">
-                    {giphyResults.map((g) => {
-                      const cell = getGiphyResultProps(g)
-                      return (
-                        <Button key={g.id} variant="cell" size="cell" pressed={cell.picked} {...cell.buttonProps}>
-                          <img {...cell.imageProps} className="block h-full w-full object-cover" />
-                        </Button>
-                      )
-                    })}
-                  </div>
-                )}
-
-                {/* one live region for the panel: the chrome swaps, the element never remounts.
-                    The card is never restyled away — the wrapper takes it off screen instead. */}
-                <div className={cn(giphyStatusHidden && 'sr-only')}>
-                  <Empty className="py-8" {...giphyStatusProps}>
-                    <EmptyDescription>{giphyStatusText}</EmptyDescription>
-                  </Empty>
-                </div>
-
-                {showGiphyPick && giphyPick && (
-                  <>
-                    <Hint className="mb-2">
-                      {giphySelectedPrefix} <strong>{giphyPick.title}</strong>
-                      {giphyPick.authorLabel} {giphyPickSuffix}
-                    </Hint>
-                    <Field>
-                      <FieldLabel>{giphyOptionalPromptLabel}</FieldLabel>
-                      <Textarea
-                        {...giphyPromptTextareaProps}
-                        rows={2}
-                        placeholder={giphyRemixPlaceholder}
-                      />
-                    </Field>
-                    {showGiphyRemixButton && (
-                      <Toolbar className="mt-1">
-                        <Button variant="primary" {...applyGiphyEditButtonProps}>
-                          <Icon name="sparkles" size={16} /> {giphyRemixButtonLabel}
-                        </Button>
-                        <span className={COST_NOTE}>{creditsNote}</span>
-                      </Toolbar>
-                    )}
-                  </>
-                )}
-              </>
+              <CreateMemeGiphyPanel
+                giphyCategoryLabel={giphyCategoryLabel}
+                giphyCategorySelectProps={giphyCategorySelectProps}
+                giphySearchLabel={giphySearchLabel}
+                giphyQueryInputProps={giphyQueryInputProps}
+                giphyQueryPlaceholder={giphyQueryPlaceholder}
+                giphySearchButtonProps={giphySearchButtonProps}
+                giphySearchButtonLabel={giphySearchButtonLabel}
+                giphyPoweredBy={giphyPoweredBy}
+                showGiphyResults={showGiphyResults}
+                giphyResults={giphyResults}
+                getGiphyResultProps={getGiphyResultProps}
+                giphyStatusHidden={giphyStatusHidden}
+                giphyStatusProps={giphyStatusProps}
+                giphyStatusText={giphyStatusText}
+                showGiphyPick={showGiphyPick}
+                giphyPick={giphyPick}
+                giphySelectedPrefix={giphySelectedPrefix}
+                giphyPickSuffix={giphyPickSuffix}
+                giphyOptionalPromptLabel={giphyOptionalPromptLabel}
+                giphyPromptTextareaProps={giphyPromptTextareaProps}
+                giphyRemixPlaceholder={giphyRemixPlaceholder}
+                showGiphyRemixButton={showGiphyRemixButton}
+                applyGiphyEditButtonProps={applyGiphyEditButtonProps}
+                giphyRemixButtonLabel={giphyRemixButtonLabel}
+                creditsNote={creditsNote}
+              />
             ) : showUrlPanel ? (
-              <>
-                <Field>
-                  <FieldLabel>{urlFieldLabel}</FieldLabel>
-                  <Input {...urlInputProps} placeholder={urlPlaceholder} />
-                  <FieldDescription className={CAPTION_OFFSET} id={helpIds.url}>
-                    {urlHelpText}
-                  </FieldDescription>
-                </Field>
-                <div>
-                  <Button {...fetchUrlButtonProps}>{fetchUrlButtonLabel}</Button>
-                </div>
-                <Field>
-                  <FieldLabel>{urlOptionalPromptLabel}</FieldLabel>
-                  <Textarea
-                    {...urlPromptTextareaProps}
-                    rows={2}
-                    placeholder={urlRemixPlaceholder}
-                  />
-                </Field>
-                {showUrlApplyEdit && (
-                  <Toolbar className="mt-1">
-                    <Button variant="primary" {...applyUrlEditButtonProps}>
-                      <Icon name="sparkles" size={16} /> {applyUrlEditLabel}
-                    </Button>
-                    <span className={COST_NOTE}>{creditsNote}</span>
-                  </Toolbar>
-                )}
-              </>
+              <CreateMemeUrlPanel
+                urlFieldLabel={urlFieldLabel}
+                urlInputProps={urlInputProps}
+                urlPlaceholder={urlPlaceholder}
+                urlHelpText={urlHelpText}
+                urlHelpId={helpIds.url}
+                fetchUrlButtonProps={fetchUrlButtonProps}
+                fetchUrlButtonLabel={fetchUrlButtonLabel}
+                urlOptionalPromptLabel={urlOptionalPromptLabel}
+                urlPromptTextareaProps={urlPromptTextareaProps}
+                urlRemixPlaceholder={urlRemixPlaceholder}
+                showUrlApplyEdit={showUrlApplyEdit}
+                applyUrlEditButtonProps={applyUrlEditButtonProps}
+                applyUrlEditLabel={applyUrlEditLabel}
+                creditsNote={creditsNote}
+              />
             ) : showUploadPanel ? (
-              <>
-                <Field>
-                  <FieldLabel>{uploadImageLabel}</FieldLabel>
-                  <FileDrop {...imageFileDropProps} />
-                  <FieldDescription className={CAPTION_OFFSET} id={helpIds.uploadImage}>
-                    {uploadImageHelpText}
-                  </FieldDescription>
-                </Field>
-                <Field>
-                  <FieldLabel>{uploadVideoLabel}</FieldLabel>
-                  <FileDrop {...videoFileDropProps} />
-                  <FieldDescription className={CAPTION_OFFSET} id={helpIds.uploadVideo}>
-                    {uploadVideoHelpText}
-                  </FieldDescription>
-                </Field>
-              </>
+              <CreateMemeUploadPanel
+                uploadImageLabel={uploadImageLabel}
+                uploadImageHelpText={uploadImageHelpText}
+                imageFileDropProps={imageFileDropProps}
+                uploadImageHelpId={helpIds.uploadImage}
+                uploadVideoLabel={uploadVideoLabel}
+                uploadVideoHelpText={uploadVideoHelpText}
+                videoFileDropProps={videoFileDropProps}
+                uploadVideoHelpId={helpIds.uploadVideo}
+              />
             ) : showGeneratePanel ? (
-              <>
-                <Field>
-                  <FieldLabel>{promptLabel}</FieldLabel>
-                  <Textarea
-                    {...generatePromptTextareaProps}
-                    rows={3}
-                    placeholder={generatePromptPlaceholder}
-                  />
-                  <FieldDescription className={CAPTION_OFFSET} id={helpIds.prompt}>
-                    {generatePromptHelpText}
-                  </FieldDescription>
-                </Field>
-                <Toolbar className="mt-1">
-                  <Button variant="primary" {...generateButtonProps}>
-                    {generateButtonLabel}
-                  </Button>
-                  <span className={COST_NOTE}>{creditsNote}</span>
-                </Toolbar>
-              </>
+              <CreateMemeGeneratePanel
+                promptLabel={promptLabel}
+                generatePromptPlaceholder={generatePromptPlaceholder}
+                generatePromptHelpText={generatePromptHelpText}
+                generateButtonLabel={generateButtonLabel}
+                creditsNote={creditsNote}
+                promptHelpId={helpIds.prompt}
+                generatePromptTextareaProps={generatePromptTextareaProps}
+                generateButtonProps={generateButtonProps}
+              />
             ) : null}
 
             {/* both regions are mounted in every state and only their text swaps: a live region

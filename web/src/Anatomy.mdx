@@ -17,7 +17,7 @@ or moving a component. `pnpm --filter web run check-tiers` runs recursively and 
 | Tier | Folder | What lives there | Owns state? |
 |---|---|---|---|
 | **Atoms** | `src/atoms/` | `Alert`, `AlertDialog`, `Avatar`, `Badge`, `Button`, `Card`, `Checkbox`, `Collapsible`, `Dialog`, `DropdownMenu`, `Empty` (+ `PageState`), `Field`, `FileDrop`, `FoilCard` (+ `FoilMedia`), `Heading`, `Icon`, `InlineLink`, `Input`, `InputGroup`, `Item`, `Label`, `LiveRegion`, `PageContainer`, `PageHead`, `Popover`, `PortalAnchor`, `Progress`, `Select`, `Separator`, `Skeleton`, `Spinner`, `Tabs`, `Textarea`, `TierChip`, `Toggle`, `ToggleGroup`, `Toolbar` | No |
-| **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `HeroVideo`, `LegalDocument`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `MemeCard`, `TradeCard` (`give`/`get`, not `offer`/`ask`) | No |
+| **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `HeroVideo`, `LegalDocument`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `MemeCard`, `TradeCard` (`give`/`get`, not `offer`/`ask`), `CreateMemeGeneratePanel` (generate+video share), `CreateMemeRemixPanel`, `CreateMemeGiphyPanel`, `CreateMemeUrlPanel`, `CreateMemeUploadPanel` | No |
 | **Organisms** | `src/organisms/` | `AppShell` (slots `nav` / `headerEnd` / `bottomNav`), `MemeplexPanel`, the `nav-item.tsx` links `NavPill` / `TabItem` / `FooterLink` | No |
 | **Screens** | `src/screens/` | One model object per route/chrome surface | No |
 | **Views** | `src/views/` | Engine wired to screen; `observer` wrap; `AppView` is the route switch | Via hooks |
@@ -76,7 +76,7 @@ main.tsx ── StoresProvider + AuthRuntime + BrowserRouter
          ├─ LandingView ── useLandingScreen (+ useHeroVideo) → LandingScreen ── FoilCard · HeroVideo · FaqItem
          ├─ AuthCallbackView ── useAuthCallbackScreen → AuthStatusScreen
          ├─ MobileAuthForwardView ── useMobileAuthForwardScreen → AuthStatusScreen
-         ├─ CreateMemeView ── useCreateMemeScreen → CreateMemeScreen ── FoilCard
+         ├─ CreateMemeView ── useCreateMemeScreen → CreateMemeScreen ── CreateMemeGeneratePanel · CreateMemeRemixPanel · CreateMemeGiphyPanel · CreateMemeUrlPanel · CreateMemeUploadPanel · FoilCard
          ├─ MarketplaceView ── useMarketplaceScreen (+ useMarketplaceCatalog) → MarketplaceScreen ── SortChips · MemeCard* ── FoilCard
          ├─ MemeDetailView ── useMemeDetailScreen → MemeDetailScreen ── ConfirmDialog · MemeplexPanel ── MemeCard*
          ├─ TradesView ── useTradesScreen → TradesScreen ── ConfirmDialog · TradeCard ── SideSummary
@@ -240,6 +240,7 @@ Probe these instead of a class name or copy string:
 | Invite | `invite-hero` |
 | Settings | `settings-sections`, `settings-account`, `settings-appearance`, `settings-connections`, `connection-row` (`data-linked`) |
 | Landing | `landing-hero`, `hero-pile`, `hero-card`, `hero-card-slot`, `hero-card-art`, `landing-how`, `landing-tiers`, `tier-card`, `tier-frame-slot`, `tier-frame-img`, `landing-faq`, `landing-closing` |
+| Create Meme | `mint-modes`, `create-meme-generate-panel`, `create-meme-remix-panel`, `create-meme-giphy-panel`, `create-meme-url-panel`, `create-meme-upload-panel`, `approval-card`, `busy-card`, `preview-placeholder` |
 | Legal (Privacy, Terms) | `legal-toc`, `legal-section` |
 | Auth (`screens/AuthStatusScreen.tsx`) | `auth-status` (`data-phase`), `auth-ring`, `auth-timeout`, `auth-web-fallback` |
 | Shell | `header`, `header-row`, `top-nav`, `nav-pill`, `header-end`, `mint-link`, `braincells`, `quest-trigger` (`data-progress`), `quest-claim-dot`, `quest-panel`, `tab-item`, `bottom-nav`, `site-footer`, `avatar-menu-identity`, `avatar-menu-name`, `avatar-menu-theme`, `avatar-menu-theme-option`, `avatar-menu-logout` |
