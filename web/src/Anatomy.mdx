@@ -16,8 +16,8 @@ or moving a component. `pnpm --filter web run check-tiers` runs recursively and 
 
 | Tier | Folder | What lives there | Owns state? |
 |---|---|---|---|
-| **Atoms** | `src/atoms/` | `Alert`, `AlertDialog`, `Avatar`, `Badge`, `Button`, `Card`, `Checkbox`, `Collapsible`, `Dialog`, `DropdownMenu`, `Empty` (+ `PageState`), `Field`, `FileDrop`, `Heading`, `Icon`, `InlineLink`, `Input`, `InputGroup`, `Item`, `Label`, `LiveRegion`, `MemeCard`, `PageContainer`, `PageHead`, `Popover`, `PortalAnchor`, `Progress`, `Select`, `Separator`, `Skeleton`, `Spinner`, `Tabs`, `Textarea`, `TierChip`, `Toggle`, `ToggleGroup`, `Toolbar` | No |
-| **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `HeroVideo`, `LegalDocument`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `TradeCard` (`give`/`get`, not `offer`/`ask`) | No |
+| **Atoms** | `src/atoms/` | `Alert`, `AlertDialog`, `Avatar`, `Badge`, `Button`, `Card`, `Checkbox`, `Collapsible`, `Dialog`, `DropdownMenu`, `Empty` (+ `PageState`), `Field`, `FileDrop`, `Heading`, `Icon`, `InlineLink`, `Input`, `InputGroup`, `Item`, `Label`, `LiveRegion`, `PageContainer`, `PageHead`, `Popover`, `PortalAnchor`, `Progress`, `Select`, `Separator`, `Skeleton`, `Spinner`, `Tabs`, `Textarea`, `TierChip`, `Toggle`, `ToggleGroup`, `Toolbar` | No |
+| **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `HeroVideo`, `LegalDocument`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `MemeCard`, `TradeCard` (`give`/`get`, not `offer`/`ask`) | No |
 | **Organisms** | `src/organisms/` | `AppShell` (slots `nav` / `headerEnd` / `bottomNav`), `MemeplexPanel`, the `nav-item.tsx` links `NavPill` / `TabItem` / `FooterLink` | No |
 | **Screens** | `src/screens/` | One model object per route/chrome surface | No |
 | **Views** | `src/views/` | Engine wired to screen; `observer` wrap; `AppView` is the route switch | Via hooks |
@@ -66,7 +66,7 @@ main.tsx ── StoresProvider + AuthRuntime + BrowserRouter
    ├─ RequireAuth · BinderOwnRedirect · BinderRoute · ProfileRoute · MemeDetailRoute · CreateMemeRoute · InviteRoute · LegacyMemeRedirect
    └─ AppShellView ── useAppShellScreen → AppShellScreen
       ├─ AppShell
-      │   ├─ QuestBar
+      │   ├─ QuestBar ── MemeCard* (pack dialog)
       │   ├─ AlertsBell
       │   └─ AvatarMenu
       └─ Routes
@@ -242,7 +242,7 @@ Probe these instead of a class name or copy string:
 
 ## Talking about it
 
-Name the tier and the piece: *"the `MemeCard` atom"*, *"the `GiftDialog` molecule"*,
+Name the tier and the piece: *"the `MemeCard` molecule"*, *"the `GiftDialog` molecule"*,
 *"the `CreateMemeScreen` › `Error` story"*, *"`useMarketplaceScreen` should hide the grid on empty"*.
 
 ## Checker exceptions
