@@ -9,6 +9,8 @@ const script = resolve(import.meta.dirname, "shadcn-postadd.mjs")
 const liveSrc = resolve(import.meta.dirname, "..", "src")
 /** Same pattern as shadcn-postadd.mjs — do not import the CLI (it has no exports). */
 const CN_IMPORT = /(\bfrom\s*)(['"])cn\2/g
+/** Stock shadcn CLI import. Not rewritten by postadd; live-tree ratchet only. */
+const LUCIDE_IMPORT = /\bfrom\s*(['"])lucide-react\1/g
 
 const walk = (dir) => readdirSync(dir).flatMap((entry) => {
   const file = join(dir, entry)
@@ -69,6 +71,15 @@ test("leaves from 'cn/config', from '@/lib/cn', and from '../lib/cn' unchanged",
   )
 })
 
+test("LUCIDE_IMPORT matches from \"lucide-react\" and from 'lucide-react' only", () => {
+  const hits = (source) => [...source.matchAll(LUCIDE_IMPORT)].length
+  assert.equal(hits('import { Check } from "lucide-react"\n'), 1)
+  assert.equal(hits("import { Check } from 'lucide-react'\n"), 1)
+  assert.equal(hits("import { Check } from 'lucide-react/foo'\n"), 0)
+  assert.equal(hits("import { Icon } from '@/atoms/icon'\n"), 0)
+  assert.equal(hits("lucide glyph\n"), 0)
+})
+
 // Read-only walk of the real tree. Never spawn the mutator against live src/.
 test("live src/ has no from \"cn\" / from 'cn' (cn/config must not match)", () => {
   const hits = []
@@ -78,4 +89,14 @@ test("live src/ has no from \"cn\" / from 'cn' (cn/config must not match)", () =
   }
   assert.equal(hits.length, 0, `stock from "cn" in ${hits.join(", ")}`)
   assert.match(readFileSync(join(liveSrc, "lib", "cn.ts"), "utf8"), /from ['"]cn\/config['"]/)
+})
+
+// Read-only walk of the real tree. Never spawn the mutator against live src/.
+test("live src/ has no from \"lucide-react\" / from 'lucide-react'", () => {
+  const hits = []
+  for (const file of walk(liveSrc).filter((name) => /\.(ts|tsx)$/.test(name))) {
+    const source = readFileSync(file, "utf8")
+    if ([...source.matchAll(LUCIDE_IMPORT)].length) hits.push(relative(liveSrc, file))
+  }
+  assert.equal(hits.length, 0, `from "lucide-react" in ${hits.join(", ")}`)
 })
