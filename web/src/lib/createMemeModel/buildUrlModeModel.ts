@@ -6,6 +6,9 @@ import type { CreateMemeScreenActions, CreateMemeScreenModel } from './types'
 type UrlModeSlice = Pick<
   CreateMemeScreenModel,
   | 'showUrlPanel'
+  | 'urlLabel'
+  | 'urlRemixPromptLabel'
+  | 'urlApplyEditLabel'
   | 'urlPlaceholder'
   | 'urlHelpText'
   | 'showUrlApplyEdit'
@@ -23,7 +26,10 @@ export function buildUrlModeModel(
 ): UrlModeSlice {
   return {
     showUrlPanel: ctx.mode === 'url',
-    urlPlaceholder: 'https://…/meme.png',
+    urlLabel: copy.url.label,
+    urlRemixPromptLabel: copy.url.remixPromptLabel,
+    urlApplyEditLabel: copy.url.applyEdit,
+    urlPlaceholder: copy.url.placeholder,
     urlHelpText: copy.url.help,
     showUrlApplyEdit: !!ctx.prompt.trim() && !!ctx.imageUrl && !ctx.edited,
     fetchUrlButtonLabel: copy.url.fetch,
@@ -46,6 +52,7 @@ export function buildUrlModeModel(
     },
     urlPromptTextareaProps: {
       value: ctx.prompt,
+      placeholder: copy.url.remixPlaceholder,
       onChange: (event) => actions.setPrompt(event.currentTarget.value),
     },
     applyUrlEditButtonProps: {

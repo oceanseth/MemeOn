@@ -13,12 +13,38 @@ import {
 } from './shared'
 import type { CreateMemeScreenActions, CreateMemeScreenModel } from './types'
 
+const MODE_LABEL: Record<CreateMemeMode, string> = {
+  remix: copy.modes.remix,
+  generate: copy.modes.generate,
+  video: copy.modes.video,
+  upload: copy.modes.upload,
+  giphy: copy.modes.giphy,
+  url: copy.modes.url,
+}
+
 type CommonSlice = Pick<
   CreateMemeScreenModel,
   | 'phase'
   | 'mode'
   | 'showRemixModeButton'
   | 'modeGroupProps'
+  | 'pageTitle'
+  | 'pageSubtitle'
+  | 'formHeading'
+  | 'formDescription'
+  | 'titleLabel'
+  | 'tagsLabel'
+  | 'creditsNote'
+  | 'formFooter'
+  | 'mintButtonLabel'
+  | 'sharesToYou'
+  | 'busyStayText'
+  | 'previewHeading'
+  | 'previewDescription'
+  | 'previewPlaceholder'
+  | 'toMintPrefix'
+  | 'shareLinkLabel'
+  | 'openCardLabel'
   | 'busy'
   | 'busyElapsedLabel'
   | 'err'
@@ -68,6 +94,23 @@ export function buildCommonModel(
     mode: ctx.mode,
     showRemixModeButton: !!ctx.remixId,
     modeGroupProps: { role: 'group', 'aria-label': copy.form.sourceGroup },
+    pageTitle: copy.page.title,
+    pageSubtitle: copy.page.subtitle,
+    formHeading: copy.form.heading[ctx.mode],
+    formDescription: copy.form.description,
+    titleLabel: copy.form.titleLabel,
+    tagsLabel: copy.form.tagsLabel,
+    creditsNote: copy.form.creditsNote,
+    formFooter: copy.form.footer(TITLE_MAX),
+    mintButtonLabel: copy.form.mint,
+    sharesToYou: copy.form.sharesToYou,
+    busyStayText: copy.busy.stay,
+    previewHeading: copy.preview.heading,
+    previewDescription: copy.preview.description,
+    previewPlaceholder: copy.preview.placeholder,
+    toMintPrefix: copy.preview.toMint,
+    shareLinkLabel: copy.form.success.shareLink,
+    openCardLabel: copy.form.success.openCard,
     busy: ctx.busy,
     busyElapsedLabel: ctx.busyElapsed,
     err: ctx.err,
@@ -89,6 +132,7 @@ export function buildCommonModel(
     formProps: { 'aria-busy': isBusy },
     getModeButtonProps: (candidate: CreateMemeMode) => ({
       selected: ctx.mode === candidate,
+      label: MODE_LABEL[candidate],
       buttonProps: {
         type: 'button',
         'aria-pressed': ctx.mode === candidate,

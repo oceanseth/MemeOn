@@ -119,14 +119,19 @@ describe('buildCreateMemeScreenModel', () => {
       prompt: 'current prompt',
     }, calls)
 
-    /* the chip's chrome is the screen's business: the model only names the state */
+    /* the chip's chrome is the screen's business: the model names the state and the label */
     const selectedMode = model.getModeButtonProps('remix')
-    expect(selectedMode).toMatchObject({ selected: true, buttonProps: { 'aria-pressed': true } })
+    expect(selectedMode).toMatchObject({
+      selected: true,
+      label: copy.modes.remix,
+      buttonProps: { 'aria-pressed': true },
+    })
     expect(selectedMode.buttonProps).not.toHaveProperty('className')
     selectedMode.buttonProps.onClick?.(clickEvent())
     expect(calls.selectMode).toHaveBeenCalledWith('remix')
     expect(model.getModeButtonProps('generate')).toMatchObject({
       selected: false,
+      label: copy.modes.generate,
       buttonProps: { 'aria-pressed': false },
     })
 
@@ -260,9 +265,9 @@ describe('buildCreateMemeScreenModel', () => {
     expect(model.imageFileDropProps.accept).toBe('image/png,image/jpeg,image/gif,image/webp')
     expect(model.videoFileDropProps.accept).toBe('video/mp4,video/quicktime,video/webm')
     // the words the browser used to write are the deck's now
-    expect(model.imageFileDropProps.chooseLabel).toBe('Choose an image')
-    expect(model.videoFileDropProps.chooseLabel).toBe('Choose a video')
-    expect(model.imageFileDropProps.emptyLabel).toBe('or drop one here')
+    expect(model.imageFileDropProps.chooseLabel).toBe(copy.upload.chooseImage)
+    expect(model.videoFileDropProps.chooseLabel).toBe(copy.upload.chooseVideo)
+    expect(model.imageFileDropProps.emptyLabel).toBe(copy.upload.dropHint)
     model.imageFileDropProps.onFile(image)
     model.videoFileDropProps.onFile(video)
     expect(calls.uploadImage).toHaveBeenCalledWith(image)
@@ -314,7 +319,7 @@ describe('buildCreateMemeScreenModel', () => {
     }
     const awaiting = buildCreateMemeScreenModel('remix', frameOnly, actions())
     expect(awaiting.mintButtonProps.disabled).toBe(true)
-    expect(awaiting.mintHint).toBe('animate the frame')
+    expect(awaiting.mintHint).toBe(copy.preview.mintHint.animate)
     /* the approval panel owns the only remix control while the question is open */
     expect(awaiting.showEditedFrameApproval).toBe(true)
     expect(awaiting.showRemixButton).toBe(false)
@@ -340,7 +345,7 @@ describe('buildCreateMemeScreenModel', () => {
       },
       actions(),
     )
-    expect(carried.previewCard.originLabel).toBe('from GIPHY · @catlord')
+    expect(carried.previewCard.originLabel).toBe(copy.preview.originFromAuthor('GIPHY', 'catlord'))
     expect(carried.getModeButtonProps('giphy').buttonProps.disabled).toBe(false)
 
     const running = buildCreateMemeScreenModel(
@@ -362,10 +367,10 @@ describe('buildCreateMemeScreenModel', () => {
     expect(searched.err).toBeNull()
     expect(searched.giphyStatusProps).toEqual({ role: 'status' })
     expect(searched.giphyStatusHidden).toBe(false)
-    expect(searched.giphyStatusText).toContain('Nothing for "zzz"')
+    expect(searched.giphyStatusText).toBe(copy.giphy.emptySearch('zzz'))
 
     const fresh = buildCreateMemeScreenModel('giphy', { ...baseContext, mode: 'giphy' }, actions())
-    expect(fresh.giphyStatusText).toBe('Pick a category or search to browse GIPHY.')
+    expect(fresh.giphyStatusText).toBe(copy.giphy.idle)
   })
 
   it('names the file caps and the next step out of a failure once', () => {
@@ -377,7 +382,7 @@ describe('buildCreateMemeScreenModel', () => {
       { ...baseContext, err: 'credits exhausted' },
       actions(),
     )
-    expect(failed.errorNextStep).toContain('Top up Masky credits')
+    expect(failed.errorNextStep).toBe(copy.preview.nextStep.credits)
     expect(failed.uploadVideoHelpText).toContain('max 50MB')
   })
 
@@ -424,5 +429,23 @@ describe('buildCreateMemeScreenModel', () => {
     expect(calls.applyUrlEdit).toHaveBeenCalledOnce()
     expect(calls.generate).toHaveBeenCalledOnce()
     expect(calls.mint).toHaveBeenCalledOnce()
+  })
+
+  it('passes page chrome, mode labels, and select options from createMemeCopy', () => {
+    const model = buildCreateMemeScreenModel('generate', baseContext, actions())
+    expect(model.pageTitle).toBe(copy.page.title)
+    expect(model.pageSubtitle).toBe(copy.page.subtitle)
+    expect(model.formHeading).toBe(copy.form.heading.generate)
+    expect(model.formFooter).toBe(copy.form.footer(20))
+    expect(model.remixOutputSelectProps.items).toEqual([
+      { value: 'image', label: copy.remix.outputOptions.image },
+      { value: 'video', label: copy.remix.outputOptions.video },
+    ])
+    expect(model.videoModeSelectProps.items).toEqual([
+      { value: 'edit', label: copy.remix.videoStyle.edit },
+      { value: 'restyle', label: copy.remix.videoStyle.restyle },
+    ])
+    expect(model.urlPlaceholder).toBe(copy.url.placeholder)
+    expect(model.motionPromptTextareaProps.placeholder).toBe(copy.remix.motionPlaceholder)
   })
 })

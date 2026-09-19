@@ -10,6 +10,14 @@ type GiphyModeSlice = Pick<
   | 'giphyResults'
   | 'giphyPick'
   | 'giphyStatusText'
+  | 'giphyCategoryLabel'
+  | 'giphySearchLabel'
+  | 'giphySearchButtonLabel'
+  | 'giphyPoweredBy'
+  | 'giphySelectedPrefix'
+  | 'giphySelectedSuffix'
+  | 'giphyRemixPromptLabel'
+  | 'giphyRemixButtonLabel'
   | 'showGiphyResults'
   | 'showGiphyPick'
   | 'showGiphyRemixButton'
@@ -44,6 +52,14 @@ export function buildGiphyModeModel(
         : ctx.giphySearched
           ? copy.giphy.emptySearch(ctx.giphyQuery)
           : copy.giphy.idle,
+    giphyCategoryLabel: copy.giphy.categoryLabel,
+    giphySearchLabel: copy.giphy.searchLabel,
+    giphySearchButtonLabel: copy.giphy.search,
+    giphyPoweredBy: copy.giphy.poweredBy,
+    giphySelectedPrefix: copy.giphy.selectedPrefix,
+    giphySelectedSuffix: copy.giphy.selectedSuffix,
+    giphyRemixPromptLabel: copy.giphy.remixPromptLabel,
+    giphyRemixButtonLabel: copy.giphy.remixWithMasky,
     showGiphyResults: ctx.giphyResults.length > 0,
     showGiphyPick: !!ctx.giphyPick,
     showGiphyRemixButton: !!ctx.prompt.trim() && !!ctx.giphyPick,
@@ -51,6 +67,10 @@ export function buildGiphyModeModel(
     giphyCategorySelectProps: {
       value: '',
       disabled: isBusy,
+      items: [
+        { value: '', label: copy.giphy.browse },
+        ...ctx.giphyCategories.map((category) => ({ value: category, label: category })),
+      ],
       onValueChange: (value) => {
         if (value) void actions.searchGiphy(value)
       },
@@ -58,6 +78,7 @@ export function buildGiphyModeModel(
     giphyQueryInputProps: {
       type: 'search',
       value: ctx.giphyQuery,
+      placeholder: copy.giphy.queryPlaceholder,
       onChange: (event) => actions.setGiphyQuery(event.currentTarget.value),
       onKeyDown: (event) => {
         if (event.key !== 'Enter') return
@@ -89,6 +110,7 @@ export function buildGiphyModeModel(
     },
     giphyPromptTextareaProps: {
       value: ctx.prompt,
+      placeholder: copy.giphy.remixPlaceholder,
       onChange: (event) => actions.setPrompt(event.currentTarget.value),
     },
     applyGiphyEditButtonProps: {

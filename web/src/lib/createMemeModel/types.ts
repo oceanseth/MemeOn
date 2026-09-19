@@ -23,13 +23,13 @@ type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement>
 
 /**
  * The `Select` atom is controlled by value rather than by a change event, so a picker's model is a
- * value plus the callback that receives the next one. The option copy stays in the screen with the
- * rest of the words.
+ * value, the callback that receives the next one, and the option copy the trigger paints.
  */
 export interface CreateMemeSelectModel {
   value: string
   disabled?: boolean
   onValueChange: (value: string | null) => void
+  items: readonly { value: string; label: string }[]
 }
 
 /**
@@ -67,10 +67,11 @@ export interface GiphyCellModel {
   picked: boolean
 }
 
-/** One source chip. The engine names the state; the screen picks the chrome for it. */
+/** One source chip. The engine names the state and the label; the screen picks the icon. */
 export interface CreateMemeModeButtonModel {
   buttonProps: ButtonProps
   selected: boolean
+  label: string
 }
 
 export type CreateMemeMediaModel =
@@ -96,23 +97,61 @@ export interface CreateMemeScreenModel {
   mode: CreateMemeMode
   showRemixModeButton: boolean
   modeGroupProps: HTMLAttributes<HTMLDivElement>
+  pageTitle: string
+  pageSubtitle: string
+  formHeading: string
+  formDescription: string
+  titleLabel: string
+  tagsLabel: string
+  creditsNote: string
+  formFooter: string
+  mintButtonLabel: string
+  sharesToYou: string
+  busyStayText: string
+  previewHeading: string
+  previewDescription: string
+  previewPlaceholder: string
+  toMintPrefix: string
+  shareLinkLabel: string
+  openCardLabel: string
   busy: string | null
   busyElapsedLabel: string | null
   err: string | null
   errorNextStep: string | null
   remixSource: CreateMemeSourceModel | null
   remixSourceLoadingText: string
+  remixSourcePrefix: string
+  remixSourceBy: string
+  remixOutputLabel: string
+  remixVideoStyleLabel: string
+  remixApprovalTitle: string
+  remixApprovalBody: string
+  remixMotionLabel: string
+  remixAnimateLabel: string
+  remixRerunLabel: string
   giphyCategories: string[]
   giphyResults: GiphyResult[]
   giphyPick: SelectedGiphyModel | null
   giphyStatusText: string
+  giphyCategoryLabel: string
+  giphySearchLabel: string
+  giphySearchButtonLabel: string
+  giphyPoweredBy: string
+  giphySelectedPrefix: string
+  giphySelectedSuffix: string
+  giphyRemixPromptLabel: string
+  giphyRemixButtonLabel: string
   remixPromptLabel: string
   remixPromptPlaceholder: string
+  generatePromptLabel: string
   generatePromptPlaceholder: string
   generatePromptHelpText: string
   remixButtonLabel: string
   generateButtonLabel: string
   fetchUrlButtonLabel: string
+  urlLabel: string
+  urlRemixPromptLabel: string
+  urlApplyEditLabel: string
   mintHint: string
   titlePlaceholder: string
   titleHelpText: string

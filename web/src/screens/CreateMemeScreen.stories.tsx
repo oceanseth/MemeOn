@@ -113,10 +113,10 @@ export const UrlTyped: Story = {
   args: model({ mode: 'url', urlDraft: 'https://www.reddit.com/r/memes/comments/abc' }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Fetch image' })).toBeEnabled()
+    await expect(canvas.getByRole('button', { name: copy.url.fetch })).toBeEnabled()
     /* nothing is resolved yet, so the terminal action stays shut */
-    await expect(canvas.getByRole('button', { name: /Mint/ })).toBeDisabled()
-    await expect(canvas.getByText(/To mint:/)).toHaveTextContent('add artwork')
+    await expect(canvas.getByRole('button', { name: copy.form.mint })).toBeDisabled()
+    await expect(canvas.getByText(`${copy.preview.toMint} ${copy.preview.mintHint.artwork}`)).toBeVisible()
   },
 }
 
@@ -126,8 +126,8 @@ export const Upload: Story = {
     const canvas = within(canvasElement)
     const image = new File(['image'], 'cat.png', { type: 'image/png' })
     const video = new File(['video'], 'cat.mp4', { type: 'video/mp4' })
-    await userEvent.upload(canvas.getByLabelText('Image'), image)
-    await userEvent.upload(canvas.getByLabelText('Video'), video)
+    await userEvent.upload(canvas.getByLabelText(copy.upload.imageLabel), image)
+    await userEvent.upload(canvas.getByLabelText(copy.upload.videoLabel), video)
     await expect(actions.uploadImage).toHaveBeenCalledWith(image)
     await expect(actions.uploadVideo).toHaveBeenCalledWith(video)
   },
@@ -181,12 +181,14 @@ export const RemixEditedFrame: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     /* exactly one primary and one secondary: the frame-destroying remix button is gone */
-    await expect(canvas.getByRole('button', { name: /animate it/ })).toBeEnabled()
-    await expect(canvas.getByRole('button', { name: /Re-run the edit/ })).toBeEnabled()
-    await expect(canvas.queryByRole('button', { name: 'Remix into video' })).toBeNull()
+    await expect(canvas.getByRole('button', { name: copy.remix.animateIt })).toBeEnabled()
+    await expect(canvas.getByRole('button', { name: copy.remix.rerunEdit })).toBeEnabled()
+    await expect(canvas.queryByRole('button', { name: copy.remix.remixVideo })).toBeNull()
     /* "New video" was chosen, so a still frame is not mintable yet */
-    await expect(canvas.getByRole('button', { name: /Mint/ })).toBeDisabled()
-    await expect(canvas.getByText(/To mint:/)).toHaveTextContent('animate the frame')
+    await expect(canvas.getByRole('button', { name: copy.form.mint })).toBeDisabled()
+    await expect(
+      canvas.getByText(`${copy.preview.toMint} ${copy.preview.mintHint.animate}`),
+    ).toBeVisible()
   },
 }
 
@@ -204,7 +206,7 @@ export const GiphyResults: Story = {
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const search = canvas.getByRole('searchbox', { name: 'Search GIPHY' })
+    const search = canvas.getByRole('searchbox', { name: copy.giphy.searchLabel })
     search.focus()
     await userEvent.keyboard('{Enter}')
     await expect(actions.searchGiphy).toHaveBeenCalledWith('cat')
@@ -235,7 +237,7 @@ export const GiphyEmpty: Story = {
     /* the mint's own live region is always mounted, so name the panel's status by its text:
        the card is the region, its description the line that swaps */
     await expect(
-      canvas.getByText(/Nothing for "zzzzzz"/).closest('[data-slot="empty"]'),
+      canvas.getByText(copy.giphy.emptySearch('zzzzzz')).closest('[data-slot="empty"]'),
     ).toHaveAttribute('role', 'status')
   },
 }
@@ -277,7 +279,7 @@ export const GiphyArtworkInUploadMode: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     /* the origin travels with the artwork, so the attribution is never silently dropped */
-    await expect(canvas.getByText('from GIPHY · @giphy-user')).toBeVisible()
+    await expect(canvas.getByText(copy.preview.originFromAuthor('GIPHY', 'giphy-user'))).toBeVisible()
   },
 }
 
@@ -307,7 +309,7 @@ export const Submitting: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     /* the mode row locks with the rest of the form: no reshaping a running request */
-    await expect(canvas.getByRole('button', { name: /Upload/ })).toBeDisabled()
+    await expect(canvas.getByRole('button', { name: copy.modes.upload })).toBeDisabled()
     /* the busy text lands in a region that was already mounted and silent, not one inserted with it */
     const busyNotice = canvas
       .getByText(copy.busy.generatingImage)
@@ -353,7 +355,7 @@ export const Error: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('alert')).toHaveTextContent('Top up Masky credits')
+    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.preview.nextStep.credits)
   },
 }
 
@@ -385,7 +387,7 @@ export const Success: Story = {
     // the render can run minutes: the outcome takes focus and announces itself
     await expect(canvas.getByRole('heading', { name: /Minted/ })).toHaveFocus()
     await expect(canvas.getByRole('status')).toHaveTextContent('Minted. Your card is live')
-    await userEvent.click(canvas.getByRole('button', { name: /Copy share link/ }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.form.success.copyLink }))
     await expect(actions.copyShareLink).toHaveBeenCalled()
   },
 }
@@ -403,7 +405,7 @@ export const SuccessCopied: Story = {
     'success',
   ),
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByRole('status')).toHaveTextContent('Share link copied')
+    await expect(within(canvasElement).getByRole('status')).toHaveTextContent(copy.form.success.copied)
   },
 }
 
@@ -418,7 +420,7 @@ export const Ready: Story = {
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: /Mint/ })).toBeEnabled()
+    await expect(canvas.getByRole('button', { name: copy.form.mint })).toBeEnabled()
     const tierNote = canvasElement.querySelector('[data-slot="tier-note"]') as HTMLElement
     await expect(within(tierNote).getByText('Paper')).toBeVisible()
     await expect(within(tierNote).getByText('freshly minted')).toBeVisible()

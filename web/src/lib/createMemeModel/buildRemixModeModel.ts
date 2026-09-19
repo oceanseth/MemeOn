@@ -3,11 +3,30 @@ import type { CreateMemeContext } from '../../stores/createMemeMachine'
 import { isRemixOutput, isVideoRemixStyle } from './shared'
 import type { CreateMemeScreenActions, CreateMemeScreenModel } from './types'
 
+const REMIX_OUTPUT_ITEMS = [
+  { value: 'image', label: copy.remix.outputOptions.image },
+  { value: 'video', label: copy.remix.outputOptions.video },
+] as const
+
+const VIDEO_REMIX_STYLE_ITEMS = [
+  { value: 'edit', label: copy.remix.videoStyle.edit },
+  { value: 'restyle', label: copy.remix.videoStyle.restyle },
+] as const
+
 type RemixModeSlice = Pick<
   CreateMemeScreenModel,
   | 'showRemixPanel'
   | 'remixSource'
   | 'remixSourceLoadingText'
+  | 'remixSourcePrefix'
+  | 'remixSourceBy'
+  | 'remixOutputLabel'
+  | 'remixVideoStyleLabel'
+  | 'remixApprovalTitle'
+  | 'remixApprovalBody'
+  | 'remixMotionLabel'
+  | 'remixAnimateLabel'
+  | 'remixRerunLabel'
   | 'remixPromptLabel'
   | 'remixPromptPlaceholder'
   | 'remixButtonLabel'
@@ -42,6 +61,15 @@ export function buildRemixModeModel(
         }
       : null,
     remixSourceLoadingText: copy.remix.loadingSource,
+    remixSourcePrefix: copy.remix.sourcePrefix,
+    remixSourceBy: copy.remix.sourceBy,
+    remixOutputLabel: copy.remix.outputLabel,
+    remixVideoStyleLabel: copy.remix.videoStyleLabel,
+    remixApprovalTitle: copy.remix.approvalTitle,
+    remixApprovalBody: copy.remix.approvalBody,
+    remixMotionLabel: copy.remix.motionLabel,
+    remixAnimateLabel: copy.remix.animateIt,
+    remixRerunLabel: copy.remix.rerunEdit,
     remixPromptLabel: remixPromptIsPrecise
       ? copy.remix.promptLabelPrecise
       : copy.remix.promptLabelEdit,
@@ -57,12 +85,14 @@ export function buildRemixModeModel(
     showRemixButton: !showEditedFrameApproval,
     remixOutputSelectProps: {
       value: ctx.remixOutput,
+      items: REMIX_OUTPUT_ITEMS,
       onValueChange: (value) => {
         if (value && isRemixOutput(value)) actions.setRemixOutput(value)
       },
     },
     videoModeSelectProps: {
       value: ctx.videoMode,
+      items: VIDEO_REMIX_STYLE_ITEMS,
       onValueChange: (value) => {
         if (value && isVideoRemixStyle(value)) actions.setVideoMode(value)
       },
@@ -73,6 +103,7 @@ export function buildRemixModeModel(
     },
     motionPromptTextareaProps: {
       value: ctx.motionPrompt,
+      placeholder: copy.remix.motionPlaceholder,
       onChange: (event) => actions.setMotionPrompt(event.currentTarget.value),
     },
     animateEditedButtonProps: {
