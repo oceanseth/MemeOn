@@ -14,16 +14,26 @@ import { rtdb } from './firebase'
 export function startPresence(uid: string): () => void {
   const me = ref(rtdb, `presence/${uid}`)
   const connected = ref(rtdb, '.info/connected')
-  const unsub = onValue(connected, (snap) => {
-    if (!snap.val()) return
-    void onDisconnect(me)
-      .remove()
-      .then(() => set(me, { online: true, at: serverTimestamp() }))
-      .catch(() => {})
-  })
+  const unsub = onValue(
+    connected,
+    (snap) => {
+      if (!snap.val()) return
+      void onDisconnect(me)
+        .remove()
+        .then(() => set(me, { online: true, at: serverTimestamp() }))
+        .catch((err) => {
+          console.error('[memeon presence] advertise failed', err)
+        })
+    },
+    (err) => {
+      console.error('[memeon presence] connected listener failed', err)
+    },
+  )
   return () => {
     unsub()
-    void remove(me).catch(() => {})
+    void remove(me).catch((err) => {
+      console.error('[memeon presence] stop failed', err)
+    })
   }
 }
 
@@ -74,7 +84,8 @@ export function watchPresence(cb: (onlineUids: Set<string>) => void): PresenceWa
             else online.delete(sub)
             emit()
           },
-          () => {
+          (err) => {
+            console.error('[memeon presence] watch failed', err)
             if (online.delete(sub)) emit()
           },
         ),

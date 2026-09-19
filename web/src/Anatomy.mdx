@@ -105,7 +105,7 @@ signed-in player can reach is a `lazy()` chunk behind `RequireAuth`.
 | `lib/*Model.ts` | pure builders from API records to component prop bags (`buildMemeCardModel`, `buildTradeCardModel`, `buildQuestBarModel`, …); the dialog models carry their `DialogOpenerRef` via `lib/dialogOpener` | screen hooks, stories (fixtures), the components as types only |
 | `lib/cardMedia.ts` | the meme card's one imperative seam: a shared IntersectionObserver, `video.play()`, the paused foil ring; exports the stable `cardMediaRef` / `toggleCardMedia` handles the card model hands to `MemeCard` | `lib/memeCardModel` |
 | `hooks/useHeroVideo` + `lib/heroVideoModel` | the landing film: whether autoplay is spent (reduced motion, Data Saver, 2g/3g — a live `useSyncExternalStore` probe), started-by-hand, muted; the element is kept for `play()` behind a ref callback so the model stays a plain props bag | `useLandingScreen` → `LandingScreen` → `HeroVideo` |
-| `lib/presence.ts` | Firebase online flag | `useAuthRuntime`, Friends watch |
+| `lib/presence.ts` | Firebase online flag; hardcoded web config in `lib/firebase.ts` is expected public client config, not the SSM service account | `useAuthRuntime`, Friends watch |
 
 `useProjectedActor` uses `useActorRef` to start and stop an actor with its mounted
 view. Its side-effect-free projection constructor retains the snapshot by reference
