@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { friendAccepted, giftablePaper, meLou } from '../../.storybook/fixtures'
 import { friendsCopy as copy } from '../copy/friends'
 import { profileCopy } from '../copy/profile'
-import type { Me } from '../lib/types'
+import type { FriendEntry, Me } from '../lib/types'
 import { authMachine } from '../stores/authMachine'
 import { createStores, type AppStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
@@ -89,6 +89,7 @@ interface SocialApiOptions {
   gifts?: Array<ReturnType<typeof deferred<Response>>>
   friendRequests?: Array<ReturnType<typeof deferred<Response>>>
   users?: (query: string) => Promise<Response>
+  friends?: FriendEntry[]
 }
 
 function installSocialApi(options: SocialApiOptions = {}) {
@@ -96,11 +97,12 @@ function installSocialApi(options: SocialApiOptions = {}) {
   const userQueries: string[] = []
   let giftIndex = 0
   let requestIndex = 0
+  const friends = options.friends ?? [friendAccepted]
   vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
     const request = details(input, init)
     requests.push({ method: request.method, path: request.url.pathname, body: request.body })
     if (request.method === 'GET' && request.url.pathname === '/api/friends') {
-      return Promise.resolve(json({ friends: [friendAccepted] }))
+      return Promise.resolve(json({ friends }))
     }
     if (request.method === 'GET' && request.url.pathname === '/api/binder') {
       return Promise.resolve(json({ memes: [giftablePaper] }))
@@ -114,6 +116,12 @@ function installSocialApi(options: SocialApiOptions = {}) {
       const pending = options.friendRequests?.[requestIndex++]
       if (!pending) throw new Error('Unexpected friend request')
       return pending.promise
+    }
+    if (request.method === 'POST' && request.url.pathname === '/api/friends/remove') {
+      return Promise.resolve(json({ ok: true }))
+    }
+    if (request.method === 'POST' && request.url.pathname === '/api/friends/respond') {
+      return Promise.resolve(json({ ok: true }))
     }
     if (request.method === 'GET' && request.url.pathname === '/api/users') {
       const query = request.url.searchParams.get('q') ?? ''
@@ -357,6 +365,33 @@ describe('FriendsView search failure vs empty hits', () => {
     await advance(250)
     expect(host.textContent).toContain(copy.search.noHits('pal'))
     expect(host.textContent).not.toContain(copy.search.failed)
+  })
+})
+
+describe('FriendsView unfriend and decline confirm', () => {
+  it('POSTs /api/friends/remove after the unfriend confirm', async () => {
+    const api = installSocialApi()
+    await renderFriends()
+    await click(host.querySelector<HTMLElement>(`[aria-label="${copy.row.removeName(friendAccepted.name)}"]`)!)
+    const dialog = host.querySelector<HTMLElement>('[data-slot="dialog-content"]')!
+    expect(dialog.textContent).toContain(copy.removeDialog.remove.title(friendAccepted.name))
+    await click(button(copy.removeDialog.remove.confirm, dialog))
+    expect(api.requests.filter((request) => request.method === 'POST' && request.path === '/api/friends/remove')).toEqual([
+      expect.objectContaining({ body: { userId: friendAccepted.sub } }),
+    ])
+  })
+
+  it('POSTs /api/friends/respond {accept:false} after the decline confirm', async () => {
+    const incoming = { ...friendAccepted, status: 'incoming' as const }
+    const api = installSocialApi({ friends: [incoming] })
+    await renderFriends()
+    await click(host.querySelector<HTMLElement>(`[aria-label="${copy.row.decline(incoming.name)}"]`)!)
+    const dialog = host.querySelector<HTMLElement>('[data-slot="dialog-content"]')!
+    expect(dialog.textContent).toContain(copy.removeDialog.decline.title(incoming.name))
+    await click(button(copy.removeDialog.decline.confirm, dialog))
+    expect(api.requests.filter((request) => request.method === 'POST' && request.path === '/api/friends/respond')).toEqual([
+      expect.objectContaining({ body: { userId: incoming.sub, accept: false } }),
+    ])
   })
 })
 
