@@ -1,270 +1,43 @@
 import { Link } from 'react-router-dom'
-import { Alert } from '@/atoms/alert'
-import { Button, buttonVariants } from '@/atoms/button'
-import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
+import { buttonVariants } from '@/atoms/button'
 import { Heading } from '@/atoms/heading'
-import { PageContainer } from '@/atoms/page-container'
-import { TierChip } from '@/atoms/tier-chip'
-import { cn } from '../lib/cn'
-import type { LandingScreenModel } from '../hooks/useLandingScreen'
-import { FaqItem } from '@/molecules/faq-item'
-import { HeroVideo } from '@/molecules/hero-video'
 import { Icon } from '@/atoms/icon'
+import { PageContainer } from '@/atoms/page-container'
+import type { LandingScreenModel } from '../hooks/useLandingScreen'
+import { HeroVideo } from '@/molecules/hero-video'
+import { LandingClosing } from '@/organisms/landing-closing'
+import { LandingFaq } from '@/organisms/landing-faq'
+import { LandingHero } from '@/organisms/landing-hero'
+import { LandingHow } from '@/organisms/landing-how'
+import { LandingTiers } from '@/organisms/landing-tiers'
 import './LandingScreen.css'
 
 const SECTION = 'mt-14 max-md:mt-10'
 
-const CARD = 'rounded-lg material-card p-4.5'
-
-/** Hero pile card: percentage positions scale with the column, no phone transform. */
-const PILE_CARD = 'absolute origin-top-left rounded-lg material-card p-2'
-
-const PILE_LAYOUT = [
-  'left-0 top-[19%] w-[38.2%]',
-  'left-[26.3%] top-0 w-[41.8%] rotate-[-8deg]',
-  'left-[55.9%] top-[23.3%] w-[35.4%] rotate-[10deg]',
-] as const
-
 /** Landing as a function of its model. Every engine state is one set of args. */
-export function LandingScreen({
-  err,
-  showMarketplaceCta,
-  showLoginButton,
-  showErr,
-  loginLabel,
-  loginAside,
-  marketplaceCta,
-  closingLine,
-  closingLoginLabel,
-  heroTitle,
-  heroBody,
-  heroCards,
-  howTitle,
-  howSteps,
-  tiersTitle,
-  tiers,
-  filmTitle,
-  faqTitle,
-  faqItems,
-  heroVideo,
-  loginButtonProps,
-  closingLoginButtonProps,
-  frameImageProps,
-  frameSlotProps,
-  errorNoticeProps,
-}: LandingScreenModel) {
-  const marketplaceCtaLink = (
+export function LandingScreen(model: LandingScreenModel) {
+  const marketplaceCta = (
     <Link className={buttonVariants({ variant: 'primary', size: 'login' })} to="/marketplace">
       <span aria-hidden="true">
         <Icon name="playing-card" size={18} />
       </span>{' '}
-      {marketplaceCta}
+      {model.marketplaceCta}
     </Link>
   )
 
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      {/* hero band bleeds into the page gutter, not the shell column's inset */}
-      <section
-        data-slot="landing-hero"
-        className="-mx-5 border-b border-border bg-accent px-5 pt-12 pb-14 max-md:pt-8 max-md:pb-10"
-      >
-        <div className="grid items-center gap-12 max-md:gap-8 lg:grid-cols-[minmax(0,570px)_minmax(0,405px)] lg:justify-between">
-          <div className="min-w-0">
-            <h1
-              className={cn(
-                'm-0 font-display text-4xl font-medium text-foreground text-balance',
-                'md:text-6xl',
-              )}
-            >
-              {heroTitle}
-            </h1>
-            <p className="mt-5 mb-0 max-w-[65ch] text-pretty text-lg text-muted-foreground">
-              {heroBody}
-            </p>
-            {showMarketplaceCta ? (
-              <div className="mt-7">{marketplaceCtaLink}</div>
-            ) : showLoginButton ? (
-              <div className="mt-7 flex flex-wrap items-center gap-3.5">
-                <Button variant="primary" size="login" {...loginButtonProps}>
-                  {loginLabel}
-                </Button>
-                <p className="m-0 max-w-[24ch] text-sm text-muted-foreground">
-                  {loginAside}
-                </p>
-              </div>
-            ) : null}
-            {showErr && (
-              <Alert variant="error" className="mt-3" {...errorNoticeProps}>
-                {err}
-              </Alert>
-            )}
-          </div>
-
-          {/* three tilted tier specimens */}
-          <ul
-            data-slot="hero-pile"
-            /* `w-full` inside a `max-w`, never a fixed width: an `auto` grid track sizes to its
-               item's max-content, so a 405px box would widen the column past the phone viewport */
-            className="relative m-0 mx-auto aspect-[405/281] w-full max-w-[405px] min-w-0 list-none p-0"
-          >
-            {heroCards.map((card, index) => {
-              const image = frameImageProps[card.tierKey]
-              return (
-                <FoilCard
-                  as="li"
-                  key={card.tierKey}
-                  data-slot="hero-card"
-                  tierKey={card.tierKey}
-                  className={cn(PILE_CARD, PILE_LAYOUT[index] ?? PILE_LAYOUT[0])}
-                >
-                  <FoilMedia className="block overflow-hidden">
-                    <span
-                      data-slot="hero-card-slot"
-                      className="relative block aspect-4/3 w-full"
-                      {...frameSlotProps[card.tierKey]}
-                    >
-                      {image ? (
-                        <img
-                          data-slot="hero-card-art"
-                          className="block h-full w-full object-cover"
-                          {...image}
-                        />
-                      ) : null}
-                    </span>
-                  </FoilMedia>
-                  <span
-                    className="mx-1 mt-1.5 mb-1.5 block pr-13 font-sans text-sm font-medium text-foreground md:text-base"
-                  >
-                    {card.caption}
-                  </span>
-                  <TierChip
-                    tierKey={card.tierKey}
-                    label={card.tierName}
-                    /* pile seal at the grid thumb's own step (`size="sm"`), pinned to the corner */
-                    className="absolute right-2.5 bottom-2.5"
-                  />
-                </FoilCard>
-              )
-            })}
-          </ul>
-        </div>
-      </section>
-
-      {/* how it works */}
-      <section data-slot="landing-how" className={SECTION}>
-        <Heading size="section">{howTitle}</Heading>
-        <ol className="mt-6 grid list-none grid-cols-1 gap-4 p-0 md:grid-cols-3">
-          {howSteps.map((step) => (
-            <li key={step.step} className={CARD}>
-              {/* step number in link colour — focus token misses contrast on dark surfaces */}
-              <span className="block text-sm font-semibold text-link tabular-nums">
-                {step.step}
-              </span>
-              <Heading as="h3" size="card-title" className="mt-3">{step.title}</Heading>
-              <p className="mt-2 mb-0 text-sm text-muted-foreground">{step.body}</p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      {/* tier ladder */}
-      <section data-slot="landing-tiers" className={SECTION}>
-        <Heading size="section" id="tiers">
-          {tiersTitle}
-        </Heading>
-        {/* an ordered climb, so the ladder is an <ol>: the sequence is the section's argument */}
-        <ol className="mt-6 grid list-none grid-cols-[repeat(auto-fill,minmax(136px,1fr))] gap-3 p-0 max-sm:grid-cols-2 2xl:grid-cols-7">
-          {tiers.map((t) => (
-            <FoilCard
-              as="li"
-              key={t.key}
-              data-slot="tier-card"
-              rarityLadder
-              tierKey={t.key}
-              className="flex flex-col rounded-lg material-raised p-3"
-            >
-              {/* the slot is permanent, so loading, ready and failed all keep the same box */}
-              <FoilMedia className="block overflow-hidden">
-                <span
-                  data-slot="tier-frame-slot"
-                  className="relative block aspect-4/3 min-h-26 w-full"
-                  {...frameSlotProps[t.key]}
-                >
-                  {frameImageProps[t.key] ? (
-                    <img
-                      data-slot="tier-frame-img"
-                      className="block h-full w-full object-cover"
-                      {...frameImageProps[t.key]}
-                    />
-                  ) : null}
-                </span>
-              </FoilMedia>
-              <Heading as="h3" size="card-title-phone" className="mt-3">
-                {t.name}
-              </Heading>
-              <span className="mt-2.5 text-sm font-semibold text-link tabular-nums">
-                {t.resharesLabel}
-              </span>
-              <span className="mt-1 text-xs text-muted-foreground">{t.rarityLabel}</span>
-            </FoilCard>
-          ))}
-        </ol>
-      </section>
-
+      <LandingHero {...model} marketplaceCta={marketplaceCta} />
+      <LandingHow {...model} />
+      <LandingTiers {...model} />
       {/* The promo film: the whole loop, framed like the cards above it, right
           before the questions it raises. */}
       <section data-slot="landing-film" className={SECTION}>
-        <Heading size="section">{filmTitle}</Heading>
-        <HeroVideo model={heroVideo} className="mt-6 max-w-220" />
+        <Heading size="section">{model.filmTitle}</Heading>
+        <HeroVideo model={model.heroVideo} className="mt-6 max-w-220" />
       </section>
-
-      {/* questions */}
-      <section data-slot="landing-faq" className={SECTION}>
-        <Heading size="section" className="mb-6">{faqTitle}</Heading>
-        <div className="max-w-[65ch]">
-          {faqItems.map((item) => (
-            <FaqItem key={item.id} question={item.question} defaultOpen={item.defaultOpen}>
-              {item.imageSrc ? (
-                <img
-                  src={item.imageSrc}
-                  alt={item.imageAlt}
-                  className="mt-1.5 mb-1.5 ml-3 size-18 float-right rounded-full object-cover align-middle"
-                />
-              ) : null}
-              <p>{item.body}</p>
-            </FaqItem>
-          ))}
-        </div>
-      </section>
-
-      {/* closing CTA — ultraviolet plate with one bubblegum pill */}
-      {showMarketplaceCta || showLoginButton ? (
-        <section
-          data-slot="landing-closing"
-          className={cn(
-            'mt-10 flex items-center justify-between gap-4 rounded-lg material-raised bg-brand',
-            'px-6 py-5.5',
-            'max-lg:flex-col max-lg:items-stretch max-lg:gap-4',
-          )}
-        >
-          <p
-            className={cn(
-              'm-0 font-display font-normal text-brand-foreground',
-              'text-2xl md:text-3xl',
-            )}
-          >
-            {closingLine}
-          </p>
-          {showMarketplaceCta ? (
-            marketplaceCtaLink
-          ) : (
-            <Button variant="primary" size="login" {...closingLoginButtonProps}>
-              {closingLoginLabel}
-            </Button>
-          )}
-        </section>
-      ) : null}
+      <LandingFaq {...model} />
+      <LandingClosing {...model} marketplaceCta={marketplaceCta} />
     </PageContainer>
   )
 }
