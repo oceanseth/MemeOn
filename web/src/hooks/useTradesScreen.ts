@@ -3,6 +3,7 @@ import { Fragment, createElement, useCallback, useRef, type ChangeEventHandler, 
 import { tradesCopy } from '../copy/trades'
 import { apiFetch, post } from '../lib/api'
 import { buildConfirmDialogModel, type ConfirmDialogModel } from '../lib/confirmDialogModel'
+import { memeReshareCount } from '../lib/memeMetrics'
 import type { FriendEntry, Meme, Trade } from '../lib/types'
 import { buildTradeCardModel, tradeSideSentence, type TradeCardModel, type TradeAction, type TradeMemeInfo } from '../lib/tradeCardModel'
 import { tradeProposalPayload, tradesMachine, type TradesPhase } from '../stores/tradesMachine'
@@ -102,7 +103,7 @@ const memeInfo = (meme: Meme): TradeMemeInfo => ({
   tierKey: meme.tier.key,
   tierName: meme.tier.name,
   tierLabel: copy.memeTierLabel(meme.tier.name, meme.tier.rarity),
-  reshares: meme.reshareCount ?? meme.reshares,
+  reshares: memeReshareCount(meme),
 })
 const errorText = (error: unknown, fallback: string): string => (error instanceof Error && error.message ? error.message : fallback)
 

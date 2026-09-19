@@ -9,6 +9,7 @@ import { beginMaskyLogin } from '../lib/auth'
 import { buildConfirmDialogModel, type ConfirmDialogModel } from '../lib/confirmDialogModel'
 import { createDetailBinderGate } from '../lib/detailBinderGate'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
+import { memeReshareCount, memeViewCount } from '../lib/memeMetrics'
 import type { Meme, Memeplex, Position } from '../lib/types'
 import { clampPrice, clampShares, memeDetailMachine, type MemeDetailPhase, type MemeStats } from '../stores/memeDetailMachine'
 import { buildMemeplexPanelModel, type MemeplexPanelModel } from '../lib/memeplexPanelModel'
@@ -291,10 +292,8 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
   }
 
   const coins = user?.coins ?? 0
-  /* `reshares` is the legacy name of the same share-link counter `views` reports, and it is what
-     the tier the API returned was computed from — the fallback is one metric, not a borrowed one. */
-  const views = meme.views ?? meme.reshares
-  const reshareCount = meme.reshareCount ?? 0
+  const views = memeViewCount(meme)
+  const reshareCount = memeReshareCount(meme)
   const pricePerShare = meme.listing?.pricePerShare ?? 0
   const buyShares = context.buyShares
   const buyTotal = Math.ceil(buyShares * pricePerShare)

@@ -44,6 +44,13 @@ describe('sortMemes', () => {
     expect(sortMemes([fallback, explicit], 'reshares', 'desc')).toEqual([explicit, fallback])
   })
 
+  it('sorts the reshares key by uniqueRefs, never the load counter', () => {
+    const loud = meme('loud', { reshares: 80, views: 80, reshareCount: 0 })
+    const quiet = meme('quiet', { reshares: 2, views: 2, reshareCount: 9 })
+
+    expect(sortMemes([loud, quiet], 'reshares', 'desc')).toEqual([quiet, loud])
+  })
+
   it('sorts numeric values in either direction', () => {
     const low = meme('low', { value: 2 })
     const high = meme('high', { value: 10 })
