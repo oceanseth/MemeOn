@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, within } from 'storybook/test'
-import { developersCopy } from '../copy/developers'
+import { developersCopy as copy } from '../copy/developers'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
 import type { DeveloperKeyRowModel, DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { DevelopersScreen } from './DevelopersScreen'
@@ -34,9 +34,10 @@ const toRow = (key: (typeof fixtureKeys)[number]): DeveloperKeyRowModel => ({
     month: 'short',
     year: 'numeric',
   })}`,
+  revokeLabel: copy.row.revokeLabel,
   revokeButtonProps: {
     onClick: handlers.onRevoke,
-    'aria-label': `Revoke API key ${key.label}`,
+    'aria-label': copy.row.revoke(key.label),
   },
 })
 
@@ -45,22 +46,25 @@ const fullKeyRows = fixtureKeys.map(toRow)
 
 const confirmDialog = buildConfirmDialogModel({
   open: false,
-  title: developersCopy.revokeDialog.title,
+  title: copy.revokeDialog.title,
   message: '',
   danger: true,
-  confirmLabel: developersCopy.revokeDialog.confirm,
+  confirmLabel: copy.revokeDialog.confirm,
   onCancel: handlers.onRevokeCancel,
   onConfirm: handlers.onRevokeConfirm,
 })
 
 const revokeKey = fixtureKeys[0]!
 const revokeInlines = [
-  { kind: 'code' as const, text: developersCopy.revokeDialog.prefix(revokeKey.prefix) },
-  developersCopy.revokeDialog.body(revokeKey.label),
+  { kind: 'code' as const, text: copy.revokeDialog.prefix(revokeKey.prefix) },
+  copy.revokeDialog.body(revokeKey.label),
 ]
 
 const empty: DevelopersScreenModel = {
   phase: 'loading',
+  pageTitle: copy.pageTitle,
+  skillButtonLabel: copy.skillButton,
+  explainer: copy.explainer,
   keys: null,
   freshKey: null,
   err: null,
@@ -88,7 +92,8 @@ const empty: DevelopersScreenModel = {
     value: '',
     onChange: handlers.onLabelChange,
     maxLength: 60,
-    'aria-label': 'API key label',
+    'aria-label': copy.labelInput,
+    placeholder: copy.labelPlaceholder,
   },
   createFormProps: { onSubmit: handlers.onCreateSubmit },
   createButtonProps: { disabled: false, 'aria-busy': false },
@@ -97,6 +102,7 @@ const empty: DevelopersScreenModel = {
     disabled: true,
     'aria-busy': false,
   },
+  retryLabel: copy.retry,
   retryButtonProps: { onClick: handlers.onRetry },
   freshKeyProps: { tabIndex: 0 },
   freshKeyRegionProps: { role: 'status', 'aria-live': 'polite' },
@@ -152,10 +158,10 @@ export const Ready: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // one control, one tab stop: the skill.md action is a link, never a link wrapping a button
-    await expect(canvas.getByRole('link', { name: 'API skill.md' })).toBeInTheDocument()
-    await expect(canvas.queryByRole('button', { name: 'API skill.md' })).toBeNull()
+    await expect(canvas.getByRole('link', { name: copy.skillButton })).toBeInTheDocument()
+    await expect(canvas.queryByRole('button', { name: copy.skillButton })).toBeNull()
     // the route's title is the page's one h1 (the wave-3 screens took the same step); sections are h3
-    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('Developers')
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(copy.pageTitle)
     await expect(canvas.getByRole('button', { name: 'Create key' })).toBeEnabled()
     // every key is an Item row, and the two announce wrappers are LiveRegions
     await expect(canvasElement.querySelectorAll('[data-slot="api-key-row"]').length).toBeGreaterThan(0)
@@ -187,7 +193,7 @@ export const LoadError: Story = {
     await expect(await canvas.findByRole('alert')).toHaveTextContent('your keys are still active')
     await expect(canvasElement.querySelector('[data-slot="empty"]')).toHaveAttribute('data-variant', 'error')
     await expect(canvas.queryByText(args.emptyCopy)).toBeNull()
-    await userEvent.click(canvas.getByRole('button', { name: 'Try again' }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.retry }))
     await expect(handlers.onRetry).toHaveBeenCalled()
   },
 }
@@ -303,19 +309,19 @@ export const Revoking: Story = {
     ...ready,
     confirmDialog: buildConfirmDialogModel({
       open: true,
-      title: developersCopy.revokeDialog.title,
+      title: copy.revokeDialog.title,
       message: revokeInlines,
       danger: true,
-      confirmLabel: developersCopy.revokeDialog.confirm,
+      confirmLabel: copy.revokeDialog.confirm,
       onCancel: handlers.onRevokeCancel,
       onConfirm: handlers.onRevokeConfirm,
     }),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const dialog = canvas.getByRole('alertdialog', { name: developersCopy.revokeDialog.title })
-    await expect(dialog.querySelector('code')).toHaveTextContent(developersCopy.revokeDialog.prefix(revokeKey.prefix))
-    await expect(dialog).toHaveTextContent(developersCopy.revokeDialog.body(revokeKey.label).trim())
+    const dialog = canvas.getByRole('alertdialog', { name: copy.revokeDialog.title })
+    await expect(dialog.querySelector('code')).toHaveTextContent(copy.revokeDialog.prefix(revokeKey.prefix))
+    await expect(dialog).toHaveTextContent(copy.revokeDialog.body(revokeKey.label).trim())
     await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }))
     await expect(handlers.onRevokeCancel).toHaveBeenCalled()
   },
@@ -328,10 +334,10 @@ export const RevokingBusy: Story = {
     confirmDialog: buildConfirmDialogModel({
       open: true,
       busy: true,
-      title: developersCopy.revokeDialog.title,
+      title: copy.revokeDialog.title,
       message: revokeInlines,
       danger: true,
-      confirmLabel: developersCopy.revokeDialog.confirm,
+      confirmLabel: copy.revokeDialog.confirm,
       onCancel: handlers.onRevokeCancel,
       onConfirm: handlers.onRevokeConfirm,
     }),
@@ -348,20 +354,20 @@ export const RevokeFailed: Story = {
     ...ready,
     confirmDialog: buildConfirmDialogModel({
       open: true,
-      title: developersCopy.revokeDialog.title,
+      title: copy.revokeDialog.title,
       message: revokeInlines,
-      error: developersCopy.errors.revoke(revokeKey.label),
+      error: copy.errors.revoke(revokeKey.label),
       danger: true,
-      confirmLabel: developersCopy.revokeDialog.confirm,
+      confirmLabel: copy.revokeDialog.confirm,
       onCancel: handlers.onRevokeCancel,
       onConfirm: handlers.onRevokeConfirm,
     }),
   },
   play: async ({ canvasElement }) => {
     const dialog = within(canvasElement).getByRole('alertdialog')
-    await expect(dialog.querySelector('code')).toHaveTextContent(developersCopy.revokeDialog.prefix(revokeKey.prefix))
-    await expect(within(dialog).getByRole('alert')).toHaveTextContent(developersCopy.errors.revoke(revokeKey.label))
-    await expect(within(dialog).getByRole('button', { name: developersCopy.revokeDialog.confirm })).toBeInTheDocument()
+    await expect(dialog.querySelector('code')).toHaveTextContent(copy.revokeDialog.prefix(revokeKey.prefix))
+    await expect(within(dialog).getByRole('alert')).toHaveTextContent(copy.errors.revoke(revokeKey.label))
+    await expect(within(dialog).getByRole('button', { name: copy.revokeDialog.confirm })).toBeInTheDocument()
   },
 }
 

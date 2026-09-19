@@ -2,6 +2,7 @@ import type { Meta, StoryContext, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
+import { developersCopy as copy } from '../copy/developers'
 import { DevelopersView } from './DevelopersView'
 
 const meta = {
@@ -105,7 +106,7 @@ export const KeyListFailureShowsRetry: Story = {
     await expect(await canvas.findByRole('alert')).toHaveTextContent('your keys are still active')
     await expect(canvas.queryByText(/No keys yet/)).toBeNull()
     loaded.scenario.options.failures = {}
-    await userEvent.click(canvas.getByRole('button', { name: 'Try again' }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.retry }))
     await expect(await canvas.findByText('my-trading-bot')).toBeInTheDocument()
   },
 }

@@ -3,6 +3,9 @@ import { sharedCopy } from './shared'
 
 /** Every string the Invite screen spells itself; the highlight cards read `lib/memeCardModel`. */
 export const inviteCopy = {
+  /** PageHead + document title; typographic apostrophe (U+2019). */
+  pageTitle: 'You’re invited',
+  heroVerb: 'invited you to MemeOn',
   loading: 'Loading invite…',
   /** the sentence under the hero: one line, product language, never "invest" */
   body: 'Mint memes, share the link, and trade your friends’ bangers before they go Shiny.',

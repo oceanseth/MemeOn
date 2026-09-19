@@ -33,11 +33,13 @@ const binderCardFooterClasses = cn(
 
 /** Own binder as a function of its model. Every engine state is one set of args. */
 export function BinderScreen({
+  pageTitle,
   intro,
   identity,
   statusProps,
   statusMessage,
   collectionHeading,
+  toolbarAriaLabel,
   showPrivateToggle,
   privateToggleLabel,
   privateToggleProps,
@@ -53,12 +55,13 @@ export function BinderScreen({
   showError,
   errorTitle,
   errorMessage,
+  retryLabel,
   retryProps,
   showGrid,
 }: BinderScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <PageHead title="My Binder" subtitle={intro} />
+      <PageHead title={pageTitle} subtitle={intro} />
 
       {/* identity card — raised surface, not a bare row */}
       {identity && (
@@ -96,7 +99,7 @@ export function BinderScreen({
         <div
           className="flex flex-wrap items-center gap-3 max-xl:w-full"
           role="group"
-          aria-label="Sort and filter your binder"
+          aria-label={toolbarAriaLabel}
         >
           {/* toolbar order: private filter → sort → Mint */}
           {showPrivateToggle && (
@@ -131,7 +134,7 @@ export function BinderScreen({
           </EmptyHeader>
           <EmptyContent>
             <Button variant="primary" {...retryProps}>
-              Try again
+              {retryLabel}
             </Button>
           </EmptyContent>
         </Empty>
@@ -170,12 +173,12 @@ export function BinderScreen({
                   <>
                     <span data-slot="binder-card-note" className={binderCardFooterClasses}>
                       <span className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
-                        {card.showCreator && <span>you minted this</span>}
+                        {card.showCreator && <span>{card.mintedLabel}</span>}
                         {card.showPrivate && <Badge>
                             <span aria-hidden="true">
                               <Icon name="eye-off" size={14} />
                             </span>{' '}
-                            private
+                            {card.privateLabel}
                           </Badge>}
                       </span>
                     </span>

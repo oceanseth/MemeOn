@@ -4,6 +4,7 @@ import { useInviteScreen } from '../hooks/useInviteScreen'
 import { InviteScreen } from '../screens/InviteScreen'
 
 export const InviteView = observer(function InviteView() {
-  useDocumentTitle("You're invited")
-  return <InviteScreen {...useInviteScreen()} />
+  const model = useInviteScreen()
+  useDocumentTitle(model.pageTitle)
+  return <InviteScreen {...model} />
 })

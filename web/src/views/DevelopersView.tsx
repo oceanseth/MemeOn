@@ -4,6 +4,7 @@ import { useDevelopersScreen } from '../hooks/useDevelopersScreen'
 import { DevelopersScreen } from '../screens/DevelopersScreen'
 
 export const DevelopersView = observer(function DevelopersView() {
-  useDocumentTitle('Developers')
-  return <DevelopersScreen {...useDevelopersScreen()} />
+  const model = useDevelopersScreen()
+  useDocumentTitle(model.pageTitle)
+  return <DevelopersScreen {...model} />
 })

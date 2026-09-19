@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
+import { binderCopy as copy } from '../copy/binder'
 import { BinderView } from './BinderView'
 
 const meta = {
@@ -77,7 +78,7 @@ export const InitialFailureShowsRetry: Story = {
     const alert = await canvas.findByRole('alert')
     await expect(alert).toHaveTextContent("Couldn't load your binder.")
     await expect(canvas.queryByText(/binder is empty/i)).not.toBeInTheDocument()
-    await userEvent.click(canvas.getByRole('button', { name: 'Try again' }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.retry }))
     await expect(await canvas.findByRole('link', { name: /fresh paper/i })).toBeInTheDocument()
     await expect(canvas.queryByRole('alert')).not.toBeInTheDocument()
   },

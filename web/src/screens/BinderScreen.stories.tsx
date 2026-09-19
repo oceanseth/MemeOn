@@ -41,6 +41,8 @@ const card = (
     sharesPct: shares,
     showCreator: !!extra.showCreator,
     showPrivate: !!extra.showPrivate,
+    mintedLabel: copy.card.minted,
+    privateLabel: copy.card.private,
   }
 }
 
@@ -49,11 +51,13 @@ const status = (...parts: string[]) => parts.join(copy.separator)
 
 const empty: BinderScreenModel = {
   phase: 'empty',
+  pageTitle: copy.pageTitle,
   intro: copy.intro,
   identity: null,
   statusProps: { role: 'status', 'aria-live': 'polite' },
   statusMessage: status(copy.status.empty, copy.status.sort.new[0]),
   collectionHeading: copy.collection.heading,
+  toolbarAriaLabel: copy.toolbarAria,
   showPrivateToggle: false,
   privateCount: 0,
   privateToggleLabel: copy.collection.showPrivate(0),
@@ -70,6 +74,7 @@ const empty: BinderScreenModel = {
   showError: false,
   errorTitle: copy.errorState.title,
   errorMessage: copy.errorState.message,
+  retryLabel: copy.retry,
   retryProps: { onClick: fn() },
   showGrid: false,
 }
@@ -124,7 +129,7 @@ export const Error: Story = {
     await expect(alert).toHaveAttribute('data-variant', 'error')
     await expect(alert).toHaveTextContent("Couldn't load your binder.")
     await expect(alert).toHaveTextContent('Your cards are safe')
-    await expect(canvas.getByRole('button', { name: 'Try again' })).toBeInTheDocument()
+    await expect(canvas.getByRole('button', { name: copy.retry })).toBeInTheDocument()
     await expect(canvas.queryByText(/binder is empty/i)).not.toBeInTheDocument()
   },
 }
@@ -146,7 +151,7 @@ export const Ready: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getAllByRole('listitem')).toHaveLength(3)
     await expect(canvas.getByRole('listitem', { name: /8\/100 shares/ })).toBeInTheDocument()
-    await expect(canvas.getByRole('group', { name: /Sort and filter/ })).toBeInTheDocument()
+    await expect(canvas.getByRole('group', { name: copy.toolbarAria })).toBeInTheDocument()
     await expect(canvas.getByRole('status')).toHaveTextContent('3 cards shown')
     // the ownership groove is a Progress, not a hand-spelled track with an inline width
     await expect(canvasElement.querySelectorAll('[data-slot="progress"]')).toHaveLength(3)
@@ -204,7 +209,7 @@ export const Full: Story = {
     /* the grid is the page's only list: three cards, no second rail list above it */
     await expect(canvas.getAllByRole('listitem')).toHaveLength(3)
     /* toolbar order: Show private → sort → Mint */
-    const lane = canvas.getByRole('group', { name: 'Sort and filter your binder' })
+    const lane = canvas.getByRole('group', { name: copy.toolbarAria })
     await expect(lane.children).toHaveLength(3)
     await expect(lane.firstElementChild).toHaveTextContent('Show private (1)')
     await expect(lane.children[1]?.querySelector('[data-slot="sort-chips"]')).not.toBeNull()
