@@ -49,7 +49,7 @@ Beside the tiers, four folders are the engine side:
 | `DiscordLinkScreen` | `useDiscordLinkScreen()` | `DiscordLinkScreenModel` | `working` \| `done` \| `error` |
 | `DevelopersScreen` | `useDevelopersScreen()` | `DevelopersScreenModel` | `loading` \| `ready` \| `empty` \| `error` |
 | `SettingsScreen` | `useSettingsScreen()` | `SettingsScreenModel` | — (no machine: reads `useAuth()` and `useTheme()` only) |
-| `AuthStatusScreen` | `useAuthCallbackScreen()` · `useMobileAuthForwardScreen()` | `AuthStatusScreenModel` | `working` \| `error` (no machine: callback is `useMountEffect` + one-exchange-per-code in `lib/auth`, not a ran ref; mobile forward is the `memeon://` effect) |
+| `AuthStatusScreen` | `useAuthCallbackScreen()` · `useMobileAuthForwardScreen()` | `AuthStatusScreenModel` | `working` \| `error` (no machine: callback is `useMountEffect` + one-exchange-per-code in `lib/auth`, not a ran ref; mobile forward is one `useMountEffect` for the `memeon://` forward) |
 | `PrivacyScreen` | `buildPrivacyScreenModel()` in `lib/privacyModel.ts` | `LegalDocumentModel` (`lib/legalDocumentModel.ts`: prose as `paragraph` / `list` blocks of plain inline segments; `LegalDocument` renders them) | — (static copy; no machine) |
 | `TermsScreen` | `buildTermsScreenModel()` in `lib/termsModel.ts` | `LegalDocumentModel` | — (static copy; no machine) |
 
@@ -162,6 +162,7 @@ touch four.
 | Add a new component | its tier folder, pure props → markup, `data-slot` on the root, a sibling `*.stories.tsx` | `pnpm --filter web run check-tiers` |
 | Add a shadcn / registry primitive | from web/, `pnpm dlx shadcn add <item>` (never init, never npx) | `scripts/shadcn-postadd.mjs` (`node scripts/shadcn-postadd.mjs`). Registry files import stock cn; this app's merge is `lib/cn.ts` (`createCn` with the material class group and container `card-narrow`). A second copy typechecks and skips the merge. The CLI also emits a `lucide-react` import because `components.json` still sets iconLibrary to lucide; do not flip iconLibrary without a throwaway-branch `pnpm dlx shadcn add` proof. `pnpm --filter web run test:shadcn-postadd` fails any `web/src` file that still has that import. |
 | Add a route | a `use*Screen` hook + `*Screen` + `*View` (+ stories), then a `<Route>` in `views/AppView.tsx` (`lazy()` if it is behind `RequireAuth`) | `useDocumentTitle` in the view |
+| Need a mount-time side effect (subscribe, title, retain) | `hooks/useMountEffect.ts` — never `useEffect` / `useLayoutEffect` (`memeon/no-use-effect`) | derived state, an event handler, a query, or a keyed remount |
 | Persist a value across a route change (OAuth, invite, Discord link, remix-video resume) | `lib/sessionBus.ts` | the caller that reads or writes that key |
 | Change what the API returns | `lib/types.ts`, the machine that fetches it, the builder that reads it | `.storybook/fixtures.ts` and `msw-handlers.ts` / `connected-scenario.ts` |
 
@@ -225,7 +226,8 @@ Layered onto the tiers and rules above, not a replacement for them:
   (`navigateToAuthorization`, `forwardToDeepLink`) go through `lib/authNavigation.ts`, which
   Storybook aliases to a recorder so the stories can assert the URL instead of leaving the iframe.
   The callback is `useMountEffect` plus one in-flight `completeMaskyLogin` Promise per Masky code
-  in `lib/auth.ts`, not a ran ref.
+  in `lib/auth.ts`, not a ran ref. The mobile forward is one `useMountEffect` that calls
+  `forwardToDeepLink`.
 
 ### New data-slots, by family
 
