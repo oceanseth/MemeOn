@@ -40,7 +40,7 @@ export interface TradeSideSummaryModel {
   ownerLabel: string
   empty: boolean
   memeLines: readonly TradeMemeLineModel[]
-  coinsLabel: string | null
+  braincellsLabel: string | null
 }
 
 export interface TradeActionModel {
@@ -175,7 +175,7 @@ function buildSideSummary(
         detailHref: `/m/${meme.memeId}`,
       }
     }),
-    coinsLabel: side.coins > 0 ? braincells(side.coins) : null,
+    braincellsLabel: side.coins > 0 ? braincells(side.coins) : null,
   }
 }
 
