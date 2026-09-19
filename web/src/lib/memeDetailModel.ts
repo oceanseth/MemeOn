@@ -174,9 +174,10 @@ function holderLabel(userId: string, meSub: string | null, names: Record<string,
 
 /** Where this card sits on the rarity ladder, and what the next rung costs. */
 export function buildTierLadderModel(tierKey: string, views: number): DetailTierLadderModel {
-  const index = Math.max(0, TIERS.findIndex((tier) => tier.key === tierKey))
-  const tier = TIERS[index]
-  const next = TIERS[index + 1]
+  const paper = TIERS[0]
+  if (!paper) throw new Error('TIERS is empty')
+  const tier = TIERS.find((candidate) => candidate.key === tierKey) ?? paper
+  const next = TIERS.find((candidate) => candidate.minReshares > tier.minReshares)
   if (!next) {
     return {
       currentLabel: copy.ladder.current(tier.name),
