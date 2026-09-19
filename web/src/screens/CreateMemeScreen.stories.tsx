@@ -605,9 +605,10 @@ export const GiphySearchFailed: Story = {
     'error',
   ),
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(
-      copy.errors.giphySearchFailed,
-    )
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.errors.giphySearchFailed)
+    /* a failed search is an alert, never the Giphy empty card */
+    await expect(canvas.queryByText(copy.giphy.emptySearch('cat'))).not.toBeInTheDocument()
   },
 }
 
