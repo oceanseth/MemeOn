@@ -54,15 +54,15 @@ export const CloseReopenRejectsLateComposeAndProposes: Story = {
     },
     'GET /api/binder': async (_request, scenario) => {
       const call = scenario.requests.filter((request) => request.path === '/api/binder').length
-      if (call === 1) { await scenario.waitForRelease('binder-a'); scenario.checkpoints.push('binder-a-returned'); return { body: { memes: [{ ...giftablePaper, id: 'offer-a', title: 'Offer A' }] } } }
+      if (call === 1) { await scenario.waitForRelease('binder-a'); scenario.checkpoints.push('binder-a-returned'); return { body: { memes: [{ ...giftablePaper, id: 'offer-a', title: 'Give A' }] } } }
       await scenario.waitForRelease('binder-b')
-      return { body: { memes: [{ ...giftablePaper, id: 'offer-b', title: 'Offer B' }] } }
+      return { body: { memes: [{ ...giftablePaper, id: 'offer-b', title: 'Give B' }] } }
     },
     'GET /api/memes': async (_request, scenario) => {
       const call = scenario.requests.filter((request) => request.path === '/api/memes').length
-      if (call === 1) { await scenario.waitForRelease('memes-a'); scenario.checkpoints.push('memes-a-returned'); return { body: { memes: [{ ...silverMeme, id: 'ask-a', title: 'Ask A', ownerId: 'friend-a' }] } } }
+      if (call === 1) { await scenario.waitForRelease('memes-a'); scenario.checkpoints.push('memes-a-returned'); return { body: { memes: [{ ...silverMeme, id: 'ask-a', title: 'Get A', ownerId: 'friend-a' }] } } }
       await scenario.waitForRelease('memes-b')
-      return { body: { memes: [{ ...silverMeme, id: 'ask-b', title: 'Ask B', ownerId: 'friend-b' }] } }
+      return { body: { memes: [{ ...silverMeme, id: 'ask-b', title: 'Get B', ownerId: 'friend-b' }] } }
     },
   } })],
   beforeEach: async (context) => connectedBeforeEach(context),
@@ -81,16 +81,16 @@ export const CloseReopenRejectsLateComposeAndProposes: Story = {
     const selects = await canvas.findAllByRole('combobox')
     await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => ['/api/friends', '/api/binder', '/api/memes'].includes(request.path))).toHaveLength(6))
     await expect(selects[0]).not.toHaveTextContent('Friend A')
-    await expect(selects[1]).not.toHaveTextContent('Offer A')
-    await expect(selects[2]).not.toHaveTextContent('Ask A')
+    await expect(selects[1]).not.toHaveTextContent('Give A')
+    await expect(selects[2]).not.toHaveTextContent('Get A')
     loaded.scenario.release('friends-b'); loaded.scenario.release('binder-b'); loaded.scenario.release('memes-b')
     await waitFor(() => expect(selects[0]).toHaveTextContent('Friend B'))
     await pickOption(selects[0]!, 'Friend B')
-    await pickOption(selects[1]!, /^Offer B/)
-    await pickOption(selects[2]!, 'Ask B')
+    await pickOption(selects[1]!, /^Give B/)
+    await pickOption(selects[2]!, 'Get B')
     await expect(selects[0]).not.toHaveTextContent('Friend A')
-    await expect(selects[1]).not.toHaveTextContent('Offer A')
-    await expect(selects[2]).not.toHaveTextContent('Ask A')
+    await expect(selects[1]).not.toHaveTextContent('Give A')
+    await expect(selects[2]).not.toHaveTextContent('Get A')
     const amounts = canvas.getAllByRole('spinbutton')
     for (const [input, value] of [[amounts[0], '4'], [amounts[1], '12'], [amounts[2], '6'], [amounts[3], '8']] as const) {
       await userEvent.clear(input!)
@@ -113,13 +113,13 @@ export const BReadyRejectsLateAComposeResults: Story = {
     },
     'GET /api/binder': async (_request, scenario) => {
       const call = scenario.requests.filter((request) => request.path === '/api/binder').length
-      if (call === 1) { await scenario.waitForRelease('late-binder-a'); scenario.checkpoints.push('late-binder-a-returned'); return { body: { memes: [{ ...giftablePaper, id: 'offer-a', title: 'Offer A' }] } } }
-      return { body: { memes: [{ ...giftablePaper, id: 'offer-b', title: 'Offer B' }] } }
+      if (call === 1) { await scenario.waitForRelease('late-binder-a'); scenario.checkpoints.push('late-binder-a-returned'); return { body: { memes: [{ ...giftablePaper, id: 'offer-a', title: 'Give A' }] } } }
+      return { body: { memes: [{ ...giftablePaper, id: 'offer-b', title: 'Give B' }] } }
     },
     'GET /api/memes': async (_request, scenario) => {
       const call = scenario.requests.filter((request) => request.path === '/api/memes').length
-      if (call === 1) { await scenario.waitForRelease('late-memes-a'); scenario.checkpoints.push('late-memes-a-returned'); return { body: { memes: [{ ...silverMeme, id: 'ask-a', title: 'Ask A', ownerId: 'friend-a' }] } } }
-      return { body: { memes: [{ ...silverMeme, id: 'ask-b', title: 'Ask B', ownerId: 'friend-b' }] } }
+      if (call === 1) { await scenario.waitForRelease('late-memes-a'); scenario.checkpoints.push('late-memes-a-returned'); return { body: { memes: [{ ...silverMeme, id: 'ask-a', title: 'Get A', ownerId: 'friend-a' }] } } }
+      return { body: { memes: [{ ...silverMeme, id: 'ask-b', title: 'Get B', ownerId: 'friend-b' }] } }
     },
   } })],
   beforeEach: async (context) => connectedBeforeEach(context),
@@ -133,21 +133,21 @@ export const BReadyRejectsLateAComposeResults: Story = {
     const selects = await canvas.findAllByRole('combobox')
     await waitFor(() => {
       expect(selects[0]).toHaveTextContent('Friend B')
-      expect(selects[1]).toHaveTextContent('Offer B')
+      expect(selects[1]).toHaveTextContent('Give B')
     })
     await pickOption(selects[0]!, 'Friend B')
-    await waitFor(() => expect(selects[2]).toHaveTextContent('Ask B'))
-    await pickOption(selects[1]!, /^Offer B/)
-    await pickOption(selects[2]!, 'Ask B')
+    await waitFor(() => expect(selects[2]).toHaveTextContent('Get B'))
+    await pickOption(selects[1]!, /^Give B/)
+    await pickOption(selects[2]!, 'Get B')
     loaded.scenario.release('late-friends-a'); loaded.scenario.release('late-binder-a'); loaded.scenario.release('late-memes-a')
     await waitFor(() => expect(loaded.scenario.checkpoints).toEqual(expect.arrayContaining(['late-friends-a-returned', 'late-binder-a-returned', 'late-memes-a-returned'])))
     await flushDeliveredCallbacks()
     await expect(chosenLabel(selects[0]!)).toBe('Friend B')
-    await expect(chosenLabel(selects[1]!)).toMatch(/^Offer B/)
-    await expect(chosenLabel(selects[2]!)).toBe('Ask B')
+    await expect(chosenLabel(selects[1]!)).toMatch(/^Give B/)
+    await expect(chosenLabel(selects[2]!)).toBe('Get B')
     await expect(selects[0]).not.toHaveTextContent('Friend A')
-    await expect(selects[1]).not.toHaveTextContent('Offer A')
-    await expect(selects[2]).not.toHaveTextContent('Ask A')
+    await expect(selects[1]).not.toHaveTextContent('Give A')
+    await expect(selects[2]).not.toHaveTextContent('Get A')
   },
 }
 
