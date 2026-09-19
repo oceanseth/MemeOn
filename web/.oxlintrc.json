@@ -8,7 +8,7 @@
     "shadcn": {
       "ui": "@/atoms",
       "componentImports": ["(^|/)(molecules|organisms)/"],
-      "ignoreImports": ["react-router-dom"],
+      "ignoreImports": ["react-router-dom", "@/atoms/foil-frame"],
       "note": "Tokens: src/index.css @theme. Appearance belongs in the component's variants. Exceptions live in web/.oxlintrc.json."
     }
   },
