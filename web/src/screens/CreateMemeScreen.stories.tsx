@@ -357,6 +357,17 @@ export const Error: Story = {
   },
 }
 
+export const MintFailed: Story = {
+  name: 'Error (mint fallback)',
+  args: model(
+    { prompt: 'a capybara in a business suit', err: copy.errors.mintFailed },
+    'error',
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(copy.errors.mintFailed)
+  },
+}
+
 export const Success: Story = {
   name: 'Success (minted)',
   args: model(

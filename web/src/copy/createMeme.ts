@@ -28,23 +28,24 @@ export const createMemeCopy = {
   },
   /** What the alert says when the request threw nothing the user can read. */
   errors: {
-    notALink: 'that is not a link — paste a full https:// address',
-    renderFailed: 'render failed',
-    giphySearchFailed: 'giphy search failed',
-    resolveFailed: 'could not resolve that page',
-    editFailed: 'edit failed',
-    remixFailed: 'remix failed',
-    videoGenerationFailed: 'video generation failed',
-    generationFailed: 'generation failed',
-    animationFailed: 'animation failed',
-    mintFailed: 'mint failed',
-    uploadFailed: 'upload failed',
+    notALink: 'That is not a link — paste a full https:// address.',
+    renderFailed: "The video render didn't finish. Try again, or reopen this page if a job is still running.",
+    giphySearchFailed: "GIPHY search didn't work. Try another word, or pick a category.",
+    resolveFailed: "Couldn't find an image on that page. Check the link and try again.",
+    editFailed: "That Masky edit didn't finish. Try again.",
+    remixFailed: "That Masky remix didn't finish. Try again.",
+    videoGenerationFailed: "That Masky video didn't finish. Try again.",
+    generationFailed: "That Masky image didn't finish. Try again.",
+    animationFailed: "That Masky animation didn't finish. Try again.",
+    mintFailed: "The card didn't mint. Try again.",
+    uploadFailed: "That file didn't upload. Try a smaller file, or try again.",
     /** The storage PUT answered with a status the user then reads in the alert. */
-    uploadRejected: (status: number) => `upload failed (${status})`,
+    uploadRejected: (status: number) =>
+      `That file didn't upload (${status}). Try a smaller file, or try again.`,
     /** The poller gave up; the job id lets support find the render on Masky. */
     stillRendering: (generationId: string) =>
       `Still rendering after 8 minutes. It may finish on Masky (job ${generationId}) — reopen this page to pick the render back up.`,
-    lifetimeEnded: 'creation lifetime ended',
+    lifetimeEnded: 'This mint session ended. Start the render again.',
   },
   form: {
     sourceGroup: 'Source',

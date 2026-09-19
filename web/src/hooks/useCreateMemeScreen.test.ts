@@ -1,5 +1,6 @@
 import type { ChangeEvent, FocusEvent, KeyboardEvent, MouseEvent } from 'react'
 import { describe, expect, it, vi } from 'vitest'
+import { createMemeCopy as copy } from '../copy/createMeme'
 import type { GiphyResult } from '../lib/types'
 import type { CreateMemeContext } from '../stores/createMemeMachine'
 import {
@@ -378,6 +379,13 @@ describe('buildCreateMemeScreenModel', () => {
     )
     expect(failed.errorNextStep).toContain('Top up Masky credits')
     expect(failed.uploadVideoHelpText).toContain('max 50MB')
+  })
+
+  it('hints a smaller file from copy.errors upload fallbacks, including a non-413 rejection', () => {
+    for (const err of [copy.errors.uploadFailed, copy.errors.uploadRejected(413), copy.errors.uploadRejected(403)]) {
+      const failed = buildCreateMemeScreenModel('error', { ...baseContext, err }, actions())
+      expect(failed.errorNextStep).toBe(copy.preview.nextStep.tooLarge)
+    }
   })
 
   it('carries the whole draft in the pending-render record', () => {
