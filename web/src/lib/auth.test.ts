@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { maskyAccessToken, sessionToken } from './api'
 import { completeMaskyLogin } from './auth'
 import { firebaseSignIn } from './firebase'
+import { setMaskyOauthState } from './sessionBus'
 
 const { firebaseSignIn: firebaseSignInMock } = vi.hoisted(() => ({
   firebaseSignIn: vi.fn(),
@@ -93,5 +94,39 @@ describe('completeMaskyLogin', () => {
     expect(maskyAccessToken()).toBe('masky')
     expect(firebaseSignIn).not.toHaveBeenCalled()
     expect(console.error).not.toHaveBeenCalled()
+  })
+
+  it('issues one POST /api/auth/masky/callback for overlapping same-code calls', async () => {
+    const code = `overlap-${crypto.randomUUID()}`
+    const state = `state-${crypto.randomUUID()}`
+    setMaskyOauthState(state)
+    let resolveFetch!: (value: Response) => void
+    const fetchMock = vi.fn<typeof fetch>(
+      () => new Promise<Response>((resolve) => { resolveFetch = resolve }),
+    )
+    vi.stubGlobal('fetch', fetchMock)
+
+    const first = completeMaskyLogin(code, state)
+    const second = completeMaskyLogin(code, state)
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+    expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/auth/masky/callback')
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({
+      code,
+      redirectUri: 'http://localhost:5173/auth/callback',
+    })
+
+    resolveFetch(
+      Response.json({
+        sessionToken: 'sess-overlap',
+        maskyAccessToken: 'masky-overlap',
+        firebaseToken: null,
+        profile,
+      }),
+    )
+    await expect(first).resolves.toEqual(profile)
+    await expect(second).resolves.toEqual(profile)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(sessionToken()).toBe('sess-overlap')
+    expect(maskyAccessToken()).toBe('masky-overlap')
   })
 })

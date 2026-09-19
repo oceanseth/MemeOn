@@ -24,14 +24,27 @@ export async function beginMaskyLogin(): Promise<void> {
   navigateToAuthorization(url.toString())
 }
 
+type MaskyProfile = Pick<Me, 'sub' | 'name' | 'picture' | 'coins'>
+
+/** Overlapping same-code exchanges share one POST; Masky codes are single-use and post() cannot abort. */
+const inFlightByCode = new Map<string, Promise<MaskyProfile>>()
+
 /**
  * Complete the OAuth round-trip: validate state, exchange the code via our API
  * for a session JWT + the Masky access token (used to spend the user's credits).
  */
-export async function completeMaskyLogin(
-  code: string,
-  state: string | null,
-): Promise<Pick<Me, 'sub' | 'name' | 'picture' | 'coins'>> {
+export function completeMaskyLogin(code: string, state: string | null): Promise<MaskyProfile> {
+  const existing = inFlightByCode.get(code)
+  if (existing) return existing
+
+  const pending = exchangeMaskyCode(code, state).finally(() => {
+    if (inFlightByCode.get(code) === pending) inFlightByCode.delete(code)
+  })
+  inFlightByCode.set(code, pending)
+  return pending
+}
+
+async function exchangeMaskyCode(code: string, state: string | null): Promise<MaskyProfile> {
   const expected = getMaskyOauthState()
   clearMaskyOauthState()
   if (!expected || expected !== state) throw new Error('OAuth state mismatch — try again')
@@ -40,7 +53,7 @@ export async function completeMaskyLogin(
     sessionToken: string
     maskyAccessToken: string
     firebaseToken: string | null
-    profile: Pick<Me, 'sub' | 'name' | 'picture' | 'coins'>
+    profile: MaskyProfile
   }>('/api/auth/masky/callback', { code, redirectUri: redirectUri() })
 
   setSessionToken(res.sessionToken)
