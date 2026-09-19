@@ -1,8 +1,1 @@
-{
-  "views/AppView.tsx": 1,
-  "views/AuthCallbackView.tsx": 1,
-  "views/MarketplaceView.tsx": 1,
-  "views/MobileAuthForwardView.tsx": 1,
-  "views/SettingsView.tsx": 1,
-  "views/TradesView.tsx": 1
-}
+{}

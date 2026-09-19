@@ -4,6 +4,7 @@ import { useSettingsScreen } from '../hooks/useSettingsScreen'
 import { SettingsScreen } from '../screens/SettingsScreen'
 
 export const SettingsView = observer(function SettingsView() {
-  useDocumentTitle('Settings')
-  return <SettingsScreen {...useSettingsScreen()} />
+  const model = useSettingsScreen()
+  useDocumentTitle(model.title)
+  return <SettingsScreen {...model} />
 })

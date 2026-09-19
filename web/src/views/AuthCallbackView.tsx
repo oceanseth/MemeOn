@@ -5,6 +5,7 @@ import { AuthStatusScreen } from '../screens/AuthStatusScreen'
 
 /** `/auth/callback` — Masky's OAuth redirect lands here. */
 export const AuthCallbackView = observer(function AuthCallbackView() {
-  useDocumentTitle('Completing Masky login')
-  return <AuthStatusScreen {...useAuthCallbackScreen()} />
+  const model = useAuthCallbackScreen()
+  useDocumentTitle(model.documentTitle)
+  return <AuthStatusScreen {...model} />
 })

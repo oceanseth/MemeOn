@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory, RemountStory } from '../../.storybook/connected-story'
 import { friendAccepted, giftablePaper, paperMeme, silverMeme } from '../../.storybook/fixtures'
+import { sharedCopy } from '../copy/shared'
 import { tradesCopy as copy } from '../copy/trades'
 import { TradesView } from './TradesView'
 
@@ -70,6 +71,7 @@ export const CloseReopenRejectsLateComposeAndProposes: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByText(/fresh paper/)).toBeInTheDocument()
+    await expect(document.title).toBe(`${copy.pageTitle} — ${sharedCopy.brand}`)
     await userEvent.click(canvas.getByRole('button', { name: copy.newTrade }))
     await userEvent.click(canvas.getByRole('button', { name: copy.closeComposer }))
     loaded.scenario.release('friends-a'); loaded.scenario.release('binder-a'); loaded.scenario.release('memes-a')

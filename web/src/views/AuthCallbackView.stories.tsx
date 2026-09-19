@@ -5,6 +5,7 @@ import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.sto
 import { meLou } from '../../.storybook/fixtures'
 import { authStatusCopy } from '../copy/authStatus'
 import { inviteCopy } from '../copy/invite'
+import { sharedCopy } from '../copy/shared'
 import { sessionToken } from '../lib/api'
 import { setInviteFrom, setMaskyOauthState, setPostLogin } from '../lib/sessionBus'
 import { AuthCallbackView } from './AuthCallbackView'
@@ -73,10 +74,10 @@ export const ProviderDenied: Story = {
   render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><AuthCallbackView /></ConnectedStory>,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(await canvas.findByRole('heading', { name: 'Masky login didn’t finish' })).toBeInTheDocument()
+    await expect(await canvas.findByRole('heading', { name: authStatusCopy.callback.failed.title })).toBeInTheDocument()
     await expect(canvas.getByRole('alert')).toHaveTextContent('access_denied')
     await expect(canvasElement.querySelector('[data-slot="auth-ring"]')).toBeNull()
-    await expect(document.title).toBe('Completing Masky login — MemeOn')
+    await expect(document.title).toBe(`${authStatusCopy.callback.documentTitle} — ${sharedCopy.brand}`)
   },
 }
 

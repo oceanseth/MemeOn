@@ -6,6 +6,7 @@ import { meLou, unreadSale } from '../../.storybook/fixtures'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
 import { createRequestGuard } from '../../.storybook/request-accounting'
 import { appShellCopy } from '../copy/appShell'
+import { sharedCopy } from '../copy/shared'
 import { clearSession, maskyAccessToken, sessionToken, setMaskyAccessToken, setSessionToken } from '../lib/api'
 import { authMachine } from '../stores/authMachine'
 import { createStores } from '../stores/createStores'
@@ -166,6 +167,7 @@ export const InitialAuthenticationGatesMint: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.queryByRole('textbox', { name: 'Title' })).not.toBeInTheDocument()
     await expect(loaded.authStores.auth.loading).toBe(true)
+    await expect(canvas.getByRole('status')).toHaveTextContent(sharedCopy.checkingSession)
 
     const pending = loaded.authStores.auth.refresh()
     void pending.catch(() => {})

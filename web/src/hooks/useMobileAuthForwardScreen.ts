@@ -30,6 +30,7 @@ export function useMobileAuthForwardScreen(): AuthStatusScreenModel {
 
   return {
     phase: 'working',
+    documentTitle: copy.documentTitle,
     title: copy.title,
     subtitle: copy.subtitle,
     error: null,
