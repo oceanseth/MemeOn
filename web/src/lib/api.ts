@@ -25,14 +25,12 @@ export class ApiError extends Error {
  * token rides along in x-masky-token for aigen endpoints (credit spend).
  */
 export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const headers: Record<string, string> = {
-    'content-type': 'application/json',
-    ...((init.headers as Record<string, string>) ?? {}),
-  }
+  const headers = new Headers(init.headers)
+  if (!headers.has('content-type')) headers.set('content-type', 'application/json')
   const session = sessionToken()
-  if (session) headers.authorization = `Bearer ${session}`
+  if (session) headers.set('authorization', `Bearer ${session}`)
   const masky = maskyAccessToken()
-  if (masky) headers['x-masky-token'] = masky
+  if (masky) headers.set('x-masky-token', masky)
 
   const res = await fetch(path, { ...init, headers })
   const text = await res.text()
