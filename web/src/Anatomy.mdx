@@ -88,7 +88,13 @@ main.tsx ── StoresProvider + AuthRuntime + BrowserRouter
 ```
 
 Landing, legal, auth and the public share routes are eager; every route only a
-signed-in player can reach is a `lazy()` chunk behind `RequireAuth`.
+signed-in player can reach is a `lazy()` chunk behind `RequireAuth`. The eight
+lazy views are `BinderView`, `CreateMemeView`, `DevelopersView`, `FriendsView`,
+`LeaderboardView`, `MarketplaceView`, `SettingsView`, and `TradesView`. MemeCard
+and `react-router-dom` already ride the entry via AppShell / QuestBar plus those
+public share routes; that is accepted. Landing, Create Meme, and
+`lib/createMemeModel` must not import meme-card. `web/scripts/check-chunks.mjs`
+records the split (entry source-map membership, plus those import specifiers).
 
 ## Where state lives
 
