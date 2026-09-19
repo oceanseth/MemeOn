@@ -1,9 +1,9 @@
 import { apiFetch, post, setMaskyAccessToken, setSessionToken } from './api'
 import { firebaseSignIn } from './firebase'
+import { clearMaskyOauthState, getMaskyOauthState, setMaskyOauthState } from './sessionBus'
 import type { Me } from './types'
 import { navigateToAuthorization } from './authNavigation'
 
-const STATE_KEY = 'masky_oauth_state'
 const REDIRECT_PATH = '/auth/callback'
 
 const redirectUri = (): string => `${window.location.origin}${REDIRECT_PATH}`
@@ -14,7 +14,7 @@ export async function beginMaskyLogin(): Promise<void> {
     '/api/auth/masky/config',
   )
   const state = crypto.randomUUID()
-  sessionStorage.setItem(STATE_KEY, state)
+  setMaskyOauthState(state)
   const url = new URL(cfg.authorizeUrl)
   url.searchParams.set('response_type', 'code')
   url.searchParams.set('client_id', cfg.clientId)
@@ -32,8 +32,8 @@ export async function completeMaskyLogin(
   code: string,
   state: string | null,
 ): Promise<Pick<Me, 'sub' | 'name' | 'picture' | 'coins'>> {
-  const expected = sessionStorage.getItem(STATE_KEY)
-  sessionStorage.removeItem(STATE_KEY)
+  const expected = getMaskyOauthState()
+  clearMaskyOauthState()
   if (!expected || expected !== state) throw new Error('OAuth state mismatch — try again')
 
   const res = await post<{

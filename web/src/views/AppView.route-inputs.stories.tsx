@@ -5,7 +5,7 @@ import { Link, MemoryRouter, Route, Routes } from "react-router-dom";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { meLou } from "../../.storybook/fixtures";
 import { createRequestGuard } from "../../.storybook/request-accounting";
-import { PENDING_VIDEO_KEY } from "../hooks/useCreateMemeScreen";
+import { PENDING_VIDEO_KEY } from "../lib/sessionBus";
 import { clearSession, setSessionToken } from "../lib/api";
 import { authMachine } from "../stores/authMachine";
 import { createStores } from "../stores/createStores";

@@ -1,6 +1,6 @@
 import { createMemeCopy } from '../copy/createMeme'
 import { apiFetch } from './api'
-import { PENDING_VIDEO_KEY } from './createMemeModel/lifecycle'
+import { clearPendingVideo, getPendingVideo } from './sessionBus'
 
 const copy = createMemeCopy
 
@@ -37,12 +37,12 @@ export function fetchVideoStatus(id: string): Promise<VideoStatus> {
 }
 
 export function clearPendingVideoIfOwned(generationId: string, startedAt: number): void {
-  const raw = sessionStorage.getItem(PENDING_VIDEO_KEY)
+  const raw = getPendingVideo()
   if (!raw) return
   try {
     const pending = JSON.parse(raw) as { generationId?: unknown; startedAt?: unknown }
     if (pending.generationId === generationId && pending.startedAt === startedAt) {
-      sessionStorage.removeItem(PENDING_VIDEO_KEY)
+      clearPendingVideo()
     }
   } catch {
     /* A malformed record is handled by the mount-time recovery path. */

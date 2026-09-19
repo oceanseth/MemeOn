@@ -4,6 +4,7 @@ import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
 import { tierFrames } from '../../.storybook/fixtures'
 import { TIERS } from '@memeon/shared/tiers'
+import { getMaskyOauthState } from '../lib/sessionBus'
 import { LandingView } from './LandingView'
 
 /** The one authored login-failure sentence; thrown strings never reach the page. */
@@ -32,7 +33,7 @@ function expectAuthorizationUrl(url: string): void {
   expect(authorization.searchParams.get('client_id')).toBe('memeon-storybook')
   expect(authorization.searchParams.get('redirect_uri')).toBe(`${window.location.origin}/auth/callback`)
   expect(authorization.searchParams.get('scope')).toBe('openid profile')
-  expect(authorization.searchParams.get('state')).toBe(sessionStorage.getItem('masky_oauth_state'))
+  expect(authorization.searchParams.get('state')).toBe(getMaskyOauthState())
 }
 
 const meta = {

@@ -4,11 +4,8 @@ import type { IconName } from '@/atoms/icon'
 import { authStatusCopy } from '../copy/authStatus'
 import { beginMaskyLogin, completeMaskyLogin } from '../lib/auth'
 import { post } from '../lib/api'
+import { clearInviteFrom, clearPostLogin, getInviteFrom, getPostLogin } from '../lib/sessionBus'
 import { useAuth } from './useAuth'
-import { INVITE_KEY } from './useInviteScreen'
-
-/** Where a login that started from a Discord link (or another guarded route) resumes. */
-export const POST_LOGIN_KEY = 'memeon_post_login'
 
 const copy = authStatusCopy.callback
 
@@ -57,13 +54,13 @@ export function useAuthCallbackScreen(): AuthStatusScreenModel {
     completeMaskyLogin(code, params.get('state'))
       .then(async () => {
         // finish an invite if this login started from an invite link
-        const inviterId = sessionStorage.getItem(INVITE_KEY)
-        sessionStorage.removeItem(INVITE_KEY)
+        const inviterId = getInviteFrom()
+        clearInviteFrom()
         if (inviterId) {
           await post('/api/invites/accept', { inviterId }).catch(() => {})
         }
-        const postLogin = sessionStorage.getItem(POST_LOGIN_KEY)
-        sessionStorage.removeItem(POST_LOGIN_KEY)
+        const postLogin = getPostLogin()
+        clearPostLogin()
         await refresh()
         navigate(postLogin ?? (inviterId ? '/friends' : '/marketplace'), { replace: true })
       })

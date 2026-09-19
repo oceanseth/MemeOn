@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemeCopy } from '../copy/createMeme'
-import { PENDING_VIDEO_KEY } from './createMemeModel/lifecycle'
+import { PENDING_VIDEO_KEY } from './sessionBus'
 import {
   cancelVideoPollForOwner,
   clearPendingVideoIfOwned,
