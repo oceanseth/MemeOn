@@ -154,10 +154,12 @@ touch four.
 | Change what the API returns | `lib/types.ts`, the machine that fetches it, the builder that reads it | `.storybook/fixtures.ts` and `msw-handlers.ts` / `connected-scenario.ts` |
 
 `pnpm run check` is the whole gate (`lint:ds` first, then docs, tiers, copy, card-media, contrast, tokens,
-the script tests, proxy, unit, runtime, stories). `check-copy` is a ratchet: it counts copy-like literals still spelled in `hooks/`,
-`screens/`, and the `lib/*Model.ts` builders against `scripts/copy-baseline.json`, and a file
-may only match or fall below its number (`--list` names the strings, `--update` locks a drop in;
-it refuses to raise anything). `pnpm run storybook` (port 6006, MSW-backed) is where a state is verified.
+the script tests, proxy, unit, runtime, stories). `check-copy` is a ratchet: it counts copy-like quoted literals
+and JSX text nodes still spelled in `hooks/`, `screens/`, `views/`, `molecules/`, `organisms/`,
+the `lib/*Model.ts` builders, and `lib/createMemeModel/` against `scripts/copy-baseline.json`. `copy/` is
+uncounted; stories and tests are skipped; `atoms/` and `stores/` are not walked. A file may only match or
+fall below its number (`--list` names the strings, `--update` locks a drop in; it refuses to raise
+anything). `pnpm run storybook` (port 6006, MSW-backed) is where a state is verified.
 
 ## Soft Press additions (mo-263)
 
