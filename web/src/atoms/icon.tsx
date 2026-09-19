@@ -85,17 +85,10 @@ export type IconName =
   | 'ban'
   | 'square'
   | 'meh'
-  // Drawn to close the gaps the emoji sweep left behind — each of these had a raw text character
-  // (▾, ✕, ☆/★) still rendering at a call site because the set had no glyph to swap in.
   | 'chevron-down'
   | 'x'
   | 'star-filled'
   | 'arrows-swap'
-  // The account menu's three undecorated rows (2026-09-17): Profile, Developers and Discord each
-  // sat in an empty 18px lane, so three of five rows read as unfinished beside Top Brains and
-  // Settings. `user` and `code` are Lucide v1.46 (ISC) verbatim, in the stand-in idiom the rest of
-  // this half already uses; `discord` is the brand mark (see the note above). All three rastered
-  // at 18px, the size the menu actually calls them at, before they landed.
   | 'user'
   | 'code'
   | 'discord'
@@ -161,27 +154,6 @@ export const ICON_NAMES: readonly IconName[] = [
   'discord',
   'log-out',
 ]
-
-/*
- * ARBITRATION, this pass. Three design agents returned overlapping verdicts; where they disagreed:
- *  - `target` was both normalised onto the Central ring and marked dead. Dead won: it has no call
- *    site outside this file (the greps that look live are `<a target>` attributes), and a glyph with
- *    no meaning behind it is precisely what the geometry pass was cleaning up after. Its normalised
- *    ring survives in `CENTRAL_RING`, so nothing was lost.
- *  - `gamepad-2` left with it. The emoji it was translating lives in discordLinkCopy.done
- *    ("Connected!"), a different file's success string, and the connections row's own emoji had
- *    already been deleted product-wide by 8165e4e before the sweep ran - so the icon on that row was
- *    invented by the sweep, not preserved from the design. Removing it here strands
- *    SettingsScreen's connections row until that row reverts to the bare service label.
- *  - The audit brief called the Paper extraction "the first 11". 8f07a8b's own commit message and
- *    source both say twelve: `arrow-right` is genuine Central, and both `chevron-down` and
- *    `arrows-swap` are built off its head. The docblock above records twelve.
- *  - `refresh-cw` is gone because it meant two different things at once (reshare and re-run). The
- *    replacements already exist: reshare takes `arrows-left-right`, whose rectangular repeat loop is
- *    literally the shape it replaced; Trade takes `arrows-swap`; re-run takes `rotate-cw`.
- *  - `gear`, `play`, `rotate-cw`, `volume-x` and `volume-2` have no call site yet and are kept on
- *    purpose - each is the glyph a surface still rendering a raw character is waiting on.
- */
 
 interface PathDef {
   d: string
@@ -618,7 +590,6 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
     { d: 'M16 18L22 12L16 6', linecap: 'round', linejoin: 'round' },
     { d: 'M8 6L2 12L8 18', linecap: 'round', linejoin: 'round' },
   ],
-  // The way out of the account menu, so its last row is not the one bare lane in the column.
   'log-out': [
     { d: 'M16 17L21 12L16 7', linecap: 'round', linejoin: 'round' },
     { d: 'M21 12H9', linecap: 'round', linejoin: 'round' },

@@ -9,44 +9,27 @@
    built CSS back and fails the build if any bundle ever ranks these differently. */
 @layer properties, theme, base, components, utilities;
 
-/* The foil system: the parts of a card's tier frame no utility can express — the animated
-   `--glow-angle`, the conic ring that *is* the frame's 3px border on a foil tier, its bloom, the
-   per-tier stop sets, the sheen sweep and the sparkle twinkle.
+/* The foil system: animated `--glow-angle`, the conic ring that *is* a foil tier's 3px border,
+   its bloom, per-tier stop sets, sheen sweep and sparkle twinkle. Class-based (not `data-slot`-only)
+   so surfaces that are not the `MemeCard` atom can reuse the frame.
 
-   ── Public effect API ─────────────────────────────────────────────────────────────────────────
-   This file is the one owner of the foil, and it is deliberately class-based rather than
-   `data-slot`-only: surfaces that are not the `MemeCard` atom put the same frame on their own
-   markup.
+     `foil-card tier-<key> [sheen] [sparkle]` on the card, paired with
+     `data-glow-style="<stop set>"`           on the same element (`shared/tiers`), plus
+     `foil-frame`                             on the image frame (3px border; holo+ turning ring),
+     `foil-media`                             bounds sheen and sparkle so neither sweep crosses the
+                                              meta text. `MemeCard` puts both names on one element.
 
-     `foil-card tier-<key> [sheen] [sparkle]`     on the card, paired with
-     `data-glow-style="<stop set>"`               on the same element (`shared/tiers`), plus
-     `foil-frame`                                 on the image frame, which is where the 3px tier
-                                                  border and (holo and up) the turning ring live,
-     `foil-media`                                 on the box the sheen and the sparkle are bounded
-                                                  to, so neither sweep crosses the meta text.
-                                                  `MemeCard` puts both names on one element: the
-                                                  frame *is* the media box.
+   Colour comes from `--tier-<key>-frame` (`index.css`). The still frame is that colour flat; holo,
+   chrome, gold, prismatic and shiny add the turning conic ring and a bloom. Paper and silver are
+   still by design.
 
-   Colour comes from the tier tokens (`--tier-<key>-frame`, `index.css`), so every frame and
-   every bloom flips with the theme. The still frame is that colour flat; holo, chrome, gold,
-   prismatic and shiny add the turning conic ring and a bloom on top of it, bounded to the image
-   frame. Paper and silver are still by design — the rarity ladder starts quiet.
+   `atoms/foil.ts` exports `tierFrameClasses(tierKey)`. Do not restore `.glow-border` /
+   `--glow-width` / `.tier-card-inner`.
 
-   `atoms/foil.ts` exports `tierFrameClasses(tierKey)`; it has no React import, so a code-split
-   route can pull in the classes without dragging the atom's module graph onto its critical path.
-   `atoms/meme-card.tsx`, `screens/LandingScreen.tsx` (the tier ladder) and
-   `hooks/useCreateMemeScreen.ts` (the live mint preview) all write `tierFrameClasses`, and
-   `molecules/gift-dialog.tsx` shows its tier with a `<TierChip>`. The legacy padding frame —
-   `.glow-border`, `--glow-width`, `.tier-card-inner` — was the dead-code pass's first removal from
-   this file; nothing in the app has drawn it since the Soft Press frame moved onto the art.
-   Anything else that wants a foil frame writes the names above; nothing else here is addressable
-   from outside.
-
-   Cascade: `:where()` keeps the shared base at zero specificity, so a host's own utilities decide
-   position and overflow without `!important`. `.tier-<key>` sets a fallback *background*; a card
-   that paints its own surface says so with a `bg-*` utility, which wins because `utilities` ranks
-   after `components`. Keyframes carry a `card-` prefix so a keyframe name this file does not own
-   can never shadow them from another sheet in the same bundle. */
+   Cascade: `:where()` keeps the shared base at specificity 0, so a host's utilities decide position
+   and overflow without `!important`. `.tier-<key>` sets a fallback background; a card that paints
+   its own surface uses a `bg-*` utility, which wins because `utilities` ranks after `components`.
+   Keyframes carry a `card-` prefix so a name this file does not own cannot shadow them. */
 @layer components {
   @property --glow-angle {
     syntax: '<angle>';
@@ -99,8 +82,7 @@
     overflow: visible;
   }
 
-  /* ── The frame ────────────────────────────────────────────────────────────────────────────────
-     The always-on 3px solid tier border. It is a real border, so `border-radius` and `overflow`
+  /* The always-on 3px solid tier border. It is a real border, so `border-radius` and `overflow`
      come from the host's utilities and the art clips to the frame's inner radius. */
   .foil-frame {
     border: var(--frame-width, 3px) solid var(--tier-frame, var(--color-border));
@@ -129,8 +111,7 @@
     animation-play-state: var(--glow-play-state);
   }
 
-  /* ── Tier frames ──────────────────────────────────────────────────────────────────────────────
-     One source of colour: the tier tokens. `--tier-frame` is the still ring and the border; the
+  /* One source of colour: the tier tokens. `--tier-frame` is the still ring and the border; the
      bloom is the same colour, mixed down so a light canvas stays clean (the dark arm reads the same
      percentages against a darker surface, which is why they are conservative). `background` is a
      fallback paint — a card that owns its surface overrides it with `bg-*`. */
@@ -174,8 +155,7 @@
     background: var(--tier-frame);
   }
 
-  /* ── Stop sets ────────────────────────────────────────────────────────────────────────────────
-     `shared/tiers.ts` names one per tier and the host echoes it as `data-glow-style`. Paper and
+  /* `shared/tiers.ts` names one per tier and the host echoes it as `data-glow-style`. Paper and
      silver keep a set for the legacy ring only; their Soft Press frame is the flat token. Every
      animated set opens and closes on the tier's own frame token, so the ring reads as *that* tier's
      colour with a foil highlight travelling through it rather than as a rainbow of its own. */
@@ -333,8 +313,7 @@
     }
   }
 
-  /* ── Bounded effects ──────────────────────────────────────────────────────────────────────────
-     Foil mechanics are host-agnostic — this atom and the tier ladder alike — and bounded to the art
+  /* Foil mechanics are host-agnostic — this atom and the tier ladder alike — and bounded to the art
      box via `.foil-media`, so no sweep ever crosses the meta text. Both pseudo-elements sit at
      `inset: 0`, which on a `.foil-frame` is the padding box: inside the ring, never over it. */
   .foil-media {
@@ -343,7 +322,6 @@
     overflow: hidden;
   }
 
-  /* sheen sweep over holo+ tiers */
   .sheen .foil-media::after {
     content: '';
     position: absolute;
@@ -363,7 +341,6 @@
     mix-blend-mode: screen;
   }
 
-  /* sparkles for the shiny tier */
   .sparkle .foil-media::before {
     content: '';
     position: absolute;
