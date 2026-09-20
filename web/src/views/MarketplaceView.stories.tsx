@@ -77,9 +77,7 @@ export const FiltersSortAndStyles: Story = {
     await expect(canvas.getByLabelText('Current search')).toHaveTextContent(
       'q=holo&type=image&tier=holo&listed=true',
     )
-    // ranking a loaded sample would be a wrong answer, so the chips say what the market can do
-    await expect(canvas.getByRole('button', { name: /Value/ })).toBeDisabled()
-    await expect(canvas.getByRole('group', { name: 'Sort by' })).toHaveAccessibleDescription(copy.sortDisabledReason)
+    await expect(canvas.queryByRole('group', { name: 'Sort by' })).toBeNull()
     // the status line is written from the settled response, so it is awaited, never sampled
     await waitFor(() =>
       expect(canvas.getByRole('status')).toHaveTextContent(
