@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { popmelt } from '@popmelt.com/core/vite';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
@@ -21,13 +22,22 @@ const proxy = {
     secure: false
   }
 };
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
+export default defineConfig(({ command, isPreview }) => ({
+  plugins: [
+    react(),
+    tailwindcss(),
+    ...(command === 'serve' && !isPreview && !process.env.VITEST ? [popmelt()] : []),
+  ],
   resolve: {
-    alias: { '@': path.resolve(dirname, 'src') },
+    alias: {
+      '@': path.resolve(dirname, 'src'),
+      // Popmelt peers lucide-react; this repo never installs that package.
+      'lucide-react': path.resolve(dirname, 'src/popmeltLucideStub.ts'),
+    },
   },
   optimizeDeps: {
     include: ['msw-storybook-addon/csf3'],
+    exclude: ['lucide-react'],
   },
   server: {
     port: 5173,
@@ -86,4 +96,4 @@ export default defineConfig({
       }
     }]
   }
-});
+}));

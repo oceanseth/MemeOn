@@ -14,7 +14,24 @@ allowBuilds:
 
 resolvePeersFromWorkspaceRoot: false
 
+# lucide-react is a required peer of @popmelt.com/core. Do not install it;
+# Vite aliases the specifier to web/src/popmeltLucideStub.ts.
+overrides:
+  lucide: '-'
+  lucide-react: '-'
+  lucide-static: '-'
+
+peerDependencyRules:
+  ignoreMissing:
+    - lucide
+    - lucide-react
+    - lucide-static
+
 packageExtensions:
+  '@popmelt.com/core':
+    peerDependenciesMeta:
+      lucide-react:
+        optional: true
   react-router@*:
     peerDependencies:
       '@types/react': ^18.0.0
