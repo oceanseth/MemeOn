@@ -6,11 +6,10 @@
 //
 // Usage: TABLE_NAME=memeon-dev SSM_PREFIX=/memeon/dev AWS_REGION=us-west-2 \
 //          npx tsx scripts/seed-giphy.ts [count]
-import { randomUUID } from 'node:crypto'
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm'
 import * as db from '../src/db'
-import { TIERS } from '@memeon/shared/tiers'
-import type { Meme } from '../src/types'
+import { mintArchiveGif } from '../src/archiveMint'
+import type { GiphyResult } from '../src/giphy'
 
 const SEARCHES = ['classic meme', 'doge meme', 'cat meme', 'reaction meme', 'fail meme', 'dance meme']
 const COUNT = Math.min(Number(process.argv[2]) || 20, 50) // batches of 20 by default
@@ -61,10 +60,6 @@ if (!ping.ok) {
 }
 
 await db.ensureUser({ sub: db.ARCHIVE_SUB, name: 'Meme Archive', picture: null })
-const existing = await db.listMemes()
-const existingGiphyIds = new Set(
-  existing.filter((m) => m.source?.provider === 'giphy').map((m) => m.source!.id),
-)
 
 const picked: GiphyGif[] = []
 for (const q of SEARCHES) {
@@ -79,42 +74,32 @@ for (const q of SEARCHES) {
   }
   for (const gif of data.data) {
     if (picked.length >= COUNT) break
-    if (existingGiphyIds.has(gif.id) || picked.some((p) => p.id === gif.id)) continue
+    if (picked.some((p) => p.id === gif.id)) continue
     if (!gif.images.original.mp4) continue
     picked.push(gif)
   }
 }
 
 console.log(`seeding ${picked.length} archive memes`)
+let seeded = 0
 for (const gif of picked) {
-  const title =
-    (gif.title || 'Classic Meme').replace(/\s*GIF.*$/i, '').trim().slice(0, 20) || 'Classic Meme'
   const still =
     gif.images.downsized_still?.url ?? gif.images.original_still?.url ?? gif.images.downsized_medium?.url
   if (!still) continue
-  const meme: Meme = {
-    id: randomUUID().slice(0, 12),
-    title,
-    description: `From the Meme Archive · via GIPHY${gif.username ? ` (@${gif.username})` : ''}`,
-    mediaType: 'video',
-    imageUrl: still,
-    videoUrl: gif.images.original.mp4!,
-    tags: ['archive', 'classic'],
-    creatorId: db.ARCHIVE_SUB,
-    creatorName: 'Meme Archive',
-    ownerId: db.ARCHIVE_SUB,
-    ownerName: 'Meme Archive',
-    reshares: 0,
-    tierKey: TIERS[0].key,
-    listing: null,
-    createdAt: new Date().toISOString(),
-    remixOf: null,
-    private: false,
-    source: { provider: 'giphy', id: gif.id, url: gif.url, author: gif.username || null },
+  const mapped: GiphyResult = {
+    id: gif.id,
+    title: (gif.title || '').replace(/\s*GIF.*$/i, '').trim(),
+    stillUrl: still,
+    gifUrl: still,
+    mp4Url: gif.images.original.mp4 ?? null,
+    author: gif.username || null,
+    url: gif.url,
   }
-  await db.putMeme(meme)
-  await db.putPosition(meme.id, db.ARCHIVE_SUB, 100)
-  console.log(`archived: ${title} (${meme.id})`)
+  if (await mintArchiveGif(mapped, 'classic')) {
+    console.log(`archived: ${mapped.title.slice(0, 20) || 'Classic Meme'}`)
+    seeded++
+  }
 }
+if (seeded > 0) await db.bumpArchiveSeedCount(seeded)
 console.log('giphy seed done')
 process.exit(0)
