@@ -7,6 +7,7 @@ import { authStatusCopy } from '../copy/authStatus'
 import { setMaskyOauthState } from '../lib/sessionBus'
 import { createStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
+import { deferred, pathOf, settle } from '../test/runtime'
 import { AuthCallbackView } from '../views/AuthCallbackView'
 
 vi.mock('../lib/firebase', () => ({
@@ -14,23 +15,6 @@ vi.mock('../lib/firebase', () => ({
   firebaseSignOut: vi.fn(),
   onFirebaseUser: vi.fn(() => () => {}),
 }))
-
-function deferred<T>() {
-  let resolve!: (value: T) => void
-  const promise = new Promise<T>((done) => { resolve = done })
-  return { promise, resolve }
-}
-
-function pathOf(input: RequestInfo | URL): string {
-  const value = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
-  return new URL(value, window.location.origin).pathname
-}
-
-async function settle(): Promise<void> {
-  await Promise.resolve()
-  await Promise.resolve()
-  await Promise.resolve()
-}
 
 function CurrentRoute() {
   return <output aria-label="Current route">{useLocation().pathname}</output>

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { CreateMemeContext } from '../../stores/createMemeMachine'
+import { stubSessionStorage } from '../../test/runtime'
 import { POLL_TIMEOUT_MS } from '../createMemeVideoPoll'
 import { PENDING_VIDEO_KEY } from '../sessionBus'
 import {
@@ -14,47 +14,7 @@ import {
   takePendingVideoRestore,
   writePendingVideo,
 } from './lifecycle'
-
-function stubSessionStorage(): void {
-  const storage = new Map<string, string>()
-  vi.stubGlobal('sessionStorage', {
-    getItem: (key: string) => storage.get(key) ?? null,
-    setItem: (key: string, value: string) => storage.set(key, value),
-    removeItem: (key: string) => storage.delete(key),
-    clear: () => storage.clear(),
-  })
-}
-
-const baseCtx: CreateMemeContext = {
-  remixId: null,
-  mode: 'video',
-  remixSource: null,
-  remixOutput: 'image',
-  videoMode: 'edit',
-  motionPrompt: '',
-  editedFrame: null,
-  title: 'burning office',
-  tags: 'chaos',
-  prompt: 'a capybara',
-  urlDraft: '',
-  imageUrl: '/thumb.png',
-  videoUrl: '',
-  imageFileName: null,
-  videoFileName: null,
-  busy: null,
-  busyElapsed: null,
-  err: null,
-  giphyCategories: [],
-  giphyQuery: '',
-  giphyResults: [],
-  giphySearched: false,
-  giphyPick: null,
-  edited: false,
-  artworkSource: null,
-  mintedId: null,
-  shareUrl: '',
-  shareCopied: false,
-}
+import { baseCreateMemeContext as baseCtx } from './testContext'
 
 function rawOf(): string | null {
   return sessionStorage.getItem(PENDING_VIDEO_KEY)

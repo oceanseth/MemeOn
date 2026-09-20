@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemeCopy } from '../copy/createMeme'
+import { stubSessionStorage } from '../test/runtime'
 import { PENDING_VIDEO_KEY } from './sessionBus'
 import {
   cancelVideoPollForOwner,
@@ -12,16 +13,6 @@ import {
 } from './createMemeVideoPoll'
 
 const copy = createMemeCopy
-
-function stubSessionStorage(): void {
-  const storage = new Map<string, string>()
-  vi.stubGlobal('sessionStorage', {
-    getItem: (key: string) => storage.get(key) ?? null,
-    setItem: (key: string, value: string) => storage.set(key, value),
-    removeItem: (key: string) => storage.delete(key),
-    clear: () => storage.clear(),
-  })
-}
 
 function deferred<T>() {
   let resolve!: (value: T) => void

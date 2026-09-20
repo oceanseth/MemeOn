@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { stubSessionStorage } from '../test/runtime'
 import {
   clearDiscordLinkConsent,
   clearDiscordLinkToken,
@@ -25,16 +26,6 @@ import {
   setPendingVideo,
   setPostLogin,
 } from './sessionBus'
-
-function stubSessionStorage(): void {
-  const storage = new Map<string, string>()
-  vi.stubGlobal('sessionStorage', {
-    getItem: (key: string) => storage.get(key) ?? null,
-    setItem: (key: string, value: string) => storage.set(key, value),
-    removeItem: (key: string) => storage.delete(key),
-    clear: () => storage.clear(),
-  })
-}
 
 const KEYS = [
   PENDING_VIDEO_KEY,

@@ -2,37 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { CreateMemeContext, CreateMemeEvent } from '../../stores/createMemeMachine'
 import type { CreateMemeActionHost } from './actionHost'
 import { onMint } from './mintActions'
-
-const baseCtx: CreateMemeContext = {
-  remixId: null,
-  mode: 'generate',
-  remixSource: null,
-  remixOutput: 'image',
-  videoMode: 'edit',
-  motionPrompt: '',
-  editedFrame: null,
-  title: 'burning office',
-  tags: 'chaos,  cats, ',
-  prompt: 'a capybara',
-  urlDraft: '',
-  imageUrl: '/thumb.png',
-  videoUrl: '',
-  imageFileName: null,
-  videoFileName: null,
-  busy: null,
-  busyElapsed: null,
-  err: null,
-  giphyCategories: [],
-  giphyQuery: '',
-  giphyResults: [],
-  giphySearched: false,
-  giphyPick: null,
-  edited: false,
-  artworkSource: null,
-  mintedId: null,
-  shareUrl: '',
-  shareCopied: false,
-}
+import { baseCreateMemeContext as baseCtx } from './testContext'
 
 function stubBrowser(): void {
   const storage = new Map<string, string>()
@@ -102,6 +72,9 @@ describe('onMint', () => {
     const source = { provider: 'giphy', id: 'cat-1', url: 'https://giphy.com/gifs/cat-1', author: 'catlord' }
     const body = await postedMintBody({
       ...baseCtx,
+      title: 'burning office',
+      tags: 'chaos,  cats, ',
+      prompt: 'a capybara',
       artworkSource: source,
     })
     expect(Object.keys(body)).toEqual([...MINT_BODY_KEYS])

@@ -11,6 +11,7 @@ import { tradesCopy } from '../copy/trades'
 import { authMachine } from '../stores/authMachine'
 import { createStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
+import { deferred, jsonResponse } from '../test/runtime'
 import { useAppShellScreen } from './useAppShellScreen'
 import { useLandingScreen } from './useLandingScreen'
 import { useCreateMemeScreen } from './useCreateMemeScreen'
@@ -39,19 +40,6 @@ const profile: ProfileData = {
   profile: { ...invitePal.inviter },
   created: [paperMeme], binder: [{ ...paperMeme, id: 'held', title: 'held card', shares: 2 }],
   followingByMe: false, friendStatus: null,
-}
-
-function deferred<T>() {
-  let resolve!: (value: T) => void
-  const promise = new Promise<T>((done) => { resolve = done })
-  return { promise, resolve }
-}
-
-function jsonResponse(body: unknown, init?: ResponseInit): Response {
-  const result = Response.json(body, init)
-  // These tests control API completion; streamed body scheduling is tested by auth regressions.
-  result.text = async () => JSON.stringify(body)
-  return result
 }
 
 let host: HTMLDivElement

@@ -8,6 +8,7 @@ import { setDiscordLinkConsent } from '../lib/sessionBus'
 import { authMachine } from '../stores/authMachine'
 import { createStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
+import { deferred, jsonResponse } from '../test/runtime'
 import { useDiscordLinkScreen } from './useDiscordLinkScreen'
 
 vi.mock('../lib/presence', () => ({ watchPresence: vi.fn(() => vi.fn()) }))
@@ -16,20 +17,6 @@ vi.mock('../lib/auth', () => ({
   beginMaskyLogin: vi.fn(async () => {}),
   completeMaskyLogin: vi.fn(async () => {}),
 }))
-
-function deferred<T>() {
-  let resolve!: (value: T) => void
-  const promise = new Promise<T>((done) => {
-    resolve = done
-  })
-  return { promise, resolve }
-}
-
-function jsonResponse(body: unknown, init?: ResponseInit): Response {
-  const result = Response.json(body, init)
-  result.text = async () => JSON.stringify(body)
-  return result
-}
 
 let host: HTMLDivElement
 let root: Root
