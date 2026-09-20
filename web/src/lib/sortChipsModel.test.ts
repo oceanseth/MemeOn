@@ -13,11 +13,11 @@ describe('buildSortChipsModel', () => {
     expect(views).toMatchObject({
       selected: true,
       direction: 'asc',
-      arrow: '↑',
       directionLabel: 'ascending',
     })
+    expect(views).not.toHaveProperty('arrow')
     expect(views?.buttonProps['aria-label']).toBe('Views, ascending')
-    expect(newest).toMatchObject({ selected: false, direction: null, arrow: null, directionLabel: null })
+    expect(newest).toMatchObject({ selected: false, direction: null, directionLabel: null })
     expect(newest?.buttonProps['aria-label']).toBe('Newest')
   })
 
