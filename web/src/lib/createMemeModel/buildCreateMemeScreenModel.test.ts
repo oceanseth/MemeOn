@@ -357,6 +357,24 @@ describe('buildCreateMemeScreenModel', () => {
     }
   })
 
+  it('plumbs shareCopied and copyShareLinkLabel for idle vs copied success', () => {
+    const idle = buildCreateMemeScreenModel(
+      'success',
+      { ...baseContext, shareCopied: false },
+      actions(),
+    )
+    expect(idle.shareCopied).toBe(false)
+    expect(idle.copyShareLinkLabel).toBe(copy.form.success.copyLink)
+
+    const copied = buildCreateMemeScreenModel(
+      'success',
+      { ...baseContext, shareCopied: true },
+      actions(),
+    )
+    expect(copied.shareCopied).toBe(true)
+    expect(copied.copyShareLinkLabel).toBe(copy.form.copied)
+  })
+
   it('wires each creation action bundle to its domain action', () => {
     const calls = actions()
     const model = buildCreateMemeScreenModel('generate', {

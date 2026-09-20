@@ -21,7 +21,7 @@ const detail = (meme = paperMeme): MemeDetailModel => {
   tierLine: copy.hero.tierLine(meme.tier.name, reshareCount),
   tierLabel: copy.hero.tierLabel(meme.tier.name, meme.tier.rarity), tierHype: meme.tier.hype,
   tierLadder: buildTierLadderModel(meme.tier.key, views),
-  card: buildMemeCardModel(meme), creatorLinkProps: { to: `/u/${meme.creatorId}` }, creatorName: meme.creatorName, ownerLinkProps: { to: `/u/${meme.ownerId}` }, ownerName: meme.ownerName, tagsLabel: null, viewsLabel: String(views), resharesLabel: String(reshareCount), viewsWord: copy.stats.viewsWord(views), resharesWord: copy.stats.resharesWord(reshareCount), valueLabel: String(meme.value), statsSrLabel: copy.stats.srLabel(views, reshareCount), valueSrLabel: copy.stats.valueSrLabel(meme.value), holdingsLabel: '100/100', shareTitle: copy.share.title, shareCaption: copy.share.caption, previewLabel: copy.share.preview, shareInputProps: { value: `https://memeon.ai/m/${meme.id}`, readOnly: true, 'aria-label': copy.share.inputLabel }, copyButtonLabel: copy.share.copy, copyButtonProps: { onClick: noop }, previewLinkProps: { href: `/api/memes/${meme.id}/og.png`, target: '_blank', rel: 'noreferrer' }, signedOut: null, actions: [], controlsTitle: copy.controls.title, controlsCaption: copy.controls.caption, spreadingTitle: copy.spreading.title, provenanceMintedBy: copy.provenance.mintedBy, provenanceOwnedBy: copy.provenance.ownedBy, provenanceRemix: copy.provenance.remix, provenanceYouHold: copy.provenance.youHold, provenanceSeparator: copy.provenance.separator, privateBadgeLabel: copy.privateBadge, notice: null, noticeProps: { role: 'status', 'aria-live': 'polite' }, error: null, errorProps: { role: 'alert', 'aria-live': 'assertive' }, listing: null,
+  card: buildMemeCardModel(meme), creatorLinkProps: { to: `/u/${meme.creatorId}` }, creatorName: meme.creatorName, ownerLinkProps: { to: `/u/${meme.ownerId}` }, ownerName: meme.ownerName, tagsLabel: null, viewsLabel: String(views), resharesLabel: String(reshareCount), viewsWord: copy.stats.viewsWord(views), resharesWord: copy.stats.resharesWord(reshareCount), valueLabel: String(meme.value), statsSrLabel: copy.stats.srLabel(views, reshareCount), valueSrLabel: copy.stats.valueSrLabel(meme.value), holdingsLabel: '100/100', shareTitle: copy.share.title, shareCaption: copy.share.caption, previewLabel: copy.share.preview, shareInputProps: { value: `https://memeon.ai/m/${meme.id}`, readOnly: true, 'aria-label': copy.share.inputLabel }, copyDone: false, copyButtonLabel: copy.share.copy, copyButtonProps: { onClick: noop }, previewLinkProps: { href: `/api/memes/${meme.id}/og.png`, target: '_blank', rel: 'noreferrer' }, signedOut: null, actions: [], controlsTitle: copy.controls.title, controlsCaption: copy.controls.caption, spreadingTitle: copy.spreading.title, provenanceMintedBy: copy.provenance.mintedBy, provenanceOwnedBy: copy.provenance.ownedBy, provenanceRemix: copy.provenance.remix, provenanceYouHold: copy.provenance.youHold, provenanceSeparator: copy.provenance.separator, privateBadgeLabel: copy.privateBadge, notice: null, noticeProps: { role: 'status', 'aria-live': 'polite' }, error: null, errorProps: { role: 'alert', 'aria-live': 'assertive' }, listing: null,
   list: { show: true, panelTitle: copy.list.panelTitle, panelCaption: copy.list.panelCaption, sharesFieldLabel: copy.list.sharesField, perShareLabel: copy.list.perShare, priceSrLabel: copy.list.priceSr, disabledReason: null, sharesInputProps: { value: 10, min: 1, max: 100, step: 1, onChange: noop }, priceInputProps: { value: 1, min: .01, step: .01, onChange: noop }, listButtonLabel: copy.list.submit, listButtonProps: { onClick: noop, disabled: false, 'aria-busy': false } }, sources: [], plex: buildMemeplexPanelModel({ meme, plex: memeplexFamily, canEdit: true, binder: [], pick: '', pasted: '', notice: null, error: null, onPickChange: noop, onPastedChange: noop, onAdd: noop }), capTableTitle: copy.capTable.title, capTableNote: null, capTable: [{ userId: 'me', label: copy.holder.you, sharesLabel: '100/100' }], deleteDialog: buildConfirmDialogModel({ open: false, id: 'delete-meme', title: copy.deleteDialog.title, message: 'This cannot be undone.', danger: true, onCancel: noop, onConfirm: noop }), buyDialog: closedDialog('buy-shares'), claimDialog: closedDialog('claim-meme'),
   }
 }
@@ -81,6 +81,19 @@ export const Ready: Story = {
   },
 }
 export const Notice: Story = { args: { detail: { ...detail(), notice: copy.toasts.listed } } }
+export const Copied: Story = {
+  args: { detail: { ...detail(), copyDone: true, copyButtonLabel: copy.share.copied } },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = canvas.getByRole('button', { name: copy.share.copied })
+    await expect(button).toBeVisible()
+    const icon = button.querySelector('[data-slot="icon"]')
+    await expect(icon).not.toBeNull()
+    await expect(
+      icon!.querySelector('path[d*="M7.757 12L10.409 14.652L16.243 8.818"]'),
+    ).not.toBeNull()
+  },
+}
 export const CopyFailed: Story = {
   args: { detail: { ...detail(), copyButtonLabel: copy.share.copyFailed } },
   play: async ({ canvasElement }) => {

@@ -273,6 +273,7 @@ export function CreateMemeScreen({
   mintStatus,
   successHeading,
   successBody,
+  shareCopied,
   copyShareLinkLabel,
   copyShareLinkButtonProps,
   shareUrlInputProps,
@@ -309,7 +310,7 @@ export function CreateMemeScreen({
               </Link>
               <Button {...copyShareLinkButtonProps}>
                 <span aria-hidden="true">
-                  <Icon name="link" size={16} />
+                  <Icon name={shareCopied ? 'circle-check' : 'link'} size={16} />
                 </span>{' '}
                 {copyShareLinkLabel}
               </Button>

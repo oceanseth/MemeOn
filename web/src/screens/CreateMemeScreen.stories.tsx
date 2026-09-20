@@ -410,7 +410,15 @@ export const SuccessCopied: Story = {
     'success',
   ),
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByRole('status')).toHaveTextContent('Share link copied')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('status')).toHaveTextContent('Share link copied')
+    const button = canvas.getByRole('button', { name: copy.form.copied })
+    await expect(button).toBeVisible()
+    const icon = button.querySelector('[data-slot="icon"]')
+    await expect(icon).not.toBeNull()
+    await expect(
+      icon!.querySelector('path[d*="M7.757 12L10.409 14.652L16.243 8.818"]'),
+    ).not.toBeNull()
   },
 }
 
