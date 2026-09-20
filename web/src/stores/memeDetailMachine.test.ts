@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { tierFor } from '@memeon/shared/tiers'
 import type { Meme, Position } from '../lib/types'
 import { clampPrice, clampShares, memeDetailMachine } from './memeDetailMachine'
+import { expectShareCopySequence } from './shareCopySequence'
 
 const meme: Meme = {
   id: 'meme-a',
@@ -124,17 +125,7 @@ describe('memeDetailMachine reloads during actions', () => {
 
   it('keeps copyFailed across a copied:false timer unless failed:true', () => {
     const actor = readyActor()
-    actor.send({ type: 'SET_COPIED', copied: false, failed: true })
-    expect(actor.getSnapshot().context).toMatchObject({ copied: false, copyFailed: true })
-
-    actor.send({ type: 'SET_COPIED', copied: false })
-    expect(actor.getSnapshot().context.copyFailed).toBe(true)
-
-    actor.send({ type: 'SET_COPIED', copied: true })
-    expect(actor.getSnapshot().context).toMatchObject({ copied: true, copyFailed: false })
-
-    actor.send({ type: 'SET_COPIED', copied: false })
-    expect(actor.getSnapshot().context).toMatchObject({ copied: false, copyFailed: false })
+    expectShareCopySequence(actor)
     actor.stop()
   })
 

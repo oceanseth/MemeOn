@@ -1,16 +1,17 @@
 import { act } from 'react'
-import { createRoot, type Root } from 'react-dom/client'
+import type { Root } from 'react-dom/client'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
-import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { listedHolo, meLou, memeplexEmpty, paperMeme, silverMeme } from '../../.storybook/fixtures'
 import { marketplaceCopy } from '../copy/marketplace'
 import { memeDetailCopy } from '../copy/memeDetail'
 import { memeplexPanelCopy } from '../copy/memeplexPanel'
-import type { Me, Meme } from '../lib/types'
-import { authMachine } from '../stores/authMachine'
-import { createStores, type AppStores } from '../stores/createStores'
+import type { Meme } from '../lib/types'
+import type { AppStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
+import { button as queryButton, click } from '../test/dom'
+import { deferred, settle } from '../test/runtime'
+import { mountSignedInRoot, unmountSignedInRoot } from '../test/signedInHost'
 import { MemeDetailView } from '../views/MemeDetailView'
 import { MarketplaceView } from '../views/MarketplaceView'
 
@@ -18,12 +19,6 @@ vi.mock('../lib/firebase', () => ({
   firebaseSignOut: vi.fn(),
   firebaseSignIn: vi.fn(async () => {}),
 }))
-
-function deferred<T>() {
-  let resolve!: (value: T) => void
-  const promise = new Promise<T>((done) => { resolve = done })
-  return { promise, resolve }
-}
 
 function requestDetails(input: RequestInfo | URL, init?: RequestInit) {
   const value = typeof input === 'string'
@@ -33,12 +28,6 @@ function requestDetails(input: RequestInfo | URL, init?: RequestInit) {
       : input.url
   const url = new URL(value, window.location.origin)
   return { url, method: init?.method ?? 'GET' }
-}
-
-async function settle(): Promise<void> {
-  await Promise.resolve()
-  await Promise.resolve()
-  await Promise.resolve()
 }
 
 async function macrotask(delay = 0): Promise<void> {
@@ -116,17 +105,7 @@ function installVisibleObserver(): void {
 }
 
 function button(label: string, root: ParentNode = host): HTMLButtonElement {
-  const found = [...root.querySelectorAll<HTMLButtonElement>('button')]
-    .find((candidate) => candidate.textContent?.includes(label))
-  if (!found) throw new Error(`Missing button: ${label}`)
-  return found
-}
-
-async function click(element: HTMLElement): Promise<void> {
-  await act(async () => {
-    element.click()
-    await settle()
-  })
+  return queryButton(label, root)
 }
 
 /** Each card names itself through `aria-labelledby`, so the list reads as its accessible names. */
@@ -144,29 +123,14 @@ let root: Root
 let stores: AppStores
 
 beforeEach(async () => {
-  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
-  host = document.createElement('div')
-  document.body.append(host)
-  root = createRoot(host)
-  const authActor = createActor(authMachine.provide({
-    actors: { loadMe: fromPromise(async (): Promise<Me | null> => meLou) },
-    actions: { clearSessionAndFirebase: () => {} },
-  }))
-  stores = createStores(authActor)
-  stores.retain()
-  await stores.auth.refresh()
+  const mounted = await mountSignedInRoot()
+  host = mounted.host
+  root = mounted.root
+  stores = mounted.stores
 })
 
 afterEach(async () => {
-  await act(() => root.unmount())
-  stores.auth.logout()
-  stores.dispose()
-  await Promise.resolve()
-  host.remove()
-  localStorage.clear()
-  sessionStorage.clear()
-  vi.restoreAllMocks()
-  vi.unstubAllGlobals()
+  await unmountSignedInRoot({ host, root, stores })
 })
 
 describe('MemeDetailView mutation overlap', () => {

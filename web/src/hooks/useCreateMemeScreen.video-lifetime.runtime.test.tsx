@@ -1,58 +1,18 @@
-import { StrictMode } from 'react'
 import { act } from 'react'
-import { createRoot, type Root } from 'react-dom/client'
-import { Link, MemoryRouter, Route, Routes } from 'react-router-dom'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemeCopy as copy } from '../copy/createMeme'
-import { CreateMemeRoute } from '../views/AppView'
 import { POLL_TIMEOUT_MS } from '../lib/createMemeVideoPoll'
 import { PENDING_VIDEO_KEY } from '../lib/sessionBus'
+import { createMemeScreenHost } from '../test/createMemeScreenHost'
+import { bodyOf, deferred, pathOf, settle } from '../test/runtime'
 
-function deferred<T>() {
-  let resolve!: (value: T) => void
-  const promise = new Promise<T>((done) => { resolve = done })
-  return { promise, resolve }
-}
+const screen = createMemeScreenHost('lifetime')
+let host: HTMLDivElement
+const { renderAt, button, click, change } = screen
 
-function pathOf(input: RequestInfo | URL): string {
-  const value = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
-  return new URL(value, window.location.origin).pathname
-}
-
-function bodyOf(init?: RequestInit): Record<string, unknown> {
-  return init?.body ? JSON.parse(String(init.body)) as Record<string, unknown> : {}
-}
-
-async function settle(): Promise<void> {
-  await Promise.resolve()
-  await Promise.resolve()
-  await Promise.resolve()
-}
-
-/** A macrotask that survives fake timers, so React's lazy route can actually resolve. */
-function macrotask(): Promise<void> {
-  return new Promise((resolve) => {
-    const channel = new MessageChannel()
-    channel.port1.onmessage = () => resolve()
-    channel.port2.postMessage(null)
-  })
-}
-
-function CreationRoutes() {
-  return (
-    <>
-      <nav>
-        <Link to="/binder/new?remix=remix-a">Remix A</Link>
-        <Link to="/binder/new?remix=remix-b">Remix B</Link>
-        <Link to="/away">Away</Link>
-      </nav>
-      <Routes>
-        <Route path="/binder/new" element={<CreateMemeRoute />} />
-        <Route path="/away" element={<p>Elsewhere</p>} />
-      </Routes>
-    </>
-  )
-}
+beforeEach(() => {
+  host = screen.host
+})
 
 const sourceMeme = (id: string) => ({
   id,
@@ -73,61 +33,6 @@ const sourceMeme = (id: string) => ({
   tier: { key: 'paper', name: 'Paper', minViews: 0, color: '#fff' },
   value: 1,
 })
-
-let host: HTMLDivElement
-let root: Root
-
-beforeEach(async () => {
-  /* the route view is lazy: pull its module in before any test installs fake timers */
-  await import('../views/CreateMemeView')
-  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
-  host = document.createElement('div')
-  document.body.append(host)
-  root = createRoot(host)
-  sessionStorage.clear()
-})
-
-afterEach(async () => {
-  await act(() => root.unmount())
-  host.remove()
-  sessionStorage.clear()
-  localStorage.clear()
-  vi.useRealTimers()
-  vi.restoreAllMocks()
-  vi.unstubAllGlobals()
-})
-
-async function renderAt(entry = '/binder/new', strict = false): Promise<void> {
-  await act(async () => {
-    root.render(
-      <MemoryRouter initialEntries={[entry]}>
-        {strict ? <StrictMode><CreationRoutes /></StrictMode> : <CreationRoutes />}
-      </MemoryRouter>,
-    )
-    await settle()
-  })
-  /* the route view is lazy: wait for the mounted form rather than guessing a tick count */
-  for (let attempt = 0; attempt < 20 && !host.querySelector('[data-slot="form-grid"]'); attempt += 1) {
-    await act(async () => {
-      await macrotask()
-      await settle()
-    })
-  }
-}
-
-function setControlValue(control: HTMLInputElement | HTMLTextAreaElement, value: string): void {
-  const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(control), 'value')
-  descriptor?.set?.call(control, value)
-  control.dispatchEvent(new Event('input', { bubbles: true }))
-}
-
-function button(label: string, occurrence: 'first' | 'last' = 'first'): HTMLButtonElement {
-  const matches = [...host.querySelectorAll<HTMLButtonElement>('button')]
-    .filter((candidate) => candidate.textContent?.includes(label))
-  const found = occurrence === 'first' ? matches[0] : matches.at(-1)
-  if (!found) throw new Error(`Missing button: ${label}`)
-  return found
-}
 
 function link(label: string): HTMLAnchorElement {
   const found = [...host.querySelectorAll<HTMLAnchorElement>('a')]
@@ -151,20 +56,6 @@ function press(element: Element, type: string, init: PointerEventInit = {}): voi
   element.dispatchEvent(
     new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerType: 'mouse', ...init }),
   )
-}
-
-async function click(element: HTMLElement): Promise<void> {
-  await act(async () => {
-    element.click()
-    await settle()
-  })
-}
-
-async function change(control: HTMLInputElement | HTMLTextAreaElement, value: string): Promise<void> {
-  await act(async () => {
-    setControlValue(control, value)
-    await settle()
-  })
 }
 
 async function pick(label: string, option: string): Promise<void> {
@@ -337,7 +228,7 @@ describe('CreateMemeRoute video lifetime ownership', () => {
       if (path === '/api/memes/remix-a') return sourceLoads[index++]!.promise
       throw new Error(`Unexpected request: ${path}`)
     }))
-    await renderAt('/binder/new?remix=remix-a', true)
+    await renderAt('/binder/new?remix=remix-a', { strict: true })
     expect(index).toBe(2)
     await act(async () => {
       sourceLoads[1]!.resolve(Response.json({ meme: sourceMeme('current-source') }))

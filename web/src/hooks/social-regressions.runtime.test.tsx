@@ -1,26 +1,21 @@
 import { act } from 'react'
-import { createRoot, type Root } from 'react-dom/client'
+import type { Root } from 'react-dom/client'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { friendAccepted, giftablePaper, meLou } from '../../.storybook/fixtures'
 import { friendsCopy as copy } from '../copy/friends'
 import { profileCopy } from '../copy/profile'
-import type { FriendEntry, Me } from '../lib/types'
-import { authMachine } from '../stores/authMachine'
-import { createStores, type AppStores } from '../stores/createStores'
+import type { FriendEntry } from '../lib/types'
+import type { AppStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
+import { button as queryButton, click } from '../test/dom'
+import { deferred, settle } from '../test/runtime'
+import { mountSignedInRoot, unmountSignedInRoot } from '../test/signedInHost'
 import { FriendsView } from '../views/FriendsView'
 import { ProfileView } from '../views/ProfileView'
 
 vi.mock('../lib/firebase', () => ({ firebaseSignOut: vi.fn() }))
 vi.mock('../lib/presence', () => ({ watchPresence: () => () => {} }))
-
-function deferred<T>() {
-  let resolve!: (value: T) => void
-  const promise = new Promise<T>((done) => { resolve = done })
-  return { promise, resolve }
-}
 
 function json(body: unknown, status = 200): Response {
   return {
@@ -43,12 +38,6 @@ function details(input: RequestInfo | URL, init?: RequestInit) {
   }
 }
 
-async function settle(): Promise<void> {
-  await Promise.resolve()
-  await Promise.resolve()
-  await Promise.resolve()
-}
-
 async function advance(ms: number): Promise<void> {
   await act(async () => {
     await vi.advanceTimersByTimeAsync(ms)
@@ -57,17 +46,7 @@ async function advance(ms: number): Promise<void> {
 }
 
 function button(label: string, parent: ParentNode = host): HTMLButtonElement {
-  const found = [...parent.querySelectorAll<HTMLButtonElement>('button')]
-    .find((candidate) => candidate.textContent?.includes(label))
-  if (!found) throw new Error(`Missing button: ${label}`)
-  return found
-}
-
-async function click(element: HTMLElement): Promise<void> {
-  await act(async () => {
-    element.click()
-    await settle()
-  })
+  return queryButton(label, parent)
 }
 
 async function search(value: string): Promise<void> {
@@ -163,31 +142,14 @@ let root: Root
 let stores: AppStores
 
 beforeEach(async () => {
-  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
-  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
-  host = document.createElement('div')
-  document.body.append(host)
-  root = createRoot(host)
-  const authActor = createActor(authMachine.provide({
-    actors: { loadMe: fromPromise(async (): Promise<Me | null> => meLou) },
-    actions: { clearSessionAndFirebase: () => {} },
-  }))
-  stores = createStores(authActor)
-  stores.retain()
-  await stores.auth.refresh()
+  const mounted = await mountSignedInRoot({ fakeTimers: true })
+  host = mounted.host
+  root = mounted.root
+  stores = mounted.stores
 })
 
 afterEach(async () => {
-  await act(() => root.unmount())
-  stores.auth.logout()
-  stores.dispose()
-  await Promise.resolve()
-  host.remove()
-  localStorage.clear()
-  sessionStorage.clear()
-  vi.useRealTimers()
-  vi.restoreAllMocks()
-  vi.unstubAllGlobals()
+  await unmountSignedInRoot({ host, root, stores })
 })
 
 async function renderFriends(): Promise<void> {
