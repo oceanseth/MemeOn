@@ -97,7 +97,7 @@ export interface ProfileScreenModel {
   gridProps: ProfileGridProps
 }
 
-/** Tabs + empty/grid/show-more shared by ProfileScreen and PublicBinderScreen. */
+/** Tabs + empty/grid/show-more for ProfileShelf, projected by ProfileScreen. */
 export type ProfileShelfModel = Pick<
   ProfileScreenModel,
   | 'tabsListLabel'
