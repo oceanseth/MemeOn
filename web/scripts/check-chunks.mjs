@@ -24,6 +24,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
 import { basename, isAbsolute, join, relative, resolve } from "node:path"
 import ts from "typescript"
+import { scriptKindFor, staticModuleSpecifier } from "./lib/ts-ast.mjs"
 
 const display = (path) => {
   const short = relative(process.cwd(), path)
@@ -113,17 +114,6 @@ const isLazyView = (name) => LAZY_VIEW_BASENAMES.has(name) || CREATE_MEME_VIEW.t
 const isMemeCardSpecifier = (spec) => {
   const value = toPosix(spec).split("?")[0]
   return value.split("/").some((part) => part === "meme-card" || /^meme-card\.[cm]?[jt]sx?$/.test(part))
-}
-
-const scriptKindFor = (file) => {
-  if (file.endsWith(".jsx")) return ts.ScriptKind.JSX
-  if (file.endsWith(".tsx")) return ts.ScriptKind.TSX
-  return ts.ScriptKind.TS
-}
-
-const staticModuleSpecifier = (node) => {
-  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return node.text
-  return undefined
 }
 
 const memeCardImportSpecs = (file) => {
