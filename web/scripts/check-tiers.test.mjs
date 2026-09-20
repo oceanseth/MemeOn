@@ -1,22 +1,16 @@
 import assert from "node:assert/strict"
-import { spawnSync } from "node:child_process"
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
+import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { dirname, join, resolve } from "node:path"
+import { join, resolve } from "node:path"
 import test from "node:test"
+import { runChecker as runCheckerOn } from "./lib/checker-fixture.mjs"
 
 const checker = resolve(import.meta.dirname, "check-tiers.mjs")
 
 const runChecker = (files) => {
   const src = mkdtempSync(join(tmpdir(), "memeon-tier-check-"))
   try {
-    for (const [path, contents] of Object.entries(files)) {
-      const file = join(src, path)
-      mkdirSync(dirname(file), { recursive: true })
-      writeFileSync(file, contents)
-    }
-    const result = spawnSync(process.execPath, [checker, src], { encoding: "utf8" })
-    return { status: result.status, output: result.stdout + result.stderr }
+    return runCheckerOn(checker, src, files)
   } finally {
     rmSync(src, { recursive: true, force: true })
   }

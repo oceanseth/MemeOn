@@ -30,6 +30,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
 import { basename, dirname, join, relative, resolve, sep } from "node:path"
 import ts from "typescript"
+import { scriptKindFor, staticModuleSpecifier } from "./lib/ts-ast.mjs"
 
 const TIERS = ["atoms", "molecules", "organisms", "screens", "views"]
 const ENGINES = ["hooks", "stores"]
@@ -110,17 +111,6 @@ const folderOf = (fromFile, spec) => {
   if (sourceRelative.startsWith("..")) return undefined
   const [first] = sourceRelative.split(sep)
   return first && first.includes(".") ? undefined : first
-}
-
-const scriptKindFor = (file) => {
-  if (file.endsWith(".jsx")) return ts.ScriptKind.JSX
-  if (file.endsWith(".tsx")) return ts.ScriptKind.TSX
-  return ts.ScriptKind.TS
-}
-
-const staticModuleSpecifier = (node) => {
-  if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) return node.text
-  return undefined
 }
 
 const relativeModuleFile = (fromFile, spec) => {
