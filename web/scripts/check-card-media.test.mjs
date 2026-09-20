@@ -1,9 +1,10 @@
 import assert from "node:assert/strict"
 import { spawnSync } from "node:child_process"
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { dirname, join, resolve } from "node:path"
+import { join, resolve } from "node:path"
 import test from "node:test"
+import { runChecker } from "./lib/checker-fixture.mjs"
 
 const checker = resolve(import.meta.dirname, "check-card-media.mjs")
 
@@ -41,13 +42,8 @@ const withSrc = (files, run) => {
   const root = mkdtempSync(join(tmpdir(), "memeon-card-media-check-"))
   const src = join(root, "src")
   try {
-    for (const [path, contents] of Object.entries(files)) {
-      const file = join(src, path)
-      mkdirSync(dirname(file), { recursive: true })
-      writeFileSync(file, contents)
-    }
-    const result = spawnSync(process.execPath, [checker, src], { encoding: "utf8" })
-    return run({ status: result.status, output: result.stdout + result.stderr, src })
+    const { status, output } = runChecker(checker, src, files)
+    return run({ status, output, src })
   } finally {
     rmSync(root, { recursive: true, force: true })
   }
