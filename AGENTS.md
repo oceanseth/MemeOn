@@ -36,6 +36,7 @@ When you hit one of these situations, use the resolution — do not re-discover 
 | Who can call `POST /api/admin/frames`? | Only subs listed in Lambda env **`ADMIN_SUBS`** (comma-separated). Empty = fail-closed (403 everyone). Offline frame gen: `api/scripts/generate-frames.ts`. | mo-100.6 |
 | Outbound URL fetch (OG / resolve-image) | Use **`safeFetch` / `assertPublicUrl`** (`api/src/safeFetch.ts`) — never raw `fetch` with `redirect: 'follow'` to user URLs. | mo-100.5 |
 | Duplicate code (DRY) gate | `pnpm run check:dup` — jscpd over `api`, `web`, `shared`, `mobile/src`, `discord`. Scope, ignores (stories are excluded by design) and the fail threshold live in `.jscpd.json`; CI runs it as the `duplicate code (jscpd)` job in `web-check.yml`, and the *(local-only)* pre-commit hook (`scripts/hooks/pre-commit.sh`) runs the same scan so clones are fixed before the commit lands. | lou 2026-09-20 |
+| Format / Biome | `pnpm exec biome check` (or `pnpm run check:biome` / `pnpm run format`). Pre-commit is tracked `.githooks/pre-commit` (staged `--write`), invoked from *(local-only)* `scripts/hooks/pre-commit.sh`. oxlint stays the DS / `memeon/no-use-effect` gate (`pnpm --filter web run lint:ds`). | ox/biome 2026-09-21 |
 | Where do long docs live? | `docs/` for runbooks; `shared/`, `api/`, `web/` for code; this file only for the resolver table + pointers. | oxferd 2026-07-28 |
 
 ## Pointers

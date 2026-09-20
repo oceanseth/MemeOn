@@ -1,0 +1,105 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true,
+    "defaultBranch": "dev"
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**",
+      "!!**/node_modules",
+      "!!**/dist",
+      "!!**/storybook-static",
+      "!!**/.turbo",
+      "!!**/.popmelt",
+      "!!**/coverage",
+      "!!**/.hermes",
+      "!!**/api/vendor",
+      "!!**/api/fonts",
+      "!**/api/lambda.zip",
+      "!!**/mobile/ios",
+      "!!**/mobile/android",
+      "!!**/mobile/.expo",
+      "!!**/ui/dist",
+      "!!**/ui/storybook-static",
+      "!!**/videos",
+      "!**/pnpm-lock.yaml",
+      // Copy ratchet baseline: never rewrite this file.
+      "!**/web/scripts/copy-baseline.json",
+      // MSW generated worker.
+      "!**/web/public/mockServiceWorker.js"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "jsxQuoteStyle": "double",
+      "semicolons": "asNeeded",
+      "trailingCommas": "all",
+      "arrowParentheses": "always"
+    }
+  },
+  "json": {
+    "parser": {
+      "allowComments": true,
+      "allowTrailingCommas": true
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        // Import order is load-bearing (web/src/main.tsx must import index.css first).
+        "organizeImports": "off"
+      }
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      // oxlint + @shadcn/lint remain the design-system / a11y / no-use-effect gate.
+      "a11y": "off",
+      "complexity": {
+        "noImportantStyles": "off",
+        "useLiteralKeys": "off",
+        "useOptionalChain": "off"
+      },
+      "correctness": {
+        // Conflicts with memeon/no-use-effect (useMountEffect is the only wrapper).
+        "useExhaustiveDependencies": "off",
+        "noUnusedFunctionParameters": "off"
+      },
+      "style": {
+        "noNonNullAssertion": "off",
+        "useNodejsImportProtocol": "off",
+        "useTemplate": "off"
+      },
+      "suspicious": {
+        "noApproximativeNumericConstant": "off",
+        "noArrayIndexKey": "off",
+        "noAssignInExpressions": "off",
+        "noImplicitAnyLet": "off",
+        "noMisleadingCharacterClass": "off",
+        "noShadowRestrictedNames": "off",
+        "noTemplateCurlyInString": "off",
+        "useIterableCallbackReturn": "off"
+      }
+    }
+  }
+}
