@@ -182,12 +182,6 @@ importers:
       firebase:
         specifier: ^12.15.0
         version: 12.15.0(@react-native-async-storage/async-storage@2.2.0(react-native@0.86.0(@types/react@18.3.31)(react@18.3.1)(supports-color@8.1.1)))
-      mobx:
-        specifier: ^7.0.3
-        version: 7.0.3
-      mobx-react-lite:
-        specifier: ^5.0.3
-        version: 5.0.3(mobx@7.0.3)(react@18.3.1)
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -4748,15 +4742,6 @@ packages:
 
   mnemonist@0.38.3:
     resolution: {integrity: sha512-2K9QYubXx/NAjv4VLq1d1Ly8pWNC5L3BrixtdkyTegXWJIqY+zLNDhhX/A+ZwWt70tB1S8H4BE8FLYEFyNoOBw==}
-
-  mobx-react-lite@5.0.3:
-    resolution: {integrity: sha512-8qT/d/8Cg8ljt+heKhoFHNoqgedyeSGzdTixT0lgbFMMFlWfHUcXHZ8UD63eQi3ELjkxaH1VU07lXWhRwM0cVA==}
-    peerDependencies:
-      mobx: ^7.0.0
-      react: ^18 || ^19
-
-  mobx@7.0.3:
-    resolution: {integrity: sha512-KopyyzqZ8xT1fqxFNl8ItKKMpGifRe2ySaNAHs80/cx0mL1bpJtJ46S+FSyzXKRjW0TODWj5zwq/Y9hUdJUy4w==}
 
   mockdate@3.0.5:
     resolution: {integrity: sha512-iniQP4rj1FhBdBYS/+eQv7j1tadJ9lJtdzgOpvsOHng/GbcDh2Fhdeq+ZRldrPYdXvCyfFUmFeEwEGXZB5I/AQ==}
@@ -11210,13 +11195,6 @@ snapshots:
   mnemonist@0.38.3:
     dependencies:
       obliterator: 1.6.1
-
-  mobx-react-lite@5.0.3(mobx@7.0.3)(react@18.3.1):
-    dependencies:
-      mobx: 7.0.3
-      react: 18.3.1
-
-  mobx@7.0.3: {}
 
   mockdate@3.0.5: {}
 

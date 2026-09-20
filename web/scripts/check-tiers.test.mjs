@@ -325,3 +325,15 @@ test("rejects React trees and value-imported tiers in hooks/*.ts and lib/*Model.
   assert.doesNotMatch(result.output, /lib\/domain\.ts/)
   assert.doesNotMatch(result.output, /lib\/createMemeModel\/shared\.ts/)
 })
+
+test("views may import mobx-react-lite; STATE_LIBS still rejects it below views (knip/typecheck catch a views import once packages are gone)", () => {
+  const result = runChecker({
+    "views/Observed.tsx": "import { observer } from 'mobx-react-lite'\nexport const Observed = observer(function Observed() { return <div /> })\n",
+    "views/Observed.stories.tsx": story,
+    "molecules/StateLibrary.tsx": "import { observer } from 'mobx-react-lite'\nexport const StateLibrary = observer(function StateLibrary() { return <div /> })\n",
+    "molecules/StateLibrary.stories.tsx": story,
+  })
+  assert.equal(result.status, 1, result.output)
+  assert.match(result.output, /molecules\/StateLibrary\.tsx: imports state library "mobx-react-lite" below views/)
+  assert.doesNotMatch(result.output, /views\/Observed\.tsx/)
+})

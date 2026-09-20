@@ -1,7 +1,8 @@
 import type { ChangeEvent, FocusEvent, KeyboardEvent, MouseEvent } from 'react'
+import { createActor } from 'xstate'
 import { describe, expect, it, vi } from 'vitest'
 import { createMemeCopy as copy } from '../../copy/createMeme'
-import type { CreateMemeContext } from '../../stores/createMemeMachine'
+import { createMemeMachine, type CreateMemeContext } from '../../stores/createMemeMachine'
 import type { GiphyResult } from '../types'
 import { buildCreateMemeScreenModel } from './buildCreateMemeScreenModel'
 import { MAX_VIDEO_BYTES, overCapMessage } from './shared'
@@ -17,36 +18,7 @@ const giphyResult: GiphyResult = {
   url: 'https://giphy.com/gifs/cat-1',
 }
 
-const baseContext: CreateMemeContext = {
-  remixId: null,
-  mode: 'generate',
-  remixSource: null,
-  remixOutput: 'image',
-  videoMode: 'edit',
-  motionPrompt: '',
-  editedFrame: null,
-  title: '',
-  tags: '',
-  prompt: '',
-  urlDraft: '',
-  imageUrl: '',
-  videoUrl: '',
-  imageFileName: null,
-  videoFileName: null,
-  busy: null,
-  busyElapsed: null,
-  err: null,
-  giphyCategories: [],
-  giphyQuery: '',
-  giphyResults: [],
-  giphySearched: false,
-  giphyPick: null,
-  edited: false,
-  artworkSource: null,
-  mintedId: null,
-  shareUrl: '',
-  shareCopied: false,
-}
+const baseContext: CreateMemeContext = createActor(createMemeMachine, { input: { remixId: null } }).getSnapshot().context
 
 function actions(): CreateMemeScreenActions {
   return {

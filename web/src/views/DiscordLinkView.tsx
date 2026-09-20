@@ -1,10 +1,9 @@
-import { observer } from 'mobx-react-lite'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useDiscordLinkScreen } from '../hooks/useDiscordLinkScreen'
 import { DiscordLinkScreen } from '../screens/DiscordLinkScreen'
 
-export const DiscordLinkView = observer(function DiscordLinkView() {
+export function DiscordLinkView() {
   const model = useDiscordLinkScreen()
   useDocumentTitle(model.documentTitle)
   return <DiscordLinkScreen {...model} />
-})
+}

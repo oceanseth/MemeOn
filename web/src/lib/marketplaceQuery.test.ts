@@ -5,26 +5,8 @@ import {
   buildMarketFilterTabs,
   filtersFromUrl,
   queryString,
-  writeFilter,
+  writeLiveFilters,
 } from './marketplaceQuery'
-
-function writeLive(live: {
-  q: string
-  type: string
-  tier: string
-  listed: boolean
-  sortKey: string
-  sortDir: string
-}): URLSearchParams {
-  const next = new URLSearchParams()
-  writeFilter(next, 'q', live.q)
-  writeFilter(next, 'type', live.type)
-  writeFilter(next, 'tier', live.tier)
-  writeFilter(next, 'listed', live.listed ? 'true' : '')
-  writeFilter(next, 'sort', live.sortKey, 'new')
-  writeFilter(next, 'dir', live.sortDir, 'desc')
-  return next
-}
 
 describe('marketplaceQuery URL codec', () => {
   it('round-trips filtersFromUrl through writeFilter, including non-default sort', () => {
@@ -36,11 +18,14 @@ describe('marketplaceQuery URL codec', () => {
       sortKey: 'views',
       sortDir: 'asc',
     }
-    expect(filtersFromUrl(writeLive(live))).toEqual(live)
+    const params = new URLSearchParams()
+    writeLiveFilters(params, live)
+    expect(filtersFromUrl(params)).toEqual(live)
   })
 
   it('omits empty q/type/tier, listed false, and the default sort=new dir=desc', () => {
-    const params = writeLive({
+    const params = new URLSearchParams()
+    writeLiveFilters(params, {
       q: '',
       type: '',
       tier: '',
@@ -53,7 +38,8 @@ describe('marketplaceQuery URL codec', () => {
   })
 
   it('writes listed=true and ignores invalid sort/dir', () => {
-    const listed = writeLive({
+    const listed = new URLSearchParams()
+    writeLiveFilters(listed, {
       q: '',
       type: '',
       tier: '',

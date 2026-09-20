@@ -4,7 +4,7 @@ import { apiFetch } from '../lib/api'
 import {
   MARKETPLACE_SEARCH_DEBOUNCE_MS,
   queryString,
-  writeFilter,
+  writeLiveFilters,
 } from '../lib/marketplaceQuery'
 import type { SortDir, SortKey } from '../lib/sorting'
 import type { Meme } from '../lib/types'
@@ -109,12 +109,7 @@ export function useMarketplaceCatalog({
     const live = actor.getSnapshot().context
     setParams((current) => {
       const next = new URLSearchParams(current)
-      writeFilter(next, 'q', live.q)
-      writeFilter(next, 'type', live.type)
-      writeFilter(next, 'tier', live.tier)
-      writeFilter(next, 'listed', live.listed ? 'true' : '')
-      writeFilter(next, 'sort', live.sortKey, 'new')
-      writeFilter(next, 'dir', live.sortDir, 'desc')
+      writeLiveFilters(next, live)
       return next
     }, { replace: true })
   }, [actor, setParams])

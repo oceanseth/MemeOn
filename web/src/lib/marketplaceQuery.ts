@@ -109,6 +109,18 @@ export function writeFilter(params: URLSearchParams, key: string, value: string,
   else params.set(key, value)
 }
 
+export function writeLiveFilters(
+  params: URLSearchParams,
+  live: { q: string; type: string; tier: string; listed: boolean; sortKey: string; sortDir: string },
+): void {
+  writeFilter(params, 'q', live.q)
+  writeFilter(params, 'type', live.type)
+  writeFilter(params, 'tier', live.tier)
+  writeFilter(params, 'listed', live.listed ? 'true' : '')
+  writeFilter(params, 'sort', live.sortKey, 'new')
+  writeFilter(params, 'dir', live.sortDir, 'desc')
+}
+
 const typeLabel = (type: string): string => (type === 'video' ? copy.filters.media.videos : copy.filters.media.images)
 
 const tierLabel = (tier: string): string =>
