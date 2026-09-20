@@ -66,6 +66,7 @@ type CommonSlice = Pick<
   | 'mintStatus'
   | 'successHeading'
   | 'successBody'
+  | 'shareCopied'
   | 'copyShareLinkLabel'
   | 'copyShareLinkButtonProps'
   | 'shareUrlInputProps'
@@ -160,6 +161,7 @@ export function buildCommonModel(
         : '',
     successHeading: copy.form.success.heading,
     successBody: copy.form.success.body,
+    shareCopied: ctx.shareCopied,
     copyShareLinkLabel: ctx.shareCopied ? copy.form.copied : copy.form.success.copyLink,
     copyShareLinkButtonProps: {
       type: 'button',
