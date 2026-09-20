@@ -4,7 +4,12 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
-packageExtensionsChecksum: sha256-JSwoZssCOLKk15A4gwMKP+j8oy5/sBshvJYvq4joJe4=
+overrides:
+  lucide: '-'
+  lucide-react: '-'
+  lucide-static: '-'
+
+packageExtensionsChecksum: sha256-NrK+39TrlPcM10Lq4993uC5tKE/QZRIGabRQ0ME3oFg=
 
 importers:
 
@@ -204,6 +209,9 @@ importers:
       '@chromatic-com/storybook':
         specifier: ^5.3.1
         version: 5.3.1(storybook@10.6.0(@types/react@18.3.31)(prettier@3.6.2)(react@18.3.1))
+      '@popmelt.com/core':
+        specifier: ^0.24.2
+        version: 0.24.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@shadcn/lint':
         specifier: 0.1.0
         version: 0.1.0(supports-color@8.1.1)(typescript@5.9.3)
@@ -2371,6 +2379,30 @@ packages:
 
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
+
+  '@popmelt.com/core@0.24.2':
+    resolution: {integrity: sha512-e5t2y3rUoozNnanEjDRxeJSrBlEifV+dhzem9DAR03N8jyeqOg0zCWckxcCL3wznoysdWMhGOyRrOGVyUCoPoA==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
+    peerDependencies:
+      '@react-three/fiber': '>=8.0.0'
+      lucide-react: '*'
+      next: '>=14.0.0'
+      nuxt: '>=4.5.2 <5'
+      react: '>=18.0.0'
+      react-dom: '>=18.0.0'
+      three: '>=0.150.0'
+    peerDependenciesMeta:
+      '@react-three/fiber':
+        optional: true
+      lucide-react:
+        optional: true
+      next:
+        optional: true
+      nuxt:
+        optional: true
+      three:
+        optional: true
 
   '@protobufjs/aspromise@1.1.2':
     resolution: {integrity: sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ==}
@@ -4797,6 +4829,9 @@ packages:
 
   mockdate@3.0.5:
     resolution: {integrity: sha512-iniQP4rj1FhBdBYS/+eQv7j1tadJ9lJtdzgOpvsOHng/GbcDh2Fhdeq+ZRldrPYdXvCyfFUmFeEwEGXZB5I/AQ==}
+
+  modern-screenshot@4.7.0:
+    resolution: {integrity: sha512-9YxN+ddPSMMlhylOv25VHzXrl9u67QRxoh7+SEewGtgUw7t6hHTrjptSDJUSne9oG4Xk/h2cwG15nIt4Hc9ujg==}
 
   mrmime@2.0.1:
     resolution: {integrity: sha512-Y3wQdFg2Va6etvQ5I82yUhGdsKrcYox6p7FfL1LbK2J4V01F9TGlepTIhnK24t7koZibmg82KGglhA1XK5IsLQ==}
@@ -8441,6 +8476,16 @@ snapshots:
 
   '@polka/url@1.0.0-next.29': {}
 
+  '@popmelt.com/core@0.24.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      modern-screenshot: 4.7.0
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      ws: 8.21.3
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   '@protobufjs/aspromise@1.1.2': {}
 
   '@protobufjs/base64@1.1.2': {}
@@ -11284,6 +11329,8 @@ snapshots:
       obliterator: 1.6.1
 
   mockdate@3.0.5: {}
+
+  modern-screenshot@4.7.0: {}
 
   mrmime@2.0.1: {}
 

@@ -165,23 +165,23 @@ export const NoViews: Story = {
   },
 }
 
-/** autoplay is loaned out by the viewport observer and can always be taken back */
+/** autoplay is loaned out by the viewport observer; Play videos in the account menu is the control */
 export const Video: Story = {
   args: { model: buildMemeCardModel(videoMeme) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const toggle = canvas.getByRole('button', { name: `Play ${videoMeme.title}` })
-    await expect(toggle).toHaveAttribute('aria-pressed', 'false')
+    await expect(canvas.getByRole('article').querySelector('video')).not.toBeNull()
+    await expect(canvas.queryByRole('button', { name: /Play / })).toBeNull()
   },
 }
 
-/** the OS asked for stillness: the poster is the whole card until the player presses play */
+/** the OS asked for stillness: the poster is the whole card and Play videos stays off */
 export const VideoReducedMotion: Story = {
   args: { model: buildReducedMotionMemeCardModel(videoMeme) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('article').dataset.mediaAutoplay).toBe('off')
-    await expect(canvas.getByRole('button', { name: `Play ${videoMeme.title}` })).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: /Play / })).toBeNull()
   },
 }
 

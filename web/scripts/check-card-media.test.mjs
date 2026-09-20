@@ -25,7 +25,7 @@ const CARD = [
   "export function MemeCard({ model }) {",
   "  return (",
   "    <article ref={model.cardRef}>",
-  "      <button {...model.media.toggleProps} />",
+  "      <video />",
   "    </article>",
   "  )",
   "}",
@@ -111,7 +111,6 @@ test("fails when a meme-card component mentions IntersectionObserver or drops th
     assert.match(output, /molecules\/meme-card\.tsx/)
     assert.match(output, /does not construct an observer/)
     assert.match(output, /missing ref=\{model\.cardRef\}/)
-    assert.match(output, /missing \{\.\.\.model\.media\.toggleProps\}/)
   })
 })
 

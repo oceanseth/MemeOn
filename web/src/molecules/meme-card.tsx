@@ -9,7 +9,7 @@ import { Icon } from '@/atoms/icon'
 
 /* The card is a container for its own meta row (`@max-card-narrow:` fires under 220px). The ring
    is the card's, for the link inside it: `has-[a:focus-visible]` rather than `focus-ring`, because
-   the focused element is the art link and the toggle keeps its own ring.
+   the focused element is the art link.
    Every card in a grid is the same size: the track sets the width, and the height is the same by
    construction — the title reserves its two lines and the value row reserves the two-line listing
    slot — so the card is left free to stretch to its track (no `self-start`) and a screen's own
@@ -74,17 +74,6 @@ export type MemeCardSize = NonNullable<VariantProps<typeof memeCardVariants>['si
 const INNER = 'relative flex h-full flex-col'
 
 const ART = 'block aspect-square w-full bg-muted object-contain'
-
-/* 32px raised square over the art's corner; the coarse-pointer form is the full 44px target */
-const TOGGLE = cn(
-  'absolute right-2 bottom-2 z-2 inline-flex items-center justify-center',
-  'size-8 p-0 pointer-coarse:size-11',
-  'cursor-pointer whitespace-nowrap text-base leading-none text-foreground',
-  'rounded-sm material-raised',
-  'transition-press',
-  'lift press',
-  'focus-ring',
-)
 
 const CHIP_POS = 'absolute bottom-4 left-4 z-2'
 
@@ -156,13 +145,6 @@ export function MemeCard({ model, subTitle, footer, footerRight, size, titleAs }
             size={scale === 'lg' ? 'md' : 'sm'}
             className={CHIP_POS}
           />
-          {model.media.kind === 'video' && (
-            <button data-slot="media-toggle" className={TOGGLE} {...model.media.toggleProps}>
-              <span aria-hidden="true">
-                <Icon name="square-play" size={20} />
-              </span>
-            </button>
-          )}
         </FoilMedia>
         <div data-slot="meme-meta" className={cn(memeMetaVariants({ size: scale }))}>
           <TitleTag data-slot="meme-title" className={cn(memeTitleVariants({ size: scale }))} id={model.titleId}>

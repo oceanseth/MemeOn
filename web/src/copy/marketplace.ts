@@ -60,7 +60,7 @@ export const marketplaceCopy = {
   loadingMore: sharedCopy.loading,
   loadMoreRetry: sharedCopy.tryAgain,
   loadMoreError: "Couldn't pull the next page.",
-  endOfList: "That's every meme matching these filters.",
+  endOfList: "That's all.",
   /** Machine fallbacks when the fetch throws without a message. */
   machine: { loadFailed: 'load failed', appendFailed: 'append failed' },
 } as const

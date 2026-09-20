@@ -28,7 +28,12 @@ export function AppShellScreen({
 }: AppShellScreenModel & { children: ReactNode }) {
   const nav = showNav
     ? navItems.map((item) => (
-        <NavPill key={item.to} current={item.current} render={<Link {...item.linkProps} />}>
+        <NavPill
+          key={item.to}
+          current={item.current}
+          className={item.hiddenUntil2xl ? 'max-2xl:hidden' : undefined}
+          render={<Link {...item.linkProps} />}
+        >
           {item.icon && (
             <span aria-hidden="true">
               <Icon name={item.icon} size={16} />

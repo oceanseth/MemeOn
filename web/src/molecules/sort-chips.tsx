@@ -52,7 +52,9 @@ export function SortChips({ model }: { model: SortChipsModel }) {
         ))}
       </ToggleGroup>
       {/* the standalone description (no `<Field>` here): the group names it through `aria-describedby` */}
-      {model.reason && <Hint {...model.reasonProps}>{model.reason}</Hint>}
+      {model.reason && (
+        <Hint className="sr-only" {...model.reasonProps}>{model.reason}</Hint>
+      )}
     </div>
   )
 }

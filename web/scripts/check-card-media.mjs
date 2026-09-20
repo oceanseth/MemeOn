@@ -8,7 +8,7 @@
  * ViewportObserver so tests can stub the platform) and the only `setProperty` /
  * `removeProperty` of `--glow-play-state`. `hooks/useMarketplaceCatalog.ts` may construct
  * a *different* observer for the infinite-scroll sentinel. The MemeCard molecule applies
- * `model.cardRef` and `{...model.media.toggleProps}`; it does not construct an observer.
+ * `model.cardRef`; it does not construct an observer.
  *
  * Fails (exit 1) unless:
  *   - the identifier IntersectionObserver appears only in lib/cardMedia.ts and
@@ -17,7 +17,7 @@
  *   - setProperty('--glow-play-state' / removeProperty('--glow-play-state' appear only in
  *     lib/cardMedia.ts
  *   - every *meme-card* component file contains zero IntersectionObserver tokens and still
- *     has ref={model.cardRef} and {...model.media.toggleProps}
+ *     has ref={model.cardRef}
  *
  * Tests, stories and mdx are skipped (they may mock IntersectionObserver). CSS may declare
  * and read `--glow-play-state`; mutation is a JS concern.
@@ -72,7 +72,7 @@ for (const file of walk(src)) {
     const isNew = NEW_IO.test(line)
     const isIdent = IO_IDENT.test(line)
     if (isCard && (isNew || isIdent)) {
-      report(where, "IntersectionObserver token — the card applies model.cardRef / media.toggleProps, it does not construct an observer")
+      report(where, "IntersectionObserver token — the card applies model.cardRef, it does not construct an observer")
     } else if (isNew && !NEW_IO_ALLOWED.has(sourcePath)) {
       report(where, "`new IntersectionObserver` — use the ViewportObserver alias; the constructor stays in hooks/useMarketplaceCatalog.ts")
     } else if (isIdent && !IO_ALLOWED.has(sourcePath)) {
@@ -85,7 +85,6 @@ for (const file of walk(src)) {
 
   if (isCard) {
     if (!source.includes("ref={model.cardRef}")) report(sourcePath, "missing ref={model.cardRef}")
-    if (!source.includes("{...model.media.toggleProps}")) report(sourcePath, "missing {...model.media.toggleProps}")
   }
 }
 
@@ -93,7 +92,7 @@ if (!sawCardMedia) {
   findings.unshift("  lib/cardMedia.ts is missing — it owns the shared observer and --glow-play-state")
 }
 if (memeCards.length === 0) {
-  findings.push("  no *meme-card* component under src — the card must apply model.cardRef / media.toggleProps")
+  findings.push("  no *meme-card* component under src — the card must apply model.cardRef")
 }
 
 if (findings.length > 0) {
@@ -103,5 +102,5 @@ if (findings.length > 0) {
 
 const cardList = memeCards.join(", ")
 console.log(
-  `check-card-media: IntersectionObserver stays in lib/cardMedia.ts and hooks/useMarketplaceCatalog.ts; --glow-play-state mutation stays in lib/cardMedia.ts; ${cardList} delegates via model.cardRef / media.toggleProps`,
+  `check-card-media: IntersectionObserver stays in lib/cardMedia.ts and hooks/useMarketplaceCatalog.ts; --glow-play-state mutation stays in lib/cardMedia.ts; ${cardList} delegates via model.cardRef`,
 )

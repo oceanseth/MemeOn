@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { spawnSync } from "node:child_process"
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join, relative, resolve } from "node:path"
 import test from "node:test"
@@ -99,4 +99,54 @@ test("live src/ has no from \"lucide-react\" / from 'lucide-react'", () => {
     if ([...source.matchAll(LUCIDE_IMPORT)].length) hits.push(relative(liveSrc, file))
   }
   assert.equal(hits.length, 0, `from "lucide-react" in ${hits.join(", ")}`)
+})
+
+const repoRoot = resolve(import.meta.dirname, "..", "..")
+const LUCIDE_PACKAGES = ["lucide", "lucide-react", "lucide-static"]
+const WORKSPACE_MANIFESTS = ["package.json", "web/package.json", "api/package.json", "mobile/package.json", "shared/package.json"]
+const DEP_FIELDS = ["dependencies", "devDependencies", "optionalDependencies", "peerDependencies"]
+
+test("pnpm-workspace.yaml overrides lucide-react to - so it is never installed", () => {
+  const yaml = readFileSync(join(repoRoot, "pnpm-workspace.yaml"), "utf8")
+  assert.match(yaml, /^overrides:\n(?:[ \t]+.+\n)*[ \t]+lucide-react:\s*'-'/m)
+})
+
+test("workspace package.json files do not declare lucide packages", () => {
+  const hits = []
+  for (const rel of WORKSPACE_MANIFESTS) {
+    const pkg = JSON.parse(readFileSync(join(repoRoot, rel), "utf8"))
+    for (const field of DEP_FIELDS) {
+      const bag = pkg[field]
+      if (!bag) continue
+      for (const name of LUCIDE_PACKAGES) {
+        if (name in bag) hits.push(`${rel} ${field}.${name}`)
+      }
+    }
+  }
+  assert.equal(hits.length, 0, hits.join(", "))
+})
+
+test("pnpm-lock.yaml has no installed lucide package snapshot", () => {
+  const lock = readFileSync(join(repoRoot, "pnpm-lock.yaml"), "utf8")
+  const snapshots = [...lock.matchAll(/^ {2}(lucide(?:-react|-static)?)@/gm)].map((match) => match[1])
+  assert.equal(snapshots.length, 0, `lockfile snapshots: ${snapshots.join(", ")}`)
+})
+
+test("node_modules does not contain a lucide-react install", () => {
+  const hits = []
+  const roots = [repoRoot, join(repoRoot, "web"), join(repoRoot, "api"), join(repoRoot, "mobile"), join(repoRoot, "shared")]
+  for (const root of roots) {
+    for (const name of LUCIDE_PACKAGES) {
+      const direct = join(root, "node_modules", name, "package.json")
+      if (existsSync(direct)) hits.push(relative(repoRoot, direct))
+    }
+    const pnpmStore = join(root, "node_modules", ".pnpm")
+    if (!existsSync(pnpmStore)) continue
+    for (const entry of readdirSync(pnpmStore)) {
+      if (LUCIDE_PACKAGES.some((name) => entry === name || entry.startsWith(`${name}@`))) {
+        hits.push(relative(repoRoot, join(pnpmStore, entry)))
+      }
+    }
+  }
+  assert.equal(hits.length, 0, hits.join(", "))
 })

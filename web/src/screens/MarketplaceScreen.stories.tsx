@@ -116,7 +116,7 @@ export const LoadMoreFailed: Story = {
     await expect(canvas.getByRole('button', { name: copy.loadMoreRetry })).toBeEnabled()
   },
 }
-/** Phone disclosure: the sticky row keeps search and the mint CTA, filters open on demand. */
+/** Phone disclosure: the sticky row keeps search; filters open on demand. */
 export const FiltersNarrowed: Story = {
   args: {
     ...ready,
@@ -178,7 +178,7 @@ export const Dark: Story = {
   globals: { theme: 'dark' },
 }
 
-/** 390: search, "All memes" pressed beside "Filters", the primary Mint pill, a 2-up grid. */
+/** 390: search, "All memes" pressed beside "Filters", a 2-up grid. */
 const phone390Args = { ...ready, showMore: true }
 
 export const Phone390: Story = {
