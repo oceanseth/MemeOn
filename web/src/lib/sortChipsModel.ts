@@ -11,8 +11,7 @@ export interface SortChipModel {
   selected: boolean
   /** which way the selected chip sorts; null on the others */
   direction: SortDir | null
-  arrow: '↓' | '↑' | null
-  /** The arrow is decoration; direction is spoken here. */
+  /** The direction mark is decoration; direction is spoken here. */
   directionLabel: 'ascending' | 'descending' | null
   buttonProps: { 'aria-label': string }
 }
@@ -74,7 +73,6 @@ export function buildSortChipsModel({
         icon,
         selected,
         direction: selected ? dir : null,
-        arrow: selected ? (dir === 'desc' ? '↓' : '↑') : null,
         directionLabel,
         buttonProps: {
           'aria-label': copy.chipA11y(label, directionLabel),

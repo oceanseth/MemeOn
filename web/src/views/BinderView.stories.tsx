@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
 import { binderCopy as copy } from '../copy/binder'
+import { sortChipsCopy } from '../copy/sortChips'
 import { BinderView } from './BinderView'
 
 const meta = {
@@ -56,8 +57,12 @@ export const SortAndPrivateFromUrl: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('checkbox', { name: /Show private/ })).toBeChecked()
-    await expect(canvas.getByRole('button', { name: /Value/ })).toHaveAttribute('aria-pressed', 'true')
-    await expect(canvas.getByRole('button', { name: /Value/ })).toHaveTextContent('↑')
+    const value = canvas.getByRole('button', {
+      name: sortChipsCopy.chipA11y(sortChipsCopy.chips.value, sortChipsCopy.direction.ascending),
+    })
+    await expect(value).toHaveAttribute('aria-pressed', 'true')
+    const icons = value.querySelectorAll('[data-slot="icon"]')
+    await expect(icons[icons.length - 1]).toHaveClass('rotate-180')
     await expect(canvas.getByRole('link', { name: /fresh paper/i })).toBeInTheDocument()
   },
 }
