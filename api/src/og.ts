@@ -284,6 +284,65 @@ ${block}
 </html>`
 }
 
+async function withCachedShareOg(
+  key: string,
+  paint: (canvas: JimpImage) => Promise<void>,
+): Promise<string> {
+  const age = await assetAgeSeconds(key)
+  if (age !== null && age < 3600) return assetUrl(key)
+  const canvas = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14ff }) as unknown as JimpImage
+  await paint(canvas)
+  const png = await canvas.getBuffer('image/png')
+  await putAssetShortCache(key, png)
+  return assetUrl(key)
+}
+
+async function paintDimmedHomeBanner(canvas: JimpImage, dimColor: number): Promise<void> {
+  try {
+    const banner = await fetchImage(`${env.siteOrigin}/brand/og-home.png`)
+    banner.cover({ w: OG_W, h: OG_H })
+    canvas.composite(banner, 0, 0)
+    const dim = new Jimp({ width: OG_W, height: OG_H, color: dimColor }) as unknown as JimpImage
+    canvas.composite(dim, 0, 0)
+  } catch {
+    /* solid bg fallback */
+  }
+}
+
+async function paintAvatar(
+  canvas: JimpImage,
+  picture: string | null,
+  { size, x, y }: { size: number; x: number; y: number },
+): Promise<void> {
+  try {
+    const avatar = picture
+      ? await fetchImage(picture)
+      : await fetchImage(assetUrl('brand/memeon-logo-circle-256.png'))
+    avatar.cover({ w: size, h: size })
+    try {
+      ;(avatar as unknown as { circle: () => void }).circle()
+    } catch {
+      /* square avatar is fine */
+    }
+    canvas.composite(avatar, x, y)
+  } catch {
+    /* no avatar — text still carries it */
+  }
+}
+
+function injectShareHead(
+  index: string | null,
+  { title, block, pageUrl }: { title: string; block: string; pageUrl: string },
+): string {
+  if (index) {
+    return index
+      .replace(/\s*<meta (?:property="og:|name="twitter:)[^>]*\/?>/g, '')
+      .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
+      .replace('</head>', `${block}\n</head>`)
+  }
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title>${block}</head><body><a href="${esc(pageUrl)}">${esc(title)}</a></body></html>`
+}
+
 /**
  * Profile share card: avatar + name + stats over the dimmed brand banner.
  * Cached in S3, refreshed when older than an hour (stats drift).
@@ -295,62 +354,36 @@ export async function ensureProfileOgImage(profile: {
   coins: number
   collectionSize: number
 }): Promise<string> {
-  const key = `og/u/${profile.sub}.png`
-  const age = await assetAgeSeconds(key)
-  if (age !== null && age < 3600) return assetUrl(key)
+  return withCachedShareOg(`og/u/${profile.sub}.png`, async (canvas) => {
+    await paintDimmedHomeBanner(canvas, 0x0b0d14a8)
 
-  // base: the site's home banner, dimmed so the profile pops
-  const canvas = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14ff }) as unknown as JimpImage
-  try {
-    const banner = await fetchImage(`${env.siteOrigin}/brand/og-home.png`)
-    banner.cover({ w: OG_W, h: OG_H })
-    canvas.composite(banner, 0, 0)
-    const dim = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14a8 }) as unknown as JimpImage
-    canvas.composite(dim, 0, 0)
-  } catch {
-    /* solid bg fallback */
-  }
-
-  // avatar (circle when possible), centered-left
-  const AV = 250
-  try {
-    const avatar = profile.picture
-      ? await fetchImage(profile.picture)
-      : await fetchImage(assetUrl('brand/memeon-logo-circle-256.png'))
-    avatar.cover({ w: AV, h: AV })
-    try {
-      ;(avatar as unknown as { circle: () => void }).circle()
-    } catch {
-      /* square avatar is fine */
-    }
-    canvas.composite(avatar, 150, Math.round((OG_H - AV) / 2))
-  } catch {
-    /* no avatar — text still carries it */
-  }
-
-  // name + stats
-  try {
-    const big = await getFont('w64')
-    const bigShadow = await getFont('b64')
-    const small = await getFont('w32')
-    let name = profile.name.slice(0, 18)
-    while (name.length > 4 && measureText(big, name) > 680) name = name.slice(0, -1)
-    const nx = 460
-    canvas.print({ font: bigShadow, x: nx + 3, y: 233, text: name })
-    canvas.print({ font: big, x: nx, y: 230, text: name })
-    canvas.print({
-      font: small,
-      x: nx + 2,
-      y: 330,
-      text: `on MemeOn · ${profile.coins.toLocaleString()} braincells · ${profile.collectionSize} memes`,
+    // avatar (circle when possible), centered-left
+    await paintAvatar(canvas, profile.picture, {
+      size: 250,
+      x: 150,
+      y: Math.round((OG_H - 250) / 2),
     })
-  } catch (err) {
-    console.error('profile og text failed', err)
-  }
 
-  const png = await canvas.getBuffer('image/png')
-  await putAssetShortCache(key, png)
-  return assetUrl(key)
+    // name + stats
+    try {
+      const big = await getFont('w64')
+      const bigShadow = await getFont('b64')
+      const small = await getFont('w32')
+      let name = profile.name.slice(0, 18)
+      while (name.length > 4 && measureText(big, name) > 680) name = name.slice(0, -1)
+      const nx = 460
+      canvas.print({ font: bigShadow, x: nx + 3, y: 233, text: name })
+      canvas.print({ font: big, x: nx, y: 230, text: name })
+      canvas.print({
+        font: small,
+        x: nx + 2,
+        y: 330,
+        text: `on MemeOn · ${profile.coins.toLocaleString()} braincells · ${profile.collectionSize} memes`,
+      })
+    } catch (err) {
+      console.error('profile og text failed', err)
+    }
+  })
 }
 
 /**
@@ -376,13 +409,7 @@ export async function profilePageHtml(
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:image" content="${esc(ogImageUrl)}">`
   const index = await fetchIndexHtml()
-  if (index) {
-    return index
-      .replace(/\s*<meta (?:property="og:|name="twitter:)[^>]*\/?>/g, '')
-      .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
-      .replace('</head>', `${block}\n</head>`)
-  }
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title>${block}</head><body><a href="${esc(pageUrl)}">${esc(title)}</a></body></html>`
+  return injectShareHead(index, { title, block, pageUrl })
 }
 
 /** The SPA shell as-is — for share-path URLs that aren't a real user (e.g. /binder/new). */
@@ -402,95 +429,66 @@ export async function ensureBinderOgImage(
   stats: { collectionSize: number; value: number },
   topMemes: Meme[],
 ): Promise<string> {
-  const key = `og/binder/${profile.sub}.png`
-  const age = await assetAgeSeconds(key)
-  if (age !== null && age < 3600) return assetUrl(key)
+  return withCachedShareOg(`og/binder/${profile.sub}.png`, async (canvas) => {
+    await paintDimmedHomeBanner(canvas, 0x0b0d14c4)
 
-  const canvas = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14ff }) as unknown as JimpImage
-  try {
-    const banner = await fetchImage(`${env.siteOrigin}/brand/og-home.png`)
-    banner.cover({ w: OG_W, h: OG_H })
-    canvas.composite(banner, 0, 0)
-    const dim = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14c4 }) as unknown as JimpImage
-    canvas.composite(dim, 0, 0)
-  } catch {
-    /* solid bg fallback */
-  }
-
-  // right: a binder page holding the top cards in tier-colored sleeves
-  const PANEL = { x: 600, y: 55, w: 560, h: 520 }
-  const panel = new Jimp({ width: PANEL.w, height: PANEL.h, color: 0x171b26ff }) as unknown as JimpImage
-  canvas.composite(panel, PANEL.x, PANEL.y)
-  // binder rings along the spine
-  try {
-    for (const ry of [150, 315, 480]) {
-      const ring = new Jimp({ width: 34, height: 34, color: 0x0b0d14ff }) as unknown as JimpImage
-      ;(ring as unknown as { circle: () => void }).circle()
-      canvas.composite(ring, PANEL.x - 17, ry)
-    }
-  } catch {
-    /* rings are decoration */
-  }
-  // 2×3 sleeve grid; empty sleeves stay visible so a thin binder still reads as one
-  const SLOT = { w: 160, h: 213 }
-  const GAP = 20
-  const gridX = PANEL.x + Math.round((PANEL.w - (3 * SLOT.w + 2 * GAP)) / 2)
-  const gridY = PANEL.y + Math.round((PANEL.h - (2 * SLOT.h + GAP)) / 2)
-  for (let i = 0; i < 6; i++) {
-    const x = gridX + (i % 3) * (SLOT.w + GAP)
-    const y = gridY + Math.floor(i / 3) * (SLOT.h + GAP)
-    const meme = topMemes[i]
-    const sleeveColor = meme ? hexToInt(tierFor(meme.reshares).color) : 0x212636ff
-    const sleeve = new Jimp({ width: SLOT.w, height: SLOT.h, color: sleeveColor }) as unknown as JimpImage
-    canvas.composite(sleeve, x, y)
-    if (!meme) continue
+    // right: a binder page holding the top cards in tier-colored sleeves
+    const PANEL = { x: 600, y: 55, w: 560, h: 520 }
+    const panel = new Jimp({ width: PANEL.w, height: PANEL.h, color: 0x171b26ff }) as unknown as JimpImage
+    canvas.composite(panel, PANEL.x, PANEL.y)
+    // binder rings along the spine
     try {
-      const art = await fetchImage(meme.imageUrl)
-      art.cover({ w: SLOT.w - 10, h: SLOT.h - 10 })
-      canvas.composite(art, x + 5, y + 5)
+      for (const ry of [150, 315, 480]) {
+        const ring = new Jimp({ width: 34, height: 34, color: 0x0b0d14ff }) as unknown as JimpImage
+        ;(ring as unknown as { circle: () => void }).circle()
+        canvas.composite(ring, PANEL.x - 17, ry)
+      }
     } catch {
-      /* tier-colored sleeve alone still reads as a card */
+      /* rings are decoration */
     }
-  }
+    // 2×3 sleeve grid; empty sleeves stay visible so a thin binder still reads as one
+    const SLOT = { w: 160, h: 213 }
+    const GAP = 20
+    const gridX = PANEL.x + Math.round((PANEL.w - (3 * SLOT.w + 2 * GAP)) / 2)
+    const gridY = PANEL.y + Math.round((PANEL.h - (2 * SLOT.h + GAP)) / 2)
+    for (let i = 0; i < 6; i++) {
+      const x = gridX + (i % 3) * (SLOT.w + GAP)
+      const y = gridY + Math.floor(i / 3) * (SLOT.h + GAP)
+      const meme = topMemes[i]
+      const sleeveColor = meme ? hexToInt(tierFor(meme.reshares).color) : 0x212636ff
+      const sleeve = new Jimp({ width: SLOT.w, height: SLOT.h, color: sleeveColor }) as unknown as JimpImage
+      canvas.composite(sleeve, x, y)
+      if (!meme) continue
+      try {
+        const art = await fetchImage(meme.imageUrl)
+        art.cover({ w: SLOT.w - 10, h: SLOT.h - 10 })
+        canvas.composite(art, x + 5, y + 5)
+      } catch {
+        /* tier-colored sleeve alone still reads as a card */
+      }
+    }
 
-  // left: avatar + name + stats
-  const AV = 180
-  try {
-    const avatar = profile.picture
-      ? await fetchImage(profile.picture)
-      : await fetchImage(assetUrl('brand/memeon-logo-circle-256.png'))
-    avatar.cover({ w: AV, h: AV })
+    // left: avatar + name + stats
+    await paintAvatar(canvas, profile.picture, { size: 180, x: 90, y: 100 })
     try {
-      ;(avatar as unknown as { circle: () => void }).circle()
-    } catch {
-      /* square avatar is fine */
+      const big = await getFont('w64')
+      const bigShadow = await getFont('b64')
+      const small = await getFont('w32')
+      let name = profile.name.slice(0, 18)
+      while (name.length > 4 && measureText(big, name) > 470) name = name.slice(0, -1)
+      canvas.print({ font: bigShadow, x: 93, y: 333, text: name })
+      canvas.print({ font: big, x: 90, y: 330, text: name })
+      canvas.print({ font: small, x: 92, y: 430, text: 'Meme Binder on MemeOn' })
+      canvas.print({
+        font: small,
+        x: 92,
+        y: 478,
+        text: `${stats.collectionSize} memes · ${stats.value.toLocaleString()} braincells`,
+      })
+    } catch (err) {
+      console.error('binder og text failed', err)
     }
-    canvas.composite(avatar, 90, 100)
-  } catch {
-    /* no avatar — text still carries it */
-  }
-  try {
-    const big = await getFont('w64')
-    const bigShadow = await getFont('b64')
-    const small = await getFont('w32')
-    let name = profile.name.slice(0, 18)
-    while (name.length > 4 && measureText(big, name) > 470) name = name.slice(0, -1)
-    canvas.print({ font: bigShadow, x: 93, y: 333, text: name })
-    canvas.print({ font: big, x: 90, y: 330, text: name })
-    canvas.print({ font: small, x: 92, y: 430, text: 'Meme Binder on MemeOn' })
-    canvas.print({
-      font: small,
-      x: 92,
-      y: 478,
-      text: `${stats.collectionSize} memes · ${stats.value.toLocaleString()} braincells`,
-    })
-  } catch (err) {
-    console.error('binder og text failed', err)
-  }
-
-  const png = await canvas.getBuffer('image/png')
-  await putAssetShortCache(key, png)
-  return assetUrl(key)
+  })
 }
 
 /** SPA shell with binder og tags injected (crawlers see the collection; humans get the app). */
@@ -519,13 +517,7 @@ export async function binderPageHtml(
 <meta name="twitter:description" content="${esc(desc)}">
 <meta name="twitter:image" content="${esc(ogImageUrl)}">`
   const index = await fetchIndexHtml()
-  if (index) {
-    return index
-      .replace(/\s*<meta (?:property="og:|name="twitter:)[^>]*\/?>/g, '')
-      .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
-      .replace('</head>', `${block}\n</head>`)
-  }
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title>${block}</head><body><a href="${esc(pageUrl)}">${esc(title)}</a></body></html>`
+  return injectShareHead(index, { title, block, pageUrl })
 }
 
 /**
