@@ -58,3 +58,29 @@ export const Sizes: Story = {
 
 /** WP1 wires the `theme` global; this forces the dark twin so the grid renders on the dark canvas. */
 export const Dark: Story = { ...All, globals: { theme: 'dark' } }
+
+/** Empty-disc medal at the sizes the live podium and the 16px row actually use. */
+export const Medal: Story = {
+  render: () => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <Icon name="medal" size={16} />
+      <Icon name="medal" size={28} />
+      <Icon name="medal" size={48} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const PIP = 'M12 18v-2h-.5'
+    const svgs = canvasElement.querySelectorAll('[data-slot="icon"]')
+    await expect(svgs).toHaveLength(3)
+    for (const svg of svgs) {
+      const ds = [...svg.querySelectorAll('path')].map((path) => path.getAttribute('d'))
+      for (const d of ds) {
+        await expect(d).not.toBe(PIP)
+      }
+      await expect(ds).toHaveLength(5)
+      await expect(ds).toContain('M 7 17 a 5 5 0 1 0 10 0 a 5 5 0 1 0 -10 0')
+    }
+  },
+}
+
+export const MedalDark: Story = { ...Medal, globals: { theme: 'dark' } }
