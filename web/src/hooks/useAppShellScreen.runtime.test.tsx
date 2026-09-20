@@ -1,7 +1,6 @@
 import { act, StrictMode, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
-import { observer } from 'mobx-react-lite'
 import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import {
@@ -78,7 +77,7 @@ function controlledShellReads() {
   return { alerts, steps, fetchMock }
 }
 
-const Probe = observer(function Probe() {
+function Probe() {
   const model = useAppShellScreen()
   return (
     <section>
@@ -88,7 +87,7 @@ const Probe = observer(function Probe() {
       <output data-testid="quest">{model.questBar?.completionLabel ?? 'none'}</output>
     </section>
   )
-})
+}
 
 function mountedProbe(stores: AppStores, children: ReactNode = <Probe />) {
   return (
@@ -329,7 +328,7 @@ it('still MARK_READs when alerts/read POST rejects and does not SET_ALERTS_FAIL'
   }))
   await refreshAs(stores, loads, allDoneUser('Mark-read account'))
 
-  const OpenAlertsProbe = observer(function OpenAlertsProbe() {
+  function OpenAlertsProbe() {
     const model = useAppShellScreen()
     return (
       <section>
@@ -339,7 +338,7 @@ it('still MARK_READs when alerts/read POST rejects and does not SET_ALERTS_FAIL'
         <button type="button" data-testid="open-alerts" onClick={() => void model.alertsBell.onOpenChange(true)}>open</button>
       </section>
     )
-  })
+  }
 
   await act(async () => {
     root.render(mountedProbe(stores, <OpenAlertsProbe />))

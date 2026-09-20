@@ -1,10 +1,9 @@
-import { observer } from 'mobx-react-lite'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useBinderScreen } from '../hooks/useBinderScreen'
 import { BinderScreen } from '../screens/BinderScreen'
 
-export const BinderView = observer(function BinderView() {
+export function BinderView() {
   const model = useBinderScreen()
   useDocumentTitle(model.pageTitle)
   return <BinderScreen {...model} />
-})
+}

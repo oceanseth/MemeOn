@@ -1,7 +1,8 @@
+import { createActor } from 'xstate'
 import { describe, expect, it, vi } from 'vitest'
 import { friendsCopy as copy } from '../copy/friends'
 import type { FriendEntry } from './types'
-import type { FriendsContext } from '../stores/friendsMachine'
+import { friendsMachine, type FriendsContext } from '../stores/friendsMachine'
 import {
   buildFriendLinkModel,
   buildFriendsScreenModel,
@@ -18,30 +19,7 @@ const pal: FriendEntry = {
 }
 
 function context(overrides: Partial<FriendsContext> = {}): FriendsContext {
-  return {
-    friends: [],
-    query: '',
-    hits: [],
-    msg: null,
-    actionErr: null,
-    searchErr: null,
-    pendingSub: null,
-    pendingRemoval: null,
-    searching: false,
-    onlineSubs: [],
-    gifting: null,
-    giftMemes: [],
-    giftQuery: '',
-    giftPick: null,
-    giftShares: 1,
-    giftSharesInput: null,
-    giftBusy: false,
-    giftErr: null,
-    copied: false,
-    copyFailed: false,
-    err: null,
-    ...overrides,
-  }
+  return { ...createActor(friendsMachine).getSnapshot().context, ...overrides }
 }
 
 function actions(overrides: Partial<FriendsScreenModelActions> = {}): FriendsScreenModelActions {

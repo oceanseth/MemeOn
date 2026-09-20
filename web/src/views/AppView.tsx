@@ -1,5 +1,4 @@
 import { lazy, Suspense, type ReactNode } from 'react'
-import { observer } from 'mobx-react-lite'
 import { Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom'
 import { PageContainer } from '@/atoms/page-container'
 import { Spinner } from '@/atoms/spinner'
@@ -99,7 +98,7 @@ function RequireAuth({ children }: { children: ReactNode }) {
   return <Suspense fallback={<AuthSpinner label={checkingSessionLabel} />}>{children}</Suspense>
 }
 
-export const AppView = observer(function AppView() {
+export function AppView() {
   return (
     <AppShellView>
       <Routes>
@@ -187,4 +186,4 @@ export const AppView = observer(function AppView() {
       </Routes>
     </AppShellView>
   )
-})
+}

@@ -1,7 +1,6 @@
 import { act, StrictMode, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom'
-import { observer } from 'mobx-react-lite'
 import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { meLou } from '../../.storybook/fixtures'
@@ -69,7 +68,7 @@ afterEach(async () => {
   vi.unstubAllGlobals()
 })
 
-const Probe = observer(function Probe() {
+function Probe() {
   const model = useDiscordLinkScreen()
   return (
     <output>
@@ -78,7 +77,7 @@ const Probe = observer(function Probe() {
       {model.canRetry ? <button type="button" onClick={model.onRetry}>retry</button> : null}
     </output>
   )
-})
+}
 
 function tree(child: ReactNode, path: string, strict: boolean) {
   const routes = (
@@ -160,7 +159,7 @@ it('keeps the latest query token until auth settles, then freezes it after POST'
     throw new Error(`Unexpected fixture request: ${path}`)
   })
 
-  const Harness = observer(function Harness() {
+  function Harness() {
     return (
       <>
         <nav>
@@ -173,7 +172,7 @@ it('keeps the latest query token until auth settles, then freezes it after POST'
         </Routes>
       </>
     )
-  })
+  }
 
   await act(() =>
     root.render(
