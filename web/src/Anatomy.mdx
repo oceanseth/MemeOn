@@ -109,7 +109,7 @@ records the split (entry source-map membership, plus those import specifiers).
 | `stores/createStores` + `StoresContext` | inert app store bag; committed or imperative owners retain/dispose it | views via hooks |
 | `stores/themeStore` + `hooks/useTheme` | preference `auto`/`light`/`dark`, resolved arm, per-avatar persistence; paints `data-theme` on `<html>` | observer views, `ThemeControl` (the public header button, the Settings well), the `AvatarMenu` radio, `SettingsScreen` |
 | `stores/*Machine.ts` (one per flow) | XState source of truth for that screen | matching `useXScreen()` |
-| `stores/ActorSnapshotProjection` + `hooks/useProjectedActor` | route-local snapshot reference; action-safe MobX updates; XState actor mount lifetime | all stateful screen hooks within `observer` views |
+| `hooks/useProjectedActor` | route-local snapshot reference; action-safe MobX updates; XState actor mount lifetime | all stateful screen hooks within `observer` views |
 | `hooks/useXScreen.ts` | view-model: projected snapshot + callbacks + derived flags; picks the screen's strings out of `copy/<surface>.ts` (never spells them, never leaves that to the screen) | matching `XView` → `XScreen` |
 | `copy/<surface>.ts` | the strings themselves, as data; `copy/shared.ts` for the ones every surface shares | hooks, `lib/*Model.ts`, tests, stories |
 | `hooks/useAuth.ts` | `user`, `loading`, `error`, `refresh`, `logout` | `RequireAuth`, chrome, screens |
