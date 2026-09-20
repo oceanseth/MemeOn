@@ -20,7 +20,7 @@ or moving a component. `pnpm --filter web run check-tiers` runs recursively and 
 | **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `HeroVideo`, `LegalDocument`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `MemeCard`, `TradeCard` (`give`/`get`, not `offer`/`ask`), `CreateMemeGeneratePanel` (generate+video share), `CreateMemeRemixPanel`, `CreateMemeGiphyPanel`, `CreateMemeUrlPanel`, `CreateMemeUploadPanel` | No |
 | **Organisms** | `src/organisms/` | `AppShell` (slots `nav` / `headerEnd` / `bottomNav`), `MemeplexPanel`, `ProfileShelf`, the `nav-item.tsx` links `NavPill` / `TabItem` / `FooterLink`, `LandingHero`, `LandingHow`, `LandingTiers`, `LandingFaq`, `LandingClosing` | No |
 | **Screens** | `src/screens/` | One model object per route/chrome surface | No |
-| **Views** | `src/views/` | Engine wired to screen; `observer` wrap; `AppView` is the route switch | Via hooks |
+| **Views** | `src/views/` | Engine wired to screen; plain component; hooks subscribe via `useSyncExternalStore`; `AppView` is the route switch | Via hooks |
 
 Beside the tiers, four folders are the engine side:
 
@@ -28,7 +28,7 @@ Beside the tiers, four folders are the engine side:
 |---|---|
 | `src/copy/` | **Every user-facing string**, one plain-data module per surface (`settings.ts`, …) plus `shared.ts` for labels that recur. Keys name the role (`intro`, `account.logOut`), never the content; dynamic strings are small pure functions (`account.name(user.name)`, `` shown: (n) => `${plural(n, 'card')} shown` ``). `copy/` imports nothing but `copy/` and the two formatting helpers `lib/plural` and `lib/braincells`, so a noun stays beside its sentence. Hooks and `lib/*Model.ts` builders read it; tests and stories assert **through the same constant**, so a copy change touches one file. Tier components never import it — strings reach them as props. |
 | `src/hooks/` | One `useXScreen()` per screen (exports `XScreenModel`), plus `useAuth`, `useTheme`, `useProjectedActor`, `useDocumentTitle`, `useMountEffect`. App shell composes `useAppShellQuests` / `useAppShellAlerts` (one actor, one `useMountEffect` in the composer). `ProfileScreen` and `PublicBinderScreen` share `useProfileScreen`. |
-| `src/stores/` | XState machines (`*Machine.ts`), the MobX `AuthStore` / `ThemeStore`, `createStores` + `StoresContext` |
+| `src/stores/` | XState machines (`*Machine.ts`), plain `AuthStore` / `ThemeStore` (`subscribe` / `getSnapshot`), `createStores` + `StoresContext` |
 | `src/lib/` | Everything with no React tree: the API client, auth, presence, formatting (`braincells`, `plural`), `cn()`, class maps (`lib/binderChrome.ts`; same family as `cn()` / `atoms/foil.ts` `tierFrameClasses`), the imperative `cardMedia`, and the **model builders** (`*Model.ts`) that turn API records into the prop bags molecules and atoms render (`memeCardModel`, `tradeCardModel`, `questBarModel`, `appShellModel`, …). Create-meme also keeps its signed upload PUT (`createMemeUpload`), the video-status poller (`createMemeVideoPoll`), pending-video resume (`lib/createMemeModel/lifecycle.ts`), and one-concern mode actions (`lib/createMemeModel/giphyActions.ts`, `lib/createMemeModel/urlActions.ts`, `lib/createMemeModel/imageEdit.ts`, `lib/createMemeModel/remixActions.ts`, `lib/createMemeModel/generateActions.ts`, `lib/createMemeModel/uploadActions.ts`, `lib/createMemeModel/mintActions.ts`, hosted by `lib/createMemeModel/actionHost.ts`) here so `useCreateMemeScreen` stays orchestration-only. Marketplace keeps its URL/query/filter codec (`marketplaceQuery`) here so `useMarketplaceScreen` stays orchestration-only. Tab-scoped sessionStorage is `lib/sessionBus.ts`. Hooks call the builders; components only import their types. |
 
 | Screen | Engine | Model type | Machine phases |
@@ -104,12 +104,12 @@ records the split (entry source-map membership, plus those import specifiers).
 
 | Engine | Holds | Read by |
 |---|---|---|
-| `stores/authMachine` + `AuthStore` | session: `idle → loading → ready \| unauthenticated \| error`; refresh retains the current user on transient failure | `useAuth`, `useAuthRuntime`, screen hooks |
+| `stores/authMachine` + `AuthStore` | session: `idle → loading → ready \| unauthenticated \| error`; refresh retains the current user on transient failure. `AuthStore` is a plain `subscribe` / `getSnapshot` projection of the actor | `useAuth`, `useAuthRuntime`, screen hooks |
 | `lib/api.ts` | web session credentials: `memeon_session` and `masky_access_token` in `localStorage` (not cookies, not `sessionStorage`). `apiFetch` sends `Authorization: Bearer` and `x-masky-token`. XSS can steal both (HS256 JWT TTL 30d). Logout is this-tab `clearSession()` only — no `storage` event, other tabs stay authed until refresh/401. Agent-browser injects the same keys: `agent-browser --state ./localstorage.json open http://localhost:5173`. | `completeMaskyLogin`, `authMachine`, `apiFetch` |
 | `stores/createStores` + `StoresContext` | inert app store bag; committed or imperative owners retain/dispose it | views via hooks |
-| `stores/themeStore` + `hooks/useTheme` | preference `auto`/`light`/`dark`, resolved arm, per-avatar persistence; paints `data-theme` on `<html>` | observer views, `ThemeControl` (the public header button, the Settings well), the `AvatarMenu` radio, `SettingsScreen` |
+| `stores/themeStore` + `hooks/useTheme` | preference `auto`/`light`/`dark`, resolved arm, per-avatar persistence; paints `data-theme` on `<html>` | views via `useTheme` (`useSyncExternalStore`), `ThemeControl` (the public header button, the Settings well), the `AvatarMenu` radio, `SettingsScreen` |
 | `stores/*Machine.ts` (one per flow) | XState source of truth for that screen | matching `useXScreen()` |
-| `hooks/useProjectedActor` | route-local snapshot reference; action-safe MobX updates; XState actor mount lifetime | all stateful screen hooks within `observer` views |
+| `hooks/useProjectedActor` | route-local snapshot via `useSelector`; XState actor mount lifetime | all stateful screen hooks |
 | `hooks/useXScreen.ts` | view-model: projected snapshot + callbacks + derived flags; picks the screen's strings out of `copy/<surface>.ts` (never spells them, never leaves that to the screen) | matching `XView` → `XScreen` |
 | `copy/<surface>.ts` | the strings themselves, as data; `copy/shared.ts` for the ones every surface shares | hooks, `lib/*Model.ts`, tests, stories |
 | `hooks/useAuth.ts` | `user`, `loading`, `error`, `refresh`, `logout` | `RequireAuth`, chrome, screens |
@@ -123,22 +123,17 @@ records the split (entry source-map membership, plus those import specifiers).
 | `lib/discordLink.ts` | in-flight `POST /api/discord/link` keyed by token: same token shares one Promise under StrictMode; a settled attempt drops the lock so Try again POSTs | `useDiscordLinkScreen` |
 
 `useProjectedActor` uses `useActorRef` to start and stop an actor with its mounted
-view. Its side-effect-free projection constructor retains the snapshot by reference
-(`observableRef` in MobX 7); `useMountEffect` subscribes, catches up to the current
-snapshot, and unsubscribes on cleanup. The view's `observer` reads that projection;
-there is no second React snapshot subscription. The component that calls the hook
-must be observed, including a keyed child such as `MemeDetailRouteScreen`; observing
-only its parent does not track reads in the child. Machines and initial inputs stay
+view. React reads the snapshot with `useSelector` (identity compare); there is no
+projection class and no observer requirement. A keyed child such as `MemeDetailRouteScreen`
+still remounts the actor when the route id changes. Machines and initial inputs stay
 stable for a mount. Entity changes use route keys; route drafts never enter the
-global store bag. Actor startup/disposal and projection subscription are separate
-lifetimes, including StrictMode's setup/cleanup replay.
+global store bag. Actor startup/disposal follows StrictMode's setup/cleanup replay.
 
 The app auth bag has its own ownership lifetime. `createStores()` and the
 `AuthStore` constructor neither start nor subscribe. `main.tsx` builds the one
 app bag at module level and applies the persisted theme before the first
 render; `Root` and Storybook's `FreshStores` retain the bag on committed
-mount; imperative scenarios and story setup retain before use. The first `retain()` connects the MobX projection,
-catches up inside an action, then starts the actor. A child `useAuthRuntime`
+mount; imperative scenarios and story setup retain before use. The first `retain()` connects `AuthStore` and `ThemeStore` (`subscribe` / `getSnapshot`), binds theme to the current avatar, then starts the auth actor. A child `useAuthRuntime`
 can queue its initial refresh before the parent's retain; the actor processes
 that event on startup. Retaining an idle story bag alone does not fetch auth.
 Repeated retains cancel deferred disposal without adding owners or subscriptions.
@@ -263,7 +258,7 @@ Probe these instead of a class name or copy string:
 - A new state starts as a Screen story.
 - Every component has a sibling `*.stories.tsx` titled `"<Tier>/<Name>"`.
 - Views opt out of autodocs (`!autodocs`) and wrap with `MemoryRouter`.
-- Do not put `observer` or `useState` below `views/`.
+- Do not put `useState` or a store subscription below `views/`.
 - Model builders live in `lib/*Model.ts`, not in a tier folder: hooks call them, stories use them
   as fixtures, and a component imports only the model's *type*.
 - Strings live in `copy/`, spelled once. Builders read them; tests and stories assert through the

@@ -118,7 +118,7 @@ before touching it; the short version:
 | | |
 | --- | --- |
 | Tiers | `atoms → molecules → organisms → screens → views` under `web/src/`. Everything below `views/` is pure props → markup with a `data-slot` on its root and a sibling `*.stories.tsx`. |
-| State | `hooks/useXScreen()` per screen (exports the screen's model type and builds its copy), XState machines in `stores/*Machine.ts`, MobX for the auth/theme stores and the actor snapshot projection. Prop-bag builders (`lib/*Model.ts`) sit between API records and components. |
+| State | `hooks/useXScreen()` per screen (exports the screen's model type and builds its copy). XState machines + useSyncExternalStore (via @xstate/react useSelector and the two plain stores). Prop-bag builders (`lib/*Model.ts`) sit between API records and components. |
 | Styling | Tailwind v4, no config file, shadcn conventions on Base UI. Tokens: `web/src/index.css` `@theme`. Appearance: the component's `cva` variants. What is allowed: `web/.oxlintrc.json` (`@shadcn/lint`) — run `pnpm --filter web run lint:ds`. Co-located `.css` only for effects a utility cannot express (`atoms/foil.css`, …), each restating the layer order. |
 | Behaviour primitives | Base UI (`@base-ui/react`) for dialogs, menus, popovers, select, toggles; painted with utilities, state read from `data-*` attributes. |
 | Storybook | `pnpm run storybook` (port 6006, MSW-backed connected scenarios in `web/.storybook/`). Every component has a story; view stories drive real hooks against mocked `/api`. `Anatomy/Tokens` renders the whole token sheet. |
