@@ -71,6 +71,7 @@ const STATE_LIBS = /^(mobx|mobx-react(-lite)?|zustand|jotai|valtio|recoil|redux|
 const EXCEPTIONS = new Map([
   ["main.tsx", "application bootstrap"],
   ["stores/StoresContext.tsx", "root store provider"],
+  ["test/createMemeScreenHost.tsx", "runtime-test host, not a tier"],
 ])
 
 const args = process.argv.slice(2)
