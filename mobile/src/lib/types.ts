@@ -1,10 +1,7 @@
 import type { Tier } from '@memeon/shared/tiers'
+import type { Listing } from '@memeon/shared/types'
 
-export interface Listing {
-  sellerId: string
-  pricePerShare: number
-  shares: number
-}
+export type { Listing }
 
 export interface Meme {
   id: string
