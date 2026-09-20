@@ -147,7 +147,11 @@ export function MemeCard({ model, subTitle, footer, footerRight, size, titleAs }
           />
         </FoilMedia>
         <div data-slot="meme-meta" className={cn(memeMetaVariants({ size: scale }))}>
-          <TitleTag data-slot="meme-title" className={cn(memeTitleVariants({ size: scale }))} id={model.titleId}>
+          <TitleTag
+            data-slot="meme-title"
+            className={cn(memeTitleVariants({ size: scale }))}
+            id={model.titleId}
+          >
             {model.title}
           </TitleTag>
           {subTitle}

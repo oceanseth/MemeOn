@@ -31,7 +31,9 @@ const cardVariants = cva('rounded-lg material-card', {
   defaultVariants: { variant: 'default', size: 'default' },
 })
 
-export interface CardProps extends HTMLAttributes<HTMLDivElement>, VariantProps<typeof cardVariants> {}
+export interface CardProps
+  extends HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
 
 export function Card({ className, variant, size, ...props }: CardProps) {
   return (
@@ -90,7 +92,13 @@ export function CardTitle({ className, size, render, ...props }: CardTitleProps)
 }
 
 export function CardDescription({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
-  return <p data-slot="card-description" className={cn('text-sm text-muted-foreground', className)} {...props} />
+  return (
+    <p
+      data-slot="card-description"
+      className={cn('text-sm text-muted-foreground', className)}
+      {...props}
+    />
+  )
 }
 
 export function CardAction({ className, ...props }: HTMLAttributes<HTMLDivElement>) {

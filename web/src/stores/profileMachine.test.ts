@@ -4,22 +4,44 @@ import { BINDER_PAGE_SIZE } from './binderMachine'
 import { profileMachine, type ProfileData } from './profileMachine'
 
 const data: ProfileData = {
-  profile: { sub: 'pal', name: 'Pal', picture: null, followers: 1, collectionSize: 0, portfolioValue: 0 },
-  followingByMe: false, friendStatus: null, created: [], binder: [],
+  profile: {
+    sub: 'pal',
+    name: 'Pal',
+    picture: null,
+    followers: 1,
+    collectionSize: 0,
+    portfolioValue: 0,
+  },
+  followingByMe: false,
+  friendStatus: null,
+  created: [],
+  binder: [],
 }
 
 const idle = { busy: false, actionErr: null, visibleLimit: BINDER_PAGE_SIZE }
 
 it('owns initial tab, load results, and tab changes across relationship reloads', () => {
-  const actor = createActor(profileMachine, { input: { initialTab: 'binder' } }).start()
+  const actor = createActor(profileMachine, {
+    input: { initialTab: 'binder' },
+  }).start()
   expect(actor.getSnapshot().matches('loading')).toBe(true)
   expect(actor.getSnapshot().context.tab).toBe('binder')
   actor.send({ type: 'DONE', data })
   actor.send({ type: 'SET_TAB', tab: 'created' })
-  const updated = { ...data, followingByMe: true, friendStatus: 'accepted' as const }
+  const updated = {
+    ...data,
+    followingByMe: true,
+    friendStatus: 'accepted' as const,
+  }
   actor.send({ type: 'DONE', data: updated })
   expect(actor.getSnapshot().matches('ready')).toBe(true)
-  expect(actor.getSnapshot().context).toEqual({ data: updated, tab: 'created', err: null, errKind: null, ...idle })
+  expect(actor.getSnapshot().context).toEqual({
+    data: updated,
+    tab: 'created',
+    err: null,
+    errKind: null,
+    ...idle,
+  })
   actor.stop()
 })
 
@@ -46,7 +68,13 @@ it('separates a dead link from a transport failure and clears it once a retry la
   expect(actor.getSnapshot().context.errKind).toBe('transport')
   // Retry that succeeds leaves no stale error behind.
   actor.send({ type: 'DONE', data })
-  expect(actor.getSnapshot().context).toEqual({ data, tab: 'created', err: null, errKind: null, ...idle })
+  expect(actor.getSnapshot().context).toEqual({
+    data,
+    tab: 'created',
+    err: null,
+    errKind: null,
+    ...idle,
+  })
   actor.stop()
 })
 

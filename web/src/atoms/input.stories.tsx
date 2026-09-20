@@ -4,7 +4,8 @@ import { Field, FieldLabel } from '@/atoms/field'
 import { Input } from '@/atoms/input'
 
 /** A token as `:root` declares it, so the assertion follows the scale rather than pinning a literal. */
-const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+const token = (name: string) =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
 const meta = {
   title: 'Atoms/Input',
@@ -37,10 +38,16 @@ export const Default: Story = {
 }
 
 /** The placeholder reads at regular weight so it never passes for a filled value. */
-export const Placeholder: Story = { args: { placeholder: 'cat, chaos, monday' } }
+export const Placeholder: Story = {
+  args: { placeholder: 'cat, chaos, monday' },
+}
 
 export const Search: Story = {
-  args: { type: 'search', 'aria-label': 'Search memes', placeholder: 'Search memes' },
+  args: {
+    type: 'search',
+    'aria-label': 'Search memes',
+    placeholder: 'Search memes',
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('searchbox', { name: 'Search memes' })).toBeVisible()
@@ -48,7 +55,12 @@ export const Search: Story = {
 }
 
 export const Number: Story = {
-  args: { type: 'number', 'aria-label': 'Shares', defaultValue: 4, style: { width: 90 } },
+  args: {
+    type: 'number',
+    'aria-label': 'Shares',
+    defaultValue: 4,
+    style: { width: 90 },
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('spinbutton', { name: 'Shares' })).toHaveValue(4)

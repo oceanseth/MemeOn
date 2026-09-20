@@ -20,7 +20,9 @@ export async function onGenerate(host: CreateMemeActionHost): Promise<void> {
       })
       assertActive(owner)
       host.send({ type: 'SET_IMAGE_URL', imageUrl: thumb.imageUrl })
-      const started = await post<{ generationId: string }>('/api/aigen/video', { prompt: live.prompt })
+      const started = await post<{ generationId: string }>('/api/aigen/video', {
+        prompt: live.prompt,
+      })
       assertActive(owner)
       host.send({ type: 'BUSY', busy: copy.busy.renderingVideo })
       const videoUrl = await host.pollVideo(started.generationId, Date.now(), owner)
@@ -29,7 +31,10 @@ export async function onGenerate(host: CreateMemeActionHost): Promise<void> {
       host.settleBusy({ type: 'DONE' })
     } catch (e) {
       if (!owner.active || isLifetimeCancellation(e)) return
-      host.settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.videoGenerationFailed) })
+      host.settleBusy({
+        type: 'FAIL',
+        err: mintDeskError(e, copy.errors.videoGenerationFailed),
+      })
     }
     return
   }
@@ -44,7 +49,10 @@ export async function onGenerate(host: CreateMemeActionHost): Promise<void> {
     host.settleBusy({ type: 'DONE' })
   } catch (e) {
     if (!owner.active || isLifetimeCancellation(e)) return
-    host.settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.generationFailed) })
+    host.settleBusy({
+      type: 'FAIL',
+      err: mintDeskError(e, copy.errors.generationFailed),
+    })
   }
 }
 
@@ -74,6 +82,9 @@ export async function onAnimateEdited(host: CreateMemeActionHost): Promise<void>
     host.settleBusy({ type: 'DONE' })
   } catch (e) {
     if (!owner.active || isLifetimeCancellation(e)) return
-    host.settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.animationFailed) })
+    host.settleBusy({
+      type: 'FAIL',
+      err: mintDeskError(e, copy.errors.animationFailed),
+    })
   }
 }

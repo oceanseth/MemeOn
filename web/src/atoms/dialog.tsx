@@ -154,7 +154,10 @@ export function DialogHeader({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn('flex flex-col gap-1.5 text-left group-data-close-button/dialog-content:pr-12', className)}
+      className={cn(
+        'flex flex-col gap-1.5 text-left group-data-close-button/dialog-content:pr-12',
+        className,
+      )}
       {...props}
     />
   )
@@ -182,7 +185,10 @@ export function DialogTitle({ className, ...props }: Styled<DialogPrimitive.Titl
 }
 
 /** Label scale, not body — matches every modal description in the app. */
-export function DialogDescription({ className, ...props }: Styled<DialogPrimitive.Description.Props>) {
+export function DialogDescription({
+  className,
+  ...props
+}: Styled<DialogPrimitive.Description.Props>) {
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"

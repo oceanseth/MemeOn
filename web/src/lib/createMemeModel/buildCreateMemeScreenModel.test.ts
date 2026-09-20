@@ -18,7 +18,9 @@ const giphyResult: GiphyResult = {
   url: 'https://giphy.com/gifs/cat-1',
 }
 
-const baseContext: CreateMemeContext = createActor(createMemeMachine, { input: { remixId: null } }).getSnapshot().context
+const baseContext: CreateMemeContext = createActor(createMemeMachine, {
+  input: { remixId: null },
+}).getSnapshot().context
 
 function actions(): CreateMemeScreenActions {
   return {
@@ -55,7 +57,10 @@ function textareaChange(value: string) {
 }
 
 function keyEvent(key: string) {
-  return { key, preventDefault: vi.fn() } as unknown as KeyboardEvent<HTMLElement>
+  return {
+    key,
+    preventDefault: vi.fn(),
+  } as unknown as KeyboardEvent<HTMLElement>
 }
 
 function clickEvent() {
@@ -65,12 +70,16 @@ function clickEvent() {
 describe('buildCreateMemeScreenModel', () => {
   it('decodes mode, bounded title, text, and select events into domain actions', () => {
     const calls = actions()
-    const model = buildCreateMemeScreenModel('remix', {
-      ...baseContext,
-      mode: 'remix',
-      remixId: 'source-1',
-      prompt: 'current prompt',
-    }, calls)
+    const model = buildCreateMemeScreenModel(
+      'remix',
+      {
+        ...baseContext,
+        mode: 'remix',
+        remixId: 'source-1',
+        prompt: 'current prompt',
+      },
+      calls,
+    )
 
     /* the chip's chrome is the screen's business: the model names the state and the label */
     const selectedMode = model.getModeButtonProps('remix')
@@ -127,12 +136,16 @@ describe('buildCreateMemeScreenModel', () => {
 
   it('owns Giphy category, query, Enter, button, and keyboard-pick behavior', () => {
     const calls = actions()
-    const model = buildCreateMemeScreenModel('giphy', {
-      ...baseContext,
-      mode: 'giphy',
-      giphyQuery: 'keyboard cat',
-      giphyResults: [giphyResult],
-    }, calls)
+    const model = buildCreateMemeScreenModel(
+      'giphy',
+      {
+        ...baseContext,
+        mode: 'giphy',
+        giphyQuery: 'keyboard cat',
+        giphyResults: [giphyResult],
+      },
+      calls,
+    )
 
     /* results are on screen, so the panel's status line only has to reach a screen reader */
     expect(model.giphyStatusHidden).toBe(true)
@@ -163,23 +176,33 @@ describe('buildCreateMemeScreenModel', () => {
       loading: 'lazy',
       decoding: 'async',
     })
-    expect(cell.buttonProps).toMatchObject({ type: 'button', 'aria-pressed': false })
+    expect(cell.buttonProps).toMatchObject({
+      type: 'button',
+      'aria-pressed': false,
+    })
     expect(cell.buttonProps).not.toHaveProperty('className')
     expect(cell.picked).toBe(false)
     cell.buttonProps.onClick?.(clickEvent())
     expect(calls.pickGiphy).toHaveBeenCalledWith(giphyResult)
 
-    const selected = buildCreateMemeScreenModel('giphy', {
-      ...baseContext,
-      mode: 'giphy',
-      giphyPick: giphyResult,
-    }, calls)
+    const selected = buildCreateMemeScreenModel(
+      'giphy',
+      {
+        ...baseContext,
+        mode: 'giphy',
+        giphyPick: giphyResult,
+      },
+      calls,
+    )
     expect(selected.getGiphyResultProps(giphyResult)).toMatchObject({
       picked: true,
       buttonProps: { 'aria-pressed': true },
     })
     expect(selected.getGiphyResultProps(giphyResult).imageProps.src).toBe('/cat.gif')
-    expect(selected.giphyPick).toEqual({ title: 'Keyboard cat', authorLabel: ' (@catlord)' })
+    expect(selected.giphyPick).toEqual({
+      title: 'Keyboard cat',
+      authorLabel: ' (@catlord)',
+    })
   })
 
   it('keeps a typed URL out of the artwork until it resolves', () => {
@@ -191,7 +214,12 @@ describe('buildCreateMemeScreenModel', () => {
     expect(model.mintButtonProps.disabled).toBe(true)
     const typed = buildCreateMemeScreenModel(
       'url',
-      { ...baseContext, mode: 'url', title: 'ready', urlDraft: 'https://example.com/post' },
+      {
+        ...baseContext,
+        mode: 'url',
+        title: 'ready',
+        urlDraft: 'https://example.com/post',
+      },
       calls,
     )
     expect(typed.urlInputProps.value).toBe('https://example.com/post')
@@ -213,7 +241,7 @@ describe('buildCreateMemeScreenModel', () => {
     expect(calls.resolvePageUrl).toHaveBeenCalledTimes(2)
   })
 
-  it('keeps upload MIME contracts and spells the picker in the app\'s own words', () => {
+  it("keeps upload MIME contracts and spells the picker in the app's own words", () => {
     const calls = actions()
     const model = buildCreateMemeScreenModel('upload', { ...baseContext, mode: 'upload' }, calls)
     const image = { name: 'cat.png', type: 'image/png', size: 8 } as File
@@ -233,29 +261,43 @@ describe('buildCreateMemeScreenModel', () => {
 
   it('derives disabled actions and live-region ARIA from prompt, media, and busy state', () => {
     const readyActions = actions()
-    const ready = buildCreateMemeScreenModel('generate', {
-      ...baseContext,
-      title: 'ready',
-      prompt: 'draw a cat',
-      imageUrl: '/cat.png',
-    }, readyActions)
+    const ready = buildCreateMemeScreenModel(
+      'generate',
+      {
+        ...baseContext,
+        title: 'ready',
+        prompt: 'draw a cat',
+        imageUrl: '/cat.png',
+      },
+      readyActions,
+    )
     expect(ready.generateButtonProps.disabled).toBe(false)
     expect(ready.mintButtonProps.disabled).toBe(false)
     expect(ready.formProps['aria-busy']).toBe(false)
-    expect(ready.busyNoticeProps).toMatchObject({ role: 'status', 'aria-live': 'polite' })
-    expect(ready.errorNoticeProps).toMatchObject({ role: 'alert', 'aria-live': 'assertive' })
+    expect(ready.busyNoticeProps).toMatchObject({
+      role: 'status',
+      'aria-live': 'polite',
+    })
+    expect(ready.errorNoticeProps).toMatchObject({
+      role: 'alert',
+      'aria-live': 'assertive',
+    })
     ready.generateButtonProps.onClick?.(clickEvent())
     ready.mintButtonProps.onClick?.(clickEvent())
     expect(readyActions.generate).toHaveBeenCalledOnce()
     expect(readyActions.mint).toHaveBeenCalledOnce()
 
-    const busy = buildCreateMemeScreenModel('submitting', {
-      ...baseContext,
-      title: 'ready',
-      prompt: 'draw a cat',
-      imageUrl: '/cat.png',
-      busy: 'Rendering…',
-    }, actions())
+    const busy = buildCreateMemeScreenModel(
+      'submitting',
+      {
+        ...baseContext,
+        title: 'ready',
+        prompt: 'draw a cat',
+        imageUrl: '/cat.png',
+        busy: 'Rendering…',
+      },
+      actions(),
+    )
     expect(busy.generateButtonProps.disabled).toBe(true)
     expect(busy.mintButtonProps.disabled).toBe(true)
     expect(busy.giphySearchButtonProps.disabled).toBe(true)
@@ -298,7 +340,12 @@ describe('buildCreateMemeScreenModel', () => {
         mode: 'upload',
         imageUrl: '/cat.gif',
         title: 'cat',
-        artworkSource: { provider: 'giphy', id: 'cat-1', url: 'https://giphy.com', author: 'catlord' },
+        artworkSource: {
+          provider: 'giphy',
+          id: 'cat-1',
+          url: 'https://giphy.com',
+          author: 'catlord',
+        },
       },
       actions(),
     )
@@ -351,7 +398,11 @@ describe('buildCreateMemeScreenModel', () => {
   })
 
   it('hints a smaller file from copy.errors upload fallbacks, including a non-413 rejection', () => {
-    for (const err of [copy.errors.uploadFailed, copy.errors.uploadRejected(413), copy.errors.uploadRejected(403)]) {
+    for (const err of [
+      copy.errors.uploadFailed,
+      copy.errors.uploadRejected(413),
+      copy.errors.uploadRejected(403),
+    ]) {
       const failed = buildCreateMemeScreenModel('error', { ...baseContext, err }, actions())
       expect(failed.errorNextStep).toBe(copy.preview.nextStep.tooLarge)
     }
@@ -377,12 +428,16 @@ describe('buildCreateMemeScreenModel', () => {
 
   it('wires each creation action bundle to its domain action', () => {
     const calls = actions()
-    const model = buildCreateMemeScreenModel('generate', {
-      ...baseContext,
-      title: 'ready',
-      prompt: 'draw a cat',
-      imageUrl: '/cat.png',
-    }, calls)
+    const model = buildCreateMemeScreenModel(
+      'generate',
+      {
+        ...baseContext,
+        title: 'ready',
+        prompt: 'draw a cat',
+        imageUrl: '/cat.png',
+      },
+      calls,
+    )
 
     model.animateEditedButtonProps.onClick?.(clickEvent())
     model.rerunEditButtonProps.onClick?.(clickEvent())

@@ -11,7 +11,11 @@ const meta = {
   title: 'Molecules/SortChips',
   component: SortChips,
   args: {
-    model: buildSortChipsModel({ sortKey: 'new', dir: 'desc', onChange: onNewestChange }),
+    model: buildSortChipsModel({
+      sortKey: 'new',
+      dir: 'desc',
+      onChange: onNewestChange,
+    }),
   },
 } satisfies Meta<typeof SortChips>
 
@@ -40,7 +44,11 @@ export const NewestDesc: Story = {
 }
 export const ViewsAsc: Story = {
   args: {
-    model: buildSortChipsModel({ sortKey: 'views', dir: 'asc', onChange: onViewsChange }),
+    model: buildSortChipsModel({
+      sortKey: 'views',
+      dir: 'asc',
+      onChange: onViewsChange,
+    }),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -76,7 +84,11 @@ export const RankingUnavailable: Story = {
 /** The same row on the dark arm: the pressed well still reads as the selected tab. */
 export const Dark: Story = {
   args: {
-    model: buildSortChipsModel({ sortKey: 'views', dir: 'desc', onChange: fn() }),
+    model: buildSortChipsModel({
+      sortKey: 'views',
+      dir: 'desc',
+      onChange: fn(),
+    }),
   },
   globals: { theme: 'dark' },
 }

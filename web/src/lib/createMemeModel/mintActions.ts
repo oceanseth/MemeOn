@@ -32,6 +32,9 @@ export async function onMint(host: CreateMemeActionHost): Promise<void> {
       shareUrl: `${window.location.origin}/m/${out.meme.id}`,
     })
   } catch (e) {
-    host.settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.mintFailed) })
+    host.settleBusy({
+      type: 'FAIL',
+      err: mintDeskError(e, copy.errors.mintFailed),
+    })
   }
 }

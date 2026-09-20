@@ -1,20 +1,46 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, within } from 'storybook/test'
-import { giftablePaper, giftableSilver, holoMeme, listedHolo, memeplexEmpty, memeplexFamily } from '../../.storybook/fixtures'
+import {
+  giftablePaper,
+  giftableSilver,
+  holoMeme,
+  listedHolo,
+  memeplexEmpty,
+  memeplexFamily,
+} from '../../.storybook/fixtures'
 import { memeDetailCopy } from '../copy/memeDetail'
 import { memeplexPanelCopy } from '../copy/memeplexPanel'
 import { MemeplexPanel } from '@/organisms/memeplex-panel'
 import { buildMemeplexPanelModel } from '../lib/memeplexPanelModel'
 
 const handlers = { onPickChange: fn(), onPastedChange: fn(), onAdd: fn() }
-const build = (overrides: Partial<Parameters<typeof buildMemeplexPanelModel>[0]> = {}) => buildMemeplexPanelModel({
-  meme: holoMeme, plex: memeplexFamily, canEdit: false, binder: [], pick: '', pasted: '', notice: null, error: null, ...handlers, ...overrides,
-})
+const build = (overrides: Partial<Parameters<typeof buildMemeplexPanelModel>[0]> = {}) =>
+  buildMemeplexPanelModel({
+    meme: holoMeme,
+    plex: memeplexFamily,
+    canEdit: false,
+    binder: [],
+    pick: '',
+    pasted: '',
+    notice: null,
+    error: null,
+    ...handlers,
+    ...overrides,
+  })
 
 const meta = {
-  title: 'Organisms/MemeplexPanel', component: MemeplexPanel,
-  decorators: [(Story) => <MemoryRouter><div style={{ maxWidth: 720 }}><Story /></div></MemoryRouter>],
+  title: 'Organisms/MemeplexPanel',
+  component: MemeplexPanel,
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <div style={{ maxWidth: 720 }}>
+          <Story />
+        </div>
+      </MemoryRouter>
+    ),
+  ],
   args: { model: build() },
 } satisfies Meta<typeof MemeplexPanel>
 
@@ -27,9 +53,17 @@ export const Family: Story = {
     await expect(canvas.getByRole('heading', { name: memeplexPanelCopy.heading })).toBeVisible()
   },
 }
-export const EmptyReadOnly: Story = { args: { model: build({ plex: memeplexEmpty }) } }
+export const EmptyReadOnly: Story = {
+  args: { model: build({ plex: memeplexEmpty }) },
+}
 export const EmptyEditor: Story = {
-  args: { model: build({ plex: memeplexEmpty, canEdit: true, binder: [giftablePaper, giftableSilver, listedHolo] }) },
+  args: {
+    model: build({
+      plex: memeplexEmpty,
+      canEdit: true,
+      binder: [giftablePaper, giftableSilver, listedHolo],
+    }),
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('heading', { name: memeplexPanelCopy.heading })).toBeVisible()
@@ -37,14 +71,47 @@ export const EmptyEditor: Story = {
     await expect(canvas.getByPlaceholderText(memeplexPanelCopy.pastedPlaceholder)).toBeVisible()
   },
 }
-export const EditorPicked: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper, listedHolo], pick: listedHolo.id }) } }
-export const PastedLink: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper], pasted: 'https://memeon.ai/m/meme-listed' }) } }
-export const Notice: Story = { args: { model: build({ notice: 'Added to the memeplex' }) } }
+export const EditorPicked: Story = {
+  args: {
+    model: build({
+      canEdit: true,
+      binder: [giftablePaper, listedHolo],
+      pick: listedHolo.id,
+    }),
+  },
+}
+export const PastedLink: Story = {
+  args: {
+    model: build({
+      canEdit: true,
+      binder: [giftablePaper],
+      pasted: 'https://memeon.ai/m/meme-listed',
+    }),
+  },
+}
+export const Notice: Story = {
+  args: { model: build({ notice: 'Added to the memeplex' }) },
+}
 /** A failed link never wears success green. */
-export const ErrorNotice: Story = { args: { model: build({ canEdit: true, binder: [giftablePaper], error: 'Already in the memeplex.' }) } }
+export const ErrorNotice: Story = {
+  args: {
+    model: build({
+      canEdit: true,
+      binder: [giftablePaper],
+      error: 'Already in the memeplex.',
+    }),
+  },
+}
 /** A failed GET must not hide the panel as empty relatives. */
 export const LoadFailed: Story = {
-  args: { model: build({ plex: null, canEdit: true, binder: [giftablePaper], error: memeDetailCopy.memeplex.loadFailed }) },
+  args: {
+    model: build({
+      plex: null,
+      canEdit: true,
+      binder: [giftablePaper],
+      error: memeDetailCopy.memeplex.loadFailed,
+    }),
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('alert')).toHaveTextContent(memeDetailCopy.memeplex.loadFailed)
@@ -56,7 +123,13 @@ export const Loading: Story = { args: { model: build({ plex: null }) } }
 /** Two columns at 390px: the relatives grid no longer eats the page before the cap table. */
 export const NarrowFamily: Story = {
   parameters: { viewport: { defaultViewport: 'mobile1' } },
-  decorators: [(Story) => <div style={{ maxWidth: 358 }}><Story /></div>],
+  decorators: [
+    (Story) => (
+      <div style={{ maxWidth: 358 }}>
+        <Story />
+      </div>
+    ),
+  ],
 }
 
 /** The strip on the dark arm: raised card, tier frames, and links that still clear the floor. */

@@ -19,7 +19,10 @@ export const Default: Story = {
   play: async ({ canvasElement }) => {
     onPressedChange.mockClear()
     const canvas = within(canvasElement)
-    const toggle = canvas.getByRole('button', { name: 'Newest', pressed: false })
+    const toggle = canvas.getByRole('button', {
+      name: 'Newest',
+      pressed: false,
+    })
     await expect(toggle).toHaveAttribute('data-slot', 'toggle')
     await expect(toggle).toHaveAttribute('data-variant', 'default')
     await expect(toggle.offsetHeight).toBe(46)
@@ -35,15 +38,30 @@ export const Default: Story = {
 export const Pressed: Story = {
   args: { defaultPressed: true },
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByRole('button', { name: 'Newest', pressed: true })).toHaveAttribute('data-pressed')
+    await expect(
+      within(canvasElement).getByRole('button', {
+        name: 'Newest',
+        pressed: true,
+      }),
+    ).toHaveAttribute('data-pressed')
   },
 }
 
 /** Transparent at rest — a glyph in a toolbar; pressed, it sinks into the well. */
 export const Ghost: Story = {
-  args: { variant: 'ghost', children: <span aria-hidden="true"><Icon name="bell" size={16} /></span>, 'aria-label': 'Mute alerts' },
+  args: {
+    variant: 'ghost',
+    children: (
+      <span aria-hidden="true">
+        <Icon name="bell" size={16} />
+      </span>
+    ),
+    'aria-label': 'Mute alerts',
+  },
   play: async ({ canvasElement }) => {
-    const toggle = within(canvasElement).getByRole('button', { name: 'Mute alerts' })
+    const toggle = within(canvasElement).getByRole('button', {
+      name: 'Mute alerts',
+    })
     await expect(getComputedStyle(toggle).backgroundColor).toBe('rgba(0, 0, 0, 0)')
   },
 }

@@ -4,7 +4,14 @@ import type { LeaderRow } from '../lib/types'
 import { LEADERBOARD_PAGE_SIZE, leaderboardMachine } from './leaderboardMachine'
 
 function leader(sub: string): LeaderRow {
-  return { sub, name: sub, picture: null, braincells: 1, portfolioValue: 1, collectionSize: 1 }
+  return {
+    sub,
+    name: sub,
+    picture: null,
+    braincells: 1,
+    portfolioValue: 1,
+    collectionSize: 1,
+  }
 }
 
 function start() {

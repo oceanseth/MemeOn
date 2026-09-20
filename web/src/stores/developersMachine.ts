@@ -66,7 +66,9 @@ export const developersMachine = setup({
   initial: 'loading',
   on: {
     // typing is the user's answer to the banner: it goes away
-    SET_LABEL: { actions: assign({ label: ({ event }) => event.label, err: null }) },
+    SET_LABEL: {
+      actions: assign({ label: ({ event }) => event.label, err: null }),
+    },
     // a background reload must not wipe a notice the user has not read yet: only the user's own
     // next action (typing a label, starting a create, a successful revoke, a retry) clears `err`
     SET_KEYS: [
@@ -84,7 +86,13 @@ export const developersMachine = setup({
     LOAD_FAIL: { target: '.error', actions: assign({ creating: false }) },
     RELOAD: { target: '.loading', actions: assign({ err: null }) },
     CREATE_START: {
-      actions: assign({ creating: true, err: null, okMsg: null, freshKey: null, copied: false }),
+      actions: assign({
+        creating: true,
+        err: null,
+        okMsg: null,
+        freshKey: null,
+        copied: false,
+      }),
     },
     CREATED: {
       target: '.ready',
@@ -96,14 +104,29 @@ export const developersMachine = setup({
         creating: false,
       }),
     },
-    FAIL: { actions: assign({ err: ({ event }) => event.err, creating: false }) },
+    FAIL: {
+      actions: assign({ err: ({ event }) => event.err, creating: false }),
+    },
     COPIED: { actions: assign({ copied: true }) },
     COPY_RESET: { actions: assign({ copied: false }) },
-    REVOKE: { actions: assign({ revoking: ({ event }) => event.row, revokeErr: null, okMsg: null }) },
-    REVOKE_CANCEL: { actions: assign({ revoking: null, revokeBusy: false, revokeErr: null }) },
+    REVOKE: {
+      actions: assign({
+        revoking: ({ event }) => event.row,
+        revokeErr: null,
+        okMsg: null,
+      }),
+    },
+    REVOKE_CANCEL: {
+      actions: assign({ revoking: null, revokeBusy: false, revokeErr: null }),
+    },
     REVOKE_START: { actions: assign({ revokeBusy: true, revokeErr: null }) },
     // the dialog stays open on failure, so the retry is one click from where the user already is
-    REVOKE_FAIL: { actions: assign({ revokeErr: ({ event }) => event.err, revokeBusy: false }) },
+    REVOKE_FAIL: {
+      actions: assign({
+        revokeErr: ({ event }) => event.err,
+        revokeBusy: false,
+      }),
+    },
     REVOKE_OK: {
       actions: assign({
         revoking: null,

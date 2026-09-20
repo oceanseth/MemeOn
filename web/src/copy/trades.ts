@@ -96,7 +96,8 @@ export const tradesCopy = {
     finality: {
       nothingLeaves:
         'Trades are final — nothing leaves your binder, but the cards you get are yours the moment you accept.',
-      leaves: (list: string) => `Trades are final — ${list} leave your binder the moment you accept.`,
+      leaves: (list: string) =>
+        `Trades are final — ${list} leave your binder the moment you accept.`,
       and: (left: string, right: string) => `${left} and ${right}`,
     },
     sides: {

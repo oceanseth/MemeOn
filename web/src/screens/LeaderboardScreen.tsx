@@ -29,7 +29,8 @@ const BOARD = 'm-0 flex list-none flex-col gap-5 p-0 max-md:gap-3.5'
 /** A podium tile is a column on the desktop and a row on the phone; #1 wears the frame. */
 const PODIUM = 'h-full text-center md:w-54.5 md:flex-col md:items-center max-md:text-left'
 
-const RANK_NUMERAL = 'w-7 shrink-0 text-center text-lg font-semibold text-muted-foreground tabular-nums'
+const RANK_NUMERAL =
+  'w-7 shrink-0 text-center text-lg font-semibold text-muted-foreground tabular-nums'
 
 /**
  * The podium ornament: an empty `medal` disc in the rank's metal, with the rank numeral beside it.
@@ -145,7 +146,9 @@ export function LeaderboardScreen({
             <EmptyDescription>{errorMessage}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button variant="primary" onClick={retry}>{retryLabel}</Button>
+            <Button variant="primary" onClick={retry}>
+              {retryLabel}
+            </Button>
           </EmptyContent>
         </Empty>
       ) : null}
@@ -195,7 +198,11 @@ export function LeaderboardScreen({
                       </span>
                     ) : null}
                     <Avatar name={l.name} src={l.avatarSrc} size="podium" loading="lazy" />
-                    <ItemTitle size="lg" truncate className="min-w-0 flex-1 md:w-full md:flex-none md:text-center">
+                    <ItemTitle
+                      size="lg"
+                      truncate
+                      className="min-w-0 flex-1 md:w-full md:flex-none md:text-center"
+                    >
                       {l.name}
                     </ItemTitle>
                     {l.isMe ? (

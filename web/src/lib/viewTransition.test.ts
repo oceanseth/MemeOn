@@ -9,7 +9,13 @@ afterEach(() => {
   delete scope.matchMedia
 })
 
-function stub({ start, reduce }: { start?: ((cb: () => void) => unknown) | undefined; reduce: boolean }) {
+function stub({
+  start,
+  reduce,
+}: {
+  start?: ((cb: () => void) => unknown) | undefined
+  reduce: boolean
+}) {
   scope.document = start ? { startViewTransition: start } : {}
   scope.matchMedia = (query: string) => ({ matches: reduce, media: query })
 }

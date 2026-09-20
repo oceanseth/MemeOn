@@ -78,7 +78,11 @@ export function createMemeScreenHost(variant: CreationVariant) {
       await settle()
     })
     /* the route view is lazy: wait for the mounted form rather than guessing a tick count */
-    for (let attempt = 0; attempt < 20 && !host.querySelector('[data-slot="form-grid"]'); attempt += 1) {
+    for (
+      let attempt = 0;
+      attempt < 20 && !host.querySelector('[data-slot="form-grid"]');
+      attempt += 1
+    ) {
       await act(async () => {
         await macrotask()
         await settle()

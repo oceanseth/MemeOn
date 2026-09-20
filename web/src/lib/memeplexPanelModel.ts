@@ -27,7 +27,10 @@ export interface MemeplexPanelModel {
     onChange: ChangeEventHandler<HTMLInputElement>
   }
   /** One Link button for picker or pasted URL — picker wins when both are set. */
-  linkButtonProps: { onClick: MouseEventHandler<HTMLButtonElement>; disabled: boolean }
+  linkButtonProps: {
+    onClick: MouseEventHandler<HTMLButtonElement>
+    disabled: boolean
+  }
   showLink: boolean
   notice: string | null
   error: string | null
@@ -106,14 +109,20 @@ export function buildMemeplexPanelModel({
       onValueChange: (value) => onPickChange(value ?? ''),
     },
     pickPlaceholder: { value: '', label: copy.pickerPlaceholder },
-    linkable: linkable.map((candidate) => ({ id: candidate.id, title: candidate.title })),
+    linkable: linkable.map((candidate) => ({
+      id: candidate.id,
+      title: candidate.title,
+    })),
     pastedProps: {
       value: pasted,
       placeholder: copy.pastedPlaceholder,
       'aria-label': copy.pasted,
       onChange: (event) => onPastedChange(event.target.value),
     },
-    linkButtonProps: { onClick: () => onAdd(linkTarget), disabled: !linkTarget },
+    linkButtonProps: {
+      onClick: () => onAdd(linkTarget),
+      disabled: !linkTarget,
+    },
     showLink: !!linkTarget,
     notice,
     error,

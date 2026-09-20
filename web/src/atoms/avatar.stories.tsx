@@ -3,7 +3,8 @@ import { expect, waitFor, within } from 'storybook/test'
 import { Avatar, AvatarFallback, AvatarImage } from '@/atoms/avatar'
 
 /** A token as `:root` declares it, so the assertion follows the scale rather than pinning a literal. */
-const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+const token = (name: string) =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
 const LOGO = '/brand/memeon-logo-circle-64.png'
 /* the first fetch of the logo on a cold test shard outruns testing-library's 1 s default */
@@ -74,7 +75,11 @@ export const Header: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const root = canvas.getByText('L').closest('[data-slot="avatar"]')!
-    await expect(root).toHaveStyle({ width: '34px', height: '34px', borderRadius: token('--radius-sm') })
+    await expect(root).toHaveStyle({
+      width: '34px',
+      height: '34px',
+      borderRadius: token('--radius-sm'),
+    })
   },
 }
 
@@ -111,7 +116,10 @@ export const Composed: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await waitFor(() => expect(canvas.getByRole('img', { name: 'lou' })).toBeVisible(), IMAGE_LOAD)
-    await expect(canvasElement.querySelector('[data-slot="avatar"]')).toHaveAttribute('data-size', 'md')
+    await expect(canvasElement.querySelector('[data-slot="avatar"]')).toHaveAttribute(
+      'data-size',
+      'md',
+    )
   },
 }
 
@@ -133,7 +141,14 @@ export const Row: Story = {
 /** Profile, chrome and leaderboard sizes, squircle and monogram on the ultraviolet fill. */
 export const Sizes: Story = {
   render: () => (
-    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: 12,
+      }}
+    >
       <Avatar name="lou" size="sm" />
       <Avatar name="oxfern" size="header" />
       <Avatar name="rank" size="rank" />
@@ -147,7 +162,9 @@ export const Sizes: Story = {
   play: async ({ canvasElement }) => {
     const roots = canvasElement.querySelectorAll<HTMLElement>('[data-slot="avatar"]')
     await expect(roots).toHaveLength(8)
-    await expect(Array.from(roots, (root) => root.offsetWidth)).toEqual([32, 34, 36, 40, 50, 56, 60, 86])
+    await expect(Array.from(roots, (root) => root.offsetWidth)).toEqual([
+      32, 34, 36, 40, 50, 56, 60, 86,
+    ])
   },
 }
 

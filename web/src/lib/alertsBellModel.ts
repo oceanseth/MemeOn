@@ -15,7 +15,8 @@ const MAX_BADGE = 99
  * two-line clamp then measures message and not decoration. The match is one grapheme — a
  * pictograph plus its modifiers, variation selector and any ZWJ continuation — and nothing else.
  */
-const LEADING_MARK = /^(\p{Extended_Pictographic}(?:[\p{Emoji_Modifier}\uFE0F]|\u200D\p{Extended_Pictographic})*)\s*/u
+const LEADING_MARK =
+  /^(\p{Extended_Pictographic}(?:[\p{Emoji_Modifier}\uFE0F]|\u200D\p{Extended_Pictographic})*)\s*/u
 
 /**
  * The glyph a row falls back to when its message carries no emoji — an older alert, a test
@@ -38,8 +39,12 @@ export function formatWhen(iso: string, now: number = Date.now()): string {
   if (Math.abs(deltaMinutes) < 1) return copy.justNow
   const relative = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' })
   if (Math.abs(deltaMinutes) < 60) return relative.format(Math.round(deltaMinutes), 'minute')
-  if (Math.abs(deltaMinutes) < 60 * 24) return relative.format(Math.round(deltaMinutes / 60), 'hour')
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(then)
+  if (Math.abs(deltaMinutes) < 60 * 24)
+    return relative.format(Math.round(deltaMinutes / 60), 'hour')
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+  }).format(then)
 }
 
 export interface AlertRowModel {
@@ -119,7 +124,8 @@ export function buildAlertsBellModel({
     empty: alerts.length === 0,
     emptyLabel: failed ? copy.offline : copy.empty,
     emptyTone: failed ? 'offline' : 'idle',
-    unreadLabel: unreadCount > 0 ? (unreadCount > MAX_BADGE ? `${MAX_BADGE}+` : String(unreadCount)) : null,
+    unreadLabel:
+      unreadCount > 0 ? (unreadCount > MAX_BADGE ? `${MAX_BADGE}+` : String(unreadCount)) : null,
     unreadSummaryLabel: unreadCount > 0 ? copy.unreadSummary(unreadCount) : null,
     badgeProps: { 'aria-hidden': true },
     rows: alerts.slice(0, MAX_ROWS).map((alert) => {
@@ -134,7 +140,9 @@ export function buildAlertsBellModel({
         id: alert.id,
         unread,
         statusLabel: unread ? copy.unreadRow : null,
-        mark: emoji ? { kind: 'emoji' as const, emoji } : { kind: 'glyph' as const, icon: TYPE_MARKS[alert.type] },
+        mark: emoji
+          ? { kind: 'emoji' as const, emoji }
+          : { kind: 'glyph' as const, icon: TYPE_MARKS[alert.type] },
         message: emoji ? alert.message.replace(LEADING_MARK, '') : alert.message,
         fullMessage: alert.message,
         /* a row that navigates has done its job; leaving the popover open over the new route
@@ -147,7 +155,6 @@ export function buildAlertsBellModel({
         },
       }
     }),
-    overflowLabel:
-      alerts.length > MAX_ROWS ? copy.overflow(MAX_ROWS) : null,
+    overflowLabel: alerts.length > MAX_ROWS ? copy.overflow(MAX_ROWS) : null,
   }
 }

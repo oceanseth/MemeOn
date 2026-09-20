@@ -30,21 +30,24 @@ const avatarVariants = cva(
 )
 
 /** The monogram's type step per disc; the fallback reads the root's size through context. */
-const avatarFallbackVariants = cva('flex size-full items-center justify-center font-semibold text-brand-foreground', {
-  variants: {
-    size: {
-      sm: 'text-base',
-      header: 'text-sm',
-      rank: 'text-sm',
-      md: 'text-base',
-      podium: 'text-2xl leading-none max-md:text-sm',
-      lg: 'text-2xl leading-none',
-      public: 'text-2xl leading-none',
-      hero: 'text-3xl leading-none max-sm:text-2xl',
+const avatarFallbackVariants = cva(
+  'flex size-full items-center justify-center font-semibold text-brand-foreground',
+  {
+    variants: {
+      size: {
+        sm: 'text-base',
+        header: 'text-sm',
+        rank: 'text-sm',
+        md: 'text-base',
+        podium: 'text-2xl leading-none max-md:text-sm',
+        lg: 'text-2xl leading-none',
+        public: 'text-2xl leading-none',
+        hero: 'text-3xl leading-none max-sm:text-2xl',
+      },
     },
+    defaultVariants: { size: 'sm' },
   },
-  defaultVariants: { size: 'sm' },
-})
+)
 
 export type AvatarSize = NonNullable<VariantProps<typeof avatarVariants>['size']>
 
@@ -66,7 +69,16 @@ export interface AvatarProps extends Omit<AvatarPrimitive.Root.Props, 'className
  * Given `name`/`src` it renders its own image and monogram (the app's models carry both); given
  * children it is the registry root and the parts below do the rest.
  */
-export function Avatar({ name = '', src, alt = '', loading, size, className, children, ...props }: AvatarProps) {
+export function Avatar({
+  name = '',
+  src,
+  alt = '',
+  loading,
+  size,
+  className,
+  children,
+  ...props
+}: AvatarProps) {
   const resolved = size ?? 'sm'
   return (
     <AvatarSizeContext.Provider value={resolved}>

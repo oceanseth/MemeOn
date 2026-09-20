@@ -73,7 +73,10 @@ export function buildGiphyModeModel(
       disabled: isBusy,
       items: [
         { value: '', label: copy.giphy.browseCategories },
-        ...ctx.giphyCategories.map((category) => ({ value: category, label: category })),
+        ...ctx.giphyCategories.map((category) => ({
+          value: category,
+          label: category,
+        })),
       ],
       onValueChange: (value) => {
         if (value) void actions.searchGiphy(value)

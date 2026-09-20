@@ -15,7 +15,10 @@ export async function applyEdit(host: CreateMemeActionHost, sourceUrl: string): 
     host.send({ type: 'SET_IMAGE_URL', imageUrl: out.imageUrl, edited: true })
     host.settleBusy({ type: 'DONE' })
   } catch (e) {
-    host.settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.editFailed) })
+    host.settleBusy({
+      type: 'FAIL',
+      err: mintDeskError(e, copy.errors.editFailed),
+    })
   }
 }
 

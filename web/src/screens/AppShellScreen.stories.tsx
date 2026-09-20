@@ -1,7 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
-import { meLou, paperMeme, questStepsFresh, questStepsPackDone, unreadSale } from '../../.storybook/fixtures'
+import {
+  meLou,
+  paperMeme,
+  questStepsFresh,
+  questStepsPackDone,
+  unreadSale,
+} from '../../.storybook/fixtures'
 import { PageContainer } from '@/atoms/page-container'
 import { appShellCopy } from '../copy/appShell'
 import { questBarCopy } from '../copy/questBar'
@@ -35,7 +41,13 @@ const onThemeChange = fn()
 const light = { value: 'light', onChange: onThemeChange } as const
 const dark = { value: 'dark', onChange: onThemeChange } as const
 
-const loggedOut = buildAppShellScreenModel({ phase: 'loggedOut', user: null, context, theme: light, ...actions })
+const loggedOut = buildAppShellScreenModel({
+  phase: 'loggedOut',
+  user: null,
+  context,
+  theme: light,
+  ...actions,
+})
 const loggedIn = buildAppShellScreenModel({
   phase: 'loggedIn',
   user: meLou,
@@ -49,7 +61,12 @@ const loggedIn = buildAppShellScreenModel({
 const phone = {
   parameters: {
     viewport: {
-      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+      options: {
+        phone390: {
+          name: 'Phone 390',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
     },
   },
   globals: { viewport: { value: 'phone390', isRotated: false } },
@@ -62,9 +79,19 @@ const meta = {
   parameters: { layout: 'fullscreen' },
   args: {
     ...loggedOut,
-    children: <PageContainer as="main" id="main" tabIndex={-1}><p>page body</p></PageContainer>,
+    children: (
+      <PageContainer as="main" id="main" tabIndex={-1}>
+        <p>page body</p>
+      </PageContainer>
+    ),
   },
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 } satisfies Meta<typeof AppShellScreen>
 
 export default meta
@@ -77,7 +104,11 @@ export const LoggedOut: Story = {
     await expect(canvas.getByRole('link', { name: appShellCopy.brand })).toBeVisible()
     await expect(canvas.queryByRole('navigation', { name: appShellCopy.navAria })).toBeNull()
     // the public header carries the one theme control; it names where it is and where it goes
-    await userEvent.click(canvas.getByRole('button', { name: sharedCopy.theme.cycle(sharedCopy.theme.light, sharedCopy.theme.dark) }))
+    await userEvent.click(
+      canvas.getByRole('button', {
+        name: sharedCopy.theme.cycle(sharedCopy.theme.light, sharedCopy.theme.dark),
+      }),
+    )
     await expect(onThemeChange).toHaveBeenCalledWith('dark')
   },
 }
@@ -90,9 +121,17 @@ export const LoggedIn: Story = {
     onThemeChange.mockClear()
     const nav = canvas.getByRole('navigation', { name: appShellCopy.navAria })
     await expect(nav).toHaveAttribute('data-slot', 'top-nav')
-    await expect(within(nav).getByRole('link', { name: 'Marketplace' })).toHaveAttribute('aria-current', 'page')
-    await expect(within(nav).getByRole('link', { name: 'My Binder' })).not.toHaveAttribute('aria-current')
-    await expect(within(nav).getByRole('link', { name: 'Top Brains' })).toHaveAttribute('href', '/leaderboard')
+    await expect(within(nav).getByRole('link', { name: 'Marketplace' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    await expect(within(nav).getByRole('link', { name: 'My Binder' })).not.toHaveAttribute(
+      'aria-current',
+    )
+    await expect(within(nav).getByRole('link', { name: 'Top Brains' })).toHaveAttribute(
+      'href',
+      '/leaderboard',
+    )
     await expect(canvas.getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
     // the ladder is not live, so the pill is a plain balance: no ring, no button
     await expect(canvas.getByText(appShellCopy.braincells.label(meLou.coins))).toBeInTheDocument()
@@ -101,10 +140,24 @@ export const LoggedIn: Story = {
     await expect(canvas.queryByRole('button', { name: /^Theme:/ })).toBeNull()
     await userEvent.click(canvas.getByRole('button', { name: 'Account menu' }))
     const menu = await canvas.findByRole('menu')
-    await expect(within(menu).getByRole('menuitem', { name: 'Settings' })).toHaveAttribute('href', '/settings')
-    await expect(within(menu).getByRole('menuitem', { name: 'Discord' })).toHaveAttribute('href', '/discord')
-    await expect(within(menu).getByRole('menuitemradio', { name: new RegExp(sharedCopy.theme.light) })).toHaveAttribute('aria-checked', 'true')
-    await userEvent.click(within(menu).getByRole('menuitemradio', { name: new RegExp(sharedCopy.theme.dark) }))
+    await expect(within(menu).getByRole('menuitem', { name: 'Settings' })).toHaveAttribute(
+      'href',
+      '/settings',
+    )
+    await expect(within(menu).getByRole('menuitem', { name: 'Discord' })).toHaveAttribute(
+      'href',
+      '/discord',
+    )
+    await expect(
+      within(menu).getByRole('menuitemradio', {
+        name: new RegExp(sharedCopy.theme.light),
+      }),
+    ).toHaveAttribute('aria-checked', 'true')
+    await userEvent.click(
+      within(menu).getByRole('menuitemradio', {
+        name: new RegExp(sharedCopy.theme.dark),
+      }),
+    )
     await expect(onThemeChange).toHaveBeenCalledWith('dark')
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull())
@@ -114,7 +167,11 @@ export const LoggedIn: Story = {
 export const WithAvatar: Story = {
   args: buildAppShellScreenModel({
     phase: 'loggedIn',
-    user: { ...meLou, sub: 'mask/avatar + one', picture: '/brand/memeon-logo-circle-64.png' },
+    user: {
+      ...meLou,
+      sub: 'mask/avatar + one',
+      picture: '/brand/memeon-logo-circle-64.png',
+    },
     context,
     theme: light,
     ...actions,
@@ -125,12 +182,18 @@ export const WithAvatar: Story = {
     const trigger = canvas.getByRole('button', { name: 'Account menu' })
     // the Avatar atom paints the monogram until the picture has actually loaded
     await waitFor(() =>
-      expect(trigger.querySelector('img')).toHaveAttribute('src', '/brand/memeon-logo-circle-64.png'),
+      expect(trigger.querySelector('img')).toHaveAttribute(
+        'src',
+        '/brand/memeon-logo-circle-64.png',
+      ),
     )
     await expect(canvas.getByText(appShellCopy.braincells.label(meLou.coins))).toBeInTheDocument()
     await userEvent.click(trigger)
     const menu = await canvas.findByRole('menu')
-    await expect(within(menu).getByRole('menuitem', { name: 'Profile' })).toHaveAttribute('href', '/u/mask%2Favatar%20%2B%20one')
+    await expect(within(menu).getByRole('menuitem', { name: 'Profile' })).toHaveAttribute(
+      'href',
+      '/u/mask%2Favatar%20%2B%20one',
+    )
     await userEvent.click(within(menu).getByRole('menuitem', { name: 'Log out' }))
     await expect(actions.onLogout).toHaveBeenCalledTimes(1)
   },
@@ -139,9 +202,11 @@ export const WithAvatar: Story = {
 /** The ladder is live: the pill wears the ring and the claim dot, and a press opens the whole rail. */
 export const WithQuests: Story = {
   args: buildAppShellScreenModel({
-    phase: 'loggedIn', user: meLou,
+    phase: 'loggedIn',
+    user: meLou,
     context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
-    pathname: '/binder', theme: light,
+    pathname: '/binder',
+    theme: light,
     ...actions,
   }),
   play: async ({ canvasElement }) => {
@@ -153,8 +218,13 @@ export const WithQuests: Story = {
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
     await userEvent.click(trigger)
     await expect(await canvas.findByText(questBarCopy.title)).toBeInTheDocument()
-    await expect(canvas.getByRole('button', { name: /claim your starter pack/i })).toBeInTheDocument()
-    await expect(canvas.getByRole('link', { name: /Mint your first meme/ })).toHaveAttribute('href', '/binder/new')
+    await expect(
+      canvas.getByRole('button', { name: /claim your starter pack/i }),
+    ).toBeInTheDocument()
+    await expect(canvas.getByRole('link', { name: /Mint your first meme/ })).toHaveAttribute(
+      'href',
+      '/binder/new',
+    )
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(canvas.queryByText(questBarCopy.title)).toBeNull())
   },
@@ -163,9 +233,11 @@ export const WithQuests: Story = {
 /** Same shell as WithQuests — kept for the second quest inventory row. */
 export const WithQuestsExpanded: Story = {
   args: buildAppShellScreenModel({
-    phase: 'loggedIn', user: meLou,
+    phase: 'loggedIn',
+    user: meLou,
     context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
-    pathname: '/binder', theme: light,
+    pathname: '/binder',
+    theme: light,
     ...actions,
   }),
 }
@@ -173,8 +245,14 @@ export const WithQuestsExpanded: Story = {
 /** 'Later' hides the ladder until the next completion; the pill is the plain balance again. */
 export const QuestsDismissed: Story = {
   args: buildAppShellScreenModel({
-    phase: 'loggedIn', user: meLou,
-    context: { ...context, steps: questStepsFresh, questDismissed: true, alerts: [unreadSale] },
+    phase: 'loggedIn',
+    user: meLou,
+    context: {
+      ...context,
+      steps: questStepsFresh,
+      questDismissed: true,
+      alerts: [unreadSale],
+    },
     theme: light,
     ...actions,
   }),
@@ -188,27 +266,40 @@ export const QuestsDismissed: Story = {
 
 export const AlertsOpen: Story = {
   args: buildAppShellScreenModel({
-    phase: 'loggedIn', user: meLou,
+    phase: 'loggedIn',
+    user: meLou,
     context: { ...context, alerts: [unreadSale], alertsOpen: true },
-    pathname: '/marketplace', theme: light,
+    pathname: '/marketplace',
+    theme: light,
     ...actions,
   }),
 }
 
 export const PackOpened: Story = {
   args: buildAppShellScreenModel({
-    phase: 'loggedIn', user: meLou,
+    phase: 'loggedIn',
+    user: meLou,
     context: {
-      ...context, steps: questStepsPackDone, packMemes: [paperMeme], packReward: 20, alerts: [unreadSale],
+      ...context,
+      steps: questStepsPackDone,
+      packMemes: [paperMeme],
+      packReward: 20,
+      alerts: [unreadSale],
     },
-    pathname: '/binder', theme: light,
+    pathname: '/binder',
+    theme: light,
     ...actions,
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // one step in: the ring reads a fifth (probed by slot — the modal pack dialog makes the bar inert), and the dialog is up
-    await expect(canvasElement.querySelector('[data-slot="quest-trigger"]')).toHaveAttribute('data-progress', '20')
-    await expect(await canvas.findByRole('dialog', { name: questBarCopy.pack.title })).toBeInTheDocument()
+    await expect(canvasElement.querySelector('[data-slot="quest-trigger"]')).toHaveAttribute(
+      'data-progress',
+      '20',
+    )
+    await expect(
+      await canvas.findByRole('dialog', { name: questBarCopy.pack.title }),
+    ).toBeInTheDocument()
   },
 }
 
@@ -226,9 +317,11 @@ export const SkipLinkFocused: Story = {
 }
 
 const phone390Args = buildAppShellScreenModel({
-  phase: 'loggedIn', user: meLou,
+  phase: 'loggedIn',
+  user: meLou,
   context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
-  pathname: '/marketplace', theme: light,
+  pathname: '/marketplace',
+  theme: light,
   ...actions,
 })
 
@@ -240,8 +333,14 @@ export const Phone390: Story = {
     // the bar's links are display:none on the phone: the tab bar is the one main navigation
     const tabs = canvas.getByRole('navigation', { name: appShellCopy.navAria })
     await expect(tabs).toHaveAttribute('data-slot', 'bottom-nav')
-    await expect(within(tabs).getByRole('link', { name: 'Market' })).toHaveAttribute('aria-current', 'page')
-    await expect(within(tabs).getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
+    await expect(within(tabs).getByRole('link', { name: 'Market' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    await expect(within(tabs).getByRole('link', { name: 'Mint' })).toHaveAttribute(
+      'href',
+      '/binder/new',
+    )
     // the phone cluster is the pill, the bell and the avatar: no theme button, no header Mint
     await expect(canvas.queryByRole('button', { name: /^Theme:/ })).toBeNull()
     await expect(canvas.getAllByRole('link', { name: 'Mint' })).toHaveLength(1)
@@ -249,8 +348,15 @@ export const Phone390: Story = {
     // the avatar opens the account menu that carries the routes the tab bar cannot, and the theme
     await userEvent.click(canvas.getByRole('button', { name: 'Account menu' }))
     const menu = await canvas.findByRole('menu')
-    await expect(within(menu).getByRole('menuitem', { name: 'Top Brains' })).toHaveAttribute('href', '/leaderboard')
-    await expect(within(menu).getByRole('menuitemradio', { name: new RegExp(sharedCopy.theme.dark) })).toBeInTheDocument()
+    await expect(within(menu).getByRole('menuitem', { name: 'Top Brains' })).toHaveAttribute(
+      'href',
+      '/leaderboard',
+    )
+    await expect(
+      within(menu).getByRole('menuitemradio', {
+        name: new RegExp(sharedCopy.theme.dark),
+      }),
+    ).toBeInTheDocument()
     await expect(within(menu).getByRole('menuitem', { name: 'Log out' })).toBeInTheDocument()
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull())
@@ -265,9 +371,11 @@ export const Mobile390: Story = {
 }
 
 const darkArgs = buildAppShellScreenModel({
-  phase: 'loggedIn', user: meLou,
+  phase: 'loggedIn',
+  user: meLou,
   context: { ...context, steps: questStepsFresh, alerts: [unreadSale] },
-  pathname: '/marketplace', theme: dark,
+  pathname: '/marketplace',
+  theme: dark,
   ...actions,
 })
 

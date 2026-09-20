@@ -30,7 +30,8 @@ export const discordLinkCopy = {
     title: "Couldn't connect Discord",
     /** keyed by `DiscordLinkFailure` */
     body: {
-      'missing-token': 'This link is missing its code. Run /memeon-connect in Discord for a fresh one.',
+      'missing-token':
+        'This link is missing its code. Run /memeon-connect in Discord for a fresh one.',
       expired: 'This link already got used or expired. Fresh links last 10 minutes.',
       login: 'The Masky login never came back. Run /memeon-connect in Discord for a fresh link.',
       unreachable: "MemeOn couldn't reach the linker. Try again in a moment.",

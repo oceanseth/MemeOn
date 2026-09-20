@@ -19,8 +19,7 @@ function mountCard({ autoplay = 'on' }: { autoplay?: 'on' | 'off' } = {}): Card 
   const card = document.createElement('article')
   card.dataset.slot = 'meme-card'
   card.dataset.mediaAutoplay = autoplay
-  card.innerHTML =
-    '<video></video><button data-slot="media-toggle" aria-pressed="false"></button>'
+  card.innerHTML = '<video></video><button data-slot="media-toggle" aria-pressed="false"></button>'
   document.body.append(card)
 
   const video = card.querySelector('video')!
@@ -39,7 +38,9 @@ function mountCard({ autoplay = 'on' }: { autoplay?: 'on' | 'off' } = {}): Card 
 }
 
 const clickOn = (toggle: HTMLButtonElement) =>
-  toggleCardMedia({ currentTarget: toggle } as unknown as MouseEvent<HTMLButtonElement>)
+  toggleCardMedia({
+    currentTarget: toggle,
+  } as unknown as MouseEvent<HTMLButtonElement>)
 
 afterEach(() => {
   document.body.replaceChildren()

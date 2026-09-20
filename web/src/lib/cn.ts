@@ -19,7 +19,13 @@ export const cn = createCn({
        alphabetical). `glass` is deliberately NOT here: `material-raised glass` is a real pair —
        the plate is glass, the relief is raised. */
     classGroups: {
-      material: ['material-card', 'material-raised', 'material-pressed', 'material-pop', 'material-modal'],
+      material: [
+        'material-card',
+        'material-raised',
+        'material-pressed',
+        'material-pop',
+        'material-modal',
+      ],
     },
   },
 })

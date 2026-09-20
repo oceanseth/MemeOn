@@ -15,40 +15,40 @@
    `scripts/check-layers.mjs` reads the built CSS back and fails the build if any stylesheet ever
    ranks them differently. */
 @layer theme, base, components, utilities;
-@import 'tailwindcss';
+@import "tailwindcss";
 
 /* Soft Press type: Unbounded (display) and Onest (UI/body), self-hosted as variable woff2 through
    fontsource. Each package's sheet is a set of unicode-range subset `@font-face` rules with
    `font-display: swap`, so the first paint uses the system fallback and swaps once the ~30 KB
    latin subset lands; no FOIT. The `@import`s have to sit ahead of every other rule — only the
    layer statement above may precede them. */
-@import '@fontsource-variable/unbounded';
-@import '@fontsource-variable/onest';
+@import "@fontsource-variable/unbounded";
+@import "@fontsource-variable/onest";
 /* The enter/exit keyframes shadcn popups animate with (`animate-in`, `fade-out-0`, …). A pure
    `@utility`/`@theme` sheet: nothing is emitted until a class asks for it. */
-@import 'tw-animate-css';
+@import "tw-animate-css";
 
 /* Auto source detection reads every file as markup and mines class names out of it. `cn`'s fixtures
    are class-name literals that no markup wears; each one Tailwind emitted would ship a utility
    nothing asks for. Path is relative to this file. */
-@source not './lib/cn.test.ts';
+@source not "./lib/cn.test.ts";
 
 /* The `--container-*` theme namespace and `data-slot="page-container"` are enough for the source
    scanner to manufacture a `container` utility candidate on its own, even though nothing in
    `web/src` wears the class `container`. Without this exclusion the built stylesheet ships
    `.container{}` plus a `max-width` rule per breakpoint that nothing uses. */
-@source not inline('container');
+@source not inline("container");
 
 /* shadcn's `dark:` variant, rebound to how this app flips: `[data-theme]` on <html> pins an arm
    (`stores/themeStore.ts`) and no attribute means follow the OS. The registry's stock
    `&:is(.dark *)` would never fire here. Role tokens are `light-dark()` pairs and flip on their
    own; this exists only so a merged registry file's `dark:` tweaks land in all three modes. */
 @custom-variant dark {
-  &:where([data-theme='dark'], [data-theme='dark'] *) {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
     @slot;
   }
   @media (prefers-color-scheme: dark) {
-    &:where(:not([data-theme='light']):not([data-theme='light'] *)) {
+    &:where(:not([data-theme="light"]):not([data-theme="light"] *)) {
       @slot;
     }
   }
@@ -177,8 +177,8 @@
      axis, so `font-optical-sizing` has nothing to do and the per-step tracking below is the
      optical-size substitute. No `--tracking-*` role token survives: a step carries its tracking
      and the stock `tracking-wider` / `tracking-normal` are the only escapes. */
-  --font-display: 'Unbounded Variable', 'Unbounded', system-ui, sans-serif;
-  --font-sans: 'Onest Variable', 'Onest', system-ui, sans-serif;
+  --font-display: "Unbounded Variable", "Unbounded", system-ui, sans-serif;
+  --font-sans: "Onest Variable", "Onest", system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --text-*: initial;
@@ -333,11 +333,11 @@
     scrollbar-width: thin;
   }
 
-  :root[data-theme='light'] {
+  :root[data-theme="light"] {
     color-scheme: light;
   }
 
-  :root[data-theme='dark'] {
+  :root[data-theme="dark"] {
     color-scheme: dark;
   }
 
@@ -345,7 +345,7 @@
      steps' negative tracking by 0.01em. Leading never flips with the theme — a layout must not
      reflow when the user toggles dark — and the text steps are left alone (0.01em at 16px is a
      sixth of a pixel). */
-  :root[data-theme='dark'] {
+  :root[data-theme="dark"] {
     --text-6xl--letter-spacing: -0.02em;
     --text-5xl--letter-spacing: -0.015em;
     --text-4xl--letter-spacing: -0.01em;
@@ -353,7 +353,7 @@
   }
 
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme='light']) {
+    :root:not([data-theme="light"]) {
       --text-6xl--letter-spacing: -0.02em;
       --text-5xl--letter-spacing: -0.015em;
       --text-4xl--letter-spacing: -0.01em;
@@ -616,7 +616,7 @@
   position: relative;
   @media (pointer: coarse) {
     &::after {
-      content: '';
+      content: "";
       position: absolute;
       top: 50%;
       left: 50%;
@@ -664,11 +664,15 @@
    keep a `-translate-x-*` the element already carries. */
 @utility lift {
   @media (hover: hover) and (pointer: fine) {
-    &:hover:where(:not(:disabled, [aria-disabled='true'], [aria-pressed='true'], [data-pressed], :active)) {
+    &:hover:where(
+        :not(:disabled, [aria-disabled="true"], [aria-pressed="true"], [data-pressed], :active)
+      ) {
       translate: var(--tw-translate-x, 0) -1px;
     }
     /* a raised material also deepens its relief as it lifts; a bare link or row does not */
-    &:where(.material-raised, .material-card):hover:where(:not(:disabled, [aria-disabled='true'], [aria-pressed='true'], [data-pressed], :active)) {
+    &:where(.material-raised, .material-card):hover:where(
+        :not(:disabled, [aria-disabled="true"], [aria-pressed="true"], [data-pressed], :active)
+      ) {
       box-shadow: var(--shadow-raised-hover);
     }
   }
@@ -680,7 +684,7 @@
 }
 
 @utility press {
-  &:active:where(:not(:disabled, [aria-disabled='true'])) {
+  &:active:where(:not(:disabled, [aria-disabled="true"])) {
     translate: var(--tw-translate-x, 0) 1px;
     box-shadow: var(--shadow-pressed);
   }
@@ -689,7 +693,7 @@
 /* Disabled, whichever way the element says so. */
 @utility disabled-look {
   &:disabled,
-  &[aria-disabled='true'],
+  &[aria-disabled="true"],
   &[data-disabled] {
     cursor: not-allowed;
     opacity: var(--opacity-disabled);

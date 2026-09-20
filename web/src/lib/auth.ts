@@ -10,9 +10,11 @@ const redirectUri = (): string => `${window.location.origin}${REDIRECT_PATH}`
 
 /** Kick off Masky OAuth: fetch public config, then bounce to Masky's authorize page. */
 export async function beginMaskyLogin(): Promise<void> {
-  const cfg = await apiFetch<{ authorizeUrl: string; clientId: string; scopes: string }>(
-    '/api/auth/masky/config',
-  )
+  const cfg = await apiFetch<{
+    authorizeUrl: string
+    clientId: string
+    scopes: string
+  }>('/api/auth/masky/config')
   const state = crypto.randomUUID()
   setMaskyOauthState(state)
   const url = new URL(cfg.authorizeUrl)

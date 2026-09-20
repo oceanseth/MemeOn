@@ -28,14 +28,24 @@ const emptyShelf: ProfileShelfModel = {
   emptyLinkProps: { to: '/marketplace' },
   showGrid: false,
   tabsProps: { value: 'created', onValueChange: fn() },
-  gridProps: { id: 'profile-cards', 'aria-live': 'polite', 'aria-label': profileCopy.grid.label(profileCopy.tabs.created, 0) },
+  gridProps: {
+    id: 'profile-cards',
+    'aria-live': 'polite',
+    'aria-label': profileCopy.grid.label(profileCopy.tabs.created, 0),
+  },
 }
 
 const meta = {
   title: 'Organisms/ProfileShelf',
   component: ProfileShelf,
   args: emptyShelf,
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 } satisfies Meta<typeof ProfileShelf>
 
 export default meta
@@ -44,8 +54,14 @@ type Story = StoryObj<typeof meta>
 export const Empty: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('tablist', { name: profileCopy.tabs.section })).toBeInTheDocument()
-    await expect(canvas.getByRole('heading', { name: profileCopy.empty.other.created.title('pal') })).toBeInTheDocument()
+    await expect(
+      canvas.getByRole('tablist', { name: profileCopy.tabs.section }),
+    ).toBeInTheDocument()
+    await expect(
+      canvas.getByRole('heading', {
+        name: profileCopy.empty.other.created.title('pal'),
+      }),
+    ).toBeInTheDocument()
   },
 }
 
@@ -54,8 +70,18 @@ export const Grid: Story = {
     showEmpty: false,
     showGrid: true,
     ...tabLabels(1, 0),
-    gridProps: { id: 'profile-cards', 'aria-live': 'polite', 'aria-label': profileCopy.grid.label(profileCopy.tabs.created, 1) },
-    cards: [{ id: `created-${paperMeme.id}`, memeCard: buildMemeCardModel(paperMeme), sharesLabel: null }],
+    gridProps: {
+      id: 'profile-cards',
+      'aria-live': 'polite',
+      'aria-label': profileCopy.grid.label(profileCopy.tabs.created, 1),
+    },
+    cards: [
+      {
+        id: `created-${paperMeme.id}`,
+        memeCard: buildMemeCardModel(paperMeme),
+        sharesLabel: null,
+      },
+    ],
   },
 }
 
@@ -67,7 +93,11 @@ export const Paged: Story = {
     showMore: true,
     showMoreLabel: profileCopy.grid.showMore(2),
     gridCountLabel: profileCopy.grid.count(12, 14),
-    gridProps: { id: 'profile-cards', 'aria-live': 'polite', 'aria-label': profileCopy.grid.label(profileCopy.tabs.created, 12) },
+    gridProps: {
+      id: 'profile-cards',
+      'aria-live': 'polite',
+      'aria-label': profileCopy.grid.label(profileCopy.tabs.created, 12),
+    },
     cards: Array.from({ length: 12 }, (_value, index) => ({
       id: `created-${paperMeme.id}-${index}`,
       memeCard: buildMemeCardModel(paperMeme),
@@ -82,9 +112,23 @@ export const BinderGrid: Story = {
     showGrid: true,
     tabsProps: { value: 'binder', onValueChange: fn() },
     ...tabLabels(0, 1),
-    gridProps: { id: 'profile-cards', 'aria-live': 'polite', 'aria-label': profileCopy.grid.label(profileCopy.tabs.binder, 1) },
-    cards: [{ id: `binder-${giftablePaper.id}`, memeCard: buildMemeCardModel(giftablePaper), sharesLabel: profileCopy.cards.holds(12) }],
+    gridProps: {
+      id: 'profile-cards',
+      'aria-live': 'polite',
+      'aria-label': profileCopy.grid.label(profileCopy.tabs.binder, 1),
+    },
+    cards: [
+      {
+        id: `binder-${giftablePaper.id}`,
+        memeCard: buildMemeCardModel(giftablePaper),
+        sharesLabel: profileCopy.cards.holds(12),
+      },
+    ],
   },
 }
 
-export const Dark: Story = { ...Grid, name: 'Ready dark', globals: { theme: 'dark' } }
+export const Dark: Story = {
+  ...Grid,
+  name: 'Ready dark',
+  globals: { theme: 'dark' },
+}

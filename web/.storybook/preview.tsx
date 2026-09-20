@@ -68,10 +68,12 @@ const preview: Preview = {
     const OriginalIntersectionObserver = window.IntersectionObserver
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
-      value: { writeText: async (value: string) => {
-        const { getActiveScenario } = await import('./connected-scenario')
-        getActiveScenario().copied.push(value)
-      } },
+      value: {
+        writeText: async (value: string) => {
+          const { getActiveScenario } = await import('./connected-scenario')
+          getActiveScenario().copied.push(value)
+        },
+      },
     })
     Object.defineProperty(navigator, 'share', {
       configurable: true,
@@ -95,7 +97,9 @@ const preview: Preview = {
       }
       disconnect() {}
       observe() {}
-      takeRecords() { return [] }
+      takeRecords() {
+        return []
+      }
       unobserve() {}
     }
     window.IntersectionObserver = StoryIntersectionObserver
@@ -103,8 +107,14 @@ const preview: Preview = {
       MockDate.reset()
       localStorage.clear()
       sessionStorage.clear()
-      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: originalClipboard })
-      Object.defineProperty(navigator, 'share', { configurable: true, value: originalShare })
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: originalClipboard,
+      })
+      Object.defineProperty(navigator, 'share', {
+        configurable: true,
+        value: originalShare,
+      })
       window.IntersectionObserver = OriginalIntersectionObserver
     }
   },

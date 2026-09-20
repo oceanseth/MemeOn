@@ -51,9 +51,17 @@ export function useMarketplaceCatalog({
     loadingRef.current = true
     send({ type: 'FETCHING', scope: 'refresh' })
     apiFetch<{ memes: Meme[]; nextCursor: string | null }>(`/api/memes?${queryString(live)}`)
-      .then((result) => send({ type: 'LOADED', memes: result.memes, nextCursor: result.nextCursor }))
+      .then((result) =>
+        send({
+          type: 'LOADED',
+          memes: result.memes,
+          nextCursor: result.nextCursor,
+        }),
+      )
       .catch(() => send({ type: 'FAIL', err: copy.machine.loadFailed }))
-      .finally(() => { loadingRef.current = false })
+      .finally(() => {
+        loadingRef.current = false
+      })
   }, [actor, send])
 
   const scheduleFetch = useCallback(() => {
@@ -62,39 +70,53 @@ export function useMarketplaceCatalog({
   }, [fetchFromStart])
 
   /** The observer keeps firing while the sentinel is in view, so a failed page waits to be retried. */
-  const loadMore = useCallback(async (manual = false) => {
-    const live = actor.getSnapshot().context
-    if (loadingRef.current || !live.nextCursor) return
-    if (live.moreErr && !manual) return
-    loadingRef.current = true
-    send({ type: 'FETCHING', scope: 'more' })
-    try {
-      const result = await apiFetch<{ memes: Meme[]; nextCursor: string | null }>(
-        `/api/memes?${queryString(live)}&cursor=${encodeURIComponent(live.nextCursor)}`,
-      )
-      send({ type: 'APPEND', memes: result.memes, nextCursor: result.nextCursor })
-    } catch {
-      send({ type: 'MORE_FAILED', err: copy.machine.appendFailed })
-    } finally {
-      loadingRef.current = false
-    }
-  }, [actor, send])
+  const loadMore = useCallback(
+    async (manual = false) => {
+      const live = actor.getSnapshot().context
+      if (loadingRef.current || !live.nextCursor) return
+      if (live.moreErr && !manual) return
+      loadingRef.current = true
+      send({ type: 'FETCHING', scope: 'more' })
+      try {
+        const result = await apiFetch<{
+          memes: Meme[]
+          nextCursor: string | null
+        }>(`/api/memes?${queryString(live)}&cursor=${encodeURIComponent(live.nextCursor)}`)
+        send({
+          type: 'APPEND',
+          memes: result.memes,
+          nextCursor: result.nextCursor,
+        })
+      } catch {
+        send({ type: 'MORE_FAILED', err: copy.machine.appendFailed })
+      } finally {
+        loadingRef.current = false
+      }
+    },
+    [actor, send],
+  )
 
   const loadMoreRef = useRef(loadMore)
   loadMoreRef.current = loadMore
   // Callback freshness comes from loadMoreRef.current, but the cursor dependency is load-bearing:
   // re-observing after each page re-delivers the intersection while the sentinel is still on
   // screen, which is how a sparse or duplicate-only page is crossed without a scroll.
-  const sentinelRef = useCallback<RefCallback<HTMLDivElement>>((element) => {
-    observerRef.current?.disconnect()
-    observerRef.current = null
-    if (!element) return
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0]?.isIntersecting) void loadMoreRef.current()
-    }, { rootMargin: '900px' })
-    observer.observe(element)
-    observerRef.current = observer
-  }, [nextCursor])
+  const sentinelRef = useCallback<RefCallback<HTMLDivElement>>(
+    (element) => {
+      observerRef.current?.disconnect()
+      observerRef.current = null
+      if (!element) return
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) void loadMoreRef.current()
+        },
+        { rootMargin: '900px' },
+      )
+      observer.observe(element)
+      observerRef.current = observer
+    },
+    [nextCursor],
+  )
 
   useMountEffect(() => {
     scheduleFetch()
@@ -107,11 +129,14 @@ export function useMarketplaceCatalog({
   /** Filters live in the URL so the market can be linked, reloaded and returned to with Back. */
   const syncUrl = useCallback(() => {
     const live = actor.getSnapshot().context
-    setParams((current) => {
-      const next = new URLSearchParams(current)
-      writeLiveFilters(next, live)
-      return next
-    }, { replace: true })
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        writeLiveFilters(next, live)
+        return next
+      },
+      { replace: true },
+    )
   }, [actor, setParams])
 
   const onQueryChange: ChangeEventHandler<HTMLInputElement> = (event) => {

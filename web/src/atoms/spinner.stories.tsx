@@ -23,7 +23,14 @@ export const Default: Story = {
 /** Beside a line of copy, matching how a labelled loading row places it. */
 export const BesideLabel: Story = {
   render: () => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--color-muted-foreground)' }}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        color: 'var(--color-muted-foreground)',
+      }}
+    >
       <Spinner />
       Loading…
     </div>

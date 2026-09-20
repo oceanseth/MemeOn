@@ -49,7 +49,9 @@ describe('presence', () => {
     sdk.remove.mockReset()
     sdk.set.mockReset()
     sdk.serverTimestamp.mockClear()
-    sdk.onDisconnect.mockImplementation(() => ({ remove: sdk.onDisconnectRemove }))
+    sdk.onDisconnect.mockImplementation(() => ({
+      remove: sdk.onDisconnectRemove,
+    }))
     sdk.ref.mockImplementation((_db: unknown, path: string) => ({ path }))
     sdk.onValue.mockImplementation(
       (query: { path: string }, success: Listener['success'], cancel?: Listener['cancel']) => {
@@ -71,7 +73,10 @@ describe('presence', () => {
     expect(() => startPresence('uid-1')).not.toThrow()
     expect(() => listener('.info/connected').success({ val: () => true })).not.toThrow()
     await vi.waitFor(() => {
-      expect(console.error).toHaveBeenCalledWith('[memeon presence] advertise failed', disconnectErr)
+      expect(console.error).toHaveBeenCalledWith(
+        '[memeon presence] advertise failed',
+        disconnectErr,
+      )
     })
 
     vi.mocked(console.error).mockClear()

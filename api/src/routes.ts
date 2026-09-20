@@ -10,13 +10,7 @@ import { issueSession, verifySession } from './session'
 import { mintFirebaseToken } from './firebase'
 import { portfolioSummary } from './portfolio'
 import { rebuildLeaderboard } from './leaderboard'
-import {
-  ensureOgImage,
-  frameKey,
-  memePageHtml,
-  pingFacebookRescrape,
-  tierFrameList,
-} from './og'
+import { ensureOgImage, frameKey, memePageHtml, pingFacebookRescrape, tierFrameList } from './og'
 import * as ogModule from './og'
 import { assetUrl, presignUpload, putAsset } from './s3'
 import { memeValue, TIERS, tierFor, tierIndexFor } from '@memeon/shared/tiers'
@@ -48,19 +42,33 @@ route('POST /api/auth/masky/callback', async (req) => {
     picture,
     avatarId: profile.avatarId ?? tokens.avatar?.id ?? null,
   })
-  const sessionToken = await issueSession({ sub: user.sub, name: user.name, picture: user.picture })
+  const sessionToken = await issueSession({
+    sub: user.sub,
+    name: user.name,
+    picture: user.picture,
+  })
   const firebaseToken = await mintFirebaseToken(user.sub, { name: user.name })
   return json(200, {
     sessionToken,
     maskyAccessToken: tokens.accessToken,
     firebaseToken,
-    profile: { sub: user.sub, name: user.name, picture: user.picture, coins: user.coins },
+    profile: {
+      sub: user.sub,
+      name: user.name,
+      picture: user.picture,
+      coins: user.coins,
+    },
   })
 })
 
 // ---------- onboarding quests + braincells ----------
 
-export const QUESTS: { key: db.QuestKey; title: string; reward: number; hint: string }[] = [
+export const QUESTS: {
+  key: db.QuestKey
+  title: string
+  reward: number
+  hint: string
+}[] = [
   {
     key: 'pack',
     title: 'Claim your starter pack',
@@ -99,7 +107,11 @@ async function awardQuest(userId: string, key: db.QuestKey): Promise<void> {
   if (!quest) return
   const first = await db.completeQuest(userId, key, quest.reward)
   if (first) {
-    await db.addAlert(userId, 'friend', `🧠 +${quest.reward} braincells — ${quest.title.toLowerCase()} ✅`)
+    await db.addAlert(
+      userId,
+      'friend',
+      `🧠 +${quest.reward} braincells — ${quest.title.toLowerCase()} ✅`,
+    )
   }
 }
 
@@ -132,9 +144,9 @@ authed('POST /api/onboarding/claim-pack', async (req) => {
   } catch {
     throw new HttpError(409, 'pack already claimed or vault changed — refresh and retry')
   }
-  const memes = (
-    await Promise.all(picks.map((p) => db.getMeme(p.memeId)))
-  ).filter((m): m is Meme => !!m)
+  const memes = (await Promise.all(picks.map((p) => db.getMeme(p.memeId)))).filter(
+    (m): m is Meme => !!m,
+  )
   await db.addAlert(
     req.user.sub,
     'friend',
@@ -251,7 +263,10 @@ authed('POST /api/memes', async (req) => {
       ? {
           provider: 'giphy',
           id: String(rawSource.id).slice(0, 64),
-          url: typeof rawSource.url === 'string' ? rawSource.url.slice(0, 300) : `https://giphy.com/gifs/${rawSource.id}`,
+          url:
+            typeof rawSource.url === 'string'
+              ? rawSource.url.slice(0, 300)
+              : `https://giphy.com/gifs/${rawSource.id}`,
           author: typeof rawSource.author === 'string' ? rawSource.author.slice(0, 100) : null,
         }
       : null
@@ -286,7 +301,13 @@ authed('POST /api/memes', async (req) => {
     followers
       .filter((f) => f !== req.user.sub)
       .map((f) =>
-        db.addAlert(f, 'friend', `🆕 ${req.user.name} minted "${meme.title}"`, meme.id, req.user.sub),
+        db.addAlert(
+          f,
+          'friend',
+          `🆕 ${req.user.name} minted "${meme.title}"`,
+          meme.id,
+          req.user.sub,
+        ),
       ),
   )
   // pre-render the og card so the first crawler hit (facebook is impatient and
@@ -379,7 +400,8 @@ authed('POST /api/memes/:id/buy', async (req) => {
   const meme = await db.getMeme(req.params.id)
   if (!meme) throw new HttpError(404, 'meme not found')
   if (!meme.listing || meme.listing.shares <= 0) throw new HttpError(409, 'meme is not listed')
-  if (meme.listing.sellerId === req.user.sub) throw new HttpError(400, 'cannot buy your own listing')
+  if (meme.listing.sellerId === req.user.sub)
+    throw new HttpError(400, 'cannot buy your own listing')
   const shares = Math.min(Math.floor(Number(req.body.shares) || 0), meme.listing.shares)
   if (shares <= 0) throw new HttpError(400, 'invalid share count')
   let cost: number
@@ -494,7 +516,13 @@ authed('POST /api/friends/request', async (req) => {
   if (existing) return json(200, { ok: true, status: existing.status })
   await db.setFriendEdge(req.user.sub, otherId, 'outgoing')
   await db.setFriendEdge(otherId, req.user.sub, 'incoming')
-  await db.addAlert(otherId, 'friend', `👋 ${req.user.name} sent you a friend request`, null, req.user.sub)
+  await db.addAlert(
+    otherId,
+    'friend',
+    `👋 ${req.user.name} sent you a friend request`,
+    null,
+    req.user.sub,
+  )
   return json(200, { ok: true, status: 'outgoing' })
 })
 
@@ -505,7 +533,13 @@ authed('POST /api/friends/respond', async (req) => {
   if (req.body.accept) {
     await db.setFriendEdge(req.user.sub, otherId, 'accepted')
     await db.setFriendEdge(otherId, req.user.sub, 'accepted')
-    await db.addAlert(otherId, 'friend', `🤝 ${req.user.name} accepted your friend request`, null, req.user.sub)
+    await db.addAlert(
+      otherId,
+      'friend',
+      `🤝 ${req.user.name} accepted your friend request`,
+      null,
+      req.user.sub,
+    )
     await awardQuest(req.user.sub, 'friend')
     await awardQuest(otherId, 'friend')
   } else {
@@ -529,7 +563,10 @@ function parseTradeSide(v: unknown): TradeSide {
   const memes = Array.isArray(side.memes)
     ? side.memes
         .map((m) => m as Record<string, unknown>)
-        .map((m) => ({ memeId: String(m.memeId ?? ''), shares: Math.floor(Number(m.shares) || 0) }))
+        .map((m) => ({
+          memeId: String(m.memeId ?? ''),
+          shares: Math.floor(Number(m.shares) || 0),
+        }))
         .filter((m) => m.memeId && m.shares > 0)
     : []
   const coins = Math.max(0, Math.floor(Number(side.coins) || 0))
@@ -616,7 +653,10 @@ authed('POST /api/trades/:id/respond', async (req) => {
   try {
     updated = await db.acceptTrade(trade)
   } catch {
-    throw new HttpError(409, 'trade failed — already resolved or one side no longer holds the goods')
+    throw new HttpError(
+      409,
+      'trade failed — already resolved or one side no longer holds the goods',
+    )
   }
   await Promise.all(
     [...trade.offer.memes, ...trade.ask.memes].map((m) => db.refreshOwnership(m.memeId)),
@@ -657,12 +697,16 @@ const MAX_VIDEO_BYTES = 50 * 1024 * 1024 // 50 MB
 authed('POST /api/uploads', async (req) => {
   const contentType = requireString(req.body, 'contentType', 100)
   const ext = UPLOAD_TYPES[contentType]
-  if (!ext) throw new HttpError(400, `unsupported content type (${Object.keys(UPLOAD_TYPES).join(', ')})`)
+  if (!ext)
+    throw new HttpError(400, `unsupported content type (${Object.keys(UPLOAD_TYPES).join(', ')})`)
   const size = Math.floor(Number(req.body.size) || 0)
   const cap = contentType.startsWith('video/') ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES
   if (size <= 0) throw new HttpError(400, 'size (bytes) required')
   if (size > cap) {
-    throw new HttpError(413, `file too large — max ${Math.round(cap / 1024 / 1024)}MB for ${contentType.split('/')[0]}s`)
+    throw new HttpError(
+      413,
+      `file too large — max ${Math.round(cap / 1024 / 1024)}MB for ${contentType.split('/')[0]}s`,
+    )
   }
   const key = `uploads/${req.user.sub}/${randomUUID()}.${ext}`
   const out = await presignUpload(key, contentType, size)
@@ -741,8 +785,7 @@ authed('GET /api/feed', async (req) => {
     .filter((m) => m.creatorId !== req.user.sub && m.ownerId !== req.user.sub)
     .map((m) => ({
       meme: m,
-      score:
-        (friendOwners.get(m.id)?.length ?? 0) * 3 + (friendLikers.get(m.id)?.length ?? 0) * 2,
+      score: (friendOwners.get(m.id)?.length ?? 0) * 3 + (friendLikers.get(m.id)?.length ?? 0) * 2,
     }))
     .sort(
       (a, b) =>
@@ -805,7 +848,13 @@ authed('POST /api/invites/accept', async (req) => {
   if (existing?.status === 'accepted') return json(200, { ok: true, already: true })
   await db.setFriendEdge(req.user.sub, inviterId, 'accepted')
   await db.setFriendEdge(inviterId, req.user.sub, 'accepted')
-  await db.addAlert(inviterId, 'friend', `🎉 ${req.user.name} accepted your invite — you're now friends!`, null, req.user.sub)
+  await db.addAlert(
+    inviterId,
+    'friend',
+    `🎉 ${req.user.name} accepted your invite — you're now friends!`,
+    null,
+    req.user.sub,
+  )
   await awardQuest(req.user.sub, 'friend')
   await awardQuest(inviterId, 'friend')
   return json(200, { ok: true })
@@ -944,8 +993,7 @@ authed('DELETE /api/developers/keys/:prefix', async (req) => {
 authed('POST /api/memes/:id/claim', async (req) => {
   const meme = await db.getMeme(req.params.id)
   if (!meme) throw new HttpError(404, 'meme not found')
-  if (meme.creatorId !== db.ARCHIVE_SUB)
-    throw new HttpError(400, 'this meme already has a creator')
+  if (meme.creatorId !== db.ARCHIVE_SUB) throw new HttpError(400, 'this meme already has a creator')
   const note = typeof req.body.note === 'string' ? req.body.note.slice(0, 500) : ''
   const fresh = await db.putClaim({
     memeId: meme.id,
@@ -991,9 +1039,7 @@ route('GET /api/memes/:id/memeplex', async (req) => {
   const plexIds = await db.listPlex(meme.id)
   const plexMemes = await db.getMemesByIds(plexIds)
   const remixes = plexMemes.filter((m) => m.remixOf === meme.id && !m.private)
-  const related = plexMemes.filter(
-    (m) => !m.private && m.remixOf !== meme.id && !seen.has(m.id),
-  )
+  const related = plexMemes.filter((m) => !m.private && m.remixOf !== meme.id && !seen.has(m.id))
 
   return json(200, {
     original: ancestors.length > 0 ? publicMeme(ancestors[0]) : null,
@@ -1040,14 +1086,21 @@ route('GET /api/memes/:id/stats', async (req) => {
     reshares: meme.uniqueRefs ?? 0,
     sources: [
       ...sources.map((s) => ({
-        source: s.sourceKey.startsWith('unfurl:')
-          ? `${s.sourceKey.slice(7)} unfurls`
-          : s.sourceKey,
+        source: s.sourceKey.startsWith('unfurl:') ? `${s.sourceKey.slice(7)} unfurls` : s.sourceKey,
         url: s.url,
         views: s.count,
         firstSeen: s.firstSeen,
       })),
-      ...(direct > 0 ? [{ source: 'direct / app opens', url: null, views: direct, firstSeen: null }] : []),
+      ...(direct > 0
+        ? [
+            {
+              source: 'direct / app opens',
+              url: null,
+              views: direct,
+              firstSeen: null,
+            },
+          ]
+        : []),
     ],
   })
 })
@@ -1104,7 +1157,12 @@ authed('POST /api/resolve-image', async (req) => {
         imageUrl: gif.stillUrl,
         videoUrl: gif.mp4Url,
         resolvedFrom: 'giphy',
-        source: { provider: 'giphy', id: gif.id, url: gif.url, author: gif.author },
+        source: {
+          provider: 'giphy',
+          id: gif.id,
+          url: gif.url,
+          author: gif.author,
+        },
       })
     }
   }
@@ -1121,7 +1179,10 @@ authed('POST /api/resolve-image', async (req) => {
       maxBytes: 400_000, // only need <head> for HTML; images also capped
     })
   } catch (err) {
-    throw new HttpError(400, err instanceof SafeFetchError ? err.message : 'could not fetch that URL')
+    throw new HttpError(
+      400,
+      err instanceof SafeFetchError ? err.message : 'could not fetch that URL',
+    )
   }
 
   const contentType = fetched.headers.get('content-type') ?? ''
@@ -1181,7 +1242,8 @@ route('GET /api/discord/config', async () => {
 authed('POST /api/discord/link', async (req) => {
   const token = requireString(req.body, 'token', 2000)
   const discordUserId = await discord.readLinkToken(token)
-  if (!discordUserId) throw new HttpError(400, 'link token invalid or expired — run /memeon-connect again')
+  if (!discordUserId)
+    throw new HttpError(400, 'link token invalid or expired — run /memeon-connect again')
   await db.linkDiscord(discordUserId, req.user.sub)
   await db.addAlert(
     req.user.sub,
@@ -1197,11 +1259,7 @@ route('POST /api/discord/interactions', async (req) => {
   if (!cfg) throw new HttpError(503, 'discord app not configured')
   const sig = req.headers['x-signature-ed25519']
   const ts = req.headers['x-signature-timestamp']
-  if (
-    !sig ||
-    !ts ||
-    !discord.verifyDiscordSignature(cfg.public_key, sig, ts, req.rawBody)
-  ) {
+  if (!sig || !ts || !discord.verifyDiscordSignature(cfg.public_key, sig, ts, req.rawBody)) {
     throw new HttpError(401, 'bad signature')
   }
 
@@ -1230,10 +1288,16 @@ route('POST /api/discord/interactions', async (req) => {
     if (customId.startsWith('post:')) {
       const meme = await db.getMeme(customId.slice(5))
       if (!meme || meme.private) {
-        return json(200, { type: 4, data: { flags: 64, content: 'That meme vanished 😶' } })
+        return json(200, {
+          type: 4,
+          data: { flags: 64, content: 'That meme vanished 😶' },
+        })
       }
       // public post into the channel; the /m/ unfurl shows the card + counts a reshare
-      return json(200, { type: 4, data: { content: discord.shareUrl(meme.id) } })
+      return json(200, {
+        type: 4,
+        data: { content: discord.shareUrl(meme.id) },
+      })
     }
   }
 
@@ -1248,7 +1312,10 @@ route('POST /api/discord/interactions', async (req) => {
     return json(200, {
       type: 8,
       data: {
-        choices: results.map((m) => ({ name: discord.memeChoiceLabel(m), value: m.id })),
+        choices: results.map((m) => ({
+          name: discord.memeChoiceLabel(m),
+          value: m.id,
+        })),
       },
     })
   }
@@ -1271,14 +1338,20 @@ route('POST /api/discord/interactions', async (req) => {
     // picked a specific card from autocomplete → post it straight away
     const exact = value ? await db.getMeme(value) : null
     if (exact && !exact.private) {
-      return json(200, { type: 4, data: { content: discord.shareUrl(exact.id) } })
+      return json(200, {
+        type: 4,
+        data: { content: discord.shareUrl(exact.id) },
+      })
     }
     // free-text search → private visual picker (giphy-style): thumbnails + Send buttons
     const results = await discord.searchMemesFor(linkedSub, value, 4)
     if (results.length === 0) {
       return json(200, {
         type: 4,
-        data: { flags: 64, content: `😶 No memes matched "${value}". Mint one at ${env.siteOrigin}` },
+        data: {
+          flags: 64,
+          content: `😶 No memes matched "${value}". Mint one at ${env.siteOrigin}`,
+        },
       })
     }
     return json(200, {
@@ -1428,7 +1501,10 @@ route('GET /binder/:sub', async (req) => {
     .sort((a, b) => memeValue(b.reshares) - memeValue(a.reshares))
     .slice(0, 6)
   const profile = { sub: user.sub, name: user.name, picture: user.picture }
-  const binderStats = { collectionSize: stats.collectionSize, value: stats.value }
+  const binderStats = {
+    collectionSize: stats.collectionSize,
+    value: stats.value,
+  }
   const ogImageUrl = await ogModule
     .ensureBinderOgImage(profile, binderStats, topMemes)
     .catch(() => `${env.siteOrigin}/brand/og-home.png`)
@@ -1484,7 +1560,8 @@ route('GET /m/:id', async (req) => {
   }
   await awardQuest(meme.creatorId, 'share')
   const ogImageUrl = await ensureOgImage(meme).catch(
-    () => `${req.headers['x-forwarded-proto'] ?? 'https'}://${req.headers.host}/api/memes/${meme.id}/og.png`,
+    () =>
+      `${req.headers['x-forwarded-proto'] ?? 'https'}://${req.headers.host}/api/memes/${meme.id}/og.png`,
   )
   if (tieredUp) {
     // the card just changed tiers: bust facebook's scrape cache so old shares upgrade

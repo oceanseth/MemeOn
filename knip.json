@@ -9,10 +9,7 @@
         "scripts/*.mjs",
         ".storybook/**/*.{ts,tsx}"
       ],
-      "project": [
-        "src/**/*.{ts,tsx,css,mdx}",
-        "scripts/**/*.mjs"
-      ],
+      "project": ["src/**/*.{ts,tsx,css,mdx}", "scripts/**/*.mjs"],
       "ignoreExportsUsedInFile": true
     }
   }

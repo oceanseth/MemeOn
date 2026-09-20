@@ -21,11 +21,7 @@ vi.mock('../lib/firebase', () => ({
 }))
 
 function requestDetails(input: RequestInfo | URL, init?: RequestInit) {
-  const value = typeof input === 'string'
-    ? input
-    : input instanceof URL
-      ? input.href
-      : input.url
+  const value = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
   const url = new URL(value, window.location.origin)
   return { url, method: init?.method ?? 'GET' }
 }
@@ -80,7 +76,12 @@ class AsyncVisibleObserver implements IntersectionObserver {
   notify(): void {
     if (this.disconnected || !this.observed?.isConnected) return
     this.callback(
-      [{ isIntersecting: true, target: this.observed } as IntersectionObserverEntry],
+      [
+        {
+          isIntersecting: true,
+          target: this.observed,
+        } as IntersectionObserverEntry,
+      ],
       this,
     )
   }
@@ -110,8 +111,10 @@ function button(label: string, root: ParentNode = host): HTMLButtonElement {
 
 /** Each card names itself through `aria-labelledby`, so the list reads as its accessible names. */
 function cardTitles(): string[] {
-  return [...host.querySelectorAll<HTMLElement>('article[aria-labelledby]')]
-    .map((card) => document.getElementById(card.getAttribute('aria-labelledby') ?? '')?.textContent ?? '')
+  return [...host.querySelectorAll<HTMLElement>('article[aria-labelledby]')].map(
+    (card) =>
+      document.getElementById(card.getAttribute('aria-labelledby') ?? '')?.textContent ?? '',
+  )
 }
 
 function sentinel(): HTMLElement | null {
@@ -150,38 +153,43 @@ describe('MemeDetailView mutation overlap', () => {
     }
     let detailReads = 0
     let deleteRequests = 0
-    vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
-      const { url, method } = requestDetails(input, init)
-      if (method === 'GET' && url.pathname === '/api/memes/detail-delete') {
-        detailReads += 1
-        if (detailReads === 1) {
-          return Promise.resolve(Response.json({
-            meme: ownerMeme,
-            positions: [{ userId: meLou.sub, shares: 100 }],
-          }))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>((input, init) => {
+        const { url, method } = requestDetails(input, init)
+        if (method === 'GET' && url.pathname === '/api/memes/detail-delete') {
+          detailReads += 1
+          if (detailReads === 1) {
+            return Promise.resolve(
+              Response.json({
+                meme: ownerMeme,
+                positions: [{ userId: meLou.sub, shares: 100 }],
+              }),
+            )
+          }
+          if (detailReads === 2) return refreshedDetail.promise
         }
-        if (detailReads === 2) return refreshedDetail.promise
-      }
-      if (method === 'GET' && url.pathname === '/api/memes/detail-delete/stats') {
-        return Promise.resolve(Response.json({ views: 0, reshares: 0, sources: [] }))
-      }
-      if (method === 'GET' && url.pathname === '/api/memes/detail-delete/memeplex') {
-        return Promise.resolve(Response.json(memeplexEmpty))
-      }
-      if (method === 'GET' && url.pathname === '/api/binder') {
-        return Promise.resolve(Response.json({ memes: [] }))
-      }
-      if (method === 'POST' && url.pathname === '/api/memes/detail-delete/visibility') {
-        return Promise.resolve(Response.json({ ok: true }))
-      }
-      if (method === 'DELETE' && url.pathname === '/api/memes/detail-delete') {
-        deleteRequests += 1
-        return deleteRequests === 1
-          ? firstDelete.promise
-          : Promise.resolve(Response.json({ ok: true }))
-      }
-      throw new Error(`Unexpected request: ${method} ${url.pathname}`)
-    }))
+        if (method === 'GET' && url.pathname === '/api/memes/detail-delete/stats') {
+          return Promise.resolve(Response.json({ views: 0, reshares: 0, sources: [] }))
+        }
+        if (method === 'GET' && url.pathname === '/api/memes/detail-delete/memeplex') {
+          return Promise.resolve(Response.json(memeplexEmpty))
+        }
+        if (method === 'GET' && url.pathname === '/api/binder') {
+          return Promise.resolve(Response.json({ memes: [] }))
+        }
+        if (method === 'POST' && url.pathname === '/api/memes/detail-delete/visibility') {
+          return Promise.resolve(Response.json({ ok: true }))
+        }
+        if (method === 'DELETE' && url.pathname === '/api/memes/detail-delete') {
+          deleteRequests += 1
+          return deleteRequests === 1
+            ? firstDelete.promise
+            : Promise.resolve(Response.json({ ok: true }))
+        }
+        throw new Error(`Unexpected request: ${method} ${url.pathname}`)
+      }),
+    )
 
     await act(async () => {
       root.render(
@@ -208,16 +216,20 @@ describe('MemeDetailView mutation overlap', () => {
     expect(deleteRequests).toBe(1)
 
     await act(async () => {
-      refreshedDetail.resolve(Response.json({
-        meme: ownerMeme,
-        positions: [{ userId: meLou.sub, shares: 100 }],
-      }))
+      refreshedDetail.resolve(
+        Response.json({
+          meme: ownerMeme,
+          positions: [{ userId: meLou.sub, shares: 100 }],
+        }),
+      )
       await settle()
       firstDelete.resolve(Response.json({ error: 'delete conflicted' }, { status: 409 }))
       await settle()
     })
 
-    await eventually(() => expect(host.querySelector('[data-slot="alert"]')?.textContent).toContain('delete conflicted'))
+    await eventually(() =>
+      expect(host.querySelector('[data-slot="alert"]')?.textContent).toContain('delete conflicted'),
+    )
     expect(host.querySelector('[role="alertdialog"]')).toBeNull()
     // the failure ends the request: nothing on the page is still presented as in flight
     expect(host.querySelector('[aria-busy="true"]')).toBeNull()
@@ -226,7 +238,9 @@ describe('MemeDetailView mutation overlap', () => {
     await click(button(memeDetailCopy.actions.delete))
     dialog = host.querySelector('[role="alertdialog"]')!
     await click(button(memeDetailCopy.deleteDialog.confirm, dialog))
-    await eventually(() => expect(host.querySelector('output[aria-label="Current route"]')?.textContent).toBe('/binder'))
+    await eventually(() =>
+      expect(host.querySelector('output[aria-label="Current route"]')?.textContent).toBe('/binder'),
+    )
     expect(deleteRequests).toBe(2)
     expect(host.textContent).toContain('Binder destination')
   })
@@ -238,22 +252,35 @@ interface MarketPage {
   status?: number
 }
 
-function marketFetch(pages: Record<string, MarketPage>) {
+function marketFetch(
+  pages: Record<string, MarketPage>,
+  fallback?: (cursor: string) => Promise<Response>,
+) {
   const requests: string[] = []
-  vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
-    const { url, method } = requestDetails(input, init)
-    if (method !== 'GET' || url.pathname !== '/api/memes') {
-      throw new Error(`Unexpected request: ${method} ${url.pathname}`)
-    }
-    const cursor = url.searchParams.get('cursor') ?? 'initial'
-    requests.push(cursor)
-    const page = pages[cursor]
-    if (!page) throw new Error(`Unexpected cursor: ${cursor}`)
-    return Promise.resolve(Response.json(
-      page.status ? { error: 'page unavailable' } : { memes: page.memes, nextCursor: page.nextCursor },
-      { status: page.status ?? 200 },
-    ))
-  }))
+  vi.stubGlobal(
+    'fetch',
+    vi.fn<typeof fetch>((input, init) => {
+      const { url, method } = requestDetails(input, init)
+      if (method !== 'GET' || url.pathname !== '/api/memes') {
+        throw new Error(`Unexpected request: ${method} ${url.pathname}`)
+      }
+      const cursor = url.searchParams.get('cursor') ?? 'initial'
+      requests.push(cursor)
+      const page = pages[cursor]
+      if (page) {
+        return Promise.resolve(
+          Response.json(
+            page.status
+              ? { error: 'page unavailable' }
+              : { memes: page.memes, nextCursor: page.nextCursor },
+            { status: page.status ?? 200 },
+          ),
+        )
+      }
+      if (fallback) return fallback(cursor)
+      throw new Error(`Unexpected cursor: ${cursor}`)
+    }),
+  )
   return requests
 }
 
@@ -291,7 +318,10 @@ describe('MarketplaceView continuously visible pagination', () => {
     installVisibleObserver()
     const requests = marketFetch({
       initial: { memes: [paperMeme], nextCursor: 'cursor-a' },
-      'cursor-a': { memes: [{ ...paperMeme, title: 'duplicate paper' }], nextCursor: 'cursor-b' },
+      'cursor-a': {
+        memes: [{ ...paperMeme, title: 'duplicate paper' }],
+        nextCursor: 'cursor-b',
+      },
       'cursor-b': { memes: [silverMeme], nextCursor: null },
     })
     await renderMarketplace()
@@ -325,18 +355,10 @@ describe('MarketplaceView continuously visible pagination', () => {
   it('guards a pending continuation from duplicate callbacks and disconnects on unmount', async () => {
     installVisibleObserver()
     const continuation = deferred<Response>()
-    const requests: string[] = []
-    vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
-      const { url, method } = requestDetails(input, init)
-      if (method !== 'GET' || url.pathname !== '/api/memes') {
-        throw new Error(`Unexpected request: ${method} ${url.pathname}`)
-      }
-      const cursor = url.searchParams.get('cursor') ?? 'initial'
-      requests.push(cursor)
-      return cursor === 'initial'
-        ? Promise.resolve(Response.json({ memes: [paperMeme], nextCursor: 'cursor-a' }))
-        : continuation.promise
-    }))
+    const requests = marketFetch(
+      { initial: { memes: [paperMeme], nextCursor: 'cursor-a' } },
+      () => continuation.promise,
+    )
     await renderMarketplace()
     await eventually(() => expect(requests).toEqual(['initial', 'cursor-a']))
 
@@ -374,32 +396,41 @@ function installDetailApi(options: {
   const id = options.meme.id
   const positions = options.positions ?? [{ userId: meLou.sub, shares: 100 }]
   const requests: Array<{ method: string; path: string }> = []
-  vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
-    const { url, method } = requestDetails(input, init)
-    const path = url.pathname
-    requests.push({ method, path })
-    if (method === 'GET' && path === `/api/memes/${id}`) {
-      return Promise.resolve(Response.json({ meme: options.meme, positions }))
-    }
-    if (method === 'GET' && path === `/api/memes/${id}/stats`) {
-      return options.stats === 'fail'
-        ? Promise.resolve(jsonError())
-        : Promise.resolve(Response.json({ views: 0, reshares: 0, sources: [] }))
-    }
-    if (method === 'GET' && path === `/api/memes/${id}/memeplex`) {
-      return options.plex === 'fail' ? Promise.resolve(jsonError()) : Promise.resolve(Response.json(memeplexEmpty))
-    }
-    if (method === 'GET' && path === '/api/binder') {
-      return options.binder === 'fail' ? Promise.resolve(jsonError()) : Promise.resolve(Response.json({ memes: [] }))
-    }
-    if (method === 'GET' && path === '/api/users') {
-      return options.holders === 'fail' ? Promise.resolve(jsonError()) : Promise.resolve(Response.json({ users: [] }))
-    }
-    if (method === 'POST' && path === `/api/memes/${id}/memeplex`) {
-      return Promise.resolve(Response.json({ ok: true }))
-    }
-    throw new Error(`Unexpected request: ${method} ${path}`)
-  }))
+  vi.stubGlobal(
+    'fetch',
+    vi.fn<typeof fetch>((input, init) => {
+      const { url, method } = requestDetails(input, init)
+      const path = url.pathname
+      requests.push({ method, path })
+      if (method === 'GET' && path === `/api/memes/${id}`) {
+        return Promise.resolve(Response.json({ meme: options.meme, positions }))
+      }
+      if (method === 'GET' && path === `/api/memes/${id}/stats`) {
+        return options.stats === 'fail'
+          ? Promise.resolve(jsonError())
+          : Promise.resolve(Response.json({ views: 0, reshares: 0, sources: [] }))
+      }
+      if (method === 'GET' && path === `/api/memes/${id}/memeplex`) {
+        return options.plex === 'fail'
+          ? Promise.resolve(jsonError())
+          : Promise.resolve(Response.json(memeplexEmpty))
+      }
+      if (method === 'GET' && path === '/api/binder') {
+        return options.binder === 'fail'
+          ? Promise.resolve(jsonError())
+          : Promise.resolve(Response.json({ memes: [] }))
+      }
+      if (method === 'GET' && path === '/api/users') {
+        return options.holders === 'fail'
+          ? Promise.resolve(jsonError())
+          : Promise.resolve(Response.json({ users: [] }))
+      }
+      if (method === 'POST' && path === `/api/memes/${id}/memeplex`) {
+        return Promise.resolve(Response.json({ ok: true }))
+      }
+      throw new Error(`Unexpected request: ${method} ${path}`)
+    }),
+  )
   return requests
 }
 
@@ -420,7 +451,11 @@ async function renderDetail(id: string): Promise<void> {
 
 function stubClipboardWrite(writeText: (text: string) => Promise<void>) {
   try {
-    Object.defineProperty(navigator, 'clipboard', { configurable: true, writable: true, value: { writeText } })
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      writable: true,
+      value: { writeText },
+    })
   } catch {
     vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeText)
   }
@@ -449,17 +484,31 @@ describe('MemeDetailView secondary failures', () => {
     const requests = installDetailApi({ meme: ownerMeme, binder: 'fail' })
     await renderDetail(ownerMeme.id)
     await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
-    const pasted = host.querySelector<HTMLInputElement>(`input[aria-label="${memeplexPanelCopy.pasted}"]`)
+    const pasted = host.querySelector<HTMLInputElement>(
+      `input[aria-label="${memeplexPanelCopy.pasted}"]`,
+    )
     expect(pasted).not.toBeNull()
     await act(async () => {
-      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(pasted, silverMeme.id)
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(
+        pasted,
+        silverMeme.id,
+      )
       pasted!.dispatchEvent(new Event('input', { bubbles: true }))
       await settle()
     })
-    const linkButton = [...host.querySelectorAll('button')].find((candidate) => candidate.textContent?.trim() === memeplexPanelCopy.link)
+    const linkButton = [...host.querySelectorAll('button')].find(
+      (candidate) => candidate.textContent?.trim() === memeplexPanelCopy.link,
+    )
     if (!linkButton) throw new Error('Missing memeplex Link button')
     await click(linkButton)
-    await eventually(() => expect(requests.some((request) => request.method === 'POST' && request.path === `/api/memes/${ownerMeme.id}/memeplex`)).toBe(true))
+    await eventually(() =>
+      expect(
+        requests.some(
+          (request) =>
+            request.method === 'POST' && request.path === `/api/memes/${ownerMeme.id}/memeplex`,
+        ),
+      ).toBe(true),
+    )
   })
 
   it('falls back to holder.unknown when holder names fail', async () => {
@@ -479,7 +528,9 @@ describe('MemeDetailView secondary failures', () => {
 
   it('shows share.copyFailed when clipboard write rejects', async () => {
     installDetailApi({ meme: ownerMeme })
-    stubClipboardWrite(async () => { throw new Error('denied') })
+    stubClipboardWrite(async () => {
+      throw new Error('denied')
+    })
     await renderDetail(ownerMeme.id)
     await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
     await click(button(memeDetailCopy.share.copy))
@@ -490,7 +541,11 @@ describe('MemeDetailView secondary failures', () => {
     installDetailApi({ meme: ownerMeme, plex: 'fail' })
     await renderDetail(ownerMeme.id)
     await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
-    await eventually(() => expect(host.querySelector('[data-slot="alert"]')?.textContent).toContain(memeDetailCopy.memeplex.loadFailed))
+    await eventually(() =>
+      expect(host.querySelector('[data-slot="alert"]')?.textContent).toContain(
+        memeDetailCopy.memeplex.loadFailed,
+      ),
+    )
     expect(host.textContent).not.toContain(memeplexPanelCopy.empty)
   })
 })

@@ -55,8 +55,10 @@ export const binderMachine = createListPhaseMachine<BinderContext, BinderEvent>(
     },
     SET_SORT: {
       actions: assign({
-        sortKey: ({ event }: { event: Extract<BinderEvent, { type: 'SET_SORT' }> }) => event.sortKey,
-        sortDir: ({ event }: { event: Extract<BinderEvent, { type: 'SET_SORT' }> }) => event.sortDir,
+        sortKey: ({ event }: { event: Extract<BinderEvent, { type: 'SET_SORT' }> }) =>
+          event.sortKey,
+        sortDir: ({ event }: { event: Extract<BinderEvent, { type: 'SET_SORT' }> }) =>
+          event.sortDir,
         visibleLimit: BINDER_PAGE_SIZE,
       }),
     },

@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { expect, screen, userEvent, waitFor, within } from 'storybook/test'
-import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
+import {
+  connectedBeforeEach,
+  connectedLoader,
+  ConnectedStory,
+} from '../../.storybook/connected-story'
 import type { ConnectedScenario } from '../../.storybook/connected-scenario'
 import { marketplaceCopy as copy } from '../copy/marketplace'
 import { sharedCopy } from '../copy/shared'
@@ -44,7 +48,11 @@ const marketCalls = (scenario: ConnectedScenario, match = ''): number =>
 const connected: Story = {
   loaders: [connectedLoader()],
   beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><MarketplaceView /></ConnectedStory>,
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <MarketplaceView />
+    </ConnectedStory>
+  ),
 }
 
 export const FiltersSortAndStyles: Story = {
@@ -61,18 +69,35 @@ export const FiltersSortAndStyles: Story = {
     await expect(document.title).toBe(`${copy.pageTitle} — ${sharedCopy.brand}`)
     const search = canvas.getByRole('searchbox', { name: copy.search.label })
     await userEvent.type(search, 'holo')
-    await waitFor(() => expect(canvas.queryByRole('link', { name: /fresh paper/i })).not.toBeInTheDocument())
+    await waitFor(() =>
+      expect(canvas.queryByRole('link', { name: /fresh paper/i })).not.toBeInTheDocument(),
+    )
     await expect(canvas.getByRole('link', { name: /holo hit/i })).toBeInTheDocument()
     /* Media type and For sale are pressed tabs; only tiers use a Select */
     const media = within(canvas.getByRole('group', { name: copy.filters.media.groupLabel }))
     await userEvent.click(media.getByRole('button', { name: copy.filters.media.images }))
     await pickOption(canvas.getByRole('combobox', { name: copy.filters.tierLabel }), 'Holo')
     await userEvent.click(canvas.getByRole('button', { name: copy.filters.listed }))
-    await waitFor(() => expect(loaded.scenario.requests.some((request: { path: string }) => request.path.includes('listed=true'))).toBe(true))
+    await waitFor(() =>
+      expect(
+        loaded.scenario.requests.some((request: { path: string }) =>
+          request.path.includes('listed=true'),
+        ),
+      ).toBe(true),
+    )
     // single-select media, an independent For sale toggle — the row states itself, not a checkbox
-    await expect(media.getByRole('button', { name: copy.filters.media.images })).toHaveAttribute('aria-pressed', 'true')
-    await expect(media.getByRole('button', { name: copy.filters.media.all })).toHaveAttribute('aria-pressed', 'false')
-    await expect(canvas.getByRole('button', { name: copy.filters.listed })).toHaveAttribute('aria-pressed', 'true')
+    await expect(media.getByRole('button', { name: copy.filters.media.images })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await expect(media.getByRole('button', { name: copy.filters.media.all })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
+    await expect(canvas.getByRole('button', { name: copy.filters.listed })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
     // the filter set is linkable and survives a reload
     await expect(canvas.getByLabelText('Current search')).toHaveTextContent(
       'q=holo&type=image&tier=holo&listed=true',
@@ -85,21 +110,30 @@ export const FiltersSortAndStyles: Story = {
       ),
     )
     // a link that wears the button's look wears its weight too: button labels are 500
-    await expect(getComputedStyle(canvas.getByRole('link', { name: /Mint a meme/ })).fontWeight).toBe('500')
+    await expect(
+      getComputedStyle(canvas.getByRole('link', { name: /Mint a meme/ })).fontWeight,
+    ).toBe('500')
     await expect(loaded.scenario.unexpected).toEqual([])
   },
 }
 
 export const LoadFailureOffersRetry: Story = {
-  loaders: [connectedLoader({
-    overrides: {
-      'GET /api/memes': (_request, scenario) => marketCalls(scenario) === 1
-        ? { status: 500, body: { error: 'catalog unavailable' } }
-        : { body: { memes: scenario.memes, nextCursor: null } },
-    },
-  })],
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'GET /api/memes': (_request, scenario) =>
+          marketCalls(scenario) === 1
+            ? { status: 500, body: { error: 'catalog unavailable' } }
+            : { body: { memes: scenario.memes, nextCursor: null } },
+      },
+    }),
+  ],
   beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><MarketplaceView /></ConnectedStory>,
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <MarketplaceView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const alert = await canvas.findByRole('alert')
@@ -111,20 +145,26 @@ export const LoadFailureOffersRetry: Story = {
 }
 
 export const LoadMoreFailureKeepsTheCursor: Story = {
-  loaders: [connectedLoader({
-    overrides: {
-      'GET /api/memes': (request, scenario) => {
-        if (!request.path.includes('cursor=')) {
-          return { body: { memes: scenario.memes, nextCursor: 'page-2' } }
-        }
-        return marketCalls(scenario, 'cursor=') === 1
-          ? { status: 500, body: { error: 'page unavailable' } }
-          : { body: { memes: [scenario.mintedMeme], nextCursor: null } }
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'GET /api/memes': (request, scenario) => {
+          if (!request.path.includes('cursor=')) {
+            return { body: { memes: scenario.memes, nextCursor: 'page-2' } }
+          }
+          return marketCalls(scenario, 'cursor=') === 1
+            ? { status: 500, body: { error: 'page unavailable' } }
+            : { body: { memes: [scenario.mintedMeme], nextCursor: null } }
+        },
       },
-    },
-  })],
+    }),
+  ],
   beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><MarketplaceView /></ConnectedStory>,
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <MarketplaceView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('link', { name: /fresh paper/i })).toBeInTheDocument()
@@ -141,18 +181,38 @@ export const LoadMoreFailureKeepsTheCursor: Story = {
 export const Empty: Story = {
   loaders: [connectedLoader({ empty: true })],
   beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><MarketplaceView /></ConnectedStory>,
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <MarketplaceView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement }) => {
     await expect(await within(canvasElement).findByText(/No memes match/)).toBeInTheDocument()
   },
 }
 
 export const LoadingThenReady: Story = {
-  loaders: [connectedLoader({ overrides: { 'GET /api/memes': async (_request, scenario) => { await scenario.waitForRelease('market'); return { body: { memes: scenario.memes, nextCursor: null } } } } })],
-  beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><MarketplaceView /></ConnectedStory>,
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'GET /api/memes': async (_request, scenario) => {
+          await scenario.waitForRelease('market')
+          return { body: { memes: scenario.memes, nextCursor: null } }
+        },
+      },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <MarketplaceView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await waitFor(() => expect(canvasElement.querySelector('[data-slot="skeleton-card"]')).not.toBeNull())
+    await waitFor(() =>
+      expect(canvasElement.querySelector('[data-slot="skeleton-card"]')).not.toBeNull(),
+    )
     await expect(canvas.getByRole('status')).toHaveTextContent(copy.results.searching)
     loaded.scenario.release('market')
     await expect(await canvas.findByRole('link', { name: /fresh paper/ })).toBeInTheDocument()
@@ -160,12 +220,32 @@ export const LoadingThenReady: Story = {
 }
 
 export const CursorContinuation: Story = {
-  loaders: [connectedLoader({ overrides: { 'GET /api/memes': (request, scenario) => request.path.includes('cursor=page-2') ? { body: { memes: [scenario.mintedMeme], nextCursor: null } } : { body: { memes: scenario.memes, nextCursor: 'page-2' } } } })],
-  beforeEach: async (context) => connectedBeforeEach(context), render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><MarketplaceView /></ConnectedStory>,
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'GET /api/memes': (request, scenario) =>
+          request.path.includes('cursor=page-2')
+            ? { body: { memes: [scenario.mintedMeme], nextCursor: null } }
+            : { body: { memes: scenario.memes, nextCursor: 'page-2' } },
+      },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <MarketplaceView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement, loaded }) => {
-    const canvas = within(canvasElement); await expect(await canvas.findByRole('link', { name: /fresh paper/ })).toBeInTheDocument()
-    await waitFor(() => expect(loaded.scenario.intersectionObservers.length).toBeGreaterThan(0)); loaded.scenario.intersect()
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByRole('link', { name: /fresh paper/ })).toBeInTheDocument()
+    await waitFor(() => expect(loaded.scenario.intersectionObservers.length).toBeGreaterThan(0))
+    loaded.scenario.intersect()
     await expect(await canvas.findByRole('link', { name: /story mint/ })).toBeInTheDocument()
-    await expect(loaded.scenario.requests.some((request: { path: string }) => request.path.includes('cursor=page-2'))).toBe(true)
+    await expect(
+      loaded.scenario.requests.some((request: { path: string }) =>
+        request.path.includes('cursor=page-2'),
+      ),
+    ).toBe(true)
   },
 }

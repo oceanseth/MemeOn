@@ -20,7 +20,10 @@ import { Toggle } from '@/atoms/toggle'
 import { ToggleGroup, ToggleGroupItem } from '@/atoms/toggle-group'
 import { Toolbar, ToolbarStart } from '@/atoms/toolbar'
 import type { MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
-import { binderGridClasses as cardGrid, binderCardSlotClasses as cardSlot } from '../lib/binderChrome'
+import {
+  binderGridClasses as cardGrid,
+  binderCardSlotClasses as cardSlot,
+} from '../lib/binderChrome'
 import { cn } from '../lib/cn'
 
 /* The class strings below are this screen's own layout, one token per `cn` argument: a multi-word
@@ -57,11 +60,31 @@ export function MarketplaceScreen({
   emptyHeading,
   emptyBody,
   errorHeading,
-  cards, queryInputProps, filterTabs, tierSelectProps,
-  createLinkProps, filtersToggleProps, filtersToggleLabel, filtersPanelProps, statusProps,
-  resultsLabel, clearFiltersProps, showLoading, showEmpty, showError, showGrid, showMore,
-  skeletonCount, errorMessage, retryButtonProps, retryLabel, loadMoreProps, loadMoreLabel,
-  loadMoreError, endOfListLabel, sentinelRef,
+  cards,
+  queryInputProps,
+  filterTabs,
+  tierSelectProps,
+  createLinkProps,
+  filtersToggleProps,
+  filtersToggleLabel,
+  filtersPanelProps,
+  statusProps,
+  resultsLabel,
+  clearFiltersProps,
+  showLoading,
+  showEmpty,
+  showError,
+  showGrid,
+  showMore,
+  skeletonCount,
+  errorMessage,
+  retryButtonProps,
+  retryLabel,
+  loadMoreProps,
+  loadMoreLabel,
+  loadMoreError,
+  endOfListLabel,
+  sentinelRef,
 }: MarketplaceScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
@@ -86,7 +109,10 @@ export function MarketplaceScreen({
               className="flex-1"
               pressed={!clearFiltersProps}
               {...(clearFiltersProps
-                ? { onClick: clearFiltersProps.onClick, 'aria-label': allMemesPillA11y }
+                ? {
+                    onClick: clearFiltersProps.onClick,
+                    'aria-label': allMemesPillA11y,
+                  }
                 : {})}
             >
               {allMemesPill}
@@ -103,11 +129,7 @@ export function MarketplaceScreen({
           </Link>
         </Toolbar>
         {/* on phones the filter rows collapse behind the disclosure so the grid starts on the first screenful */}
-        <div
-          data-slot="market-filters"
-          className={marketFilters}
-          {...filtersPanelProps}
-        >
+        <div data-slot="market-filters" className={marketFilters} {...filtersPanelProps}>
           {/* media, listed, and tier filters — the pressed item is the active filter */}
           <Toolbar>
             <ToolbarStart>
@@ -119,12 +141,17 @@ export function MarketplaceScreen({
                 ))}
               </ToggleGroup>
             </ToolbarStart>
-            <Toggle pressed={filterTabs.listed.pressed} onPressedChange={filterTabs.listed.onPressedChange}>
+            <Toggle
+              pressed={filterTabs.listed.pressed}
+              onPressedChange={filterTabs.listed.onPressedChange}
+            >
               {filterTabs.listed.label}
             </Toggle>
             <Select items={tierSelectItems} variant="pill" {...tierSelectProps} />
             {clearFiltersProps && !showEmpty && (
-              <Button size="xs" {...clearFiltersProps}>{clearFiltersLabel}</Button>
+              <Button size="xs" {...clearFiltersProps}>
+                {clearFiltersLabel}
+              </Button>
             )}
           </Toolbar>
         </div>
@@ -145,7 +172,9 @@ export function MarketplaceScreen({
             <EmptyDescription>{errorMessage}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button variant="primary" {...retryButtonProps}>{retryLabel}</Button>
+            <Button variant="primary" {...retryButtonProps}>
+              {retryLabel}
+            </Button>
           </EmptyContent>
         </Empty>
       ) : showEmpty ? (
@@ -162,22 +191,28 @@ export function MarketplaceScreen({
             </EmptyContent>
           )}
         </Empty>
-      ) : showGrid ? <>
-        <div data-slot="market-grid" className={cardGrid} role="list">
-          {cards.map((card) => (
-            <div key={card.id} className={cardSlot} role="listitem"><MemeCard model={card} /></div>
-          ))}
-        </div>
-        {showMore && (
-          <div ref={sentinelRef} data-slot="load-more" className="mt-4.5">
-            <EmptyContent>
-              {loadMoreError && <Alert variant="error">{loadMoreError}</Alert>}
-              <Button className="max-sm:w-full" {...loadMoreProps}>{loadMoreLabel}</Button>
-            </EmptyContent>
+      ) : showGrid ? (
+        <>
+          <div data-slot="market-grid" className={cardGrid} role="list">
+            {cards.map((card) => (
+              <div key={card.id} className={cardSlot} role="listitem">
+                <MemeCard model={card} />
+              </div>
+            ))}
           </div>
-        )}
-        {endOfListLabel && <PageState size="compact">{endOfListLabel}</PageState>}
-      </> : null}
+          {showMore && (
+            <div ref={sentinelRef} data-slot="load-more" className="mt-4.5">
+              <EmptyContent>
+                {loadMoreError && <Alert variant="error">{loadMoreError}</Alert>}
+                <Button className="max-sm:w-full" {...loadMoreProps}>
+                  {loadMoreLabel}
+                </Button>
+              </EmptyContent>
+            </div>
+          )}
+          {endOfListLabel && <PageState size="compact">{endOfListLabel}</PageState>}
+        </>
+      ) : null}
     </PageContainer>
   )
 }

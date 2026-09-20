@@ -10,7 +10,8 @@ import { Icon } from '@/atoms/icon'
 import type { CreateMemeScreenModel } from '../lib/createMemeModel'
 
 const COST_NOTE = 'text-sm font-semibold text-muted-foreground'
-const LOADING_STATE = 'flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-muted-foreground'
+const LOADING_STATE =
+  'flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-muted-foreground'
 
 export type CreateMemeRemixPanelProps = Pick<
   CreateMemeScreenModel,
@@ -79,10 +80,7 @@ export function CreateMemeRemixPanel({
     <div data-slot="create-meme-remix-panel" className="contents">
       {remixSource ? (
         <Toolbar>
-          <img
-            {...remixSource.imageProps}
-            className="size-21 rounded-md object-cover"
-          />
+          <img {...remixSource.imageProps} className="size-21 rounded-md object-cover" />
           <Hint as="span">
             {remixingPrefix} {sourceLink}
             {remixingBy}
@@ -107,11 +105,7 @@ export function CreateMemeRemixPanel({
       )}
       <Field>
         <FieldLabel>{remixPromptLabel}</FieldLabel>
-        <Textarea
-          {...remixPromptTextareaProps}
-          rows={3}
-          placeholder={remixPromptPlaceholder}
-        />
+        <Textarea {...remixPromptTextareaProps} rows={3} placeholder={remixPromptPlaceholder} />
       </Field>
       {showEditedFrameApproval && (
         /* wrapper keeps the named slot the atom would otherwise own.

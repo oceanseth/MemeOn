@@ -12,7 +12,11 @@ export interface UserHit {
 export type GiftTarget = { sub: string; name: string }
 
 /** A destructive relationship change waiting on its confirm dialog. */
-export type PendingRemoval = { sub: string; name: string; kind: 'remove' | 'decline' }
+export type PendingRemoval = {
+  sub: string
+  name: string
+  kind: 'remove' | 'decline'
+}
 
 export interface FriendsContext {
   friends: FriendEntry[]
@@ -103,15 +107,27 @@ export const friendsMachine = setup({
   initial: 'loading',
   on: {
     SET_QUERY: { actions: assign({ query: ({ event }) => event.query }) },
-    SET_HITS: { actions: assign({ hits: ({ event }) => event.hits, searchErr: null }) },
-    SET_SEARCH_ERR: { actions: assign({ searchErr: ({ event }) => event.err }) },
+    SET_HITS: {
+      actions: assign({ hits: ({ event }) => event.hits, searchErr: null }),
+    },
+    SET_SEARCH_ERR: {
+      actions: assign({ searchErr: ({ event }) => event.err }),
+    },
     SET_MSG: { actions: assign({ msg: ({ event }) => event.msg }) },
-    SET_ACTION_ERR: { actions: assign({ actionErr: ({ event }) => event.err }) },
+    SET_ACTION_ERR: {
+      actions: assign({ actionErr: ({ event }) => event.err }),
+    },
     SET_PENDING: { actions: assign({ pendingSub: ({ event }) => event.sub }) },
-    ASK_REMOVE: { actions: assign({ pendingRemoval: ({ event }) => event.removal }) },
+    ASK_REMOVE: {
+      actions: assign({ pendingRemoval: ({ event }) => event.removal }),
+    },
     CLOSE_REMOVE: { actions: assign({ pendingRemoval: null }) },
-    SET_SEARCHING: { actions: assign({ searching: ({ event }) => event.searching }) },
-    SET_ONLINE: { actions: assign({ onlineSubs: ({ event }) => event.onlineSubs }) },
+    SET_SEARCHING: {
+      actions: assign({ searching: ({ event }) => event.searching }),
+    },
+    SET_ONLINE: {
+      actions: assign({ onlineSubs: ({ event }) => event.onlineSubs }),
+    },
     OPEN_GIFT: {
       actions: assign({
         gifting: ({ event }) => event.recipient,
@@ -123,8 +139,12 @@ export const friendsMachine = setup({
       }),
     },
     CLOSE_GIFT: { actions: assign({ gifting: null }) },
-    SET_GIFT_MEMES: { actions: assign({ giftMemes: ({ event }) => event.memes }) },
-    SET_GIFT_QUERY: { actions: assign({ giftQuery: ({ event }) => event.query }) },
+    SET_GIFT_MEMES: {
+      actions: assign({ giftMemes: ({ event }) => event.memes }),
+    },
+    SET_GIFT_QUERY: {
+      actions: assign({ giftQuery: ({ event }) => event.query }),
+    },
     SET_GIFT_PICK: {
       actions: assign({
         giftPick: ({ event }) => event.pick,
@@ -132,15 +152,20 @@ export const friendsMachine = setup({
         giftSharesInput: null,
       }),
     },
-    SET_GIFT_SHARES: { actions: assign({ giftShares: ({ event }) => event.shares }) },
-    SET_GIFT_SHARES_INPUT: { actions: assign({ giftSharesInput: ({ event }) => event.value }) },
+    SET_GIFT_SHARES: {
+      actions: assign({ giftShares: ({ event }) => event.shares }),
+    },
+    SET_GIFT_SHARES_INPUT: {
+      actions: assign({ giftSharesInput: ({ event }) => event.value }),
+    },
     SET_GIFT_BUSY: { actions: assign({ giftBusy: ({ event }) => event.busy }) },
     SET_GIFT_ERR: { actions: assign({ giftErr: ({ event }) => event.err }) },
     SET_COPIED: {
       actions: assign({
         copied: ({ event }) => event.copied,
         /* a timer's {copied:false} must not clear or set copyFailed unless failed:true */
-        copyFailed: ({ context, event }) => (event.failed ? true : event.copied ? false : context.copyFailed),
+        copyFailed: ({ context, event }) =>
+          event.failed ? true : event.copied ? false : context.copyFailed,
       }),
     },
     DONE: [

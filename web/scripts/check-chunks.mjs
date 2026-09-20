@@ -21,56 +21,56 @@
  * Reads the shipped maps rather than guessing Vite's chunk graph. Source-map membership of
  * `meme-card` in a lazy chunk is not a mint-import detector: shared modules stay in the entry.
  */
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
-import { basename, isAbsolute, join, relative, resolve } from "node:path"
-import ts from "typescript"
-import { scriptKindFor, staticModuleSpecifier } from "./lib/ts-ast.mjs"
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { basename, isAbsolute, join, relative, resolve } from 'node:path'
+import ts from 'typescript'
+import { scriptKindFor, staticModuleSpecifier } from './lib/ts-ast.mjs'
 
 const display = (path) => {
   const short = relative(process.cwd(), path)
-  return short && !short.startsWith("..") && !isAbsolute(short) ? short : path
+  return short && !short.startsWith('..') && !isAbsolute(short) ? short : path
 }
 
 const LAZY_VIEW_BASENAMES = new Set([
-  "BinderView.tsx",
-  "CreateMemeView.tsx",
-  "DevelopersView.tsx",
-  "FriendsView.tsx",
-  "LeaderboardView.tsx",
-  "MarketplaceView.tsx",
-  "SettingsView.tsx",
-  "TradesView.tsx",
+  'BinderView.tsx',
+  'CreateMemeView.tsx',
+  'DevelopersView.tsx',
+  'FriendsView.tsx',
+  'LeaderboardView.tsx',
+  'MarketplaceView.tsx',
+  'SettingsView.tsx',
+  'TradesView.tsx',
 ])
 const CREATE_MEME_VIEW = /^CreateMeme.*View\.tsx$/
-const LANDING_VIEW = "src/views/LandingView.tsx"
-const MAIN_ENTRY = "src/main.tsx"
-const APP_VIEW_ENTRY = "src/views/AppView.tsx"
+const LANDING_VIEW = 'src/views/LandingView.tsx'
+const MAIN_ENTRY = 'src/main.tsx'
+const APP_VIEW_ENTRY = 'src/views/AppView.tsx'
 const IMPORT_OWNERS = [
-  { rel: "screens/LandingScreen", label: "LandingScreen" },
-  { rel: "screens/CreateMemeScreen", label: "CreateMemeScreen" },
+  { rel: 'screens/LandingScreen', label: 'LandingScreen' },
+  { rel: 'screens/CreateMemeScreen', label: 'CreateMemeScreen' },
 ]
-const CREATE_MEME_MODEL = "lib/createMemeModel"
+const CREATE_MEME_MODEL = 'lib/createMemeModel'
 
 const args = process.argv.slice(2)
 let srcArg
 const positional = []
 for (let i = 0; i < args.length; i += 1) {
   const arg = args[i]
-  if (arg === "--src") {
+  if (arg === '--src') {
     srcArg = args[i + 1]
     i += 1
     continue
   }
-  if (arg.startsWith("--src=")) {
-    srcArg = arg.slice("--src=".length)
+  if (arg.startsWith('--src=')) {
+    srcArg = arg.slice('--src='.length)
     continue
   }
-  if (!arg.startsWith("--")) positional.push(arg)
+  if (!arg.startsWith('--')) positional.push(arg)
 }
 
-const dist = resolve(positional[0] ?? "dist")
-const src = resolve(srcArg ?? join(import.meta.dirname, "..", "src"))
-const assets = join(dist, "assets")
+const dist = resolve(positional[0] ?? 'dist')
+const src = resolve(srcArg ?? join(import.meta.dirname, '..', 'src'))
+const assets = join(dist, 'assets')
 
 if (!existsSync(assets)) {
   console.error(`check-chunks: ${display(assets)} does not exist — run the build first`)
@@ -81,12 +81,12 @@ if (!existsSync(src)) {
   process.exit(2)
 }
 
-const toPosix = (path) => path.replace(/\\/g, "/")
+const toPosix = (path) => path.replace(/\\/g, '/')
 
 /** Strip schemes, query, hash; keep a path we can suffix-match. */
 const normalizeSource = (source) => {
-  let value = toPosix(String(source ?? ""))
-  value = value.replace(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//, "")
+  let value = toPosix(String(source ?? ''))
+  value = value.replace(/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//, '')
   const cut = value.search(/[?#]/)
   if (cut !== -1) value = value.slice(0, cut)
   try {
@@ -112,12 +112,14 @@ const isLazyView = (name) => LAZY_VIEW_BASENAMES.has(name) || CREATE_MEME_VIEW.t
 
 /** Hyphenated `meme-card` module path; not memeCardModel / CreateMemeCardModel. */
 const isMemeCardSpecifier = (spec) => {
-  const value = toPosix(spec).split("?")[0]
-  return value.split("/").some((part) => part === "meme-card" || /^meme-card\.[cm]?[jt]sx?$/.test(part))
+  const value = toPosix(spec).split('?')[0]
+  return value
+    .split('/')
+    .some((part) => part === 'meme-card' || /^meme-card\.[cm]?[jt]sx?$/.test(part))
 }
 
 const memeCardImportSpecs = (file) => {
-  const source = readFileSync(file, "utf8")
+  const source = readFileSync(file, 'utf8')
   const tree = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, scriptKindFor(file))
   const specs = []
   const visit = (node) => {
@@ -139,29 +141,29 @@ const memeCardImportSpecs = (file) => {
 }
 
 const readMapSources = (file) => {
-  let raw = readFileSync(file, "utf8")
-  if (raw.startsWith(")]}'")) raw = raw.slice(raw.indexOf("\n") + 1)
+  let raw = readFileSync(file, 'utf8')
+  if (raw.startsWith(")]}'")) raw = raw.slice(raw.indexOf('\n') + 1)
   let map
   try {
     map = JSON.parse(raw)
   } catch {
-    return { error: "is not valid JSON" }
+    return { error: 'is not valid JSON' }
   }
   const listed = Array.isArray(map.sources) ? map.sources : []
-  const root = typeof map.sourceRoot === "string" ? map.sourceRoot : ""
+  const root = typeof map.sourceRoot === 'string' ? map.sourceRoot : ''
   const sources = listed
-    .filter((source) => typeof source === "string" && source.length > 0)
+    .filter((source) => typeof source === 'string' && source.length > 0)
     .map((source) => {
       if (!root) return source
       const normalized = toPosix(source)
       if (isAbsolute(normalized) || /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(normalized)) return source
-      return `${root.replace(/\/?$/, "/")}${source}`
+      return `${root.replace(/\/?$/, '/')}${source}`
     })
   return { sources }
 }
 
 const maps = readdirSync(assets)
-  .filter((name) => name.endsWith(".js.map"))
+  .filter((name) => name.endsWith('.js.map'))
   .sort()
   .map((name) => {
     const file = join(assets, name)
@@ -183,7 +185,9 @@ if (invalid.length > 0) {
 }
 
 const withMain = maps.filter((map) => map.sources.some((source) => endsWithSrc(source, MAIN_ENTRY)))
-const withAppView = maps.filter((map) => map.sources.some((source) => endsWithSrc(source, APP_VIEW_ENTRY)))
+const withAppView = maps.filter((map) =>
+  map.sources.some((source) => endsWithSrc(source, APP_VIEW_ENTRY)),
+)
 const entryMaps = withMain.length > 0 ? withMain : withAppView
 
 if (entryMaps.length === 0) {
@@ -194,7 +198,9 @@ if (entryMaps.length === 0) {
 }
 
 const problems = []
-const entrySources = entryMaps.flatMap((map) => map.sources.map((source) => ({ source, map: map.name })))
+const entrySources = entryMaps.flatMap((map) =>
+  map.sources.map((source) => ({ source, map: map.name })),
+)
 
 let landingFound = false
 for (const { source, map } of entrySources) {
@@ -221,7 +227,7 @@ const walk = (dir) =>
     : []
 
 const resolveTs = (rel) => {
-  for (const extension of [".tsx", ".ts"]) {
+  for (const extension of ['.tsx', '.ts']) {
     const file = join(src, rel + extension)
     if (existsSync(file) && statSync(file).isFile()) return file
   }
@@ -230,7 +236,9 @@ const resolveTs = (rel) => {
 
 const checkFile = (file) => {
   for (const spec of memeCardImportSpecs(file)) {
-    problems.push(`${sourceRel(file)} imports "${spec}" — Landing/Create/createMemeModel must not import meme-card`)
+    problems.push(
+      `${sourceRel(file)} imports "${spec}" — Landing/Create/createMemeModel must not import meme-card`,
+    )
   }
 }
 
@@ -259,7 +267,7 @@ if (problems.length > 0) {
   process.exit(1)
 }
 
-const entryNames = entryMaps.map((map) => map.name).join(", ")
+const entryNames = entryMaps.map((map) => map.name).join(', ')
 console.log(
   `check-chunks: entry ${entryNames} keeps ${LANDING_VIEW} eager and the lazy views out; Landing/Create/createMemeModel do not import meme-card (${display(dist)})`,
 )

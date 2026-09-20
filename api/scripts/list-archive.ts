@@ -12,7 +12,11 @@ for (const meme of memes.filter((m) => m.creatorId === db.ARCHIVE_SUB && !m.priv
   const positions = await db.getPositions(meme.id)
   const held = positions.find((p) => p.userId === db.ARCHIVE_SUB)?.shares ?? 0
   if (held <= 0) continue
-  await db.setListing(meme.id, { sellerId: db.ARCHIVE_SUB, pricePerShare: 0.1, shares: held })
+  await db.setListing(meme.id, {
+    sellerId: db.ARCHIVE_SUB,
+    pricePerShare: 0.1,
+    shares: held,
+  })
   listed++
 }
 console.log(`listed ${listed} archive memes at 0.1🧠/share`)

@@ -12,7 +12,8 @@ import {
 } from '@/atoms/card'
 
 /** A token as `:root` declares it, so the assertion follows the scale rather than pinning a literal. */
-const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+const token = (name: string) =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
 const meta = {
   title: 'Atoms/Card',
@@ -48,7 +49,10 @@ export const Default: Story = {
     await expect(card).toHaveAttribute('data-size', 'default')
     await expect(getComputedStyle(card).borderRadius).toBe(token('--radius-lg'))
     await expect(getComputedStyle(card).paddingTop).toBe('24px')
-    const title = canvas.getByRole('heading', { level: 2, name: 'Trade details' })
+    const title = canvas.getByRole('heading', {
+      level: 2,
+      name: 'Trade details',
+    })
     await expect(title).toHaveAttribute('data-slot', 'card-title')
     await expect(title).toHaveAttribute('data-size', 'intro')
     await expect(canvasElement.querySelector('[data-slot="card-description"]')).toHaveTextContent(
@@ -83,10 +87,14 @@ export const WithAction: Story = {
     const canvas = within(canvasElement)
     const header = canvasElement.querySelector<HTMLElement>('[data-slot="card-header"]')!
     await expect(getComputedStyle(header).display).toBe('grid')
-    const action = canvas.getByRole('button', { name: 'See all' }).closest('[data-slot="card-action"]')!
+    const action = canvas
+      .getByRole('button', { name: 'See all' })
+      .closest('[data-slot="card-action"]')!
     const title = canvas.getByRole('heading', { name: 'Open trades' })
     // the action shares the header row with the title, to its right
-    await expect(action.getBoundingClientRect().left).toBeGreaterThan(title.getBoundingClientRect().right)
+    await expect(action.getBoundingClientRect().left).toBeGreaterThan(
+      title.getBoundingClientRect().right,
+    )
     await expect(canvasElement.querySelector('[data-slot="card-footer"]')).not.toBeNull()
   },
 }
@@ -109,7 +117,11 @@ export const Sizes: Story = {
   play: async ({ canvasElement }) => {
     const cards = canvasElement.querySelectorAll<HTMLElement>('[data-slot="card"]')
     await expect(cards).toHaveLength(3)
-    await expect(Array.from(cards, (card) => getComputedStyle(card).paddingTop)).toEqual(['24px', '20px', '16px'])
+    await expect(Array.from(cards, (card) => getComputedStyle(card).paddingTop)).toEqual([
+      '24px',
+      '20px',
+      '16px',
+    ])
   },
 }
 
@@ -165,7 +177,10 @@ export const Pressed: Story = {
     </Card>
   ),
   play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector('[data-slot="card"]')).toHaveAttribute('data-size', 'sm')
+    await expect(canvasElement.querySelector('[data-slot="card"]')).toHaveAttribute(
+      'data-size',
+      'sm',
+    )
   },
 }
 

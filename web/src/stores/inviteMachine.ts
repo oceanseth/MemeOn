@@ -76,7 +76,9 @@ export const inviteMachine = setup({
           actions: assign({ busy: true, err: null }),
         },
         COPIED: {
-          actions: assign({ copy: ({ event }) => (event.ok ? 'copied' : 'failed') }),
+          actions: assign({
+            copy: ({ event }) => (event.ok ? 'copied' : 'failed'),
+          }),
         },
       },
     },

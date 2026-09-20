@@ -32,7 +32,15 @@ export const All: Story = {
       }}
     >
       {ICON_NAMES.map((name) => (
-        <div key={name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+        <div
+          key={name}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 6,
+          }}
+        >
           <Icon name={name} size={22} />
           <span style={{ fontSize: 12, color: 'var(--color-muted-foreground)' }}>{name}</span>
         </div>
@@ -116,7 +124,8 @@ const REMAINDER_LIVE: Record<(typeof REMAINDER)[number], readonly number[]> = {
 const REMAINDER_SURVEY = [16, 28, 48] as const
 
 const remainderCount =
-  REMAINDER.reduce((n, name) => n + REMAINDER_LIVE[name].length, 0) + REMAINDER.length * REMAINDER_SURVEY.length
+  REMAINDER.reduce((n, name) => n + REMAINDER_LIVE[name].length, 0) +
+  REMAINDER.length * REMAINDER_SURVEY.length
 
 /** Remainder family at live call sizes, then the 16/28/48 survey. */
 export const Remainder: Story = {
@@ -131,22 +140,57 @@ export const Remainder: Story = {
         color: 'var(--color-foreground)',
       }}
     >
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 16,
+          alignItems: 'flex-end',
+        }}
+      >
         {REMAINDER.flatMap((name) =>
           REMAINDER_LIVE[name].map((size) => (
-            <div key={`${name}-live-${size}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+            <div
+              key={`${name}-live-${size}`}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
               <Icon name={name} size={size} />
-              <span style={{ fontSize: 12, color: 'var(--color-muted-foreground)' }}>{name} {size}</span>
+              <span style={{ fontSize: 12, color: 'var(--color-muted-foreground)' }}>
+                {name} {size}
+              </span>
             </div>
           )),
         )}
       </div>
       {REMAINDER_SURVEY.map((size) => (
-        <div key={size} style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'flex-end' }}>
+        <div
+          key={size}
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 16,
+            alignItems: 'flex-end',
+          }}
+        >
           {REMAINDER.map((name) => (
-            <div key={`${name}-${size}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+            <div
+              key={`${name}-${size}`}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
               <Icon name={name} size={size} />
-              <span style={{ fontSize: 12, color: 'var(--color-muted-foreground)' }}>{name} {size}</span>
+              <span style={{ fontSize: 12, color: 'var(--color-muted-foreground)' }}>
+                {name} {size}
+              </span>
             </div>
           ))}
         </div>

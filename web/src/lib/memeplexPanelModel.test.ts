@@ -79,7 +79,10 @@ describe('buildMemeplexPanelModel', () => {
     expect(model.descendedFrom).toBe(memeplexPanelCopy.descendedFrom)
     expect(model.empty).toBe(memeplexPanelCopy.empty)
     expect(model.linkLabel).toBe(memeplexPanelCopy.link)
-    expect(model.pickPlaceholder).toEqual({ value: '', label: memeplexPanelCopy.pickerPlaceholder })
+    expect(model.pickPlaceholder).toEqual({
+      value: '',
+      label: memeplexPanelCopy.pickerPlaceholder,
+    })
     expect(model.pastedProps.placeholder).toBe(memeplexPanelCopy.pastedPlaceholder)
     expect(model.pastedProps['aria-label']).toBe(memeplexPanelCopy.pasted)
     expect(model.pickerProps['aria-label']).toBe(memeplexPanelCopy.picker)

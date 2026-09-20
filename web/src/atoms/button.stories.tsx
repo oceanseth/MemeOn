@@ -4,7 +4,8 @@ import { Button } from '@/atoms/button'
 import { Icon } from '@/atoms/icon'
 
 /** A token as `:root` declares it, so the assertion follows the scale rather than pinning a literal. */
-const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+const token = (name: string) =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
 const meta = {
   title: 'Atoms/Button',
@@ -28,14 +29,26 @@ export const Default: Story = {
 export const Primary: Story = { args: { variant: 'primary' } }
 
 /** The ultraviolet companion — a second action on a card that must not spend the bubblegum. */
-export const Brand: Story = { args: { variant: 'brand', children: 'Show more brains' } }
-export const Destructive: Story = { args: { variant: 'destructive', children: 'Delete forever' } }
-export const Ghost: Story = { args: { variant: 'ghost', children: 'Skip for now' } }
-export const LinkVariant: Story = { args: { variant: 'link', children: 'Read the rules' } }
+export const Brand: Story = {
+  args: { variant: 'brand', children: 'Show more brains' },
+}
+export const Destructive: Story = {
+  args: { variant: 'destructive', children: 'Delete forever' },
+}
+export const Ghost: Story = {
+  args: { variant: 'ghost', children: 'Skip for now' },
+}
+export const LinkVariant: Story = {
+  args: { variant: 'link', children: 'Read the rules' },
+}
 
 /** The sign-in CTA is a size, not a colour: primary, full width on the phone, wraps its label. */
 export const Login: Story = {
-  args: { variant: 'primary', size: 'login', children: 'Continue with Discord' },
+  args: {
+    variant: 'primary',
+    size: 'login',
+    children: 'Continue with Discord',
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const button = canvas.getByRole('button', { name: 'Continue with Discord' })
@@ -52,7 +65,10 @@ export const Pressed: Story = {
   args: { pressed: true, children: 'All memes' },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const button = canvas.getByRole('button', { name: 'All memes', pressed: true })
+    const button = canvas.getByRole('button', {
+      name: 'All memes',
+      pressed: true,
+    })
     await expect(button).toHaveAttribute('aria-pressed', 'true')
     // the pressed material is a well, so the relief runs inset-first
     await expect(getComputedStyle(button).boxShadow).toContain('inset')
@@ -62,7 +78,15 @@ export const Pressed: Story = {
 /** The size axis: control (46), row action (40), chip (34) and the two square icon boxes. */
 export const Sizes: Story = {
   render: () => (
-    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: 16 }}>
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: 12,
+        padding: 16,
+      }}
+    >
       <Button>Default</Button>
       <Button size="sm">Small</Button>
       <Button size="xs">Chip</Button>
@@ -93,7 +117,15 @@ export const Sizes: Story = {
 /** Every variant in one row, which is also the dark twin's subject. */
 export const Variants: Story = {
   render: () => (
-    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, padding: 16 }}>
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: 12,
+        padding: 16,
+      }}
+    >
       <Button>Load more</Button>
       <Button variant="primary">＋ Mint a meme</Button>
       <Button variant="brand">Show more brains</Button>
@@ -131,9 +163,13 @@ export const GlassCellAndSegment: Story = {
         Sound on
       </Button>
       <Button size="segment">Generate</Button>
-      <Button variant="cell" size="cell" pressed aria-label="Pick this picture" className="w-20">
-        
-      </Button>
+      <Button
+        variant="cell"
+        size="cell"
+        pressed
+        aria-label="Pick this picture"
+        className="w-20"
+      ></Button>
     </div>
   ),
   play: async ({ canvasElement }) => {

@@ -8,8 +8,12 @@ const fallback = copy.errors.generationFailed
 
 describe('mintDeskError', () => {
   it('maps 402 and credits-text onto copy.errors.creditsExhausted', () => {
-    expect(mintDeskError(new ApiError(402, 'out of juice'), fallback)).toBe(copy.errors.creditsExhausted)
-    expect(mintDeskError(new ApiError(500, 'credits exhausted'), fallback)).toBe(copy.errors.creditsExhausted)
+    expect(mintDeskError(new ApiError(402, 'out of juice'), fallback)).toBe(
+      copy.errors.creditsExhausted,
+    )
+    expect(mintDeskError(new ApiError(500, 'credits exhausted'), fallback)).toBe(
+      copy.errors.creditsExhausted,
+    )
     expect(mintDeskError(new Error('quota exceeded'), fallback)).toBe(copy.errors.creditsExhausted)
     expect(mintDeskError(new Error('402'), fallback)).toBe(copy.errors.creditsExhausted)
   })
@@ -30,12 +34,12 @@ describe('mintDeskError', () => {
   })
 
   it('passes authored copy values through and falls back otherwise', () => {
-    expect(mintDeskError(new Error(copy.errors.uploadRejected(403)), copy.errors.uploadFailed)).toBe(
-      copy.errors.uploadRejected(403),
-    )
-    expect(mintDeskError(new Error(copy.errors.stillRendering('gen-9')), copy.errors.renderFailed)).toBe(
-      copy.errors.stillRendering('gen-9'),
-    )
+    expect(
+      mintDeskError(new Error(copy.errors.uploadRejected(403)), copy.errors.uploadFailed),
+    ).toBe(copy.errors.uploadRejected(403))
+    expect(
+      mintDeskError(new Error(copy.errors.stillRendering('gen-9')), copy.errors.renderFailed),
+    ).toBe(copy.errors.stillRendering('gen-9'))
     expect(mintDeskError(new Error(copy.errors.mintFailed), copy.errors.uploadFailed)).toBe(
       copy.errors.mintFailed,
     )

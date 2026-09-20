@@ -35,7 +35,11 @@ export interface MarketFilterTabsModel {
   }
 }
 
-export const MEDIA_TABS: readonly { key: string; value: string; label: string }[] = [
+export const MEDIA_TABS: readonly {
+  key: string
+  value: string
+  label: string
+}[] = [
   { key: ALL_MEDIA, value: '', label: copy.filters.media.all },
   { key: 'image', value: 'image', label: copy.filters.media.images },
   { key: 'video', value: 'video', label: copy.filters.media.videos },
@@ -50,10 +54,17 @@ export interface BuildMarketFilterTabsInput {
 
 /** Exported so the screen's stories build the same row the hook does, state by state. */
 export function buildMarketFilterTabs({
-  type, listed, onTypeChange, onListedChange,
+  type,
+  listed,
+  onTypeChange,
+  onListedChange,
 }: BuildMarketFilterTabsInput): MarketFilterTabsModel {
   return {
-    media: MEDIA_TABS.map((tab) => ({ key: tab.key, label: tab.label, pressed: tab.value === type })),
+    media: MEDIA_TABS.map((tab) => ({
+      key: tab.key,
+      label: tab.label,
+      pressed: tab.value === type,
+    })),
     mediaGroupProps: {
       'aria-label': copy.filters.media.groupLabel,
       value: [type || ALL_MEDIA],
@@ -75,7 +86,12 @@ export const TIER_SELECT_ITEMS: readonly SelectOption[] = [
 ]
 
 /** GET /api/memes takes q / type / tier / listed / limit / cursor only — never sort or dir. */
-export function queryString(ctx: { q: string; type: string; tier: string; listed: boolean }): string {
+export function queryString(ctx: {
+  q: string
+  type: string
+  tier: string
+  listed: boolean
+}): string {
   const params = new URLSearchParams()
   if (ctx.q) params.set('q', ctx.q)
   if (ctx.type) params.set('type', ctx.type)
@@ -88,7 +104,8 @@ export function queryString(ctx: { q: string; type: string; tier: string; listed
 export const isSortKey = (value: string | null): value is SortKey =>
   value === 'new' || value === 'views' || value === 'reshares' || value === 'value'
 
-export const isSortDir = (value: string | null): value is SortDir => value === 'asc' || value === 'desc'
+export const isSortDir = (value: string | null): value is SortDir =>
+  value === 'asc' || value === 'desc'
 
 /** The shareable half of the market: everything a link has to carry to reopen the same shelf. */
 export function filtersFromUrl(params: URLSearchParams): MarketplaceInput {
@@ -104,14 +121,26 @@ export function filtersFromUrl(params: URLSearchParams): MarketplaceInput {
   }
 }
 
-export function writeFilter(params: URLSearchParams, key: string, value: string, fallback = ''): void {
+export function writeFilter(
+  params: URLSearchParams,
+  key: string,
+  value: string,
+  fallback = '',
+): void {
   if (value === fallback) params.delete(key)
   else params.set(key, value)
 }
 
 export function writeLiveFilters(
   params: URLSearchParams,
-  live: { q: string; type: string; tier: string; listed: boolean; sortKey: string; sortDir: string },
+  live: {
+    q: string
+    type: string
+    tier: string
+    listed: boolean
+    sortKey: string
+    sortDir: string
+  },
 ): void {
   writeFilter(params, 'q', live.q)
   writeFilter(params, 'type', live.type)
@@ -121,7 +150,8 @@ export function writeLiveFilters(
   writeFilter(params, 'dir', live.sortDir, 'desc')
 }
 
-const typeLabel = (type: string): string => (type === 'video' ? copy.filters.media.videos : copy.filters.media.images)
+const typeLabel = (type: string): string =>
+  type === 'video' ? copy.filters.media.videos : copy.filters.media.images
 
 const tierLabel = (tier: string): string =>
   TIERS.find((candidate) => candidate.key === tier)?.name ?? tier

@@ -17,7 +17,8 @@ export const profileCopy = {
     trigger: (name: string, count: number) => `${name} (${count})`,
   },
   grid: {
-    label: (tabName: string, count: number) => `${tabName} memes, ${count} ${pluralWord(count, 'card')}`,
+    label: (tabName: string, count: number) =>
+      `${tabName} memes, ${count} ${pluralWord(count, 'card')}`,
     count: (visible: number, total: number) => `Showing ${visible} of ${total}`,
     showMore: (count: number) => `Show ${count} more`,
   },
@@ -60,7 +61,8 @@ export const profileCopy = {
     minted: (count: number) => `${count} minted`,
     inBinder: (count: number) => `${count} in binder`,
     braincells: (portfolioValue: number) => `${portfolioValue.toLocaleString()} braincells`,
-    braincellsHeld: (portfolioValue: number) => `${portfolioValue.toLocaleString()} braincells held`,
+    braincellsHeld: (portfolioValue: number) =>
+      `${portfolioValue.toLocaleString()} braincells held`,
     collection: (count: number) => `${count} ${pluralWord(count, 'meme')}`,
     held: (portfolioValue: number) => `${portfolioValue.toLocaleString()} held`,
     followers: (count: number) => `${count} ${pluralWord(count, 'follower')}`,

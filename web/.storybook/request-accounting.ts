@@ -11,7 +11,9 @@ export class UnexpectedRequestLedger {
     const request = { method: method.toUpperCase(), path, body }
     this.requests.push(request)
     return Response.json(
-      { error: `Unexpected connected-story request: ${request.method} ${request.path}` },
+      {
+        error: `Unexpected connected-story request: ${request.method} ${request.path}`,
+      },
       { status: 599 },
     )
   }

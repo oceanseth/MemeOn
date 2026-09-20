@@ -1,6 +1,6 @@
 import { waitFor, type ActorRefFrom, type SnapshotFrom, type Subscription } from 'xstate'
 import type { Me } from '../lib/types'
-import { authMachine, type AuthEvent } from './authMachine'
+import type { authMachine, AuthEvent } from './authMachine'
 
 /** Plain projection of the auth actor. Views observe this; they never send to XState directly. */
 export class AuthStore {

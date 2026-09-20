@@ -11,13 +11,17 @@ import { TIERS } from '@memeon/shared/tiers'
 import { framePrompt } from '../src/routes'
 
 const KEY_PARAM = process.env.MASKY_KEY_PARAM ?? '/chooseastory/production/masky_api_key'
-const BUCKETS = (process.env.FRAME_BUCKETS ?? 'memeon-assets-production,memeon-assets-dev').split(',')
+const BUCKETS = (process.env.FRAME_BUCKETS ?? 'memeon-assets-production,memeon-assets-dev').split(
+  ',',
+)
 
 const s3 = new S3Client({})
 
 let maskyKey = process.env.MASKY_API_KEY
 if (!maskyKey) {
-  const ssm = new SSMClient({ region: process.env.MASKY_KEY_REGION ?? 'us-east-1' })
+  const ssm = new SSMClient({
+    region: process.env.MASKY_KEY_REGION ?? 'us-east-1',
+  })
   const keyRes = await ssm.send(new GetParameterCommand({ Name: KEY_PARAM, WithDecryption: true }))
   maskyKey = keyRes.Parameter?.Value
 }
@@ -32,7 +36,10 @@ for (const [idx, tier] of TIERS.entries()) {
   console.log(`\n=== ${tier.key} (${tier.name}) ===`)
   const res = await fetch('https://masky.ai/api/images/generate', {
     method: 'POST',
-    headers: { authorization: `Bearer ${maskyKey}`, 'content-type': 'application/json' },
+    headers: {
+      authorization: `Bearer ${maskyKey}`,
+      'content-type': 'application/json',
+    },
     body: JSON.stringify({ prompt, aspectRatio: '3:4' }),
   })
   const data = (await res.json()) as { imageUrl?: string; creditCost?: number }

@@ -2,10 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { giphyCat, giphyCategories, giphyDog } from '../../.storybook/fixtures'
 import { createMemeCopy as copy } from '../copy/createMeme'
-import {
-  buildCreateMemeScreenModel,
-  type CreateMemeScreenActions,
-} from '../lib/createMemeModel'
+import { buildCreateMemeScreenModel, type CreateMemeScreenActions } from '../lib/createMemeModel'
 import type { CreateMemeContext, CreateMemePhase } from '../stores/createMemeMachine'
 import {
   CreateMemeGiphyPanel,
@@ -127,7 +124,9 @@ export const Results: Story = {
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const search = canvas.getByRole('searchbox', { name: copy.giphy.searchLabel })
+    const search = canvas.getByRole('searchbox', {
+      name: copy.giphy.searchLabel,
+    })
     search.focus()
     await userEvent.keyboard('{Enter}')
     await expect(actions.searchGiphy).toHaveBeenCalledWith('cat')

@@ -156,8 +156,10 @@ export function buildGiftDialogModel({
   const dismiss = () => {
     if (!busy) onClose()
   }
-  const onSearchChange: ChangeEventHandler<HTMLInputElement> = (event) => onQueryChange(event.target.value)
-  const onShareChange: ChangeEventHandler<HTMLInputElement> = (event) => onSharesChange(event.target.value)
+  const onSearchChange: ChangeEventHandler<HTMLInputElement> = (event) =>
+    onQueryChange(event.target.value)
+  const onShareChange: ChangeEventHandler<HTMLInputElement> = (event) =>
+    onSharesChange(event.target.value)
   const onShareBlur: FocusEventHandler<HTMLInputElement> = () => onSharesBlur?.()
   // a gift with no recipient is not a dialog at all, so the frame and the opener agree on one flag
   const isOpen = open && !!recipient
@@ -209,7 +211,11 @@ export function buildGiftDialogModel({
       : pick
         ? copy.submit.gift(normalizedShares, pick.title)
         : copy.submit.choose,
-    submitButtonProps: { onClick: onSubmit, disabled: !canSubmit, 'aria-busy': busy },
+    submitButtonProps: {
+      onClick: onSubmit,
+      disabled: !canSubmit,
+      'aria-busy': busy,
+    },
     error,
   }
 }

@@ -5,10 +5,7 @@ import type { TradeSideSummaryModel } from '../lib/tradeCardModel'
 import { Icon } from '@/atoms/icon'
 
 /** Recessed well inside the raised proposal card. */
-const WELL = cn(
-  'rounded-lg material-pressed p-4',
-  'text-sm wrap-anywhere [&_em]:wrap-anywhere',
-)
+const WELL = cn('rounded-lg material-pressed p-4', 'text-sm wrap-anywhere [&_em]:wrap-anywhere')
 
 /** Owner label: caption, bold, ink-muted. */
 const LEGEND = 'mt-0 mb-2 font-sans text-sm font-semibold text-muted-foreground'
@@ -24,10 +21,12 @@ export function SideSummary({ model }: { model: TradeSideSummaryModel }) {
   return (
     <div data-slot="trade-side" className={WELL}>
       <h3 className={LEGEND}>{model.ownerLabel}</h3>
-      {model.empty && <div className="inline-flex items-center gap-1.5 text-muted-foreground">
-        <Icon name="meh" size={15} />
-        <span>{model.emptyLabel}</span>
-      </div>}
+      {model.empty && (
+        <div className="inline-flex items-center gap-1.5 text-muted-foreground">
+          <Icon name="meh" size={15} />
+          <span>{model.emptyLabel}</span>
+        </div>
+      )}
       <ItemGroup>
         {model.memeLines.map((meme) => (
           <Item key={meme.id} size="flush">

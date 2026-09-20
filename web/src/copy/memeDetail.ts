@@ -20,14 +20,17 @@ export const memeDetailCopy = {
   },
   hero: {
     /** "Prismatic · 5,800 reshares" */
-    tierLine: (tierName: string, reshares: number) => `${tierName} · ${reshares.toLocaleString()} ${pluralWord(reshares, 'reshare')}`,
+    tierLine: (tierName: string, reshares: number) =>
+      `${tierName} · ${reshares.toLocaleString()} ${pluralWord(reshares, 'reshare')}`,
     tierLabel: (tierName: string, rarity: string) => `${tierName} · ${rarity}`,
     /** "via GIPHY (@author)" */
-    source: (provider: string, author: string | null | undefined) => `via ${provider.toUpperCase()}${author ? ` (@${author})` : ''}`,
+    source: (provider: string, author: string | null | undefined) =>
+      `via ${provider.toUpperCase()}${author ? ` (@${author})` : ''}`,
   },
   ladder: {
     current: (tierName: string) => `${tierName} is spreading`,
-    next: (remaining: number, nextTierName: string) => `${remaining.toLocaleString()} more views → ${nextTierName}`,
+    next: (remaining: number, nextTierName: string) =>
+      `${remaining.toLocaleString()} more views → ${nextTierName}`,
     top: (tierName: string) => `Top of the ladder — ${tierName} is as rare as it gets`,
     meterLabel: 'Progress to the next tier',
     topValueText: (tierName: string) => `${tierName} is the top tier`,
@@ -36,7 +39,8 @@ export const memeDetailCopy = {
     viewsWord: (views: number) => pluralWord(views, 'view'),
     resharesWord: (reshares: number) => pluralWord(reshares, 'reshare'),
     /** spoken names for the compact stat row, whose glyphs are decorative */
-    srLabel: (views: number, reshares: number) => `${plural(views, 'view')}, ${plural(reshares, 'reshare')}`,
+    srLabel: (views: number, reshares: number) =>
+      `${plural(views, 'view')}, ${plural(reshares, 'reshare')}`,
     valueSrLabel: (value: number) => `${value.toLocaleString()} braincells card value`,
   },
   share: {
@@ -49,15 +53,18 @@ export const memeDetailCopy = {
     copyFailed: 'Copy failed — try again',
   },
   listing: {
-    sale: (shares: number, pricePerShare: number) => `${plural(shares, 'share')} up for grabs · ${braincells(pricePerShare)} each`,
+    sale: (shares: number, pricePerShare: number) =>
+      `${plural(shares, 'share')} up for grabs · ${braincells(pricePerShare)} each`,
     /** the compact figures beside the sale line; the noun is fixed, as it always was */
     shares: (shares: number) => `${shares} shares`,
     price: (pricePerShare: number) => `${braincells(pricePerShare)}/share`,
     buyInputLabel: 'shares to buy',
     /** the card's caption: what the viewer can spend, and the invitation to pick an amount */
-    balance: (coins: number) => `You’ve got ${braincells(coins)}. Pick how much of the joke you want.`,
+    balance: (coins: number) =>
+      `You’ve got ${braincells(coins)}. Pick how much of the joke you want.`,
     pickAtLeastOne: 'Pick at least 1 share.',
-    short: (shortBy: number) => `${braincells(shortBy)} short — sell some shares or open a pack first.`,
+    short: (shortBy: number) =>
+      `${braincells(shortBy)} short — sell some shares or open a pack first.`,
     buy: 'Buy shares',
     buyFor: (total: number) => `Buy for ${braincells(total)}`,
     buying: 'Buying…',
@@ -149,7 +156,8 @@ export const memeDetailCopy = {
     /** precedes the bold quoted title */
     lead: (shares: number) => `${shares} ${pluralWord(shares, 'share')} of `,
     /** follows the bold quoted title */
-    tail: (pricePerShare: number, coins: number) => ` at ${braincells(pricePerShare)}/share. You hold ${braincells(coins)}, and purchases are final.`,
+    tail: (pricePerShare: number, coins: number) =>
+      ` at ${braincells(pricePerShare)}/share. You hold ${braincells(coins)}, and purchases are final.`,
     confirm: (shares: number) => `Buy ${shares} ${pluralWord(shares, 'share')}`,
   },
   claimDialog: {

@@ -31,7 +31,9 @@ export const Default: Story = {
   },
 }
 
-export const Placeholder: Story = { args: { placeholder: 'Describe the meme you want…' } }
+export const Placeholder: Story = {
+  args: { placeholder: 'Describe the meme you want…' },
+}
 
 export const Disabled: Story = {
   args: { defaultValue: 'a cat wearing chrome sunglasses', disabled: true },
@@ -51,9 +53,9 @@ export const InField: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(
-      canvas.getByLabelText('Why are you reporting this?'),
-    ).toHaveAccessibleDescription('A moderator reads every report.')
+    await expect(canvas.getByLabelText('Why are you reporting this?')).toHaveAccessibleDescription(
+      'A moderator reads every report.',
+    )
   },
 }
 

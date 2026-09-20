@@ -7,7 +7,8 @@ import { Spinner } from '@/atoms/spinner'
 /* The raised pill and its relief: `lift` deepens the shadow on a fine-pointer hover, `press` sinks
    it on active, `aria-pressed` swaps the whole material for the pressed well. Every raised variant
    composes this; ghost and link paint no material and so take no relief. */
-const RAISED = 'material-raised lift press aria-pressed:material-pressed aria-pressed:text-foreground'
+const RAISED =
+  'material-raised lift press aria-pressed:material-pressed aria-pressed:text-foreground'
 
 const buttonVariants = cva(
   [
@@ -51,7 +52,8 @@ const buttonVariants = cva(
         icon: 'size-11.5',
         'icon-sm': 'size-8.5 rounded-sm',
         /** the sign-in CTA: full width on the phone, wraps, never under the control height */
-        login: 'h-auto min-h-11.5 w-full min-w-64 max-w-full px-4.5 py-3 text-base leading-5 whitespace-normal md:w-auto',
+        login:
+          'h-auto min-h-11.5 w-full min-w-64 max-w-full px-4.5 py-3 text-base leading-5 whitespace-normal md:w-auto',
         /** a film's centred call to action: a full-height glass pill */
         pill: 'h-auto min-h-11 rounded-full px-5 py-3 text-base font-semibold',
         /** the corner toggle over a video; the phone tucks it in tighter */

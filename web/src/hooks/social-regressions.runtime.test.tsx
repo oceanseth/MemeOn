@@ -26,15 +26,11 @@ function json(body: unknown, status = 200): Response {
 }
 
 function details(input: RequestInfo | URL, init?: RequestInit) {
-  const value = typeof input === 'string'
-    ? input
-    : input instanceof URL
-      ? input.href
-      : input.url
+  const value = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
   return {
     url: new URL(value, window.location.origin),
     method: init?.method ?? 'GET',
-    body: init?.body ? JSON.parse(String(init.body)) as unknown : null,
+    body: init?.body ? (JSON.parse(String(init.body)) as unknown) : null,
   }
 }
 
@@ -50,7 +46,9 @@ function button(label: string, parent: ParentNode = host): HTMLButtonElement {
 }
 
 async function search(value: string): Promise<void> {
-  const input = host.querySelector<HTMLInputElement>(`input[placeholder="${copy.search.placeholder}"]`)!
+  const input = host.querySelector<HTMLInputElement>(
+    `input[placeholder="${copy.search.placeholder}"]`,
+  )!
   await act(async () => {
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, value)
     input.dispatchEvent(new Event('input', { bubbles: true }))
@@ -77,47 +75,58 @@ function installSocialApi(options: SocialApiOptions = {}) {
   let friends = [...(options.friends ?? [friendAccepted])]
   let giftIndex = 0
   let requestIndex = 0
-  vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
-    const request = details(input, init)
-    requests.push({ method: request.method, path: request.url.pathname, body: request.body })
-    if (request.method === 'GET' && request.url.pathname === '/api/friends') {
-      return Promise.resolve(json({ friends }))
-    }
-    if (request.method === 'GET' && request.url.pathname === '/api/binder') {
-      return Promise.resolve(json({ memes: [giftablePaper] }))
-    }
-    if (request.method === 'POST' && request.url.pathname === '/api/gift') {
-      const pending = options.gifts?.[giftIndex++]
-      if (!pending) throw new Error('Unexpected gift submission')
-      return pending.promise
-    }
-    if (request.method === 'POST' && request.url.pathname === '/api/friends/request') {
-      const pending = options.friendRequests?.[requestIndex++]
-      if (!pending) throw new Error('Unexpected friend request')
-      return pending.promise
-    }
-    if (request.method === 'POST' && request.url.pathname === '/api/friends/respond') {
-      const body = request.body as { userId: string; accept: boolean }
-      friends = body.accept
-        ? friends.map((friend) => friend.sub === body.userId ? { ...friend, status: 'accepted' } : friend)
-        : friends.filter((friend) => friend.sub !== body.userId)
-      return Promise.resolve(json({ ok: true }))
-    }
-    if (request.method === 'POST' && request.url.pathname === '/api/friends/remove') {
-      const userId = (request.body as { userId: string }).userId
-      friends = friends.filter((friend) => friend.sub !== userId)
-      return Promise.resolve(json({ ok: true }))
-    }
-    if (request.method === 'GET' && request.url.pathname === '/api/users') {
-      const query = request.url.searchParams.get('q') ?? ''
-      userQueries.push(query)
-      if (options.users) return options.users(query)
-      return Promise.resolve(json({
-        users: [{ sub: query.toLocaleLowerCase(), name: query, picture: null }],
-      }))
-    }
-    throw new Error(`Unexpected request: ${request.method} ${request.url.pathname}`)
-  }))
+  vi.stubGlobal(
+    'fetch',
+    vi.fn<typeof fetch>((input, init) => {
+      const request = details(input, init)
+      requests.push({
+        method: request.method,
+        path: request.url.pathname,
+        body: request.body,
+      })
+      if (request.method === 'GET' && request.url.pathname === '/api/friends') {
+        return Promise.resolve(json({ friends }))
+      }
+      if (request.method === 'GET' && request.url.pathname === '/api/binder') {
+        return Promise.resolve(json({ memes: [giftablePaper] }))
+      }
+      if (request.method === 'POST' && request.url.pathname === '/api/gift') {
+        const pending = options.gifts?.[giftIndex++]
+        if (!pending) throw new Error('Unexpected gift submission')
+        return pending.promise
+      }
+      if (request.method === 'POST' && request.url.pathname === '/api/friends/request') {
+        const pending = options.friendRequests?.[requestIndex++]
+        if (!pending) throw new Error('Unexpected friend request')
+        return pending.promise
+      }
+      if (request.method === 'POST' && request.url.pathname === '/api/friends/respond') {
+        const body = request.body as { userId: string; accept: boolean }
+        friends = body.accept
+          ? friends.map((friend) =>
+              friend.sub === body.userId ? { ...friend, status: 'accepted' } : friend,
+            )
+          : friends.filter((friend) => friend.sub !== body.userId)
+        return Promise.resolve(json({ ok: true }))
+      }
+      if (request.method === 'POST' && request.url.pathname === '/api/friends/remove') {
+        const userId = (request.body as { userId: string }).userId
+        friends = friends.filter((friend) => friend.sub !== userId)
+        return Promise.resolve(json({ ok: true }))
+      }
+      if (request.method === 'GET' && request.url.pathname === '/api/users') {
+        const query = request.url.searchParams.get('q') ?? ''
+        userQueries.push(query)
+        if (options.users) return options.users(query)
+        return Promise.resolve(
+          json({
+            users: [{ sub: query.toLocaleLowerCase(), name: query, picture: null }],
+          }),
+        )
+      }
+      throw new Error(`Unexpected request: ${request.method} ${request.url.pathname}`)
+    }),
+  )
   return { requests, userQueries }
 }
 
@@ -174,13 +183,21 @@ describe('FriendsView gift lifetime', () => {
 
     let dialog = await openAndPickGift()
     await click(button('Gift 1 of', dialog))
-    expect(giftRequests(api.requests)).toEqual([expect.objectContaining({
-      body: { memeId: giftablePaper.id, toSub: friendAccepted.sub, shares: 1 },
-    })])
+    expect(giftRequests(api.requests)).toEqual([
+      expect.objectContaining({
+        body: {
+          memeId: giftablePaper.id,
+          toSub: friendAccepted.sub,
+          shares: 1,
+        },
+      }),
+    ])
     expect(button('Gifting', dialog).disabled).toBe(true)
 
     // in flight every control says so instead of looking operable, and the dialog stays put
-    expect(dialog.querySelector<HTMLButtonElement>('[data-slot="dialog-close"]')!.disabled).toBe(true)
+    expect(dialog.querySelector<HTMLButtonElement>('[data-slot="dialog-close"]')!.disabled).toBe(
+      true,
+    )
     expect(button('Cancel', dialog).disabled).toBe(true)
     expect(button(giftablePaper.title, dialog).disabled).toBe(true)
     await click(button('Cancel', dialog))
@@ -197,7 +214,9 @@ describe('FriendsView gift lifetime', () => {
       await settle()
     })
     expect(giftDialogOpen()).toBe(false)
-    expect(host.textContent).toContain(copy.toasts.gifted(1, giftablePaper.title, friendAccepted.name))
+    expect(host.textContent).toContain(
+      copy.toasts.gifted(1, giftablePaper.title, friendAccepted.name),
+    )
 
     dialog = await openAndPickGift()
     expect(button('Gift 1 of', dialog).disabled).toBe(false)
@@ -247,10 +266,17 @@ describe('FriendsView friend-request debounce ownership', () => {
     })
     await advance(300)
 
-    expect(host.querySelector<HTMLInputElement>(`input[placeholder="${copy.search.placeholder}"]`)?.value).toBe('')
+    expect(
+      host.querySelector<HTMLInputElement>(`input[placeholder="${copy.search.placeholder}"]`)
+        ?.value,
+    ).toBe('')
     expect(api.userQueries).toEqual(['Alice'])
     expect(host.textContent).not.toContain('Bob')
-    expect([...host.querySelectorAll('button')].some((candidate) => candidate.textContent === copy.search.addFriend)).toBe(false)
+    expect(
+      [...host.querySelectorAll('button')].some(
+        (candidate) => candidate.textContent === copy.search.addFriend,
+      ),
+    ).toBe(false)
   })
 
   it('preserves a scheduled Bob search when the visible Alice request fails', async () => {
@@ -267,7 +293,10 @@ describe('FriendsView friend-request debounce ownership', () => {
     })
     await advance(300)
 
-    expect(host.querySelector<HTMLInputElement>(`input[placeholder="${copy.search.placeholder}"]`)?.value).toBe('Bob')
+    expect(
+      host.querySelector<HTMLInputElement>(`input[placeholder="${copy.search.placeholder}"]`)
+        ?.value,
+    ).toBe('Bob')
     expect(api.userQueries).toEqual(['Alice', 'Bob'])
     // the raw API string never reaches the user; the surface names the problem and the recovery
     expect(host.textContent).toContain(copy.errors.request)
@@ -293,24 +322,41 @@ describe('FriendsView friend-request debounce ownership', () => {
 })
 
 function stubShare(share: ((data: ShareData) => Promise<void>) | undefined) {
-  Object.defineProperty(navigator, 'share', { configurable: true, writable: true, value: share })
+  Object.defineProperty(navigator, 'share', {
+    configurable: true,
+    writable: true,
+    value: share,
+  })
 }
 
 function stubClipboardWrite(writeText: (text: string) => Promise<void>) {
   try {
-    Object.defineProperty(navigator, 'clipboard', { configurable: true, writable: true, value: { writeText } })
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      writable: true,
+      value: { writeText },
+    })
   } catch {
     vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeText)
   }
 }
 
-const incomingPal: FriendEntry = { ...friendAccepted, sub: 'user-incoming', name: 'incoming pal', status: 'incoming' }
+const incomingPal: FriendEntry = {
+  ...friendAccepted,
+  sub: 'user-incoming',
+  name: 'incoming pal',
+  status: 'incoming',
+}
 
 describe('FriendsView unfriend and decline confirm', () => {
   it('POSTs /api/friends/remove after confirming unfriend', async () => {
     const api = installSocialApi()
     await renderFriends()
-    await click(host.querySelector<HTMLElement>(`[aria-label="${copy.row.removeName(friendAccepted.name)}"]`)!)
+    await click(
+      host.querySelector<HTMLElement>(
+        `[aria-label="${copy.row.removeName(friendAccepted.name)}"]`,
+      )!,
+    )
     const dialog = host.querySelector<HTMLElement>('[role="alertdialog"]')!
     expect(dialog.textContent).toContain(copy.removeDialog.remove.title(friendAccepted.name))
     await click(button(copy.removeDialog.remove.confirm, dialog))
@@ -328,7 +374,9 @@ describe('FriendsView unfriend and decline confirm', () => {
     const api = installSocialApi({ friends: [friendAccepted, incomingPal] })
     await renderFriends()
     expect(host.textContent).toContain(incomingPal.name)
-    await click(host.querySelector<HTMLElement>(`[aria-label="${copy.row.decline(incomingPal.name)}"]`)!)
+    await click(
+      host.querySelector<HTMLElement>(`[aria-label="${copy.row.decline(incomingPal.name)}"]`)!,
+    )
     const dialog = host.querySelector<HTMLElement>('[role="alertdialog"]')!
     expect(dialog.textContent).toContain(copy.removeDialog.decline.title(incomingPal.name))
     await click(button(copy.removeDialog.decline.confirm, dialog))
@@ -344,7 +392,9 @@ describe('FriendsView unfriend and decline confirm', () => {
 
 describe('FriendsView search failure vs empty hits', () => {
   it('shows copy.search.failed when GET /api/users rejects, not noHits', async () => {
-    installSocialApi({ users: async () => Promise.reject(new Error('offline')) })
+    installSocialApi({
+      users: async () => Promise.reject(new Error('offline')),
+    })
     await renderFriends()
     await search('pal')
     await advance(250)
@@ -355,7 +405,9 @@ describe('FriendsView search failure vs empty hits', () => {
   })
 
   it('shows copy.search.failed when GET /api/users returns 500, not noHits', async () => {
-    installSocialApi({ users: async () => json({ error: 'search unavailable' }, 500) })
+    installSocialApi({
+      users: async () => json({ error: 'search unavailable' }, 500),
+    })
     await renderFriends()
     await search('pal')
     await advance(250)
@@ -391,7 +443,9 @@ describe('FriendsView invite share and clipboard', () => {
   it('shows invite.copyFailed when clipboard write rejects', async () => {
     installSocialApi()
     stubShare(undefined)
-    stubClipboardWrite(async () => { throw new Error('denied') })
+    stubClipboardWrite(async () => {
+      throw new Error('denied')
+    })
     await renderFriends()
     await click(button(copy.invite.button))
     await advance(0)
@@ -412,26 +466,34 @@ describe('FriendsView invite share and clipboard', () => {
 })
 
 function installOwnProfileApi() {
-  vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
-    const request = details(input, init)
-    if (request.method === 'GET' && request.url.pathname === `/api/users/${encodeURIComponent(meLou.sub)}/profile`) {
-      return Promise.resolve(json({
-        profile: {
-          sub: meLou.sub,
-          name: meLou.name,
-          picture: meLou.picture,
-          followers: 2,
-          collectionSize: meLou.collectionSize,
-          portfolioValue: meLou.portfolioValue,
-        },
-        followingByMe: false,
-        friendStatus: null,
-        created: [],
-        binder: [],
-      }))
-    }
-    throw new Error(`Unexpected request: ${request.method} ${request.url.pathname}`)
-  }))
+  vi.stubGlobal(
+    'fetch',
+    vi.fn<typeof fetch>((input, init) => {
+      const request = details(input, init)
+      if (
+        request.method === 'GET' &&
+        request.url.pathname === `/api/users/${encodeURIComponent(meLou.sub)}/profile`
+      ) {
+        return Promise.resolve(
+          json({
+            profile: {
+              sub: meLou.sub,
+              name: meLou.name,
+              picture: meLou.picture,
+              followers: 2,
+              collectionSize: meLou.collectionSize,
+              portfolioValue: meLou.portfolioValue,
+            },
+            followingByMe: false,
+            friendStatus: null,
+            created: [],
+            binder: [],
+          }),
+        )
+      }
+      throw new Error(`Unexpected request: ${request.method} ${request.url.pathname}`)
+    }),
+  )
 }
 
 async function renderOwnProfile(): Promise<void> {
@@ -466,7 +528,9 @@ describe('ProfileView share and clipboard', () => {
   it('puts copy.errors.copy in actionErr when clipboard write rejects', async () => {
     installOwnProfileApi()
     stubShare(undefined)
-    stubClipboardWrite(async () => { throw new Error('denied') })
+    stubClipboardWrite(async () => {
+      throw new Error('denied')
+    })
     await renderOwnProfile()
     await click(button(profileCopy.actions.share))
     await advance(0)

@@ -1,12 +1,6 @@
 import { assign, setup } from 'xstate'
 
-export type DiscordLinkPhase =
-  | 'checking'
-  | 'confirm'
-  | 'redirecting'
-  | 'working'
-  | 'done'
-  | 'error'
+export type DiscordLinkPhase = 'checking' | 'confirm' | 'redirecting' | 'working' | 'done' | 'error'
 
 /** Why the link failed, in product terms. The hook maps transport detail onto exactly one of these. */
 export type DiscordLinkFailure = 'missing-token' | 'expired' | 'login' | 'unreachable'

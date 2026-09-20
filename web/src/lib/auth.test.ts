@@ -102,7 +102,10 @@ describe('completeMaskyLogin', () => {
     setMaskyOauthState(state)
     let resolveFetch!: (value: Response) => void
     const fetchMock = vi.fn<typeof fetch>(
-      () => new Promise<Response>((resolve) => { resolveFetch = resolve }),
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveFetch = resolve
+        }),
     )
     vi.stubGlobal('fetch', fetchMock)
 

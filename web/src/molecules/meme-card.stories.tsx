@@ -91,7 +91,11 @@ const meta = {
        detail-hero story ask for the 420px one without moving any other story's frame */
     (Story, context) => (
       <MemoryRouter>
-        <div style={{ maxWidth: (context.parameters['cardWidth'] as number | undefined) ?? 280 }}>
+        <div
+          style={{
+            maxWidth: (context.parameters['cardWidth'] as number | undefined) ?? 280,
+          }}
+        >
           <Story />
         </div>
       </MemoryRouter>
@@ -113,7 +117,9 @@ export const Paper: Story = {
     )
     // the art is named by the card and the link, never a third time by itself
     await expect(within(card).queryByRole('img')).toBeNull()
-    await expect(card.querySelector('[data-slot="meme-art"]')).toHaveStyle({ objectFit: 'contain' })
+    await expect(card.querySelector('[data-slot="meme-art"]')).toHaveStyle({
+      objectFit: 'contain',
+    })
     await expect(card).toHaveTextContent('reshares')
     // the chip says the tier in product language, and nothing else on the card repeats it
     await expect(within(card).getByText('Paper')).toBeVisible()
@@ -124,7 +130,9 @@ export const Silver: Story = { args: { model: buildMemeCardModel(silverMeme) } }
 export const Holo: Story = { args: { model: buildMemeCardModel(holoMeme) } }
 export const Chrome: Story = { args: { model: buildMemeCardModel(chromeMeme) } }
 export const Gold: Story = { args: { model: buildMemeCardModel(goldMeme) } }
-export const Prismatic: Story = { args: { model: buildMemeCardModel(prismaticMeme) } }
+export const Prismatic: Story = {
+  args: { model: buildMemeCardModel(prismaticMeme) },
+}
 /** the only sparkle coverage in the app */
 export const Shiny: Story = { args: { model: buildMemeCardModel(shinyMeme) } }
 
@@ -154,7 +162,9 @@ export const ForSale: Story = {
   },
 }
 
-export const LongTitle: Story = { args: { model: buildMemeCardModel(longTitleMeme) } }
+export const LongTitle: Story = {
+  args: { model: buildMemeCardModel(longTitleMeme) },
+}
 
 export const NoViews: Story = {
   args: { model: buildMemeCardModel(noViewsMeme) },
@@ -205,9 +215,14 @@ export const Large: Story = {
     const canvas = within(canvasElement)
     const card = canvas.getByRole('article', { name: longTitleMeme.title })
     await expect(card.dataset.size).toBe('lg')
-    const title = within(card).getByRole('heading', { level: 1, name: longTitleMeme.title })
+    const title = within(card).getByRole('heading', {
+      level: 1,
+      name: longTitleMeme.title,
+    })
     // the hero title wraps rather than ellipsizing: nothing about the meme is cropped away
-    await expect(card.querySelector('[data-slot="meme-art"]')).toHaveStyle({ objectFit: 'contain' })
+    await expect(card.querySelector('[data-slot="meme-art"]')).toHaveStyle({
+      objectFit: 'contain',
+    })
     await expect(title).toHaveStyle({ whiteSpace: 'normal' })
     const root = getComputedStyle(document.documentElement)
     await expect(title).toHaveStyle({
@@ -239,7 +254,12 @@ export const Phone: Story = {
   parameters: {
     cardWidth: 166,
     viewport: {
-      options: { phone: { name: 'iPhone 14', styles: { width: '390px', height: '844px' } } },
+      options: {
+        phone: {
+          name: 'iPhone 14',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
     },
   },
   globals: { viewport: { value: 'phone', isRotated: false } },
@@ -309,7 +329,9 @@ export const Uniform: Story = {
     const boxes = cards.map((card) => card.getBoundingClientRect())
     const first = boxes[0]!
     // the two-line title really did wrap: the long one is taller than the reserve would be alone
-    const titles = cards.map((card) => card.querySelector('[data-slot="meme-title"]')!.getBoundingClientRect().height)
+    const titles = cards.map(
+      (card) => card.querySelector('[data-slot="meme-title"]')!.getBoundingClientRect().height,
+    )
     await expect(Math.max(...titles)).toBe(Math.min(...titles))
     for (const box of boxes) {
       await expect(Math.round(box.width)).toBe(Math.round(first.width))
@@ -321,7 +343,9 @@ export const Uniform: Story = {
       return Math.round(sub.top - boxes[index]!.top)
     })
     await expect(new Set(subTops).size).toBe(1)
-    const subHeights = cards.map((card) => card.querySelector('[data-slot="meme-sub"]')!.getBoundingClientRect().height)
+    const subHeights = cards.map(
+      (card) => card.querySelector('[data-slot="meme-sub"]')!.getBoundingClientRect().height,
+    )
     await expect(Math.max(...subHeights)).toBe(Math.min(...subHeights))
   },
 }

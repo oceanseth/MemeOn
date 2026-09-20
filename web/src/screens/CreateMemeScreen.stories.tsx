@@ -84,7 +84,12 @@ function model(
 const phone = {
   parameters: {
     viewport: {
-      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+      options: {
+        phone390: {
+          name: 'Phone 390',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
     },
   },
   globals: { viewport: { value: 'phone390', isRotated: false } },
@@ -94,13 +99,22 @@ const meta = {
   title: 'Screens/CreateMemeScreen',
   component: CreateMemeScreen,
   args: model(),
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 } satisfies Meta<typeof CreateMemeScreen>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const ChooseMode: Story = { name: 'Choose mode (transient)', args: model({}, 'chooseMode') }
+export const ChooseMode: Story = {
+  name: 'Choose mode (transient)',
+  args: model({}, 'chooseMode'),
+}
 
 export const Generate: Story = { args: model() }
 
@@ -110,7 +124,10 @@ export const Url: Story = { args: model({ mode: 'url' }) }
 
 export const UrlTyped: Story = {
   name: 'URL typed, not fetched yet',
-  args: model({ mode: 'url', urlDraft: 'https://www.reddit.com/r/memes/comments/abc' }),
+  args: model({
+    mode: 'url',
+    urlDraft: 'https://www.reddit.com/r/memes/comments/abc',
+  }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: copy.url.fetch })).toBeEnabled()
@@ -208,7 +225,9 @@ export const GiphyResults: Story = {
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const search = canvas.getByRole('searchbox', { name: copy.giphy.searchLabel })
+    const search = canvas.getByRole('searchbox', {
+      name: copy.giphy.searchLabel,
+    })
     search.focus()
     await userEvent.keyboard('{Enter}')
     await expect(actions.searchGiphy).toHaveBeenCalledWith('cat')
@@ -354,7 +373,10 @@ export const ResumedRender: Story = {
 
 export const Error: Story = {
   args: model(
-    { prompt: 'a capybara in a business suit', err: copy.errors.creditsExhausted },
+    {
+      prompt: 'a capybara in a business suit',
+      err: copy.errors.creditsExhausted,
+    },
     'error',
   ),
   play: async ({ canvasElement }) => {
@@ -366,10 +388,7 @@ export const Error: Story = {
 
 export const MintFailed: Story = {
   name: 'Error (mint fallback)',
-  args: model(
-    { prompt: 'a capybara in a business suit', err: copy.errors.mintFailed },
-    'error',
-  ),
+  args: model({ prompt: 'a capybara in a business suit', err: copy.errors.mintFailed }, 'error'),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(copy.errors.mintFailed)
   },
@@ -440,7 +459,11 @@ export const Ready: Story = {
   },
 }
 
-export const Dark: Story = { ...Ready, name: 'Ready dark', globals: { theme: 'dark' } }
+export const Dark: Story = {
+  ...Ready,
+  name: 'Ready dark',
+  globals: { theme: 'dark' },
+}
 
 export const Phone390: Story = { ...Ready, name: 'Ready phone 390', ...phone }
 
@@ -457,7 +480,11 @@ export const SubmittingDark: Story = {
   globals: { theme: 'dark' },
 }
 
-export const SuccessPhone390: Story = { ...Success, name: 'Success phone 390', ...phone }
+export const SuccessPhone390: Story = {
+  ...Success,
+  name: 'Success phone 390',
+  ...phone,
+}
 
 export const VideoReady: Story = {
   name: 'Video ready to mint',
@@ -513,7 +540,9 @@ export const UrlResolveError: Story = {
     'error',
   ),
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(copy.errors.resolveFailed)
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(
+      copy.errors.resolveFailed,
+    )
   },
 }
 
@@ -562,7 +591,9 @@ export const RemixSourceMissing: Story = {
     err: 'source meme not found',
   }),
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent('source meme not found')
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(
+      'source meme not found',
+    )
   },
 }
 

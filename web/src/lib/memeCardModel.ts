@@ -10,14 +10,7 @@ export type MemeCardMediaModel =
       kind: 'video'
       videoProps: Pick<
         VideoHTMLAttributes<HTMLVideoElement>,
-        | 'src'
-        | 'muted'
-        | 'loop'
-        | 'playsInline'
-        | 'autoPlay'
-        | 'preload'
-        | 'poster'
-        | 'aria-label'
+        'src' | 'muted' | 'loop' | 'playsInline' | 'autoPlay' | 'preload' | 'poster' | 'aria-label'
       >
     }
   | {
@@ -136,7 +129,10 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
     tierKey: meme.tier.key,
     tierName: meme.tier.name,
     tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`,
-    detailLinkProps: { to: `/m/${meme.id}`, 'aria-label': copy.open(meme.title) },
+    detailLinkProps: {
+      to: `/m/${meme.id}`,
+      'aria-label': copy.open(meme.title),
+    },
     media,
     viewsLabel,
     resharesLabel,

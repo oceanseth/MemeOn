@@ -13,7 +13,8 @@ export const binderCopy = {
   separator: ' · ',
   identity: {
     /** "6 cards · 72 shares" — counted from the memes the grid is rendering. */
-    stats: (cards: number, shares: number) => `${plural(cards, 'card')} · ${plural(shares, 'share')}`,
+    stats: (cards: number, shares: number) =>
+      `${plural(cards, 'card')} · ${plural(shares, 'share')}`,
   },
   /** One live status line for the whole screen. */
   status: {

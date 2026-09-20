@@ -32,5 +32,10 @@ export interface Meme {
   /** hidden from marketplace/feed/others (sole-owner soft delete) */
   private?: boolean
   /** external origin attribution (e.g. seeded from Giphy) */
-  source?: { provider: string; id: string; url: string; author: string | null } | null
+  source?: {
+    provider: string
+    id: string
+    url: string
+    author: string | null
+  } | null
 }

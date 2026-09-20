@@ -42,7 +42,9 @@ export const HostingADialog: Story = {
         <DialogContent container={portalAnchor(args.id)} showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>Inside the canvas</DialogTitle>
-            <DialogDescription>The portal renders into the anchor, not into the body.</DialogDescription>
+            <DialogDescription>
+              The portal renders into the anchor, not into the body.
+            </DialogDescription>
           </DialogHeader>
         </DialogContent>
       </Dialog>

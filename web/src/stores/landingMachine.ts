@@ -61,14 +61,22 @@ export const landingMachine = setup({
           on: {
             SET_FRAMES: {
               target: 'ready',
-              actions: assign({ frames: ({ event }) => event.frames, fallbackFrames: [], brokenFrames: [] }),
+              actions: assign({
+                frames: ({ event }) => event.frames,
+                fallbackFrames: [],
+                brokenFrames: [],
+              }),
             },
           },
         },
         ready: {
           on: {
             SET_FRAMES: {
-              actions: assign({ frames: ({ event }) => event.frames, fallbackFrames: [], brokenFrames: [] }),
+              actions: assign({
+                frames: ({ event }) => event.frames,
+                fallbackFrames: [],
+                brokenFrames: [],
+              }),
             },
           },
         },

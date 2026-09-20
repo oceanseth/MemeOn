@@ -60,8 +60,16 @@ function Probe() {
   return (
     <output>
       {model.phase}
-      {model.showConfirm ? <button type="button" onClick={model.onConfirm}>confirm</button> : null}
-      {model.canRetry ? <button type="button" onClick={model.onRetry}>retry</button> : null}
+      {model.showConfirm ? (
+        <button type="button" onClick={model.onConfirm}>
+          confirm
+        </button>
+      ) : null}
+      {model.canRetry ? (
+        <button type="button" onClick={model.onRetry}>
+          retry
+        </button>
+      ) : null}
     </output>
   )
 }
@@ -96,7 +104,9 @@ it('StrictMode double-mount POSTs /api/discord/link once when consent is already
   setDiscordLinkConsent('1')
   await act(() => root.render(tree(<Probe />, '/discord/link?token=once-token', true)))
   expect(requests.filter((request) => request.path === '/api/discord/link')).toHaveLength(1)
-  expect(JSON.parse(String(requests[0]?.init?.body))).toEqual({ token: 'once-token' })
+  expect(JSON.parse(String(requests[0]?.init?.body))).toEqual({
+    token: 'once-token',
+  })
   expect(host.textContent).toContain('working')
   await act(async () => {
     pending.resolve(jsonResponse({}))
@@ -132,7 +142,9 @@ it('keeps the latest query token until auth settles, then freezes it after POST'
   stores = createStores(
     createActor(
       authMachine.provide({
-        actors: { loadMe: fromPromise<typeof meLou | null>(async () => me.promise) },
+        actors: {
+          loadMe: fromPromise<typeof meLou | null>(async () => me.promise),
+        },
       }),
     ),
   )
@@ -183,7 +195,9 @@ it('keeps the latest query token until auth settles, then freezes it after POST'
     pending.resolve(jsonResponse({}))
     await pending.promise
   })
-  expect(JSON.parse(String(requests[0]?.init?.body))).toEqual({ token: 'token-b' })
+  expect(JSON.parse(String(requests[0]?.init?.body))).toEqual({
+    token: 'token-b',
+  })
   await act(() => {
     host.querySelector<HTMLAnchorElement>('a[href="/discord/link?token=token-c"]')?.click()
   })

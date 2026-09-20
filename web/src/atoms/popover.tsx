@@ -20,7 +20,10 @@ export function PopoverPortal(props: PopoverPrimitive.Portal.Props) {
 /** Above the docked bars and the header; its own stacking context so the popup's z is local. */
 const POSITIONER = 'isolate z-(--z-modal)'
 
-export function PopoverPositioner({ className, ...props }: Styled<PopoverPrimitive.Positioner.Props>) {
+export function PopoverPositioner({
+  className,
+  ...props
+}: Styled<PopoverPrimitive.Positioner.Props>) {
   return (
     <PopoverPrimitive.Positioner
       data-slot="popover-positioner"
@@ -62,7 +65,13 @@ const popoverPopupVariants = cva(
 
 type PositionerPassthrough = Pick<
   PopoverPrimitive.Positioner.Props,
-  'align' | 'alignOffset' | 'side' | 'sideOffset' | 'collisionPadding' | 'collisionAvoidance' | 'anchor'
+  | 'align'
+  | 'alignOffset'
+  | 'side'
+  | 'sideOffset'
+  | 'collisionPadding'
+  | 'collisionAvoidance'
+  | 'anchor'
 >
 
 /**
@@ -133,7 +142,9 @@ export function PopoverContent({
 }
 
 export function PopoverHeader({ className, ...props }: ComponentProps<'div'>) {
-  return <div data-slot="popover-header" className={cn('flex flex-col gap-0.5', className)} {...props} />
+  return (
+    <div data-slot="popover-header" className={cn('flex flex-col gap-0.5', className)} {...props} />
+  )
 }
 
 /** Base UI renders an `<h2>`; the UI face and label step, not the display ladder a bare h2 wears. */
@@ -147,7 +158,10 @@ export function PopoverTitle({ className, ...props }: Styled<PopoverPrimitive.Ti
   )
 }
 
-export function PopoverDescription({ className, ...props }: Styled<PopoverPrimitive.Description.Props>) {
+export function PopoverDescription({
+  className,
+  ...props
+}: Styled<PopoverPrimitive.Description.Props>) {
   return (
     <PopoverPrimitive.Description
       data-slot="popover-description"

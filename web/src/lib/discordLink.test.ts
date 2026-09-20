@@ -47,7 +47,9 @@ describe('postDiscordLink', () => {
     expect(first).toBe(second)
     expect(hasDiscordLinkInFlight('token-a')).toBe(true)
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({ token: 'token-a' })
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({
+      token: 'token-a',
+    })
 
     pending.resolve(Response.json({}))
     await expect(first).resolves.toBeUndefined()

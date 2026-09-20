@@ -25,11 +25,7 @@ function AuthRuntime() {
 function PopmeltRoot({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   if (!import.meta.env.DEV) return children
-  return (
-    <PopmeltProvider navigate={(url) => navigate(url)}>
-      {children}
-    </PopmeltProvider>
-  )
+  return <PopmeltProvider navigate={(url) => navigate(url)}>{children}</PopmeltProvider>
 }
 
 function Root() {

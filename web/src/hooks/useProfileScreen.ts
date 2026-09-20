@@ -174,7 +174,10 @@ export function buildProfileTabProps(
     gridProps: {
       id: PROFILE_CARDS_ID,
       'aria-live': 'polite',
-      'aria-label': copy.grid.label(tab === 'created' ? copy.tabs.created : copy.tabs.binder, itemCount),
+      'aria-label': copy.grid.label(
+        tab === 'created' ? copy.tabs.created : copy.tabs.binder,
+        itemCount,
+      ),
     },
   }
 }
@@ -188,7 +191,9 @@ export function useProfileScreen({
   const { sub } = useParams<{ sub: string }>()
   const { pathname } = useLocation()
   const { user } = useAuth()
-  const [snapshot, send] = useProjectedActor(profileMachine, { input: { initialTab } })
+  const [snapshot, send] = useProjectedActor(profileMachine, {
+    input: { initialTab },
+  })
   const { data, tab, err, errKind, busy, actionErr, visibleLimit } = snapshot.context
 
   const load = useCallback(() => {
@@ -223,7 +228,10 @@ export function useProfileScreen({
     const following = !followingByMe
     send({ type: 'BEGIN_ACTION' })
     try {
-      await post(`/api/users/${encodeURIComponent(profile.sub)}/${following ? 'follow' : 'unfollow'}`, {})
+      await post(
+        `/api/users/${encodeURIComponent(profile.sub)}/${following ? 'follow' : 'unfollow'}`,
+        {},
+      )
       send({ type: 'SET_FOLLOWING', following })
       send({ type: 'SETTLE_ACTION' })
       load()
@@ -238,7 +246,11 @@ export function useProfileScreen({
     send({ type: 'BEGIN_ACTION' })
     try {
       if (friendStatus === null) await post('/api/friends/request', { userId: profile.sub })
-      else await post('/api/friends/respond', { userId: profile.sub, accept: true })
+      else
+        await post('/api/friends/respond', {
+          userId: profile.sub,
+          accept: true,
+        })
       send({ type: 'SETTLE_ACTION' })
       load()
     } catch {
@@ -251,7 +263,10 @@ export function useProfileScreen({
     const url = window.location.href
     if (navigator.share) {
       try {
-        await navigator.share({ title: profile ? copy.share.title(profile.name) : copy.share.fallbackTitle, url })
+        await navigator.share({
+          title: profile ? copy.share.title(profile.name) : copy.share.fallbackTitle,
+          url,
+        })
         return
       } catch (error) {
         if (isAbortError(error)) return
@@ -306,14 +321,32 @@ export function useProfileScreen({
     ? [
         { id: 'minted', glyph: null, text: copy.stats.minted(createdCount) },
         { id: 'binder', glyph: null, text: copy.stats.inBinder(binderCount) },
-        { id: 'braincells', glyph: 'brain', text: copy.stats.braincells(portfolio) },
+        {
+          id: 'braincells',
+          glyph: 'brain',
+          text: copy.stats.braincells(portfolio),
+        },
       ]
     : !user
-      ? [{ id: 'braincells', glyph: 'brain', text: copy.stats.braincellsHeld(portfolio) }]
+      ? [
+          {
+            id: 'braincells',
+            glyph: 'brain',
+            text: copy.stats.braincellsHeld(portfolio),
+          },
+        ]
       : [
-          { id: 'collection', glyph: 'book', text: copy.stats.collection(profile?.collectionSize ?? 0) },
+          {
+            id: 'collection',
+            glyph: 'book',
+            text: copy.stats.collection(profile?.collectionSize ?? 0),
+          },
           { id: 'portfolio', glyph: 'brain', text: copy.stats.held(portfolio) },
-          { id: 'followers', glyph: 'star', text: copy.stats.followers(profile?.followers ?? 0) },
+          {
+            id: 'followers',
+            glyph: 'star',
+            text: copy.stats.followers(profile?.followers ?? 0),
+          },
         ]
   const visible = memes.slice(0, visibleLimit)
   /* the friend button is the meaningful relationship move, so it takes the card's one bubblegum
@@ -322,7 +355,8 @@ export function useProfileScreen({
 
   return {
     showErr: !!err,
-    errTitle: errKind === 'notfound' ? copy.loadError.notFound.title : copy.loadError.transport.title,
+    errTitle:
+      errKind === 'notfound' ? copy.loadError.notFound.title : copy.loadError.transport.title,
     errBody: errKind === 'notfound' ? copy.loadError.notFound.body : copy.loadError.transport.body,
     retryLabel: copy.loadError.retry,
     retryButtonProps: { onClick: load },
@@ -342,7 +376,10 @@ export function useProfileScreen({
     profile: profile ? { name: profile.name, avatarSrc: profile.picture, stats } : null,
     showActions: !isSelf && !!user && !!profile,
     tradeLabel: copy.actions.trade,
-    tradeLinkProps: { to: '/trade', 'aria-label': copy.actions.tradeWith(ownName) },
+    tradeLinkProps: {
+      to: '/trade',
+      'aria-label': copy.actions.tradeWith(ownName),
+    },
     shareLabel: copy.actions.share,
     shareButtonProps: { onClick: onShare },
     showSelfActions: isSelf && !!profile,
@@ -375,11 +412,17 @@ export function useProfileScreen({
       : friendStatus === 'incoming'
         ? copy.actions.friend.accept
         : copy.actions.friend.add,
-    friendButtonProps: { onClick: onFriendAction, 'aria-busy': busy, disabled: busy },
+    friendButtonProps: {
+      onClick: onFriendAction,
+      'aria-busy': busy,
+      disabled: busy,
+    },
     showFriendChip: friendStatus === 'accepted' || friendStatus === 'outgoing',
-    friendChipGlyph:
-      friendStatus === 'accepted' ? 'handshake' : 'hourglass',
-    friendChipText: friendStatus === 'accepted' ? copy.actions.friendChip.friends : copy.actions.friendChip.pending,
+    friendChipGlyph: friendStatus === 'accepted' ? 'handshake' : 'hourglass',
+    friendChipText:
+      friendStatus === 'accepted'
+        ? copy.actions.friendChip.friends
+        : copy.actions.friendChip.pending,
     showActionErr: !!actionErr,
     actionErr: actionErr ?? '',
     showJoin: !user && !!profile,
@@ -398,7 +441,11 @@ export function useProfileScreen({
       memeCard: buildMemeCardModel(meme),
       // "holds N/100" on others' binders, "N/100 shares" on yours
       sharesLabel:
-        meme.shares === undefined ? null : isSelf ? copy.cards.yourShares(meme.shares) : copy.cards.holds(meme.shares),
+        meme.shares === undefined
+          ? null
+          : isSelf
+            ? copy.cards.yourShares(meme.shares)
+            : copy.cards.holds(meme.shares),
     })),
     gridCountLabel: copy.grid.count(visible.length, memes.length),
     showMore: memes.length > visible.length,

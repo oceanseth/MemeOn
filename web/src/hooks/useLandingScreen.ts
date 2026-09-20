@@ -1,19 +1,11 @@
 import { useProjectedActor } from './useProjectedActor'
-import type {
-  ButtonHTMLAttributes,
-  CSSProperties,
-  HTMLAttributes,
-  ImgHTMLAttributes,
-} from 'react'
+import type { ButtonHTMLAttributes, CSSProperties, HTMLAttributes, ImgHTMLAttributes } from 'react'
 import { TIERS, type Tier } from '@memeon/shared/tiers'
 import { landingCopy } from '../copy/landing'
 import { apiFetch } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
 import type { HeroVideoModel } from '../lib/heroVideoModel'
-import {
-  landingMachine,
-  type LandingPhase,
-} from '../stores/landingMachine'
+import { landingMachine, type LandingPhase } from '../stores/landingMachine'
 import { useAuth } from './useAuth'
 import { useHeroVideo } from './useHeroVideo'
 import { useMountEffect } from './useMountEffect'
@@ -145,7 +137,10 @@ const interactiveLandingMachine = landingMachine.provide({
     startLogin: ({ self }) => {
       void beginMaskyLogin().catch((e) => {
         /* the machine's err only flags the failure: `loginErrorCopy` replaces it before render */
-        self.send({ type: 'FAIL', err: e instanceof Error ? e.message : copy.machine.loginFailed })
+        self.send({
+          type: 'FAIL',
+          err: e instanceof Error ? e.message : copy.machine.loginFailed,
+        })
       })
     },
   },
@@ -199,7 +194,12 @@ export function useLandingScreen(): LandingScreenModel {
 
   useMountEffect(() => {
     apiFetch<{ frames: { key: string; url: string }[] }>('/api/frames')
-      .then((r) => send({ type: 'SET_FRAMES', frames: Object.fromEntries(r.frames.map((f) => [f.key, f.url])) }))
+      .then((r) =>
+        send({
+          type: 'SET_FRAMES',
+          frames: Object.fromEntries(r.frames.map((f) => [f.key, f.url])),
+        }),
+      )
       .catch(() => send({ type: 'SET_FRAMES', frames: {} }))
   })
 

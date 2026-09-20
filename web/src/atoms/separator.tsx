@@ -16,7 +16,11 @@ export const separatorVariants = cva('shrink-0 bg-border', {
   },
 })
 
-export function Separator({ className, orientation = 'horizontal', ...props }: Styled<SeparatorPrimitive.Props>) {
+export function Separator({
+  className,
+  orientation = 'horizontal',
+  ...props
+}: Styled<SeparatorPrimitive.Props>) {
   return (
     <SeparatorPrimitive
       data-slot="separator"

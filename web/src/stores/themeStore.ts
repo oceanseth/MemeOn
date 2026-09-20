@@ -1,6 +1,9 @@
 export type ThemePreference = 'auto' | 'light' | 'dark'
 export type ResolvedTheme = 'light' | 'dark'
-export type ThemeSnapshot = { readonly preference: ThemePreference; readonly resolved: ResolvedTheme }
+export type ThemeSnapshot = {
+  readonly preference: ThemePreference
+  readonly resolved: ResolvedTheme
+}
 
 /** The device key: the logged-out chrome's choice, and the fallback for an avatar that has none. */
 export const THEME_STORAGE_KEY = 'memeon_theme'
@@ -26,7 +29,11 @@ interface MediaQuery {
  * it nothing and every call is a no-op; tests hand it fakes; the app hands it `window`.
  */
 export interface ThemeHost {
-  readonly document?: { readonly documentElement: { readonly dataset: Record<string, string | undefined> } }
+  readonly document?: {
+    readonly documentElement: {
+      readonly dataset: Record<string, string | undefined>
+    }
+  }
   readonly localStorage?: Pick<Storage, 'getItem' | 'setItem'>
   readonly matchMedia?: (query: string) => MediaQuery
 }

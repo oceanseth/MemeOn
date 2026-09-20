@@ -115,20 +115,20 @@ export function buildConfirmDialogModel({
     busy,
     prompt: prompt
       ? {
-        label: prompt.label,
-        hint: prompt.hint ?? null,
-        hintId,
-        counterLabel: `${prompt.value.length}/${maxLength}`,
-        textareaProps: {
-          value: prompt.value,
-          placeholder: prompt.placeholder,
-          maxLength,
-          rows: 3,
-          disabled: busy,
-          'aria-describedby': prompt.hint ? hintId : undefined,
-          onChange: (event) => prompt.onChange(event.target.value),
-        },
-      }
+          label: prompt.label,
+          hint: prompt.hint ?? null,
+          hintId,
+          counterLabel: `${prompt.value.length}/${maxLength}`,
+          textareaProps: {
+            value: prompt.value,
+            placeholder: prompt.placeholder,
+            maxLength,
+            rows: 3,
+            disabled: busy,
+            'aria-describedby': prompt.hint ? hintId : undefined,
+            onChange: (event) => prompt.onChange(event.target.value),
+          },
+        }
       : null,
     // Escape and the scrim are Base UI's to detect; whether they are obeyed is this model's call,
     // and a request in flight refuses, so the DOM and the model can never disagree about being open.

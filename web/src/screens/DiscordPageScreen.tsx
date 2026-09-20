@@ -42,13 +42,20 @@ export function DiscordPageScreen({
                 the design spells this button with, not a stand-in for Discord, which is text
                 everywhere by design. Rasterised at 16: the two lobes and the midline survive at
                 2x and still read at 1x, so it earns its size here. */}
-            <a {...installLinkProps} className={buttonVariants({ variant: 'primary' })} aria-describedby="discord-cta-note">
+            <a
+              {...installLinkProps}
+              className={buttonVariants({ variant: 'primary' })}
+              aria-describedby="discord-cta-note"
+            >
               <span aria-hidden="true">
                 <Icon name="brain" size={16} />
               </span>{' '}
               {copy.cta.label}
             </a>
-            <span id="discord-cta-note" className="ms-3 text-sm font-medium text-muted-foreground max-md:ms-0">
+            <span
+              id="discord-cta-note"
+              className="ms-3 text-sm font-medium text-muted-foreground max-md:ms-0"
+            >
               {copy.cta.newTabNote}
             </span>
           </>
@@ -88,7 +95,8 @@ export function DiscordPageScreen({
           {faq.admin.question}
         </CardTitle>
         <CardDescription className="mt-1">
-          {faq.admin.lead} {installSteps} {faq.admin.choose} <strong>{faq.admin.addToMyApps}</strong> {faq.admin.rest}
+          {faq.admin.lead} {installSteps} {faq.admin.choose}{' '}
+          <strong>{faq.admin.addToMyApps}</strong> {faq.admin.rest}
         </CardDescription>
         <CardTitle render={<h3 />} className="mt-4.5">
           {faq.identity.question}
@@ -96,10 +104,17 @@ export function DiscordPageScreen({
         <CardDescription className="mt-1">{faq.identity.body}</CardDescription>
       </Card>
 
-      <Card size="xs" className="mt-6 flex flex-wrap items-center gap-3 max-md:flex-col max-md:items-start">
+      <Card
+        size="xs"
+        className="mt-6 flex flex-wrap items-center gap-3 max-md:flex-col max-md:items-start"
+      >
         <CardTitle render={<h2 />}>{copy.assets.heading}</CardTitle>
         <span className="flex flex-wrap items-center gap-2">
-          <a className={buttonVariants()} href="/brand/memeon-logo-1024.png" download="memeon-logo-1024.png">
+          <a
+            className={buttonVariants()}
+            href="/brand/memeon-logo-1024.png"
+            download="memeon-logo-1024.png"
+          >
             <span aria-hidden="true">
               <Icon name="download" size={16} />
             </span>{' '}

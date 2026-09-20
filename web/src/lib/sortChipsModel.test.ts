@@ -4,7 +4,11 @@ import { buildSortChipsModel } from './sortChipsModel'
 
 describe('buildSortChipsModel', () => {
   it('marks and labels the selected chip as state the row can render', () => {
-    const model = buildSortChipsModel({ sortKey: 'views', dir: 'asc', onChange: vi.fn() })
+    const model = buildSortChipsModel({
+      sortKey: 'views',
+      dir: 'asc',
+      onChange: vi.fn(),
+    })
     const views = model.chips.find((chip) => chip.key === 'views')
     const newest = model.chips.find((chip) => chip.key === 'new')
 
@@ -17,14 +21,25 @@ describe('buildSortChipsModel', () => {
     })
     expect(views).not.toHaveProperty('arrow')
     expect(views?.buttonProps['aria-label']).toBe('Views, ascending')
-    expect(newest).toMatchObject({ selected: false, direction: null, directionLabel: null })
+    expect(newest).toMatchObject({
+      selected: false,
+      direction: null,
+      directionLabel: null,
+    })
     expect(newest?.buttonProps['aria-label']).toBe('Newest')
   })
 
   it('names the row as one group and leaves the chips live without a reason', () => {
-    const model = buildSortChipsModel({ sortKey: 'new', dir: 'desc', onChange: vi.fn() })
+    const model = buildSortChipsModel({
+      sortKey: 'new',
+      dir: 'desc',
+      onChange: vi.fn(),
+    })
 
-    expect(model.groupProps).toEqual({ role: 'group', 'aria-label': copy.group })
+    expect(model.groupProps).toEqual({
+      role: 'group',
+      'aria-label': copy.group,
+    })
     expect(model.reason).toBeNull()
     expect(model.disabled).toBe(false)
   })
@@ -45,7 +60,11 @@ describe('buildSortChipsModel', () => {
 
   it('flips direction when the selected chip is pressed again', () => {
     const onChange = vi.fn()
-    const model = buildSortChipsModel({ sortKey: 'views', dir: 'desc', onChange })
+    const model = buildSortChipsModel({
+      sortKey: 'views',
+      dir: 'desc',
+      onChange,
+    })
 
     model.flip()
 
@@ -54,7 +73,11 @@ describe('buildSortChipsModel', () => {
 
   it('starts a newly selected key descending', () => {
     const onChange = vi.fn()
-    const model = buildSortChipsModel({ sortKey: 'views', dir: 'asc', onChange })
+    const model = buildSortChipsModel({
+      sortKey: 'views',
+      dir: 'asc',
+      onChange,
+    })
 
     model.select('value')
 

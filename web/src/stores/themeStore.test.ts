@@ -10,14 +10,20 @@ function fakeHost(initial: Record<string, string> = {}, systemDark = false) {
   const dataset: Record<string, string | undefined> = {}
   const media = {
     matches: systemDark,
-    addEventListener: vi.fn((_type: 'change', listener: Listener) => { listeners.add(listener) }),
-    removeEventListener: vi.fn((_type: 'change', listener: Listener) => { listeners.delete(listener) }),
+    addEventListener: vi.fn((_type: 'change', listener: Listener) => {
+      listeners.add(listener)
+    }),
+    removeEventListener: vi.fn((_type: 'change', listener: Listener) => {
+      listeners.delete(listener)
+    }),
   }
   const host: ThemeHost = {
     document: { documentElement: { dataset } },
     localStorage: {
       getItem: vi.fn((key: string) => items.get(key) ?? null),
-      setItem: vi.fn((key: string, value: string) => { items.set(key, value) }),
+      setItem: vi.fn((key: string, value: string) => {
+        items.set(key, value)
+      }),
     },
     matchMedia: vi.fn(() => media),
   }
@@ -169,7 +175,9 @@ describe('ThemeStore', () => {
     expect(initial).toEqual({ preference: 'auto', resolved: 'light' })
 
     const pushed: ReturnType<ThemeStore['getSnapshot']>[] = []
-    const stop = theme.subscribe(() => { pushed.push(theme.getSnapshot()) })
+    const stop = theme.subscribe(() => {
+      pushed.push(theme.getSnapshot())
+    })
     expect(pushed).toEqual([])
 
     try {
@@ -226,8 +234,12 @@ describe('ThemeStore', () => {
   it('survives a storage that throws', () => {
     const host: ThemeHost = {
       localStorage: {
-        getItem: () => { throw new Error('SecurityError') },
-        setItem: () => { throw new Error('QuotaExceededError') },
+        getItem: () => {
+          throw new Error('SecurityError')
+        },
+        setItem: () => {
+          throw new Error('QuotaExceededError')
+        },
       },
     }
     const theme = new ThemeStore(host)

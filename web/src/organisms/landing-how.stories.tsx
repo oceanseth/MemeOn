@@ -22,7 +22,10 @@ export const Ready: Story = {
     await expect(how).toBeInTheDocument()
     await expect(within(how).getAllByRole('listitem')).toHaveLength(3)
     await expect(
-      within(how).getByRole('heading', { level: 3, name: copy.how.steps[0].title }),
+      within(how).getByRole('heading', {
+        level: 3,
+        name: copy.how.steps[0].title,
+      }),
     ).toBeInTheDocument()
   },
 }

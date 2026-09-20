@@ -20,7 +20,12 @@ const model = buildSettingsScreenModel({
 const phone = {
   parameters: {
     viewport: {
-      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+      options: {
+        phone390: {
+          name: 'Phone 390',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
     },
   },
   globals: { viewport: { value: 'phone390', isRotated: false } },
@@ -30,7 +35,13 @@ const meta = {
   title: 'Screens/SettingsScreen',
   component: SettingsScreen,
   args: model,
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 } satisfies Meta<typeof SettingsScreen>
 
 export default meta
@@ -43,16 +54,25 @@ export const Default: Story = {
     // the three cards Lou kept: Typography, Icon style, and Alerts are gone until their APIs exist
     await expect(canvas.getByRole('heading', { name: copy.account.heading })).toBeInTheDocument()
     await expect(canvas.getByRole('heading', { name: copy.appearance.heading })).toBeInTheDocument()
-    await expect(canvas.getByRole('heading', { name: copy.connections.heading })).toBeInTheDocument()
+    await expect(
+      canvas.getByRole('heading', { name: copy.connections.heading }),
+    ).toBeInTheDocument()
     await expect(canvas.queryByRole('heading', { name: /Typography|Icon style/ })).toBeNull()
     // the one segmented well, bound to the theme store
     await expect(canvas.getByRole('group', { name: sharedCopy.theme.group })).toBeInTheDocument()
     // three Card sections, and every row is an Item
     await expect(canvasElement.querySelectorAll('[data-slot="card"]')).toHaveLength(3)
-    await expect(canvasElement.querySelector('[data-slot="settings-account"]')).toHaveAttribute('data-variant', 'default')
+    await expect(canvasElement.querySelector('[data-slot="settings-account"]')).toHaveAttribute(
+      'data-variant',
+      'default',
+    )
     // the name is an identity affordance: it wears no glyph, and never MemeOn's own brain
-    await expect(canvasElement.querySelector('[data-slot="settings-account"] [data-slot="icon"]')).toBeNull()
-    await expect(canvasElement.querySelectorAll('[data-slot="item-title"]').length).toBeGreaterThan(0)
+    await expect(
+      canvasElement.querySelector('[data-slot="settings-account"] [data-slot="icon"]'),
+    ).toBeNull()
+    await expect(canvasElement.querySelectorAll('[data-slot="item-title"]').length).toBeGreaterThan(
+      0,
+    )
   },
 }
 
@@ -70,7 +90,9 @@ export const NotLinked: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByText(copy.connections.discord.service)).toBeInTheDocument()
     await expect(canvas.getByText(copy.connections.discord.notLinked)).toBeInTheDocument()
-    await expect(canvas.getByRole('link', { name: copy.connections.discord.connect })).toHaveAttribute('href', '/discord')
+    await expect(
+      canvas.getByRole('link', { name: copy.connections.discord.connect }),
+    ).toHaveAttribute('href', '/discord')
     // the connection row is an `Item` rendered as the list item it always was
     const row = canvasElement.querySelector('[data-slot="connection-row"]')!
     await expect(row.tagName).toBe('LI')
@@ -101,13 +123,23 @@ export const Linked: Story = {
     }
   })(),
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByText(copy.connections.discord.linkedAs('oxfern#4417'))).toBeInTheDocument()
+    await expect(
+      within(canvasElement).getByText(copy.connections.discord.linkedAs('oxfern#4417')),
+    ).toBeInTheDocument()
   },
 }
 
-export const Dark: Story = { ...Default, name: 'Default dark', globals: { theme: 'dark' } }
+export const Dark: Story = {
+  ...Default,
+  name: 'Default dark',
+  globals: { theme: 'dark' },
+}
 
-export const Phone390: Story = { ...Default, name: 'Default phone 390', ...phone }
+export const Phone390: Story = {
+  ...Default,
+  name: 'Default phone 390',
+  ...phone,
+}
 
 export const DarkPhone390: Story = {
   ...Default,

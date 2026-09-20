@@ -20,7 +20,14 @@ export function ItemGroup({ className, ...props }: ComponentProps<'div'>) {
 }
 
 export function ItemSeparator({ className, ...props }: ComponentProps<typeof Separator>) {
-  return <Separator data-slot="item-separator" orientation="horizontal" className={cn('my-1', className)} {...props} />
+  return (
+    <Separator
+      data-slot="item-separator"
+      orientation="horizontal"
+      className={cn('my-1', className)}
+      {...props}
+    />
+  )
 }
 
 /**
@@ -101,7 +108,12 @@ export function Item({
 }: ItemProps) {
   return useRender({
     defaultTagName: 'div',
-    props: mergeProps<'div'>({ className: cn(itemVariants({ variant, size, frame, tone }), className) }, props),
+    props: mergeProps<'div'>(
+      {
+        className: cn(itemVariants({ variant, size, frame, tone }), className),
+      },
+      props,
+    ),
     render,
     state: {
       slot: 'item',
@@ -124,7 +136,8 @@ export const itemMediaVariants = cva(
       variant: {
         default: 'bg-transparent',
         icon: 'text-xl leading-none',
-        image: 'size-10 overflow-hidden rounded-sm group-data-[size=sm]/item:size-8 *:size-full *:object-cover',
+        image:
+          'size-10 overflow-hidden rounded-sm group-data-[size=sm]/item:size-8 *:size-full *:object-cover',
         /**
          * The mark's disc: a 32px well holding one emoji or one 18px glyph. Fixed, because what
          * it buys is the column — an emoji is as wide as it likes, and without the disc every
@@ -156,27 +169,36 @@ export function ItemMedia({
 }
 
 export function ItemContent({ className, ...props }: ComponentProps<'div'>) {
-  return <div data-slot="item-content" className={cn('flex min-w-0 flex-1 flex-col gap-0.5', className)} {...props} />
+  return (
+    <div
+      data-slot="item-content"
+      className={cn('flex min-w-0 flex-1 flex-col gap-0.5', className)}
+      {...props}
+    />
+  )
 }
 
-const itemTitleVariants = cva('flex w-fit max-w-full items-center gap-2 font-semibold text-foreground', {
-  variants: {
-    /** the row's own step; `lg` is the name a person / rank / card row carries */
-    size: {
-      default: 'text-base',
-      lg: 'text-lg',
+const itemTitleVariants = cva(
+  'flex w-fit max-w-full items-center gap-2 font-semibold text-foreground',
+  {
+    variants: {
+      /** the row's own step; `lg` is the name a person / rank / card row carries */
+      size: {
+        default: 'text-base',
+        lg: 'text-lg',
+      },
+      /** one line, ellipsis — a name in a fixed-width row; off, a message wraps */
+      truncate: {
+        true: 'truncate',
+        false: 'wrap-anywhere',
+      },
     },
-    /** one line, ellipsis — a name in a fixed-width row; off, a message wraps */
-    truncate: {
-      true: 'truncate',
-      false: 'wrap-anywhere',
+    defaultVariants: {
+      size: 'default',
+      truncate: false,
     },
   },
-  defaultVariants: {
-    size: 'default',
-    truncate: false,
-  },
-})
+)
 
 export function ItemTitle({
   className,
@@ -198,14 +220,19 @@ export function ItemDescription({ className, ...props }: ComponentProps<'p'>) {
   return (
     <p
       data-slot="item-description"
-      className={cn('m-0 text-left text-sm font-normal text-muted-foreground text-pretty', className)}
+      className={cn(
+        'm-0 text-left text-sm font-normal text-muted-foreground text-pretty',
+        className,
+      )}
       {...props}
     />
   )
 }
 
 export function ItemActions({ className, ...props }: ComponentProps<'div'>) {
-  return <div data-slot="item-actions" className={cn('flex items-center gap-2', className)} {...props} />
+  return (
+    <div data-slot="item-actions" className={cn('flex items-center gap-2', className)} {...props} />
+  )
 }
 
 export function ItemHeader({ className, ...props }: ComponentProps<'div'>) {

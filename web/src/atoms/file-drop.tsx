@@ -38,7 +38,8 @@ const PILL = [
 ]
 
 /** The chosen name, or the line standing in for it; `data-empty` is the muted state. */
-const NAME = 'min-w-0 flex-1 truncate text-base font-normal text-foreground data-empty:text-muted-foreground'
+const NAME =
+  'min-w-0 flex-1 truncate text-base font-normal text-foreground data-empty:text-muted-foreground'
 
 /** Invisible, but the full size of the well: still the click target, the drop target and the tab stop. */
 const CONTROL = 'absolute inset-0 size-full cursor-pointer opacity-0'

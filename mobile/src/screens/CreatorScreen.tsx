@@ -1,13 +1,6 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useCallback, useEffect, useState } from 'react'
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Pressable,
-  Text,
-  View,
-} from 'react-native'
+import { ActivityIndicator, FlatList, Image, Pressable, Text, View } from 'react-native'
 import type { RootStackParamList } from '../../App'
 import { FoilCard } from '../components/FoilCard'
 import { apiFetch, post } from '../lib/api'
@@ -38,7 +31,11 @@ export default function CreatorScreen({ route, navigation }: Props) {
   if (!data) {
     return (
       <View style={styles.center}>
-        {err ? <Text style={{ color: colors.danger }}>{err}</Text> : <ActivityIndicator color={colors.accent} />}
+        {err ? (
+          <Text style={{ color: colors.danger }}>{err}</Text>
+        ) : (
+          <ActivityIndicator color={colors.accent} />
+        )}
       </View>
     )
   }
@@ -47,7 +44,9 @@ export default function CreatorScreen({ route, navigation }: Props) {
   const memes: (Meme & { shares?: number })[] = tab === 'created' ? data.created : data.binder
 
   const toggleFollow = async () => {
-    await post(`/api/users/${encodeURIComponent(sub)}/${followingByMe ? 'unfollow' : 'follow'}`).catch(() => {})
+    await post(
+      `/api/users/${encodeURIComponent(sub)}/${followingByMe ? 'unfollow' : 'follow'}`,
+    ).catch(() => {})
     load()
   }
 
@@ -90,7 +89,10 @@ export default function CreatorScreen({ route, navigation }: Props) {
             {profile.portfolioValue.toLocaleString()}
           </Text>
           <View style={styles.actions}>
-            <Pressable style={[styles.btn, followingByMe && styles.btnGhost]} onPress={toggleFollow}>
+            <Pressable
+              style={[styles.btn, followingByMe && styles.btnGhost]}
+              onPress={toggleFollow}
+            >
               <Text style={styles.btnText}>{followingByMe ? '★ Following' : '☆ Follow'}</Text>
             </Pressable>
             <Pressable
@@ -133,7 +135,9 @@ export default function CreatorScreen({ route, navigation }: Props) {
         </FoilCard>
       )}
       ListEmptyComponent={
-        <Text style={{ color: colors.dim, textAlign: 'center', padding: 30 }}>Nothing here yet.</Text>
+        <Text style={{ color: colors.dim, textAlign: 'center', padding: 30 }}>
+          Nothing here yet.
+        </Text>
       }
     />
   )
@@ -141,9 +145,20 @@ export default function CreatorScreen({ route, navigation }: Props) {
 
 function createStyles(colors: LegacyColors) {
   return {
-    center: { flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' },
+    center: {
+      flex: 1,
+      backgroundColor: colors.bg,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     head: { alignItems: 'center', padding: 20, gap: 6 },
-    avatar: { width: 84, height: 84, borderRadius: 42, borderWidth: 2, borderColor: colors.border },
+    avatar: {
+      width: 84,
+      height: 84,
+      borderRadius: 42,
+      borderWidth: 2,
+      borderColor: colors.border,
+    },
     name: { color: colors.text, fontSize: 22, fontWeight: '800', marginTop: 6 },
     stats: { color: colors.dim, fontSize: 13.5 },
     actions: { flexDirection: 'row', gap: 10, marginTop: 10 },
@@ -153,7 +168,11 @@ function createStyles(colors: LegacyColors) {
       paddingHorizontal: 18,
       paddingVertical: 9,
     },
-    btnGhost: { backgroundColor: colors.raised, borderWidth: 1, borderColor: colors.border },
+    btnGhost: {
+      backgroundColor: colors.raised,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
     btnText: { color: '#fff', fontWeight: '700' },
     tabs: { flexDirection: 'row', gap: 22, marginTop: 16 },
     tab: { color: colors.dim, fontWeight: '700', fontSize: 15 },
@@ -163,7 +182,17 @@ function createStyles(colors: LegacyColors) {
       paddingBottom: 8,
     },
     gridImg: { width: '100%', aspectRatio: 1 },
-    gridTitle: { color: colors.text, fontWeight: '700', paddingHorizontal: 8, paddingTop: 6 },
-    gridTier: { fontSize: 11.5, fontWeight: '700', paddingHorizontal: 8, paddingTop: 2 },
+    gridTitle: {
+      color: colors.text,
+      fontWeight: '700',
+      paddingHorizontal: 8,
+      paddingTop: 6,
+    },
+    gridTier: {
+      fontSize: 11.5,
+      fontWeight: '700',
+      paddingHorizontal: 8,
+      paddingTop: 2,
+    },
   } as const
 }

@@ -34,7 +34,12 @@ describe('marketplaceQuery URL codec', () => {
       sortDir: 'desc',
     })
     expect([...params.keys()]).toEqual([])
-    expect(filtersFromUrl(params)).toEqual({ q: '', type: '', tier: '', listed: false })
+    expect(filtersFromUrl(params)).toEqual({
+      q: '',
+      type: '',
+      tier: '',
+      listed: false,
+    })
   })
 
   it('writes listed=true and ignores invalid sort/dir', () => {
@@ -97,7 +102,10 @@ describe('buildMarketFilterTabs', () => {
     expect(all.media.find((tab) => tab.key === 'image')?.pressed).toBe(false)
     expect(all.mediaGroupProps.value).toEqual(['all'])
     expect(all.mediaGroupProps['aria-label']).toBe(copy.filters.media.groupLabel)
-    expect(all.listed).toMatchObject({ label: copy.filters.listed, pressed: false })
+    expect(all.listed).toMatchObject({
+      label: copy.filters.listed,
+      pressed: false,
+    })
 
     all.mediaGroupProps.onValueChange(['image'])
     expect(onTypeChange).toHaveBeenLastCalledWith('image')

@@ -89,10 +89,7 @@ export function BinderScreen({
         <div className="min-w-0">
           <Heading as="h3">{collectionHeading}</Heading>
           {/* mounted in every state, text swapped: a live region inserted with its content is missed */}
-          <span
-            className="mt-1 block text-sm text-muted-foreground tabular-nums"
-            {...statusProps}
-          >
+          <span className="mt-1 block text-sm text-muted-foreground tabular-nums" {...statusProps}>
             {statusMessage}
           </span>
         </div>
@@ -107,7 +104,10 @@ export function BinderScreen({
           )}
           <SortChips model={sortChips} />
           {/* Mint is bubblegum under the shell cut and neutral once the header owns primary */}
-          <Link className={cn(buttonVariants({ variant: 'mint' }), 'max-xl:w-full')} {...createLinkProps}>
+          <Link
+            className={cn(buttonVariants({ variant: 'mint' }), 'max-xl:w-full')}
+            {...createLinkProps}
+          >
             <span className="xl:hidden" aria-hidden="true">
               <Icon name="circle-plus" size={16} />
             </span>
@@ -166,18 +166,22 @@ export function BinderScreen({
               <MemeCard
                 model={card.memeCard}
                 /* one footer row: shares count on the right */
-                footerRight={<span className="font-semibold text-foreground">{card.sharesLabel}</span>}
+                footerRight={
+                  <span className="font-semibold text-foreground">{card.sharesLabel}</span>
+                }
                 footer={
                   <>
                     <span data-slot="binder-card-note" className={binderCardFooterClasses}>
                       <span className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
                         {card.showCreator && <span>{card.mintedLabel}</span>}
-                        {card.showPrivate && <Badge>
+                        {card.showPrivate && (
+                          <Badge>
                             <span aria-hidden="true">
                               <Icon name="eye-off" size={14} />
                             </span>{' '}
                             {card.privateLabel}
-                          </Badge>}
+                          </Badge>
+                        )}
                       </span>
                     </span>
                     {/* the ownership groove: how much of this meme the binder holds. `mt-auto` pins it

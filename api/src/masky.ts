@@ -51,7 +51,10 @@ export async function exchangeCode(code: string, redirectUri: string): Promise<M
 export async function fetchProfile(accessToken: string): Promise<MaskyProfile> {
   const cfg = await getMaskyOAuth()
   const res = await fetch(cfg.userinfo_url, {
-    headers: { authorization: `Bearer ${accessToken}`, accept: 'application/json' },
+    headers: {
+      authorization: `Bearer ${accessToken}`,
+      accept: 'application/json',
+    },
   })
   const raw = (await res.json().catch(() => ({}))) as Record<string, unknown>
   if (!res.ok) {
@@ -73,7 +76,11 @@ export async function publicConfig(): Promise<{
   scopes: string
 }> {
   const cfg = await getMaskyOAuth()
-  return { authorizeUrl: cfg.authorize_url, clientId: cfg.client_id, scopes: cfg.scopes }
+  return {
+    authorizeUrl: cfg.authorize_url,
+    clientId: cfg.client_id,
+    scopes: cfg.scopes,
+  }
 }
 
 async function maskyFetch<T>(token: string, path: string, init: RequestInit = {}): Promise<T> {
@@ -132,12 +139,20 @@ export function generateVideo(
     aspectRatio?: string
   },
 ): Promise<{ generationId: string; status: string; model: string }> {
-  return maskyFetch(token, '/videos/generate', { method: 'POST', body: JSON.stringify(body) })
+  return maskyFetch(token, '/videos/generate', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
 }
 
 export function videoStatus(
   token: string,
   generationId: string,
-): Promise<{ status: string; videoUrl?: string; model?: string; errorMessage?: string }> {
+): Promise<{
+  status: string
+  videoUrl?: string
+  model?: string
+  errorMessage?: string
+}> {
   return maskyFetch(token, `/videos/${generationId}`)
 }

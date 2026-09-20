@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
-import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
+import {
+  connectedBeforeEach,
+  connectedLoader,
+  ConnectedStory,
+} from '../../.storybook/connected-story'
 import { binderCopy as copy } from '../copy/binder'
 import { sortChipsCopy } from '../copy/sortChips'
 import { BinderView } from './BinderView'
@@ -24,15 +28,31 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 const connected: Story = {
-  loaders: [connectedLoader()], beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><BinderView /></ConnectedStory>,
+  loaders: [connectedLoader()],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <BinderView />
+    </ConnectedStory>
+  ),
 }
 
 export const PrivateToggleAndSort: Story = {
   ...connected,
-  loaders: [connectedLoader({ overrides: {
-    'GET /api/binder': (_request, scenario) => ({ body: { memes: scenario.memes.map((meme, index) => ({ ...meme, private: index === 0 })) } }),
-  } })],
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'GET /api/binder': (_request, scenario) => ({
+          body: {
+            memes: scenario.memes.map((meme, index) => ({
+              ...meme,
+              private: index === 0,
+            })),
+          },
+        }),
+      },
+    }),
+  ],
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByText(/Show private \(1\)/)).toBeInTheDocument()
@@ -48,12 +68,27 @@ export const PrivateToggleAndSort: Story = {
 
 /** The sort and private choices are shareable: a seeded URL restores them before the first paint. */
 export const SortAndPrivateFromUrl: Story = {
-  loaders: [connectedLoader({ overrides: {
-    'GET /api/binder': (_request, scenario) => ({ body: { memes: scenario.memes.map((meme, index) => ({ ...meme, private: index === 0 })) } }),
-  } })],
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'GET /api/binder': (_request, scenario) => ({
+          body: {
+            memes: scenario.memes.map((meme, index) => ({
+              ...meme,
+              private: index === 0,
+            })),
+          },
+        }),
+      },
+    }),
+  ],
   beforeEach: async (context) => connectedBeforeEach(context),
   parameters: { route: '/binder/user-lou?sort=value&dir=asc&private=1' },
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><BinderView /></ConnectedStory>,
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <BinderView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('checkbox', { name: /Show private/ })).toBeChecked()
@@ -71,13 +106,25 @@ let binderAttempts = 0
 
 /** A failed load must never be dressed up as an empty collection: it names the failure and retries. */
 export const InitialFailureShowsRetry: Story = {
-  loaders: [connectedLoader({ overrides: {
-    'GET /api/binder': (_request, scenario) => (++binderAttempts === 1
-      ? { status: 503, body: { error: 'binder unavailable' } }
-      : { body: { memes: scenario.memes } }),
-  } })],
-  beforeEach: async (context) => { binderAttempts = 0; return connectedBeforeEach(context) },
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><BinderView /></ConnectedStory>,
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'GET /api/binder': (_request, scenario) =>
+          ++binderAttempts === 1
+            ? { status: 503, body: { error: 'binder unavailable' } }
+            : { body: { memes: scenario.memes } },
+      },
+    }),
+  ],
+  beforeEach: async (context) => {
+    binderAttempts = 0
+    return connectedBeforeEach(context)
+  },
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <BinderView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const alert = await canvas.findByRole('alert')
@@ -90,7 +137,30 @@ export const InitialFailureShowsRetry: Story = {
 }
 
 export const LoadingThenReady: Story = {
-  loaders: [connectedLoader({ overrides: { 'GET /api/binder': async (_request, scenario) => { await scenario.waitForRelease('binder'); return { body: { memes: scenario.memes } } } } })], beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><BinderView /></ConnectedStory>,
-  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelectorAll('[data-slot="skeleton-card"]').length).toBeGreaterThan(0)); loaded.scenario.release('binder'); await expect(await canvas.findByRole('link', { name: /fresh paper/ })).toBeInTheDocument() },
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'GET /api/binder': async (_request, scenario) => {
+          await scenario.waitForRelease('binder')
+          return { body: { memes: scenario.memes } }
+        },
+      },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <BinderView />
+    </ConnectedStory>
+  ),
+  play: async ({ canvasElement, loaded }) => {
+    const canvas = within(canvasElement)
+    await waitFor(() =>
+      expect(canvasElement.querySelectorAll('[data-slot="skeleton-card"]').length).toBeGreaterThan(
+        0,
+      ),
+    )
+    loaded.scenario.release('binder')
+    await expect(await canvas.findByRole('link', { name: /fresh paper/ })).toBeInTheDocument()
+  },
 }

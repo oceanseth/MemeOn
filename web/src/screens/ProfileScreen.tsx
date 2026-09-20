@@ -18,10 +18,10 @@ const SKELETON_CARDS = ['a', 'b', 'c', 'd']
 /* identity card: min height floor so wrapped content can grow past the avatar row */
 const IDENTITY_CARD = 'mb-5 flex flex-wrap items-center gap-x-3.5 gap-y-4'
 
-const IDENTITY_LINE =
-  'm-0 truncate font-display text-3xl font-normal text-foreground wrap-anywhere'
+const IDENTITY_LINE = 'm-0 truncate font-display text-3xl font-normal text-foreground wrap-anywhere'
 
-const META_LINE = 'm-0 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-base font-semibold text-muted-foreground'
+const META_LINE =
+  'm-0 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-base font-semibold text-muted-foreground'
 
 /** The friend state is a caption, not a pill: a standing fact never competes with the actions. */
 const FRIEND_CAPTION = 'm-0 mt-1.5 text-base font-semibold text-muted-foreground'
@@ -117,7 +117,9 @@ export function ProfileScreen({
   if (showLoading || !profile)
     return (
       <PageContainer as="main" id="main" tabIndex={-1}>
-        <div role="status" aria-live="polite" className="sr-only">{loadingLabel}</div>
+        <div role="status" aria-live="polite" className="sr-only">
+          {loadingLabel}
+        </div>
         <Card size="sm" className={cn(IDENTITY_CARD, 'mt-5 sm:min-h-34.5')} aria-hidden="true">
           <Skeleton variant="avatar" className="size-21.5 max-sm:size-18.5" />
           <div className="min-w-0 flex-1">
@@ -190,12 +192,7 @@ export function ProfileScreen({
     identityChrome = (
       <div className={BINDER_HERO_STACK}>
         <header className={BINDER_HERO} data-slot="profile-identity">
-          <Avatar
-            name={profile.name}
-            src={profile.avatarSrc}
-            size="public"
-            loading="lazy"
-          />
+          <Avatar name={profile.name} src={profile.avatarSrc} size="public" loading="lazy" />
           <div className="min-w-0 flex-1">
             <PageHead level="h1" title={title} className="m-0" />
             {statsLine}
@@ -210,7 +207,12 @@ export function ProfileScreen({
     const publicView = showJoin
     identityChrome = (
       <>
-        <PageHead level="h1" title={title} {...(intro ? { subtitle: intro } : {})} className="mb-3.5" />
+        <PageHead
+          level="h1"
+          title={title}
+          {...(intro ? { subtitle: intro } : {})}
+          className="mb-3.5"
+        />
         <Card
           size="sm"
           className={cn(IDENTITY_CARD, !publicView && 'sm:min-h-34.5')}
@@ -263,7 +265,11 @@ export function ProfileScreen({
     <PageContainer as="main" id="main" tabIndex={-1}>
       {identityChrome}
 
-      {showActionErr && <Alert variant="error" className="mt-3">{actionErr}</Alert>}
+      {showActionErr && (
+        <Alert variant="error" className="mt-3">
+          {actionErr}
+        </Alert>
+      )}
 
       <ProfileShelf
         tabsListLabel={tabsListLabel}
@@ -296,7 +302,10 @@ export function ProfileScreen({
                 {shareLabel}
               </Button>
             ) : null}
-            <Link className={cn(buttonVariants({ variant: 'primary' }), 'max-sm:w-full')} {...joinLinkProps}>
+            <Link
+              className={cn(buttonVariants({ variant: 'primary' }), 'max-sm:w-full')}
+              {...joinLinkProps}
+            >
               {joinLabel}
             </Link>
           </div>

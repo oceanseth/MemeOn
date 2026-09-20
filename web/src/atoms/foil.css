@@ -32,7 +32,7 @@
    Keyframes carry a `card-` prefix so a name this file does not own cannot shadow them. */
 @layer components {
   @property --glow-angle {
-    syntax: '<angle>';
+    syntax: "<angle>";
     inherits: false;
     initial-value: 0deg;
   }
@@ -159,23 +159,19 @@
      silver keep a set for the legacy ring only; their Soft Press frame is the flat token. Every
      animated set opens and closes on the tier's own frame token, so the ring reads as *that* tier's
      colour with a foil highlight travelling through it rather than as a rainbow of its own. */
-  :where(.foil-card[data-glow-style='graphite-gradient-still']) {
-    --glow-stops:
-      var(--tier-frame) 0deg,
-      var(--tier-frame) 360deg;
+  :where(.foil-card[data-glow-style="graphite-gradient-still"]) {
+    --glow-stops: var(--tier-frame) 0deg, var(--tier-frame) 360deg;
     --glow-duration: 12s;
     --glow-play-state: paused;
     --glow-blur: 10px;
     --glow-opacity: 0.1;
   }
 
-  :where(.foil-card[data-glow-style='silver-highlight-still']) {
+  :where(.foil-card[data-glow-style="silver-highlight-still"]) {
     --glow-stops:
-      var(--tier-frame) 0deg,
-      var(--tier-frame) 96deg,
+      var(--tier-frame) 0deg, var(--tier-frame) 96deg,
       color-mix(in oklab, var(--relief-highlight) 70%, var(--tier-frame)) 130deg,
-      var(--tier-frame) 170deg,
-      var(--tier-frame) 360deg;
+      var(--tier-frame) 170deg, var(--tier-frame) 360deg;
     --glow-duration: 12s;
     --glow-play-state: paused;
     --glow-phase: 34deg;
@@ -183,7 +179,7 @@
     --glow-opacity: 0.22;
   }
 
-  :where(.foil-card[data-glow-style='cyan-magenta-gradient-drift']) {
+  :where(.foil-card[data-glow-style="cyan-magenta-gradient-drift"]) {
     --glow-stops:
       var(--tier-frame) 0deg,
       oklch(0.798 0.138 224.636) 48deg,
@@ -198,34 +194,28 @@
     --glow-opacity: 0.34;
   }
 
-  :where(.foil-card[data-glow-style='silver-single-beam-chase']) {
+  :where(.foil-card[data-glow-style="silver-single-beam-chase"]) {
     --glow-stops:
-      var(--tier-frame) 0deg,
-      var(--tier-frame) 128deg,
+      var(--tier-frame) 0deg, var(--tier-frame) 128deg,
       color-mix(in oklab, var(--relief-highlight) 85%, var(--tier-frame)) 169deg,
-      var(--tier-frame) 205deg,
-      var(--tier-frame) 360deg;
+      var(--tier-frame) 205deg, var(--tier-frame) 360deg;
     --glow-duration: 4.5s;
     --glow-phase: -108deg;
     --glow-blur: 16px;
     --glow-opacity: 0.3;
   }
 
-  :where(.foil-card[data-glow-style='gold-gradient-counter-sweep']) {
+  :where(.foil-card[data-glow-style="gold-gradient-counter-sweep"]) {
     --glow-stops:
-      var(--tier-frame) 0deg,
-      oklch(0.794 0.134 82.498) 100deg,
-      oklch(0.969 0.034 86.305) 150deg,
-      oklch(0.794 0.134 82.498) 200deg,
-      var(--tier-frame) 300deg,
-      var(--tier-frame) 360deg;
+      var(--tier-frame) 0deg, oklch(0.794 0.134 82.498) 100deg, oklch(0.969 0.034 86.305) 150deg,
+      oklch(0.794 0.134 82.498) 200deg, var(--tier-frame) 300deg, var(--tier-frame) 360deg;
     --glow-duration: 5s;
     --glow-direction: reverse;
     --glow-blur: 18px;
     --glow-opacity: 0.3;
   }
 
-  :where(.foil-card[data-glow-style='rainbow-gradient-drift']) {
+  :where(.foil-card[data-glow-style="rainbow-gradient-drift"]) {
     --glow-stops:
       oklch(0.709 0.19 9.532) 0deg,
       oklch(0.834 0.125 66.878) 54deg,
@@ -241,7 +231,7 @@
     --glow-opacity: 0.34;
   }
 
-  :where(.foil-card[data-glow-style='mint-gold-highlight-orbit']) {
+  :where(.foil-card[data-glow-style="mint-gold-highlight-orbit"]) {
     --glow-stops:
       var(--tier-frame) 0deg,
       oklch(0.932 0.101 171.454) 80deg,
@@ -268,7 +258,7 @@
      Placement: after the stop sets, because these are the same selectors at the same specificity
      and source order is what decides. */
   @media (color-gamut: p3) {
-    :where(.foil-card[data-glow-style='cyan-magenta-gradient-drift']) {
+    :where(.foil-card[data-glow-style="cyan-magenta-gradient-drift"]) {
       --glow-stops:
         var(--tier-frame) 0deg,
         oklch(0.798 0.149 224.636) 48deg,
@@ -279,17 +269,13 @@
         var(--tier-frame) 360deg;
     }
 
-    :where(.foil-card[data-glow-style='gold-gradient-counter-sweep']) {
+    :where(.foil-card[data-glow-style="gold-gradient-counter-sweep"]) {
       --glow-stops:
-        var(--tier-frame) 0deg,
-        oklch(0.794 0.158 82.498) 100deg,
-        oklch(0.969 0.039 86.305) 150deg,
-        oklch(0.794 0.158 82.498) 200deg,
-        var(--tier-frame) 300deg,
-        var(--tier-frame) 360deg;
+        var(--tier-frame) 0deg, oklch(0.794 0.158 82.498) 100deg, oklch(0.969 0.039 86.305) 150deg,
+        oklch(0.794 0.158 82.498) 200deg, var(--tier-frame) 300deg, var(--tier-frame) 360deg;
     }
 
-    :where(.foil-card[data-glow-style='rainbow-gradient-drift']) {
+    :where(.foil-card[data-glow-style="rainbow-gradient-drift"]) {
       --glow-stops:
         oklch(0.709 0.243 9.532) 0deg,
         oklch(0.834 0.157 66.878) 54deg,
@@ -301,7 +287,7 @@
         oklch(0.709 0.243 9.532) 360deg;
     }
 
-    :where(.foil-card[data-glow-style='mint-gold-highlight-orbit']) {
+    :where(.foil-card[data-glow-style="mint-gold-highlight-orbit"]) {
       --glow-stops:
         var(--tier-frame) 0deg,
         oklch(0.932 0.115 171.454) 80deg,
@@ -323,7 +309,7 @@
   }
 
   .sheen .foil-media::after {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
@@ -342,7 +328,7 @@
   }
 
   .sparkle .foil-media::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     pointer-events: none;
@@ -402,7 +388,7 @@
       border-width: 4px;
     }
 
-    :where(.tier-card, [data-slot='meme-card']) {
+    :where(.tier-card, [data-slot="meme-card"]) {
       border: 1px solid CanvasText;
     }
 

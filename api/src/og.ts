@@ -1,12 +1,7 @@
 // OG meta frame pipeline: composited card images (tier frame + meme art + title
 // banner) served from the assets bucket, plus the crawler-facing /m/{id} page.
 import { Jimp, loadFont, measureText, measureTextHeight } from 'jimp'
-import {
-  SANS_32_BLACK,
-  SANS_32_WHITE,
-  SANS_64_BLACK,
-  SANS_64_WHITE,
-} from 'jimp/fonts'
+import { SANS_32_BLACK, SANS_32_WHITE, SANS_64_BLACK, SANS_64_WHITE } from 'jimp/fonts'
 import { env } from './env'
 import { safeFetch } from './safeFetch'
 import { assetAgeSeconds, assetExists, assetUrl, putAsset, putAssetShortCache } from './s3'
@@ -135,7 +130,11 @@ export async function ensureOgImage(meme: Meme): Promise<string> {
     try {
       const play = await fetchImage(assetUrl('brand/play-overlay.png'))
       play.resize({ w: 300, h: 300 })
-      card.composite(play, WIN.x + Math.round((WIN.w - 300) / 2), WIN.y + Math.round((WIN.h - 300) / 2))
+      card.composite(
+        play,
+        WIN.x + Math.round((WIN.w - 300) / 2),
+        WIN.y + Math.round((WIN.h - 300) / 2),
+      )
     } catch {
       /* overlay art missing — card still works */
     }
@@ -152,13 +151,21 @@ export async function ensureOgImage(meme: Meme): Promise<string> {
 
   // wide 1.91:1 canvas with the ENTIRE card visible: blurred art fills the
   // background, dimmed, card scaled to fit height and centered
-  const wide = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14ff }) as unknown as JimpImage
+  const wide = new Jimp({
+    width: OG_W,
+    height: OG_H,
+    color: 0x0b0d14ff,
+  }) as unknown as JimpImage
   try {
     const bgArt = art.clone()
     bgArt.cover({ w: OG_W, h: OG_H })
     bgArt.blur(12)
     wide.composite(bgArt, 0, 0)
-    const dim = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14b8 }) as unknown as JimpImage
+    const dim = new Jimp({
+      width: OG_W,
+      height: OG_H,
+      color: 0x0b0d14b8,
+    }) as unknown as JimpImage
     wide.composite(dim, 0, 0)
   } catch {
     /* solid brand background is a fine fallback */
@@ -262,11 +269,13 @@ export async function memePageHtml(
   const { title, block } = ogMetaBlock(meme, ogImageUrl, gifUrl)
   const index = await fetchIndexHtml()
   if (index) {
-    return index
-      // drop the site-wide og/twitter tags — crawlers honor the first tag seen
-      .replace(/\s*<meta (?:property="og:|name="twitter:)[^>]*\/?>/g, '')
-      .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
-      .replace('</head>', `${block}\n</head>`)
+    return (
+      index
+        // drop the site-wide og/twitter tags — crawlers honor the first tag seen
+        .replace(/\s*<meta (?:property="og:|name="twitter:)[^>]*\/?>/g, '')
+        .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
+        .replace('</head>', `${block}\n</head>`)
+    )
   }
   // fallback when the SPA shell can't be fetched: og tags + a manual link
   const appUrl = `/m/${encodeURIComponent(meme.id)}`
@@ -290,7 +299,11 @@ async function withCachedShareOg(
 ): Promise<string> {
   const age = await assetAgeSeconds(key)
   if (age !== null && age < 3600) return assetUrl(key)
-  const canvas = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14ff }) as unknown as JimpImage
+  const canvas = new Jimp({
+    width: OG_W,
+    height: OG_H,
+    color: 0x0b0d14ff,
+  }) as unknown as JimpImage
   await paint(canvas)
   const png = await canvas.getBuffer('image/png')
   await putAssetShortCache(key, png)
@@ -302,7 +315,11 @@ async function paintDimmedHomeBanner(canvas: JimpImage, dimColor: number): Promi
     const banner = await fetchImage(`${env.siteOrigin}/brand/og-home.png`)
     banner.cover({ w: OG_W, h: OG_H })
     canvas.composite(banner, 0, 0)
-    const dim = new Jimp({ width: OG_W, height: OG_H, color: dimColor }) as unknown as JimpImage
+    const dim = new Jimp({
+      width: OG_W,
+      height: OG_H,
+      color: dimColor,
+    }) as unknown as JimpImage
     canvas.composite(dim, 0, 0)
   } catch {
     /* solid bg fallback */
@@ -434,12 +451,20 @@ export async function ensureBinderOgImage(
 
     // right: a binder page holding the top cards in tier-colored sleeves
     const PANEL = { x: 600, y: 55, w: 560, h: 520 }
-    const panel = new Jimp({ width: PANEL.w, height: PANEL.h, color: 0x171b26ff }) as unknown as JimpImage
+    const panel = new Jimp({
+      width: PANEL.w,
+      height: PANEL.h,
+      color: 0x171b26ff,
+    }) as unknown as JimpImage
     canvas.composite(panel, PANEL.x, PANEL.y)
     // binder rings along the spine
     try {
       for (const ry of [150, 315, 480]) {
-        const ring = new Jimp({ width: 34, height: 34, color: 0x0b0d14ff }) as unknown as JimpImage
+        const ring = new Jimp({
+          width: 34,
+          height: 34,
+          color: 0x0b0d14ff,
+        }) as unknown as JimpImage
         ;(ring as unknown as { circle: () => void }).circle()
         canvas.composite(ring, PANEL.x - 17, ry)
       }
@@ -456,7 +481,11 @@ export async function ensureBinderOgImage(
       const y = gridY + Math.floor(i / 3) * (SLOT.h + GAP)
       const meme = topMemes[i]
       const sleeveColor = meme ? hexToInt(tierFor(meme.reshares).color) : 0x212636ff
-      const sleeve = new Jimp({ width: SLOT.w, height: SLOT.h, color: sleeveColor }) as unknown as JimpImage
+      const sleeve = new Jimp({
+        width: SLOT.w,
+        height: SLOT.h,
+        color: sleeveColor,
+      }) as unknown as JimpImage
       canvas.composite(sleeve, x, y)
       if (!meme) continue
       try {
@@ -478,7 +507,12 @@ export async function ensureBinderOgImage(
       while (name.length > 4 && measureText(big, name) > 470) name = name.slice(0, -1)
       canvas.print({ font: bigShadow, x: 93, y: 333, text: name })
       canvas.print({ font: big, x: 90, y: 330, text: name })
-      canvas.print({ font: small, x: 92, y: 430, text: 'Meme Binder on MemeOn' })
+      canvas.print({
+        font: small,
+        x: 92,
+        y: 430,
+        text: 'Meme Binder on MemeOn',
+      })
       canvas.print({
         font: small,
         x: 92,
@@ -539,5 +573,9 @@ export async function pingFacebookRescrape(pageUrl: string): Promise<void> {
 }
 
 export function tierFrameList(): { key: string; name: string; url: string }[] {
-  return TIERS.map((t) => ({ key: t.key, name: t.name, url: assetUrl(frameKey(t.key)) }))
+  return TIERS.map((t) => ({
+    key: t.key,
+    name: t.name,
+    url: assetUrl(frameKey(t.key)),
+  }))
 }

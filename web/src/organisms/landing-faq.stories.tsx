@@ -21,7 +21,9 @@ type Story = StoryObj<typeof meta>
 export const Ready: Story = {
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector('[data-slot="landing-faq"]')).toBeInTheDocument()
-    await expect(canvasElement.querySelectorAll('[data-slot="faq-item"]')).toHaveLength(faqItems.length)
+    await expect(canvasElement.querySelectorAll('[data-slot="faq-item"]')).toHaveLength(
+      faqItems.length,
+    )
   },
 }
 

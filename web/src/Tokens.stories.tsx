@@ -18,7 +18,9 @@ import '@/atoms/foil.css'
 
 /** A token's raw value on `:root`, as authored (a `light-dark()` pair stays a pair). */
 const token = (name: string) =>
-  typeof document === 'undefined' ? '' : getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  typeof document === 'undefined'
+    ? ''
+    : getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
 /** The same token as a number (the `--text-*` steps end in px), so the Icon sample can match it. */
 const tokenPx = (name: string) => {
@@ -41,7 +43,11 @@ const SEMANTIC: ReadonlyArray<{ token: string; bg: string; text?: string }> = [
   { token: 'link', bg: 'bg-link' },
   { token: 'primary', bg: 'bg-primary', text: 'text-primary-foreground' },
   { token: 'brand', bg: 'bg-brand', text: 'text-brand-foreground' },
-  { token: 'destructive', bg: 'bg-destructive', text: 'text-destructive-foreground' },
+  {
+    token: 'destructive',
+    bg: 'bg-destructive',
+    text: 'text-destructive-foreground',
+  },
   { token: 'success', bg: 'bg-success', text: 'text-success-foreground' },
   { token: 'warning', bg: 'bg-warning', text: 'text-warning-foreground' },
   { token: 'error', bg: 'bg-error', text: 'text-error-foreground' },
@@ -55,31 +61,75 @@ const SEMANTIC: ReadonlyArray<{ token: string; bg: string; text?: string }> = [
 ]
 
 const TIERS: ReadonlyArray<{ key: string; label: string; chip: string }> = [
-  { key: 'paper', label: 'Paper', chip: 'bg-tier-paper-chip text-tier-paper-chip-text' },
-  { key: 'silver', label: 'Silver', chip: 'bg-tier-silver-chip text-tier-silver-chip-text' },
-  { key: 'holo', label: 'Holo', chip: 'bg-tier-holo-chip text-tier-holo-chip-text' },
-  { key: 'chrome', label: 'Chrome', chip: 'bg-tier-chrome-chip text-tier-chrome-chip-text' },
-  { key: 'gold', label: 'Gold', chip: 'bg-tier-gold-chip text-tier-gold-chip-text' },
+  {
+    key: 'paper',
+    label: 'Paper',
+    chip: 'bg-tier-paper-chip text-tier-paper-chip-text',
+  },
+  {
+    key: 'silver',
+    label: 'Silver',
+    chip: 'bg-tier-silver-chip text-tier-silver-chip-text',
+  },
+  {
+    key: 'holo',
+    label: 'Holo',
+    chip: 'bg-tier-holo-chip text-tier-holo-chip-text',
+  },
+  {
+    key: 'chrome',
+    label: 'Chrome',
+    chip: 'bg-tier-chrome-chip text-tier-chrome-chip-text',
+  },
+  {
+    key: 'gold',
+    label: 'Gold',
+    chip: 'bg-tier-gold-chip text-tier-gold-chip-text',
+  },
   {
     key: 'prismatic',
     label: 'Prismatic',
     chip: 'bg-tier-prismatic-chip bg-(image:--gradient-tier-prismatic-chip) text-tier-prismatic-chip-text',
   },
-  { key: 'shiny', label: 'Shiny', chip: 'bg-tier-shiny-chip text-tier-shiny-chip-text' },
+  {
+    key: 'shiny',
+    label: 'Shiny',
+    chip: 'bg-tier-shiny-chip text-tier-shiny-chip-text',
+  },
 ]
 
 /** The materials, each painted by its utility and nothing else. */
-const MATERIALS: ReadonlyArray<{ name: string; className: string; label: string }> = [
+const MATERIALS: ReadonlyArray<{
+  name: string
+  className: string
+  label: string
+}> = [
   { name: 'card', className: 'material-card', label: 'material-card' },
   { name: 'raised', className: 'material-raised', label: 'material-raised' },
   { name: 'pressed', className: 'material-pressed', label: 'material-pressed' },
   { name: 'pop', className: 'material-pop', label: 'material-pop' },
   { name: 'modal', className: 'material-modal', label: 'material-modal' },
   { name: 'glass', className: 'glass', label: 'glass' },
-  { name: 'primary', className: 'material-raised bg-primary text-primary-foreground', label: 'raised · primary' },
-  { name: 'brand', className: 'material-raised bg-brand text-brand-foreground', label: 'raised · brand' },
-  { name: 'danger', className: 'material-raised bg-error text-error-foreground', label: 'raised · danger' },
-  { name: 'ring', className: 'material-raised outline-3 outline-offset-2 outline-ring', label: 'the ring' },
+  {
+    name: 'primary',
+    className: 'material-raised bg-primary text-primary-foreground',
+    label: 'raised · primary',
+  },
+  {
+    name: 'brand',
+    className: 'material-raised bg-brand text-brand-foreground',
+    label: 'raised · brand',
+  },
+  {
+    name: 'danger',
+    className: 'material-raised bg-error text-error-foreground',
+    label: 'raised · danger',
+  },
+  {
+    name: 'ring',
+    className: 'material-raised outline-3 outline-offset-2 outline-ring',
+    label: 'the ring',
+  },
 ]
 
 const RADII: ReadonlyArray<{ step: string; className: string }> = [
@@ -92,8 +142,16 @@ const RADII: ReadonlyArray<{ step: string; className: string }> = [
 ]
 
 /* The one container left in `@theme`: a container-query cut with no class of its own. */
-const CONTAINERS: ReadonlyArray<{ token: string; spec: string; className: string }> = [
-  { token: 'card-narrow', spec: '220px · a meme card too narrow for its meta row', className: 'max-w-card-narrow' },
+const CONTAINERS: ReadonlyArray<{
+  token: string
+  spec: string
+  className: string
+}> = [
+  {
+    token: 'card-narrow',
+    spec: '220px · a meme card too narrow for its meta row',
+    className: 'max-w-card-narrow',
+  },
 ]
 
 /* The scale. `text-<step>` is a complete setting — size, line-height, letter-spacing and default
@@ -159,7 +217,7 @@ const BREAKPOINTS: ReadonlyArray<{ name: string; role: string }> = [
   { name: 'sm', role: '2-up grids, leaderboard and person rows, login CTA' },
   { name: 'md', role: 'the phone cut: link status, filter bars, hero video' },
   { name: 'lg', role: 'bottom-sheet dialogs, market controls, quest scroller' },
-  { name: 'xl', role: 'the shell: the bar\'s links in, the tab bar out' },
+  { name: 'xl', role: "the shell: the bar's links in, the tab bar out" },
   { name: '2xl', role: 'four-column tier grid, the create rail' },
 ]
 
@@ -172,7 +230,11 @@ function Swatch({ token, bg, text }: { token: string; bg: string; text?: string 
     <li className="flex flex-col gap-1">
       <div
         data-slot={`swatch-${token}`}
-        className={cn('flex h-14 items-center justify-center rounded-sm border border-border text-xs', bg, text)}
+        className={cn(
+          'flex h-14 items-center justify-center rounded-sm border border-border text-xs',
+          bg,
+          text,
+        )}
       >
         {text ? 'on it' : ''}
       </div>
@@ -186,8 +248,9 @@ export function TokenSheet() {
     <div className="mx-auto max-w-360 bg-background p-6 text-foreground" data-slot="token-sheet">
       <h1 className="text-5xl">Tokens</h1>
       <p className="max-w-[65ch] text-lg text-muted-foreground">
-        Every colour below is a <code>light-dark()</code> pair; the theme toolbar flips <code>data-theme</code> on{' '}
-        <code>&lt;html&gt;</code> and the browser picks the arm. Same markup, both arms.
+        Every colour below is a <code>light-dark()</code> pair; the theme toolbar flips{' '}
+        <code>data-theme</code> on <code>&lt;html&gt;</code> and the browser picks the arm. Same
+        markup, both arms.
       </p>
 
       <Heading>Colour roles</Heading>
@@ -201,9 +264,15 @@ export function TokenSheet() {
       <ul className="flex flex-wrap gap-4">
         {TIERS.map((tier) => (
           <li key={tier.key} className="flex flex-col items-center gap-2">
-            <div data-slot={`tier-frame-${tier.key}`} className={cn('foil-card rounded-md', `tier-${tier.key}`)}>
+            <div
+              data-slot={`tier-frame-${tier.key}`}
+              className={cn('foil-card rounded-md', `tier-${tier.key}`)}
+            >
               <div className="foil-frame flex h-20 w-28 items-end rounded-md bg-muted p-2">
-                <span data-slot={`tier-chip-${tier.key}`} className={cn('rounded-sm px-2 py-1 text-xs font-semibold', tier.chip)}>
+                <span
+                  data-slot={`tier-chip-${tier.key}`}
+                  className={cn('rounded-sm px-2 py-1 text-xs font-semibold', tier.chip)}
+                >
                   {tier.label}
                 </span>
               </div>
@@ -219,7 +288,10 @@ export function TokenSheet() {
           <span
             key={name}
             data-slot={`material-${name}`}
-            className={cn('inline-flex h-11.5 items-center rounded-lg px-4.5 text-base font-semibold', className)}
+            className={cn(
+              'inline-flex h-11.5 items-center rounded-lg px-4.5 text-base font-semibold',
+              className,
+            )}
           >
             {label}
           </span>
@@ -244,7 +316,10 @@ export function TokenSheet() {
       <ul className="flex flex-wrap gap-3">
         {RADII.map(({ step, className }) => (
           <li key={step} className="flex flex-col items-center gap-1">
-            <div data-slot={`radius-${step}`} className={cn('h-16 w-24 border-3 border-border bg-card', className)} />
+            <div
+              data-slot={`radius-${step}`}
+              className={cn('h-16 w-24 border-3 border-border bg-card', className)}
+            />
             <code className="text-xs">{className}</code>
           </li>
         ))}
@@ -253,8 +328,8 @@ export function TokenSheet() {
       <Heading>Lengths</Heading>
       <p className="m-0 text-base text-muted-foreground">
         Lengths are grid steps — <code className="text-xs">p-4.5</code>,{' '}
-        <code className="text-xs">h-11.5</code>, <code className="text-xs">max-w-140</code>. There are no
-        role names.
+        <code className="text-xs">h-11.5</code>, <code className="text-xs">max-w-140</code>. There
+        are no role names.
       </p>
 
       <Heading>Containers</Heading>
@@ -264,7 +339,10 @@ export function TokenSheet() {
             <code className="w-fit text-xs whitespace-normal">
               {token} · {spec}
             </code>
-            <div data-slot={`container-${token}`} className={cn('h-3 w-full rounded-full bg-brand', className)} />
+            <div
+              data-slot={`container-${token}`}
+              className={cn('h-3 w-full rounded-full bg-brand', className)}
+            />
           </li>
         ))}
       </ul>
@@ -272,9 +350,15 @@ export function TokenSheet() {
       <Heading>Breakpoints</Heading>
       <ul className="flex flex-col gap-1.5">
         {BREAKPOINTS.map(({ name, role }) => (
-          <li key={name} data-slot={`breakpoint-${name}`} className="flex flex-wrap items-baseline gap-x-3">
+          <li
+            key={name}
+            data-slot={`breakpoint-${name}`}
+            className="flex flex-wrap items-baseline gap-x-3"
+          >
             <code className="w-24 shrink-0 text-xs">{name}</code>
-            <code className="w-20 shrink-0 text-xs tabular-nums">{token(`--breakpoint-${name}`)}</code>
+            <code className="w-20 shrink-0 text-xs tabular-nums">
+              {token(`--breakpoint-${name}`)}
+            </code>
             <span className="min-w-0 text-sm text-muted-foreground">{role}</span>
           </li>
         ))}
@@ -283,7 +367,10 @@ export function TokenSheet() {
       <Heading>Type scale</Heading>
       <ul className="flex flex-col gap-4">
         {STEPS.map((step) => (
-          <li key={step} className="grid gap-x-4 gap-y-1 md:grid-cols-[300px_1fr] md:items-baseline">
+          <li
+            key={step}
+            className="grid gap-x-4 gap-y-1 md:grid-cols-[300px_1fr] md:items-baseline"
+          >
             <code data-slot={`ladder-row-spec-${step}`} className="w-fit text-xs whitespace-normal">
               {step} · {stepSpec(step)} · {STEP_ROLE[step]}
             </code>
@@ -292,7 +379,11 @@ export function TokenSheet() {
                   arrive from the step, which is what the play function then reads back */}
               <p
                 data-slot={`ladder-${step}`}
-                className={cn('m-0 truncate', STEP_CLASS[step], isDisplayStep(step) ? 'font-display' : 'font-sans')}
+                className={cn(
+                  'm-0 truncate',
+                  STEP_CLASS[step],
+                  isDisplayStep(step) ? 'font-display' : 'font-sans',
+                )}
               >
                 Memes are the new trading cards
               </p>
@@ -312,7 +403,10 @@ export function TokenSheet() {
       <Heading>Icons on the scale</Heading>
       <ul className="flex flex-col gap-3">
         {GLYPHS.map(({ step, role, icon }) => (
-          <li key={step} className="grid gap-x-4 gap-y-1 md:grid-cols-[300px_1fr] md:items-baseline">
+          <li
+            key={step}
+            className="grid gap-x-4 gap-y-1 md:grid-cols-[300px_1fr] md:items-baseline"
+          >
             <code className="w-fit text-xs whitespace-normal">
               {step} + leading-none · {role}
             </code>
@@ -333,9 +427,9 @@ export function TokenSheet() {
           2,480,000 · 9876543210
         </p>
         <p className="m-0 mt-2 text-sm text-muted-foreground">
-          <code>font-variant-numeric: tabular-nums</code> on <code>body</code>: every number in this app is a count, a
-          price or a holding, so the two lines above are exactly as wide as each other. Prose opts out with{' '}
-          <code>proportional-nums</code>.
+          <code>font-variant-numeric: tabular-nums</code> on <code>body</code>: every number in this
+          app is a count, a price or a holding, so the two lines above are exactly as wide as each
+          other. Prose opts out with <code>proportional-nums</code>.
         </p>
       </div>
 
@@ -386,7 +480,11 @@ function arm(value: string, which: 'light' | 'dark'): string {
 }
 
 /** What the browser makes of a CSS value for `property`, resolved in the document: the same serialisation a swatch gets. */
-function resolved(property: 'backgroundColor' | 'boxShadow' | 'letterSpacing', value: string, fontSize?: string): string {
+function resolved(
+  property: 'backgroundColor' | 'boxShadow' | 'letterSpacing',
+  value: string,
+  fontSize?: string,
+): string {
   const probe = document.createElement('span')
   probe.style.position = 'absolute'
   probe.style.visibility = 'hidden'
@@ -398,7 +496,8 @@ function resolved(property: 'backgroundColor' | 'boxShadow' | 'letterSpacing', v
   return out
 }
 
-const slot = <T extends HTMLElement>(name: string) => document.documentElement.querySelector<T>(`[data-slot="${name}"]`)!
+const slot = <T extends HTMLElement>(name: string) =>
+  document.documentElement.querySelector<T>(`[data-slot="${name}"]`)!
 
 /** Every swatch, material, step and role, compared with the token it names. */
 async function assertTokensPainted(which: 'light' | 'dark') {
@@ -406,25 +505,56 @@ async function assertTokensPainted(which: 'light' | 'dark') {
   await expect(root.dataset.theme).toBe(which)
   await expect(getComputedStyle(root).colorScheme).toBe(which)
 
-  for (const name of ['background', 'card', 'accent', 'muted', 'primary', 'brand', 'link', 'braincell', 'destructive']) {
+  for (const name of [
+    'background',
+    'card',
+    'accent',
+    'muted',
+    'primary',
+    'brand',
+    'link',
+    'braincell',
+    'destructive',
+  ]) {
     const expected = resolved('backgroundColor', arm(token(`--color-${name}`), which))
     await expect(getComputedStyle(slot(`swatch-${name}`)).backgroundColor).toBe(expected)
   }
 
-  for (const [name, shadow] of [['raised', '--shadow-raised'], ['pressed', '--shadow-pressed'], ['pop', '--shadow-pop'], ['modal', '--shadow-modal']] as const) {
-    await expect(getComputedStyle(slot(`material-${name}`)).boxShadow).toBe(resolved('boxShadow', token(shadow)))
+  for (const [name, shadow] of [
+    ['raised', '--shadow-raised'],
+    ['pressed', '--shadow-pressed'],
+    ['pop', '--shadow-pop'],
+    ['modal', '--shadow-modal'],
+  ] as const) {
+    await expect(getComputedStyle(slot(`material-${name}`)).boxShadow).toBe(
+      resolved('boxShadow', token(shadow)),
+    )
   }
-  await expect(getComputedStyle(slot('material-card')).backgroundColor).toBe(resolved('backgroundColor', arm(token('--color-card'), which)))
-  await expect(getComputedStyle(slot('material-raised')).backgroundColor).toBe(resolved('backgroundColor', arm(token('--color-accent'), which)))
-  await expect(getComputedStyle(slot('material-pressed')).backgroundColor).toBe(resolved('backgroundColor', arm(token('--color-muted'), which)))
-  await expect(getComputedStyle(slot('material-primary')).backgroundColor).toBe(resolved('backgroundColor', arm(token('--color-primary'), which)))
-  await expect(getComputedStyle(slot('material-disabled')).opacity).toBe(token('--opacity-disabled'))
+  await expect(getComputedStyle(slot('material-card')).backgroundColor).toBe(
+    resolved('backgroundColor', arm(token('--color-card'), which)),
+  )
+  await expect(getComputedStyle(slot('material-raised')).backgroundColor).toBe(
+    resolved('backgroundColor', arm(token('--color-accent'), which)),
+  )
+  await expect(getComputedStyle(slot('material-pressed')).backgroundColor).toBe(
+    resolved('backgroundColor', arm(token('--color-muted'), which)),
+  )
+  await expect(getComputedStyle(slot('material-primary')).backgroundColor).toBe(
+    resolved('backgroundColor', arm(token('--color-primary'), which)),
+  )
+  await expect(getComputedStyle(slot('material-disabled')).opacity).toBe(
+    token('--opacity-disabled'),
+  )
 
   for (const step of ['xs', 'sm', 'md', 'lg', 'xl']) {
-    await expect(getComputedStyle(slot(`radius-${step}`)).borderRadius).toBe(token(`--radius-${step}`))
+    await expect(getComputedStyle(slot(`radius-${step}`)).borderRadius).toBe(
+      token(`--radius-${step}`),
+    )
   }
   for (const name of ['card-narrow']) {
-    await expect(getComputedStyle(slot(`container-${name}`)).maxWidth).toBe(token(`--container-${name}`))
+    await expect(getComputedStyle(slot(`container-${name}`)).maxWidth).toBe(
+      token(`--container-${name}`),
+    )
   }
 
   for (const name of BREAKPOINTS) {
@@ -443,7 +573,9 @@ async function assertTokensPainted(which: 'light' | 'dark') {
       resolved('letterSpacing', token(`--text-${step}--letter-spacing`), token(`--text-${step}`)),
     )
     await expect(style.fontWeight).toBe(token(`--text-${step}--font-weight`))
-    await expect(style.fontFamily).toContain(isDisplayStep(step) ? 'Unbounded Variable' : 'Onest Variable')
+    await expect(style.fontFamily).toContain(
+      isDisplayStep(step) ? 'Unbounded Variable' : 'Onest Variable',
+    )
     /* the spec column is read from the same tokens, so it can never describe a different scale */
     await expect(slot(`ladder-row-spec-${step}`).textContent).toContain(token(`--text-${step}`))
     if (isDisplayStep(step)) {
@@ -465,7 +597,11 @@ async function assertTokensPainted(which: 'light' | 'dark') {
     await expect(style.lineHeight).toBe(style.fontSize)
   }
 
-  for (const [level, step] of [['h1', '5xl'], ['h2', '3xl'], ['h3', '2xl']] as const) {
+  for (const [level, step] of [
+    ['h1', '5xl'],
+    ['h2', '3xl'],
+    ['h3', '2xl'],
+  ] as const) {
     const style = getComputedStyle(slot(`heading-${level}`))
     await expect(style.fontSize).toBe(token(`--text-${step}`))
     await expect(style.fontFamily).toContain('Unbounded Variable')

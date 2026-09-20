@@ -19,12 +19,10 @@ const HERO_NAME = cn(
   'block font-display text-5xl font-normal text-foreground',
   'max-md:text-4xl wrap-anywhere',
 )
-const HERO_VERB = cn(
-  'block font-display text-2xl font-normal text-foreground',
-  'md:text-4xl',
-)
+const HERO_VERB = cn('block font-display text-2xl font-normal text-foreground', 'md:text-4xl')
 
-const HERO_STATS = 'm-0 mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-base font-semibold text-muted-foreground'
+const HERO_STATS =
+  'm-0 mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-base font-semibold text-muted-foreground'
 
 const HERO_BODY = 'm-0 mt-4 max-w-140 text-lg text-muted-foreground text-pretty'
 
@@ -98,7 +96,11 @@ export function InviteScreen({
     <PageContainer as="main" id="main" tabIndex={-1}>
       <PageHead level="h1" title={pageTitle} className="mb-5" />
 
-      <Card size="sm" data-slot="invite-hero" className="flex flex-col items-center gap-2 text-center">
+      <Card
+        size="sm"
+        data-slot="invite-hero"
+        className="flex flex-col items-center gap-2 text-center"
+      >
         <Avatar name={inviter.name} src={inviter.avatarSrc} size="hero" loading="eager" />
         <h2 className="m-0 mt-3.5">
           <span className={HERO_NAME}>{inviter.name}</span>{' '}
@@ -119,7 +121,9 @@ export function InviteScreen({
 
         {selfActions ? (
           <>
-            <Alert variant="success" className="mt-3">{selfActions.note}</Alert>
+            <Alert variant="success" className="mt-3">
+              {selfActions.note}
+            </Alert>
             <div className={HERO_ACTIONS}>
               <Button variant="primary" {...selfActions.copyButtonProps}>
                 <span aria-hidden="true">
@@ -146,8 +150,16 @@ export function InviteScreen({
             </Button>
           </div>
         )}
-        {showAcceptError && <Alert variant="error" className="mt-3">{acceptErrorMessage}</Alert>}
-        {showAcceptSuccess && <Alert variant="success" className="mt-3">{acceptSuccessMessage}</Alert>}
+        {showAcceptError && (
+          <Alert variant="error" className="mt-3">
+            {acceptErrorMessage}
+          </Alert>
+        )}
+        {showAcceptSuccess && (
+          <Alert variant="success" className="mt-3">
+            {acceptSuccessMessage}
+          </Alert>
+        )}
         <p className={HERO_NOTE}>{inviter.acceptanceNote}</p>
       </Card>
 

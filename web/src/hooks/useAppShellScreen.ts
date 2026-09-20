@@ -2,11 +2,7 @@ import { useProjectedActor } from './useProjectedActor'
 import { useCallback, type MouseEventHandler } from 'react'
 import { flushSync } from 'react-dom'
 import { useLocation, useNavigate } from 'react-router-dom'
-import {
-  allDone,
-  buildAppShellScreenModel,
-  type AppShellScreenModel,
-} from '../lib/appShellModel'
+import { allDone, buildAppShellScreenModel, type AppShellScreenModel } from '../lib/appShellModel'
 import type { Me } from '../lib/types'
 import { withViewTransition } from '../lib/viewTransition'
 import { appShellMachine, type AppShellPhase } from '../stores/appShellMachine'
@@ -41,8 +37,15 @@ export function useAppShellScreen(): AppShellScreenModel {
   const [snapshot, send, actor] = useProjectedActor(appShellMachine)
   const ctx = snapshot.context
   const phase = snapshot.value as AppShellPhase
-  const { loadAlerts, onOpenAlerts } = useAppShellAlerts({ send, actor, refresh })
-  const { loadSteps, onClaimPack, onDismissPack, onDismissQuests } = useAppShellQuests({ send, refresh })
+  const { loadAlerts, onOpenAlerts } = useAppShellAlerts({
+    send,
+    actor,
+    refresh,
+  })
+  const { loadSteps, onClaimPack, onDismissPack, onDismissQuests } = useAppShellQuests({
+    send,
+    refresh,
+  })
 
   useMountEffect(() => {
     let lastUser: Me | null | undefined
@@ -63,7 +66,9 @@ export function useAppShellScreen(): AppShellScreenModel {
       let poll: ReturnType<typeof setInterval> | null = null
       const isLive = () => live
       /* a hidden tab is not a reader: skip its ticks and catch up when it comes back */
-      refetchOnVisible = () => { if (document.visibilityState === 'visible') loadAlerts(isLive) }
+      refetchOnVisible = () => {
+        if (document.visibilityState === 'visible') loadAlerts(isLive)
+      }
       disposeLoads = () => {
         live = false
         refetchOnVisible = () => {}

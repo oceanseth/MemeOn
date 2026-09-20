@@ -13,10 +13,7 @@ import {
 } from '../stores/friendsMachine'
 import { useMountEffect } from './useMountEffect'
 import { clampGiftShares } from '../lib/giftDialogModel'
-import {
-  buildFriendsScreenModel,
-  type FriendsScreenModel,
-} from '../lib/friendsModel'
+import { buildFriendsScreenModel, type FriendsScreenModel } from '../lib/friendsModel'
 
 export type { FriendsPhase }
 export type { FriendLinkModel, FriendsScreenModel } from '../lib/friendsModel'
@@ -57,7 +54,8 @@ export function useFriendsScreen(): FriendsScreenModel {
     const watch = watchPresence((online) => {
       const next = [...online].sort()
       const current = actor.getSnapshot().context.onlineSubs
-      if (current.length === next.length && current.every((sub, index) => sub === next[index])) return
+      if (current.length === next.length && current.every((sub, index) => sub === next[index]))
+        return
       send({ type: 'SET_ONLINE', onlineSubs: next })
     })
     presence.current = watch
@@ -199,7 +197,12 @@ export function useFriendsScreen(): FriendsScreenModel {
     (friend: GiftTarget) => {
       send({ type: 'OPEN_GIFT', recipient: friend })
       apiFetch<{ memes: Meme[] }>('/api/binder')
-        .then((r) => send({ type: 'SET_GIFT_MEMES', memes: r.memes.filter((m) => (m.myShares ?? 0) > 0) }))
+        .then((r) =>
+          send({
+            type: 'SET_GIFT_MEMES',
+            memes: r.memes.filter((m) => (m.myShares ?? 0) > 0),
+          }),
+        )
         .catch(() => send({ type: 'SET_GIFT_MEMES', memes: [] }))
     },
     [send],
@@ -215,11 +218,18 @@ export function useFriendsScreen(): FriendsScreenModel {
     send({ type: 'SET_GIFT_BUSY', busy: true })
     send({ type: 'SET_GIFT_ERR', err: null })
     try {
-      await post('/api/gift', { memeId: live.giftPick.id, toSub: live.gifting.sub, shares: giftShares })
+      await post('/api/gift', {
+        memeId: live.giftPick.id,
+        toSub: live.gifting.sub,
+        shares: giftShares,
+      })
       flashMsg(copy.toasts.gifted(giftShares, live.giftPick.title, live.gifting.name))
       send({ type: 'CLOSE_GIFT' })
     } catch (e) {
-      send({ type: 'SET_GIFT_ERR', err: e instanceof Error ? e.message : copy.errors.gift })
+      send({
+        type: 'SET_GIFT_ERR',
+        err: e instanceof Error ? e.message : copy.errors.gift,
+      })
     } finally {
       send({ type: 'SET_GIFT_BUSY', busy: false })
     }

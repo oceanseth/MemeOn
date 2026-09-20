@@ -29,7 +29,6 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-
 /** The 640px frame: Base UI owns modality and focus, the atom owns the box, this the contract. */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
@@ -76,7 +75,9 @@ export const CloseLocked: Story = {
   args: { close: { label: 'Close the frame', disabled: true } },
   play: async ({ canvasElement }) => {
     onOpenChange.mockClear()
-    const close = within(canvasElement).getByRole('button', { name: 'Close the frame' })
+    const close = within(canvasElement).getByRole('button', {
+      name: 'Close the frame',
+    })
     await expect(close).toBeDisabled()
     await userEvent.click(close)
     await expect(onOpenChange).not.toHaveBeenCalled()

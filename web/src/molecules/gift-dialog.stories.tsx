@@ -1,6 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, waitFor, within } from 'storybook/test'
-import { friendAccepted, giftablePaper, giftableSilver, holoMeme, listedHolo } from '../../.storybook/fixtures'
+import {
+  friendAccepted,
+  giftablePaper,
+  giftableSilver,
+  holoMeme,
+  listedHolo,
+} from '../../.storybook/fixtures'
 import { giftDialogCopy as copy } from '../copy/giftDialog'
 import type { Meme } from '../lib/types'
 import { buildGiftDialogModel, type BuildGiftDialogModelInput } from '../lib/giftDialogModel'
@@ -52,17 +58,28 @@ export const Search: Story = {
     await expect(dialog).toHaveAccessibleDescription(/Pick a meme you hold shares in/)
     // Base UI would park focus on the first tab stop (the ✕); the binder search is the task
     await waitFor(() => expect(canvas.getByRole('searchbox', { name: copy.search })).toHaveFocus())
-    await expect(canvas.getByRole('searchbox', { name: copy.search })).toHaveAttribute('placeholder', copy.searchPlaceholder)
+    await expect(canvas.getByRole('searchbox', { name: copy.search })).toHaveAttribute(
+      'placeholder',
+      copy.searchPlaceholder,
+    )
     await expect(rows(canvasElement)).toHaveLength(4)
     for (const row of rows(canvasElement)) {
       await expect(row.tagName).toBe('BUTTON')
       await expect(row).toHaveAttribute('aria-pressed', 'false')
       await expect(row.offsetHeight).toBeGreaterThanOrEqual(44)
-      for (const slot of ['item-media', 'item-title', 'item-description', 'item-actions', 'tier-chip']) {
+      for (const slot of [
+        'item-media',
+        'item-title',
+        'item-description',
+        'item-actions',
+        'tier-chip',
+      ]) {
         await expect(row.querySelector(`[data-slot="${slot}"]`)).not.toBeNull()
       }
     }
-    await expect(canvas.getByRole('button', { name: new RegExp(giftablePaper.title) })).toBeInTheDocument()
+    await expect(
+      canvas.getByRole('button', { name: new RegExp(giftablePaper.title) }),
+    ).toBeInTheDocument()
     await expect(canvas.getByText('Listed')).toHaveAttribute('data-slot', 'badge')
     // nothing picked yet: the shares field and the submit wait
     await expect(canvas.queryByRole('spinbutton')).toBeNull()
@@ -84,7 +101,9 @@ export const Picked: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // the submit names the pick too, so the row is found by its state, not its name
-    const picked = [...rows(canvasElement)].find((row) => row.getAttribute('aria-pressed') === 'true')!
+    const picked = [...rows(canvasElement)].find(
+      (row) => row.getAttribute('aria-pressed') === 'true',
+    )!
     await expect(picked).toHaveTextContent(giftablePaper.title)
     const others = [...rows(canvasElement)].filter((row) => row !== picked)
     await expect(others).toHaveLength(3)
@@ -124,7 +143,13 @@ export const Busy: Story = {
 }
 /** The failure lands in a live region that was mounted before it, so it is announced. */
 export const Error: Story = {
-  args: { model: model({ pick: giftablePaper, shares: 3, error: 'not enough shares' }) },
+  args: {
+    model: model({
+      pick: giftablePaper,
+      shares: 3,
+      error: 'not enough shares',
+    }),
+  },
   play: async ({ canvasElement }) => {
     const region = canvasElement.querySelector<HTMLElement>('[data-slot="gift-error"]')!
     await expect(region).toHaveAttribute('role', 'alert')
@@ -133,7 +158,9 @@ export const Error: Story = {
     await expect(band).toHaveTextContent('not enough shares')
   },
 }
-export const Closed: Story = { args: { model: model({ open: false, memes: [] }) } }
+export const Closed: Story = {
+  args: { model: model({ open: false, memes: [] }) },
+}
 
 /** The dark arm of the picker: pressed row, tier seals and the one bubblegum→sky submit. */
 export const Dark: Story = { ...Picked, globals: { theme: 'dark' } }

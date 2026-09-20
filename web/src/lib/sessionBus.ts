@@ -6,7 +6,8 @@
 /** `/binder/new` remix-video resume */
 export const PENDING_VIDEO_KEY = 'memeon_pending_video'
 export const getPendingVideo = (): string | null => sessionStorage.getItem(PENDING_VIDEO_KEY)
-export const setPendingVideo = (value: string): void => sessionStorage.setItem(PENDING_VIDEO_KEY, value)
+export const setPendingVideo = (value: string): void =>
+  sessionStorage.setItem(PENDING_VIDEO_KEY, value)
 export const clearPendingVideo = (): void => sessionStorage.removeItem(PENDING_VIDEO_KEY)
 
 /** `/invite/:sub` → `/auth/callback` */
@@ -24,18 +25,22 @@ export const clearPostLogin = (): void => sessionStorage.removeItem(POST_LOGIN_K
 /** `/discord/link` token across the Masky bounce */
 export const DISCORD_LINK_KEY = 'memeon_discord_link_token'
 export const getDiscordLinkToken = (): string | null => sessionStorage.getItem(DISCORD_LINK_KEY)
-export const setDiscordLinkToken = (value: string): void => sessionStorage.setItem(DISCORD_LINK_KEY, value)
+export const setDiscordLinkToken = (value: string): void =>
+  sessionStorage.setItem(DISCORD_LINK_KEY, value)
 export const clearDiscordLinkToken = (): void => sessionStorage.removeItem(DISCORD_LINK_KEY)
 
 /** `/discord/link` consent across the Masky bounce */
 export const DISCORD_LINK_CONSENT_KEY = 'memeon_discord_link_consent'
-export const getDiscordLinkConsent = (): string | null => sessionStorage.getItem(DISCORD_LINK_CONSENT_KEY)
+export const getDiscordLinkConsent = (): string | null =>
+  sessionStorage.getItem(DISCORD_LINK_CONSENT_KEY)
 export const setDiscordLinkConsent = (value: string): void =>
   sessionStorage.setItem(DISCORD_LINK_CONSENT_KEY, value)
-export const clearDiscordLinkConsent = (): void => sessionStorage.removeItem(DISCORD_LINK_CONSENT_KEY)
+export const clearDiscordLinkConsent = (): void =>
+  sessionStorage.removeItem(DISCORD_LINK_CONSENT_KEY)
 
 /** landing login → `/auth/callback` */
 export const MASKY_OAUTH_STATE_KEY = 'masky_oauth_state'
 export const getMaskyOauthState = (): string | null => sessionStorage.getItem(MASKY_OAUTH_STATE_KEY)
-export const setMaskyOauthState = (value: string): void => sessionStorage.setItem(MASKY_OAUTH_STATE_KEY, value)
+export const setMaskyOauthState = (value: string): void =>
+  sessionStorage.setItem(MASKY_OAUTH_STATE_KEY, value)
 export const clearMaskyOauthState = (): void => sessionStorage.removeItem(MASKY_OAUTH_STATE_KEY)

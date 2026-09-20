@@ -71,7 +71,11 @@ export interface MarketplaceScreenModel {
   errorMessage: string
   retryButtonProps: { onClick: () => void; disabled: boolean }
   retryLabel: string
-  loadMoreProps: { onClick: () => void; disabled: boolean; 'aria-busy': boolean }
+  loadMoreProps: {
+    onClick: () => void
+    disabled: boolean
+    'aria-busy': boolean
+  }
   loadMoreLabel: string
   loadMoreError: string | null
   endOfListLabel: string | null
@@ -83,7 +87,9 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
   const [params, setParams] = useSearchParams()
   const filtersRef = useRef<MarketplaceInput | null>(null)
   const initialFilters = (filtersRef.current ??= filtersFromUrl(params))
-  const [snapshot, send, actor] = useProjectedActor(marketplaceMachine, { input: initialFilters })
+  const [snapshot, send, actor] = useProjectedActor(marketplaceMachine, {
+    input: initialFilters,
+  })
   const context = snapshot.context
   const phase = snapshot.value as MarketplacePhase
   const {
@@ -121,9 +127,13 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
     ? copy.results.countSoFar(cards.length)
     : copy.results.count(cards.length)
   // one status line: the count doubles as the live region, and the alert box owns the error copy
-  const resultsLabel = showLoading || refreshing
-    ? copy.results.searching
-    : copy.results.line([showError ? copy.results.errored : showEmpty ? copy.results.empty : countLabel, ...filterLabels])
+  const resultsLabel =
+    showLoading || refreshing
+      ? copy.results.searching
+      : copy.results.line([
+          showError ? copy.results.errored : showEmpty ? copy.results.empty : countLabel,
+          ...filterLabels,
+        ])
   const hiddenFilterCount = [context.type, context.tier, context.listed ? 'listed' : ''].filter(
     Boolean,
   ).length
@@ -171,7 +181,9 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
       'aria-expanded': context.filtersOpen,
       'aria-controls': FILTERS_PANEL_ID,
     },
-    filtersToggleLabel: hiddenFilterCount ? copy.filters.toggleWithCount(hiddenFilterCount) : copy.filters.toggle,
+    filtersToggleLabel: hiddenFilterCount
+      ? copy.filters.toggleWithCount(hiddenFilterCount)
+      : copy.filters.toggle,
     filtersPanelProps: {
       id: FILTERS_PANEL_ID,
       'data-collapsed': context.filtersOpen ? 'false' : 'true',
@@ -193,15 +205,14 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
       disabled: context.busy === 'more',
       'aria-busy': context.busy === 'more',
     },
-    loadMoreLabel: context.busy === 'more'
-      ? copy.loadingMore
-      : context.moreErr
-        ? copy.loadMoreRetry
-        : copy.loadMore,
+    loadMoreLabel:
+      context.busy === 'more'
+        ? copy.loadingMore
+        : context.moreErr
+          ? copy.loadMoreRetry
+          : copy.loadMore,
     loadMoreError: context.moreErr ? copy.loadMoreError : null,
-    endOfListLabel: showGrid && !context.nextCursor
-      ? copy.endOfList
-      : null,
+    endOfListLabel: showGrid && !context.nextCursor ? copy.endOfList : null,
     sentinelRef,
   }
 }

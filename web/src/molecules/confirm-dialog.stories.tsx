@@ -67,11 +67,16 @@ export const Danger: Story = {
     const dialog = canvas.getByRole('alertdialog', { name: 'Delete forever?' })
     await expect(dialog).toHaveAttribute('data-variant', 'danger')
     await expect(getComputedStyle(dialog).boxShadow).toContain('inset')
-    await expect(canvas.getByRole('button', { name: 'Delete it' })).toHaveAttribute('data-slot', 'button')
+    await expect(canvas.getByRole('button', { name: 'Delete it' })).toHaveAttribute(
+      'data-slot',
+      'button',
+    )
   },
 }
 export const Busy: Story = {
-  args: { model: buildConfirmDialogModel({ ...baseInput, danger: true, busy: true }) },
+  args: {
+    model: buildConfirmDialogModel({ ...baseInput, danger: true, busy: true }),
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: 'Cancel' })).toBeDisabled()
@@ -124,7 +129,9 @@ export const RestoresFocusToItsOpener: Story = {
     for (const dismiss of Object.values(dismissals)) {
       await userEvent.click(opener)
       // the atom fades in, so visibility is a wait, not a read
-      await waitFor(() => expect(canvas.getByRole('alertdialog', { name: 'Delete forever?' })).toBeVisible())
+      await waitFor(() =>
+        expect(canvas.getByRole('alertdialog', { name: 'Delete forever?' })).toBeVisible(),
+      )
       await dismiss()
       await waitFor(() => expect(canvas.queryByRole('alertdialog')).toBeNull())
       await waitFor(() => expect(document.activeElement).toBe(opener))
@@ -138,7 +145,8 @@ export const Prompt: Story = {
       ...baseInput,
       id: 'claim-story',
       title: 'Claim this meme?',
-      message: 'This card is sitting in the archive. Tell us why it belongs to you and we’ll take a look.',
+      message:
+        'This card is sitting in the archive. Tell us why it belongs to you and we’ll take a look.',
       confirmLabel: 'File the claim',
       prompt: {
         label: 'Why is this meme yours?',
@@ -152,7 +160,9 @@ export const Prompt: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const textbox = canvas.getByRole('textbox', { name: /Why is this meme yours/ })
+    const textbox = canvas.getByRole('textbox', {
+      name: /Why is this meme yours/,
+    })
     await expect(textbox).toHaveAttribute('maxlength', '400')
     await expect(textbox).toHaveAccessibleDescription(/Links help your case/)
     for (const slot of ['field', 'field-label', 'field-description', 'field-counter']) {
@@ -169,7 +179,10 @@ export const RichInlines: Story = {
       ...baseInput,
       title: memeDetailCopy.deleteDialog.title,
       message: [
-        { kind: 'strong' as const, text: memeDetailCopy.quotedTitle('fresh paper') },
+        {
+          kind: 'strong' as const,
+          text: memeDetailCopy.quotedTitle('fresh paper'),
+        },
         memeDetailCopy.deleteDialog.body,
       ],
       confirmLabel: memeDetailCopy.deleteDialog.confirm,
@@ -177,8 +190,12 @@ export const RichInlines: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const dialog = canvas.getByRole('alertdialog', { name: memeDetailCopy.deleteDialog.title })
-    await expect(dialog.querySelector('strong')).toHaveTextContent(memeDetailCopy.quotedTitle('fresh paper'))
+    const dialog = canvas.getByRole('alertdialog', {
+      name: memeDetailCopy.deleteDialog.title,
+    })
+    await expect(dialog.querySelector('strong')).toHaveTextContent(
+      memeDetailCopy.quotedTitle('fresh paper'),
+    )
     await expect(dialog).toHaveTextContent(memeDetailCopy.deleteDialog.body.trim())
   },
 }
@@ -190,7 +207,10 @@ export const WithError: Story = {
       ...baseInput,
       title: developersCopy.revokeDialog.title,
       message: [
-        { kind: 'code' as const, text: developersCopy.revokeDialog.prefix('mk_3f9a2c') },
+        {
+          kind: 'code' as const,
+          text: developersCopy.revokeDialog.prefix('mk_3f9a2c'),
+        },
         developersCopy.revokeDialog.body('my-trading-bot'),
       ],
       error: developersCopy.errors.revoke('my-trading-bot'),
@@ -200,9 +220,15 @@ export const WithError: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const dialog = canvas.getByRole('alertdialog', { name: developersCopy.revokeDialog.title })
-    await expect(dialog.querySelector('code')).toHaveTextContent(developersCopy.revokeDialog.prefix('mk_3f9a2c'))
-    await expect(within(dialog).getByRole('alert')).toHaveTextContent(developersCopy.errors.revoke('my-trading-bot'))
+    const dialog = canvas.getByRole('alertdialog', {
+      name: developersCopy.revokeDialog.title,
+    })
+    await expect(dialog.querySelector('code')).toHaveTextContent(
+      developersCopy.revokeDialog.prefix('mk_3f9a2c'),
+    )
+    await expect(within(dialog).getByRole('alert')).toHaveTextContent(
+      developersCopy.errors.revoke('my-trading-bot'),
+    )
   },
 }
 

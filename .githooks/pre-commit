@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Format and check staged files with Biome. Fail the commit if Biome fails.
+# Invoked from scripts/hooks/pre-commit.sh (local extra-hook) or directly.
+# Do not set core.hooksPath to this directory — that would clobber beads hooks.
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+cd "$ROOT"
+
+staged="$(git diff --cached --name-only --diff-filter=ACMR || true)"
+if [[ -z "$staged" ]]; then
+  exit 0
+fi
+
+BIOME="$ROOT/node_modules/.bin/biome"
+if [[ ! -x "$BIOME" ]]; then
+  echo "MemeOn: node_modules/.bin/biome is missing. Run pnpm install." >&2
+  exit 1
+fi
+
+args=(check --write --no-errors-on-unmatched)
+if "$BIOME" check --help 2>/dev/null | grep -q -- '--staged'; then
+  args+=(--staged)
+else
+  while IFS= read -r f; do
+    [[ -n "$f" ]] || continue
+    args+=("$f")
+  done <<< "$staged"
+fi
+
+if ! "$BIOME" "${args[@]}"; then
+  echo "MemeOn: commit blocked — biome check failed." >&2
+  exit 1
+fi
+
+git update-index --again

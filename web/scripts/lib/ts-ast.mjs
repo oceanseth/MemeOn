@@ -1,8 +1,8 @@
-import ts from "typescript"
+import ts from 'typescript'
 
 export const scriptKindFor = (file) => {
-  if (file.endsWith(".jsx")) return ts.ScriptKind.JSX
-  if (file.endsWith(".tsx")) return ts.ScriptKind.TSX
+  if (file.endsWith('.jsx')) return ts.ScriptKind.JSX
+  if (file.endsWith('.tsx')) return ts.ScriptKind.TSX
   return ts.ScriptKind.TS
 }
 

@@ -34,17 +34,9 @@ export function verifyDiscordSignature(
   try {
     // wrap the raw ed25519 key in SPKI so node's verifier accepts it
     const raw = Buffer.from(publicKeyHex, 'hex')
-    const spki = Buffer.concat([
-      Buffer.from('302a300506032b6570032100', 'hex'),
-      raw,
-    ])
+    const spki = Buffer.concat([Buffer.from('302a300506032b6570032100', 'hex'), raw])
     const key = createPublicKey({ key: spki, format: 'der', type: 'spki' })
-    return edVerify(
-      null,
-      Buffer.from(timestamp + rawBody),
-      key,
-      Buffer.from(signatureHex, 'hex'),
-    )
+    return edVerify(null, Buffer.from(timestamp + rawBody), key, Buffer.from(signatureHex, 'hex'))
   } catch {
     return false
   }

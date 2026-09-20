@@ -81,7 +81,9 @@ export function useAuthCallbackScreen(): AuthStatusScreenModel {
         if (cancelled) return
         await refresh()
         if (cancelled) return
-        navigate(postLogin ?? (inviterId ? '/friends' : '/marketplace'), { replace: true })
+        navigate(postLogin ?? (inviterId ? '/friends' : '/marketplace'), {
+          replace: true,
+        })
       })
       .catch((e) => {
         if (cancelled) return
@@ -103,7 +105,9 @@ export function useAuthCallbackScreen(): AuthStatusScreenModel {
         try {
           if (inviterId) await post('/api/invites/accept', { inviterId })
           await refresh()
-          navigate(postLogin ?? (inviterId ? '/friends' : '/marketplace'), { replace: true })
+          navigate(postLogin ?? (inviterId ? '/friends' : '/marketplace'), {
+            replace: true,
+          })
         } catch {
           setInviteFailed(true)
           setErr(inviteCopy.errors.accept)
@@ -112,7 +116,9 @@ export function useAuthCallbackScreen(): AuthStatusScreenModel {
       return
     }
     setErr(null)
-    void beginMaskyLogin().catch((e) => setErr(e instanceof Error ? e.message : copy.errors.loginFailed))
+    void beginMaskyLogin().catch((e) =>
+      setErr(e instanceof Error ? e.message : copy.errors.loginFailed),
+    )
   }
 
   return {

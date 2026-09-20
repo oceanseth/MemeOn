@@ -7,13 +7,34 @@ import { buildLeaderboardRowModel, pinYouRow } from './useLeaderboardScreen'
 
 describe('leaderboard row model', () => {
   it('supplies a profile link and nullable avatar source before rendering', () => {
-    const row = buildLeaderboardRowModel({
-      sub: 'top-brain', name: 'Top Brain', picture: '/top-brain.png', braincells: 42,
-      collectionSize: 4, portfolioValue: 500,
-    }, 3)
-    const noAvatar = buildLeaderboardRowModel({ ...row, picture: null, braincells: 42, collectionSize: 4, portfolioValue: 500 }, 0)
+    const row = buildLeaderboardRowModel(
+      {
+        sub: 'top-brain',
+        name: 'Top Brain',
+        picture: '/top-brain.png',
+        braincells: 42,
+        collectionSize: 4,
+        portfolioValue: 500,
+      },
+      3,
+    )
+    const noAvatar = buildLeaderboardRowModel(
+      {
+        ...row,
+        picture: null,
+        braincells: 42,
+        collectionSize: 4,
+        portfolioValue: 500,
+      },
+      0,
+    )
 
-    expect(row).toMatchObject({ rankNumeral: '4', medal: null, profileLinkProps: { to: '/u/top-brain' }, avatarSrc: '/top-brain.png' })
+    expect(row).toMatchObject({
+      rankNumeral: '4',
+      medal: null,
+      profileLinkProps: { to: '/u/top-brain' },
+      avatarSrc: '/top-brain.png',
+    })
     expect(noAvatar.avatarSrc).toBeNull()
     expect(noAvatar.medal).toBe('gold')
   })
@@ -25,16 +46,31 @@ describe('leaderboard row model', () => {
    * (`text-warning`, a chip fill) stand in for bronze without anything noticing.
    */
   it('hands the top three their own metal, in rank order, and nobody else one', () => {
-    const leader = { sub: 'user-any', name: 'any', picture: null, braincells: 1, collectionSize: 1, portfolioValue: 1 }
+    const leader = {
+      sub: 'user-any',
+      name: 'any',
+      picture: null,
+      braincells: 1,
+      collectionSize: 1,
+      portfolioValue: 1,
+    }
     const metals = [0, 1, 2, 3, 4].map((index) => buildLeaderboardRowModel(leader, index).medal)
 
     expect(metals).toEqual(['gold', 'silver', 'bronze', null, null])
   })
 
   it('names the whole row once so the emoji columns can stay decorative', () => {
-    const row = buildLeaderboardRowModel({
-      sub: 'user-pal', name: 'pal', picture: null, braincells: 1240, collectionSize: 8, portfolioValue: 90,
-    }, 0)
+    const row = buildLeaderboardRowModel(
+      {
+        sub: 'user-pal',
+        name: 'pal',
+        picture: null,
+        braincells: 1240,
+        collectionSize: 8,
+        portfolioValue: 90,
+      },
+      0,
+    )
 
     expect(row).toMatchObject({
       linkLabel: copy.row.label(1, 'pal', 1240),
@@ -46,7 +82,14 @@ describe('leaderboard row model', () => {
   })
 
   it('marks the signed-in player and leads their row label with "You"', () => {
-    const leader = { sub: 'user-lou', name: 'lou', picture: null, braincells: 1, collectionSize: 3, portfolioValue: 40 }
+    const leader = {
+      sub: 'user-lou',
+      name: 'lou',
+      picture: null,
+      braincells: 1,
+      collectionSize: 3,
+      portfolioValue: 40,
+    }
 
     expect(buildLeaderboardRowModel(leader, 1, 'user-lou')).toMatchObject({
       isMe: true,
@@ -57,7 +100,12 @@ describe('leaderboard row model', () => {
 })
 
 const stub = (sub: string): LeaderRow => ({
-  sub, name: sub, picture: null, braincells: 1, collectionSize: 1, portfolioValue: 1,
+  sub,
+  name: sub,
+  picture: null,
+  braincells: 1,
+  collectionSize: 1,
+  portfolioValue: 1,
 })
 
 function rankedWithMeAt(meIndex: number, count: number) {

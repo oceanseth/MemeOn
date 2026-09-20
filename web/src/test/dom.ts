@@ -6,8 +6,9 @@ export function button(
   root: ParentNode,
   occurrence: 'first' | 'last' = 'first',
 ): HTMLButtonElement {
-  const matches = [...root.querySelectorAll<HTMLButtonElement>('button')]
-    .filter((candidate) => candidate.textContent?.includes(label))
+  const matches = [...root.querySelectorAll<HTMLButtonElement>('button')].filter((candidate) =>
+    candidate.textContent?.includes(label),
+  )
   const found = occurrence === 'first' ? matches[0] : matches.at(-1)
   if (!found) throw new Error(`Missing button: ${label}`)
   return found
@@ -20,7 +21,10 @@ export async function click(element: HTMLElement): Promise<void> {
   })
 }
 
-export function setControlValue(control: HTMLInputElement | HTMLTextAreaElement, value: string): void {
+export function setControlValue(
+  control: HTMLInputElement | HTMLTextAreaElement,
+  value: string,
+): void {
   const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(control), 'value')
   descriptor?.set?.call(control, value)
   control.dispatchEvent(new Event('input', { bubbles: true }))

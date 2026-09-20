@@ -1,13 +1,6 @@
 // Online presence over the Firebase Realtime Database. Each signed-in user
 // maintains presence/{uid} while connected; onDisconnect cleans it up server-side.
-import {
-  onDisconnect,
-  onValue,
-  ref,
-  remove,
-  serverTimestamp,
-  set,
-} from 'firebase/database'
+import { onDisconnect, onValue, ref, remove, serverTimestamp, set } from 'firebase/database'
 import { rtdb } from './firebase'
 
 /** Start advertising this uid as online. Returns a stop function. */

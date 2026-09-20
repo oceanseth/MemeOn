@@ -32,7 +32,9 @@ export function ValueChart({
     pad + (i / (pts.length - 1)) * w,
     pad + h - ((p.value - min) / span) * h,
   ])
-  const line = xy.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ')
+  const line = xy
+    .map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`)
+    .join(' ')
   const area = `${line} L${(pad + w).toFixed(1)},${(pad + h).toFixed(1)} L${pad},${(pad + h).toFixed(1)} Z`
 
   const first = pts[0].value
@@ -42,9 +44,23 @@ export function ValueChart({
 
   return (
     <View>
-      <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 10, marginBottom: 6 }}>
-        <Text style={{ color: colors.text, fontSize: 26, fontWeight: '800' }}>🧠 {last.toLocaleString()}</Text>
-        <Text style={{ color: delta >= 0 ? colors.ok : colors.danger, fontWeight: '700' }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'baseline',
+          gap: 10,
+          marginBottom: 6,
+        }}
+      >
+        <Text style={{ color: colors.text, fontSize: 26, fontWeight: '800' }}>
+          🧠 {last.toLocaleString()}
+        </Text>
+        <Text
+          style={{
+            color: delta >= 0 ? colors.ok : colors.danger,
+            fontWeight: '700',
+          }}
+        >
           {delta >= 0 ? '▲' : '▼'} {Math.abs(delta).toLocaleString()} ({deltaPct}%)
         </Text>
       </View>

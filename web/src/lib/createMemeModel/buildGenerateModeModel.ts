@@ -24,7 +24,8 @@ export function buildGenerateModeModel(
     promptLabel: copy.form.promptLabel,
     generatePromptPlaceholder: copy.generate.promptPlaceholder,
     generatePromptHelpText: copy.generate.promptHelp,
-    generateButtonLabel: ctx.mode === 'video' ? copy.generate.renderVideo : copy.generate.renderImage,
+    generateButtonLabel:
+      ctx.mode === 'video' ? copy.generate.renderVideo : copy.generate.renderImage,
     generatePromptTextareaProps: {
       value: ctx.prompt,
       'aria-describedby': HELP_IDS.prompt,

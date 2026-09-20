@@ -7,7 +7,13 @@ import { NavPill, TabItem } from '@/organisms/nav-item'
 const meta = {
   title: 'Organisms/NavItem',
   component: NavPill,
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 } satisfies Meta<typeof NavPill>
 
 export default meta
@@ -17,10 +23,15 @@ type Story = StoryObj<typeof meta>
 export const TopBarPills: Story = {
   render: () => (
     <nav className="flex items-center gap-1" aria-label="Main">
-      <NavPill current render={<Link to="/marketplace" />}>Marketplace</NavPill>
+      <NavPill current render={<Link to="/marketplace" />}>
+        Marketplace
+      </NavPill>
       <NavPill render={<Link to="/binder" />}>My Binder</NavPill>
       <NavPill render={<Link to="/leaderboard" />}>
-        <span aria-hidden="true"><Icon name="trophy" size={16} /></span> Top Brains
+        <span aria-hidden="true">
+          <Icon name="trophy" size={16} />
+        </span>{' '}
+        Top Brains
       </NavPill>
     </nav>
   ),
@@ -31,7 +42,9 @@ export const TopBarPills: Story = {
     await expect(current).toHaveAttribute('data-slot', 'nav-pill')
     /* 36px pill */
     await expect(getComputedStyle(current).height).toBe('36px')
-    await expect(canvas.getByRole('link', { name: 'My Binder' })).not.toHaveAttribute('aria-current')
+    await expect(canvas.getByRole('link', { name: 'My Binder' })).not.toHaveAttribute(
+      'aria-current',
+    )
     /* the emoji leads the label and stays out of the name */
     await expect(canvas.getByRole('link', { name: 'Top Brains' })).toHaveTextContent('Top Brains')
   },
@@ -41,9 +54,18 @@ export const TopBarPills: Story = {
 export const TabBarItems: Story = {
   render: () => (
     <nav className="flex items-center gap-1" aria-label="Main">
-      <TabItem current render={<Link to="/marketplace" />}><Icon name="storefront" />Market</TabItem>
-      <TabItem render={<Link to="/binder" />}><Icon name="book" />Binder</TabItem>
-      <TabItem primary render={<Link to="/binder/new" />}><Icon name="circle-plus" />Mint</TabItem>
+      <TabItem current render={<Link to="/marketplace" />}>
+        <Icon name="storefront" />
+        Market
+      </TabItem>
+      <TabItem render={<Link to="/binder" />}>
+        <Icon name="book" />
+        Binder
+      </TabItem>
+      <TabItem primary render={<Link to="/binder/new" />}>
+        <Icon name="circle-plus" />
+        Mint
+      </TabItem>
     </nav>
   ),
   play: async ({ canvasElement }) => {

@@ -80,11 +80,16 @@ export const authMachine = setup({
           {
             guard: ({ context }) => context.user !== null,
             target: 'ready',
-            actions: assign({ error: ({ event }) => authErrorMessage(event.error) }),
+            actions: assign({
+              error: ({ event }) => authErrorMessage(event.error),
+            }),
           },
           {
             target: 'error',
-            actions: assign({ user: null, error: ({ event }) => authErrorMessage(event.error) }),
+            actions: assign({
+              user: null,
+              error: ({ event }) => authErrorMessage(event.error),
+            }),
           },
         ],
       },
