@@ -76,6 +76,34 @@ describe('createMemeMachine submitting mode changes', () => {
     actor.send({ type: 'SHARE_COPIED' })
     expect(actor.getSnapshot().context.shareCopied).toBe(true)
   })
+
+  it('from error, DONE returns to the mode left', () => {
+    const actor = startedMachine()
+    actor.send({ type: 'SELECT_MODE', mode: 'upload' })
+    actor.send({ type: 'SUBMIT', busy: 'Rendering…' })
+    actor.send({ type: 'FAIL', err: 'credits exhausted' })
+    expect(actor.getSnapshot().value).toBe('error')
+
+    actor.send({ type: 'DONE' })
+    expect(actor.getSnapshot().value).toBe('upload')
+    expect(actor.getSnapshot().context.busy).toBeNull()
+  })
+
+  it('from error, MINTED goes to success', () => {
+    const actor = startedMachine()
+    actor.send({ type: 'SELECT_MODE', mode: 'upload' })
+    actor.send({ type: 'SUBMIT', busy: 'Minting…' })
+    actor.send({ type: 'FAIL', err: 'credits exhausted' })
+    expect(actor.getSnapshot().value).toBe('error')
+
+    actor.send({ type: 'MINTED', id: 'meme-1', shareUrl: 'https://memeon.ai/m/meme-1' })
+    expect(actor.getSnapshot().value).toBe('success')
+    expect(actor.getSnapshot().context).toMatchObject({
+      busy: null,
+      mintedId: 'meme-1',
+      shareUrl: 'https://memeon.ai/m/meme-1',
+    })
+  })
 })
 
 describe('createMemeMachine artwork provenance', () => {

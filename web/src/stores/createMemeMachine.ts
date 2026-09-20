@@ -129,6 +129,23 @@ const returnToMode = [
 
 const settleBusy = { busy: null, busyElapsed: null } as const
 
+const settleMintOn = {
+  DONE: returnToMode.map((branch) => ({
+    ...branch,
+    actions: assign<CreateMemeContext, Extract<CreateMemeEvent, { type: 'DONE' }>, undefined, CreateMemeEvent, never>(
+      settleBusy,
+    ),
+  })),
+  MINTED: {
+    target: 'success' as const,
+    actions: assign<CreateMemeContext, Extract<CreateMemeEvent, { type: 'MINTED' }>, undefined, CreateMemeEvent, never>({
+      mintedId: ({ event }: { event: Extract<CreateMemeEvent, { type: 'MINTED' }> }) => event.id,
+      shareUrl: ({ event }: { event: Extract<CreateMemeEvent, { type: 'MINTED' }> }) => event.shareUrl,
+      ...settleBusy,
+    }),
+  },
+}
+
 /**
  * Mint flow source of truth. chooseMode → a mode → submitting → success|error.
  * The hook drives async work and sends events; do not add React state here.
@@ -314,20 +331,9 @@ export const createMemeMachine = setup({
     giphy: {},
     submitting: {
       on: {
+        ...settleMintOn,
         /* the form is locked while a job runs: a queued mode tap must not reshape it mid-request */
         SELECT_MODE: { actions: [] },
-        DONE: returnToMode.map((branch) => ({
-          ...branch,
-          actions: assign(settleBusy),
-        })),
-        MINTED: {
-          target: 'success',
-          actions: assign({
-            mintedId: ({ event }) => event.id,
-            shareUrl: ({ event }) => event.shareUrl,
-            ...settleBusy,
-          }),
-        },
         FAIL: {
           target: 'error',
           actions: assign({ err: ({ event }) => event.err, ...settleBusy }),
@@ -341,18 +347,7 @@ export const createMemeMachine = setup({
     },
     error: {
       on: {
-        DONE: returnToMode.map((branch) => ({
-          ...branch,
-          actions: assign(settleBusy),
-        })),
-        MINTED: {
-          target: 'success',
-          actions: assign({
-            mintedId: ({ event }) => event.id,
-            shareUrl: ({ event }) => event.shareUrl,
-            ...settleBusy,
-          }),
-        },
+        ...settleMintOn,
         FAIL: {
           actions: assign({ err: ({ event }) => event.err, ...settleBusy }),
         },

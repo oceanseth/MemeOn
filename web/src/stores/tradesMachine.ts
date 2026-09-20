@@ -84,6 +84,30 @@ const restoreAfterAct = [
   { target: 'ready' as const },
 ]
 
+const respondOrFailOn = {
+  RESPOND: {
+    target: 'acting' as const,
+    actions: assign<TradesContext, Extract<TradesEvent, { type: 'RESPOND' }>, undefined, TradesEvent, never>({
+      msg: null,
+      err: null,
+      confirming: null,
+      actingTradeId: ({ event }: { event: Extract<TradesEvent, { type: 'RESPOND' }> }) => event.tradeId,
+      actingAction: ({ event }: { event: Extract<TradesEvent, { type: 'RESPOND' }> }) => event.action,
+    }),
+  },
+  FAIL: {
+    target: 'error' as const,
+    actions: assign<TradesContext, Extract<TradesEvent, { type: 'FAIL' }>, undefined, TradesEvent, never>({
+      msg: null,
+      err: ({ event }: { event: Extract<TradesEvent, { type: 'FAIL' }> }) => event.err,
+      loadFailed: false,
+      confirming: null,
+      actingTradeId: null,
+      actingAction: null,
+    }),
+  },
+}
+
 /**
  * Trades source of truth. loading → ready|empty|error,
  * with composing|acting overlays. The hook drives async work.
@@ -248,26 +272,12 @@ export const tradesMachine = setup({
     },
     ready: {
       on: {
-        RESPOND: {
-          target: 'acting',
-          actions: assign({ msg: null, err: null, confirming: null, actingTradeId: ({ event }) => event.tradeId, actingAction: ({ event }) => event.action }),
-        },
-        FAIL: {
-          target: 'error',
-          actions: assign({ msg: null, err: ({ event }) => event.err, loadFailed: false, confirming: null, actingTradeId: null, actingAction: null }),
-        },
+        ...respondOrFailOn,
       },
     },
     composing: {
       on: {
-        RESPOND: {
-          target: 'acting',
-          actions: assign({ msg: null, err: null, confirming: null, actingTradeId: ({ event }) => event.tradeId, actingAction: ({ event }) => event.action }),
-        },
-        FAIL: {
-          target: 'error',
-          actions: assign({ msg: null, err: ({ event }) => event.err, loadFailed: false, confirming: null, actingTradeId: null, actingAction: null }),
-        },
+        ...respondOrFailOn,
       },
     },
     acting: {
