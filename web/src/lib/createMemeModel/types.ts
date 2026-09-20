@@ -235,6 +235,7 @@ export interface CreateMemeScreenModel {
   mintStatus: string
   successHeading: string
   successBody: string
+  shareCopied: boolean
   copyShareLinkLabel: string
   copyShareLinkButtonProps: ButtonProps
   shareUrlInputProps: InputProps

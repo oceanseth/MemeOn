@@ -187,6 +187,13 @@ export function MemeDetailScreen({ showNotFound, showLoading, notFound, loadingL
               <Input className="min-w-50 flex-1 max-sm:w-full max-sm:flex-none" {...detail.shareInputProps} />
               {/* the ultraviolet companion: the card's one bubblegum belongs to the buy control */}
               <Button variant="brand" className="max-sm:flex-1" {...detail.copyButtonProps}>
+                {detail.copyDone ? (
+                  <>
+                    <span aria-hidden="true">
+                      <Icon name="circle-check" size={16} />
+                    </span>{' '}
+                  </>
+                ) : null}
                 {detail.copyButtonLabel}
               </Button>
               <a className={cn(buttonVariants(), 'max-sm:flex-1')} {...detail.previewLinkProps}>{detail.previewLabel}</a>

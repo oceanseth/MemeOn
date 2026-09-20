@@ -21,7 +21,7 @@ export const friendsCopy = {
   },
   invite: {
     button: 'Invite a friend',
-    copied: 'Invite link copied ✓',
+    copied: 'Invite link copied',
     copyFailed: 'Copy failed — try again',
     /** the platform share sheet, when there is one */
     share: {

@@ -110,6 +110,7 @@ export interface MemeDetailModel {
   shareCaption: string
   previewLabel: string
   shareInputProps: { value: string; readOnly: true; 'aria-label': string }
+  copyDone: boolean
   copyButtonLabel: string
   copyButtonProps: { onClick: () => void }
   previewLinkProps: { href: string; target: '_blank'; rel: 'noreferrer' }
@@ -323,7 +324,7 @@ export function buildMemeDetailModel({
     valueSrLabel: copy.stats.valueSrLabel(meme.value),
     holdingsLabel: myShares > 0 ? `${myShares}/100` : null,
     shareTitle: copy.share.title, shareCaption: copy.share.caption, previewLabel: copy.share.preview,
-    shareInputProps: { value: shareUrl, readOnly: true, 'aria-label': copy.share.inputLabel }, copyButtonLabel: context.copied ? copy.share.copied : context.copyFailed ? copy.share.copyFailed : copy.share.copy, copyButtonProps: { onClick: actions.onCopy }, previewLinkProps: { href: `/api/memes/${meme.id}/og.png`, target: '_blank', rel: 'noreferrer' },
+    shareInputProps: { value: shareUrl, readOnly: true, 'aria-label': copy.share.inputLabel }, copyDone: context.copied, copyButtonLabel: context.copied ? copy.share.copied : context.copyFailed ? copy.share.copyFailed : copy.share.copy, copyButtonProps: { onClick: actions.onCopy }, previewLinkProps: { href: `/api/memes/${meme.id}/og.png`, target: '_blank', rel: 'noreferrer' },
     signedOut, actions: detailActions,
     controlsTitle: copy.controls.title, controlsCaption: copy.controls.caption,
     spreadingTitle: copy.spreading.title,

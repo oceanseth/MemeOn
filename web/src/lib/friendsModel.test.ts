@@ -114,6 +114,20 @@ describe('buildFriendsScreenModel 1.6 copy keys', () => {
     expect(model.declineLabel).toBe(copy.row.declineLabel)
     expect(model.cancelLabel).toBe(copy.row.cancelLabel)
   })
+
+  it('plumbs inviteCopied and inviteLabel for idle, copied, and failed', () => {
+    const idle = buildFriendsScreenModel('ready', context(), actions())
+    expect(idle.inviteCopied).toBe(false)
+    expect(idle.inviteLabel).toBe(copy.invite.button)
+
+    const copied = buildFriendsScreenModel('ready', context({ copied: true }), actions())
+    expect(copied.inviteCopied).toBe(true)
+    expect(copied.inviteLabel).toBe(copy.invite.copied)
+
+    const failed = buildFriendsScreenModel('ready', context({ copyFailed: true }), actions())
+    expect(failed.inviteCopied).toBe(false)
+    expect(failed.inviteLabel).toBe(copy.invite.copyFailed)
+  })
 })
 
 describe('buildFriendsScreenModel load-error chrome (2.7)', () => {

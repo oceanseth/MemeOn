@@ -40,6 +40,7 @@ export interface FriendsScreenModel {
   msg: string | null
   err: string | null
   inviteLabel: string
+  inviteCopied: boolean
   searchResultsHeading: string
   addFriendLabel: string
   onlineHeading: string
@@ -277,6 +278,7 @@ export function buildFriendsScreenModel(
     },
     msg: ctx.msg,
     err: ctx.actionErr,
+    inviteCopied: ctx.copied,
     inviteLabel: ctx.copied ? copy.invite.copied : ctx.copyFailed ? copy.invite.copyFailed : copy.invite.button,
     searchResultsHeading: copy.search.resultsHeading,
     addFriendLabel: copy.search.addFriend,

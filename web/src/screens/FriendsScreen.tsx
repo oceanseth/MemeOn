@@ -109,6 +109,7 @@ export function FriendsScreen({
   msg,
   err,
   inviteLabel,
+  inviteCopied,
   searchResultsHeading,
   addFriendLabel,
   onlineHeading,
@@ -172,7 +173,7 @@ export function FriendsScreen({
           </span>
           <Button variant="primary" className="max-sm:w-full" {...inviteButtonProps}>
             <span aria-hidden="true">
-              <Icon name="mail" size={16} />
+              <Icon name={inviteCopied ? 'circle-check' : 'mail'} size={16} />
             </span>{' '}
             {inviteLabel}
           </Button>
@@ -254,6 +255,13 @@ export function FriendsScreen({
           </EmptyHeader>
           <EmptyContent>
             <Button variant="primary" {...emptyActionProps}>
+              {inviteCopied ? (
+                <>
+                  <span aria-hidden="true">
+                    <Icon name="circle-check" size={16} />
+                  </span>{' '}
+                </>
+              ) : null}
               {inviteLabel}
             </Button>
           </EmptyContent>

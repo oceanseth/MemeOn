@@ -63,6 +63,7 @@ const empty: FriendsScreenModel = {
   msg: null,
   err: null,
   inviteLabel: copy.invite.button,
+  inviteCopied: false,
   searchResultsHeading: copy.search.resultsHeading,
   addFriendLabel: copy.search.addFriend,
   onlineHeading: copy.online.label,
@@ -256,6 +257,27 @@ export const RequestFailed: Story = {
     accepted: [acceptedRow()],
     showErr: true,
     err: copy.errors.request,
+  },
+}
+
+export const InviteCopied: Story = {
+  args: {
+    phase: 'ready',
+    showEmpty: false,
+    showCircle: true,
+    accepted: [acceptedRow()],
+    inviteCopied: true,
+    inviteLabel: copy.invite.copied,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const button = canvas.getByRole('button', { name: copy.invite.copied })
+    await expect(button).toBeVisible()
+    const icon = button.querySelector('[data-slot="icon"]')
+    await expect(icon).not.toBeNull()
+    await expect(
+      icon!.querySelector('path[d*="M7.757 12L10.409 14.652L16.243 8.818"]'),
+    ).not.toBeNull()
   },
 }
 
