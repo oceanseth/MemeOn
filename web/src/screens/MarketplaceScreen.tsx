@@ -9,7 +9,6 @@ import {
   EmptyTitle,
   PageState,
 } from '@/atoms/empty'
-import { Heading } from '@/atoms/heading'
 import { Icon } from '@/atoms/icon'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/atoms/input-group'
 import { MemeCard } from '@/molecules/meme-card'
@@ -23,7 +22,6 @@ import { Toolbar, ToolbarStart } from '@/atoms/toolbar'
 import type { MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
 import { binderGridClasses as cardGrid, binderCardSlotClasses as cardSlot } from '../lib/binderChrome'
 import { cn } from '../lib/cn'
-import { SortChips } from '@/molecules/sort-chips'
 
 /* The class strings below are this screen's own layout, one token per `cn` argument: a multi-word
    class string in a `screens/` file is counted as copy by `scripts/check-copy.mjs` (LEDGER L24). */
@@ -42,21 +40,15 @@ const marketControls = cn(
 /** The search well grows into the toolbar's slack and stops at the reading width. */
 const searchWell = 'min-w-0 flex-1 lg:max-w-135'
 
-/** Results / Count: the section heading left, the live count right, on one baseline. */
-const resultsRow = 'mt-1 mb-4.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2'
-const summaryRow = 'flex flex-wrap items-center gap-2.5 text-sm text-muted-foreground'
-
 const marketDisclosures = 'flex w-full gap-3 lg:hidden'
-const marketFilters = 'flex flex-col gap-3 max-lg:data-[collapsed=true]:hidden'
+const marketFilters = 'flex flex-col gap-2 max-lg:data-[collapsed=true]:hidden'
 
-/** Toolbar Mint: bubblegum under the shell cut, neutral once the header owns primary (`mint`). */
-const mintLink = cn(buttonVariants({ variant: 'mint' }), 'w-full lg:w-51.5')
+/** Header already owns Mint from the shell cut; the page CTA is desktop-only. */
+const mintLink = cn(buttonVariants({ variant: 'mint' }), 'max-lg:hidden lg:w-51.5')
 
 /** Marketplace list as a function of its engine-provided model. */
 export function MarketplaceScreen({
   pageTitle,
-  intro,
-  sectionHeading: sectionTitle,
   mintLabel,
   allMemesPill,
   allMemesPillA11y,
@@ -65,7 +57,7 @@ export function MarketplaceScreen({
   emptyHeading,
   emptyBody,
   errorHeading,
-  cards, queryInputProps, filterTabs, tierSelectProps, sortChips,
+  cards, queryInputProps, filterTabs, tierSelectProps,
   createLinkProps, filtersToggleProps, filtersToggleLabel, filtersPanelProps, statusProps,
   resultsLabel, clearFiltersProps, showLoading, showEmpty, showError, showGrid, showMore,
   skeletonCount, errorMessage, retryButtonProps, retryLabel, loadMoreProps, loadMoreLabel,
@@ -73,7 +65,7 @@ export function MarketplaceScreen({
 }: MarketplaceScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <PageHead level="h1" title={pageTitle} subtitle={intro} className="mb-3.5" />
+      <PageHead level="h1" title={pageTitle} className="mb-3.5" />
       <div data-slot="market-controls" className={marketControls}>
         <Toolbar data-slot="market-toolbar">
           {/* the well's own width lives on the wrapper: `max-w-135` is a `--container-*` name
@@ -131,19 +123,14 @@ export function MarketplaceScreen({
               {filterTabs.listed.label}
             </Toggle>
             <Select items={tierSelectItems} variant="pill" {...tierSelectProps} />
+            {clearFiltersProps && !showEmpty && (
+              <Button size="xs" {...clearFiltersProps}>{clearFiltersLabel}</Button>
+            )}
           </Toolbar>
-          <SortChips model={sortChips} />
         </div>
       </div>
-      <div className={resultsRow}>
-        <Heading size="title-phone">{sectionTitle}</Heading>
-        {/* one status line: the count doubles as the live region, and the state card owns the error copy */}
-        <div data-slot="market-summary" className={summaryRow} {...statusProps}>
-          <span>{resultsLabel}</span>
-          {clearFiltersProps && !showEmpty && (
-            <Button size="xs" {...clearFiltersProps}>{clearFiltersLabel}</Button>
-          )}
-        </div>
+      <div data-slot="market-summary" className="sr-only" {...statusProps}>
+        {resultsLabel}
       </div>
       {showLoading ? (
         <div className={cardGrid} aria-hidden="true">

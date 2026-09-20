@@ -9,6 +9,7 @@ import { AvatarMenu, type AvatarMenuModel } from '@/molecules/avatar-menu'
 
 const onLogout = fn()
 const onThemeChange = fn()
+const onPlayVideosChange = fn()
 
 const model: AvatarMenuModel = {
   name: meLou.name,
@@ -27,6 +28,11 @@ const model: AvatarMenuModel = {
     value: 'light',
     onChange: onThemeChange,
     options: THEME_OPTIONS,
+  },
+  playVideos: {
+    label: appShellCopy.accountMenu.playVideos,
+    checked: true,
+    onCheckedChange: onPlayVideosChange,
   },
   logOut: { label: 'Log out', onSelect: onLogout },
 }

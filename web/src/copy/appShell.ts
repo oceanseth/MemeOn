@@ -47,6 +47,7 @@ export const appShellCopy = {
     developers: 'Developers',
     discord: 'Discord',
     theme: sharedCopy.theme.group,
+    playVideos: 'Play videos',
     logOut: sharedCopy.logOut,
   },
 } as const

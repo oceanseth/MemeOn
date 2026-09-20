@@ -1,15 +1,9 @@
-import type { ImgHTMLAttributes, MouseEvent, RefCallback, VideoHTMLAttributes } from 'react'
+import type { ImgHTMLAttributes, RefCallback, VideoHTMLAttributes } from 'react'
 import { memeCardCopy as copy } from '../copy/memeCard'
-import { cardMediaRef, toggleCardMedia } from './cardMedia'
+import { cardMediaRef } from './cardMedia'
 import { memeReshareCount } from './memeMetrics'
+import { getPlayVideosSnapshot } from './playbackPreference'
 import type { Meme } from './types'
-
-export interface MemeCardMediaToggleProps {
-  type: 'button'
-  'aria-pressed': boolean
-  'aria-label': string
-  onClick: (event: MouseEvent<HTMLButtonElement>) => void
-}
 
 export type MemeCardMediaModel =
   | {
@@ -25,8 +19,6 @@ export type MemeCardMediaModel =
         | 'poster'
         | 'aria-label'
       >
-      /** the card's own pause/play control — the video never plays without one on screen */
-      toggleProps: MemeCardMediaToggleProps
     }
   | {
       kind: 'image'
@@ -82,15 +74,20 @@ const prefersReducedMotion = (): boolean => motionQuery?.matches ?? false
 
 /** Map-safe: every grid builds its cards with `memes.map(buildMemeCardModel)`. */
 export function buildMemeCardModel(meme: Meme): MemeCardModel {
-  return buildCard(meme, prefersReducedMotion())
+  return buildCard(meme, prefersReducedMotion(), getPlayVideosSnapshot().playVideos)
+}
+
+/** Same builder, with the Play videos preference supplied by the live hook. */
+export function buildMemeCardModelForPlayback(meme: Meme, playVideos: boolean): MemeCardModel {
+  return buildCard(meme, prefersReducedMotion(), playVideos)
 }
 
 /** The same card with the motion branch forced, so stories and tests can render it. */
 export function buildReducedMotionMemeCardModel(meme: Meme): MemeCardModel {
-  return buildCard(meme, true)
+  return buildCard(meme, true, false)
 }
 
-function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
+function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): MemeCardModel {
   const media: MemeCardMediaModel =
     meme.mediaType === 'video' && meme.videoUrl
       ? {
@@ -105,12 +102,6 @@ function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
             preload: 'none',
             poster: meme.imageUrl,
             'aria-label': '',
-          },
-          toggleProps: {
-            type: 'button',
-            'aria-pressed': false,
-            'aria-label': copy.play(meme.title),
-            onClick: toggleCardMedia,
           },
         }
       : {
@@ -154,7 +145,7 @@ function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
     valueA11yLabel: copy.valueA11y(valueLabel),
     listing,
     reducedMotion,
-    mediaAutoplay: media.kind === 'video' && !reducedMotion ? 'on' : 'off',
+    mediaAutoplay: media.kind === 'video' && !reducedMotion && playVideos ? 'on' : 'off',
     cardRef: cardMediaRef,
   }
 }

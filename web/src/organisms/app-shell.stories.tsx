@@ -52,6 +52,11 @@ const avatarMenu = (
         onChange: fn(),
         options: THEME_OPTIONS,
       },
+      playVideos: {
+        label: appShellCopy.accountMenu.playVideos,
+        checked: true,
+        onCheckedChange: fn(),
+      },
       logOut: { label: 'Log out', onSelect: fn() },
     }}
   />

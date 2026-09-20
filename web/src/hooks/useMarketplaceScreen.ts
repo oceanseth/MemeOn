@@ -3,7 +3,7 @@ import { useMemo, useRef, type ChangeEventHandler, type RefCallback } from 'reac
 import { useSearchParams } from 'react-router-dom'
 import type { SelectOption } from '@/atoms/select'
 import { marketplaceCopy } from '../copy/marketplace'
-import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
+import { buildMemeCardModelForPlayback, type MemeCardModel } from '../lib/memeCardModel'
 import {
   FILTERS_PANEL_ID,
   TIER_SELECT_ITEMS,
@@ -19,6 +19,7 @@ import {
   type MarketplacePhase,
 } from '../stores/marketplaceMachine'
 import { useMarketplaceCatalog } from './useMarketplaceCatalog'
+import { usePlayVideos } from './usePlayVideos'
 
 const SKELETON_COUNT = 8
 const copy = marketplaceCopy
@@ -102,7 +103,11 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
     nextCursor: context.nextCursor,
   })
 
-  const cards = useMemo(() => context.memes.map(buildMemeCardModel), [context.memes])
+  const { playVideos } = usePlayVideos()
+  const cards = useMemo(
+    () => context.memes.map((meme) => buildMemeCardModelForPlayback(meme, playVideos)),
+    [context.memes, playVideos],
+  )
 
   const showLoading = phase === 'loading'
   const showEmpty = phase === 'empty'

@@ -95,8 +95,7 @@ describe('buildMemeCardModel', () => {
       poster: '/foil-cat.png',
       'aria-label': '',
     })
-    expect(video.media.toggleProps['aria-label']).toBe(copy.play('foil cat'))
-    expect(video.media.toggleProps['aria-pressed']).toBe(false)
+    expect('toggleProps' in video.media).toBe(false)
     expect(missingVideo.media.kind).toBe('image')
   })
 

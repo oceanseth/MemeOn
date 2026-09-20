@@ -53,6 +53,8 @@ export interface ShellNavItem {
   icon: IconName
   current: boolean
   linkProps: ShellLinkProps
+  /** Hide this pill below 2xl; the account menu still carries the route. */
+  hiddenUntil2xl?: boolean
 }
 
 export interface ShellTabItem {
@@ -98,12 +100,24 @@ const CHROME_ICONS = {
 /** Every chrome slot carries a glyph; the alias is kept so the item tables read as before. */
 type GlyphSlot = RouteFamily
 
-const NAV_ITEMS: { slot: GlyphSlot; families: RouteFamily[]; to: string; label: string }[] = [
+const NAV_ITEMS: {
+  slot: GlyphSlot
+  families: RouteFamily[]
+  to: string
+  label: string
+  hiddenUntil2xl?: boolean
+}[] = [
   { slot: 'marketplace', families: ['marketplace'], to: '/marketplace', label: copy.nav.marketplace },
   { slot: 'binder', families: ['binder', 'mint'], to: '/binder', label: copy.nav.binder },
   { slot: 'friends', families: ['friends'], to: '/friends', label: copy.nav.friends },
   { slot: 'trade', families: ['trade'], to: '/trade', label: copy.nav.trade },
-  { slot: 'leaderboard', families: ['leaderboard'], to: '/leaderboard', label: copy.nav.leaderboard },
+  {
+    slot: 'leaderboard',
+    families: ['leaderboard'],
+    to: '/leaderboard',
+    label: copy.nav.leaderboard,
+    hiddenUntil2xl: true,
+  },
 ]
 
 /**
@@ -167,6 +181,7 @@ export function buildAppShellScreenModel({
   context,
   pathname = '/',
   theme = { value: 'auto', onChange: () => {} },
+  playVideos = { checked: true, onCheckedChange: () => {} },
   onLogout,
   onClaimPack,
   onDismissPack,
@@ -180,6 +195,7 @@ export function buildAppShellScreenModel({
   /** The current route, for the chrome's `aria-current` marks. */
   pathname?: string
   theme?: Pick<ThemeControlModel, 'value' | 'onChange'>
+  playVideos?: { checked: boolean; onCheckedChange: (checked: boolean) => void }
   onLogout: () => void
   onClaimPack: () => void
   onDismissPack: () => void
@@ -240,6 +256,11 @@ export function buildAppShellScreenModel({
             value: themeModel.value,
             onChange: themeModel.onChange,
             options: themeModel.options,
+          },
+          playVideos: {
+            label: copy.accountMenu.playVideos,
+            checked: playVideos.checked,
+            onCheckedChange: playVideos.onCheckedChange,
           },
           logOut: { label: copy.accountMenu.logOut, onSelect: onLogout },
         }

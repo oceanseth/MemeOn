@@ -3,6 +3,7 @@ import { Avatar } from '@/atoms/avatar'
 import { Button } from '@/atoms/button'
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
@@ -49,6 +50,11 @@ export interface AvatarMenuModel {
     value: ThemePreference
     onChange: (preference: ThemePreference) => void
     options: readonly ThemeOption[]
+  }
+  playVideos: {
+    label: string
+    checked: boolean
+    onCheckedChange: (checked: boolean) => void
   }
   logOut: { label: string; onSelect: () => void }
   /** stories only: mount the menu open. The app leaves Base UI to own the open state. */
@@ -116,6 +122,16 @@ export function AvatarMenu({ model }: { model: AvatarMenuModel }) {
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
+          <DropdownMenuCheckboxItem
+            checked={model.playVideos.checked}
+            onCheckedChange={model.playVideos.onCheckedChange}
+            data-slot="avatar-menu-play-videos"
+          >
+            <span aria-hidden="true" className="flex size-4.5 shrink-0 items-center justify-center">
+              <Icon name="square-play" size={18} />
+            </span>{' '}
+            {model.playVideos.label}
+          </DropdownMenuCheckboxItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={model.logOut.onSelect} data-slot="avatar-menu-logout">

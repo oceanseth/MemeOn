@@ -15,6 +15,7 @@ import { useAppShellAlerts } from './useAppShellAlerts'
 import { useAppShellQuests } from './useAppShellQuests'
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
+import { usePlayVideos } from './usePlayVideos'
 import { useTheme } from './useTheme'
 
 export {
@@ -34,6 +35,7 @@ export function useAppShellScreen(): AppShellScreenModel {
   const { user, logout, refresh } = useAuth()
   const { auth } = useStores()
   const { preference, setPreference } = useTheme()
+  const { playVideos, setPlayVideos } = usePlayVideos()
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const [snapshot, send, actor] = useProjectedActor(appShellMachine)
@@ -126,6 +128,7 @@ export function useAppShellScreen(): AppShellScreenModel {
     context: ctx,
     pathname,
     theme: { value: preference, onChange: setPreference },
+    playVideos: { checked: playVideos, onCheckedChange: setPlayVideos },
     onLogout,
     onClaimPack: () => void onClaimPack(),
     onDismissPack,
