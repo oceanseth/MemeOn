@@ -27,7 +27,7 @@ Beside the tiers, four folders are the engine side:
 | Folder | What lives there |
 |---|---|
 | `src/copy/` | **Every user-facing string**, one plain-data module per surface (`settings.ts`, …) plus `shared.ts` for labels that recur. Keys name the role (`intro`, `account.logOut`), never the content; dynamic strings are small pure functions (`account.name(user.name)`, `` shown: (n) => `${plural(n, 'card')} shown` ``). `copy/` imports nothing but `copy/` and the two formatting helpers `lib/plural` and `lib/braincells`, so a noun stays beside its sentence. Hooks and `lib/*Model.ts` builders read it; tests and stories assert **through the same constant**, so a copy change touches one file. Tier components never import it — strings reach them as props. |
-| `src/hooks/` | One `useXScreen()` per screen (exports `XScreenModel`), plus `useAuth`, `useTheme`, `useProjectedActor`, `useDocumentTitle`, `useMountEffect`. App shell composes `useAppShellQuests` / `useAppShellAlerts` (one actor, one `useMountEffect` in the composer). `ProfileScreen` and `PublicBinderScreen` share `useProfileScreen`. |
+| `src/hooks/` | One `useXScreen()` per screen (exports `XScreenModel`), plus `useAuth`, `useTheme`, `useProjectedActor`, `useDocumentTitle`, `useMountEffect`. App shell composes `useAppShellQuests` / `useAppShellAlerts` (one actor, one `useMountEffect` in the composer). `ProfileScreen` uses `useProfileScreen` (`showBinderHero` selects identity Card vs `/binder/:sub` non-owner hero). |
 | `src/stores/` | XState machines (`*Machine.ts`), plain `AuthStore` / `ThemeStore` (`subscribe` / `getSnapshot`), `createStores` + `StoresContext` |
 | `src/lib/` | Everything with no React tree: the API client, auth, presence, formatting (`braincells`, `plural`), `cn()`, class maps (`lib/binderChrome.ts`; same family as `cn()` / `atoms/foil.ts` `tierFrameClasses`), the imperative `cardMedia`, and the **model builders** (`*Model.ts`) that turn API records into the prop bags molecules and atoms render (`memeCardModel`, `tradeCardModel`, `questBarModel`, `appShellModel`, …). Create-meme also keeps its signed upload PUT (`createMemeUpload`), the video-status poller (`createMemeVideoPoll`), pending-video resume (`lib/createMemeModel/lifecycle.ts`), and one-concern mode actions (`lib/createMemeModel/giphyActions.ts`, `lib/createMemeModel/urlActions.ts`, `lib/createMemeModel/imageEdit.ts`, `lib/createMemeModel/remixActions.ts`, `lib/createMemeModel/generateActions.ts`, `lib/createMemeModel/uploadActions.ts`, `lib/createMemeModel/mintActions.ts`, hosted by `lib/createMemeModel/actionHost.ts`) here so `useCreateMemeScreen` stays orchestration-only. Marketplace keeps its URL/query/filter codec (`marketplaceQuery`) here so `useMarketplaceScreen` stays orchestration-only. Tab-scoped sessionStorage is `lib/sessionBus.ts`. Hooks call the builders; components only import their types. |
 
@@ -41,8 +41,7 @@ Beside the tiers, four folders are the engine side:
 | `TradesScreen` | `useTradesScreen()` | `TradesScreenModel` | `loading` \| `ready` \| `empty` \| `error` \| `composing` \| `acting` |
 | `FriendsScreen` | `useFriendsScreen()` | `FriendsScreenModel` | `loading` \| `ready` \| `empty` \| `error` |
 | `BinderScreen` | `useBinderScreen()` | `BinderScreenModel` | `loading` \| `ready` \| `empty` \| `error` |
-| `ProfileScreen` | `useProfileScreen()` | `ProfileScreenModel` | `loading` \| `ready` \| `error`; tab in actor context |
-| `PublicBinderScreen` | `useProfileScreen()` | `ProfileScreenModel` | same hook; `/binder/:sub` non-owner hero |
+| `ProfileScreen` | `useProfileScreen()` | `ProfileScreenModel` | `loading` \| `ready` \| `error`; tab in actor context; `showBinderHero` for `/binder/:sub` non-owner |
 | `LeaderboardScreen` | `useLeaderboardScreen()` | `LeaderboardScreenModel` | `loading` \| `ready` \| `empty` \| `error` |
 | `InviteScreen` | `useInviteScreen()` | `InviteScreenModel` | `loading` \| `ready` \| `accepting` \| `error` |
 | `DiscordPageScreen` | `useDiscordPageScreen()` | `DiscordPageScreenModel` | `loading` \| `ready` \| `errored` |
@@ -83,7 +82,7 @@ main.tsx ── StoresProvider + AuthRuntime + BrowserRouter
          ├─ TradesView ── useTradesScreen → TradesScreen ── ConfirmDialog · TradeCard ── SideSummary
          ├─ FriendsView ── useFriendsScreen → FriendsScreen ── GiftDialog · ConfirmDialog
          ├─ BinderView ── useBinderScreen → BinderScreen ── SortChips · MemeCard*
-         ├─ ProfileView ── useProfileScreen → ProfileScreen · PublicBinderScreen ── ProfileShelf ── MemeCard*
+         ├─ ProfileView ── useProfileScreen → ProfileScreen ── ProfileShelf ── MemeCard*
          ├─ LeaderboardView ── useLeaderboardScreen → LeaderboardScreen
          ├─ InviteView ── useInviteScreen → InviteScreen ── MemeCard*
          ├─ DiscordPageView · DiscordLinkView · DevelopersView ── ConfirmDialog
@@ -189,7 +188,7 @@ Layered onto the tiers and rules above, not a replacement for them:
 - `BinderScreenModel` no longer carries `questRail` — the reward rail is the shell's own `QuestBar`,
   rendered on every route (design-gap decision 8: one rail, owned by the shell). The binder grid
   and card-slot class maps live in `lib/binderChrome.ts`; consumers are `BinderScreen`,
-  `ProfileScreen`, `PublicBinderScreen`, `ProfileShelf`, `InviteScreen`, and `MarketplaceScreen`.
+  `ProfileScreen`, `ProfileShelf`, `InviteScreen`, and `MarketplaceScreen`.
   The card footer classes are Binder-private.
   `stores/binderMachine.ts` exports
   `BINDER_PAGE_SIZE` (12, the `SHOW_MORE` step); `stores/leaderboardMachine.ts` exports
