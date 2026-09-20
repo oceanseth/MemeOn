@@ -79,6 +79,22 @@ describe('memeDetailMachine reloads during actions', () => {
     }
   })
 
+  it('enters listing, buying, and deleting from error', () => {
+    for (const action of [
+      { event: { type: 'LIST' } as const, phase: 'listing' },
+      { event: { type: 'BUY' } as const, phase: 'buying' },
+      { event: { type: 'DELETE' } as const, phase: 'deleting' },
+    ]) {
+      const actor = readyActor()
+      actor.send({ type: 'FAIL', err: 'load failed' })
+      expect(actor.getSnapshot().value).toBe('error')
+      actor.send(action.event)
+      expect(actor.getSnapshot().value).toBe(action.phase)
+      expect(actor.getSnapshot().context.err).toBeNull()
+      actor.stop()
+    }
+  })
+
   it('clamps money-adjacent inputs where the state lives', () => {
     const listed = { ...meme, listing: { sellerId: 'owner-a', pricePerShare: 4, shares: 10 } }
     const actor = createActor(memeDetailMachine, { input: { id: meme.id } }).start()

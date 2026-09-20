@@ -99,6 +99,55 @@ const backToReady = [
   { target: 'empty' as const },
 ]
 
+const listBuyDeleteOn = {
+  LIST: {
+    target: 'listing' as const,
+    actions: assign<MemeDetailContext, Extract<MemeDetailEvent, { type: 'LIST' }>, undefined, MemeDetailEvent, never>({
+      msg: null,
+      err: null,
+    }),
+  },
+  BUY: {
+    target: 'buying' as const,
+    actions: assign<MemeDetailContext, Extract<MemeDetailEvent, { type: 'BUY' }>, undefined, MemeDetailEvent, never>({
+      msg: null,
+      err: null,
+      confirmingBuy: false,
+    }),
+  },
+  DELETE: {
+    target: 'deleting' as const,
+    actions: assign<MemeDetailContext, Extract<MemeDetailEvent, { type: 'DELETE' }>, undefined, MemeDetailEvent, never>({
+      deleting: true,
+      err: null,
+    }),
+  },
+}
+
+const listingBuyingOn = {
+  LOADED: {
+    actions: assign<MemeDetailContext, Extract<MemeDetailEvent, { type: 'LOADED' }>, undefined, MemeDetailEvent, never>({
+      meme: ({ event }: { event: Extract<MemeDetailEvent, { type: 'LOADED' }> }) => event.meme,
+      positions: ({ event }: { event: Extract<MemeDetailEvent, { type: 'LOADED' }> }) => event.positions,
+      err: null,
+    }),
+  },
+  DONE: {
+    target: 'ready' as const,
+    actions: assign<MemeDetailContext, Extract<MemeDetailEvent, { type: 'DONE' }>, undefined, MemeDetailEvent, never>({
+      msg: ({ event }: { event: Extract<MemeDetailEvent, { type: 'DONE' }> }) => event.msg ?? null,
+      err: null,
+    }),
+  },
+  FAIL: {
+    target: 'error' as const,
+    actions: assign<MemeDetailContext, Extract<MemeDetailEvent, { type: 'FAIL' }>, undefined, MemeDetailEvent, never>({
+      err: ({ event }: { event: Extract<MemeDetailEvent, { type: 'FAIL' }> }) => event.err,
+      msg: null,
+    }),
+  },
+}
+
 /**
  * Meme detail source of truth. loading → ready|empty|error,
  * with listing|buying|deleting overlays. The hook drives async work.
@@ -195,18 +244,7 @@ export const memeDetailMachine = setup({
     empty: {},
     ready: {
       on: {
-        LIST: {
-          target: 'listing',
-          actions: assign({ msg: null, err: null }),
-        },
-        BUY: {
-          target: 'buying',
-          actions: assign({ msg: null, err: null, confirmingBuy: false }),
-        },
-        DELETE: {
-          target: 'deleting',
-          actions: assign({ deleting: true, err: null }),
-        },
+        ...listBuyDeleteOn,
         FAIL: {
           target: 'error',
           actions: assign({ err: ({ event }) => event.err, msg: null }),
@@ -215,40 +253,12 @@ export const memeDetailMachine = setup({
     },
     listing: {
       on: {
-        LOADED: {
-          actions: assign({
-            meme: ({ event }) => event.meme,
-            positions: ({ event }) => event.positions,
-            err: null,
-          }),
-        },
-        DONE: {
-          target: 'ready',
-          actions: assign({ msg: ({ event }) => event.msg ?? null, err: null }),
-        },
-        FAIL: {
-          target: 'error',
-          actions: assign({ err: ({ event }) => event.err, msg: null }),
-        },
+        ...listingBuyingOn,
       },
     },
     buying: {
       on: {
-        LOADED: {
-          actions: assign({
-            meme: ({ event }) => event.meme,
-            positions: ({ event }) => event.positions,
-            err: null,
-          }),
-        },
-        DONE: {
-          target: 'ready',
-          actions: assign({ msg: ({ event }) => event.msg ?? null, err: null }),
-        },
-        FAIL: {
-          target: 'error',
-          actions: assign({ err: ({ event }) => event.err, msg: null }),
-        },
+        ...listingBuyingOn,
       },
     },
     deleting: {
@@ -277,18 +287,7 @@ export const memeDetailMachine = setup({
     },
     error: {
       on: {
-        LIST: {
-          target: 'listing',
-          actions: assign({ msg: null, err: null }),
-        },
-        BUY: {
-          target: 'buying',
-          actions: assign({ msg: null, err: null, confirmingBuy: false }),
-        },
-        DELETE: {
-          target: 'deleting',
-          actions: assign({ deleting: true, err: null }),
-        },
+        ...listBuyDeleteOn,
         DONE: backToReady.map((branch) => ({
           ...branch,
           actions: assign({ msg: ({ event }) => event.msg ?? null, err: null }),

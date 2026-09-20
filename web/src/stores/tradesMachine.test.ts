@@ -1,8 +1,21 @@
 import { createActor } from "xstate";
 import { expect, test } from "vitest";
 import { tierFor } from '@memeon/shared/tiers';
-import type { FriendEntry, Meme } from "../lib/types";
+import type { FriendEntry, Meme, Trade } from "../lib/types";
 import { tradeProposalPayload, tradesMachine } from "./tradesMachine";
+
+const tradeA: Trade = {
+  id: "trade-a",
+  fromId: "friend-a",
+  fromName: "Friend A",
+  toId: "me",
+  toName: "Me",
+  offer: { memes: [{ memeId: "meme-a", shares: 1 }], coins: 0 },
+  ask: { memes: [], coins: 5 },
+  status: "proposed",
+  createdAt: "2026-01-01T00:00:00.000Z",
+  resolvedAt: null,
+};
 
 const friendA: FriendEntry = {
   sub: "friend-a",
@@ -183,4 +196,66 @@ test("a stale proposal completion cannot close or report an error in a newer com
     friends: [friendB],
   });
   actor.stop();
+});
+
+test("RESPOND from ready and composing enters acting with stamped acting fields", () => {
+  const actorReady = createActor(tradesMachine).start();
+  actorReady.send({ type: "LOADED", trades: [tradeA] });
+  expect(actorReady.getSnapshot().value).toBe("ready");
+  actorReady.send({ type: "RESPOND", tradeId: tradeA.id, action: "accept" });
+  expect(actorReady.getSnapshot().value).toBe("acting");
+  expect(actorReady.getSnapshot().context).toMatchObject({
+    actingTradeId: tradeA.id,
+    actingAction: "accept",
+    msg: null,
+    err: null,
+    confirming: null,
+  });
+  actorReady.stop();
+
+  const actorComposing = createActor(tradesMachine).start();
+  actorComposing.send({ type: "LOADED", trades: [tradeA] });
+  actorComposing.send({ type: "OPEN_COMPOSE" });
+  expect(actorComposing.getSnapshot().value).toBe("composing");
+  actorComposing.send({ type: "RESPOND", tradeId: tradeA.id, action: "decline" });
+  expect(actorComposing.getSnapshot().value).toBe("acting");
+  expect(actorComposing.getSnapshot().context).toMatchObject({
+    actingTradeId: tradeA.id,
+    actingAction: "decline",
+    msg: null,
+    err: null,
+    confirming: null,
+  });
+  actorComposing.stop();
+});
+
+test("FAIL from ready and composing enters error with loadFailed false", () => {
+  const actorReady = createActor(tradesMachine).start();
+  actorReady.send({ type: "LOADED", trades: [tradeA] });
+  actorReady.send({ type: "FAIL", err: "respond failed" });
+  expect(actorReady.getSnapshot().value).toBe("error");
+  expect(actorReady.getSnapshot().context).toMatchObject({
+    err: "respond failed",
+    loadFailed: false,
+    msg: null,
+    confirming: null,
+    actingTradeId: null,
+    actingAction: null,
+  });
+  actorReady.stop();
+
+  const actorComposing = createActor(tradesMachine).start();
+  actorComposing.send({ type: "LOADED", trades: [tradeA] });
+  actorComposing.send({ type: "OPEN_COMPOSE" });
+  actorComposing.send({ type: "FAIL", err: "compose failed" });
+  expect(actorComposing.getSnapshot().value).toBe("error");
+  expect(actorComposing.getSnapshot().context).toMatchObject({
+    err: "compose failed",
+    loadFailed: false,
+    msg: null,
+    confirming: null,
+    actingTradeId: null,
+    actingAction: null,
+  });
+  actorComposing.stop();
 });
