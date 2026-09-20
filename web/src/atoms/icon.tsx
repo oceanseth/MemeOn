@@ -18,11 +18,11 @@ import { cn } from '@/lib/cn'
  * something to swap each character for. Those are stand-ins, not design artefacts: compact relative
  * commands, radius-10 circles spanning 2..22, hard rectangle corners, and dots faked as zero-length
  * round-capped lines. Glyphs since restated on the Central grid carry their own note saying so
- * (circle-check, circle-x, ban, contrast, meh, square, dna, star); the rest are
+ * (circle-check, circle-x, ban, contrast, meh, square, dna, star, globe, mail, film,
+ * playing-card, gift, square-play, theater, satellite, handshake); the rest are
  * still the raw import and still read about 8% large beside the twelve. Do not add to this half
- * without rasterising the candidate at the size its call site actually uses - party-popper,
- * satellite, theater, brain, handshake, film and medal are all unreadable at 16px, which is exactly
- * how they got in here.
+ * without rasterising the candidate at the size its call site actually uses - brain is still
+ * accepted at the Discord CTA, and unreadability at 16px is exactly how the raw imports got in.
  *
  * DISCORD IS A BRAND MARK, NOT A GLYPH - superseding the note that kept it text-only. The
  * objection there was sound and still is: stroking Discord's logo at 1.5 bloats the silhouette
@@ -155,13 +155,13 @@ export const ICON_NAMES: readonly IconName[] = [
   'log-out',
 ]
 
-interface PathDef {
+export interface PathDef {
   d: string
   linecap?: 'round'
   linejoin?: 'round'
-  /** Paint the interior as well as the outline. Only solid/outline toggle pairs need this: the
-      filled member reuses its outline twin's exact `d`, so filling *and* stroking keeps both
-      states on the same silhouette and the glyph does not jump when the toggle flips. */
+  /** Paint the interior as well as the outline. Solid/outline toggle pairs use this so the
+      filled member reuses its outline twin's exact `d` and the glyph does not jump when the
+      toggle flips. `contrast` is a single auto-theme mark: only its half-disc is filled. */
   filled?: true
   /** A brand mark: filled with `currentColor` and *not* stroked, because a logo is reproduced as
       drawn or not at all. `discord` is the only one, and the header note says why. */
@@ -177,8 +177,34 @@ interface PathDef {
  * keeps its ring inline: its `d` welds ring and plus into a single path and that path is the
  * untouched design export, so it is left exactly as extracted.
  */
-const CENTRAL_RING =
+export const CENTRAL_RING =
   'M21.25 12C21.25 17.109 17.109 21.25 12 21.25C6.891 21.25 2.75 17.109 2.75 12C2.75 6.891 6.891 2.75 12 2.75C17.109 2.75 21.25 6.891 21.25 12Z'
+
+/** Byte-identical to the original `square` d (3.75..20.25, corner 2.75). Remainder squares alias this. */
+export const CENTRAL_BOX =
+  'M6.5 3.75H17.5C19.019 3.75 20.25 4.981 20.25 6.5V17.5C20.25 19.019 19.019 20.25 17.5 20.25H6.5C4.981 20.25 3.75 19.019 3.75 17.5V6.5C3.75 4.981 4.981 3.75 6.5 3.75Z'
+
+const CENTRAL_CORNER = 2.75
+const KAPPA = 0.5523
+
+function round3(n: number): number {
+  return Math.round(n * 1000) / 1000
+}
+
+/** Non-square remainder boxes. Kappa 0.5523, 3-decimal Central cubics, corner 2.75. */
+function roundedRect(minX: number, minY: number, maxX: number, maxY: number): string {
+  const r = CENTRAL_CORNER
+  const k = round3(KAPPA * r)
+  const left = round3(minX + r)
+  const right = round3(maxX - r)
+  const top = round3(minY + r)
+  const bottom = round3(maxY - r)
+  const x0 = round3(minX)
+  const y0 = round3(minY)
+  const x1 = round3(maxX)
+  const y1 = round3(maxY)
+  return `M${left} ${y0}H${right}C${round3(right + k)} ${y0} ${x1} ${round3(top - k)} ${x1} ${top}V${bottom}C${x1} ${round3(bottom + k)} ${round3(right + k)} ${y1} ${right} ${y1}H${left}C${round3(left - k)} ${y1} ${x0} ${round3(bottom + k)} ${x0} ${bottom}V${top}C${x0} ${round3(top - k)} ${round3(left - k)} ${y0} ${left} ${y0}Z`
+}
 
 const PATHS: Record<IconName, readonly PathDef[]> = {
   storefront: [
@@ -322,23 +348,33 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
     { d: 'M22 4h-4' },
     { d: 'M 2 20 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0' },
   ],
+  // Comedy/tragedy masks on the Central grid (Invite's accept mark). Lucide's curtains were nine
+  // hairlines that vanished at the 16px the Join row actually uses; two ovals + mouths keep the
+  // 🎭 reading and the name `theater`.
   theater: [
-    { d: 'M2 10s3-3 3-8' },
-    { d: 'M22 10s-3-3-3-8' },
-    { d: 'M10 2c0 4.4-3.6 8-8 8' },
-    { d: 'M14 2c0 4.4 3.6 8 8 8' },
-    { d: 'M2 10s2 2 2 5' },
-    { d: 'M22 10s-2 2-2 5' },
-    { d: 'M8 15h8' },
-    { d: 'M2 22v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1' },
-    { d: 'M14 22v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1' },
+    {
+      d: 'M11.75 12C11.75 16.556 9.735 20.25 7.25 20.25C4.765 20.25 2.75 16.556 2.75 12C2.75 7.444 4.765 3.75 7.25 3.75C9.735 3.75 11.75 7.444 11.75 12Z',
+      linejoin: 'round',
+    },
+    { d: 'M5.25 14.75C6.25 17.25 8.25 17.25 9.25 14.75', linecap: 'round' },
+    {
+      d: 'M21.25 12C21.25 16.556 19.235 20.25 16.75 20.25C14.265 20.25 12.25 16.556 12.25 12C12.25 7.444 14.265 3.75 16.75 3.75C19.235 3.75 21.25 7.444 21.25 12Z',
+      linejoin: 'round',
+    },
+    { d: 'M14.75 15.75C15.75 13.25 17.75 13.25 18.75 15.75', linecap: 'round' },
   ],
+  // Two hands meeting. Lucide's five-path clasp collapsed to noise at 16px (Invite accept) and
+  // 18px (Profile chip). Thumbs keep it from reading as a chevron; nothing shorter than ~4 units.
   handshake: [
-    { d: 'm11 17 2 2a1 1 0 1 0 3-3' },
-    { d: 'm14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4' },
-    { d: 'm21 3 1 11h-2' },
-    { d: 'M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3' },
-    { d: 'M3 4h8' },
+    {
+      d: 'M2.75 16.25C2.75 13.5 5 12 7.75 12H12.25C14 12 14.75 13.25 14.75 14.75C14.75 17.25 12.75 19.5 10 19.5H7.5C4.75 19.5 2.75 17.5 2.75 16.25Z',
+      linejoin: 'round',
+    },
+    {
+      d: 'M21.25 16.25C21.25 13.5 19 12 16.25 12H11.75C10 12 9.25 13.25 9.25 14.75C9.25 17.25 11.25 19.5 14 19.5H16.5C19.25 19.5 21.25 17.5 21.25 16.25Z',
+      linejoin: 'round',
+    },
+    { d: 'M11.5 12.15C10.25 9.25 8.25 6.75 6.25 6.25M12.5 12.15C13.75 9.25 15.75 6.75 17.75 6.25', linecap: 'round' },
   ],
   wrench: [
     { d: 'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z' },
@@ -367,11 +403,17 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
     { d: 'M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143' },
     { d: 'm2 2 20 20' },
   ],
+  // Lid+body on a Central rounded box (corner 2.75, long side 16.5); bow scaled into the
+  // leftover 3.75..8.5 band so the 16px quest-bar/Friends mark still reads as a gift.
   gift: [
-    { d: 'M12 7v14' },
-    { d: 'M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8' },
-    { d: 'M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5' },
-    { d: 'M 3 7 H 21 V 11 H 3 Z' },
+    { d: roundedRect(3.75, 8.5, 20.25, 20.25), linejoin: 'round' },
+    { d: 'M3.75 12H20.25', linecap: 'round' },
+    { d: 'M12 8.5V20.25', linecap: 'round' },
+    {
+      d: 'M12 8.5C7.75 8.5 6.5 3.75 9.75 3.75C12.25 3.75 12.75 6.75 12 8.5C11.25 6.75 11.75 3.75 14.25 3.75C17.5 3.75 16.25 8.5 12 8.5',
+      linecap: 'round',
+      linejoin: 'round',
+    },
   ],
   link: [
     { d: 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71' },
@@ -391,10 +433,11 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
   // Ring plus the half-disc, the disc held at 0.6 of the ring (5.55 against 9.25) exactly as the
   // imported version held 6 against 10, so the light/dark split reads at the same ratio. The
   // half-disc is two cubics closed by `Z`; the closing segment IS the vertical diameter, which is
-  // why it must stay a closed subpath and not a pair of open arcs.
+  // why it must stay a closed subpath and not a pair of open arcs. Filled so the D carries at the
+  // 16/22px theme-control sizes; the ring stays a stroke.
   contrast: [
     { d: CENTRAL_RING, linecap: 'round' },
-    { d: 'M12 17.55C15.065 17.55 17.55 15.065 17.55 12C17.55 8.935 15.065 6.45 12 6.45Z', linejoin: 'round' },
+    { d: 'M12 17.55C15.065 17.55 17.55 15.065 17.55 12C17.55 8.935 15.065 6.45 12 6.45Z', filled: true, linejoin: 'round' },
   ],
   palette: [
     { d: 'M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z' },
@@ -441,24 +484,26 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
     { d: 'M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
     { d: 'm6.18 5.276 3.1 3.899' },
   ],
+  // Outer box is CENTRAL_BOX; Lucide sprockets scaled 16.5/18 into 3.75..20.25 so they sit on the
+  // flat sides and do not poke the 2.75 corners.
   film: [
-    { d: 'M 3 3 H 21 V 21 H 3 Z' },
-    { d: 'M7 3v18' },
-    { d: 'M3 7.5h4' },
-    { d: 'M3 12h18' },
-    { d: 'M3 16.5h4' },
-    { d: 'M17 3v18' },
-    { d: 'M17 7.5h4' },
-    { d: 'M17 16.5h4' },
+    { d: CENTRAL_BOX, linejoin: 'round' },
+    {
+      d: 'M7.417 3.75V20.25M16.583 3.75V20.25M3.75 12H20.25M3.75 7.875H7.417M3.75 16.125H7.417M16.583 7.875H20.25M16.583 16.125H20.25',
+      linecap: 'round',
+    },
   ],
+  // Ring is CENTRAL_RING; meridians and equator scaled onto the same 2.75..21.25 span so the
+  // r=10 Lucide ellipse does not sit around a r=9.25 ring.
   globe: [
-    { d: 'M 2 12 a 10 10 0 1 0 20 0 a 10 10 0 1 0 -20 0' },
-    { d: 'M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20' },
-    { d: 'M2 12h20' },
+    { d: CENTRAL_RING, linecap: 'round' },
+    { d: 'M12 2.75a13.413 13.413 0 0 0 0 18.5 13.413 13.413 0 0 0 0-18.5', linecap: 'round' },
+    { d: 'M2.75 12H21.25', linecap: 'round' },
   ],
+  // Portrait card: same 2.75 corner, height capped at 16.5, width scaled off Lucide's 14×20.
   'playing-card': [
-    { d: 'M12.832 8.445a1 1 0 00-1.589-.098l-2.075 3.098a1 1 0 000 1.11l2 3a1 1 0 001.664 0l2-3a1 1 0 000-1.11z' },
-    { d: 'M 5 2 H 19 V 22 H 5 Z' },
+    { d: roundedRect(6.225, 3.75, 17.775, 20.25), linejoin: 'round' },
+    { d: 'M12 8.95L14.35 12L12 15.05L9.65 12Z', linejoin: 'round' },
   ],
   'scroll-text': [
     { d: 'M15 12h-5' },
@@ -471,16 +516,17 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
     { d: 'm17 8-5-5-5 5' },
     { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' },
   ],
+  // Dish + beam. Lucide's five-path satellite (panels, dish, nested signal arcs) was unreadable
+  // at the 16px MemeDetail row. Three strokes, nothing shorter than dna's ~5 unit floor.
   satellite: [
-    { d: 'm13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5' },
-    { d: 'M16.5 7.5 19 5' },
-    { d: 'm17.5 10.5 3.148 3.148a1.205 1.205 0 0 1 0 1.704l-2.296 2.296a1.205 1.205 0 0 1-1.704 0L13.5 14.5' },
-    { d: 'M9 21a6 6 0 0 0-6-6' },
-    { d: 'M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z' },
+    { d: 'M2.75 20.25A13 13 0 0 0 21.25 3.75', linecap: 'round' },
+    { d: 'M8.75 16.5L13.5 11.25', linecap: 'round' },
+    { d: 'M15.5 7.75L18.5 4.75M17.25 9.5L21 5.75', linecap: 'round' },
   ],
+  // Landscape envelope on the Central corner; Lucide 20×16 scaled onto long side 16.5.
   mail: [
-    { d: 'm22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7' },
-    { d: 'M 2 4 H 22 V 20 H 2 Z' },
+    { d: roundedRect(3.75, 5.4, 20.25, 18.6), linejoin: 'round' },
+    { d: 'M20.25 8.15L12 13.2L3.75 8.15', linecap: 'round', linejoin: 'round' },
   ],
   'volume-x': [
     { d: 'M11 4.702a.7.7 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.7.7 0 0 0 11 19.298z' },
@@ -512,8 +558,8 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
     { d: 'M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z' },
   ],
   'square-play': [
-    { d: 'M 3 3 H 21 V 21 H 3 Z' },
-    { d: 'M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z' },
+    { d: CENTRAL_BOX, linejoin: 'round' },
+    { d: 'M9.25 8.25L16.25 12L9.25 15.75Z', linejoin: 'round' },
   ],
   // Same 1.0607 interior scale as `circle-check`, which puts the cross's arms on +/-3.182 — the x
   // positions `meh` uses for its eyes. Kept as two independent strokes: crossing them as one
@@ -537,7 +583,7 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
   // read heavier than the done state. Now 16.5 across on Central's 3.75..20.25 span (the same box
   // `storefront`'s body sits in) with a 2.75 corner (`gear`'s inner radius): ~89% of the ring's
   // diameter, which is what it takes for a square to carry the same optical weight as a circle.
-  square: [{ d: 'M6.5 3.75H17.5C19.019 3.75 20.25 4.981 20.25 6.5V17.5C20.25 19.019 19.019 20.25 17.5 20.25H6.5C4.981 20.25 3.75 19.019 3.75 17.5V6.5C3.75 4.981 4.981 3.75 6.5 3.75Z', linejoin: 'round' }],
+  square: [{ d: CENTRAL_BOX, linejoin: 'round' }],
   // Face on the Central ring, features on the same 1.0607 interior scale as the rest of the family:
   // the mouth spans 7.757..16.243 (the `circle-plus` crossbar again) at y 16.243 (its lower arm
   // tip), and the eyes sit on 8.818/15.182 (`circle-x`'s arms). Both eyes are one path — they are
@@ -601,6 +647,10 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
       brand: true,
     },
   ],
+}
+
+export function iconPaths(name: IconName): readonly PathDef[] {
+  return PATHS[name]
 }
 
 export interface IconProps {
