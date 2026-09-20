@@ -8,6 +8,16 @@ const DPR = 2
 const INK_DELTA = 18
 const GROUNDS = ['light', 'dark'] as const
 
+function rgbByte(data: Uint8ClampedArray, i: number): number {
+  const v = data[i]
+  if (v === undefined) throw new Error(`missing ImageData byte at ${i}`)
+  return Number(v)
+}
+
+function rgbAt(data: Uint8ClampedArray, i: number): [number, number, number] {
+  return [rgbByte(data, i), rgbByte(data, i + 1), rgbByte(data, i + 2)]
+}
+
 function parseRgb(color: string): [number, number, number] {
   const match = color.match(/rgba?\((\d+)[,\s]+(\d+)[,\s]+(\d+)/)
   if (match) return [Number(match[1]), Number(match[2]), Number(match[3])]
@@ -17,8 +27,7 @@ function parseRgb(color: string): [number, number, number] {
   if (!ctx) throw new Error('no 2d context')
   ctx.fillStyle = color
   ctx.fillRect(0, 0, 1, 1)
-  const px = ctx.getImageData(0, 0, 1, 1).data
-  return [px[0], px[1], px[2]]
+  return rgbAt(ctx.getImageData(0, 0, 1, 1).data, 0)
 }
 
 function isInk(px: [number, number, number], bg: [number, number, number]): boolean {
@@ -86,7 +95,7 @@ async function raster(name: IconName, size: number, theme: 'light' | 'dark'): Pr
     for (let y = 0; y < canvas.height; y++) {
       for (let x = 0; x < canvas.width; x++) {
         const i = (y * canvas.width + x) * 4
-        if (!isInk([data[i], data[i + 1], data[i + 2]], bg)) continue
+        if (!isInk(rgbAt(data, i), bg)) continue
         count++
         if (x < minX) minX = x
         if (y < minY) minY = y
@@ -116,7 +125,7 @@ function sample(rastered: Raster, cssPx: number, vbX: number, vbY: number): [num
   const x = Math.round((vbX / 24) * cssPx * DPR)
   const y = Math.round((vbY / 24) * cssPx * DPR)
   const i = (y * rastered.width + x) * 4
-  return [rastered.data[i], rastered.data[i + 1], rastered.data[i + 2]]
+  return rgbAt(rastered.data, i)
 }
 
 function neighborhoodInk(rastered: Raster, cssPx: number, vbX: number, vbY: number): boolean {

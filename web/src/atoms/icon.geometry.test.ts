@@ -88,8 +88,14 @@ function numbers(d: string): number[] {
   return [...d.matchAll(/-?\d*\.?\d+(?:e[-+]?\d+)?/gi)].map((match) => Number(match[0]))
 }
 
+function pathAt(name: IconName, index: number) {
+  const path = iconPaths(name)[index]
+  if (!path) throw new Error(`missing path ${index} for ${name}`)
+  return path
+}
+
 function outerBounds(name: IconName) {
-  const d = iconPaths(name)[0].d
+  const d = pathAt(name, 0).d
   const values = numbers(d)
   return { d, min: Math.min(...values), max: Math.max(...values), values }
 }
@@ -112,9 +118,9 @@ describe('icon geometry (mo-6ro.3 remainder)', () => {
     expect(CENTRAL_BOX).toBe(
       'M6.5 3.75H17.5C19.019 3.75 20.25 4.981 20.25 6.5V17.5C20.25 19.019 19.019 20.25 17.5 20.25H6.5C4.981 20.25 3.75 19.019 3.75 17.5V6.5C3.75 4.981 4.981 3.75 6.5 3.75Z',
     )
-    expect(iconPaths('square')[0].d).toBe(CENTRAL_BOX)
-    expect(iconPaths('square-play')[0].d).toBe(CENTRAL_BOX)
-    expect(iconPaths('film')[0].d).toBe(CENTRAL_BOX)
+    expect(pathAt('square', 0).d).toBe(CENTRAL_BOX)
+    expect(pathAt('square-play', 0).d).toBe(CENTRAL_BOX)
+    expect(pathAt('film', 0).d).toBe(CENTRAL_BOX)
   })
 
   it('keeps mail, playing-card, and gift outers on the Central box without hard corners', () => {
@@ -132,11 +138,12 @@ describe('icon geometry (mo-6ro.3 remainder)', () => {
   })
 
   it('fills only contrast’s half-disc and leaves the ring a stroke', () => {
-    const paths = iconPaths('contrast')
-    expect(paths[0].d).toBe(CENTRAL_RING)
-    expect(paths[0].filled).toBeUndefined()
-    expect(paths[1].d).toBe(CONTRAST_HALF_DISC)
-    expect(paths[1].filled).toBe(true)
+    const ring = pathAt('contrast', 0)
+    const disc = pathAt('contrast', 1)
+    expect(ring.d).toBe(CENTRAL_RING)
+    expect(ring.filled).toBeUndefined()
+    expect(disc.d).toBe(CONTRAST_HALF_DISC)
+    expect(disc.filled).toBe(true)
   })
 
   it('freezes the genuine Central twelve ds vs ee2930f', () => {
