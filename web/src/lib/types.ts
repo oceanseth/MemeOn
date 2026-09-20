@@ -1,28 +1,9 @@
 import type { Tier } from '@memeon/shared/tiers'
+import type { Meme as MemeRecord } from '@memeon/shared/types'
 
-export interface Listing {
-  sellerId: string
-  pricePerShare: number
-  shares: number
-}
+export type { Listing } from '@memeon/shared/types'
 
-export interface Meme {
-  id: string
-  title: string
-  description: string | null
-  mediaType: 'image' | 'video'
-  imageUrl: string
-  videoUrl: string | null
-  tags: string[]
-  creatorId: string
-  creatorName: string
-  ownerId: string
-  ownerName: string
-  /** legacy name of the share-link load counter (`views`); same metric, not uniqueRefs */
-  reshares: number
-  tierKey: string
-  listing: Listing | null
-  createdAt: string
+export interface Meme extends MemeRecord {
   tier: Tier
   value: number
   /** total share-link loads (drives the tier ladder) */
@@ -31,9 +12,6 @@ export interface Meme {
   reshareCount?: number
   myShares?: number
   isCreator?: boolean
-  remixOf?: string | null
-  private?: boolean
-  source?: { provider: string; id: string; url: string; author: string | null } | null
 }
 
 export interface Memeplex {
