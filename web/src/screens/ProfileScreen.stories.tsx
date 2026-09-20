@@ -122,6 +122,71 @@ const oneCreatedCard = {
   cards: [{ id: `created-${paperMeme.id}`, memeCard: buildMemeCardModel(paperMeme), sharesLabel: null }],
 } satisfies Partial<ProfileScreenModel>
 
+const publicBinder: ProfileScreenModel = {
+  showErr: false,
+  errTitle: profileCopy.loadError.transport.title,
+  errBody: profileCopy.loadError.transport.body,
+  retryLabel: profileCopy.loadError.retry,
+  errorLinkLabel: profileCopy.loadError.browse,
+  errorLinkProps: { to: '/marketplace' },
+  showLoading: false,
+  loadingLabel: profileCopy.loading,
+  documentTitle: profileCopy.documentTitle.binder,
+  title: profileCopy.hero.binderTitle(palProfile.name),
+  intro: profileCopy.hero.publicIntro,
+  identityLine: null,
+  showBinderHero: true,
+  tradeLabel: profileCopy.actions.trade,
+  tradeLinkProps: { to: '/trade', 'aria-label': profileCopy.actions.tradeWith(palProfile.name) },
+  shareLabel: profileCopy.actions.share,
+  showSelfActions: false,
+  settingsLabel: profileCopy.actions.settings,
+  settingsLinkProps: { to: '/settings' },
+  reshareNote: profileCopy.join.reshareNote,
+  gridCountLabel: profileCopy.grid.count(1, 1),
+  showMore: false,
+  showMoreLabel: profileCopy.grid.showMore(12),
+  profile: {
+    name: palProfile.name,
+    avatarSrc: null,
+    stats: [
+      { id: 'minted', glyph: null, text: profileCopy.stats.minted(1) },
+      { id: 'binder', glyph: null, text: profileCopy.stats.inBinder(1) },
+      { id: 'braincells', glyph: 'brain', text: profileCopy.stats.braincells(palProfile.portfolioValue) },
+    ],
+  },
+  showActions: false,
+  followButtonVariant: 'default',
+  followGlyph: 'star',
+  followText: profileCopy.actions.follow.label,
+  showFriendButton: true,
+  friendGlyph: 'hand',
+  friendText: profileCopy.actions.friend.add,
+  showFriendChip: false,
+  friendChipGlyph: 'handshake',
+  friendChipText: profileCopy.actions.friendChip.friends,
+  showActionErr: false,
+  actionErr: '',
+  showJoin: true,
+  joinLabel: profileCopy.join.trade(palProfile.name),
+  joinAddFriendLabel: profileCopy.join.addFriend,
+  joinLinkProps: { to: '/', state: { next: '/binder/user-pal' } },
+  actionsGroupLabel: profileCopy.actions.groupLabel,
+  tabsListLabel: profileCopy.tabs.section,
+  ...tabLabels(1, 1),
+  cards: [{ id: `binder-${giftablePaper.id}`, memeCard: buildMemeCardModel(giftablePaper), sharesLabel: profileCopy.cards.holds(12) }],
+  showEmpty: false,
+  emptyTitle: '',
+  emptyBody: '',
+  showEmptyLink: false,
+  emptyLinkLabel: '',
+  emptyLinkProps: { to: '/marketplace' },
+  showGrid: true,
+  gridProps: { id: 'profile-cards', 'aria-live': 'polite', 'aria-label': profileCopy.grid.label(profileCopy.tabs.binder, 1) },
+  ...handlers,
+  tabsProps: { value: 'binder', onValueChange: fn() },
+}
+
 /** Storybook's viewport global; the vitest storybook project renders at the story's own width. */
 const phone = {
   parameters: {
@@ -367,4 +432,24 @@ export const DarkPhone390: Story = {
   name: 'Ready dark phone 390',
   ...phone,
   globals: { ...phone.globals, theme: 'dark' },
+}
+
+/** `/binder/:sub` seen by anyone but its owner: the title is the binder, the grid is the shelf. */
+export const PublicBinder: Story = {
+  args: publicBinder,
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('heading', { name: profileCopy.hero.binderTitle(palProfile.name) })).toBeInTheDocument()
+  },
+}
+
+export const PublicBinderDark: Story = {
+  ...PublicBinder,
+  name: 'Public binder dark',
+  globals: { theme: 'dark' },
+}
+
+export const PublicBinderPhone390: Story = {
+  ...PublicBinder,
+  name: 'Public binder phone 390',
+  ...phone,
 }
