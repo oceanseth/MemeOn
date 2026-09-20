@@ -32,13 +32,12 @@ const PODIUM = 'h-full text-center md:w-54.5 md:flex-col md:items-center max-md:
 const RANK_NUMERAL = 'w-7 shrink-0 text-center text-lg font-semibold text-muted-foreground tabular-nums'
 
 /**
- * The podium ornament: one `medal` glyph in the rank's metal, with the rank numeral beside it.
+ * The podium ornament: an empty `medal` disc in the rank's metal, with the rank numeral beside it.
  *
  * The numeral is not decoration. The 🥇🥈🥉 this replaced carried the place *inside* the disc; the
- * glyph does not — it engraves a fixed "1" at every rank (`M12 18v-2h-.5` in `atoms/icon.tsx`), so
- * the pip reads as an engraving and never as a place. Gold and bronze are then one silhouette at
- * one size with nothing but hue between them, which is a thin thread to hang third place on and no
- * thread at all in a monochrome print or a red-green eye. The numeral puts the place back on shape.
+ * glyph is an empty disc, so gold and bronze would otherwise be one silhouette at one size with
+ * nothing but hue between them — a thin thread to hang third place on and no thread at all in a
+ * monochrome print or a red-green eye. The numeral puts the place back on shape.
  *
  * The metal goes on the wrapper rather than on `Icon`: the glyph strokes in `currentColor`, so one
  * class tints medal and numeral together and both class names stay literal for the linter.
