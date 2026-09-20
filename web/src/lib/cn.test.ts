@@ -52,7 +52,9 @@ describe('cn', () => {
     expect(cn('text-2xl', 'md:text-4xl')).toBe('text-2xl md:text-4xl')
     expect(cn('text-sm', 'text-muted-foreground')).toBe('text-sm text-muted-foreground')
     expect(cn('text-xl leading-none', 'text-2xl leading-none')).toBe('text-2xl leading-none')
-    expect(cn('text-base leading-none', 'text-primary-foreground')).toBe('text-base leading-none text-primary-foreground')
+    expect(cn('text-base leading-none', 'text-primary-foreground')).toBe(
+      'text-base leading-none text-primary-foreground',
+    )
   })
 
   it('merges the stock trackings against each other', () => {
@@ -75,7 +77,9 @@ describe('cn', () => {
      rather than by where it happens to sort in the built sheet */
   it('merges the materials against each other and passes the rest through', () => {
     expect(cn('material-pressed', 'material-raised')).toBe('material-raised')
-    expect(cn('material-card', 'aria-pressed:material-pressed')).toBe('material-card aria-pressed:material-pressed')
+    expect(cn('material-card', 'aria-pressed:material-pressed')).toBe(
+      'material-card aria-pressed:material-pressed',
+    )
     expect(cn('material-card', 'focus-ring', 'bg-card')).toBe('material-card focus-ring bg-card')
     /* `glass` is a plate, not a material: `material-raised glass` is a real pair (hero-video) */
     expect(cn('material-raised', 'glass')).toBe('material-raised glass')

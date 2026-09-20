@@ -18,9 +18,21 @@ export const landingCopy = {
   how: {
     title: 'A card gets better when it gets around.',
     steps: [
-      { step: '01', title: 'Mint a moment', body: 'Turn an image, video, Giphy, or URL into a card.' },
-      { step: '02', title: 'Drop the link', body: 'Every share unfurls with its live foil frame.' },
-      { step: '03', title: 'Go Shiny', body: 'Reshares push Paper cards up the virality tiers.' },
+      {
+        step: '01',
+        title: 'Mint a moment',
+        body: 'Turn an image, video, Giphy, or URL into a card.',
+      },
+      {
+        step: '02',
+        title: 'Drop the link',
+        body: 'Every share unfurls with its live foil frame.',
+      },
+      {
+        step: '03',
+        title: 'Go Shiny',
+        body: 'Reshares push Paper cards up the virality tiers.',
+      },
     ],
   },
   tier: {

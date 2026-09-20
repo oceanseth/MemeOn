@@ -16,7 +16,7 @@ export function pathOf(input: RequestInfo | URL): string {
 }
 
 export function bodyOf(init?: RequestInit): Record<string, unknown> {
-  return init?.body ? JSON.parse(String(init.body)) as Record<string, unknown> : {}
+  return init?.body ? (JSON.parse(String(init.body)) as Record<string, unknown>) : {}
 }
 
 export function jsonResponse(body: unknown, init?: ResponseInit): Response {
@@ -44,8 +44,14 @@ export function stubSessionStorage(): void {
   const storage = new Map<string, string>()
   vi.stubGlobal('sessionStorage', {
     getItem: (key: string) => storage.get(key) ?? null,
-    setItem: (key: string, value: string) => { storage.set(key, value) },
-    removeItem: (key: string) => { storage.delete(key) },
-    clear: () => { storage.clear() },
+    setItem: (key: string, value: string) => {
+      storage.set(key, value)
+    },
+    removeItem: (key: string) => {
+      storage.delete(key)
+    },
+    clear: () => {
+      storage.clear()
+    },
   })
 }

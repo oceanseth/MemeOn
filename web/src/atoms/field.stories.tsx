@@ -37,9 +37,7 @@ export const Default: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByLabelText('Share link')).toHaveValue(
-      'https://memeon.lol/m/meme-holo',
-    )
+    await expect(canvas.getByLabelText('Share link')).toHaveValue('https://memeon.lol/m/meme-holo')
     await expect(canvas.getByText('Share link')).toHaveAttribute('data-slot', 'field-label')
   },
 }

@@ -4,14 +4,7 @@ import { Alert } from '@/atoms/alert'
 import { Button, buttonVariants } from '@/atoms/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/atoms/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
-import {
-  Field,
-  FieldCounter,
-  FieldDescription,
-  FieldFooter,
-  FieldLabel,
-  Hint,
-} from '@/atoms/field'
+import { Field, FieldCounter, FieldDescription, FieldFooter, FieldLabel, Hint } from '@/atoms/field'
 import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
 import { Heading } from '@/atoms/heading'
 import { Input } from '@/atoms/input'
@@ -56,17 +49,10 @@ const MODE_ROW = 'mb-5 flex flex-wrap items-center gap-2'
 const FORM_NOTE = 'mt-1 text-xs font-medium text-muted-foreground'
 
 /** One source chip. The engine names the state and label; the icon stays here. */
-function ModeChip({
-  model,
-  icon,
-}: {
-  model: CreateMemeModeButtonModel
-  icon: ReactNode
-}) {
+function ModeChip({ model, icon }: { model: CreateMemeModeButtonModel; icon: ReactNode }) {
   return (
     <Button size="segment" {...model.buttonProps} data-slot="mode-chip">
-      <span aria-hidden="true">{icon}</span>{' '}
-      {model.label}
+      <span aria-hidden="true">{icon}</span> {model.label}
     </Button>
   )
 }
@@ -107,11 +93,7 @@ function PreviewCard({ card }: { card: CreateMemeCardModel }) {
       <div data-slot="meme-card-inner" className={PREVIEW_INNER}>
         <FoilMedia>
           {card.media.kind === 'video' ? (
-            <video
-              data-slot="meme-art"
-              className={PREVIEW_ART}
-              {...card.media.videoProps}
-            />
+            <video data-slot="meme-art" className={PREVIEW_ART} {...card.media.videoProps} />
           ) : (
             <img data-slot="meme-art" className={PREVIEW_ART} {...card.media.imageProps} />
           )}
@@ -293,7 +275,9 @@ export function CreateMemeScreen({
             </span>
           </Heading>
         </div>
-        <div className="sr-only" role="status">{mintStatus}</div>
+        <div className="sr-only" role="status">
+          {mintStatus}
+        </div>
         <div className={LAYOUT}>
           <div className={RAIL}>
             <PreviewCard card={successCard} />
@@ -324,7 +308,9 @@ export function CreateMemeScreen({
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
       <PageHead title={pageTitle} subtitle={pageSubtitle} />
-      <div className="sr-only" role="status">{mintStatus}</div>
+      <div className="sr-only" role="status">
+        {mintStatus}
+      </div>
 
       {/* the source row sits above both columns, the full width of the content column */}
       <div data-slot="mint-modes" className={MODE_ROW} {...modeGroupProps}>
@@ -332,7 +318,10 @@ export function CreateMemeScreen({
           <ModeChip model={getModeButtonProps('remix')} icon={<Icon name="dna" size={16} />} />
         )}
         <ModeChip model={getModeButtonProps('generate')} icon={<Icon name="palette" size={16} />} />
-        <ModeChip model={getModeButtonProps('video')} icon={<Icon name="clapperboard" size={16} />} />
+        <ModeChip
+          model={getModeButtonProps('video')}
+          icon={<Icon name="clapperboard" size={16} />}
+        />
         <ModeChip model={getModeButtonProps('upload')} icon={<Icon name="upload" size={16} />} />
         <ModeChip model={getModeButtonProps('giphy')} icon={<Icon name="film" size={16} />} />
         <ModeChip model={getModeButtonProps('url')} icon={<Icon name="link" size={16} />} />
@@ -370,9 +359,7 @@ export function CreateMemeScreen({
                 remixingPrefix={remixingPrefix}
                 remixingBy={remixingBy}
                 sourceLink={
-                  remixSource ? (
-                    <Link {...remixSource.linkProps}>"{remixSource.title}"</Link>
-                  ) : null
+                  remixSource ? <Link {...remixSource.linkProps}>"{remixSource.title}"</Link> : null
                 }
                 remixOutputLabel={remixOutputLabel}
                 remixOutputSelectProps={remixOutputSelectProps}
@@ -519,10 +506,16 @@ export function CreateMemeScreen({
               {showPreviewCard && (
                 <>
                   <PreviewCard card={previewCard} />
-                  {previewCard.originLabel && <Hint className="mt-0">{previewCard.originLabel}</Hint>}
+                  {previewCard.originLabel && (
+                    <Hint className="mt-0">{previewCard.originLabel}</Hint>
+                  )}
                 </>
               )}
-              {showMintHint && <Hint className="mt-0">{toMintPrefix} {mintHint}</Hint>}
+              {showMintHint && (
+                <Hint className="mt-0">
+                  {toMintPrefix} {mintHint}
+                </Hint>
+              )}
             </div>
             {/* phone: shares line above a full-width Mint pill */}
             <div className="mt-4 flex items-center justify-between gap-3 max-md:flex-col max-md:items-stretch max-md:gap-2">

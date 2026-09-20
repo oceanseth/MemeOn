@@ -25,10 +25,7 @@ export function createListPhaseMachine<
 >(config: {
   id: string
   context: TContext | ((args: { input: TInput }) => TContext)
-  isEmpty: (args: {
-    event: Extract<TEvent, { type: 'DONE' }>
-    context: TContext
-  }) => boolean
+  isEmpty: (args: { event: Extract<TEvent, { type: 'DONE' }>; context: TContext }) => boolean
   applyDone: unknown
   extraOn?: object
   onRetry?: unknown
@@ -50,13 +47,7 @@ export function createListPhaseMachine<
       ...extraOn,
       DONE: [
         {
-          guard: ({
-            event,
-            context: ctx,
-          }: {
-            event: AnyEventObject
-            context: TContext
-          }) =>
+          guard: ({ event, context: ctx }: { event: AnyEventObject; context: TContext }) =>
             isEmpty({
               event: event as Extract<TEvent, { type: 'DONE' }>,
               context: ctx,

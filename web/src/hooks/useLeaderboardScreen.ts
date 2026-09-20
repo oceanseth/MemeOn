@@ -129,7 +129,10 @@ export function useLeaderboardScreen(): LeaderboardScreenModel {
     subtitle: copy.subtitle,
     podiumTitle: copy.podium.title,
     podiumSubtitle: copy.podium.subtitle,
-    columnHeaders: { player: copy.columns.player, braincells: copy.columns.braincells },
+    columnHeaders: {
+      player: copy.columns.player,
+      braincells: copy.columns.braincells,
+    },
     leaders,
     youRow,
     showMore: hidden > 0,

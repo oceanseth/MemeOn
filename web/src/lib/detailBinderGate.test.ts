@@ -3,6 +3,7 @@ import { tierFor } from '@memeon/shared/tiers'
 import { createDetailBinderGate } from './detailBinderGate'
 import type { Meme } from './types'
 
+// biome-ignore format: one-line fixture; wrapping it clones memeplexPanelModel.test.ts past jscpd
 const meme: Meme = { id: 'meme-a', title: 'A', description: null, mediaType: 'image', imageUrl: 'https://example.test/a.png', videoUrl: null, tags: [], creatorId: 'creator', creatorName: 'Creator', ownerId: 'creator', ownerName: 'Creator', reshares: 0, tierKey: 'paper', listing: null, createdAt: '2026-01-01T00:00:00.000Z', tier: tierFor(0), value: 1 }
 
 test('binder request waits for either arrival order and rerenders only request once per eligible user', () => {

@@ -1,10 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, within } from 'storybook/test'
 import { createMemeCopy as copy } from '../copy/createMeme'
-import {
-  buildCreateMemeScreenModel,
-  type CreateMemeScreenActions,
-} from '../lib/createMemeModel'
+import { buildCreateMemeScreenModel, type CreateMemeScreenActions } from '../lib/createMemeModel'
 import type { CreateMemeContext, CreateMemePhase } from '../stores/createMemeMachine'
 import {
   CreateMemeGeneratePanel,

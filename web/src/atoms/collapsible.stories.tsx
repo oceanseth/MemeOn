@@ -11,7 +11,10 @@ const meta = {
   render: (args) => (
     <Collapsible variant="card" {...args} className="w-96">
       <CollapsibleTrigger variant="card">
-        <span aria-hidden="true" className="shrink-0 text-base text-muted-foreground transition-lift group-data-panel-open:rotate-180">
+        <span
+          aria-hidden="true"
+          className="shrink-0 text-base text-muted-foreground transition-lift group-data-panel-open:rotate-180"
+        >
           ▾
         </span>
         <span className="text-lg font-semibold text-foreground">How do shares work?</span>
@@ -52,7 +55,10 @@ export const DefaultOpen: Story = {
   args: { defaultOpen: true },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'How do shares work?' })).toHaveAttribute('aria-expanded', 'true')
+    await expect(canvas.getByRole('button', { name: 'How do shares work?' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
     await expect(canvas.getByText(/fixed number of shares/)).toBeVisible()
   },
 }

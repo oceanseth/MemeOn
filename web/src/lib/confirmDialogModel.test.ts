@@ -31,7 +31,10 @@ describe('buildConfirmDialogModel', () => {
 
   it('passes inline parts and error through without rendering', () => {
     const message = [
-      { kind: 'strong' as const, text: memeDetailCopy.quotedTitle('fresh paper') },
+      {
+        kind: 'strong' as const,
+        text: memeDetailCopy.quotedTitle('fresh paper'),
+      },
       memeDetailCopy.deleteDialog.body,
     ]
     const error = developersCopy.errors.revoke('my-trading-bot')
@@ -49,8 +52,14 @@ describe('buildConfirmDialogModel', () => {
   })
 
   it('records the opener, so the frame can hand focus back on the way out', () => {
-    const opener = { focus: () => {}, isConnected: true } as unknown as HTMLElement
-    vi.stubGlobal('document', { activeElement: opener, body: { nodeName: 'BODY' } })
+    const opener = {
+      focus: () => {},
+      isConnected: true,
+    } as unknown as HTMLElement
+    vi.stubGlobal('document', {
+      activeElement: opener,
+      body: { nodeName: 'BODY' },
+    })
     const input = {
       id: 'restore-focus',
       title: 'Remove Pal?',
@@ -104,7 +113,10 @@ describe('buildConfirmDialogModel', () => {
     expect(model.cancelButtonProps.disabled).toBe(true)
     expect(model.cancelButtonProps.onClick).toBeUndefined()
     // busy is announced, not disabled: the label of an irreversible action stays readable
-    expect(model.confirmButtonProps).toMatchObject({ 'aria-busy': true, 'aria-disabled': true })
+    expect(model.confirmButtonProps).toMatchObject({
+      'aria-busy': true,
+      'aria-disabled': true,
+    })
     expect(model.confirmButtonProps.onClick).toBeUndefined()
   })
 
@@ -136,15 +148,32 @@ describe('buildConfirmDialogModel', () => {
       id: 'claim-meme',
       title: 'Claim this meme?',
       message: 'Tell us why.',
-      prompt: { label: 'Why is this meme yours?', value: 'my post', maxLength: 400, hint: 'Links help your case.', onChange },
+      prompt: {
+        label: 'Why is this meme yours?',
+        value: 'my post',
+        maxLength: 400,
+        hint: 'Links help your case.',
+        onChange,
+      },
       onConfirm: vi.fn(),
       onCancel: vi.fn(),
     })
 
-    expect(model.prompt).toMatchObject({ label: 'Why is this meme yours?', hint: 'Links help your case.', hintId: 'claim-meme-hint', counterLabel: '7/400' })
-    expect(model.prompt?.textareaProps).toMatchObject({ value: 'my post', maxLength: 400, 'aria-describedby': 'claim-meme-hint' })
+    expect(model.prompt).toMatchObject({
+      label: 'Why is this meme yours?',
+      hint: 'Links help your case.',
+      hintId: 'claim-meme-hint',
+      counterLabel: '7/400',
+    })
+    expect(model.prompt?.textareaProps).toMatchObject({
+      value: 'my post',
+      maxLength: 400,
+      'aria-describedby': 'claim-meme-hint',
+    })
 
-    model.prompt?.textareaProps.onChange?.({ target: { value: 'my post plus a link' } } as never)
+    model.prompt?.textareaProps.onChange?.({
+      target: { value: 'my post plus a link' },
+    } as never)
     expect(onChange).toHaveBeenCalledWith('my post plus a link')
 
     // the counter reads the same cap the field enforces, even when the caller names neither

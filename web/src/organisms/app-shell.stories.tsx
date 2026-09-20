@@ -21,7 +21,9 @@ const chrome = buildAppShellChrome()
 
 const nav = (
   <>
-    <NavPill current render={<Link to="/marketplace" />}>Marketplace</NavPill>
+    <NavPill current render={<Link to="/marketplace" />}>
+      Marketplace
+    </NavPill>
     <NavPill render={<Link to="/binder" />}>My Binder</NavPill>
     <NavPill render={<Link to="/friends" />}>Friends</NavPill>
     <NavPill render={<Link to="/trade" />}>Trade</NavPill>
@@ -34,7 +36,10 @@ const nav = (
   </>
 )
 
-const balance = { text: appShellCopy.braincells.text(meLou.coins), label: appShellCopy.braincells.label(meLou.coins) }
+const balance = {
+  text: appShellCopy.braincells.text(meLou.coins),
+  label: appShellCopy.braincells.label(meLou.coins),
+}
 
 const avatarMenu = (
   <AvatarMenu
@@ -43,7 +48,12 @@ const avatarMenu = (
       src: null,
       triggerProps: { 'aria-label': 'Account menu' },
       items: [
-        { key: 'profile', label: 'Profile', to: `/u/${meLou.sub}`, icon: 'user' },
+        {
+          key: 'profile',
+          label: 'Profile',
+          to: `/u/${meLou.sub}`,
+          icon: 'user',
+        },
         { key: 'settings', label: 'Settings', to: '/settings', icon: 'gear' },
       ],
       theme: {
@@ -64,35 +74,63 @@ const avatarMenu = (
 
 const headerEnd = (quest: boolean, alertsOpen = false) => (
   <>
-    <Link to="/binder/new" className={`${buttonVariants({ variant: 'primary', size: 'sm' })} max-xl:hidden`}>
+    <Link
+      to="/binder/new"
+      className={`${buttonVariants({ variant: 'primary', size: 'sm' })} max-xl:hidden`}
+    >
       <span aria-hidden="true">
         <Icon name="circle-plus" size={16} />
       </span>{' '}
       Mint
     </Link>
     <QuestBar
-      model={quest ? buildQuestBarModel({
-        steps: questStepsFresh,
-        packMemes: null,
-        packReward: 0,
-        busy: false,
-        onClaimPack: fn(),
-        onDismissPack: fn(),
-      }) : null}
+      model={
+        quest
+          ? buildQuestBarModel({
+              steps: questStepsFresh,
+              packMemes: null,
+              packReward: 0,
+              busy: false,
+              onClaimPack: fn(),
+              onDismissPack: fn(),
+            })
+          : null
+      }
       balance={balance}
     />
-    <AlertsBell model={buildAlertsBellModel({ alerts: [unreadSale], open: alertsOpen, onOpenChange: fn() })} />
+    <AlertsBell
+      model={buildAlertsBellModel({
+        alerts: [unreadSale],
+        open: alertsOpen,
+        onOpenChange: fn(),
+      })}
+    />
     {avatarMenu}
   </>
 )
 
 const bottomNav = (
   <>
-    <TabItem current render={<Link to="/marketplace" />}><Icon name="storefront" />Market</TabItem>
-    <TabItem render={<Link to="/binder" />}><Icon name="book" />Binder</TabItem>
-    <TabItem primary render={<Link to="/binder/new" />}><Icon name="circle-plus" />Mint</TabItem>
-    <TabItem render={<Link to="/friends" />}><Icon name="users" />Friends</TabItem>
-    <TabItem render={<Link to="/trade" />}><Icon name="arrows-swap" />Trade</TabItem>
+    <TabItem current render={<Link to="/marketplace" />}>
+      <Icon name="storefront" />
+      Market
+    </TabItem>
+    <TabItem render={<Link to="/binder" />}>
+      <Icon name="book" />
+      Binder
+    </TabItem>
+    <TabItem primary render={<Link to="/binder/new" />}>
+      <Icon name="circle-plus" />
+      Mint
+    </TabItem>
+    <TabItem render={<Link to="/friends" />}>
+      <Icon name="users" />
+      Friends
+    </TabItem>
+    <TabItem render={<Link to="/trade" />}>
+      <Icon name="arrows-swap" />
+      Trade
+    </TabItem>
   </>
 )
 
@@ -100,7 +138,12 @@ const bottomNav = (
 const phone = {
   parameters: {
     viewport: {
-      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+      options: {
+        phone390: {
+          name: 'Phone 390',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
     },
   },
   globals: { viewport: { value: 'phone390', isRotated: false } },
@@ -111,10 +154,20 @@ const meta = {
   component: AppShell,
   /* the chrome owns the viewport edge: no Storybook gutter, or the 390 header loses 32 of its 350 */
   parameters: { layout: 'fullscreen' },
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
   args: {
     chrome,
-    children: <PageContainer as="main" id="main" tabIndex={-1}><p>page body</p></PageContainer>,
+    children: (
+      <PageContainer as="main" id="main" tabIndex={-1}>
+        <p>page body</p>
+      </PageContainer>
+    ),
   },
 } satisfies Meta<typeof AppShell>
 
@@ -124,14 +177,31 @@ type Story = StoryObj<typeof meta>
 /** The public frame: wordmark, the theme button, the page, the footer. */
 export const LoggedOut: Story = {
   args: {
-    headerEnd: <ThemeControl model={buildThemeControlModel({ value: 'auto', onChange: fn(), variant: 'button' })} size="lg" />,
+    headerEnd: (
+      <ThemeControl
+        model={buildThemeControlModel({
+          value: 'auto',
+          onChange: fn(),
+          variant: 'button',
+        })}
+        size="lg"
+      />
+    ),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('link', { name: appShellCopy.brand })).toHaveAttribute('href', '/')
+    await expect(canvas.getByRole('link', { name: appShellCopy.brand })).toHaveAttribute(
+      'href',
+      '/',
+    )
     await expect(canvas.queryByRole('navigation', { name: appShellCopy.navAria })).toBeNull()
-    await expect(canvasElement.querySelector('[data-slot="app-frame"]')).toHaveAttribute('data-layout', 'public')
-    await expect(canvas.getByRole('navigation', { name: appShellCopy.footerAria })).toBeInTheDocument()
+    await expect(canvasElement.querySelector('[data-slot="app-frame"]')).toHaveAttribute(
+      'data-layout',
+      'public',
+    )
+    await expect(
+      canvas.getByRole('navigation', { name: appShellCopy.footerAria }),
+    ).toBeInTheDocument()
   },
 }
 
@@ -140,13 +210,21 @@ export const LoggedIn: Story = {
   args: { nav, headerEnd: headerEnd(false), bottomNav },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvasElement.querySelector('[data-slot="app-frame"]')).toHaveAttribute('data-layout', 'app')
+    await expect(canvasElement.querySelector('[data-slot="app-frame"]')).toHaveAttribute(
+      'data-layout',
+      'app',
+    )
     const bar = canvas.getByRole('banner')
     await expect(bar).toHaveAttribute('data-slot', 'header')
     /* the bar is the sticky-chrome contract's 64 (`--topbar-h`) at every width */
-    await expect(getComputedStyle(bar.querySelector('[data-slot="header-row"]')!).height).toBe('64px')
+    await expect(getComputedStyle(bar.querySelector('[data-slot="header-row"]')!).height).toBe(
+      '64px',
+    )
     await expect(getComputedStyle(bar).position).toBe('sticky')
-    await expect(canvas.getByRole('link', { name: 'Marketplace' })).toHaveAttribute('aria-current', 'page')
+    await expect(canvas.getByRole('link', { name: 'Marketplace' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
     await expect(canvas.getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
     await expect(canvas.getByText(appShellCopy.braincells.label(meLou.coins))).toBeInTheDocument()
     /* from the cut the footer is the page's end, tab bar or not */
@@ -158,7 +236,10 @@ export const WithQuests: Story = {
   args: { nav, headerEnd: headerEnd(true), bottomNav },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: /quests 0 of 5/ })).toHaveAttribute('data-progress', '0')
+    await expect(canvas.getByRole('button', { name: /quests 0 of 5/ })).toHaveAttribute(
+      'data-progress',
+      '0',
+    )
   },
 }
 
@@ -170,7 +251,10 @@ export const Phone390: Story = {
     // the bar's links are display:none on the phone; the tab bar is the one main navigation
     const tabs = canvas.getByRole('navigation', { name: appShellCopy.navAria })
     await expect(tabs).toHaveAttribute('data-slot', 'bottom-nav')
-    await expect(within(tabs).getByRole('link', { name: 'Mint' })).toHaveAttribute('href', '/binder/new')
+    await expect(within(tabs).getByRole('link', { name: 'Mint' })).toHaveAttribute(
+      'href',
+      '/binder/new',
+    )
     await expect(canvas.getByRole('link', { name: appShellCopy.brand })).toBeVisible()
     /* the bar is the phone's: fixed to the viewport's bottom edge and spanning it, no gap */
     const box = tabs.getBoundingClientRect()

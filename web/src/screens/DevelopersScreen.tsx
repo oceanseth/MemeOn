@@ -77,7 +77,15 @@ export function DevelopersScreen({
         </a>
       </PageHead>
       <p className={EXPLAINER}>
-        {explainer.lede}<strong className="font-semibold text-foreground">{explainer.account}</strong>{explainer.powers}<InlineLink href="/skill.md" target="_blank" rel="noreferrer">{explainer.skill}</InlineLink>{explainer.alsoAt}<code>{explainer.wellKnown}</code>{explainer.close}
+        {explainer.lede}
+        <strong className="font-semibold text-foreground">{explainer.account}</strong>
+        {explainer.powers}
+        <InlineLink href="/skill.md" target="_blank" rel="noreferrer">
+          {explainer.skill}
+        </InlineLink>
+        {explainer.alsoAt}
+        <code>{explainer.wellKnown}</code>
+        {explainer.close}
       </p>
 
       <Card size="sm" className="mt-5">
@@ -101,7 +109,12 @@ export function DevelopersScreen({
       </Card>
 
       {showErr && (
-        <Alert variant="error" size="compact" className="mt-4 block max-w-none" {...errorNoticeProps}>
+        <Alert
+          variant="error"
+          size="compact"
+          className="mt-4 block max-w-none"
+          {...errorNoticeProps}
+        >
           <AlertTitle>{err}</AlertTitle>
         </Alert>
       )}
@@ -142,7 +155,11 @@ export function DevelopersScreen({
           )}
         </div>
         <LiveRegion variant="visible" {...statusRegionProps}>
-          {showOk && <Alert variant="success" className="mt-3">{okMsg}</Alert>}
+          {showOk && (
+            <Alert variant="success" className="mt-3">
+              {okMsg}
+            </Alert>
+          )}
         </LiveRegion>
         {showSpinner && (
           /* a labelled spinner row, never a bare spinner */

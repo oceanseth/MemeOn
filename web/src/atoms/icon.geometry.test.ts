@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  CENTRAL_BOX,
-  CENTRAL_RING,
-  ICON_NAMES,
-  iconPaths,
-  type IconName,
-} from '@/atoms/icon'
+import { CENTRAL_BOX, CENTRAL_RING, ICON_NAMES, iconPaths, type IconName } from '@/atoms/icon'
 
 const CENTRAL_TWELVE = {
   storefront: [
@@ -49,10 +43,7 @@ const CENTRAL_TWELVE = {
     'M4.473 9.402C4.943 5.603 8.172 2.75 12 2.75C15.828 2.75 19.057 5.603 19.527 9.402L20.222 15.004C20.369 16.197 19.439 17.25 18.237 17.25H5.763C4.561 17.25 3.631 16.197 3.778 15.004L4.473 9.402Z',
     'M16 17.25C16 19.459 14.209 21.25 12 21.25C9.791 21.25 8 19.459 8 17.25',
   ],
-  'arrow-right': [
-    'M14 5.75L20.25 12L14 18.25',
-    'M19.5 12H3.75',
-  ],
+  'arrow-right': ['M14 5.75L20.25 12L14 18.25', 'M19.5 12H3.75'],
   sun: [
     'M11.998 3.291V1.768M5.84 18.159L4.763 19.236M11.998 22.233V20.709M19.233 4.765L18.156 5.842M20.707 12H22.23M18.156 18.159L19.233 19.236M1.766 12H3.289M4.763 4.765L5.84 5.842M15.71 8.288C17.761 10.338 17.761 13.662 15.71 15.712C13.66 17.763 10.336 17.763 8.286 15.712C6.235 13.662 6.235 10.338 8.286 8.288C10.336 6.238 13.66 6.238 15.71 8.288Z',
   ],
@@ -82,7 +73,8 @@ const THEATER_CURTAINS = [
   'M14 22v-1a2 2 0 0 1 2-2h4',
 ]
 
-const CONTRAST_HALF_DISC = 'M12 17.55C15.065 17.55 17.55 15.065 17.55 12C17.55 8.935 15.065 6.45 12 6.45Z'
+const CONTRAST_HALF_DISC =
+  'M12 17.55C15.065 17.55 17.55 15.065 17.55 12C17.55 8.935 15.065 6.45 12 6.45Z'
 
 function numbers(d: string): number[] {
   return [...d.matchAll(/-?\d*\.?\d+(?:e[-+]?\d+)?/gi)].map((match) => Number(match[0]))
@@ -158,7 +150,9 @@ describe('icon geometry (mo-6ro.3 remainder)', () => {
   })
 
   it('redraws theater as masks, not Lucide curtains', () => {
-    const joined = iconPaths('theater').map((path) => path.d).join('\n')
+    const joined = iconPaths('theater')
+      .map((path) => path.d)
+      .join('\n')
     for (const fragment of THEATER_CURTAINS) {
       expect(joined.includes(fragment)).toBe(false)
     }

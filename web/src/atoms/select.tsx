@@ -97,7 +97,10 @@ export function SelectSizer({
   placeholder,
   className,
   ...props
-}: ComponentPropsWithoutRef<'span'> & { items: readonly SelectOption[]; placeholder?: ReactNode }) {
+}: ComponentPropsWithoutRef<'span'> & {
+  items: readonly SelectOption[]
+  placeholder?: ReactNode
+}) {
   return (
     <span
       aria-hidden="true"
@@ -134,7 +137,10 @@ export function SelectContent({
   'aria-labelledby': ariaLabelledBy,
   ...props
 }: Styled<BaseSelect.Popup.Props> &
-  Pick<BaseSelect.Positioner.Props, 'align' | 'alignOffset' | 'side' | 'sideOffset' | 'alignItemWithTrigger'>) {
+  Pick<
+    BaseSelect.Positioner.Props,
+    'align' | 'alignOffset' | 'side' | 'sideOffset' | 'alignItemWithTrigger'
+  >) {
   return (
     <BaseSelect.Portal>
       <BaseSelect.Positioner
@@ -173,7 +179,13 @@ export function SelectContent({
 }
 
 export function SelectGroup({ className, ...props }: Styled<BaseSelect.Group.Props>) {
-  return <BaseSelect.Group data-slot="select-group" className={cn('scroll-my-1 p-1', className)} {...props} />
+  return (
+    <BaseSelect.Group
+      data-slot="select-group"
+      className={cn('scroll-my-1 p-1', className)}
+      {...props}
+    />
+  )
 }
 
 export function SelectLabel({ className, ...props }: Styled<BaseSelect.GroupLabel.Props>) {
@@ -220,11 +232,17 @@ export function SelectSeparator({ className, ...props }: Styled<BaseSelect.Separ
   )
 }
 
-export function SelectScrollUpButton({ className, ...props }: Styled<BaseSelect.ScrollUpArrow.Props>) {
+export function SelectScrollUpButton({
+  className,
+  ...props
+}: Styled<BaseSelect.ScrollUpArrow.Props>) {
   return (
     <BaseSelect.ScrollUpArrow
       data-slot="select-scroll-up-button"
-      className={cn('top-0 z-10 flex w-full cursor-default items-center justify-center bg-popover py-1', className)}
+      className={cn(
+        'top-0 z-10 flex w-full cursor-default items-center justify-center bg-popover py-1',
+        className,
+      )}
       {...props}
     >
       <Icon name="chevron-down" size={16} className="rotate-180" />
@@ -232,11 +250,17 @@ export function SelectScrollUpButton({ className, ...props }: Styled<BaseSelect.
   )
 }
 
-export function SelectScrollDownButton({ className, ...props }: Styled<BaseSelect.ScrollDownArrow.Props>) {
+export function SelectScrollDownButton({
+  className,
+  ...props
+}: Styled<BaseSelect.ScrollDownArrow.Props>) {
   return (
     <BaseSelect.ScrollDownArrow
       data-slot="select-scroll-down-button"
-      className={cn('bottom-0 z-10 flex w-full cursor-default items-center justify-center bg-popover py-1', className)}
+      className={cn(
+        'bottom-0 z-10 flex w-full cursor-default items-center justify-center bg-popover py-1',
+        className,
+      )}
       {...props}
     >
       <Icon name="chevron-down" size={16} />
@@ -283,7 +307,11 @@ export function Select({
       <SelectTrigger aria-label={ariaLabel} variant={variant} className={className}>
         <span className="grid min-w-0">
           <SelectValue placeholder={placeholder} className="col-start-1 row-start-1" />
-          <SelectSizer items={items} placeholder={placeholder} className="col-start-1 row-start-1" />
+          <SelectSizer
+            items={items}
+            placeholder={placeholder}
+            className="col-start-1 row-start-1"
+          />
         </span>
       </SelectTrigger>
       <SelectContent aria-label={ariaLabel}>

@@ -59,7 +59,10 @@ export const Open: Story = {
     await expect(popup).toHaveAttribute('data-side', 'bottom')
     await expect(popup).toHaveAccessibleDescription('Nothing new since you last looked.')
     await expect(getComputedStyle(popup).boxShadow).not.toBe('none')
-    await expect(canvas.getByRole('button', { name: 'Alerts' })).toHaveAttribute('aria-expanded', 'true')
+    await expect(canvas.getByRole('button', { name: 'Alerts' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
     await expect(canvasElement.querySelector('[data-slot="popover-positioner"]')).not.toBeNull()
   },
 }
@@ -108,7 +111,10 @@ export const OnTop: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByRole('dialog', { name: 'Alerts' })).toHaveAttribute('data-side', 'top')
+    await expect(within(canvasElement).getByRole('dialog', { name: 'Alerts' })).toHaveAttribute(
+      'data-side',
+      'top',
+    )
   },
 }
 

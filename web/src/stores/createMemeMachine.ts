@@ -3,12 +3,7 @@ import type { GiphyResult, Meme } from '../lib/types'
 
 export type CreateMemeMode = 'generate' | 'video' | 'url' | 'upload' | 'remix' | 'giphy'
 
-export type CreateMemePhase =
-  | 'chooseMode'
-  | CreateMemeMode
-  | 'submitting'
-  | 'success'
-  | 'error'
+export type CreateMemePhase = 'chooseMode' | CreateMemeMode | 'submitting' | 'success' | 'error'
 
 export type RemixOutput = 'image' | 'video'
 export type VideoRemixStyle = 'edit' | 'restyle'
@@ -94,7 +89,12 @@ export type CreateMemeEvent =
   | { type: 'SET_TAGS'; tags: string }
   | { type: 'SET_PROMPT'; prompt: string }
   | { type: 'SET_URL_DRAFT'; urlDraft: string }
-  | { type: 'SET_IMAGE_URL'; imageUrl: string; edited?: boolean; fileName?: string }
+  | {
+      type: 'SET_IMAGE_URL'
+      imageUrl: string
+      edited?: boolean
+      fileName?: string
+    }
   | { type: 'SET_VIDEO_URL'; videoUrl: string; fileName?: string }
   | { type: 'SET_FILE_NAME'; kind: 'image' | 'video'; name: string }
   | { type: 'SET_REMIX_OUTPUT'; remixOutput: RemixOutput }
@@ -106,7 +106,12 @@ export type CreateMemeEvent =
   | { type: 'REMIX_SOURCE_MISSING' }
   | { type: 'SET_GIPHY_CATEGORIES'; categories: string[] }
   | { type: 'SET_GIPHY_RESULTS'; results: GiphyResult[] }
-  | { type: 'SET_RESOLVED'; imageUrl: string; videoUrl: string | null; source: ResolvedSource | null }
+  | {
+      type: 'SET_RESOLVED'
+      imageUrl: string
+      videoUrl: string | null
+      source: ResolvedSource | null
+    }
   | { type: 'SET_EDITED_FRAME'; imageUrl: string }
   | { type: 'CLEAR_EDITED_FRAME' }
   | { type: 'RESTORE_DRAFT'; draft: Partial<CreateMemeDraft> }
@@ -119,11 +124,26 @@ export type CreateMemeEvent =
   | { type: 'FAIL'; err: string }
 
 const returnToMode = [
-  { guard: ({ context }: { context: CreateMemeContext }) => context.mode === 'generate', target: 'generate' as const },
-  { guard: ({ context }: { context: CreateMemeContext }) => context.mode === 'video', target: 'video' as const },
-  { guard: ({ context }: { context: CreateMemeContext }) => context.mode === 'url', target: 'url' as const },
-  { guard: ({ context }: { context: CreateMemeContext }) => context.mode === 'upload', target: 'upload' as const },
-  { guard: ({ context }: { context: CreateMemeContext }) => context.mode === 'remix', target: 'remix' as const },
+  {
+    guard: ({ context }: { context: CreateMemeContext }) => context.mode === 'generate',
+    target: 'generate' as const,
+  },
+  {
+    guard: ({ context }: { context: CreateMemeContext }) => context.mode === 'video',
+    target: 'video' as const,
+  },
+  {
+    guard: ({ context }: { context: CreateMemeContext }) => context.mode === 'url',
+    target: 'url' as const,
+  },
+  {
+    guard: ({ context }: { context: CreateMemeContext }) => context.mode === 'upload',
+    target: 'upload' as const,
+  },
+  {
+    guard: ({ context }: { context: CreateMemeContext }) => context.mode === 'remix',
+    target: 'remix' as const,
+  },
   { target: 'giphy' as const },
 ]
 
@@ -132,15 +152,26 @@ const settleBusy = { busy: null, busyElapsed: null } as const
 const settleMintOn = {
   DONE: returnToMode.map((branch) => ({
     ...branch,
-    actions: assign<CreateMemeContext, Extract<CreateMemeEvent, { type: 'DONE' }>, undefined, CreateMemeEvent, never>(
-      settleBusy,
-    ),
+    actions: assign<
+      CreateMemeContext,
+      Extract<CreateMemeEvent, { type: 'DONE' }>,
+      undefined,
+      CreateMemeEvent,
+      never
+    >(settleBusy),
   })),
   MINTED: {
     target: 'success' as const,
-    actions: assign<CreateMemeContext, Extract<CreateMemeEvent, { type: 'MINTED' }>, undefined, CreateMemeEvent, never>({
+    actions: assign<
+      CreateMemeContext,
+      Extract<CreateMemeEvent, { type: 'MINTED' }>,
+      undefined,
+      CreateMemeEvent,
+      never
+    >({
       mintedId: ({ event }: { event: Extract<CreateMemeEvent, { type: 'MINTED' }> }) => event.id,
-      shareUrl: ({ event }: { event: Extract<CreateMemeEvent, { type: 'MINTED' }> }) => event.shareUrl,
+      shareUrl: ({ event }: { event: Extract<CreateMemeEvent, { type: 'MINTED' }> }) =>
+        event.shareUrl,
       ...settleBusy,
     }),
   },
@@ -193,7 +224,9 @@ export const createMemeMachine = setup({
     SET_TITLE: { actions: assign({ title: ({ event }) => event.title }) },
     SET_TAGS: { actions: assign({ tags: ({ event }) => event.tags }) },
     SET_PROMPT: { actions: assign({ prompt: ({ event }) => event.prompt }) },
-    SET_URL_DRAFT: { actions: assign({ urlDraft: ({ event }) => event.urlDraft }) },
+    SET_URL_DRAFT: {
+      actions: assign({ urlDraft: ({ event }) => event.urlDraft }),
+    },
     /* new artwork of unknown origin: any carried-over attribution dies with the old image */
     SET_IMAGE_URL: {
       actions: assign({
@@ -219,10 +252,18 @@ export const createMemeMachine = setup({
           event.kind === 'video' ? event.name : context.videoFileName,
       }),
     },
-    SET_REMIX_OUTPUT: { actions: assign({ remixOutput: ({ event }) => event.remixOutput }) },
-    SET_VIDEO_MODE: { actions: assign({ videoMode: ({ event }) => event.videoMode }) },
-    SET_MOTION_PROMPT: { actions: assign({ motionPrompt: ({ event }) => event.motionPrompt }) },
-    SET_GIPHY_QUERY: { actions: assign({ giphyQuery: ({ event }) => event.query }) },
+    SET_REMIX_OUTPUT: {
+      actions: assign({ remixOutput: ({ event }) => event.remixOutput }),
+    },
+    SET_VIDEO_MODE: {
+      actions: assign({ videoMode: ({ event }) => event.videoMode }),
+    },
+    SET_MOTION_PROMPT: {
+      actions: assign({ motionPrompt: ({ event }) => event.motionPrompt }),
+    },
+    SET_GIPHY_QUERY: {
+      actions: assign({ giphyQuery: ({ event }) => event.query }),
+    },
     PICK_GIPHY: {
       actions: assign({
         giphyPick: ({ event }) => event.pick,
@@ -245,7 +286,9 @@ export const createMemeMachine = setup({
       }),
     },
     REMIX_SOURCE_MISSING: { actions: assign({ err: 'source meme not found' }) },
-    SET_GIPHY_CATEGORIES: { actions: assign({ giphyCategories: ({ event }) => event.categories }) },
+    SET_GIPHY_CATEGORIES: {
+      actions: assign({ giphyCategories: ({ event }) => event.categories }),
+    },
     /* zero results is an empty state, not an error: the panel reports it, the notice does not */
     SET_GIPHY_RESULTS: {
       actions: assign({
@@ -309,7 +352,11 @@ export const createMemeMachine = setup({
     ],
     SUBMIT: {
       target: '.submitting',
-      actions: assign({ busy: ({ event }) => event.busy, busyElapsed: null, err: null }),
+      actions: assign({
+        busy: ({ event }) => event.busy,
+        busyElapsed: null,
+        err: null,
+      }),
     },
     BUSY: { actions: assign({ busy: ({ event }) => event.busy }) },
     TICK: { actions: assign({ busyElapsed: ({ event }) => event.elapsed }) },

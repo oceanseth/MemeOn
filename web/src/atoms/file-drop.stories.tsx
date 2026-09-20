@@ -60,7 +60,9 @@ export const Picked: Story = {
  */
 export const Disabled: Story = {
   args: { disabled: true },
-  parameters: { a11y: { config: { rules: [{ id: 'color-contrast', enabled: false }] } } },
+  parameters: {
+    a11y: { config: { rules: [{ id: 'color-contrast', enabled: false }] } },
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByLabelText('Image')).toBeDisabled()

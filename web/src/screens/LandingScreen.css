@@ -25,9 +25,9 @@
     }
   }
 
-  [data-slot='tier-frame-slot'][data-state='loading']::after,
-  [data-slot='hero-card-slot'][data-state='loading']::after {
-    content: '';
+  [data-slot="tier-frame-slot"][data-state="loading"]::after,
+  [data-slot="hero-card-slot"][data-state="loading"]::after {
+    content: "";
     position: absolute;
     inset: 0;
     /* The travelling sheen. A literal on purpose, and the same idiom `atoms/foil.css` documents for
@@ -39,15 +39,15 @@
     animation: landing-tier-shimmer 3.8s ease-in-out infinite;
   }
 
-  [data-slot='tier-frame-slot'][data-state='error'],
-  [data-slot='hero-card-slot'][data-state='error'] {
+  [data-slot="tier-frame-slot"][data-state="error"],
+  [data-slot="hero-card-slot"][data-state="error"] {
     background: color-mix(in oklab, currentColor 18%, var(--color-muted));
     box-shadow: inset 0 0 0 1px color-mix(in oklab, currentColor 45%, transparent);
   }
 
   @media (prefers-reduced-motion: reduce) {
-    [data-slot='tier-frame-slot'][data-state='loading']::after,
-    [data-slot='hero-card-slot'][data-state='loading']::after {
+    [data-slot="tier-frame-slot"][data-state="loading"]::after,
+    [data-slot="hero-card-slot"][data-state="loading"]::after {
       animation: none;
     }
   }

@@ -34,7 +34,9 @@ describe('parsePendingVideo', () => {
     expect(parsePendingVideo('null')).toBe('malformed')
     expect(parsePendingVideo(JSON.stringify({ startedAt: 1 }))).toBe('malformed')
     expect(parsePendingVideo(JSON.stringify({ generationId: '', startedAt: 1 }))).toBe('malformed')
-    expect(parsePendingVideo(JSON.stringify({ generationId: 'g', startedAt: '1' }))).toBe('malformed')
+    expect(parsePendingVideo(JSON.stringify({ generationId: 'g', startedAt: '1' }))).toBe(
+      'malformed',
+    )
     expect(parsePendingVideo(JSON.stringify({ generationId: 'g', startedAt: Number.NaN }))).toBe(
       'malformed',
     )
@@ -102,15 +104,28 @@ describe('pending video storage policy', () => {
     expect(takePendingVideoRestore(null, 1_000)).toEqual({ kind: 'cleared' })
     expect(rawOf()).toBeNull()
 
-    writePendingVideo({ generationId: 'g', startedAt: 50, remixId: 'remix-a', imageUrl: '/a.png' })
+    writePendingVideo({
+      generationId: 'g',
+      startedAt: 50,
+      remixId: 'remix-a',
+      imageUrl: '/a.png',
+    })
     expect(takePendingVideoRestore('remix-b', 50)).toEqual({ kind: 'mismatch' })
     expect(rawOf()).toContain('remix-a')
   })
 
   it('match resume leaves the record', () => {
-    const record = { generationId: 'g', startedAt: 50, remixId: 'remix-a', imageUrl: '/a.png' }
+    const record = {
+      generationId: 'g',
+      startedAt: 50,
+      remixId: 'remix-a',
+      imageUrl: '/a.png',
+    }
     writePendingVideo(record)
-    expect(takePendingVideoRestore('remix-a', 50)).toEqual({ kind: 'resume', record })
+    expect(takePendingVideoRestore('remix-a', 50)).toEqual({
+      kind: 'resume',
+      record,
+    })
     expect(rawOf()).toContain('remix-a')
   })
 
@@ -137,7 +152,10 @@ describe('pending video storage policy', () => {
       imageUrl: '/a.png',
       draft: draftOf({ ...baseCtx, title: 'old' }),
     })
-    const persister = createDraftPersister(() => ({ ...baseCtx, title: 'new title' }))
+    const persister = createDraftPersister(() => ({
+      ...baseCtx,
+      title: 'new title',
+    }))
     persister.schedule()
     expect(JSON.parse(rawOf()!).draft.title).toBe('old')
     vi.advanceTimersByTime(DRAFT_PERSIST_MS)
@@ -162,19 +180,40 @@ describe('pending video storage policy', () => {
 
   it('carries the whole draft in the pending-render record', () => {
     const record = pendingVideoRecord(
-      { ...baseCtx, mode: 'video', title: 'burning office', tags: 'chaos', prompt: 'a capybara', imageUrl: '/thumb.png' },
+      {
+        ...baseCtx,
+        mode: 'video',
+        title: 'burning office',
+        tags: 'chaos',
+        prompt: 'a capybara',
+        imageUrl: '/thumb.png',
+      },
       'render-a',
       1_700_000_000_000,
     )
-    expect(record).toMatchObject({ generationId: 'render-a', imageUrl: '/thumb.png' })
+    expect(record).toMatchObject({
+      generationId: 'render-a',
+      imageUrl: '/thumb.png',
+    })
     expect(record.draft).toEqual(
-      draftOf({ ...baseCtx, mode: 'video', title: 'burning office', tags: 'chaos', prompt: 'a capybara' }),
+      draftOf({
+        ...baseCtx,
+        mode: 'video',
+        title: 'burning office',
+        tags: 'chaos',
+        prompt: 'a capybara',
+      }),
     )
     expect(record.draft?.title).toBe('burning office')
   })
 
   it('clearPendingVideoIfOwned removes only a matching generationId and startedAt', () => {
-    writePendingVideo({ generationId: 'gen-a', startedAt: 100, remixId: null, imageUrl: '/a.png' })
+    writePendingVideo({
+      generationId: 'gen-a',
+      startedAt: 100,
+      remixId: null,
+      imageUrl: '/a.png',
+    })
     clearPendingVideoIfOwned('gen-b', 100)
     expect(rawOf()).not.toBeNull()
     clearPendingVideoIfOwned('gen-a', 100)

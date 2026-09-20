@@ -24,6 +24,9 @@ export async function onGiphySearch(host: CreateMemeActionHost, q: string): Prom
     host.send({ type: 'SET_GIPHY_RESULTS', results: r.results })
     host.settleBusy({ type: 'DONE' })
   } catch (e) {
-    host.settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.giphySearchFailed) })
+    host.settleBusy({
+      type: 'FAIL',
+      err: mintDeskError(e, copy.errors.giphySearchFailed),
+    })
   }
 }

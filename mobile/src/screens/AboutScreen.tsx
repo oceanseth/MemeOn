@@ -24,9 +24,15 @@ export default function AboutScreen() {
   }, [])
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={{ padding: 18, paddingBottom: 48 }}>
+    <ScrollView
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      contentContainerStyle={{ padding: 18, paddingBottom: 48 }}
+    >
       <View style={{ alignItems: 'center', paddingVertical: 18 }}>
-        <Image source={require('../../assets/brand-logo.png')} style={{ width: 110, height: 110 }} />
+        <Image
+          source={require('../../assets/brand-logo.png')}
+          style={{ width: 110, height: 110 }}
+        />
         <Text style={styles.h1}>
           Memes are the new <Text style={{ color: colors.accent }}>trading cards</Text>
         </Text>
@@ -78,13 +84,13 @@ export default function AboutScreen() {
       </Faq>
       <Faq q="How do I invest in a meme?" styles={styles}>
         Memes are split into 100 shares. Holders list shares for braincells; buy from the
-        marketplace or swipe right in the feed to make offers. When your meme sells or tiers up,
-        you get an alert.
+        marketplace or swipe right in the feed to make offers. When your meme sells or tiers up, you
+        get an alert.
       </Faq>
       <Faq q="What's Masky got to do with it?" styles={styles}>
         Login is "Sign in with Masky" — your avatar is your identity, generation runs on your own
-        Masky credits, and your real identity stays protected. Configure an agentic harness on
-        Masky and your avatar can trade, mint, and hunt reshares for you.
+        Masky credits, and your real identity stays protected. Configure an agentic harness on Masky
+        and your avatar can trade, mint, and hunt reshares for you.
       </Faq>
     </ScrollView>
   )
@@ -116,9 +122,26 @@ function createStyles(colors: LegacyColors) {
       textAlign: 'center',
       marginTop: 12,
     },
-    lead: { color: colors.dim, fontSize: 15, lineHeight: 22, textAlign: 'center', marginTop: 10 },
-    h2: { color: colors.text, fontSize: 21, fontWeight: '800', marginTop: 26, marginBottom: 6 },
-    sub: { color: colors.dim, fontSize: 13.5, lineHeight: 20, marginBottom: 12 },
+    lead: {
+      color: colors.dim,
+      fontSize: 15,
+      lineHeight: 22,
+      textAlign: 'center',
+      marginTop: 10,
+    },
+    h2: {
+      color: colors.text,
+      fontSize: 21,
+      fontWeight: '800',
+      marginTop: 26,
+      marginBottom: 6,
+    },
+    sub: {
+      color: colors.dim,
+      fontSize: 13.5,
+      lineHeight: 20,
+      marginBottom: 12,
+    },
     tierWrap: { borderRadius: 14, padding: 2.5, marginBottom: 10 },
     tierInner: {
       backgroundColor: colors.card,
@@ -128,10 +151,25 @@ function createStyles(colors: LegacyColors) {
       gap: 12,
       alignItems: 'center',
     },
-    tierImg: { width: 62, height: 82, borderRadius: 6, backgroundColor: '#0a0c12' },
+    tierImg: {
+      width: 62,
+      height: 82,
+      borderRadius: 6,
+      backgroundColor: '#0a0c12',
+    },
     tierName: { fontWeight: '800', fontSize: 15.5 },
-    tierReq: { color: colors.dim, fontSize: 12, fontWeight: '700', marginTop: 1 },
-    tierHype: { color: colors.dim, fontSize: 12.5, marginTop: 3, lineHeight: 17 },
+    tierReq: {
+      color: colors.dim,
+      fontSize: 12,
+      fontWeight: '700',
+      marginTop: 1,
+    },
+    tierHype: {
+      color: colors.dim,
+      fontSize: 12.5,
+      marginTop: 3,
+      lineHeight: 17,
+    },
     faq: {
       backgroundColor: colors.raised,
       borderColor: colors.border,

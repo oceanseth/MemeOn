@@ -10,7 +10,11 @@ if (!base) throw new Error('usage: seed-term.ts <term> [count]')
 const want = Math.min(Number(process.argv[3]) || 15, 40)
 const terms = [base, `${base} meme`, `${base}y`, `${base} reaction`]
 
-await db.ensureUser({ sub: db.ARCHIVE_SUB, name: 'Meme Archive', picture: null })
+await db.ensureUser({
+  sub: db.ARCHIVE_SUB,
+  name: 'Meme Archive',
+  picture: null,
+})
 let seeded = 0
 for (const term of terms) {
   if (seeded >= want) break

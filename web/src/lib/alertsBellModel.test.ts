@@ -9,7 +9,9 @@ describe('buildAlertsBellModel', () => {
   it('counts unread alerts and supplies the current disclosure state', () => {
     const onOpenChange = vi.fn()
     const model = buildAlertsBellModel({
-      alerts: [unreadSale, unreadFriend, readSale], open: true, onOpenChange,
+      alerts: [unreadSale, unreadFriend, readSale],
+      open: true,
+      onOpenChange,
     })
     expect(model.unreadLabel).toBe('2')
     expect(model.triggerProps['aria-label']).toBe(copy.trigger(2))
@@ -50,14 +52,20 @@ describe('buildAlertsBellModel', () => {
     expect(formatWhen(FIXED_NOW, NOW + 5 * 60_000)).toBe('5 minutes ago')
     expect(formatWhen(FIXED_NOW, NOW + 3 * 3_600_000)).toBe('3 hours ago')
     expect(formatWhen(FIXED_NOW, NOW + 4 * 86_400_000)).toBe(
-      new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(NOW),
+      new Intl.DateTimeFormat(undefined, {
+        month: 'short',
+        day: 'numeric',
+      }).format(NOW),
     )
     expect(formatWhen('not a date')).toBe('')
   })
 
   it('keeps alerts that were unread when the popover opened marked as unread', () => {
     const model = buildAlertsBellModel({
-      alerts: [unreadSale, unreadFriend, readSale].map((alert) => ({ ...alert, read: true })),
+      alerts: [unreadSale, unreadFriend, readSale].map((alert) => ({
+        ...alert,
+        read: true,
+      })),
       open: true,
       onOpenChange: vi.fn(),
       wasUnread: [unreadSale.id, unreadFriend.id],
@@ -71,7 +79,11 @@ describe('buildAlertsBellModel', () => {
       ...unreadSale,
       id: `alert-${index}`,
     }))
-    const model = buildAlertsBellModel({ alerts: flood, open: true, onOpenChange: vi.fn() })
+    const model = buildAlertsBellModel({
+      alerts: flood,
+      open: true,
+      onOpenChange: vi.fn(),
+    })
     expect(model.unreadLabel).toBe('99+')
     expect(model.triggerProps['aria-label']).toBe(copy.trigger(120))
     expect(model.rows).toHaveLength(20)
@@ -79,9 +91,22 @@ describe('buildAlertsBellModel', () => {
   })
 
   it('omits the unread badge for an empty or fully read inbox, and names a failed load', () => {
-    const empty = buildAlertsBellModel({ alerts: [], open: false, onOpenChange: vi.fn() })
-    const read = buildAlertsBellModel({ alerts: [readSale], open: true, onOpenChange: vi.fn() })
-    const offline = buildAlertsBellModel({ alerts: [], open: true, onOpenChange: vi.fn(), failed: true })
+    const empty = buildAlertsBellModel({
+      alerts: [],
+      open: false,
+      onOpenChange: vi.fn(),
+    })
+    const read = buildAlertsBellModel({
+      alerts: [readSale],
+      open: true,
+      onOpenChange: vi.fn(),
+    })
+    const offline = buildAlertsBellModel({
+      alerts: [],
+      open: true,
+      onOpenChange: vi.fn(),
+      failed: true,
+    })
     expect(empty.empty).toBe(true)
     expect(empty.unreadLabel).toBeNull()
     expect(empty.emptyLabel).toBe(copy.empty)

@@ -8,23 +8,19 @@ export interface UseAppShellQuestsArgs {
   refresh: () => void | Promise<void>
 }
 
-export function loadAppShellSteps(
-  send: (event: AppShellEvent) => void,
-  live: () => boolean,
-): void {
+export function loadAppShellSteps(send: (event: AppShellEvent) => void, live: () => boolean): void {
   if (!live()) return
   void apiFetch<{ steps: QuestStep[] }>('/api/onboarding')
-    .then((r) => { if (live()) send({ type: 'SET_STEPS', steps: r.steps }) })
+    .then((r) => {
+      if (live()) send({ type: 'SET_STEPS', steps: r.steps })
+    })
     // steps stay null → quest bar stays hidden
     .catch(() => {})
 }
 
 /** Quest IO: GET /api/onboarding, claim-pack, dismiss. The composer owns the live flag. */
 export function useAppShellQuests({ send, refresh }: UseAppShellQuestsArgs) {
-  const loadSteps = useCallback(
-    (live: () => boolean) => loadAppShellSteps(send, live),
-    [send],
-  )
+  const loadSteps = useCallback((live: () => boolean) => loadAppShellSteps(send, live), [send])
 
   const onClaimPack = useCallback(async () => {
     send({ type: 'CLAIM_START' })

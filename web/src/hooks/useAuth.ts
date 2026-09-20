@@ -15,7 +15,10 @@ export interface AuthModel {
 /** Auth state and actions, subscribed through the actor snapshot projection. */
 export function useAuth(): AuthModel {
   const { auth } = useStores()
-  const subscribe = useCallback((onStoreChange: () => void) => auth.subscribe(onStoreChange), [auth])
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => auth.subscribe(onStoreChange),
+    [auth],
+  )
   const getSnapshot = useCallback(() => auth.getSnapshot(), [auth])
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 

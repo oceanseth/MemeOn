@@ -59,10 +59,12 @@ export type TradesEvent =
   | { type: 'CANCEL_CONFIRM' }
   | { type: 'RETRY' }
 
-export function tradeProposalPayload(context: Pick<
-  TradesContext,
-  'toId' | 'offerMeme' | 'offerShares' | 'offerCoins' | 'askMeme' | 'askShares' | 'askCoins'
->): { toId: string; offer: TradeSide; ask: TradeSide } {
+export function tradeProposalPayload(
+  context: Pick<
+    TradesContext,
+    'toId' | 'offerMeme' | 'offerShares' | 'offerCoins' | 'askMeme' | 'askShares' | 'askCoins'
+  >,
+): { toId: string; offer: TradeSide; ask: TradeSide } {
   return {
     toId: context.toId,
     offer: {
@@ -76,28 +78,54 @@ export function tradeProposalPayload(context: Pick<
   }
 }
 
-const settleAct = { err: null, loadFailed: false, confirming: null, actingTradeId: null, actingAction: null } as const
+const settleAct = {
+  err: null,
+  loadFailed: false,
+  confirming: null,
+  actingTradeId: null,
+  actingAction: null,
+} as const
 
 const restoreAfterAct = [
-  { guard: ({ context }: { context: TradesContext }) => context.showNew, target: 'composing' as const },
-  { guard: ({ context }: { context: TradesContext }) => context.trades.length === 0, target: 'empty' as const },
+  {
+    guard: ({ context }: { context: TradesContext }) => context.showNew,
+    target: 'composing' as const,
+  },
+  {
+    guard: ({ context }: { context: TradesContext }) => context.trades.length === 0,
+    target: 'empty' as const,
+  },
   { target: 'ready' as const },
 ]
 
 const respondOrFailOn = {
   RESPOND: {
     target: 'acting' as const,
-    actions: assign<TradesContext, Extract<TradesEvent, { type: 'RESPOND' }>, undefined, TradesEvent, never>({
+    actions: assign<
+      TradesContext,
+      Extract<TradesEvent, { type: 'RESPOND' }>,
+      undefined,
+      TradesEvent,
+      never
+    >({
       msg: null,
       err: null,
       confirming: null,
-      actingTradeId: ({ event }: { event: Extract<TradesEvent, { type: 'RESPOND' }> }) => event.tradeId,
-      actingAction: ({ event }: { event: Extract<TradesEvent, { type: 'RESPOND' }> }) => event.action,
+      actingTradeId: ({ event }: { event: Extract<TradesEvent, { type: 'RESPOND' }> }) =>
+        event.tradeId,
+      actingAction: ({ event }: { event: Extract<TradesEvent, { type: 'RESPOND' }> }) =>
+        event.action,
     }),
   },
   FAIL: {
     target: 'error' as const,
-    actions: assign<TradesContext, Extract<TradesEvent, { type: 'FAIL' }>, undefined, TradesEvent, never>({
+    actions: assign<
+      TradesContext,
+      Extract<TradesEvent, { type: 'FAIL' }>,
+      undefined,
+      TradesEvent,
+      never
+    >({
       msg: null,
       err: ({ event }: { event: Extract<TradesEvent, { type: 'FAIL' }> }) => event.err,
       loadFailed: false,
@@ -154,15 +182,21 @@ export const tradesMachine = setup({
       actions: assign({ composeErr: ({ event }) => event.err }),
     },
     SET_FRIENDS: {
-      guard: ({ context, event }) => context.showNew && event.composeGeneration === context.composeGeneration,
-      actions: assign({ friends: ({ event }) => event.friends, friendsLoaded: true }),
+      guard: ({ context, event }) =>
+        context.showNew && event.composeGeneration === context.composeGeneration,
+      actions: assign({
+        friends: ({ event }) => event.friends,
+        friendsLoaded: true,
+      }),
     },
     SET_BINDER: {
-      guard: ({ context, event }) => context.showNew && event.composeGeneration === context.composeGeneration,
+      guard: ({ context, event }) =>
+        context.showNew && event.composeGeneration === context.composeGeneration,
       actions: assign({ binder: ({ event }) => event.binder }),
     },
     SET_ALL_MEMES: {
-      guard: ({ context, event }) => context.showNew && event.composeGeneration === context.composeGeneration,
+      guard: ({ context, event }) =>
+        context.showNew && event.composeGeneration === context.composeGeneration,
       actions: assign({ allMemes: ({ event }) => event.memes }),
     },
     SET_TO_ID: { actions: assign({ toId: ({ event }) => event.toId }) },
@@ -176,11 +210,19 @@ export const tradesMachine = setup({
         },
       }),
     },
-    SET_OFFER_SHARES: { actions: assign({ offerShares: ({ event }) => event.shares }) },
-    SET_OFFER_COINS: { actions: assign({ offerCoins: ({ event }) => event.coins }) },
+    SET_OFFER_SHARES: {
+      actions: assign({ offerShares: ({ event }) => event.shares }),
+    },
+    SET_OFFER_COINS: {
+      actions: assign({ offerCoins: ({ event }) => event.coins }),
+    },
     SET_ASK_MEME: { actions: assign({ askMeme: ({ event }) => event.memeId }) },
-    SET_ASK_SHARES: { actions: assign({ askShares: ({ event }) => event.shares }) },
-    SET_ASK_COINS: { actions: assign({ askCoins: ({ event }) => event.coins }) },
+    SET_ASK_SHARES: {
+      actions: assign({ askShares: ({ event }) => event.shares }),
+    },
+    SET_ASK_COINS: {
+      actions: assign({ askCoins: ({ event }) => event.coins }),
+    },
     SET_BUSY: {
       guard: ({ context, event }) =>
         event.composeGeneration === undefined ||
@@ -189,12 +231,18 @@ export const tradesMachine = setup({
     },
     SET_MEME_INFO: {
       actions: assign({
-        memeNames: ({ context, event }) => ({ ...context.memeNames, [event.id]: event.info }),
+        memeNames: ({ context, event }) => ({
+          ...context.memeNames,
+          [event.id]: event.info,
+        }),
       }),
     },
     ASK_CONFIRM: {
       actions: assign({
-        confirming: ({ event }) => ({ tradeId: event.tradeId, action: event.action }),
+        confirming: ({ event }) => ({
+          tradeId: event.tradeId,
+          action: event.action,
+        }),
       }),
     },
     CANCEL_CONFIRM: { actions: assign({ confirming: null }) },
@@ -202,16 +250,28 @@ export const tradesMachine = setup({
       {
         guard: ({ context }) => context.showNew,
         target: '.composing',
-        actions: assign({ trades: ({ event }) => event.trades, err: null, loadFailed: false }),
+        actions: assign({
+          trades: ({ event }) => event.trades,
+          err: null,
+          loadFailed: false,
+        }),
       },
       {
         guard: ({ event }) => event.trades.length === 0,
         target: '.empty',
-        actions: assign({ trades: ({ event }) => event.trades, err: null, loadFailed: false }),
+        actions: assign({
+          trades: ({ event }) => event.trades,
+          err: null,
+          loadFailed: false,
+        }),
       },
       {
         target: '.ready',
-        actions: assign({ trades: ({ event }) => event.trades, err: null, loadFailed: false }),
+        actions: assign({
+          trades: ({ event }) => event.trades,
+          err: null,
+          loadFailed: false,
+        }),
       },
     ],
     OPEN_COMPOSE: {
@@ -257,16 +317,36 @@ export const tradesMachine = setup({
       on: {
         FAIL: {
           target: 'error',
-          actions: assign({ msg: null, err: ({ event }) => event.err, loadFailed: true }),
+          actions: assign({
+            msg: null,
+            err: ({ event }) => event.err,
+            loadFailed: true,
+          }),
         },
       },
     },
     empty: {
       on: {
-        RESPOND: { target: 'acting', actions: assign({ msg: null, err: null, confirming: null, actingTradeId: ({ event }) => event.tradeId, actingAction: ({ event }) => event.action }) },
+        RESPOND: {
+          target: 'acting',
+          actions: assign({
+            msg: null,
+            err: null,
+            confirming: null,
+            actingTradeId: ({ event }) => event.tradeId,
+            actingAction: ({ event }) => event.action,
+          }),
+        },
         FAIL: {
           target: 'error',
-          actions: assign({ msg: null, err: ({ event }) => event.err, loadFailed: false, confirming: null, actingTradeId: null, actingAction: null }),
+          actions: assign({
+            msg: null,
+            err: ({ event }) => event.err,
+            loadFailed: false,
+            confirming: null,
+            actingTradeId: null,
+            actingAction: null,
+          }),
         },
       },
     },
@@ -284,11 +364,21 @@ export const tradesMachine = setup({
       on: {
         DONE: restoreAfterAct.map((branch) => ({
           ...branch,
-          actions: assign({ msg: ({ event }) => event.msg ?? null, ...settleAct }),
+          actions: assign({
+            msg: ({ event }) => event.msg ?? null,
+            ...settleAct,
+          }),
         })),
         FAIL: {
           target: 'error',
-          actions: assign({ msg: null, err: ({ event }) => event.err, loadFailed: false, confirming: null, actingTradeId: null, actingAction: null }),
+          actions: assign({
+            msg: null,
+            err: ({ event }) => event.err,
+            loadFailed: false,
+            confirming: null,
+            actingTradeId: null,
+            actingAction: null,
+          }),
         },
       },
     },
@@ -296,14 +386,30 @@ export const tradesMachine = setup({
       on: {
         RESPOND: {
           target: 'acting',
-          actions: assign({ msg: null, err: null, loadFailed: false, confirming: null, actingTradeId: ({ event }) => event.tradeId, actingAction: ({ event }) => event.action }),
+          actions: assign({
+            msg: null,
+            err: null,
+            loadFailed: false,
+            confirming: null,
+            actingTradeId: ({ event }) => event.tradeId,
+            actingAction: ({ event }) => event.action,
+          }),
         },
         DONE: restoreAfterAct.map((branch) => ({
           ...branch,
-          actions: assign({ msg: ({ event }) => event.msg ?? null, ...settleAct }),
+          actions: assign({
+            msg: ({ event }) => event.msg ?? null,
+            ...settleAct,
+          }),
         })),
         FAIL: {
-          actions: assign({ msg: null, err: ({ event }) => event.err, confirming: null, actingTradeId: null, actingAction: null }),
+          actions: assign({
+            msg: null,
+            err: ({ event }) => event.err,
+            confirming: null,
+            actingTradeId: null,
+            actingAction: null,
+          }),
         },
         RETRY: {
           target: 'loading',

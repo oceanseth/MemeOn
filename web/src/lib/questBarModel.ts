@@ -130,7 +130,11 @@ export function buildQuestBarModel({
           key: step.key,
           label: busy ? copy.claim.busy : copy.claim.label(step.title, step.reward),
           busy,
-          buttonProps: { onClick: onClaimPack, disabled: busy, 'aria-busy': busy },
+          buttonProps: {
+            onClick: onClaimPack,
+            disabled: busy,
+            'aria-busy': busy,
+          },
         }
       }
       const to = step.done ? null : QUEST_LINKS[step.key]
@@ -146,7 +150,7 @@ export function buildQuestBarModel({
       }
     }),
     /* one line of guidance at a time: a failed claim outranks the next step's instructions */
-    hint: claimError ? null : nextStep?.hint ?? null,
+    hint: claimError ? null : (nextStep?.hint ?? null),
     dismissLabel: copy.dismiss,
     dismissProps: { onClick: onDismissSteps, 'aria-label': copy.dismissA11y },
     errorMessage: claimError,

@@ -56,7 +56,8 @@ export function applyCardVisibility(card: HTMLElement, visible: boolean): void {
   const video = videoIn(card)
   if (!video) return
   const intent = manualIntent.get(card)
-  const mayPlay = intent === 'playing' || (intent === undefined && card.dataset.mediaAutoplay === 'on')
+  const mayPlay =
+    intent === 'playing' || (intent === undefined && card.dataset.mediaAutoplay === 'on')
   if (visible && mayPlay) startCard(card, video)
   else stopCard(card, video)
 }

@@ -86,10 +86,8 @@ const noNativeChrome = {
     messages: {
       chromeType:
         'type="{{type}}" hands this control to the browser: its widget, its sizing, and words that never pass through copy/. Use {{fix}}.',
-      element:
-        '<{{tag}}> is painted by the user agent, not by this design system. Use {{fix}}.',
-      dialog:
-        '{{call}} opens the browser\'s own modal, in the browser\'s own words. Use {{fix}}.',
+      element: '<{{tag}}> is painted by the user agent, not by this design system. Use {{fix}}.',
+      dialog: "{{call}} opens the browser's own modal, in the browser's own words. Use {{fix}}.",
     },
   },
   create(context) {
@@ -105,7 +103,11 @@ const noNativeChrome = {
       JSXOpeningElement(node) {
         const tag = node.name.type === 'JSXIdentifier' ? node.name.name : null
         if (tag && UA_ELEMENTS.has(tag)) {
-          context.report({ node, messageId: 'element', data: { tag, fix: UA_ELEMENTS.get(tag) } })
+          context.report({
+            node,
+            messageId: 'element',
+            data: { tag, fix: UA_ELEMENTS.get(tag) },
+          })
         }
         for (const attribute of node.attributes) {
           if (attribute.type !== 'JSXAttribute') continue
@@ -143,7 +145,10 @@ const noNativeChrome = {
           context.report({
             node,
             messageId: 'dialog',
-            data: { call: `${callee.object.name}.${name}()`, fix: UA_DIALOGS.get(name) },
+            data: {
+              call: `${callee.object.name}.${name}()`,
+              fix: UA_DIALOGS.get(name),
+            },
           })
           return
         }
@@ -179,8 +184,7 @@ const noUseEffect = {
     },
     schema: [],
     messages: {
-      used:
-        'Do not {{kind}} `{{name}}`. Derive state, handle the event, use a query, or call `useMountEffect` for mount-only external sync.',
+      used: 'Do not {{kind}} `{{name}}`. Derive state, handle the event, use a query, or call `useMountEffect` for mount-only external sync.',
     },
   },
   create(context) {

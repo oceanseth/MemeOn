@@ -20,8 +20,19 @@
       "error",
       {
         "allow": [
-          "foil-card", "foil-frame", "foil-media", "sheen", "sparkle", "tier-card",
-          "tier-paper", "tier-silver", "tier-holo", "tier-chrome", "tier-gold", "tier-prismatic", "tier-shiny"
+          "foil-card",
+          "foil-frame",
+          "foil-media",
+          "sheen",
+          "sparkle",
+          "tier-card",
+          "tier-paper",
+          "tier-silver",
+          "tier-holo",
+          "tier-chrome",
+          "tier-gold",
+          "tier-prismatic",
+          "tier-shiny"
         ]
       }
     ],
@@ -32,13 +43,22 @@
         "allow": ["layout"],
         "contracts": [
           { "pattern": "^Card$", "allow": ["layout", "gap", "gap-x", "gap-y"] },
-          { "pattern": "^(PageContainer|Empty)$", "allow": ["layout", "spacing"] },
-          { "pattern": "^(Skeleton|SkeletonBlock|SkeletonRow|SkeletonCard)$", "allow": ["layout", "h", "size"] },
+          {
+            "pattern": "^(PageContainer|Empty)$",
+            "allow": ["layout", "spacing"]
+          },
+          {
+            "pattern": "^(Skeleton|SkeletonBlock|SkeletonRow|SkeletonCard)$",
+            "allow": ["layout", "h", "size"]
+          },
           { "pattern": "^Icon$", "allow": ["layout", "color"] }
         ]
       }
     ],
-    "shadcn/no-arbitrary-values": ["error", { "allow": ["layout", "pointer-coarse:text-[length:max(16px,1em)]"] }],
+    "shadcn/no-arbitrary-values": [
+      "error",
+      { "allow": ["layout", "pointer-coarse:text-[length:max(16px,1em)]"] }
+    ],
     "shadcn/require-static-classes": "error"
   },
   "overrides": [
@@ -46,10 +66,19 @@
     // atoms/file-drop.tsx is the picker itself: a real file input is the only thing that opens the
     // OS dialog and the only control a Field label can name, so it stays — invisible, at the full
     // size of the well, with every pixel and every word painted under it.
-    { "files": ["src/atoms/file-drop.tsx"], "rules": { "memeon/no-native-chrome": "off" } },
+    {
+      "files": ["src/atoms/file-drop.tsx"],
+      "rules": { "memeon/no-native-chrome": "off" }
+    },
     // hooks/useMountEffect.ts is the mount-only wrapper: the one place useEffect may be named, so
     // every other file has to say what it means (derive, handle, query, or call this).
-    { "files": ["src/hooks/useMountEffect.ts"], "rules": { "memeon/no-use-effect": "off" } },
-    { "files": ["**/*.stories.tsx"], "rules": { "shadcn/no-inline-styles": "off", "shadcn/no-restyle": "off" } }
+    {
+      "files": ["src/hooks/useMountEffect.ts"],
+      "rules": { "memeon/no-use-effect": "off" }
+    },
+    {
+      "files": ["**/*.stories.tsx"],
+      "rules": { "shadcn/no-inline-styles": "off", "shadcn/no-restyle": "off" }
+    }
   ]
 }

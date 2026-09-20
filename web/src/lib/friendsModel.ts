@@ -10,11 +10,7 @@ import type {
 } from '../stores/friendsMachine'
 import type { FriendEntry, Meme } from './types'
 import { buildConfirmDialogModel, type ConfirmDialogModel } from './confirmDialogModel'
-import {
-  buildGiftDialogModel,
-  clampGiftShares,
-  type GiftDialogModel,
-} from './giftDialogModel'
+import { buildGiftDialogModel, clampGiftShares, type GiftDialogModel } from './giftDialogModel'
 
 export type { FriendsPhase }
 
@@ -22,7 +18,12 @@ const copy = friendsCopy
 
 const REMOVAL_COPY: Record<
   PendingRemoval['kind'],
-  { title: (name: string) => string; body: string; confirm: string; cancel: string }
+  {
+    title: (name: string) => string
+    body: string
+    confirm: string
+    cancel: string
+  }
 > = copy.removeDialog
 
 type RowButtonProps = Pick<
@@ -152,12 +153,19 @@ function statsLine(friend: { collectionSize: number; portfolioValue: number }): 
   return copy.row.stats(friend.collectionSize, friend.portfolioValue)
 }
 
-function busyProps(busySub: string | null, sub: string): Pick<RowButtonProps, 'disabled' | 'aria-busy'> {
+function busyProps(
+  busySub: string | null,
+  sub: string,
+): Pick<RowButtonProps, 'disabled' | 'aria-busy'> {
   return { disabled: busySub === sub, 'aria-busy': busySub === sub }
 }
 
 /** Turns nullable social-avatar data into safe element props before markup sees it. */
-export function buildFriendLinkModel(friend: { sub: string; name: string; picture: string | null }): FriendLinkModel {
+export function buildFriendLinkModel(friend: {
+  sub: string
+  name: string
+  picture: string | null
+}): FriendLinkModel {
   const profileLinkProps = { to: `/u/${encodeURIComponent(friend.sub)}` }
   return {
     sub: friend.sub,
@@ -197,7 +205,12 @@ function projectIncoming(
       ...busyProps(busySub, friend.sub),
     },
     declineButtonProps: {
-      onClick: () => actions.onAskRemove({ sub: friend.sub, name: friend.name, kind: 'decline' }),
+      onClick: () =>
+        actions.onAskRemove({
+          sub: friend.sub,
+          name: friend.name,
+          kind: 'decline',
+        }),
       'aria-label': copy.row.decline(friend.name),
       ...busyProps(busySub, friend.sub),
     },
@@ -233,7 +246,10 @@ function projectAccepted(
     onlineLabel: copy.online.label,
     statsLabel: statsLine(friend),
     tradeLabel: copy.row.trade,
-    tradeLinkProps: { to: '/trade', 'aria-label': copy.row.tradeWith(friend.name) },
+    tradeLinkProps: {
+      to: '/trade',
+      'aria-label': copy.row.tradeWith(friend.name),
+    },
     giftLabel: copy.row.gift,
     giftButtonProps: {
       onClick: () => actions.onGiftOpen({ sub: friend.sub, name: friend.name }),
@@ -242,7 +258,12 @@ function projectAccepted(
     },
     removeLabel: copy.row.remove,
     removeButtonProps: {
-      onClick: () => actions.onAskRemove({ sub: friend.sub, name: friend.name, kind: 'remove' }),
+      onClick: () =>
+        actions.onAskRemove({
+          sub: friend.sub,
+          name: friend.name,
+          kind: 'remove',
+        }),
       'aria-label': copy.row.removeName(friend.name),
       ...busyProps(busySub, friend.sub),
     },
@@ -272,14 +293,19 @@ export function buildFriendsScreenModel(
     pageTitle: copy.pageTitle,
     searchInputProps: {
       value: ctx.query,
-      onChange: ((event) => actions.onQueryChange(event.target.value)) as ChangeEventHandler<HTMLInputElement>,
+      onChange: ((event) =>
+        actions.onQueryChange(event.target.value)) as ChangeEventHandler<HTMLInputElement>,
       'aria-label': copy.search.inputLabel,
       placeholder: copy.search.placeholder,
     },
     msg: ctx.msg,
     err: ctx.actionErr,
     inviteCopied: ctx.copied,
-    inviteLabel: ctx.copied ? copy.invite.copied : ctx.copyFailed ? copy.invite.copyFailed : copy.invite.button,
+    inviteLabel: ctx.copied
+      ? copy.invite.copied
+      : ctx.copyFailed
+        ? copy.invite.copyFailed
+        : copy.invite.button,
     searchResultsHeading: copy.search.resultsHeading,
     addFriendLabel: copy.search.addFriend,
     onlineHeading: copy.online.label,

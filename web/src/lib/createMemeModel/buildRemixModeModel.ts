@@ -55,7 +55,10 @@ export function buildRemixModeModel(
     showRemixPanel: ctx.mode === 'remix',
     remixSource: ctx.remixSource
       ? {
-          imageProps: { src: ctx.remixSource.imageUrl, alt: ctx.remixSource.title },
+          imageProps: {
+            src: ctx.remixSource.imageUrl,
+            alt: ctx.remixSource.title,
+          },
           linkProps: { to: `/m/${ctx.remixSource.id}` },
           title: ctx.remixSource.title,
           creatorName: ctx.remixSource.creatorName,

@@ -4,7 +4,13 @@ import { Tabs, TabsContent, TabsList, type TabsListVariant, TabsTrigger } from '
 
 const onValueChange = fn()
 
-function ProfileTabs({ variant, orientation }: { variant?: TabsListVariant; orientation?: 'horizontal' | 'vertical' }) {
+function ProfileTabs({
+  variant,
+  orientation,
+}: {
+  variant?: TabsListVariant
+  orientation?: 'horizontal' | 'vertical'
+}) {
   return (
     <Tabs defaultValue="created" orientation={orientation} onValueChange={onValueChange}>
       <TabsList aria-label="Profile sections" variant={variant}>
@@ -49,7 +55,10 @@ export const Default: Story = {
     await expect(onValueChange).toHaveBeenCalledWith('binder', expect.anything())
     // Base UI keeps the outgoing panel for an exit frame, so the swap is a wait, not a read
     await waitFor(() => expect(canvas.getByRole('tabpanel')).toHaveTextContent('Cards Lou owns.'))
-    await expect(canvas.getByRole('tab', { name: 'Trades' })).toHaveAttribute('aria-disabled', 'true')
+    await expect(canvas.getByRole('tab', { name: 'Trades' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
   },
 }
 

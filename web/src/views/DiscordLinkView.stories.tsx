@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
-import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
+import {
+  connectedBeforeEach,
+  connectedLoader,
+  ConnectedStory,
+} from '../../.storybook/connected-story'
 import { discordLinkCopy as copy } from '../copy/discordLink'
 import { setDiscordLinkConsent } from '../lib/sessionBus'
 import { DiscordLinkView } from './DiscordLinkView'
@@ -23,22 +27,52 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const ConsentGateUsesLatestTokenOnce: Story = {
-  loaders: [connectedLoader()], beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DiscordLinkView /></ConnectedStory>,
+  loaders: [connectedLoader()],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <DiscordLinkView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     const connect = await canvas.findByRole('button', { name: copy.connect })
-    await expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/discord/link')).toHaveLength(0)
+    await expect(
+      loaded.scenario.requests.filter(
+        (request: { path: string }) => request.path === '/api/discord/link',
+      ),
+    ).toHaveLength(0)
     await userEvent.click(connect)
     await expect(await canvas.findByRole('heading', { name: copy.done })).toBeInTheDocument()
-    await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/discord/link')).toHaveLength(1))
-    await expect(loaded.scenario.requests.find((request: { path: string }) => request.path === '/api/discord/link')?.body).toEqual({ token: 'latest-story-token' })
+    await waitFor(() =>
+      expect(
+        loaded.scenario.requests.filter(
+          (request: { path: string }) => request.path === '/api/discord/link',
+        ),
+      ).toHaveLength(1),
+    )
+    await expect(
+      loaded.scenario.requests.find(
+        (request: { path: string }) => request.path === '/api/discord/link',
+      )?.body,
+    ).toEqual({ token: 'latest-story-token' })
   },
 }
 
 export const LinkExpired: Story = {
-  loaders: [connectedLoader({ failures: { 'POST /api/discord/link': { error: 'link expired', status: 410 } } })], beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DiscordLinkView /></ConnectedStory>,
+  loaders: [
+    connectedLoader({
+      failures: {
+        'POST /api/discord/link': { error: 'link expired', status: 410 },
+      },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <DiscordLinkView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(await canvas.findByRole('button', { name: copy.connect }))
@@ -49,14 +83,29 @@ export const LinkExpired: Story = {
 }
 
 export const UnreachableThenRetried: Story = {
-  loaders: [connectedLoader({ failures: { 'POST /api/discord/link': { error: 'boom', status: 500 } } })], beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DiscordLinkView /></ConnectedStory>,
+  loaders: [
+    connectedLoader({
+      failures: { 'POST /api/discord/link': { error: 'boom', status: 500 } },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <DiscordLinkView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await userEvent.click(await canvas.findByRole('button', { name: copy.connect }))
     await expect(await canvas.findByText(/couldn't reach the linker/)).toBeInTheDocument()
     await userEvent.click(await canvas.findByRole('button', { name: copy.retry }))
-    await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/discord/link')).toHaveLength(2))
+    await waitFor(() =>
+      expect(
+        loaded.scenario.requests.filter(
+          (request: { path: string }) => request.path === '/api/discord/link',
+        ),
+      ).toHaveLength(2),
+    )
   },
 }
 
@@ -67,18 +116,46 @@ export const ConsentAlreadyGivenPostsOnce: Story = {
     setDiscordLinkConsent('1')
     return cleanup
   },
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DiscordLinkView /></ConnectedStory>,
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <DiscordLinkView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('heading', { name: copy.done })).toBeInTheDocument()
-    await waitFor(() => expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/discord/link')).toHaveLength(1))
-    await expect(loaded.scenario.requests.find((request: { path: string }) => request.path === '/api/discord/link')?.body).toEqual({ token: 'latest-story-token' })
+    await waitFor(() =>
+      expect(
+        loaded.scenario.requests.filter(
+          (request: { path: string }) => request.path === '/api/discord/link',
+        ),
+      ).toHaveLength(1),
+    )
+    await expect(
+      loaded.scenario.requests.find(
+        (request: { path: string }) => request.path === '/api/discord/link',
+      )?.body,
+    ).toEqual({ token: 'latest-story-token' })
   },
 }
 
 export const WorkingThenDone: Story = {
-  loaders: [connectedLoader({ overrides: { 'POST /api/discord/link': async (_request, scenario) => { await scenario.waitForRelease('discord-link'); return { body: {} } } } })], beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DiscordLinkView /></ConnectedStory>,
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'POST /api/discord/link': async (_request, scenario) => {
+          await scenario.waitForRelease('discord-link')
+          return { body: {} }
+        },
+      },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <DiscordLinkView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await userEvent.click(await canvas.findByRole('button', { name: copy.connect }))

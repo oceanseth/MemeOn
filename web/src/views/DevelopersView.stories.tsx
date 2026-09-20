@@ -1,7 +1,11 @@
 import type { Meta, StoryContext, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
-import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
+import {
+  connectedBeforeEach,
+  connectedLoader,
+  ConnectedStory,
+} from '../../.storybook/connected-story'
 import { developersCopy as copy } from '../copy/developers'
 import { DevelopersView } from './DevelopersView'
 
@@ -29,22 +33,37 @@ async function denyClipboard(context: StoryContext) {
   const original = navigator.clipboard
   Object.defineProperty(navigator, 'clipboard', {
     configurable: true,
-    value: { writeText: async () => { throw new Error('denied') } },
+    value: {
+      writeText: async () => {
+        throw new Error('denied')
+      },
+    },
   })
   return () => {
-    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: original })
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: original,
+    })
     restoreScenario()
   }
 }
 
 export const CreateCopyAndRevoke: Story = {
-  loaders: [connectedLoader()], beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DevelopersView /></ConnectedStory>,
+  loaders: [connectedLoader()],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <DevelopersView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByText('my-trading-bot')).toBeInTheDocument()
     // the primary action is reachable without leaving the keyboard
-    await userEvent.type(canvas.getByRole('textbox', { name: 'API key label' }), 'story client{Enter}')
+    await userEvent.type(
+      canvas.getByRole('textbox', { name: 'API key label' }),
+      'story client{Enter}',
+    )
     await expect(await canvas.findByText(loaded.scenario.freshKey)).toBeInTheDocument()
     await userEvent.click(canvas.getByRole('button', copyButton))
     // the outcome is the caption beside the button; the label itself never changes
@@ -62,8 +81,22 @@ export const CreateCopyAndRevoke: Story = {
 }
 
 export const CreateFailure: Story = {
-  loaders: [connectedLoader({ failures: { 'POST /api/developers/keys': { error: 'key quota reached', status: 409 } } })], beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DevelopersView /></ConnectedStory>,
+  loaders: [
+    connectedLoader({
+      failures: {
+        'POST /api/developers/keys': {
+          error: 'key quota reached',
+          status: 409,
+        },
+      },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <DevelopersView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await userEvent.click(await canvas.findByRole('button', { name: 'Create key' }))
@@ -76,8 +109,27 @@ export const CreateFailure: Story = {
 
 /** A slow POST must not mint a second key the user can never see. */
 export const DoubleSubmitMintsOneKey: Story = {
-  loaders: [connectedLoader({ overrides: { 'POST /api/developers/keys': async (_request, scenario) => { await scenario.waitForRelease('create'); scenario.keys.push({ prefix: 'mk_story', label: 'held', createdAt: '2026-09-08T00:00:00.000Z' }); return { body: { key: scenario.freshKey } } } } })], beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DevelopersView /></ConnectedStory>,
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'POST /api/developers/keys': async (_request, scenario) => {
+          await scenario.waitForRelease('create')
+          scenario.keys.push({
+            prefix: 'mk_story',
+            label: 'held',
+            createdAt: '2026-09-08T00:00:00.000Z',
+          })
+          return { body: { key: scenario.freshKey } }
+        },
+      },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <DevelopersView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     const generate = await canvas.findByRole('button', { name: /Creat/ })
@@ -86,21 +138,53 @@ export const DoubleSubmitMintsOneKey: Story = {
     await userEvent.click(canvas.getByRole('button', { name: 'Creating…' }))
     loaded.scenario.release('create')
     await expect(await canvas.findByText(loaded.scenario.freshKey)).toBeInTheDocument()
-    const posts = loaded.scenario.requests.filter((entry: { method: string; path: string }) => entry.method === 'POST' && entry.path === '/api/developers/keys')
+    const posts = loaded.scenario.requests.filter(
+      (entry: { method: string; path: string }) =>
+        entry.method === 'POST' && entry.path === '/api/developers/keys',
+    )
     await expect(posts).toHaveLength(1)
   },
 }
 
 export const LoadingThenReady: Story = {
-  loaders: [connectedLoader({ overrides: { 'GET /api/developers/keys': async (_request, scenario) => { await scenario.waitForRelease('keys'); return { body: { keys: scenario.keys } } } } })], beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DevelopersView /></ConnectedStory>,
-  play: async ({ canvasElement, loaded }) => { const canvas = within(canvasElement); await waitFor(() => expect(canvasElement.querySelector('[data-slot=spinner]')).not.toBeNull()); await expect(canvas.getByText('Loading your API keys…')).toBeInTheDocument(); loaded.scenario.release('keys'); await expect(await canvas.findByText('my-trading-bot')).toBeInTheDocument() },
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'GET /api/developers/keys': async (_request, scenario) => {
+          await scenario.waitForRelease('keys')
+          return { body: { keys: scenario.keys } }
+        },
+      },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <DevelopersView />
+    </ConnectedStory>
+  ),
+  play: async ({ canvasElement, loaded }) => {
+    const canvas = within(canvasElement)
+    await waitFor(() => expect(canvasElement.querySelector('[data-slot=spinner]')).not.toBeNull())
+    await expect(canvas.getByText('Loading your API keys…')).toBeInTheDocument()
+    loaded.scenario.release('keys')
+    await expect(await canvas.findByText('my-trading-bot')).toBeInTheDocument()
+  },
 }
 
 /** A failed list fetch is an unknown list, never an empty account. */
 export const KeyListFailureShowsRetry: Story = {
-  loaders: [connectedLoader({ failures: { 'GET /api/developers/keys': { error: 'offline' } } })], beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DevelopersView /></ConnectedStory>,
+  loaders: [
+    connectedLoader({
+      failures: { 'GET /api/developers/keys': { error: 'offline' } },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <DevelopersView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('alert')).toHaveTextContent('your keys are still active')
@@ -113,8 +197,13 @@ export const KeyListFailureShowsRetry: Story = {
 
 /** A denied clipboard leaves the one-time secret on screen and selectable. */
 export const CopyDenied: Story = {
-  loaders: [connectedLoader()], beforeEach: denyClipboard,
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DevelopersView /></ConnectedStory>,
+  loaders: [connectedLoader()],
+  beforeEach: denyClipboard,
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <DevelopersView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await userEvent.click(await canvas.findByRole('button', { name: 'Create key' }))
@@ -127,14 +216,31 @@ export const CopyDenied: Story = {
 
 /** A failed DELETE keeps the dialog open with the reason inside it; the key is still listed. */
 export const RevokeFailureKeepsDialogOpen: Story = {
-  loaders: [connectedLoader({ failures: { 'DELETE /api/developers/keys/mo_live_abcd': { error: 'gone wrong' } } })], beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><DevelopersView /></ConnectedStory>,
+  loaders: [
+    connectedLoader({
+      failures: {
+        'DELETE /api/developers/keys/mo_live_abcd': { error: 'gone wrong' },
+      },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <DevelopersView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await userEvent.click(await canvas.findByRole('button', { name: 'Revoke API key my-trading-bot' }))
+    await userEvent.click(
+      await canvas.findByRole('button', {
+        name: 'Revoke API key my-trading-bot',
+      }),
+    )
     const dialog = await canvas.findByRole('alertdialog')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Revoke it' }))
-    await expect(await within(dialog).findByRole('alert')).toHaveTextContent('Couldn’t revoke my-trading-bot')
+    await expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+      'Couldn’t revoke my-trading-bot',
+    )
     await expect(dialog).toBeVisible()
     await expect(canvas.getByText('my-trading-bot')).toBeInTheDocument()
   },

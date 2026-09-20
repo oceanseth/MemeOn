@@ -118,8 +118,7 @@ export function nextStepFor(err: string | null): string | null {
 
 export function deriveMintState(ctx: CreateMemeContext, isBusy: boolean) {
   const needsVideo = ctx.mode === 'video' || (ctx.mode === 'remix' && ctx.remixOutput === 'video')
-  const canMint =
-    !!ctx.title.trim() && !!ctx.imageUrl && (!needsVideo || !!ctx.videoUrl) && !isBusy
+  const canMint = !!ctx.title.trim() && !!ctx.imageUrl && (!needsVideo || !!ctx.videoUrl) && !isBusy
   const mintHint =
     [
       !ctx.title.trim() && copy.preview.mintHint.title,

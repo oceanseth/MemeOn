@@ -73,7 +73,11 @@ async function raster(name: IconName, size: number, theme: 'light' | 'dark'): Pr
     if (el.getAttribute('fill') === 'currentColor') el.setAttribute('fill', fg)
     if (el.getAttribute('stroke') === 'currentColor') el.setAttribute('stroke', fg)
   }
-  const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml;charset=utf-8' }))
+  const url = URL.createObjectURL(
+    new Blob([new XMLSerializer().serializeToString(clone)], {
+      type: 'image/svg+xml;charset=utf-8',
+    }),
+  )
   try {
     const img = new Image()
     img.src = url
@@ -112,7 +116,8 @@ async function raster(name: IconName, size: number, theme: 'light' | 'dark'): Pr
       bboxW: (maxX - minX + 1) / DPR,
       bboxH: (maxY - minY + 1) / DPR,
       ratio: count / (canvas.width * canvas.height),
-      bboxAreaRatio: count === 0 ? 0 : ((maxX - minX + 1) * (maxY - minY + 1)) / (canvas.width * canvas.height),
+      bboxAreaRatio:
+        count === 0 ? 0 : ((maxX - minX + 1) * (maxY - minY + 1)) / (canvas.width * canvas.height),
     }
   } finally {
     URL.revokeObjectURL(url)
@@ -121,7 +126,12 @@ async function raster(name: IconName, size: number, theme: 'light' | 'dark'): Pr
   }
 }
 
-function sample(rastered: Raster, cssPx: number, vbX: number, vbY: number): [number, number, number] {
+function sample(
+  rastered: Raster,
+  cssPx: number,
+  vbX: number,
+  vbY: number,
+): [number, number, number] {
   const x = Math.round((vbX / 24) * cssPx * DPR)
   const y = Math.round((vbY / 24) * cssPx * DPR)
   const i = (y * rastered.width + x) * 4
@@ -165,9 +175,14 @@ describe('icon remainder family runtime (mo-6ro.3)', () => {
     for (const theme of GROUNDS) {
       for (const name of ['theater', 'satellite', 'handshake'] as const) {
         const drawn = await raster(name, 16, theme)
-        expect(drawn.ratio, `${theme} ${name} ink ratio ${drawn.ratio}`).toBeGreaterThanOrEqual(0.12)
-        expect(drawn.ratio, `${theme} ${name} ink ratio ${drawn.ratio}`).toBeLessThanOrEqual(0.50)
-        expect(drawn.bboxAreaRatio, `${theme} ${name} bbox ${drawn.bboxW.toFixed(2)}x${drawn.bboxH.toFixed(2)} area ${drawn.bboxAreaRatio}`).toBeGreaterThanOrEqual(0.50)
+        expect(drawn.ratio, `${theme} ${name} ink ratio ${drawn.ratio}`).toBeGreaterThanOrEqual(
+          0.12,
+        )
+        expect(drawn.ratio, `${theme} ${name} ink ratio ${drawn.ratio}`).toBeLessThanOrEqual(0.5)
+        expect(
+          drawn.bboxAreaRatio,
+          `${theme} ${name} bbox ${drawn.bboxW.toFixed(2)}x${drawn.bboxH.toFixed(2)} area ${drawn.bboxAreaRatio}`,
+        ).toBeGreaterThanOrEqual(0.5)
       }
     }
   })

@@ -27,9 +27,11 @@ export type RouteFamily =
   | 'discord'
 
 export function routeFamily(pathname: string, sub: string | null): RouteFamily | null {
-  if (pathname === '/marketplace' || pathname.startsWith('/m/') || pathname.startsWith('/meme/')) return 'marketplace'
+  if (pathname === '/marketplace' || pathname.startsWith('/m/') || pathname.startsWith('/meme/'))
+    return 'marketplace'
   if (pathname === '/binder/new') return 'mint'
-  if (pathname === '/binder' || (sub !== null && pathname === `/binder/${encodeURIComponent(sub)}`)) return 'binder'
+  if (pathname === '/binder' || (sub !== null && pathname === `/binder/${encodeURIComponent(sub)}`))
+    return 'binder'
   if (pathname === '/friends') return 'friends'
   if (pathname === '/trade') return 'trade'
   if (pathname === '/leaderboard') return 'leaderboard'
@@ -107,9 +109,24 @@ const NAV_ITEMS: {
   label: string
   hiddenUntil2xl?: boolean
 }[] = [
-  { slot: 'marketplace', families: ['marketplace'], to: '/marketplace', label: copy.nav.marketplace },
-  { slot: 'binder', families: ['binder', 'mint'], to: '/binder', label: copy.nav.binder },
-  { slot: 'friends', families: ['friends'], to: '/friends', label: copy.nav.friends },
+  {
+    slot: 'marketplace',
+    families: ['marketplace'],
+    to: '/marketplace',
+    label: copy.nav.marketplace,
+  },
+  {
+    slot: 'binder',
+    families: ['binder', 'mint'],
+    to: '/binder',
+    label: copy.nav.binder,
+  },
+  {
+    slot: 'friends',
+    families: ['friends'],
+    to: '/friends',
+    label: copy.nav.friends,
+  },
   { slot: 'trade', families: ['trade'], to: '/trade', label: copy.nav.trade },
   {
     slot: 'leaderboard',
@@ -127,7 +144,11 @@ const NAV_ITEMS: {
  * reusing it would collide).
  */
 const MENU_ROUTES: { slot: RouteFamily; label: string; to: string }[] = [
-  { slot: 'leaderboard', label: copy.accountMenu.leaderboard, to: '/leaderboard' },
+  {
+    slot: 'leaderboard',
+    label: copy.accountMenu.leaderboard,
+    to: '/leaderboard',
+  },
   { slot: 'settings', label: copy.accountMenu.settings, to: '/settings' },
   { slot: 'developers', label: copy.accountMenu.developers, to: '/developers' },
   { slot: 'discord', label: copy.accountMenu.discord, to: '/discord' },
@@ -136,11 +157,26 @@ const MENU_ROUTES: { slot: RouteFamily; label: string; to: string }[] = [
 const MINT_TO = '/binder/new'
 
 /** Phone tab bar; the labels are the 62px abbreviations. */
-const TAB_ITEMS: { family: GlyphSlot; to: string; label: string; primary: boolean }[] = [
-  { family: 'marketplace', to: '/marketplace', label: copy.tabs.market, primary: false },
+const TAB_ITEMS: {
+  family: GlyphSlot
+  to: string
+  label: string
+  primary: boolean
+}[] = [
+  {
+    family: 'marketplace',
+    to: '/marketplace',
+    label: copy.tabs.market,
+    primary: false,
+  },
   { family: 'binder', to: '/binder', label: copy.tabs.binder, primary: false },
   { family: 'mint', to: MINT_TO, label: copy.tabs.mint, primary: true },
-  { family: 'friends', to: '/friends', label: copy.tabs.friends, primary: false },
+  {
+    family: 'friends',
+    to: '/friends',
+    label: copy.tabs.friends,
+    primary: false,
+  },
   { family: 'trade', to: '/trade', label: copy.tabs.trade, primary: false },
 ]
 
@@ -204,11 +240,12 @@ export function buildAppShellScreenModel({
   /** The live hook's click handler per route; absent, a chrome link is a plain router link. */
   onNavigate?: ((to: string) => MouseEventHandler<HTMLAnchorElement>) | undefined
 }): AppShellScreenModel {
-  const steps = context.questDismissed ? [] : context.steps ?? []
+  const steps = context.questDismissed ? [] : (context.steps ?? [])
   const showQuest = (!!user && !allDone(user) && steps.length > 0) || !!context.packMemes
   const family = routeFamily(pathname, user?.sub ?? null)
   const profileTo = user ? `/u/${encodeURIComponent(user.sub)}` : '/'
-  const link = (to: string): ShellLinkProps => (onNavigate ? { to, onClick: onNavigate(to) } : { to })
+  const link = (to: string): ShellLinkProps =>
+    onNavigate ? { to, onClick: onNavigate(to) } : { to }
   const themeModel = buildThemeControlModel({
     value: theme.value,
     onChange: theme.onChange,
@@ -248,8 +285,17 @@ export function buildAppShellScreenModel({
           /* your own profile, then the slots off the same map the bar and the tabs read, so a
              route wears one glyph wherever in the chrome it is reachable from */
           items: [
-            { key: 'profile', label: copy.accountMenu.profile, to: profileTo, icon: 'user' },
-            ...MENU_ROUTES.map(({ slot, ...route }) => ({ key: slot, ...route, icon: CHROME_ICONS[slot] })),
+            {
+              key: 'profile',
+              label: copy.accountMenu.profile,
+              to: profileTo,
+              icon: 'user',
+            },
+            ...MENU_ROUTES.map(({ slot, ...route }) => ({
+              key: slot,
+              ...route,
+              icon: CHROME_ICONS[slot],
+            })),
           ],
           theme: {
             label: copy.accountMenu.theme,
@@ -272,15 +318,17 @@ export function buildAppShellScreenModel({
       wasUnread: context.wasUnread,
       failed: context.alertsError,
     }),
-    questBar: showQuest ? buildQuestBarModel({
-      steps,
-      packMemes: context.packMemes,
-      packReward: context.packReward,
-      busy: context.packBusy,
-      claimError: context.claimError,
-      onClaimPack,
-      onDismissPack,
-      onDismissSteps: onDismissQuests,
-    }) : null,
+    questBar: showQuest
+      ? buildQuestBarModel({
+          steps,
+          packMemes: context.packMemes,
+          packReward: context.packReward,
+          busy: context.packBusy,
+          claimError: context.claimError,
+          onClaimPack,
+          onDismissPack,
+          onDismissSteps: onDismissQuests,
+        })
+      : null,
   }
 }

@@ -54,7 +54,10 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
     /* non-json */
   }
   if (!res.ok) {
-    throw new ApiError(res.status, (data as { error?: string }).error ?? `request failed (${res.status})`)
+    throw new ApiError(
+      res.status,
+      (data as { error?: string }).error ?? `request failed (${res.status})`,
+    )
   }
   return data as T
 }

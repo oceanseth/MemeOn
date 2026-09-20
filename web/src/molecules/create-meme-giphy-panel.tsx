@@ -10,7 +10,8 @@ import { cn } from '../lib/cn'
 import type { CreateMemeScreenModel } from '../lib/createMemeModel'
 
 const COST_NOTE = 'text-sm font-semibold text-muted-foreground'
-const GIPHY_MARK = 'text-xs font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase'
+const GIPHY_MARK =
+  'text-xs font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase'
 
 export type CreateMemeGiphyPanelProps = Pick<
   CreateMemeScreenModel,
@@ -119,11 +120,7 @@ export function CreateMemeGiphyPanel({
           </Hint>
           <Field>
             <FieldLabel>{giphyOptionalPromptLabel}</FieldLabel>
-            <Textarea
-              {...giphyPromptTextareaProps}
-              rows={2}
-              placeholder={giphyRemixPlaceholder}
-            />
+            <Textarea {...giphyPromptTextareaProps} rows={2} placeholder={giphyRemixPlaceholder} />
           </Field>
           {showGiphyRemixButton && (
             <Toolbar className="mt-1">

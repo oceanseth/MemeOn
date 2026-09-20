@@ -28,13 +28,17 @@ function counter() {
       resource: fromCallback(({ sendBack }) => {
         lifecycle.starts += 1
         sendBack({ type: 'ADD' })
-        return () => { lifecycle.stops += 1 }
+        return () => {
+          lifecycle.stops += 1
+        }
       }),
     },
   }).createMachine({
     context: { count: 0 },
     invoke: { src: 'resource' },
-    on: { ADD: { actions: assign({ count: ({ context }) => context.count + 1 }) } },
+    on: {
+      ADD: { actions: assign({ count: ({ context }) => context.count + 1 }) },
+    },
   })
   return { machine, lifecycle }
 }
@@ -47,12 +51,23 @@ it('catches startup events, notifies every consumer, and isolates independent mo
     actors.set(id, actor)
     return <output data-testid={id}>{snapshot.context.count}</output>
   }
-  await act(() => root.render(<><Probe id="a" /><Probe id="b" /><Probe id="plain" /></>))
+  await act(() =>
+    root.render(
+      <>
+        <Probe id="a" />
+        <Probe id="b" />
+        <Probe id="plain" />
+      </>,
+    ),
+  )
   expect(host.querySelector('[data-testid=a]')?.textContent).toBe('1')
   expect(host.querySelector('[data-testid=b]')?.textContent).toBe('1')
   expect(host.querySelector('[data-testid=plain]')?.textContent).toBe('1')
   expect(actors.get('a')).not.toBe(actors.get('b'))
-  await act(() => { actors.get('a')!.send({ type: 'ADD' }); actors.get('plain')!.send({ type: 'ADD' }) })
+  await act(() => {
+    actors.get('a')!.send({ type: 'ADD' })
+    actors.get('plain')!.send({ type: 'ADD' })
+  })
   expect(host.querySelector('[data-testid=a]')?.textContent).toBe('2')
   expect(host.querySelector('[data-testid=b]')?.textContent).toBe('1')
   expect(host.querySelector('[data-testid=plain]')?.textContent).toBe('2')
@@ -65,9 +80,18 @@ it('cleans subscriptions and invoked resources through StrictMode and keyed rout
   function Probe({ route }: { route: string }) {
     const [snapshot, , actor] = useProjectedActor(machine)
     actors.set(route, actor)
-    return <output>{route}:{snapshot.context.count}</output>
+    return (
+      <output>
+        {route}:{snapshot.context.count}
+      </output>
+    )
   }
-  const render = (route: string) => root.render(<StrictMode><Probe key={route} route={route} /></StrictMode>)
+  const render = (route: string) =>
+    root.render(
+      <StrictMode>
+        <Probe key={route} route={route} />
+      </StrictMode>,
+    )
   await act(() => render('a'))
   expect(lifecycle.starts - lifecycle.stops).toBe(1)
   const first = actors.get('a')!
@@ -82,7 +106,10 @@ it('cleans subscriptions and invoked resources through StrictMode and keyed rout
   await act(() => root.unmount())
   expect(lifecycle.stops).toBe(lifecycle.starts)
   const starts = lifecycle.starts
-  await act(() => { first.send({ type: 'ADD' }); actors.get('b')!.send({ type: 'ADD' }) })
+  await act(() => {
+    first.send({ type: 'ADD' })
+    actors.get('b')!.send({ type: 'ADD' })
+  })
   expect(lifecycle.starts).toBe(starts)
   expect(lifecycle.stops).toBe(lifecycle.starts)
 })
@@ -94,7 +121,11 @@ it('starts no resource or subscription during an abandoned render', () => {
     const [snapshot] = useProjectedActor(machine)
     return <output>{snapshot.context.count}</output>
   }
-  renderToString(<StrictMode><Probe /></StrictMode>)
+  renderToString(
+    <StrictMode>
+      <Probe />
+    </StrictMode>,
+  )
   expect(lifecycle).toEqual({ starts: 0, stops: 0 })
   expect(subscribe).not.toHaveBeenCalled()
 })

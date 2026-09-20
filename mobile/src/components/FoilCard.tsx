@@ -63,11 +63,19 @@ export function Sheen({ width = 600 }: { width?: number }) {
       -1,
     )
   }, [width, x])
-  const style = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }, { rotate: '18deg' }] }))
+  const style = useAnimatedStyle(() => ({
+    transform: [{ translateX: x.value }, { rotate: '18deg' }],
+  }))
   return (
     <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill as object, style]}>
       <LinearGradient
-        colors={['transparent', 'rgba(255,255,255,0.16)', 'rgba(255,255,255,0.34)', 'rgba(255,255,255,0.16)', 'transparent']}
+        colors={[
+          'transparent',
+          'rgba(255,255,255,0.16)',
+          'rgba(255,255,255,0.34)',
+          'rgba(255,255,255,0.16)',
+          'transparent',
+        ]}
         start={{ x: 0, y: 0.5 }}
         end={{ x: 1, y: 0.5 }}
         style={{ width: 130, height: '160%', marginTop: '-20%' }}

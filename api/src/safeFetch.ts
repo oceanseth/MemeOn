@@ -5,8 +5,7 @@
 import { lookup } from 'node:dns/promises'
 import { isIP } from 'node:net'
 
-const PRIVATE_HOST_RE =
-  /^(localhost|.*\.local|.*\.internal|.*\.localhost)$/i
+const PRIVATE_HOST_RE = /^(localhost|.*\.local|.*\.internal|.*\.localhost)$/i
 
 const MAX_REDIRECTS = 5
 const DEFAULT_MAX_BYTES = 5 * 1024 * 1024 // 5 MiB
@@ -101,7 +100,10 @@ export type SafeFetchResult = {
  * Fetch a URL with redirect re-validation and a hard body size cap.
  * Does not follow redirects automatically — each Location is checked again.
  */
-export async function safeFetch(raw: string, opts: SafeFetchOptions = {}): Promise<SafeFetchResult> {
+export async function safeFetch(
+  raw: string,
+  opts: SafeFetchOptions = {},
+): Promise<SafeFetchResult> {
   const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS
   const maxBytes = opts.maxBytes ?? DEFAULT_MAX_BYTES
   let current = await assertPublicUrl(raw)

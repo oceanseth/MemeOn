@@ -17,5 +17,10 @@ export async function portfolioSummary(userId: string, opts: { priceAll?: boolea
     const m = byId.get(p.memeId)
     if (m) value += (p.shares / 100) * memeValue(m.reshares)
   }
-  return { positions, memes, value: Math.round(value), collectionSize: positions.length }
+  return {
+    positions,
+    memes,
+    value: Math.round(value),
+    collectionSize: positions.length,
+  }
 }

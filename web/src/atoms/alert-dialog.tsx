@@ -18,7 +18,10 @@ export function AlertDialogPortal(props: AlertDialogPrimitive.Portal.Props) {
   return <AlertDialogPrimitive.Portal data-slot="alert-dialog-portal" {...props} />
 }
 
-export function AlertDialogOverlay({ className, ...props }: Styled<AlertDialogPrimitive.Backdrop.Props>) {
+export function AlertDialogOverlay({
+  className,
+  ...props
+}: Styled<AlertDialogPrimitive.Backdrop.Props>) {
   return (
     <AlertDialogPrimitive.Backdrop
       data-slot="alert-dialog-overlay"
@@ -75,7 +78,14 @@ export interface AlertDialogContentProps
 }
 
 /** Portal + overlay + popup. Base UI sets `role="alertdialog"`; `aria-modal` is added because it does not. */
-export function AlertDialogContent({ className, size, variant, sheet, container, ...props }: AlertDialogContentProps) {
+export function AlertDialogContent({
+  className,
+  size,
+  variant,
+  sheet,
+  container,
+  ...props
+}: AlertDialogContentProps) {
   return (
     <AlertDialogPortal container={container} className="contents">
       <AlertDialogOverlay />
@@ -92,7 +102,13 @@ export function AlertDialogContent({ className, size, variant, sheet, container,
 }
 
 export function AlertDialogHeader({ className, ...props }: ComponentProps<'div'>) {
-  return <div data-slot="alert-dialog-header" className={cn('flex flex-col gap-1.5 text-left', className)} {...props} />
+  return (
+    <div
+      data-slot="alert-dialog-header"
+      className={cn('flex flex-col gap-1.5 text-left', className)}
+      {...props}
+    />
+  )
 }
 
 export function AlertDialogFooter({ className, ...props }: ComponentProps<'div'>) {
@@ -110,13 +126,19 @@ export function AlertDialogMedia({ className, ...props }: ComponentProps<'div'>)
   return (
     <div
       data-slot="alert-dialog-media"
-      className={cn('inline-flex size-10 shrink-0 items-center justify-center rounded-md material-pressed text-xl leading-none', className)}
+      className={cn(
+        'inline-flex size-10 shrink-0 items-center justify-center rounded-md material-pressed text-xl leading-none',
+        className,
+      )}
       {...props}
     />
   )
 }
 
-export function AlertDialogTitle({ className, ...props }: Styled<AlertDialogPrimitive.Title.Props>) {
+export function AlertDialogTitle({
+  className,
+  ...props
+}: Styled<AlertDialogPrimitive.Title.Props>) {
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
@@ -126,7 +148,10 @@ export function AlertDialogTitle({ className, ...props }: Styled<AlertDialogPrim
   )
 }
 
-export function AlertDialogDescription({ className, ...props }: Styled<AlertDialogPrimitive.Description.Props>) {
+export function AlertDialogDescription({
+  className,
+  ...props
+}: Styled<AlertDialogPrimitive.Description.Props>) {
   return (
     <AlertDialogPrimitive.Description
       data-slot="alert-dialog-description"
@@ -141,10 +166,16 @@ export function AlertDialogAction(props: ButtonProps) {
   return <Button data-slot="alert-dialog-action" {...props} />
 }
 
-export type AlertDialogCancelProps = Styled<AlertDialogPrimitive.Close.Props> & Pick<ButtonProps, 'variant' | 'size'>
+export type AlertDialogCancelProps = Styled<AlertDialogPrimitive.Close.Props> &
+  Pick<ButtonProps, 'variant' | 'size'>
 
 /** The way out: Base UI's Close rendered as the Button pill (the registry form). */
-export function AlertDialogCancel({ className, variant = 'default', size = 'default', ...props }: AlertDialogCancelProps) {
+export function AlertDialogCancel({
+  className,
+  variant = 'default',
+  size = 'default',
+  ...props
+}: AlertDialogCancelProps) {
   return (
     <AlertDialogPrimitive.Close
       data-slot="alert-dialog-cancel"

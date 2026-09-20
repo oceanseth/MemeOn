@@ -6,8 +6,7 @@ import { TierChip } from '@/atoms/tier-chip'
 import { cn } from '../lib/cn'
 import type { LandingScreenModel } from '../hooks/useLandingScreen'
 
-const SECTION =
-  '-mx-5 border-b border-border bg-accent px-5 pt-12 pb-14 max-md:pt-8 max-md:pb-10'
+const SECTION = '-mx-5 border-b border-border bg-accent px-5 pt-12 pb-14 max-md:pt-8 max-md:pb-10'
 
 /** Hero pile card: percentage positions scale with the column, no phone transform. */
 const PILE_CARD = 'absolute origin-top-left rounded-lg material-card p-2'
@@ -77,9 +76,7 @@ export function LandingHero({
               <Button variant="primary" size="login" {...loginButtonProps}>
                 {loginLabel}
               </Button>
-              <p className="m-0 max-w-[24ch] text-sm text-muted-foreground">
-                {loginAside}
-              </p>
+              <p className="m-0 max-w-[24ch] text-sm text-muted-foreground">{loginAside}</p>
             </div>
           ) : null}
           {showErr && (
@@ -120,9 +117,7 @@ export function LandingHero({
                     ) : null}
                   </span>
                 </FoilMedia>
-                <span
-                  className="mx-1 mt-1.5 mb-1.5 block pr-13 font-sans text-sm font-medium text-foreground md:text-base"
-                >
+                <span className="mx-1 mt-1.5 mb-1.5 block pr-13 font-sans text-sm font-medium text-foreground md:text-base">
                   {card.caption}
                 </span>
                 <TierChip

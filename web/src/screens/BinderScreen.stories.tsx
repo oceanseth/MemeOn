@@ -12,7 +12,12 @@ import { BinderScreen } from './BinderScreen'
 const phone = {
   parameters: {
     viewport: {
-      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+      options: {
+        phone390: {
+          name: 'Phone 390',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
     },
   },
   globals: { viewport: { value: 'phone390', isRotated: false } },
@@ -62,7 +67,11 @@ const empty: BinderScreenModel = {
   privateCount: 0,
   privateToggleLabel: copy.collection.showPrivate(0),
   privateToggleProps: { checked: false, onCheckedChange: fn() },
-  sortChips: buildSortChipsModel({ sortKey: 'new', dir: 'desc', onChange: fn() }),
+  sortChips: buildSortChipsModel({
+    sortKey: 'new',
+    dir: 'desc',
+    onChange: fn(),
+  }),
   createLinkProps: { to: '/binder/new' },
   createLabel: copy.collection.mint,
   cards: [],
@@ -70,7 +79,11 @@ const empty: BinderScreenModel = {
   showLoading: false,
   showEmpty: true,
   emptyMessage: copy.emptyState.firstRun,
-  emptyAction: { kind: 'create', label: copy.emptyState.mintFirst, linkProps: { to: '/binder/new' } },
+  emptyAction: {
+    kind: 'create',
+    label: copy.emptyState.mintFirst,
+    linkProps: { to: '/binder/new' },
+  },
   showError: false,
   errorTitle: copy.errorState.title,
   errorMessage: copy.errorState.message,
@@ -83,7 +96,13 @@ const meta = {
   title: 'Screens/BinderScreen',
   component: BinderScreen,
   args: empty,
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 } satisfies Meta<typeof BinderScreen>
 
 export default meta
@@ -130,7 +149,9 @@ export const Error: Story = {
     const title = empty.querySelector('[data-slot="empty-title"]')
     await expect(title?.tagName).toBe('H2')
     await expect(title).toHaveTextContent(copy.errorState.title)
-    await expect(empty.querySelector('[data-slot="empty-description"]')).toHaveTextContent(copy.errorState.message)
+    await expect(empty.querySelector('[data-slot="empty-description"]')).toHaveTextContent(
+      copy.errorState.message,
+    )
     const retry = canvas.getByRole('button', { name: copy.retry })
     await expect(retry).toHaveClass('bg-primary')
     await expect(canvas.queryByRole('listitem')).not.toBeInTheDocument()
@@ -160,7 +181,10 @@ export const Ready: Story = {
     await expect(canvas.getByRole('status')).toHaveTextContent('3 cards shown')
     // the ownership groove is a Progress, not a hand-spelled track with an inline width
     await expect(canvasElement.querySelectorAll('[data-slot="progress"]')).toHaveLength(3)
-    await expect(canvasElement.querySelector('[data-slot="progress-indicator"]')).toHaveAttribute('data-variant', 'braincell')
+    await expect(canvasElement.querySelector('[data-slot="progress-indicator"]')).toHaveAttribute(
+      'data-variant',
+      'braincell',
+    )
   },
 }
 
@@ -171,7 +195,11 @@ export const AllPrivate: Story = {
     privateCount: 2,
     privateToggleLabel: 'Show private (2)',
     emptyMessage: 'All 2 of your memes are private. Turn on "Show private" to see them.',
-    emptyAction: { kind: 'showPrivate', label: 'Show private (2)', onClick: fn() },
+    emptyAction: {
+      kind: 'showPrivate',
+      label: 'Show private (2)',
+      onClick: fn(),
+    },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -201,7 +229,11 @@ export const Full: Story = {
   name: 'Ready (identity, toolbar, paging)',
   args: {
     ...Ready.args,
-    identity: { name: 'oxfern', pictureUrl: null, statsLabel: '3 cards · 150 shares' },
+    identity: {
+      name: 'oxfern',
+      pictureUrl: null,
+      statsLabel: '3 cards · 150 shares',
+    },
     showPrivateToggle: true,
     privateCount: 1,
     privateToggleLabel: 'Show private (1)',
@@ -220,14 +252,27 @@ export const Full: Story = {
     await expect(lane.children[1]?.querySelector('[data-slot="sort-chips"]')).not.toBeNull()
     await expect(lane.lastElementChild).toHaveTextContent('Mint a meme')
     /* the private filter is the Checkbox's pill variant, not a restyled row */
-    await expect(lane.querySelector('[data-slot="checkbox-label"]')).toHaveAttribute('data-variant', 'pill')
+    await expect(lane.querySelector('[data-slot="checkbox-label"]')).toHaveAttribute(
+      'data-variant',
+      'pill',
+    )
     /* the identity block and the toolbar are the Card and Toolbar atoms */
-    await expect(canvasElement.querySelector('[data-slot="binder-identity"]')).toHaveAttribute('data-size', 'sm')
-    await expect(canvasElement.querySelector('[data-slot="binder-toolbar"]')).toHaveAttribute('data-align', 'between')
+    await expect(canvasElement.querySelector('[data-slot="binder-identity"]')).toHaveAttribute(
+      'data-size',
+      'sm',
+    )
+    await expect(canvasElement.querySelector('[data-slot="binder-toolbar"]')).toHaveAttribute(
+      'data-align',
+      'between',
+    )
   },
 }
 
-export const Dark: Story = { ...Full, name: 'Ready dark', globals: { theme: 'dark' } }
+export const Dark: Story = {
+  ...Full,
+  name: 'Ready dark',
+  globals: { theme: 'dark' },
+}
 
 export const Phone390: Story = { ...Full, name: 'Ready phone 390', ...phone }
 

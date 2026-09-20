@@ -46,11 +46,7 @@ const PILL = cn(
   'max-xl:h-9 max-xl:px-3 max-xl:text-sm',
 )
 const PILL_STATIC = cn(PILL, 'material-raised')
-const PILL_TRIGGER = cn(
-  buttonVariants({ size: 'sm' }),
-  PILL,
-  'aria-expanded:material-pressed',
-)
+const PILL_TRIGGER = cn(buttonVariants({ size: 'sm' }), PILL, 'aria-expanded:material-pressed')
 
 /**
  * The claim-ready dot on the pill's corner: the pack is waiting, and the ring alone would not say
@@ -75,13 +71,11 @@ const CHIP = cn(
   'group-hover:text-foreground',
 )
 
-const CHIP_LINK = cn(
-  'no-underline',
-  'focus-ring rounded-sm',
-)
+const CHIP_LINK = cn('no-underline', 'focus-ring rounded-sm')
 
 /** The card grid with the starter pack's tighter tracks; under 561px only the gap tightens. */
-const PACK_GRID = 'm-0 grid list-none grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-5 p-0 max-sm:gap-3'
+const PACK_GRID =
+  'm-0 grid list-none grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-5 p-0 max-sm:gap-3'
 
 export interface QuestBarProps {
   /** The ladder, or nothing: without it the pill is the plain balance. */
@@ -123,8 +117,12 @@ export function QuestBar({ model, balance }: QuestBarProps) {
             >
               {figure}
               {/* one sr-only run, so the name reads "120 braincells, quests 0 of 5" without a stray space */}
-              <span className="sr-only">{balance.label}, {model.progressLabel}</span>
-              {claim && <span className={CLAIM_DOT} aria-hidden="true" data-slot="quest-claim-dot" />}
+              <span className="sr-only">
+                {balance.label}, {model.progressLabel}
+              </span>
+              {claim && (
+                <span className={CLAIM_DOT} aria-hidden="true" data-slot="quest-claim-dot" />
+              )}
             </PopoverTrigger>
             <PortalAnchor id={ANCHOR_ID} />
             <PopoverContent
@@ -142,14 +140,29 @@ export function QuestBar({ model, balance }: QuestBarProps) {
               <div className="flex flex-col gap-3 p-1.5" data-slot="questbar-head">
                 <div className="flex items-center gap-x-3">
                   <span id={TITLE_ID} className={TITLE} data-slot="questbar-title">
-                    <img className={BRAINCELL_IMG} src={BRAINCELL_SRC} alt="" width={26} height={26} />
+                    <img
+                      className={BRAINCELL_IMG}
+                      src={BRAINCELL_SRC}
+                      alt=""
+                      width={26}
+                      height={26}
+                    />
                     <span className="truncate">{model.title}</span>
-                    <span className="text-sm font-medium text-muted-foreground tabular-nums" data-slot="questbar-count">
+                    <span
+                      className="text-sm font-medium text-muted-foreground tabular-nums"
+                      data-slot="questbar-count"
+                    >
                       {model.completionLabel}
                     </span>
                   </span>
                   {/* ghost, so the claim pill stays the only loud control in the panel */}
-                  <Button variant="ghost" size="xs" className="ml-auto" data-slot="quest-later" {...model.dismissProps}>
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="ml-auto"
+                    data-slot="quest-later"
+                    {...model.dismissProps}
+                  >
                     {model.dismissLabel}
                   </Button>
                 </div>
@@ -167,7 +180,12 @@ export function QuestBar({ model, balance }: QuestBarProps) {
                   </small>
                 )}
                 {model.errorMessage && (
-                  <Alert variant="error" size="compact" data-slot="questbar-error" {...model.errorProps}>
+                  <Alert
+                    variant="error"
+                    size="compact"
+                    data-slot="questbar-error"
+                    {...model.errorProps}
+                  >
                     {model.errorMessage}
                   </Alert>
                 )}
@@ -176,11 +194,18 @@ export function QuestBar({ model, balance }: QuestBarProps) {
                     const content = (
                       <span className={CHIP} data-slot="quest-chip">
                         <span aria-hidden="true">
-                          {chip.done ? <Icon name="circle-check" size={18} /> : <Icon name="square" size={18} />}
+                          {chip.done ? (
+                            <Icon name="circle-check" size={18} />
+                          ) : (
+                            <Icon name="square" size={18} />
+                          )}
                         </span>
                         <span className="sr-only">{chip.statusLabel} </span>
                         <span className="min-w-0 flex-1">{chip.title}</span>
-                        <em className="inline-flex items-center gap-1 text-sm not-italic tabular-nums" aria-hidden="true">
+                        <em
+                          className="inline-flex items-center gap-1 text-sm not-italic tabular-nums"
+                          aria-hidden="true"
+                        >
                           <Icon name="brain" size={14} />
                           {chip.rewardLabel}
                         </em>
@@ -235,7 +260,8 @@ export function QuestBar({ model, balance }: QuestBarProps) {
           finalFocus={model.pack.opener}
           title={
             <>
-              <img className={BRAINCELL_IMG} src={BRAINCELL_SRC} alt="" width={26} height={26} /> <Icon name="gift" size={16} />
+              <img className={BRAINCELL_IMG} src={BRAINCELL_SRC} alt="" width={26} height={26} />{' '}
+              <Icon name="gift" size={16} />
               {model.pack.title}
             </>
           }

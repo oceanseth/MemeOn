@@ -2,7 +2,13 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
-import { meLou, paperMeme, questStepsFresh, questStepsPackDone, silverMeme } from '../../.storybook/fixtures'
+import {
+  meLou,
+  paperMeme,
+  questStepsFresh,
+  questStepsPackDone,
+  silverMeme,
+} from '../../.storybook/fixtures'
 import { appShellCopy } from '../copy/appShell'
 import { questBarCopy } from '../copy/questBar'
 import { buildQuestBarModel } from '../lib/questBarModel'
@@ -21,16 +27,27 @@ const fresh = {
   onDismissSteps,
 }
 
-const balance = { text: appShellCopy.braincells.text(meLou.coins), label: appShellCopy.braincells.label(meLou.coins) }
+const balance = {
+  text: appShellCopy.braincells.text(meLou.coins),
+  label: appShellCopy.braincells.label(meLou.coins),
+}
 
 /** The ladder mounted open, as the shell shows it after a press on the pill. */
-const open = (model: ReturnType<typeof buildQuestBarModel>) => ({ ...model, defaultOpen: true })
+const open = (model: ReturnType<typeof buildQuestBarModel>) => ({
+  ...model,
+  defaultOpen: true,
+})
 
 /** 390×844: the same viewport globals Organisms/AppShell Phone390 uses. */
 const phone = {
   parameters: {
     viewport: {
-      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+      options: {
+        phone390: {
+          name: 'Phone 390',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
     },
     /* padded layout adds gutters the pin's left-3/right-3 would then miss */
     layout: 'fullscreen' as const,
@@ -71,7 +88,9 @@ export const Fresh: Story = {
     const canvas = within(canvasElement)
     onDismissSteps.mockClear()
     onClaimPack.mockClear()
-    const trigger = canvas.getByRole('button', { name: /braincells, quests 0 of 5/ })
+    const trigger = canvas.getByRole('button', {
+      name: /braincells, quests 0 of 5/,
+    })
     await expect(trigger).toHaveAttribute('data-slot', 'quest-trigger')
     await expect(trigger).toHaveAttribute('data-progress', '0')
     await expect(trigger).toHaveTextContent('120')
@@ -82,7 +101,9 @@ export const Fresh: Story = {
     await expect(await canvas.findByText(questBarCopy.title)).toBeInTheDocument()
     await expect(canvas.getByText('0/5')).toBeInTheDocument()
     /* the meter is named by the title beside it and counts the same ladder the rows list */
-    const meter = canvas.getByRole('progressbar', { name: new RegExp(questBarCopy.title) })
+    const meter = canvas.getByRole('progressbar', {
+      name: new RegExp(questBarCopy.title),
+    })
     await expect(meter).toHaveAttribute('data-slot', 'questbar-progress')
     await expect(meter).toHaveAttribute('aria-valuenow', '0')
     await expect(meter).toHaveAttribute('aria-valuemax', String(questStepsFresh.length))
@@ -92,7 +113,9 @@ export const Fresh: Story = {
     /* every quest is in the panel from the first render — nothing waits behind a disclosure */
     await expect(canvas.getByRole('link', { name: /Mint/ })).toHaveAttribute('href', '/binder/new')
     await expect(canvas.getByRole('link', { name: /trade/i })).toBeInTheDocument()
-    const later = canvas.getByRole('button', { name: 'Later — hide quests for now' })
+    const later = canvas.getByRole('button', {
+      name: 'Later — hide quests for now',
+    })
     await expect(later).toHaveAttribute('data-slot', 'quest-later')
     await userEvent.click(later)
     await expect(onDismissSteps).toHaveBeenCalledTimes(1)
@@ -108,7 +131,9 @@ export const Fresh: Story = {
 
 /** The ladder once the pack is claimed: the ring reads a fifth, one row per step, each with its own state and reward. */
 export const Expanded: Story = {
-  args: { model: open(buildQuestBarModel({ ...fresh, steps: questStepsPackDone })) },
+  args: {
+    model: open(buildQuestBarModel({ ...fresh, steps: questStepsPackDone })),
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const popup = canvasElement.querySelector('[data-slot="quest-panel"]')
@@ -131,7 +156,9 @@ export const Opening: Story = {
   args: { model: open(buildQuestBarModel({ ...fresh, busy: true })) },
   play: async ({ canvasElement }) => {
     onClaimPack.mockClear()
-    const trigger = within(canvasElement).getByRole('button', { name: /Opening/ })
+    const trigger = within(canvasElement).getByRole('button', {
+      name: /Opening/,
+    })
     await expect(trigger).toBeDisabled()
     await expect(trigger).toHaveAttribute('aria-busy', 'true')
     await expect(trigger.querySelector('[data-slot="spinner"]')).not.toBeNull()
@@ -143,7 +170,12 @@ export const Opening: Story = {
 /** A one-shot claim that fails silently is the worst state this panel can be in. */
 export const ClaimFailed: Story = {
   args: {
-    model: open(buildQuestBarModel({ ...fresh, claimError: questBarCopy.pack.claimError })),
+    model: open(
+      buildQuestBarModel({
+        ...fresh,
+        claimError: questBarCopy.pack.claimError,
+      }),
+    ),
   },
   play: async ({ canvasElement }) => {
     const alert = within(canvasElement).getByRole('alert')
@@ -155,12 +187,19 @@ export const ClaimFailed: Story = {
 
 /** The inventory's name for the same state `Expanded` asserts against. */
 export const PackDone: Story = {
-  args: { model: open(buildQuestBarModel({ ...fresh, steps: questStepsPackDone })) },
+  args: {
+    model: open(buildQuestBarModel({ ...fresh, steps: questStepsPackDone })),
+  },
 }
 
 export const PackOpened: Story = {
   args: {
-    model: buildQuestBarModel({ ...fresh, steps: questStepsPackDone, packMemes: [paperMeme, silverMeme], packReward: 20 }),
+    model: buildQuestBarModel({
+      ...fresh,
+      steps: questStepsPackDone,
+      packMemes: [paperMeme, silverMeme],
+      packReward: 20,
+    }),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -170,7 +209,9 @@ export const PackOpened: Story = {
     await waitFor(() => expect(modal).toBeVisible())
     await expect(modal.querySelector('[data-slot="pack-grid"]')).not.toBeNull()
     await expect(modal.querySelector('[data-slot="dialog-footer"]')).not.toBeNull()
-    const cardLink = within(modal).getByRole('link', { name: new RegExp(paperMeme.title) })
+    const cardLink = within(modal).getByRole('link', {
+      name: new RegExp(paperMeme.title),
+    })
     await expect(cardLink).toHaveAttribute('href', `/m/${paperMeme.id}`)
 
     await userEvent.click(within(modal).getByRole('button', { name: 'Close' }))
@@ -180,10 +221,18 @@ export const PackOpened: Story = {
     await expect(onDismissPack).toHaveBeenCalledTimes(1)
     onDismissPack.mockClear()
     /* one element, one tab stop: the binder exit is a link wearing the pill, not a button inside a link */
-    await expect(within(modal).queryByRole('button', { name: questBarCopy.pack.viewInBinder })).toBeNull()
-    const binderLink = within(modal).getByRole('link', { name: questBarCopy.pack.viewInBinder })
+    await expect(
+      within(modal).queryByRole('button', {
+        name: questBarCopy.pack.viewInBinder,
+      }),
+    ).toBeNull()
+    const binderLink = within(modal).getByRole('link', {
+      name: questBarCopy.pack.viewInBinder,
+    })
     await expect(binderLink).toHaveAttribute('href', '/binder')
-    await expect(binderLink.offsetHeight).toBe(within(modal).getByRole('button', { name: questBarCopy.pack.explore }).offsetHeight)
+    await expect(binderLink.offsetHeight).toBe(
+      within(modal).getByRole('button', { name: questBarCopy.pack.explore }).offsetHeight,
+    )
     await userEvent.click(binderLink)
     await expect(onDismissPack).toHaveBeenCalledTimes(1)
   },
@@ -194,7 +243,7 @@ export const PackOpened: Story = {
  * controlled, so the story owns the state the dismissal reports into — exactly as the shell does.
  */
 function StatefulPack() {
-  const [packMemes, setPackMemes] = useState<typeof paperMeme[] | null>([paperMeme])
+  const [packMemes, setPackMemes] = useState<(typeof paperMeme)[] | null>([paperMeme])
   return (
     <QuestBar
       model={buildQuestBarModel({
@@ -214,7 +263,12 @@ function StatefulPack() {
 
 export const PackOpenedKeyboard: Story = {
   args: {
-    model: buildQuestBarModel({ ...fresh, steps: questStepsPackDone, packMemes: [paperMeme], packReward: 20 }),
+    model: buildQuestBarModel({
+      ...fresh,
+      steps: questStepsPackDone,
+      packMemes: [paperMeme],
+      packReward: 20,
+    }),
   },
   render: () => <StatefulPack />,
   play: async ({ canvasElement }) => {
@@ -230,7 +284,12 @@ export const PackOpenedKeyboard: Story = {
 
 export const EmptyVault: Story = {
   args: {
-    model: buildQuestBarModel({ ...fresh, steps: questStepsPackDone, packMemes: [], packReward: 20 }),
+    model: buildQuestBarModel({
+      ...fresh,
+      steps: questStepsPackDone,
+      packMemes: [],
+      packReward: 20,
+    }),
   },
 }
 

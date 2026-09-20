@@ -4,12 +4,15 @@ import { post } from './api'
 const copy = createMemeCopy
 
 /** Signed PUT upload for create-meme image/video blobs; throws copy.errors.uploadRejected on failure. */
-export async function uploadCreateMemeFile(file: File | Blob, contentType?: string): Promise<string> {
+export async function uploadCreateMemeFile(
+  file: File | Blob,
+  contentType?: string,
+): Promise<string> {
   const type = contentType ?? (file as File).type
-  const { uploadUrl, publicUrl } = await post<{ uploadUrl: string; publicUrl: string }>(
-    '/api/uploads',
-    { contentType: type, size: file.size },
-  )
+  const { uploadUrl, publicUrl } = await post<{
+    uploadUrl: string
+    publicUrl: string
+  }>('/api/uploads', { contentType: type, size: file.size })
   const put = await fetch(uploadUrl, {
     method: 'PUT',
     headers: { 'content-type': type },

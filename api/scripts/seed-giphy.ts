@@ -11,7 +11,14 @@ import * as db from '../src/db'
 import { mintArchiveGif } from '../src/archiveMint'
 import type { GiphyResult } from '../src/giphy'
 
-const SEARCHES = ['classic meme', 'doge meme', 'cat meme', 'reaction meme', 'fail meme', 'dance meme']
+const SEARCHES = [
+  'classic meme',
+  'doge meme',
+  'cat meme',
+  'reaction meme',
+  'fail meme',
+  'dance meme',
+]
 const COUNT = Math.min(Number(process.argv[2]) || 20, 50) // batches of 20 by default
 
 async function giphyKey(): Promise<string> {
@@ -19,7 +26,10 @@ async function giphyKey(): Promise<string> {
   try {
     const ssm = new SSMClient({})
     const res = await ssm.send(
-      new GetParameterCommand({ Name: '/memeon/shared/giphy_api_key', WithDecryption: true }),
+      new GetParameterCommand({
+        Name: '/memeon/shared/giphy_api_key',
+        WithDecryption: true,
+      }),
     )
     if (res.Parameter?.Value) return res.Parameter.Value
   } catch {
@@ -59,7 +69,11 @@ if (!ping.ok) {
   process.exit(1)
 }
 
-await db.ensureUser({ sub: db.ARCHIVE_SUB, name: 'Meme Archive', picture: null })
+await db.ensureUser({
+  sub: db.ARCHIVE_SUB,
+  name: 'Meme Archive',
+  picture: null,
+})
 
 const picked: GiphyGif[] = []
 for (const q of SEARCHES) {
@@ -84,7 +98,9 @@ console.log(`seeding ${picked.length} archive memes`)
 let seeded = 0
 for (const gif of picked) {
   const still =
-    gif.images.downsized_still?.url ?? gif.images.original_still?.url ?? gif.images.downsized_medium?.url
+    gif.images.downsized_still?.url ??
+    gif.images.original_still?.url ??
+    gif.images.downsized_medium?.url
   if (!still) continue
   const mapped: GiphyResult = {
     id: gif.id,

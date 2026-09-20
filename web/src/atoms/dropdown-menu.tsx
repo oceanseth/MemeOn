@@ -40,7 +40,10 @@ export function DropdownMenuTrigger(props: MenuPrimitive.Trigger.Props) {
 /** Above the docked bars and the header; its own stacking context so the popup's z is local. */
 const POSITIONER = 'isolate z-(--z-modal) outline-none'
 
-export function DropdownMenuPositioner({ className, ...props }: Styled<MenuPrimitive.Positioner.Props>) {
+export function DropdownMenuPositioner({
+  className,
+  ...props
+}: Styled<MenuPrimitive.Positioner.Props>) {
   return (
     <MenuPrimitive.Positioner
       data-slot="dropdown-menu-positioner"
@@ -63,10 +66,18 @@ const POPUP = cn(
 
 type PositionerPassthrough = Pick<
   MenuPrimitive.Positioner.Props,
-  'align' | 'alignOffset' | 'side' | 'sideOffset' | 'collisionPadding' | 'collisionAvoidance' | 'anchor'
+  | 'align'
+  | 'alignOffset'
+  | 'side'
+  | 'sideOffset'
+  | 'collisionPadding'
+  | 'collisionAvoidance'
+  | 'anchor'
 >
 
-export interface DropdownMenuContentProps extends Styled<MenuPrimitive.Popup.Props>, PositionerPassthrough {
+export interface DropdownMenuContentProps
+  extends Styled<MenuPrimitive.Popup.Props>,
+    PositionerPassthrough {
   /** where the portal renders; pair `PortalAnchor` with `portalAnchor(id)` to stay inside the screen */
   container?: MenuPrimitive.Portal.Props['container']
   positionerClassName?: string | undefined
@@ -98,7 +109,11 @@ export function DropdownMenuContent({
         anchor={anchor}
         className={cn(POSITIONER, positionerClassName)}
       >
-        <MenuPrimitive.Popup data-slot="dropdown-menu-content" className={cn(POPUP, className)} {...props} />
+        <MenuPrimitive.Popup
+          data-slot="dropdown-menu-content"
+          className={cn(POPUP, className)}
+          {...props}
+        />
       </MenuPrimitive.Positioner>
     </DropdownMenuPortal>
   )
@@ -117,7 +132,11 @@ export function DropdownMenuLabel({
     <MenuPrimitive.GroupLabel
       data-slot="dropdown-menu-label"
       data-inset={inset || undefined}
-      className={cn('px-3 py-1.5 text-sm font-semibold text-muted-foreground', inset && 'pl-10', className)}
+      className={cn(
+        'px-3 py-1.5 text-sm font-semibold text-muted-foreground',
+        inset && 'pl-10',
+        className,
+      )}
       {...props}
     />
   )
@@ -139,7 +158,8 @@ export const dropdownMenuItemVariants = cva(
     variants: {
       variant: {
         default: '',
-        destructive: 'text-destructive data-highlighted:bg-error data-highlighted:text-error-foreground',
+        destructive:
+          'text-destructive data-highlighted:bg-error data-highlighted:text-error-foreground',
       },
       inset: {
         true: 'pl-10',
@@ -153,7 +173,8 @@ export const dropdownMenuItemVariants = cva(
   },
 )
 
-export type DropdownMenuItemProps = Styled<MenuPrimitive.Item.Props> & VariantProps<typeof dropdownMenuItemVariants>
+export type DropdownMenuItemProps = Styled<MenuPrimitive.Item.Props> &
+  VariantProps<typeof dropdownMenuItemVariants>
 
 /** A row; `render={<Link to />}` makes it the link itself (Base UI keeps the menuitem role). */
 export function DropdownMenuItem({ className, inset, variant, ...props }: DropdownMenuItemProps) {
@@ -177,16 +198,14 @@ export function DropdownMenuSubTrigger({
   inset,
   children,
   ...props
-}: Styled<MenuPrimitive.SubmenuTrigger.Props> & { inset?: boolean | undefined }) {
+}: Styled<MenuPrimitive.SubmenuTrigger.Props> & {
+  inset?: boolean | undefined
+}) {
   return (
     <MenuPrimitive.SubmenuTrigger
       data-slot="dropdown-menu-sub-trigger"
       data-inset={inset || undefined}
-      className={cn(
-        dropdownMenuItemVariants({ inset }),
-        'data-popup-open:bg-accent',
-        className,
-      )}
+      className={cn(dropdownMenuItemVariants({ inset }), 'data-popup-open:bg-accent', className)}
       {...props}
     >
       {children}
@@ -271,7 +290,10 @@ export function DropdownMenuRadioItem({
   )
 }
 
-export function DropdownMenuSeparator({ className, ...props }: Styled<MenuPrimitive.Separator.Props>) {
+export function DropdownMenuSeparator({
+  className,
+  ...props
+}: Styled<MenuPrimitive.Separator.Props>) {
   return (
     <MenuPrimitive.Separator
       data-slot="dropdown-menu-separator"

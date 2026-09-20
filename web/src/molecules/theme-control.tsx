@@ -38,11 +38,16 @@ export interface ThemeControlProps extends VariantProps<typeof themeButtonVarian
  */
 export function ThemeControl({ model, size, className }: ThemeControlProps) {
   if (model.variant === 'button') {
-    const current = model.options.find((option) => option.value === model.value) ?? model.options[0]!
+    const current =
+      model.options.find((option) => option.value === model.value) ?? model.options[0]!
     return (
       <button
         type="button"
-        className={cn(buttonVariants({ size: 'icon-sm' }), themeButtonVariants({ size }), className)}
+        className={cn(
+          buttonVariants({ size: 'icon-sm' }),
+          themeButtonVariants({ size }),
+          className,
+        )}
         aria-label={model.cycleLabel}
         onClick={() => model.onChange(model.nextValue)}
         data-slot="theme-button"
@@ -71,10 +76,12 @@ export function ThemeControl({ model, size, className }: ThemeControlProps) {
       data-slot="theme-segmented"
     >
       {model.options.map((option) => (
-        <ToggleGroupItem<ThemePreference> key={option.value} value={option.value} data-slot="theme-segment">
-          <Icon name={option.icon} size={16} />
-          {' '}
-          {option.label}
+        <ToggleGroupItem<ThemePreference>
+          key={option.value}
+          value={option.value}
+          data-slot="theme-segment"
+        >
+          <Icon name={option.icon} size={16} /> {option.label}
         </ToggleGroupItem>
       ))}
     </ToggleGroup>

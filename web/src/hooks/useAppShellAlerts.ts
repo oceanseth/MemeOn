@@ -15,16 +15,17 @@ export function loadAppShellAlerts(
 ): void {
   if (!live()) return
   void apiFetch<{ alerts: Alert[] }>('/api/alerts')
-    .then((r) => { if (live()) send({ type: 'SET_ALERTS', alerts: r.alerts }) })
-    .catch(() => { if (live()) send({ type: 'SET_ALERTS_FAIL' }) })
+    .then((r) => {
+      if (live()) send({ type: 'SET_ALERTS', alerts: r.alerts })
+    })
+    .catch(() => {
+      if (live()) send({ type: 'SET_ALERTS_FAIL' })
+    })
 }
 
 /** Alert IO: GET /api/alerts, mark-read. The composer owns poll, visibility, and the live flag. */
 export function useAppShellAlerts({ send, actor, refresh }: UseAppShellAlertsArgs) {
-  const loadAlerts = useCallback(
-    (live: () => boolean) => loadAppShellAlerts(send, live),
-    [send],
-  )
+  const loadAlerts = useCallback((live: () => boolean) => loadAppShellAlerts(send, live), [send])
 
   const onOpenAlerts = useCallback(
     async (next: boolean) => {

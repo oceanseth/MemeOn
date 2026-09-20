@@ -10,7 +10,9 @@ export type LandingFaqProps = Pick<LandingScreenModel, 'faqTitle' | 'faqItems'>
 export function LandingFaq({ faqTitle, faqItems }: LandingFaqProps) {
   return (
     <section data-slot="landing-faq" className={SECTION}>
-      <Heading size="section" className="mb-6">{faqTitle}</Heading>
+      <Heading size="section" className="mb-6">
+        {faqTitle}
+      </Heading>
       <div className="max-w-[65ch]">
         {faqItems.map((item) => (
           <FaqItem key={item.id} question={item.question} defaultOpen={item.defaultOpen}>

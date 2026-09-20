@@ -3,24 +3,76 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { leaderboardRows, meLou } from '../../.storybook/fixtures'
 import { leaderboardCopy as copy } from '../copy/leaderboard'
-import { buildLeaderboardRowModel, type LeaderboardScreenModel } from '../hooks/useLeaderboardScreen'
+import {
+  buildLeaderboardRowModel,
+  type LeaderboardScreenModel,
+} from '../hooks/useLeaderboardScreen'
 import type { LeaderRow } from '../lib/types'
 import { LeaderboardScreen } from './LeaderboardScreen'
 
 /** Mix of avatars with and without profile pictures. */
 const mixedAvatarRows: LeaderRow[] = [
-  { sub: 'user-pal', name: 'pal', picture: '/brand/memeon-logo-circle-64.png', braincells: 240, portfolioValue: 90, collectionSize: 8 },
-  { sub: 'user-lou', name: 'lou', picture: null, braincells: 120, portfolioValue: 40, collectionSize: 3 },
-  { sub: 'user-dez', name: 'dez the unfurler', picture: '/brand/memeon-logo-circle-48.png', braincells: 95, portfolioValue: 30, collectionSize: 2 },
-  { sub: 'user-smooth', name: 'smoothbrain', picture: null, braincells: 12, portfolioValue: 5, collectionSize: 1 },
+  {
+    sub: 'user-pal',
+    name: 'pal',
+    picture: '/brand/memeon-logo-circle-64.png',
+    braincells: 240,
+    portfolioValue: 90,
+    collectionSize: 8,
+  },
+  {
+    sub: 'user-lou',
+    name: 'lou',
+    picture: null,
+    braincells: 120,
+    portfolioValue: 40,
+    collectionSize: 3,
+  },
+  {
+    sub: 'user-dez',
+    name: 'dez the unfurler',
+    picture: '/brand/memeon-logo-circle-48.png',
+    braincells: 95,
+    portfolioValue: 30,
+    collectionSize: 2,
+  },
+  {
+    sub: 'user-smooth',
+    name: 'smoothbrain',
+    picture: null,
+    braincells: 12,
+    portfolioValue: 5,
+    collectionSize: 1,
+  },
 ]
 
 /* Every Google-signed-in account carries an lh3.googleusercontent URL that can 404 or be
    rate-limited, and real display names are full names, not handles. */
 const realAccountRows: LeaderRow[] = [
-  { sub: 'user-broken', name: 'Alice Memerson-Whitfield', picture: 'https://lh3.googleusercontent.com/a/does-not-resolve=s96-c', braincells: 4174, portfolioValue: 30_000, collectionSize: 27 },
-  { sub: 'user-issam', name: 'Issam Misto', picture: 'https://lh3.googleusercontent.com/a/also-gone=s96-c', braincells: 1290, portfolioValue: 1507, collectionSize: 7 },
-  { sub: 'user-carol', name: 'Carol Newbraincell', picture: null, braincells: 48, portfolioValue: 12, collectionSize: 1 },
+  {
+    sub: 'user-broken',
+    name: 'Alice Memerson-Whitfield',
+    picture: 'https://lh3.googleusercontent.com/a/does-not-resolve=s96-c',
+    braincells: 4174,
+    portfolioValue: 30_000,
+    collectionSize: 27,
+  },
+  {
+    sub: 'user-issam',
+    name: 'Issam Misto',
+    picture: 'https://lh3.googleusercontent.com/a/also-gone=s96-c',
+    braincells: 1290,
+    portfolioValue: 1507,
+    collectionSize: 7,
+  },
+  {
+    sub: 'user-carol',
+    name: 'Carol Newbraincell',
+    picture: null,
+    braincells: 48,
+    portfolioValue: 12,
+    collectionSize: 1,
+  },
 ]
 
 const rows = (source: LeaderRow[], meSub: string | null = null) =>
@@ -32,7 +84,10 @@ const empty: LeaderboardScreenModel = {
   subtitle: copy.subtitle,
   podiumTitle: copy.podium.title,
   podiumSubtitle: copy.podium.subtitle,
-  columnHeaders: { player: copy.columns.player, braincells: copy.columns.braincells },
+  columnHeaders: {
+    player: copy.columns.player,
+    braincells: copy.columns.braincells,
+  },
   leaders: [],
   youRow: null,
   showMore: false,
@@ -63,7 +118,12 @@ const ready: Partial<LeaderboardScreenModel> = {
 const phone = {
   parameters: {
     viewport: {
-      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+      options: {
+        phone390: {
+          name: 'Phone 390',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
     },
   },
   globals: { viewport: { value: 'phone390', isRotated: false } },
@@ -73,7 +133,13 @@ const meta = {
   title: 'Screens/LeaderboardScreen',
   component: LeaderboardScreen,
   args: empty,
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 } satisfies Meta<typeof LeaderboardScreen>
 
 export default meta
@@ -90,7 +156,9 @@ export const Loading: Story = {
 
 export const Empty: Story = {
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByRole('heading', { name: copy.pageTitle })).toBeInTheDocument()
+    await expect(
+      within(canvasElement).getByRole('heading', { name: copy.pageTitle }),
+    ).toBeInTheDocument()
   },
 }
 
@@ -112,7 +180,9 @@ export const Error: Story = {
     const title = empty.querySelector('[data-slot="empty-title"]')
     await expect(title?.tagName).toBe('H2')
     await expect(title).toHaveTextContent(copy.loadError.title)
-    await expect(empty.querySelector('[data-slot="empty-description"]')).toHaveTextContent(copy.loadError.body)
+    await expect(empty.querySelector('[data-slot="empty-description"]')).toHaveTextContent(
+      copy.loadError.body,
+    )
     const retry = canvas.getByRole('button', { name: copy.retry })
     await expect(retry).toHaveClass('bg-primary')
     await expect(canvasElement.querySelector('[data-slot="podium"]')).toBeNull()
@@ -130,7 +200,10 @@ export const Ready: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('list').tagName).toBe('OL')
     await expect(canvas.getAllByRole('listitem')).toHaveLength(2)
-    await expect(canvas.getByRole('link', { name: copy.row.label(1, 'pal', 240) })).toHaveAttribute('href', '/u/user-pal')
+    await expect(canvas.getByRole('link', { name: copy.row.label(1, 'pal', 240) })).toHaveAttribute(
+      'href',
+      '/u/user-pal',
+    )
     await expect(canvas.getByRole('status')).toHaveTextContent(copy.listSummary(2))
   },
 }
@@ -142,7 +215,11 @@ export const Ready: Story = {
  * and the numeral is asserted because the disc itself carries no rank.
  */
 export const Podium: Story = {
-  args: { ...ready, leaders: rows(mixedAvatarRows), listSummary: copy.listSummary(4) },
+  args: {
+    ...ready,
+    leaders: rows(mixedAvatarRows),
+    listSummary: copy.listSummary(4),
+  },
   play: async ({ canvasElement }) => {
     const medals = canvasElement.querySelectorAll<HTMLElement>('[data-slot="podium-medal"]')
     const PIP = 'M12 18v-2h-.5'
@@ -161,7 +238,11 @@ export const Podium: Story = {
         await expect(path.getAttribute('d')).not.toBe(PIP)
       }
     }
-    await expect(within(canvasElement).getByRole('link', { name: copy.row.label(1, 'pal', 240) })).toBeInTheDocument()
+    await expect(
+      within(canvasElement).getByRole('link', {
+        name: copy.row.label(1, 'pal', 240),
+      }),
+    ).toBeInTheDocument()
   },
 }
 
@@ -172,11 +253,15 @@ export const MixedAvatars: Story = {
     listSummary: copy.listSummary(4),
   },
   play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelectorAll('[data-slot="person-row"] [data-slot="avatar"]')).toHaveLength(4)
+    await expect(
+      canvasElement.querySelectorAll('[data-slot="person-row"] [data-slot="avatar"]'),
+    ).toHaveLength(4)
     // the podium takes the podium disc, the ladder the rank disc
     const podium = canvasElement.querySelector('[data-slot="podium-cards"] [data-slot="avatar"]')
     await expect(podium).toHaveAttribute('data-size', 'podium')
-    await expect(canvasElement.querySelector('[data-slot="leaderboard"] [data-slot="avatar"]')).toHaveAttribute('data-size', 'rank')
+    await expect(
+      canvasElement.querySelector('[data-slot="leaderboard"] [data-slot="avatar"]'),
+    ).toHaveAttribute('data-size', 'rank')
   },
 }
 
@@ -205,7 +290,11 @@ export const SelfInTopTen: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByText(copy.row.you)).toBeInTheDocument()
-    await expect(canvas.getByRole('link', { name: copy.row.youLabel(copy.row.label(2, meLou.name, meLou.coins)) })).toBeInTheDocument()
+    await expect(
+      canvas.getByRole('link', {
+        name: copy.row.youLabel(copy.row.label(2, meLou.name, meLou.coins)),
+      }),
+    ).toBeInTheDocument()
     // rows are raised Items; the frame axis marks the podium's first place and your own row
     const rows = canvasElement.querySelectorAll('[data-slot="person-row"]')
     await expect(rows[0]).toHaveAttribute('data-variant', 'raised')
@@ -222,7 +311,14 @@ export const Full: Story = {
     leaders: rows(mixedAvatarRows),
     listSummary: copy.listSummary(4),
     youRow: buildLeaderboardRowModel(
-      { sub: 'user-me', name: 'oxfern', picture: null, braincells: 2480, portfolioValue: 900, collectionSize: 6 },
+      {
+        sub: 'user-me',
+        name: 'oxfern',
+        picture: null,
+        braincells: 2480,
+        portfolioValue: 900,
+        collectionSize: 6,
+      },
       8,
       'user-me',
     ),
@@ -233,7 +329,11 @@ export const Full: Story = {
   },
 }
 
-export const Dark: Story = { ...Full, name: 'Ready dark', globals: { theme: 'dark' } }
+export const Dark: Story = {
+  ...Full,
+  name: 'Ready dark',
+  globals: { theme: 'dark' },
+}
 
 export const Phone390: Story = { ...Full, name: 'Ready phone 390', ...phone }
 

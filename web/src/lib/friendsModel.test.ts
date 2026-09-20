@@ -47,8 +47,16 @@ function actions(overrides: Partial<FriendsScreenModelActions> = {}): FriendsScr
 
 describe('buildFriendLinkModel', () => {
   it('keeps nullable avatar data out of screen markup while preserving its current display semantics', () => {
-    const withAvatar = buildFriendLinkModel({ sub: 'pal', name: 'Pal', picture: '/pal.png' })
-    const withoutAvatar = buildFriendLinkModel({ sub: 'no-picture', name: 'no picture', picture: null })
+    const withAvatar = buildFriendLinkModel({
+      sub: 'pal',
+      name: 'Pal',
+      picture: '/pal.png',
+    })
+    const withoutAvatar = buildFriendLinkModel({
+      sub: 'no-picture',
+      name: 'no picture',
+      picture: null,
+    })
 
     expect(withAvatar.profileLinkProps).toEqual({ to: '/u/pal' })
     expect(withAvatar.onlineLinkProps).toEqual({ to: '/u/pal', title: 'Pal' })
@@ -59,7 +67,11 @@ describe('buildFriendLinkModel', () => {
 
 describe('buildFriendsScreenModel search flags', () => {
   it('shows searching only while the panel is open, in-flight, and hits are empty', () => {
-    const searching = buildFriendsScreenModel('ready', context({ query: 'pal', searching: true }), actions())
+    const searching = buildFriendsScreenModel(
+      'ready',
+      context({ query: 'pal', searching: true }),
+      actions(),
+    )
     const withHits = buildFriendsScreenModel(
       'ready',
       context({
@@ -132,8 +144,18 @@ describe('buildFriendsScreenModel 1.6 copy keys', () => {
 
 describe('buildFriendsScreenModel load-error chrome (2.7)', () => {
   it('hides action/online/request chrome and uses authored loadError.body', () => {
-    const incoming: FriendEntry = { ...pal, sub: 'in', name: 'In', status: 'incoming' }
-    const outgoing: FriendEntry = { ...pal, sub: 'out', name: 'Out', status: 'outgoing' }
+    const incoming: FriendEntry = {
+      ...pal,
+      sub: 'in',
+      name: 'In',
+      status: 'incoming',
+    }
+    const outgoing: FriendEntry = {
+      ...pal,
+      sub: 'out',
+      name: 'Out',
+      status: 'outgoing',
+    }
     const model = buildFriendsScreenModel(
       'error',
       context({

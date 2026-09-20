@@ -13,9 +13,11 @@ function randomState(): string {
 }
 
 export async function loginWithMasky(): Promise<Pick<Me, 'sub' | 'name' | 'picture' | 'coins'>> {
-  const cfg = await apiFetch<{ authorizeUrl: string; clientId: string; scopes: string }>(
-    '/api/auth/masky/config',
-  )
+  const cfg = await apiFetch<{
+    authorizeUrl: string
+    clientId: string
+    scopes: string
+  }>('/api/auth/masky/config')
   const state = randomState()
   const url = new URL(cfg.authorizeUrl)
   url.searchParams.set('response_type', 'code')

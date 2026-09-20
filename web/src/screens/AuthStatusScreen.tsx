@@ -42,14 +42,19 @@ export function AuthStatusScreen({
             </Alert>
           )}
           {primaryAction && (
-            <a href={primaryAction.href} className={cn(buttonVariants({ variant: 'primary' }), 'mt-5')}>
+            <a
+              href={primaryAction.href}
+              className={cn(buttonVariants({ variant: 'primary' }), 'mt-5')}
+            >
               <Icon name={primaryAction.icon} size={20} />
               {primaryAction.label}
             </a>
           )}
           {fallback.retry ? (
             <div data-slot="auth-timeout" className="mt-6 flex flex-col items-center gap-3">
-              {fallback.prompt && <p className="m-0 text-base text-muted-foreground">{fallback.prompt}</p>}
+              {fallback.prompt && (
+                <p className="m-0 text-base text-muted-foreground">{fallback.prompt}</p>
+              )}
               <div className="flex flex-wrap items-center justify-center gap-4">
                 {/* ultraviolet, not bubblegum: a retry is the companion action, never the page's primary */}
                 <Button variant="brand" onClick={fallback.retry.onClick}>

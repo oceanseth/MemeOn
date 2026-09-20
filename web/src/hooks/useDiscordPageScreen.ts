@@ -2,10 +2,7 @@ import { useProjectedActor } from './useProjectedActor'
 import type { AnchorHTMLAttributes } from 'react'
 import { discordPageCopy } from '../copy/discordPage'
 import { apiFetch } from '../lib/api'
-import {
-  discordPageMachine,
-  type DiscordPagePhase,
-} from '../stores/discordPageMachine'
+import { discordPageMachine, type DiscordPagePhase } from '../stores/discordPageMachine'
 import { useMountEffect } from './useMountEffect'
 
 export type DiscordInstallLinkProps = Pick<
@@ -45,7 +42,9 @@ export function useDiscordPageScreen(): DiscordPageScreenModel {
     showInstall,
     showPending: phase === 'ready' && !ctx.installUrl,
     showError: phase === 'errored',
-    installSteps: showInstall ? discordPageCopy.installSteps.live : discordPageCopy.installSteps.pending,
+    installSteps: showInstall
+      ? discordPageCopy.installSteps.live
+      : discordPageCopy.installSteps.pending,
     installLinkProps: {
       href: ctx.installUrl ?? undefined,
       target: '_blank',

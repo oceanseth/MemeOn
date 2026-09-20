@@ -13,7 +13,12 @@ export async function onResolvePageUrl(host: CreateMemeActionHost): Promise<void
     return
   }
   if (/\.(png|jpe?g|gif|webp)($|\?)/i.test(url)) {
-    host.send({ type: 'SET_RESOLVED', imageUrl: url, videoUrl: null, source: null })
+    host.send({
+      type: 'SET_RESOLVED',
+      imageUrl: url,
+      videoUrl: null,
+      source: null,
+    })
     return
   }
   host.beginBusy(copy.busy.resolvingPage)
@@ -36,6 +41,9 @@ export async function onResolvePageUrl(host: CreateMemeActionHost): Promise<void
     })
     host.settleBusy({ type: 'DONE' })
   } catch (e) {
-    host.settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.resolveFailed) })
+    host.settleBusy({
+      type: 'FAIL',
+      err: mintDeskError(e, copy.errors.resolveFailed),
+    })
   }
 }

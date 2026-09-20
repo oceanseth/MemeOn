@@ -16,6 +16,10 @@ export interface ThemeModel {
  */
 export function useTheme(): ThemeModel {
   const { theme } = useStores()
-  const { preference, resolved } = useSyncExternalStore(theme.subscribe, theme.getSnapshot, theme.getSnapshot)
+  const { preference, resolved } = useSyncExternalStore(
+    theme.subscribe,
+    theme.getSnapshot,
+    theme.getSnapshot,
+  )
   return { preference, resolved, setPreference: theme.setPreference }
 }

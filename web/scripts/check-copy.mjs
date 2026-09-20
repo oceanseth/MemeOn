@@ -20,40 +20,45 @@
  * therefore hold its own layout in ordinary strings. It over-counts a little
  * rather than missing a caption; the baseline absorbs the noise.
  */
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
-import { join, relative, resolve, sep } from "node:path"
-import ts from "typescript"
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { join, relative, resolve, sep } from 'node:path'
+import ts from 'typescript'
 
 const args = process.argv.slice(2)
-const update = args.includes("--update")
-const list = args.includes("--list")
-const positional = args.filter((arg) => !arg.startsWith("--"))
-const src = resolve(positional[0] ?? "src")
-const baselineArg = args.find((arg) => arg.startsWith("--baseline="))?.slice("--baseline=".length)
-const baselineFile = baselineArg ? resolve(baselineArg) : resolve(import.meta.dirname, "copy-baseline.json")
+const update = args.includes('--update')
+const list = args.includes('--list')
+const positional = args.filter((arg) => !arg.startsWith('--'))
+const src = resolve(positional[0] ?? 'src')
+const baselineArg = args.find((arg) => arg.startsWith('--baseline='))?.slice('--baseline='.length)
+const baselineFile = baselineArg
+  ? resolve(baselineArg)
+  : resolve(import.meta.dirname, 'copy-baseline.json')
 
 if (!existsSync(src)) {
   console.error(`check-copy: ${src} does not exist`)
   process.exit(2)
 }
 
-const toSourcePath = (file) => relative(src, file).split(sep).join("/")
+const toSourcePath = (file) => relative(src, file).split(sep).join('/')
 const isTestLike = (name) => /\.(test|spec|stories|runtime)\./.test(name)
 const inScope = (sourcePath) => {
   if (!/\.tsx?$/.test(sourcePath) || isTestLike(sourcePath)) return false
-  if (sourcePath.startsWith("hooks/")) return true
-  if (sourcePath.startsWith("screens/")) return true
-  if (sourcePath.startsWith("views/")) return true
-  if (sourcePath.startsWith("molecules/")) return true
-  if (sourcePath.startsWith("organisms/")) return true
+  if (sourcePath.startsWith('hooks/')) return true
+  if (sourcePath.startsWith('screens/')) return true
+  if (sourcePath.startsWith('views/')) return true
+  if (sourcePath.startsWith('molecules/')) return true
+  if (sourcePath.startsWith('organisms/')) return true
   if (/^lib\/[^/]*Model\.ts$/.test(sourcePath)) return true
-  return sourcePath.startsWith("lib/createMemeModel/")
+  return sourcePath.startsWith('lib/createMemeModel/')
 }
 
-const walk = (dir) => (existsSync(dir) ? readdirSync(dir).flatMap((entry) => {
-  const file = join(dir, entry)
-  return statSync(file).isDirectory() ? walk(file) : [file]
-}) : [])
+const walk = (dir) =>
+  existsSync(dir)
+    ? readdirSync(dir).flatMap((entry) => {
+        const file = join(dir, entry)
+        return statSync(file).isDirectory() ? walk(file) : [file]
+      })
+    : []
 
 /** Two or more words with a letter in them, or exactly one Capitalised word (`Settings`, `Tier-ups`). */
 const isCopyLike = (raw) => {
@@ -66,25 +71,55 @@ const isCopyLike = (raw) => {
 const isDeveloperMessage = (node) => {
   const parent = node.parent
   if (!parent) return false
-  if (ts.isNewExpression(parent) && ts.isIdentifier(parent.expression) && /Error$/.test(parent.expression.text)) return true
-  if (ts.isCallExpression(parent) && ts.isPropertyAccessExpression(parent.expression) && ts.isIdentifier(parent.expression.expression) && parent.expression.expression.text === "console") return true
+  if (
+    ts.isNewExpression(parent) &&
+    ts.isIdentifier(parent.expression) &&
+    /Error$/.test(parent.expression.text)
+  )
+    return true
+  if (
+    ts.isCallExpression(parent) &&
+    ts.isPropertyAccessExpression(parent.expression) &&
+    ts.isIdentifier(parent.expression.expression) &&
+    parent.expression.expression.text === 'console'
+  )
+    return true
   return false
 }
 
-const MERGE_FUNCTIONS = new Set(['cn', 'cx', 'clsx', 'cva', 'tv', 'twMerge', 'twJoin', 'classNames'])
+const MERGE_FUNCTIONS = new Set([
+  'cn',
+  'cx',
+  'clsx',
+  'cva',
+  'tv',
+  'twMerge',
+  'twJoin',
+  'classNames',
+])
 
 /** Inside `className={…}` or a class-merge call — anywhere in the argument tree. */
 const isClassPosition = (node) => {
   for (let parent = node.parent; parent; parent = parent.parent) {
     if (ts.isJsxAttribute(parent)) {
-      return ts.isIdentifier(parent.name) && (parent.name.text === 'className' || parent.name.text === 'class')
+      return (
+        ts.isIdentifier(parent.name) &&
+        (parent.name.text === 'className' || parent.name.text === 'class')
+      )
     }
     if (ts.isCallExpression(parent)) {
       return ts.isIdentifier(parent.expression) && MERGE_FUNCTIONS.has(parent.expression.text)
     }
-    if (ts.isJsxExpression(parent) || ts.isArrayLiteralExpression(parent) || ts.isObjectLiteralExpression(parent)
-      || ts.isPropertyAssignment(parent) || ts.isConditionalExpression(parent) || ts.isBinaryExpression(parent)
-      || ts.isParenthesizedExpression(parent)) continue
+    if (
+      ts.isJsxExpression(parent) ||
+      ts.isArrayLiteralExpression(parent) ||
+      ts.isObjectLiteralExpression(parent) ||
+      ts.isPropertyAssignment(parent) ||
+      ts.isConditionalExpression(parent) ||
+      ts.isBinaryExpression(parent) ||
+      ts.isParenthesizedExpression(parent)
+    )
+      continue
     return false
   }
   return false
@@ -103,8 +138,7 @@ const KEYBOARD_KEYS = new Set(['Enter', 'Escape', 'Tab'])
 const isKeyboardKeyCheck = (node) => {
   const parent = node.parent
   if (!parent || !ts.isBinaryExpression(parent)) return false
-  const usesEventKey = (side) =>
-    ts.isPropertyAccessExpression(side) && side.name.text === 'key'
+  const usesEventKey = (side) => ts.isPropertyAccessExpression(side) && side.name.text === 'key'
   if (!usesEventKey(parent.left) && !usesEventKey(parent.right)) return false
   return KEYBOARD_KEYS.has(node.text)
 }
@@ -112,7 +146,10 @@ const isKeyboardKeyCheck = (node) => {
 const isRelOrTargetAttribute = (node) => {
   for (let parent = node.parent; parent; parent = parent.parent) {
     if (ts.isJsxAttribute(parent)) {
-      return ts.isIdentifier(parent.name) && (parent.name.text === "rel" || parent.name.text === "target")
+      return (
+        ts.isIdentifier(parent.name) &&
+        (parent.name.text === 'rel' || parent.name.text === 'target')
+      )
     }
     if (ts.isJsxExpression(parent)) continue
     return false
@@ -123,9 +160,15 @@ const isRelOrTargetAttribute = (node) => {
 const isNotCopyPosition = (node) => {
   const parent = node.parent
   if (!parent) return false
-  if (ts.isImportDeclaration(parent) || ts.isExportDeclaration(parent) || ts.isLiteralTypeNode(parent)) return true
+  if (
+    ts.isImportDeclaration(parent) ||
+    ts.isExportDeclaration(parent) ||
+    ts.isLiteralTypeNode(parent)
+  )
+    return true
   if (ts.isPropertyAssignment(parent) && parent.name === node) return true
-  if (ts.isCallExpression(parent) && parent.expression.kind === ts.SyntaxKind.ImportKeyword) return true
+  if (ts.isCallExpression(parent) && parent.expression.kind === ts.SyntaxKind.ImportKeyword)
+    return true
   if (isKeyboardKeyCheck(node)) return true
   if (isClassPosition(node)) return true
   if (isRelOrTargetAttribute(node)) return true
@@ -133,16 +176,23 @@ const isNotCopyPosition = (node) => {
 }
 
 const countCopyLiterals = (file) => {
-  const sourceFile = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true, file.endsWith(".tsx") ? ts.ScriptKind.TSX : ts.ScriptKind.TS)
+  const sourceFile = ts.createSourceFile(
+    file,
+    readFileSync(file, 'utf8'),
+    ts.ScriptTarget.Latest,
+    true,
+    file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+  )
   const hits = []
   const visit = (node) => {
     if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
-      if (!isNotCopyPosition(node) && isCopyLike(node.text) && !looksLikeClassList(node.text)) hits.push(node.text)
+      if (!isNotCopyPosition(node) && isCopyLike(node.text) && !looksLikeClassList(node.text))
+        hits.push(node.text)
     } else if (ts.isTemplateExpression(node) && !isNotCopyPosition(node)) {
-      const text = [node.head.text, ...node.templateSpans.map((span) => span.literal.text)].join("")
+      const text = [node.head.text, ...node.templateSpans.map((span) => span.literal.text)].join('')
       if (isCopyLike(text) && !looksLikeClassList(text)) hits.push(text)
     } else if (ts.isJsxText(node) && !node.containsOnlyTriviaWhiteSpaces) {
-      const text = node.text.replace(/\s+/g, " ").trim()
+      const text = node.text.replace(/\s+/g, ' ').trim()
       if (text && isCopyLike(text) && !looksLikeClassList(text)) hits.push(text)
     }
     ts.forEachChild(node, visit)
@@ -153,25 +203,30 @@ const countCopyLiterals = (file) => {
 
 const counts = {}
 for (const file of [
-  ...walk(join(src, "hooks")),
-  ...walk(join(src, "lib")),
-  ...walk(join(src, "screens")),
-  ...walk(join(src, "views")),
-  ...walk(join(src, "molecules")),
-  ...walk(join(src, "organisms")),
+  ...walk(join(src, 'hooks')),
+  ...walk(join(src, 'lib')),
+  ...walk(join(src, 'screens')),
+  ...walk(join(src, 'views')),
+  ...walk(join(src, 'molecules')),
+  ...walk(join(src, 'organisms')),
 ]) {
   const sourcePath = toSourcePath(file)
   if (!inScope(sourcePath)) continue
   const hits = countCopyLiterals(file)
   if (hits.length > 0) counts[sourcePath] = hits.length
-  if (list && hits.length > 0) console.log(`${sourcePath} (${hits.length})\n${hits.map((hit) => `  ${JSON.stringify(hit)}`).join("\n")}`)
+  if (list && hits.length > 0)
+    console.log(
+      `${sourcePath} (${hits.length})\n${hits.map((hit) => `  ${JSON.stringify(hit)}`).join('\n')}`,
+    )
 }
 
 const total = Object.values(counts).reduce((sum, count) => sum + count, 0)
 
 if (!existsSync(baselineFile)) {
   if (!update) {
-    console.error(`check-copy: no baseline at ${relative(process.cwd(), baselineFile)}; create it with --update`)
+    console.error(
+      `check-copy: no baseline at ${relative(process.cwd(), baselineFile)}; create it with --update`,
+    )
     process.exit(1)
   }
   writeFileSync(baselineFile, `${JSON.stringify(counts, null, 2)}\n`)
@@ -179,7 +234,7 @@ if (!existsSync(baselineFile)) {
   process.exit(0)
 }
 
-const baseline = JSON.parse(readFileSync(baselineFile, "utf8"))
+const baseline = JSON.parse(readFileSync(baselineFile, 'utf8'))
 const files = [...new Set([...Object.keys(baseline), ...Object.keys(counts)])].sort()
 const grew = []
 const shrank = []
@@ -191,17 +246,23 @@ for (const file of files) {
 }
 
 if (grew.length > 0) {
-  console.error(`check-copy: ${grew.length} file(s) spell more copy than the baseline allows\n${grew.join("\n")}\n  move the string into copy/<surface>.ts and read it from there`)
+  console.error(
+    `check-copy: ${grew.length} file(s) spell more copy than the baseline allows\n${grew.join('\n')}\n  move the string into copy/<surface>.ts and read it from there`,
+  )
   process.exit(1)
 }
 
 if (shrank.length > 0) {
   if (update) {
     writeFileSync(baselineFile, `${JSON.stringify(counts, null, 2)}\n`)
-    console.log(`check-copy: baseline lowered for ${shrank.length} file(s), ${total} copy-like literal(s) remain outside copy/`)
+    console.log(
+      `check-copy: baseline lowered for ${shrank.length} file(s), ${total} copy-like literal(s) remain outside copy/`,
+    )
     process.exit(0)
   }
-  console.error(`check-copy: ${shrank.length} file(s) dropped below the baseline\n${shrank.join("\n")}\n  lock it in: pnpm --filter web run check-copy -- --update`)
+  console.error(
+    `check-copy: ${shrank.length} file(s) dropped below the baseline\n${shrank.join('\n')}\n  lock it in: pnpm --filter web run check-copy -- --update`,
+  )
   process.exit(1)
 }
 

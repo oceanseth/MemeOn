@@ -10,7 +10,10 @@ function isAuthoredMintCopy(message: string): boolean {
     if (typeof value === 'string' && value === message) return true
   }
   const rejectedStatus = message.match(/\((\d+)\)/)?.[1]
-  if (rejectedStatus !== undefined && message === copy.errors.uploadRejected(Number(rejectedStatus))) {
+  if (
+    rejectedStatus !== undefined &&
+    message === copy.errors.uploadRejected(Number(rejectedStatus))
+  ) {
     return true
   }
   const token = '__generationId__'

@@ -140,7 +140,10 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
               >
                 <Icon name={model.emptyTone === 'offline' ? 'triangle-alert' : 'bell'} size={22} />
               </span>
-              <p className="m-0 text-sm text-pretty text-muted-foreground" data-slot="alerts-empty-label">
+              <p
+                className="m-0 text-sm text-pretty text-muted-foreground"
+                data-slot="alerts-empty-label"
+              >
                 {model.emptyLabel}
               </p>
             </div>
@@ -158,7 +161,11 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
                   title={row.fullMessage}
                 >
                   <ItemMedia variant="disc" aria-hidden="true" data-slot="alert-mark">
-                    {row.mark.kind === 'emoji' ? row.mark.emoji : <Icon name={row.mark.icon} size={18} />}
+                    {row.mark.kind === 'emoji' ? (
+                      row.mark.emoji
+                    ) : (
+                      <Icon name={row.mark.icon} size={18} />
+                    )}
                   </ItemMedia>
                   <ItemContent>
                     <span

@@ -110,10 +110,12 @@ test('disposing an unretained bag acquires no actor resources', async () => {
 })
 
 test('projection connection catches up by exact reference and is reversible', async () => {
-  const actor = createActor(authMachine.provide({
-    actors: { loadMe: fromPromise<Me | null>(async () => me) },
-    actions: { clearSessionAndFirebase: () => {} },
-  }))
+  const actor = createActor(
+    authMachine.provide({
+      actors: { loadMe: fromPromise<Me | null>(async () => me) },
+      actions: { clearSessionAndFirebase: () => {} },
+    }),
+  )
   const actorSubscribe = vi.spyOn(actor, 'subscribe')
   const auth = new AuthStore(actor)
   const initial = actor.getSnapshot()
@@ -152,13 +154,18 @@ test('projection connection catches up by exact reference and is reversible', as
 })
 
 test('retaining binds the theme to the signed-in avatar and disposal stops following it', async () => {
-  const items = new Map([['memeon_theme', 'light'], ['memeon_theme:user-test', 'dark']])
+  const items = new Map([
+    ['memeon_theme', 'light'],
+    ['memeon_theme:user-test', 'dark'],
+  ])
   const dataset: Record<string, string | undefined> = {}
   const theme = new ThemeStore({
     document: { documentElement: { dataset } },
     localStorage: {
       getItem: (key) => items.get(key) ?? null,
-      setItem: (key, value) => { items.set(key, value) },
+      setItem: (key, value) => {
+        items.set(key, value)
+      },
     },
   })
   const disconnect = vi.spyOn(theme, 'disconnect')

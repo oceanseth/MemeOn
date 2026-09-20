@@ -32,7 +32,9 @@ function Frame(props: DialogContentProps) {
         <DialogContent container={portalAnchor(ANCHOR)} {...props}>
           <DialogHeader>
             <DialogTitle>A modal frame</DialogTitle>
-            <DialogDescription>Everything the app puts in a modal sits on this box.</DialogDescription>
+            <DialogDescription>
+              Everything the app puts in a modal sits on this box.
+            </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button onClick={() => onOpenChange(false)}>Cancel</Button>
@@ -67,10 +69,15 @@ export const Default: Story = {
     await expect(dialog).toHaveAttribute('data-size', 'md')
     // Base UI never sets it: a screen reader that constrains its cursor by aria-modal needs it
     await expect(dialog).toHaveAttribute('aria-modal', 'true')
-    await expect(dialog).toHaveAccessibleDescription('Everything the app puts in a modal sits on this box.')
+    await expect(dialog).toHaveAccessibleDescription(
+      'Everything the app puts in a modal sits on this box.',
+    )
     await expect(canvasElement.querySelector('[data-slot="dialog-overlay"]')).not.toBeNull()
     // the ✕ is in the corner and the header keeps out of its lane
-    await expect(canvas.getByRole('button', { name: 'Close the dialog' })).toHaveAttribute('data-slot', 'dialog-close')
+    await expect(canvas.getByRole('button', { name: 'Close the dialog' })).toHaveAttribute(
+      'data-slot',
+      'dialog-close',
+    )
     const header = canvasElement.querySelector<HTMLElement>('[data-slot="dialog-header"]')!
     await expect(getComputedStyle(header).paddingRight).toBe('48px')
     // Base UI moves focus on the next frame, so this is a wait, not a read
@@ -148,7 +155,9 @@ export const Triggered: Story = {
         <DialogContent container={portalAnchor(ANCHOR)} {...args}>
           <DialogHeader>
             <DialogTitle>Opened by its trigger</DialogTitle>
-            <DialogDescription>Base UI restores focus to the trigger on the way out.</DialogDescription>
+            <DialogDescription>
+              Base UI restores focus to the trigger on the way out.
+            </DialogDescription>
           </DialogHeader>
         </DialogContent>
       </Dialog>
@@ -159,7 +168,9 @@ export const Triggered: Story = {
     const trigger = canvas.getByRole('button', { name: 'Open the dialog' })
     await expect(canvas.queryByRole('dialog')).toBeNull()
     await userEvent.click(trigger)
-    const dialog = await canvas.findByRole('dialog', { name: 'Opened by its trigger' })
+    const dialog = await canvas.findByRole('dialog', {
+      name: 'Opened by its trigger',
+    })
     await expect(canvasElement.contains(dialog)).toBe(true)
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull())

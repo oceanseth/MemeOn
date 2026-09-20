@@ -34,7 +34,9 @@ const optionFor = (value: ThemePreference) =>
   THEME_OPTIONS.find((option) => option.value === value) ?? THEME_OPTIONS[0]!
 
 const nextAfter = (value: ThemePreference) =>
-  THEME_OPTIONS[(THEME_OPTIONS.findIndex((option) => option.value === value) + 1) % THEME_OPTIONS.length]!
+  THEME_OPTIONS[
+    (THEME_OPTIONS.findIndex((option) => option.value === value) + 1) % THEME_OPTIONS.length
+  ]!
 
 export function buildThemeControlModel({
   value,

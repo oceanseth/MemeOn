@@ -8,15 +8,8 @@ import type {
 } from 'react'
 import { developersCopy } from '../copy/developers'
 import { apiFetch, post } from '../lib/api'
-import {
-  buildConfirmDialogModel,
-  type ConfirmDialogModel,
-} from '../lib/confirmDialogModel'
-import {
-  developersMachine,
-  type DevelopersPhase,
-  type KeyRow,
-} from '../stores/developersMachine'
+import { buildConfirmDialogModel, type ConfirmDialogModel } from '../lib/confirmDialogModel'
+import { developersMachine, type DevelopersPhase, type KeyRow } from '../stores/developersMachine'
 import { useMountEffect } from './useMountEffect'
 
 /** Key ceiling — shown in UI instead of letting the API reject a click. */
@@ -148,7 +141,10 @@ export function useDevelopersScreen(): DevelopersScreenModel {
       load()
     } catch (e) {
       // Prefer server error over generic create failure
-      send({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.create })
+      send({
+        type: 'FAIL',
+        err: e instanceof Error ? e.message : copy.errors.create,
+      })
     }
   }, [actor, load, send])
 
@@ -210,7 +206,10 @@ export function useDevelopersScreen(): DevelopersScreenModel {
     busy: ctx.revokeBusy,
     title: copy.revokeDialog.title,
     message: [
-      { kind: 'code' as const, text: copy.revokeDialog.prefix(String(ctx.revoking?.prefix)) },
+      {
+        kind: 'code' as const,
+        text: copy.revokeDialog.prefix(String(ctx.revoking?.prefix)),
+      },
       copy.revokeDialog.body(String(ctx.revoking?.label)),
     ],
     // the page behind an open modal is inert, so the failure has to land inside the dialog

@@ -44,7 +44,11 @@ export interface BuildSortChipsModelInput {
   disabledReason?: string | null
 }
 
-const CHIP_OPTIONS: readonly { key: SortKey; label: string; icon: IconName | null }[] = [
+const CHIP_OPTIONS: readonly {
+  key: SortKey
+  label: string
+  icon: IconName | null
+}[] = [
   { key: 'new', label: copy.chips.new, icon: null },
   { key: 'views', label: copy.chips.views, icon: 'eye' },
   { key: 'reshares', label: copy.chips.reshares, icon: 'arrows-left-right' },

@@ -13,7 +13,9 @@ import { labelVariants } from '@/atoms/label'
 import { cn } from '@/lib/cn'
 
 /** Base UI takes `className` as a string or a state function; the parts here take the string. */
-export type Styled<P> = Omit<P, 'className'> & { className?: string | undefined }
+export type Styled<P> = Omit<P, 'className'> & {
+  className?: string | undefined
+}
 
 /** Label, control, description and error wired together by Base UI (`for`, `aria-describedby`, `data-invalid`). */
 export function Field({ className, ...props }: Styled<FieldRootProps>) {
@@ -60,7 +62,9 @@ export function FieldError({ className, ...props }: Styled<FieldErrorProps>) {
 }
 
 /** Standalone description outside a `<Field>`; `as="span"` for use inside a bare `<label>`. */
-export type TextProps = ComponentPropsWithoutRef<'p'> & { as?: 'p' | 'span' | undefined }
+export type TextProps = ComponentPropsWithoutRef<'p'> & {
+  as?: 'p' | 'span' | undefined
+}
 
 export function Hint({ as: Tag = 'p', className, ...props }: TextProps) {
   return <Tag data-slot="hint" className={cn(descriptionChrome, className)} {...props} />
@@ -81,7 +85,10 @@ export function FieldCounter({ className, ...props }: ComponentPropsWithoutRef<'
   return (
     <span
       data-slot="field-counter"
-      className={cn('ml-auto shrink-0 text-sm font-normal text-muted-foreground tabular-nums', className)}
+      className={cn(
+        'ml-auto shrink-0 text-sm font-normal text-muted-foreground tabular-nums',
+        className,
+      )}
       {...props}
     />
   )
@@ -117,5 +124,3 @@ export function FieldLegend({
     />
   )
 }
-
-

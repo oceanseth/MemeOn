@@ -59,6 +59,9 @@ export async function onRemix(host: CreateMemeActionHost): Promise<void> {
     host.settleBusy({ type: 'DONE' })
   } catch (e) {
     if (!owner.active || isLifetimeCancellation(e)) return
-    host.settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.remixFailed) })
+    host.settleBusy({
+      type: 'FAIL',
+      err: mintDeskError(e, copy.errors.remixFailed),
+    })
   }
 }

@@ -28,10 +28,7 @@ const ONLINE_STRIP = cn(
 )
 
 /** Fixed title width so avatar lanes align across strips. */
-const ONLINE_TITLE = cn(
-  'w-35 shrink-0 text-lg font-semibold text-foreground',
-  'max-sm:w-full',
-)
+const ONLINE_TITLE = cn('w-35 shrink-0 text-lg font-semibold text-foreground', 'max-sm:w-full')
 
 /** The presence dot: 10px, the success ink, never the only carrier of the fact (an sr-only says it). */
 const DOT = 'inline-block size-2.5 shrink-0 rounded-full bg-success-foreground'
@@ -165,10 +162,7 @@ export function FriendsScreen({
               <InputGroupAddon>
                 <Icon name="magnifying-glass" size={20} />
               </InputGroupAddon>
-              <InputGroupInput
-                type="search"
-                {...searchInputProps}
-              />
+              <InputGroupInput type="search" {...searchInputProps} />
             </InputGroup>
           </span>
           <Button variant="primary" className="max-sm:w-full" {...inviteButtonProps}>
@@ -180,16 +174,28 @@ export function FriendsScreen({
         </Toolbar>
       </PageHead>
 
-      {showMsg && <Alert variant="success" className="mt-3">{msg}</Alert>}
-      {showErr && !showError && <Alert variant="error" className="mt-3">{err}</Alert>}
+      {showMsg && (
+        <Alert variant="success" className="mt-3">
+          {msg}
+        </Alert>
+      )}
+      {showErr && !showError && (
+        <Alert variant="error" className="mt-3">
+          {err}
+        </Alert>
+      )}
 
       {showSearchPanel && (
         <Card className="mb-5">
           <CardTitle render={<h2 />}>{searchResultsHeading}</CardTitle>
           <div role="status">
-            {showSearching && <p className="m-0 text-base text-muted-foreground">{searchingLabel}</p>}
+            {showSearching && (
+              <p className="m-0 text-base text-muted-foreground">{searchingLabel}</p>
+            )}
             {showNoHits && <p className="m-0 text-base text-muted-foreground">{noHitsMessage}</p>}
-            {showSearchFailed && <p className="m-0 text-base text-muted-foreground">{searchFailedMessage}</p>}
+            {showSearchFailed && (
+              <p className="m-0 text-base text-muted-foreground">{searchFailedMessage}</p>
+            )}
           </div>
           {showHits && (
             <div className={cn(SECTION, 'mt-3.5')}>
@@ -231,7 +237,10 @@ export function FriendsScreen({
       ) : null}
 
       {showLoading ? (
-        <div role="status" className="flex items-center justify-center gap-2.5 px-5 py-15 text-base text-muted-foreground">
+        <div
+          role="status"
+          className="flex items-center justify-center gap-2.5 px-5 py-15 text-base text-muted-foreground"
+        >
           <Spinner />
           {loadingLabel}
         </div>
@@ -336,7 +345,9 @@ export function FriendsScreen({
         </>
       )}
 
-      {showCircleHint && !showError ? <p className="mt-6 text-base text-muted-foreground">{circleHintMessage}</p> : null}
+      {showCircleHint && !showError ? (
+        <p className="mt-6 text-base text-muted-foreground">{circleHintMessage}</p>
+      ) : null}
 
       <GiftDialog model={giftDialog} />
       <ConfirmDialog model={removeDialog} />

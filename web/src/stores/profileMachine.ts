@@ -64,17 +64,31 @@ export const profileMachine = setup({
   on: {
     /* a tab is a different collection, so it starts at page one; a relationship reload (DONE) is
        the same collection and keeps whatever the reader has already paged in */
-    SET_TAB: { actions: assign({ tab: ({ event }) => event.tab, visibleLimit: BINDER_PAGE_SIZE }) },
+    SET_TAB: {
+      actions: assign({
+        tab: ({ event }) => event.tab,
+        visibleLimit: BINDER_PAGE_SIZE,
+      }),
+    },
     SHOW_MORE: {
-      actions: assign({ visibleLimit: ({ context }) => context.visibleLimit + BINDER_PAGE_SIZE }),
+      actions: assign({
+        visibleLimit: ({ context }) => context.visibleLimit + BINDER_PAGE_SIZE,
+      }),
     },
     DONE: {
       target: '.ready',
-      actions: assign({ data: ({ event }) => event.data, err: null, errKind: null }),
+      actions: assign({
+        data: ({ event }) => event.data,
+        err: null,
+        errKind: null,
+      }),
     },
     FAIL: {
       target: '.error',
-      actions: assign({ err: ({ event }) => event.err, errKind: ({ event }) => event.kind }),
+      actions: assign({
+        err: ({ event }) => event.err,
+        errKind: ({ event }) => event.kind,
+      }),
     },
     /* relationship mutations keep the loaded profile on screen; only busy/actionErr move */
     BEGIN_ACTION: { actions: assign({ busy: true, actionErr: null }) },
@@ -85,7 +99,9 @@ export const profileMachine = setup({
       }),
     },
     SETTLE_ACTION: { actions: assign({ busy: false }) },
-    FAIL_ACTION: { actions: assign({ busy: false, actionErr: ({ event }) => event.err }) },
+    FAIL_ACTION: {
+      actions: assign({ busy: false, actionErr: ({ event }) => event.err }),
+    },
   },
   states: { loading: {}, ready: {}, error: {} },
 })

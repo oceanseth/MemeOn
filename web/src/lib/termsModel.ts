@@ -38,9 +38,11 @@ export function buildTermsScreenModel(): TermsScreenModel {
         heading: copy.yourContent.heading,
         blocks: [
           legalParagraph(
-            copy.yourContent.bodyBeforeLink, ' ',
+            copy.yourContent.bodyBeforeLink,
+            ' ',
             legalExternalLink(copy.yourContent.maskyTerms.href, copy.yourContent.maskyTerms.text),
-            copy.yourContent.bodyAfterLink),
+            copy.yourContent.bodyAfterLink,
+          ),
         ],
       },
       {
@@ -48,11 +50,20 @@ export function buildTermsScreenModel(): TermsScreenModel {
         heading: claimsAndTakedowns.heading,
         blocks: [
           legalParagraph(
-            claimsAndTakedowns.lead, ' ',
-            legalInAppLink(claimsAndTakedowns.claimFlow.to, claimsAndTakedowns.claimFlow.text), '. ',
-            claimsAndTakedowns.mid, ' ',
-            legalMailto(claimsAndTakedowns.email, claimsAndTakedowns.emailSubject, claimsAndTakedowns.email), ' ',
-            claimsAndTakedowns.tail),
+            claimsAndTakedowns.lead,
+            ' ',
+            legalInAppLink(claimsAndTakedowns.claimFlow.to, claimsAndTakedowns.claimFlow.text),
+            '. ',
+            claimsAndTakedowns.mid,
+            ' ',
+            legalMailto(
+              claimsAndTakedowns.email,
+              claimsAndTakedowns.emailSubject,
+              claimsAndTakedowns.email,
+            ),
+            ' ',
+            claimsAndTakedowns.tail,
+          ),
         ],
       },
       {
@@ -69,13 +80,24 @@ export function buildTermsScreenModel(): TermsScreenModel {
         heading: thirdPartyServices.heading,
         blocks: [
           legalParagraph(
-            thirdPartyServices.signInLead, ' ',
-            legalExternalLink(thirdPartyServices.maskyTerms.href, thirdPartyServices.maskyTerms.text),
-            thirdPartyServices.signInTail, ' ',
-            legalExternalLink(thirdPartyServices.discordTerms.href, thirdPartyServices.discordTerms.text),
-            thirdPartyServices.giphyLead, ' ',
-            legalExternalLink(thirdPartyServices.giphy.href, thirdPartyServices.giphy.text), ' ',
-            thirdPartyServices.giphyTail),
+            thirdPartyServices.signInLead,
+            ' ',
+            legalExternalLink(
+              thirdPartyServices.maskyTerms.href,
+              thirdPartyServices.maskyTerms.text,
+            ),
+            thirdPartyServices.signInTail,
+            ' ',
+            legalExternalLink(
+              thirdPartyServices.discordTerms.href,
+              thirdPartyServices.discordTerms.text,
+            ),
+            thirdPartyServices.giphyLead,
+            ' ',
+            legalExternalLink(thirdPartyServices.giphy.href, thirdPartyServices.giphy.text),
+            ' ',
+            thirdPartyServices.giphyTail,
+          ),
         ],
       },
       {
@@ -86,7 +108,11 @@ export function buildTermsScreenModel(): TermsScreenModel {
       {
         id: 'contact',
         heading: copy.contact.heading,
-        blocks: [legalParagraph(legalMailto(copy.contact.email, copy.contact.emailSubject, copy.contact.email))],
+        blocks: [
+          legalParagraph(
+            legalMailto(copy.contact.email, copy.contact.emailSubject, copy.contact.email),
+          ),
+        ],
       },
     ],
   })

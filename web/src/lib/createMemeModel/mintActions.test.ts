@@ -69,7 +69,12 @@ describe('onMint', () => {
   afterEach(() => vi.unstubAllGlobals())
 
   it('POSTs /api/memes JSON exactly { title, imageUrl, mediaType, videoUrl, remixOf, source, tags }', async () => {
-    const source = { provider: 'giphy', id: 'cat-1', url: 'https://giphy.com/gifs/cat-1', author: 'catlord' }
+    const source = {
+      provider: 'giphy',
+      id: 'cat-1',
+      url: 'https://giphy.com/gifs/cat-1',
+      author: 'catlord',
+    }
     const body = await postedMintBody({
       ...baseCtx,
       title: 'burning office',

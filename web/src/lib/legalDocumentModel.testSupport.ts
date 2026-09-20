@@ -13,6 +13,11 @@ export function expectLegalDocumentChrome(
   expect(model.title).toBe(copy.title)
   expect(model.updated).toEqual(copy.updated)
   expect(model.tocLabel).toBe(copy.tocLabel)
-  expect(model.toc).toEqual(model.sections.map((section) => ({ id: section.id, label: section.heading })))
+  expect(model.toc).toEqual(
+    model.sections.map((section) => ({
+      id: section.id,
+      label: section.heading,
+    })),
+  )
   expect(model.crossLink).toEqual(copy.crossLink)
 }

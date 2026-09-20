@@ -4,7 +4,15 @@ import { Button } from '@/atoms/button'
 import { DialogFooter } from '@/atoms/dialog'
 import { Input } from '@/atoms/input'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/atoms/input-group'
-import { Item, ItemActions, ItemContent, ItemDescription, ItemGroup, ItemMedia, ItemTitle } from '@/atoms/item'
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemGroup,
+  ItemMedia,
+  ItemTitle,
+} from '@/atoms/item'
 import { Label } from '@/atoms/label'
 import { LiveRegion } from '@/atoms/live-region'
 import { TierChip } from '@/atoms/tier-chip'
@@ -43,15 +51,12 @@ export function GiftDialog({ model }: { model: GiftDialogModel }) {
       // Base UI parks focus on the first tab stop (the ✕); the binder search is the actual task
       initialFocus={() => document.getElementById(searchId)}
     >
-      <Input
-        id={searchId}
-        type="search"
-        className="w-full"
-        {...model.searchInputProps}
-      />
+      <Input id={searchId} type="search" className="w-full" {...model.searchInputProps} />
       <div className={cn(LIST, model.busy && 'pointer-events-none')} data-slot="gift-list">
         {/* my-4 is the UA paragraph margin preflight removed; the empty binder read as a gap, not a row */}
-        {model.showEmpty && <p className="my-4 text-base text-muted-foreground">{model.emptyMessage}</p>}
+        {model.showEmpty && (
+          <p className="my-4 text-base text-muted-foreground">{model.emptyMessage}</p>
+        )}
         <ItemGroup>
           {model.rows.map((row) => (
             <Item

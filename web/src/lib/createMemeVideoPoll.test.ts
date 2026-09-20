@@ -46,7 +46,9 @@ describe('pollVideoStatus', () => {
     const owner = { active: true }
     const fetchStatus = vi.fn().mockResolvedValue({ status: 'video', videoUrl: '/done.mp4' })
 
-    const result = pollVideoStatus(pollRunRef, 'gen-1', Date.now(), owner, persistOwned, { fetchStatus })
+    const result = pollVideoStatus(pollRunRef, 'gen-1', Date.now(), owner, persistOwned, {
+      fetchStatus,
+    })
     await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS)
     await expect(result).resolves.toBe('/done.mp4')
     expect(fetchStatus).toHaveBeenCalledWith('gen-1')
@@ -55,9 +57,13 @@ describe('pollVideoStatus', () => {
 
   it('rejects on error status with the server message and clears if owned', async () => {
     const owner = { active: true }
-    const fetchStatus = vi.fn().mockResolvedValue({ status: 'error', errorMessage: 'Masky blew up' })
+    const fetchStatus = vi
+      .fn()
+      .mockResolvedValue({ status: 'error', errorMessage: 'Masky blew up' })
 
-    const result = pollVideoStatus(pollRunRef, 'gen-1', Date.now(), owner, persistOwned, { fetchStatus })
+    const result = pollVideoStatus(pollRunRef, 'gen-1', Date.now(), owner, persistOwned, {
+      fetchStatus,
+    })
     const settled = expect(result).rejects.toThrow('Masky blew up')
     await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS)
     await settled
@@ -83,8 +89,12 @@ describe('pollVideoStatus', () => {
     const owner = { active: true }
     const fetchStatus = vi.fn().mockResolvedValue({ status: 'video', videoUrl: '/second.mp4' })
 
-    const firstResult = pollVideoStatus(pollRunRef, 'gen-a', Date.now(), owner, () => {}, { fetchStatus })
-    const secondResult = pollVideoStatus(pollRunRef, 'gen-b', Date.now(), owner, () => {}, { fetchStatus })
+    const firstResult = pollVideoStatus(pollRunRef, 'gen-a', Date.now(), owner, () => {}, {
+      fetchStatus,
+    })
+    const secondResult = pollVideoStatus(pollRunRef, 'gen-b', Date.now(), owner, () => {}, {
+      fetchStatus,
+    })
     await expect(firstResult).rejects.toBeInstanceOf(CreationLifetimeCancelledError)
     await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS)
     await expect(secondResult).resolves.toBe('/second.mp4')
@@ -99,7 +109,9 @@ describe('pollVideoStatus', () => {
       .mockRejectedValueOnce(new Error('network blip'))
       .mockResolvedValue({ status: 'video', videoUrl: '/recovered.mp4' })
 
-    const result = pollVideoStatus(pollRunRef, 'gen-1', Date.now(), owner, () => {}, { fetchStatus })
+    const result = pollVideoStatus(pollRunRef, 'gen-1', Date.now(), owner, () => {}, {
+      fetchStatus,
+    })
     await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS)
     await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS)
     await expect(result).resolves.toBe('/recovered.mp4')
@@ -109,7 +121,9 @@ describe('pollVideoStatus', () => {
   it('rejects immediately when the owner is already inactive', async () => {
     const owner = { active: false }
     await expect(
-      pollVideoStatus(pollRunRef, 'gen-1', Date.now(), owner, () => {}, { fetchStatus: vi.fn() }),
+      pollVideoStatus(pollRunRef, 'gen-1', Date.now(), owner, () => {}, {
+        fetchStatus: vi.fn(),
+      }),
     ).rejects.toBeInstanceOf(CreationLifetimeCancelledError)
   })
 

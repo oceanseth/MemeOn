@@ -3,7 +3,8 @@ import { expect, within } from 'storybook/test'
 import { Heading } from '@/atoms/heading'
 
 /** A token as `:root` declares it, so the assertion follows the scale rather than pinning a literal. */
-const token = (name: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+const token = (name: string) =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 
 const meta = {
   title: 'Atoms/Heading',
@@ -17,7 +18,10 @@ type Story = StoryObj<typeof meta>
 /** The default: an `<h2>` at the title step. */
 export const Default: Story = {
   play: async ({ canvasElement }) => {
-    const heading = within(canvasElement).getByRole('heading', { level: 2, name: 'Top Brains' })
+    const heading = within(canvasElement).getByRole('heading', {
+      level: 2,
+      name: 'Top Brains',
+    })
     await expect(heading).toHaveAttribute('data-slot', 'heading')
     await expect(heading).toHaveAttribute('data-size', 'title')
     await expect(getComputedStyle(heading).fontSize).toBe(token('--text-3xl'))
@@ -75,7 +79,10 @@ export const Levels: Story = {
     await expect(getComputedStyle(h1).fontSize).toBe(token('--text-3xl'))
     const h2 = canvas.getByRole('heading', { level: 2 })
     await expect(getComputedStyle(h2).fontSize).toBe(token('--text-5xl'))
-    await expect(canvas.getByRole('heading', { level: 3 })).toHaveAttribute('data-size', 'card-title-phone')
+    await expect(canvas.getByRole('heading', { level: 3 })).toHaveAttribute(
+      'data-size',
+      'card-title-phone',
+    )
   },
 }
 
@@ -83,7 +90,10 @@ export const Levels: Story = {
 export const TitlePhone: Story = {
   args: { size: 'title-phone', children: 'Fresh drops · 128' },
   play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector('[data-slot="heading"]')).toHaveAttribute('data-size', 'title-phone')
+    await expect(canvasElement.querySelector('[data-slot="heading"]')).toHaveAttribute(
+      'data-size',
+      'title-phone',
+    )
   },
 }
 

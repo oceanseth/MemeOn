@@ -83,25 +83,40 @@ export function AvatarMenu({ model }: { model: AvatarMenuModel }) {
         <Avatar name={model.name} src={model.src} size="header" />
       </DropdownMenuTrigger>
       <PortalAnchor id={ANCHOR_ID} />
-      <DropdownMenuContent container={portalAnchor(ANCHOR_ID)} align="end" className="w-64" data-slot="avatar-menu">
+      <DropdownMenuContent
+        container={portalAnchor(ANCHOR_ID)}
+        align="end"
+        className="w-64"
+        data-slot="avatar-menu"
+      >
         <DropdownMenuGroup>
           <DropdownMenuLabel data-slot="avatar-menu-identity">
             <span className="flex items-center gap-2.5">
               <Avatar name={model.name} src={model.src} size="sm" />
-              <span className="min-w-0 truncate text-base font-semibold text-foreground" data-slot="avatar-menu-name">
+              <span
+                className="min-w-0 truncate text-base font-semibold text-foreground"
+                data-slot="avatar-menu-name"
+              >
                 {model.name}
               </span>
             </span>
           </DropdownMenuLabel>
           {model.items.map((item) => (
             // the row is the link itself; Base UI keeps `menuitem` on the anchor and closes on click
-            <DropdownMenuItem key={item.key} render={<Link to={item.to} />} data-slot="avatar-menu-item">
+            <DropdownMenuItem
+              key={item.key}
+              render={<Link to={item.to} />}
+              data-slot="avatar-menu-item"
+            >
               {/* The 18px lane, held by a fixed-size box rather than by the glyph, so a mark with a
                   narrower silhouette (`code`) still starts its label on the same vertical as a wide
                   one (`trophy`). The trailing space is not slop: it reproduces the theme radio's own
                   `<Icon /> {label}` spacing below, so every label in the popup — routes and radio
                   alike — sits on one column. */}
-              <span aria-hidden="true" className="flex size-4.5 shrink-0 items-center justify-center">
+              <span
+                aria-hidden="true"
+                className="flex size-4.5 shrink-0 items-center justify-center"
+              >
                 <Icon name={item.icon} size={18} />
               </span>{' '}
               {item.label}
@@ -117,7 +132,11 @@ export function AvatarMenu({ model }: { model: AvatarMenuModel }) {
             data-slot="avatar-menu-theme"
           >
             {model.theme.options.map((option) => (
-              <DropdownMenuRadioItem key={option.value} value={option.value} data-slot="avatar-menu-theme-option">
+              <DropdownMenuRadioItem
+                key={option.value}
+                value={option.value}
+                data-slot="avatar-menu-theme-option"
+              >
                 <Icon name={option.icon} size={18} /> {option.label}
               </DropdownMenuRadioItem>
             ))}

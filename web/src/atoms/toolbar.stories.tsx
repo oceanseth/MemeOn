@@ -40,7 +40,10 @@ export const Default: Story = {
     const end = canvasElement.querySelector<HTMLElement>('[data-slot="toolbar-end"]')!
     await expect(getComputedStyle(start).columnGap).toBe('10px')
     // the end slot sits at the far edge of the row
-    await expect(end.getBoundingClientRect().right).toBeCloseTo(toolbar.getBoundingClientRect().right, 0)
+    await expect(end.getBoundingClientRect().right).toBeCloseTo(
+      toolbar.getBoundingClientRect().right,
+      0,
+    )
     await expect(within(canvasElement).getAllByRole('button')).toHaveLength(4)
   },
 }

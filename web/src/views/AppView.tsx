@@ -18,11 +18,19 @@ import { TermsView } from './TermsView'
 /* Landing, legal and the public share routes stay eager so first paint is unchanged;
    everything only a signed-in player can reach arrives with its route. */
 const BinderView = lazy(() => import('./BinderView').then((m) => ({ default: m.BinderView })))
-const CreateMemeView = lazy(() => import('./CreateMemeView').then((m) => ({ default: m.CreateMemeView })))
-const DevelopersView = lazy(() => import('./DevelopersView').then((m) => ({ default: m.DevelopersView })))
+const CreateMemeView = lazy(() =>
+  import('./CreateMemeView').then((m) => ({ default: m.CreateMemeView })),
+)
+const DevelopersView = lazy(() =>
+  import('./DevelopersView').then((m) => ({ default: m.DevelopersView })),
+)
 const FriendsView = lazy(() => import('./FriendsView').then((m) => ({ default: m.FriendsView })))
-const LeaderboardView = lazy(() => import('./LeaderboardView').then((m) => ({ default: m.LeaderboardView })))
-const MarketplaceView = lazy(() => import('./MarketplaceView').then((m) => ({ default: m.MarketplaceView })))
+const LeaderboardView = lazy(() =>
+  import('./LeaderboardView').then((m) => ({ default: m.LeaderboardView })),
+)
+const MarketplaceView = lazy(() =>
+  import('./MarketplaceView').then((m) => ({ default: m.MarketplaceView })),
+)
 const SettingsView = lazy(() => import('./SettingsView').then((m) => ({ default: m.SettingsView })))
 const TradesView = lazy(() => import('./TradesView').then((m) => ({ default: m.TradesView })))
 

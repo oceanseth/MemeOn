@@ -58,7 +58,11 @@ const FRAME = 'relative mx-auto flex w-full max-w-360 grow flex-col'
  * carry (grow to push the footer down, full width against `PageContainer`'s auto margins) are
  * restated here for a nested main. The gutter steps with the header row's.
  */
-const CONTENT = cn('flex min-w-0 grow flex-col', '[&>main]:w-full [&>main]:grow', 'xl:px-3 2xl:px-8')
+const CONTENT = cn(
+  'flex min-w-0 grow flex-col',
+  '[&>main]:w-full [&>main]:grow',
+  'xl:px-3 2xl:px-8',
+)
 
 /** The wordmark: Unbounded 500 — with the landing hero, the typeset's two poster moments. */
 const WORDMARK = cn(
@@ -151,10 +155,15 @@ export function AppShell({ chrome, nav, headerEnd, bottomNav, children }: AppShe
           {children}
           <footer className={cn(FOOTER, bottomNav && 'max-xl:hidden')} data-slot="site-footer">
             <span className="font-semibold text-foreground">{chrome.brand}</span>
-            <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 xl:ml-auto" aria-label={chrome.footerAria}>
+            <nav
+              className="flex flex-wrap justify-center gap-x-5 gap-y-2 xl:ml-auto"
+              aria-label={chrome.footerAria}
+            >
               <FooterLink render={<NavLink to="/privacy" />}>{chrome.footer.privacy}</FooterLink>
               <FooterLink render={<NavLink to="/terms" />}>{chrome.footer.terms}</FooterLink>
-              <FooterLink render={<NavLink to="/developers" />}>{chrome.footer.developers}</FooterLink>
+              <FooterLink render={<NavLink to="/developers" />}>
+                {chrome.footer.developers}
+              </FooterLink>
               <FooterLink render={<NavLink to="/discord" />}>{chrome.footer.discord}</FooterLink>
               {/* a real static file in public/, not a route: it must leave the SPA */}
               <FooterLink href="/skill.md">{chrome.footer.api}</FooterLink>

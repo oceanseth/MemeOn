@@ -25,7 +25,10 @@ describe('createMemeMachine submitting mode changes', () => {
     actor.send({ type: 'SELECT_MODE', mode: 'giphy' })
 
     expect(actor.getSnapshot().value).toBe('submitting')
-    expect(actor.getSnapshot().context).toMatchObject({ mode: 'upload', busy: 'Rendering…' })
+    expect(actor.getSnapshot().context).toMatchObject({
+      mode: 'upload',
+      busy: 'Rendering…',
+    })
 
     actor.send({ type: 'DONE' })
     expect(actor.getSnapshot().value).toBe('upload')
@@ -54,16 +57,26 @@ describe('createMemeMachine submitting mode changes', () => {
   it('reports a pre-flight rejection in place, without a busy flash', () => {
     const actor = startedMachine()
     actor.send({ type: 'SELECT_MODE', mode: 'upload' })
-    actor.send({ type: 'FAIL', err: 'that video is 143MB — the cap is 50MB, try a shorter clip' })
+    actor.send({
+      type: 'FAIL',
+      err: 'that video is 143MB — the cap is 50MB, try a shorter clip',
+    })
 
     expect(actor.getSnapshot().value).toBe('upload')
-    expect(actor.getSnapshot().context).toMatchObject({ busy: null, err: expect.stringContaining('143MB') })
+    expect(actor.getSnapshot().context).toMatchObject({
+      busy: null,
+      err: expect.stringContaining('143MB'),
+    })
   })
 
   it('holds the minted card with its share link instead of ending on an empty state', () => {
     const actor = startedMachine('source-1')
     actor.send({ type: 'SUBMIT', busy: 'Minting…' })
-    actor.send({ type: 'MINTED', id: 'meme-1', shareUrl: 'https://memeon.ai/m/meme-1' })
+    actor.send({
+      type: 'MINTED',
+      id: 'meme-1',
+      shareUrl: 'https://memeon.ai/m/meme-1',
+    })
 
     expect(actor.getSnapshot().value).toBe('success')
     expect(actor.getSnapshot().context).toMatchObject({
@@ -96,7 +109,11 @@ describe('createMemeMachine submitting mode changes', () => {
     actor.send({ type: 'FAIL', err: 'credits exhausted' })
     expect(actor.getSnapshot().value).toBe('error')
 
-    actor.send({ type: 'MINTED', id: 'meme-1', shareUrl: 'https://memeon.ai/m/meme-1' })
+    actor.send({
+      type: 'MINTED',
+      id: 'meme-1',
+      shareUrl: 'https://memeon.ai/m/meme-1',
+    })
     expect(actor.getSnapshot().value).toBe('success')
     expect(actor.getSnapshot().context).toMatchObject({
       busy: null,
@@ -118,7 +135,9 @@ describe('createMemeMachine artwork provenance', () => {
 
     /* switching modes keeps both the artwork and its credit */
     actor.send({ type: 'SELECT_MODE', mode: 'upload' })
-    expect(actor.getSnapshot().context.artworkSource).toMatchObject({ provider: 'giphy' })
+    expect(actor.getSnapshot().context.artworkSource).toMatchObject({
+      provider: 'giphy',
+    })
 
     /* replacing the artwork retires the credit with it */
     actor.send({ type: 'SET_IMAGE_URL', imageUrl: '/uploaded.png' })
@@ -129,9 +148,17 @@ describe('createMemeMachine artwork provenance', () => {
     const actor = startedMachine()
     actor.send({
       type: 'RESTORE_DRAFT',
-      draft: { mode: 'video', title: 'burning office', tags: 'chaos', prompt: 'a capybara' },
+      draft: {
+        mode: 'video',
+        title: 'burning office',
+        tags: 'chaos',
+        prompt: 'a capybara',
+      },
     })
-    actor.send({ type: 'SUBMIT', busy: 'Resuming a video render already in progress…' })
+    actor.send({
+      type: 'SUBMIT',
+      busy: 'Resuming a video render already in progress…',
+    })
     actor.send({ type: 'DONE' })
 
     expect(actor.getSnapshot().value).toBe('video')

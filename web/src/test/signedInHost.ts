@@ -21,10 +21,12 @@ export async function mountSignedInRoot(options?: { fakeTimers: true }): Promise
   const host = document.createElement('div')
   document.body.append(host)
   const root = createRoot(host)
-  const authActor = createActor(authMachine.provide({
-    actors: { loadMe: fromPromise(async (): Promise<Me | null> => meLou) },
-    actions: { clearSessionAndFirebase: () => {} },
-  }))
+  const authActor = createActor(
+    authMachine.provide({
+      actors: { loadMe: fromPromise(async (): Promise<Me | null> => meLou) },
+      actions: { clearSessionAndFirebase: () => {} },
+    }),
+  )
   const stores = createStores(authActor)
   stores.retain()
   await stores.auth.refresh()

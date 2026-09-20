@@ -41,7 +41,8 @@ export const createMemeCopy = {
   /** What the alert says when the request threw nothing the user can read. */
   errors: {
     notALink: 'That is not a link — paste a full https:// address.',
-    renderFailed: "The video render didn't finish. Try again, or reopen this page if a job is still running.",
+    renderFailed:
+      "The video render didn't finish. Try again, or reopen this page if a job is still running.",
     giphySearchFailed: "GIPHY search didn't work. Try another word, or pick a category.",
     resolveFailed: "Couldn't find an image on that page. Check the link and try again.",
     editFailed: "That Masky edit didn't finish. Try again.",
@@ -98,13 +99,15 @@ export const createMemeCopy = {
   },
   generate: {
     promptPlaceholder: 'a capybara in a business suit ignoring a burning office, cinematic',
-    promptHelp: 'Describe the whole scene — subject, style, chaos level. Runs on your Masky credits.',
+    promptHelp:
+      'Describe the whole scene — subject, style, chaos level. Runs on your Masky credits.',
     renderVideo: 'Render the video',
     renderImage: 'Render the image',
   },
   giphy: {
     results: (count: number, query: string) => `${count} GIPHY results for "${query}"`,
-    emptySearch: (query: string) => `Nothing for "${query}" — try a broader word or pick a category.`,
+    emptySearch: (query: string) =>
+      `Nothing for "${query}" — try a broader word or pick a category.`,
     idle: 'Pick a category or search to browse GIPHY.',
     categoryLabel: 'Category',
     browseCategories: 'Browse categories…',

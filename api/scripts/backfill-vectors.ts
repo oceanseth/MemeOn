@@ -3,10 +3,7 @@
 //
 // Usage: TABLE_NAME=memeon-dev VECTOR_BUCKET=memeon-vectors-dev AWS_REGION=us-west-2 \
 //          npx tsx scripts/backfill-vectors.ts
-import {
-  S3VectorsClient,
-  PutVectorsCommand,
-} from '@aws-sdk/client-s3vectors'
+import { S3VectorsClient, PutVectorsCommand } from '@aws-sdk/client-s3vectors'
 import * as db from '../src/db'
 import { env } from '../src/env'
 import { embedText, memeText } from '../src/vectors'
@@ -25,7 +22,10 @@ do {
   for (let i = 0; i < publicMemes.length; i += 10) {
     const chunk = publicMemes.slice(i, i + 10)
     const embedded = await Promise.all(
-      chunk.map(async (m) => ({ key: m.id, data: { float32: await embedText(memeText(m)) } })),
+      chunk.map(async (m) => ({
+        key: m.id,
+        data: { float32: await embedText(memeText(m)) },
+      })),
     )
     await vectors.send(new PutVectorsCommand({ ...INDEX, vectors: embedded }))
     total += chunk.length

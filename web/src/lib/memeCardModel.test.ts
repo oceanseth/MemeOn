@@ -28,7 +28,10 @@ describe('buildMemeCardModel', () => {
   it('builds the detail link, tier and listing labels', () => {
     const model = buildMemeCardModel(imageMeme)
 
-    expect(model.detailLinkProps).toEqual({ to: '/m/meme-1', 'aria-label': copy.open('foil cat') })
+    expect(model.detailLinkProps).toEqual({
+      to: '/m/meme-1',
+      'aria-label': copy.open('foil cat'),
+    })
     expect(model.titleId).toBe('meme-card-title-meme-1')
     expect(model.tierName).toBe('Holo')
     expect(model.tierLabel).toBe('Holo · Rare')
@@ -51,7 +54,11 @@ describe('buildMemeCardModel', () => {
     expect(thin.resharesLabel).toBe('0')
     expect(thin.statsA11yLabel).toBe(copy.stats(null, '0'))
 
-    const full = buildMemeCardModel({ ...imageMeme, views: 9876, reshareCount: 60 })
+    const full = buildMemeCardModel({
+      ...imageMeme,
+      views: 9876,
+      reshareCount: 60,
+    })
 
     expect(full.viewsLabel).toBe('9,876')
     expect(full.resharesLabel).toBe('60')
@@ -100,7 +107,11 @@ describe('buildMemeCardModel', () => {
   })
 
   it('lets the viewport observer start video only when motion is welcome', () => {
-    const videoMeme = { ...imageMeme, mediaType: 'video' as const, videoUrl: '/foil-cat.mp4' }
+    const videoMeme = {
+      ...imageMeme,
+      mediaType: 'video' as const,
+      videoUrl: '/foil-cat.mp4',
+    }
 
     expect(buildMemeCardModel(videoMeme).mediaAutoplay).toBe('on')
     expect(buildReducedMotionMemeCardModel(videoMeme).mediaAutoplay).toBe('off')

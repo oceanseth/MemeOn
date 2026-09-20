@@ -89,7 +89,10 @@ export function buildSettingsScreenModel({
           nameLabel: copy.account.name(user.name),
           providerLabel: copy.account.provider,
           logoutLabel: copy.account.logOut,
-          logoutButtonProps: { onClick: onLogout, 'aria-label': copy.account.logOut },
+          logoutButtonProps: {
+            onClick: onLogout,
+            'aria-label': copy.account.logOut,
+          },
         }
       : null,
     appearance: {

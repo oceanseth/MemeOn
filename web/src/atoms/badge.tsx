@@ -41,7 +41,10 @@ export function Badge({ className, variant, size, render, ...props }: BadgeProps
   const resolved = variant ?? 'default'
   return useRender({
     defaultTagName: 'span',
-    props: mergeProps<'span'>({ className: cn(badgeVariants({ variant: resolved, size }), className) }, props),
+    props: mergeProps<'span'>(
+      { className: cn(badgeVariants({ variant: resolved, size }), className) },
+      props,
+    ),
     render,
     state: { slot: 'badge', variant: resolved, size: size ?? 'default' },
   })

@@ -1,9 +1,14 @@
 import type { Loader, StoryContext } from '@storybook/react-vite'
 import { useState, type ReactNode } from 'react'
-import { createConnectedScenario, setActiveScenario, type ConnectedScenarioOptions } from './connected-scenario'
+import {
+  createConnectedScenario,
+  setActiveScenario,
+  type ConnectedScenarioOptions,
+} from './connected-scenario'
 import { StoresProvider } from '../src/stores/StoresContext'
 
-export const connectedLoader = (options: ConnectedScenarioOptions = {}): Loader =>
+export const connectedLoader =
+  (options: ConnectedScenarioOptions = {}): Loader =>
   ({ id }: StoryContext) => ({ scenario: createConnectedScenario(id, options) })
 
 export async function connectedBeforeEach({ loaded }: StoryContext): Promise<() => void> {
@@ -16,14 +21,24 @@ export async function connectedBeforeEach({ loaded }: StoryContext): Promise<() 
   }
 }
 
-export function ConnectedStory({ scenario, children }: { scenario: ReturnType<typeof createConnectedScenario>; children: ReactNode }) {
+export function ConnectedStory({
+  scenario,
+  children,
+}: {
+  scenario: ReturnType<typeof createConnectedScenario>
+  children: ReactNode
+}) {
   return <StoresProvider stores={scenario.stores}>{children}</StoresProvider>
 }
 
 export function RemountStory({ children }: { children: (key: number) => ReactNode }) {
   const [mountKey, setMountKey] = useState(0)
-  return <>
-    <button type="button" onClick={() => setMountKey((key) => key + 1)}>Remount connected view</button>
-    {children(mountKey)}
-  </>
+  return (
+    <>
+      <button type="button" onClick={() => setMountKey((key) => key + 1)}>
+        Remount connected view
+      </button>
+      {children(mountKey)}
+    </>
+  )
 }

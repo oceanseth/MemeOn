@@ -26,7 +26,8 @@ function Specimen({
   )
 }
 
-const hostOf = (canvasElement: HTMLElement) => canvasElement.querySelector<HTMLElement>('.foil-card')!
+const hostOf = (canvasElement: HTMLElement) =>
+  canvasElement.querySelector<HTMLElement>('.foil-card')!
 
 const meta = {
   title: 'Atoms/FoilFrame',
@@ -50,7 +51,13 @@ export const Paper: Story = {
     await expect(host).toHaveAttribute('data-glow-style', glowStyleFor('paper'))
     await expect(host).not.toHaveAttribute('rarityladder')
     const media = host.querySelector('[data-slot="foil-media"]')
-    await expect(media).toHaveClass('foil-frame', 'foil-media', 'relative', 'rounded-md', 'bg-muted')
+    await expect(media).toHaveClass(
+      'foil-frame',
+      'foil-media',
+      'relative',
+      'rounded-md',
+      'bg-muted',
+    )
   },
 }
 

@@ -34,7 +34,11 @@ function Frame({ media, ...props }: AlertDialogContentProps & { media?: boolean 
       <AlertDialog open onOpenChange={onOpenChange}>
         <AlertDialogContent container={portalAnchor(ANCHOR)} {...props}>
           <AlertDialogHeader>
-            {media && <AlertDialogMedia aria-hidden="true"><Icon name="trash-2" size={20} /></AlertDialogMedia>}
+            {media && (
+              <AlertDialogMedia aria-hidden="true">
+                <Icon name="trash-2" size={20} />
+              </AlertDialogMedia>
+            )}
             <AlertDialogTitle>Delete forever?</AlertDialogTitle>
             <AlertDialogDescription>This can&apos;t be undone.</AlertDialogDescription>
           </AlertDialogHeader>
@@ -132,7 +136,9 @@ export const Triggered: Story = {
     const canvas = within(canvasElement)
     const trigger = canvas.getByRole('button', { name: 'Delete the meme' })
     await userEvent.click(trigger)
-    const dialog = await canvas.findByRole('alertdialog', { name: 'Delete forever?' })
+    const dialog = await canvas.findByRole('alertdialog', {
+      name: 'Delete forever?',
+    })
     await expect(canvasElement.contains(dialog)).toBe(true)
     await userEvent.click(canvas.getByRole('button', { name: 'Keep it' }))
     await waitFor(() => expect(canvas.queryByRole('alertdialog')).toBeNull())

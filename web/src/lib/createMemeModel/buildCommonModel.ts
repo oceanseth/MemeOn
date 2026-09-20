@@ -1,5 +1,9 @@
 import { createMemeCopy as copy } from '../../copy/createMeme'
-import type { CreateMemeContext, CreateMemeMode, CreateMemePhase } from '../../stores/createMemeMachine'
+import type {
+  CreateMemeContext,
+  CreateMemeMode,
+  CreateMemePhase,
+} from '../../stores/createMemeMachine'
 import {
   boundTags,
   boundTitle,
@@ -167,7 +171,11 @@ export function buildCommonModel(
       type: 'button',
       onClick: () => void actions.copyShareLink(),
     },
-    shareUrlInputProps: { value: ctx.shareUrl, readOnly: true, 'aria-label': copy.form.success.shareLink },
+    shareUrlInputProps: {
+      value: ctx.shareUrl,
+      readOnly: true,
+      'aria-label': copy.form.success.shareLink,
+    },
     openMintedLinkProps: { to: `/m/${ctx.mintedId ?? ''}` },
   }
 }

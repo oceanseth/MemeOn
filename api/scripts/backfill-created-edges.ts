@@ -19,7 +19,9 @@ do {
   for (let i = 0; i < items.length; i += 25) {
     let requests = items.slice(i, i + 25).map((Item) => ({ PutRequest: { Item } }))
     while (requests.length > 0) {
-      const res = await ddb.send(new BatchWriteCommand({ RequestItems: { [env.tableName]: requests } }))
+      const res = await ddb.send(
+        new BatchWriteCommand({ RequestItems: { [env.tableName]: requests } }),
+      )
       requests = (res.UnprocessedItems?.[env.tableName] ?? []) as typeof requests
     }
   }

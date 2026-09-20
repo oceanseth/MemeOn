@@ -28,11 +28,11 @@ describe('settings screen model', () => {
     const model = build()
 
     expect(model).toMatchObject({ title: copy.title, intro: copy.intro })
-    expect([
-      model.account?.heading,
-      model.appearance.heading,
-      model.connections.heading,
-    ]).toEqual([copy.account.heading, copy.appearance.heading, copy.connections.heading])
+    expect([model.account?.heading, model.appearance.heading, model.connections.heading]).toEqual([
+      copy.account.heading,
+      copy.appearance.heading,
+      copy.connections.heading,
+    ])
   })
 
   it('reads the account off the avatar, and drops the card when there is no session', () => {
@@ -59,7 +59,10 @@ describe('settings screen model', () => {
     const onChange = vi.fn()
     const model = build({ theme: { value: 'dark', onChange } })
 
-    expect(model.appearance.theme).toMatchObject({ value: 'dark', variant: 'segmented' })
+    expect(model.appearance.theme).toMatchObject({
+      value: 'dark',
+      variant: 'segmented',
+    })
     expect(model.appearance.theme.groupLabel).toBe(sharedCopy.theme.group)
     expect(model.appearance.theme.cycleLabel).toBe(
       sharedCopy.theme.cycle(sharedCopy.theme.dark, sharedCopy.theme.auto),
@@ -93,5 +96,4 @@ describe('settings screen model', () => {
     // Discord's own, the same mark the account menu's row wears: filled, never stroked
     expect(build().connections.rows[0]?.icon).toBe('discord')
   })
-
 })

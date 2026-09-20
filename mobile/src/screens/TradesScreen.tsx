@@ -62,11 +62,21 @@ export default function TradesScreen() {
             {item.status === 'proposed' && (
               <View style={styles.actions}>
                 {mine ? (
-                  <Btn label="Cancel" danger onPress={() => respond(item, 'cancel')} styles={styles} />
+                  <Btn
+                    label="Cancel"
+                    danger
+                    onPress={() => respond(item, 'cancel')}
+                    styles={styles}
+                  />
                 ) : (
                   <>
                     <Btn label="Accept" onPress={() => respond(item, 'accept')} styles={styles} />
-                    <Btn label="Decline" danger onPress={() => respond(item, 'decline')} styles={styles} />
+                    <Btn
+                      label="Decline"
+                      danger
+                      onPress={() => respond(item, 'decline')}
+                      styles={styles}
+                    />
                   </>
                 )}
               </View>
@@ -101,7 +111,9 @@ function SideLine({
         </Text>
       ))}
       {side.coins > 0 && <Text style={styles.sideText}>• 🧠 {side.coins.toLocaleString()}</Text>}
-      {side.memes.length === 0 && side.coins === 0 && <Text style={styles.sideText}>• nothing 😶</Text>}
+      {side.memes.length === 0 && side.coins === 0 && (
+        <Text style={styles.sideText}>• nothing 😶</Text>
+      )}
     </View>
   )
 }
@@ -147,7 +159,11 @@ function createStyles(colors: LegacyColors) {
       borderRadius: 14,
       padding: 14,
     },
-    head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    head: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
     who: { color: colors.text, fontWeight: '700', fontSize: 15 },
     status: { color: colors.dim, fontSize: 12.5, fontWeight: '700' },
     sideLabel: {
@@ -167,6 +183,11 @@ function createStyles(colors: LegacyColors) {
     },
     btnDanger: { backgroundColor: '#5b2733' },
     btnText: { color: '#fff', fontWeight: '700' },
-    empty: { color: colors.dim, textAlign: 'center', padding: 40, fontSize: 15 },
+    empty: {
+      color: colors.dim,
+      textAlign: 'center',
+      padding: 40,
+      fontSize: 15,
+    },
   } as const
 }

@@ -10,7 +10,11 @@ import { FriendsScreen } from './FriendsScreen'
 
 const friendIncoming = { ...friendAccepted, status: 'incoming' as const }
 const friendOutgoing = { ...friendAccepted, status: 'outgoing' as const }
-const searchHit = { sub: friendAccepted.sub, name: friendAccepted.name, picture: friendAccepted.picture }
+const searchHit = {
+  sub: friendAccepted.sub,
+  name: friendAccepted.name,
+  picture: friendAccepted.picture,
+}
 
 const friendLink = buildFriendLinkModel
 const statsLabel = copy.row.stats(friendAccepted.collectionSize, friendAccepted.portfolioValue)
@@ -23,22 +27,48 @@ const searchInput = (value: string) => ({
 const incomingRow = () => ({
   ...friendLink(friendIncoming),
   statsLabel,
-  acceptButtonProps: { onClick: fn(), 'aria-label': copy.row.accept(friendIncoming.name) },
-  declineButtonProps: { onClick: fn(), 'aria-label': copy.row.decline(friendIncoming.name) },
+  acceptButtonProps: {
+    onClick: fn(),
+    'aria-label': copy.row.accept(friendIncoming.name),
+  },
+  declineButtonProps: {
+    onClick: fn(),
+    'aria-label': copy.row.decline(friendIncoming.name),
+  },
 })
 const outgoingRow = () => ({
   ...friendLink(friendOutgoing),
   statsLabel,
   pendingLabel: copy.row.pending,
-  cancelButtonProps: { onClick: fn(), 'aria-label': copy.row.cancelRequest(friendOutgoing.name) },
+  cancelButtonProps: {
+    onClick: fn(),
+    'aria-label': copy.row.cancelRequest(friendOutgoing.name),
+  },
 })
 
 const giftDialog = buildGiftDialogModel({
-  open: false, recipient: null, memes: [], query: '', pick: null, shares: 1, busy: false, error: null,
-  onQueryChange: fn(), onPick: fn(), onSharesChange: fn(), onSharesBlur: fn(), onClose: fn(), onSubmit: fn(),
+  open: false,
+  recipient: null,
+  memes: [],
+  query: '',
+  pick: null,
+  shares: 1,
+  busy: false,
+  error: null,
+  onQueryChange: fn(),
+  onPick: fn(),
+  onSharesChange: fn(),
+  onSharesBlur: fn(),
+  onClose: fn(),
+  onSubmit: fn(),
 })
 const removeDialog = buildConfirmDialogModel({
-  open: false, title: '', message: '', danger: true, onConfirm: fn(), onCancel: fn(),
+  open: false,
+  title: '',
+  message: '',
+  danger: true,
+  onConfirm: fn(),
+  onCancel: fn(),
 })
 
 const acceptedRow = (overrides: Partial<FriendsScreenModel['accepted'][number]> = {}) => ({
@@ -47,11 +77,20 @@ const acceptedRow = (overrides: Partial<FriendsScreenModel['accepted'][number]> 
   onlineLabel: copy.online.label,
   statsLabel,
   tradeLabel: copy.row.trade,
-  tradeLinkProps: { to: '/trade', 'aria-label': copy.row.tradeWith(friendAccepted.name) },
+  tradeLinkProps: {
+    to: '/trade',
+    'aria-label': copy.row.tradeWith(friendAccepted.name),
+  },
   giftLabel: copy.row.gift,
-  giftButtonProps: { onClick: fn(), 'aria-label': copy.row.giftTo(friendAccepted.name) },
+  giftButtonProps: {
+    onClick: fn(),
+    'aria-label': copy.row.giftTo(friendAccepted.name),
+  },
   removeLabel: copy.row.remove,
-  removeButtonProps: { onClick: fn(), 'aria-label': copy.row.removeName(friendAccepted.name) },
+  removeButtonProps: {
+    onClick: fn(),
+    'aria-label': copy.row.removeName(friendAccepted.name),
+  },
   ...overrides,
 })
 
@@ -114,7 +153,12 @@ const empty: FriendsScreenModel = {
 const phone = {
   parameters: {
     viewport: {
-      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+      options: {
+        phone390: {
+          name: 'Phone 390',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
     },
   },
   globals: { viewport: { value: 'phone390', isRotated: false } },
@@ -124,7 +168,13 @@ const meta = {
   title: 'Screens/FriendsScreen',
   component: FriendsScreen,
   args: empty,
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 } satisfies Meta<typeof FriendsScreen>
 
 export default meta
@@ -160,7 +210,9 @@ export const Error: Story = {
     const title = empty.querySelector('[data-slot="empty-title"]')
     await expect(title?.tagName).toBe('H2')
     await expect(title).toHaveTextContent(copy.loadError.title)
-    await expect(empty.querySelector('[data-slot="empty-description"]')).toHaveTextContent(copy.loadError.body)
+    await expect(empty.querySelector('[data-slot="empty-description"]')).toHaveTextContent(
+      copy.loadError.body,
+    )
     const retry = canvas.getByRole('button', { name: copy.loadError.retry })
     await expect(retry).toHaveClass('bg-primary')
     await expect(canvasElement.querySelector('[data-slot="person-row"]')).toBeNull()
@@ -171,7 +223,12 @@ export const Error: Story = {
 }
 
 export const Ready: Story = {
-  args: { phase: 'ready', showEmpty: false, showCircle: true, accepted: [acceptedRow()] },
+  args: {
+    phase: 'ready',
+    showEmpty: false,
+    showCircle: true,
+    accepted: [acceptedRow()],
+  },
 }
 
 export const Incoming: Story = {
@@ -213,10 +270,15 @@ export const SearchHits: Story = {
     searchInputProps: searchInput('pal'),
     showSearchPanel: true,
     showHits: true,
-    hits: [{
-      ...buildFriendLinkModel(searchHit),
-      requestButtonProps: { onClick: fn(), 'aria-label': copy.search.requestLabel(searchHit.name) },
-    }],
+    hits: [
+      {
+        ...buildFriendLinkModel(searchHit),
+        requestButtonProps: {
+          onClick: fn(),
+          'aria-label': copy.search.requestLabel(searchHit.name),
+        },
+      },
+    ],
   },
 }
 
@@ -290,7 +352,11 @@ export const InviteCopyFailed: Story = {
     inviteLabel: copy.invite.copyFailed,
   },
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByRole('button', { name: copy.invite.copyFailed })).toBeVisible()
+    await expect(
+      within(canvasElement).getByRole('button', {
+        name: copy.invite.copyFailed,
+      }),
+    ).toBeVisible()
   },
 }
 
@@ -300,10 +366,21 @@ export const RowBusy: Story = {
     phase: 'ready',
     showEmpty: false,
     showCircle: true,
-    accepted: [acceptedRow({
-      giftButtonProps: { onClick: fn(), 'aria-label': copy.row.giftTo(friendAccepted.name), disabled: true },
-      removeButtonProps: { onClick: fn(), 'aria-label': copy.row.removeName(friendAccepted.name), disabled: true, 'aria-busy': true },
-    })],
+    accepted: [
+      acceptedRow({
+        giftButtonProps: {
+          onClick: fn(),
+          'aria-label': copy.row.giftTo(friendAccepted.name),
+          disabled: true,
+        },
+        removeButtonProps: {
+          onClick: fn(),
+          'aria-label': copy.row.removeName(friendAccepted.name),
+          disabled: true,
+          'aria-busy': true,
+        },
+      }),
+    ],
   },
 }
 
@@ -326,9 +403,20 @@ export const GiftOpen: Story = {
     showCircle: true,
     accepted: [acceptedRow()],
     giftDialog: buildGiftDialogModel({
-      open: true, recipient: { sub: friendAccepted.sub, name: friendAccepted.name }, memes: [giftablePaper],
-      query: '', pick: null, shares: 1, busy: false, error: null,
-      onQueryChange: fn(), onPick: fn(), onSharesChange: fn(), onSharesBlur: fn(), onClose: fn(), onSubmit: fn(),
+      open: true,
+      recipient: { sub: friendAccepted.sub, name: friendAccepted.name },
+      memes: [giftablePaper],
+      query: '',
+      pick: null,
+      shares: 1,
+      busy: false,
+      error: null,
+      onQueryChange: fn(),
+      onPick: fn(),
+      onSharesChange: fn(),
+      onSharesBlur: fn(),
+      onClose: fn(),
+      onSubmit: fn(),
     }),
   },
 }
@@ -364,24 +452,40 @@ export const Full: Story = {
     accepted: [acceptedRow({ isOnline: true })],
     onlineFriends: [friendLink(friendAccepted)],
     onlineCountLabel: copy.online.count(1),
-    incoming: [{
-      ...friendLink(friendIncoming),
-      statsLabel,
-      acceptButtonProps: { onClick: fn(), 'aria-label': copy.row.accept(friendIncoming.name) },
-      declineButtonProps: { onClick: fn(), 'aria-label': copy.row.decline(friendIncoming.name) },
-    }],
-    outgoing: [{
-      ...friendLink(friendOutgoing),
-      statsLabel,
-      pendingLabel: copy.row.pending,
-      cancelButtonProps: { onClick: fn(), 'aria-label': copy.row.cancelRequest(friendOutgoing.name) },
-    }],
+    incoming: [
+      {
+        ...friendLink(friendIncoming),
+        statsLabel,
+        acceptButtonProps: {
+          onClick: fn(),
+          'aria-label': copy.row.accept(friendIncoming.name),
+        },
+        declineButtonProps: {
+          onClick: fn(),
+          'aria-label': copy.row.decline(friendIncoming.name),
+        },
+      },
+    ],
+    outgoing: [
+      {
+        ...friendLink(friendOutgoing),
+        statsLabel,
+        pendingLabel: copy.row.pending,
+        cancelButtonProps: {
+          onClick: fn(),
+          'aria-label': copy.row.cancelRequest(friendOutgoing.name),
+        },
+      },
+    ],
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // the search well is one InputGroup, not a positioned glyph over a padded input
     const group = canvasElement.querySelector('[data-slot="input-group"]')!
-    await expect(group.querySelector('[data-slot="input-group-addon"]')).toHaveAttribute('data-align', 'inline-start')
+    await expect(group.querySelector('[data-slot="input-group-addon"]')).toHaveAttribute(
+      'data-align',
+      'inline-start',
+    )
     await expect(canvas.getByRole('searchbox', { name: copy.search.inputLabel })).toHaveAttribute(
       'data-slot',
       'input-group-control',
@@ -396,7 +500,11 @@ export const Full: Story = {
   },
 }
 
-export const Dark: Story = { ...Full, name: 'Ready dark', globals: { theme: 'dark' } }
+export const Dark: Story = {
+  ...Full,
+  name: 'Ready dark',
+  globals: { theme: 'dark' },
+}
 
 export const Phone390: Story = { ...Full, name: 'Ready phone 390', ...phone }
 

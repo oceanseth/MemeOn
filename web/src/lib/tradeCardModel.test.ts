@@ -4,8 +4,10 @@ import { tradesCopy } from '../copy/trades'
 import { braincells } from './braincells'
 import { buildTradeCardModel } from './tradeCardModel'
 
-const memeIds = (side: { memeLines: readonly { id: string }[] }) => side.memeLines.map((line) => line.id)
-const wireMemeIds = (side: { memes: readonly { memeId: string }[] }) => side.memes.map((meme) => meme.memeId)
+const memeIds = (side: { memeLines: readonly { id: string }[] }) =>
+  side.memeLines.map((line) => line.id)
+const wireMemeIds = (side: { memes: readonly { memeId: string }[] }) =>
+  side.memes.map((meme) => meme.memeId)
 
 describe('buildTradeCardModel perspective', () => {
   it('incoming: give is wire ask, get is wire offer', () => {

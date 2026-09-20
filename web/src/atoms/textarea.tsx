@@ -7,7 +7,9 @@ import { cn } from '@/lib/cn'
 export function Textarea({
   className,
   ...props
-}: Omit<ComponentPropsWithoutRef<'textarea'>, 'className'> & { className?: string | undefined }) {
+}: Omit<ComponentPropsWithoutRef<'textarea'>, 'className'> & {
+  className?: string | undefined
+}) {
   return (
     <BaseField.Control
       render={<textarea {...props} />}

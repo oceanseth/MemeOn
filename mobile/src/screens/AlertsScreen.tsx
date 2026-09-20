@@ -52,9 +52,7 @@ export default function AlertsScreen() {
         </Pressable>
       )}
       ListEmptyComponent={
-        alerts === null ? null : (
-          <Text style={styles.empty}>No alerts yet — go make noise. 📣</Text>
-        )
+        alerts === null ? null : <Text style={styles.empty}>No alerts yet — go make noise. 📣</Text>
       }
     />
   )
@@ -73,6 +71,11 @@ function createStyles(colors: LegacyColors) {
     unread: { borderColor: colors.accent, backgroundColor: colors.infoSurface },
     msg: { color: colors.text, fontSize: 14.5, lineHeight: 20 },
     time: { color: colors.dim, fontSize: 11.5 },
-    empty: { color: colors.dim, textAlign: 'center', padding: 40, fontSize: 15 },
+    empty: {
+      color: colors.dim,
+      textAlign: 'center',
+      padding: 40,
+      fontSize: 15,
+    },
   } as const
 }

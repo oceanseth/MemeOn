@@ -137,7 +137,10 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         })
         .catch((e) => {
           if (!owner.active || isLifetimeCancellation(e)) return
-          settleBusy({ type: 'FAIL', err: mintDeskError(e, copy.errors.renderFailed) })
+          settleBusy({
+            type: 'FAIL',
+            err: mintDeskError(e, copy.errors.renderFailed),
+          })
         })
     }
 

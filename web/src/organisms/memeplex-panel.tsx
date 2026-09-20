@@ -36,9 +36,7 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
           {model.ancestors.map((ancestor, index) => (
             <span key={ancestor.id}>
               {index > 0 && ' → '}
-              <InlineLink render={<Link {...ancestor.linkProps} />}>
-                "{ancestor.title}"
-              </InlineLink>
+              <InlineLink render={<Link {...ancestor.linkProps} />}>"{ancestor.title}"</InlineLink>
             </span>
           ))}
           {model.showOriginalLabel && ' (the original)'}
@@ -56,22 +54,23 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
           ))}
         </div>
       ) : model.error ? null : (
-        <p className={LINE}>
-          {model.empty}
-        </p>
+        <p className={LINE}>{model.empty}</p>
       )}
 
       {model.canEdit && (
         <Toolbar className="mt-3">
           <ToolbarStart>
             <Select
-              items={[model.pickPlaceholder, ...model.linkable.map((candidate) => ({ value: candidate.id, label: candidate.title }))]}
+              items={[
+                model.pickPlaceholder,
+                ...model.linkable.map((candidate) => ({
+                  value: candidate.id,
+                  label: candidate.title,
+                })),
+              ]}
               {...model.pickerProps}
             />
-            <Input
-              className="min-w-45"
-              {...model.pastedProps}
-            />
+            <Input className="min-w-45" {...model.pastedProps} />
             {/* one primary per card: the model already chose which of the two inputs this submits */}
             {model.showLink && (
               <Button variant="primary" {...model.linkButtonProps}>

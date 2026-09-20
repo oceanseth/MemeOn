@@ -35,7 +35,12 @@ const empty: DiscordLinkScreenModel = {
 const phone = {
   parameters: {
     viewport: {
-      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+      options: {
+        phone390: {
+          name: 'Phone 390',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
     },
   },
   globals: { viewport: { value: 'phone390', isRotated: false } },
@@ -45,7 +50,13 @@ const meta = {
   title: 'Screens/DiscordLinkScreen',
   component: DiscordLinkScreen,
   args: empty,
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 } satisfies Meta<typeof DiscordLinkScreen>
 
 export default meta
@@ -131,13 +142,29 @@ export const ErrorNoToken: Story = {
   },
 }
 
-export const Dark: Story = { ...Confirm, name: 'Confirm dark', globals: { theme: 'dark' } }
+export const Dark: Story = {
+  ...Confirm,
+  name: 'Confirm dark',
+  globals: { theme: 'dark' },
+}
 
-export const Phone390: Story = { ...Confirm, name: 'Confirm phone 390', ...phone }
+export const Phone390: Story = {
+  ...Confirm,
+  name: 'Confirm phone 390',
+  ...phone,
+}
 
-export const WorkingDark: Story = { ...Working, name: 'Working dark', globals: { theme: 'dark' } }
+export const WorkingDark: Story = {
+  ...Working,
+  name: 'Working dark',
+  globals: { theme: 'dark' },
+}
 
-export const DoneDark: Story = { ...Done, name: 'Done dark', globals: { theme: 'dark' } }
+export const DoneDark: Story = {
+  ...Done,
+  name: 'Done dark',
+  globals: { theme: 'dark' },
+}
 
 export const DonePhone390: Story = { ...Done, name: 'Done phone 390', ...phone }
 
@@ -147,4 +174,8 @@ export const ErrorDark: Story = {
   globals: { theme: 'dark' },
 }
 
-export const ErrorPhone390: Story = { ...ErrorRetryable, name: 'Error phone 390', ...phone }
+export const ErrorPhone390: Story = {
+  ...ErrorRetryable,
+  name: 'Error phone 390',
+  ...phone,
+}

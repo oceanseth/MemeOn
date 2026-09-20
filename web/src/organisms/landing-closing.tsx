@@ -36,10 +36,7 @@ export function LandingClosing({
       )}
     >
       <p
-        className={cn(
-          'm-0 font-display font-normal text-brand-foreground',
-          'text-2xl md:text-3xl',
-        )}
+        className={cn('m-0 font-display font-normal text-brand-foreground', 'text-2xl md:text-3xl')}
       >
         {closingLine}
       </p>

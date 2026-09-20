@@ -19,7 +19,8 @@ export const leaderboardCopy = {
   row: {
     /** gold, silver, bronze — positions past the podium get no medal */
     /** The whole row as one utterance, so the emoji columns can stay decorative. */
-    label: (rank: number, name: string, count: number) => `Rank ${rank}, ${name}, ${plural(count, 'braincell')}`,
+    label: (rank: number, name: string, count: number) =>
+      `Rank ${rank}, ${name}, ${plural(count, 'braincell')}`,
     /** the signed-in player's own row leads with "You", the rest of the label lower-cased */
     youLabel: (label: string) => `You, ${label.charAt(0).toLowerCase()}${label.slice(1)}`,
     collection: (size: number) => `${size} ${pluralWord(size, 'meme')}`,

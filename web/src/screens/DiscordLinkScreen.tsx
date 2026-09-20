@@ -11,13 +11,11 @@ import type { DiscordLinkScreenModel } from '../hooks/useDiscordLinkScreen'
 
 const COLUMN = 'mx-auto max-w-255 text-center'
 
-const TITLE = cn(
-  'm-0 font-display text-5xl font-normal text-foreground',
-  'max-md:text-2xl',
-)
+const TITLE = cn('m-0 font-display text-5xl font-normal text-foreground', 'max-md:text-2xl')
 
 /** Row label inherits the band's tone — the command is plain text, not a code chip. */
-const ROW_LABEL = 'm-0 text-sm font-semibold [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-inherit'
+const ROW_LABEL =
+  'm-0 text-sm font-semibold [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-inherit'
 
 /** Each phase names its own card; the lede above the rows never moves. */
 const CARD_LEDE = 'm-0 mb-3 text-base font-semibold text-muted-foreground'
@@ -60,7 +58,9 @@ export function DiscordLinkScreen({
         {showConfirm && (
           <>
             <p className="mx-auto mt-4 mb-0 max-w-[65ch] text-base text-muted-foreground">
-              {privacyLead}<code>{command}</code>{privacyRest}
+              {privacyLead}
+              <code>{command}</code>
+              {privacyRest}
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
               <Button variant="primary" onClick={onConfirm}>
@@ -95,7 +95,9 @@ export function DiscordLinkScreen({
             {showDone && (
               <Alert variant="success" className="block w-full max-w-none">
                 <p className={ROW_LABEL}>
-                  {successLead}<code>{command}</code>{successRest}
+                  {successLead}
+                  <code>{command}</code>
+                  {successRest}
                 </p>
                 <AlertAction>
                   <Link className={buttonVariants({ size: 'sm' })} to="/discord">

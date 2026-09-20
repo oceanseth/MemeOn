@@ -64,11 +64,7 @@ export function CreateMemeUrlPanel({
       </div>
       <Field>
         <FieldLabel>{urlOptionalPromptLabel}</FieldLabel>
-        <Textarea
-          {...urlPromptTextareaProps}
-          rows={2}
-          placeholder={urlRemixPlaceholder}
-        />
+        <Textarea {...urlPromptTextareaProps} rows={2} placeholder={urlRemixPlaceholder} />
       </Field>
       {showUrlApplyEdit && (
         <Toolbar className="mt-1">

@@ -126,13 +126,17 @@ function relativeAge(createdAt: string, now: number): string {
   if (elapsed < DAY) return copy.time.hoursAgo(Math.floor(elapsed / HOUR))
   if (elapsed < 2 * DAY) return copy.time.yesterday
   if (elapsed < 7 * DAY) return copy.time.daysAgo(Math.floor(elapsed / DAY))
-  return new Date(then).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  return new Date(then).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  })
 }
 
 /** One side of a deal as a sentence, for the confirmation dialog. */
 export function tradeSideSentence(side: TradeSide, memeNames: TradeMemeInfoMap): string {
   const parts = side.memes.map(
-    (meme) => `${sharesPhrase(meme.shares)} "${memeNames[meme.memeId]?.title ?? copy.pendingMemeTitle}"`,
+    (meme) =>
+      `${sharesPhrase(meme.shares)} "${memeNames[meme.memeId]?.title ?? copy.pendingMemeTitle}"`,
   )
   if (side.coins > 0) parts.push(braincells(side.coins))
   return parts.length === 0 ? copy.sideSentence.nothing : parts.join(' + ')

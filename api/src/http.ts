@@ -29,7 +29,10 @@ export const json = (statusCode: number, data: unknown): Res => ({
 
 export const html = (statusCode: number, body: string): Res => ({
   statusCode,
-  headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' },
+  headers: {
+    'content-type': 'text/html; charset=utf-8',
+    'cache-control': 'no-store',
+  },
   body,
 })
 
@@ -61,7 +64,12 @@ const routes: Route[] = []
 
 function add(auth: boolean, spec: string, handler: Handler) {
   const [method, path] = spec.split(' ')
-  routes.push({ method, segments: path.split('/').filter(Boolean), handler, auth })
+  routes.push({
+    method,
+    segments: path.split('/').filter(Boolean),
+    handler,
+    auth,
+  })
 }
 
 /** Public route: `route('GET /api/foo/:id', handler)` */

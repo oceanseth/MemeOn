@@ -51,7 +51,8 @@ const doneCount = (steps: QuestStep[] | null): number =>
 
 /** A poll that returns the same list must not re-render the chrome below the shell. */
 const sameAlerts = (a: Alert[], b: Alert[]): boolean =>
-  a.length === b.length && a.every((alert, index) => {
+  a.length === b.length &&
+  a.every((alert, index) => {
     const other = b[index]
     return !!other && other.id === alert.id && other.read === alert.read
   })

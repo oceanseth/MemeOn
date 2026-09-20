@@ -48,7 +48,9 @@ function actions(): MemeDetailModelActions {
 
 function detail(overrides: { copied?: boolean; copyFailed?: boolean } = {}) {
   const context = {
-    ...createActor(memeDetailMachine, { input: { id: paperMeme.id } }).getSnapshot().context,
+    ...createActor(memeDetailMachine, {
+      input: { id: paperMeme.id },
+    }).getSnapshot().context,
     ...overrides,
   }
   return buildMemeDetailModel({
@@ -77,4 +79,3 @@ describe('buildMemeDetailModel copy state', () => {
     expect(failed.copyButtonLabel).toBe(copy.share.copyFailed)
   })
 })
-
