@@ -22,7 +22,7 @@ export function LandingTiers({
         {tiersTitle}
       </Heading>
       {/* an ordered climb, so the ladder is an <ol>: the sequence is the section's argument */}
-      <ol className="mt-6 grid list-none grid-cols-[repeat(auto-fill,minmax(136px,1fr))] gap-3 p-0 max-sm:grid-cols-2 2xl:grid-cols-7">
+      <ol className="mt-6 grid list-none grid-cols-(--grid-landing-tiers) gap-3 p-0 max-sm:grid-cols-2 2xl:grid-cols-7">
         {tiers.map((t) => (
           <FoilCard
             as="li"

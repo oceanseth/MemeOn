@@ -12,10 +12,10 @@ const SECTION = '-mx-5 border-b border-border bg-accent px-5 pt-12 pb-14 max-md:
 const PILE_CARD = 'absolute origin-top-left rounded-lg material-card p-2'
 
 const PILE_LAYOUT = [
-  'left-0 top-[19%] w-[38.2%]',
-  'left-[26.3%] top-0 w-[41.8%] rotate-[-8deg]',
-  'left-[55.9%] top-[23.3%] w-[35.4%] rotate-[10deg]',
-] as const
+  cn('left-0 top-(--pile-1-top) w-(--pile-1-w)'),
+  cn('left-(--pile-2-left) top-0 w-(--pile-2-w) rotate-(--rotate-pile-2)'),
+  cn('left-(--pile-3-left) top-(--pile-3-top) w-(--pile-3-w) rotate-(--rotate-pile-3)'),
+]
 
 export type LandingHeroProps = Pick<
   LandingScreenModel,
@@ -56,7 +56,7 @@ export function LandingHero({
 }: LandingHeroProps) {
   return (
     <section data-slot="landing-hero" className={SECTION}>
-      <div className="grid items-center gap-12 max-md:gap-8 lg:grid-cols-[minmax(0,570px)_minmax(0,405px)] lg:justify-between">
+      <div className="grid items-center gap-12 max-md:gap-8 lg:grid-cols-(--grid-hero) lg:justify-between">
         <div className="min-w-0">
           <h1
             className={cn(
@@ -66,7 +66,7 @@ export function LandingHero({
           >
             {heroTitle}
           </h1>
-          <p className="mt-5 mb-0 max-w-[65ch] text-pretty text-lg text-muted-foreground">
+          <p className="mt-5 mb-0 max-w-prose text-pretty text-lg text-muted-foreground">
             {heroBody}
           </p>
           {showMarketplaceCta ? (
@@ -76,7 +76,7 @@ export function LandingHero({
               <Button variant="primary" size="login" {...loginButtonProps}>
                 {loginLabel}
               </Button>
-              <p className="m-0 max-w-[24ch] text-sm text-muted-foreground">{loginAside}</p>
+              <p className="m-0 max-w-aside text-sm text-muted-foreground">{loginAside}</p>
             </div>
           ) : null}
           {showErr && (
@@ -90,7 +90,7 @@ export function LandingHero({
           data-slot="hero-pile"
           /* `w-full` inside a `max-w`, never a fixed width: an `auto` grid track sizes to its
              item's max-content, so a 405px box would widen the column past the phone viewport */
-          className="relative m-0 mx-auto aspect-[405/281] w-full max-w-[405px] min-w-0 list-none p-0"
+          className="relative m-0 mx-auto aspect-(--aspect-hero-pile) w-full max-w-hero-pile min-w-0 list-none p-0"
         >
           {heroCards.map((card, index) => {
             const image = frameImageProps[card.tierKey]
