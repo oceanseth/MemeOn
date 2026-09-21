@@ -170,3 +170,25 @@ test('leaves a useMountEffect call alone', () => {
     ({ status, output }) => assert.equal(status, 0, output),
   )
 })
+
+test('flags an arbitrary max-width value', () => {
+  lint(
+    'Width.tsx',
+    'export const S = () => <div className="max-w-[65ch]" />\n',
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /no-arbitrary-values/)
+    },
+  )
+})
+
+test('leaves a named measure token alone', () => {
+  lint(
+    'Width.tsx',
+    'export const S = () => <div className="max-w-prose" />\n',
+    ({ status, output }) => {
+      assert.equal(status, 0, output)
+      assert.doesNotMatch(output, /no-arbitrary-values/)
+    },
+  )
+})

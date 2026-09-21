@@ -9,7 +9,7 @@
       "ui": "@/atoms",
       "componentImports": ["(^|/)(molecules|organisms)/"],
       "ignoreImports": ["react-router-dom", "@/atoms/foil-frame"],
-      "note": "Tokens: src/index.css @theme. Appearance belongs in the component's variants. Exceptions live in web/.oxlintrc.json."
+      "note": "Tokens: src/index.css @theme. Appearance belongs in the component's variants. Arbitrary values are errors."
     }
   },
   "rules": {
@@ -55,10 +55,7 @@
         ]
       }
     ],
-    "shadcn/no-arbitrary-values": [
-      "error",
-      { "allow": ["layout", "pointer-coarse:text-[length:max(16px,1em)]"] }
-    ],
+    "shadcn/no-arbitrary-values": "error",
     "shadcn/require-static-classes": "error"
   },
   "overrides": [
