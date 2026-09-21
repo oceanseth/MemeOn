@@ -87,7 +87,7 @@ export const headerPopoverPositionerClassName = cn(
 )
 
 /** Companion width: 380 on desktop, stretch with the pinned gutters at ≤480. */
-export const headerPopoverPopupClassName = 'w-[min(380px,calc(100vw-24px))] max-xs:w-auto'
+export const headerPopoverPopupClassName = cn('w-(--header-popover-w) max-xs:w-auto')
 
 export interface PopoverContentProps
   extends Styled<PopoverPrimitive.Popup.Props>,

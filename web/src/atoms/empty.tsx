@@ -57,7 +57,7 @@ export function EmptyHeader({ className, ...props }: ComponentPropsWithoutRef<'d
     <div
       data-slot="empty-header"
       className={cn(
-        'flex max-w-[60ch] flex-col items-center gap-3',
+        'flex max-w-notice flex-col items-center gap-3',
         'group-data-[size=inline]/empty:items-start group-data-[size=inline]/empty:gap-2',
         className,
       )}
