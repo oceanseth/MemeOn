@@ -33,9 +33,9 @@ const focusOutcome = (node: HTMLHeadingElement | null): void => node?.focus()
 
 /** Form and preview columns; preview stacks below the form under 1000px. */
 const LAYOUT =
-  'grid grid-cols-1 items-start gap-5 2xl:grid-cols-[minmax(0,555fr)_minmax(0,522fr)] 2xl:gap-8'
+  'grid grid-cols-1 items-start gap-5 2xl:grid-cols-(--grid-create) 2xl:gap-8'
 /** the preview column sticks to the top of the scroll once the two columns split */
-const RAIL = 'flex flex-col gap-4 2xl:sticky 2xl:top-[calc(var(--topbar-h)+16px)]'
+const RAIL = 'flex flex-col gap-4 2xl:sticky 2xl:top-(--topbar-dock)'
 const FORM_GRID = 'flex flex-col gap-3.5'
 /**
  * A caption row sits 4px under its control on this form, where `Field`'s own rhythm is the 6px it

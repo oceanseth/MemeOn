@@ -30,7 +30,7 @@ import { Icon } from '@/atoms/icon'
  */
 const detailGrid = cn(
   'grid grid-cols-1 gap-4.5',
-  '2xl:grid-cols-[minmax(0,410px)_minmax(0,1fr)] 2xl:gap-8',
+  '2xl:grid-cols-(--grid-detail) 2xl:gap-8',
 )
 
 const rail = 'flex min-w-0 flex-col gap-4.5'

@@ -25,7 +25,7 @@ const SKELETON_ROWS = ['a', 'b', 'c']
 /** Give and get side by side at 2xl, stacked below. */
 const composeGrid = cn(
   'flex flex-col gap-5',
-  'xl:grid xl:grid-cols-[repeat(2,minmax(0,1fr))] xl:gap-x-7 xl:gap-y-5',
+  'xl:grid xl:grid-cols-2 xl:gap-x-7 xl:gap-y-5',
   'xl:[&>*:not([data-slot=field-set])]:col-span-full',
 )
 const columnFields = 'flex flex-col gap-2.5'
