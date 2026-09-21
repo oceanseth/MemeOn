@@ -25,7 +25,7 @@ import './quest-bar.css'
 const BRAINCELL_SRC = '/api/brand/braincell.png'
 
 /** `inline-block` is load-bearing in the dialog heading: preflight would drop the braincell mascot onto its own line. */
-const BRAINCELL_IMG = 'inline-block size-6.5 rounded-full object-cover align-middle'
+const BRAINCELL_IMG = cn('inline-block size-6.5 rounded-full object-cover align-middle')
 
 /** One ladder per page (it lives in the header), so the meter can name itself by the title's id. */
 const TITLE_ID = 'questbar-title'
@@ -74,8 +74,7 @@ const CHIP = cn(
 const CHIP_LINK = cn('no-underline', 'focus-ring rounded-sm')
 
 /** The card grid with the starter pack's tighter tracks; under 561px only the gap tightens. */
-const PACK_GRID =
-  'm-0 grid list-none grid-cols-[repeat(auto-fill,minmax(170px,1fr))] gap-5 p-0 max-sm:gap-3'
+const PACK_GRID = cn('m-0 grid list-none grid-cols-(--grid-quest) gap-5 p-0 max-sm:gap-3')
 
 export interface QuestBarProps {
   /** The ladder, or nothing: without it the pill is the plain balance. */

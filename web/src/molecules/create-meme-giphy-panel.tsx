@@ -9,9 +9,10 @@ import { Icon } from '@/atoms/icon'
 import { cn } from '../lib/cn'
 import type { CreateMemeScreenModel } from '../lib/createMemeModel'
 
-const COST_NOTE = 'text-sm font-semibold text-muted-foreground'
-const GIPHY_MARK =
-  'text-xs font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase'
+const COST_NOTE = cn('text-sm font-semibold text-muted-foreground')
+const GIPHY_MARK = cn(
+  'text-xs font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase',
+)
 
 export type CreateMemeGiphyPanelProps = Pick<
   CreateMemeScreenModel,
@@ -86,7 +87,7 @@ export function CreateMemeGiphyPanel({
       </Toolbar>
 
       {showGiphyResults && (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(130px,1fr))] gap-2.5">
+        <div className="grid grid-cols-(--grid-giphy) gap-2.5">
           {giphyResults.map((result) => {
             const cell = getGiphyResultProps(result)
             return (
