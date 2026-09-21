@@ -225,10 +225,12 @@
   --text-6xl--letter-spacing: -0.03em;
   --text-6xl--font-weight: 500;
 
-  /* ── Layout. Widths are grid steps on the element (`max-w-140`, `max-w-135`, `max-w-360`) or
-     the measure itself (`max-w-[65ch]`, layout). The one container that survives is a
-     container-query cut, which has no class form. */
+  /* ── Layout. A length is a grid step (`max-w-140`) or a named token on this sheet. */
   --container-card-narrow: 220px; /* a meme card too narrow for its meta row (`@max-card-narrow:`) */
+  --container-prose: 65ch;
+  --container-notice: 60ch;
+  --container-aside: 24ch;
+  --container-hero-pile: 405px;
 
   /* The widths this app branches on: six named cuts, no literals. Tailwind writes `bp:` as
      (width >= N) and `max-bp:` as (width < N), so a `max-width: N` breakpoint is exact at N + 1
@@ -305,6 +307,41 @@
        below, the marketplace's control band (`lg:docked`), the create rail, the legal `<h2>` scroll
        margins, the alerts and quest panels' phone placement. */
     --topbar-h: 64px;
+    /* Dialog / overlay. Later leaves consume `max-h-(--dialog-max-h)` and friends. */
+    --dialog-max-h: min(86dvh, 86vh);
+    --dialog-max-w-sm: min(440px, calc(100vw - 24px));
+    --dialog-max-w-md: min(640px, calc(100vw - 24px));
+    --alerts-max-h: min(60vh, 25rem);
+    --header-popover-w: min(380px, calc(100vw - 24px));
+    /* Chrome that docks under the bar or sits above it. */
+    --z-skip: calc(var(--z-header) + 10);
+    --topbar-dock: calc(var(--topbar-h) + 16px);
+    /* Grids. Off-grid minmax snaps only 230→232, 130→128, 170→168, 150→152. */
+    --grid-binder: repeat(auto-fill, minmax(232px, 1fr));
+    --grid-giphy: repeat(auto-fill, minmax(128px, 1fr));
+    --grid-quest: repeat(auto-fill, minmax(168px, 1fr));
+    --grid-memeplex: repeat(auto-fill, minmax(152px, 1fr));
+    --grid-landing-tiers: repeat(auto-fill, minmax(136px, 1fr));
+    --grid-token-swatch: repeat(auto-fill, minmax(132px, 1fr));
+    --grid-token-spec: 300px 1fr;
+    --grid-hero: minmax(0, 570px) minmax(0, 405px);
+    --grid-detail: minmax(0, 410px) minmax(0, 1fr);
+    --grid-create: minmax(0, 555fr) minmax(0, 522fr);
+    --grid-trade: 1fr auto 1fr;
+    --grid-card-action: 1fr auto;
+    --grid-card-rows: auto auto;
+    /* Hero pile / flex. Consumed as `aspect-(--aspect-hero-pile)` / `rotate-(--rotate-pile-2)`. */
+    --aspect-hero-pile: 405 / 281;
+    --flex-key-card: 1 1 240px;
+    --rotate-pile-2: -8deg;
+    --rotate-pile-3: 10deg;
+    --pile-1-top: 19%;
+    --pile-1-w: 38.2%;
+    --pile-2-left: 26.3%;
+    --pile-2-w: 41.8%;
+    --pile-3-left: 55.9%;
+    --pile-3-top: 23.3%;
+    --pile-3-w: 35.4%;
     /* Unbounded's heading weight, kept out of `@theme` so it cannot shadow the `font-display`
        family utility. 400: its stems already match Onest 600. The wordmark and the landing hero
        are the two poster moments and wear 500 by hand. */
@@ -624,6 +661,13 @@
       height: max(100%, calc(var(--spacing) * 11));
       translate: -50% -50%;
     }
+  }
+}
+
+/* Coarse pointers: never let a field shrink below 16px (iOS zoom). */
+@utility text-never-zoom {
+  @media (pointer: coarse) {
+    font-size: max(16px, 1em);
   }
 }
 
