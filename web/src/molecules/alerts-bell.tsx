@@ -26,14 +26,14 @@ import { Icon } from '@/atoms/icon'
 const ANCHOR_ID = 'alerts-pop-anchor'
 
 /** The bell glyph on the ghost icon button; the unread bubble sits on its corner. */
-const GLYPH = 'text-xl leading-none xl:text-2xl'
+const GLYPH = cn('text-xl leading-none xl:text-2xl')
 
 /** The unread count rides the trigger's corner; the disc itself is `Badge size="count"`. */
-const BUBBLE = 'absolute -top-1 -right-1'
+const BUBBLE = cn('absolute -top-1 -right-1')
 
 /** Title band: the name, then the count of what is new in it. */
-const HEAD = 'flex items-baseline gap-2 px-3.5 pt-3 pb-2.5'
-const COUNT = 'text-sm font-medium text-muted-foreground tabular-nums'
+const HEAD = cn('flex items-baseline gap-2 px-3.5 pt-3 pb-2.5')
+const COUNT = cn('text-sm font-medium text-muted-foreground tabular-nums')
 
 /**
  * The list: hairline-separated rows, capped at ~7 of them so a full queue is a panel and not a
@@ -41,7 +41,7 @@ const COUNT = 'text-sm font-medium text-muted-foreground tabular-nums'
  * available height is the smaller number.
  */
 const LIST = cn(
-  'flex max-h-[min(60vh,25rem)] flex-col overflow-y-auto scrollbar-thin',
+  'flex max-h-(--alerts-max-h) flex-col overflow-y-auto scrollbar-thin',
   'border-t border-border divide-y divide-border',
 )
 
@@ -50,21 +50,23 @@ const LIST = cn(
  * the list to say is that a row does not shrink: `LIST` is a capped flex column, and without this
  * the rows share the shortfall out between them and every stamp is sliced by the hairline below.
  */
-const ROW = 'shrink-0'
+const ROW = cn('shrink-0')
 
 /** Two lines of message, then the stamp. `text-sm` is the list's step: 20 rows of `text-base` is a page. */
-const MESSAGE = 'line-clamp-2 text-sm/5 text-foreground wrap-anywhere'
-const TIME = 'text-xs font-normal text-muted-foreground tabular-nums'
+const MESSAGE = cn('line-clamp-2 text-sm/5 text-foreground wrap-anywhere')
+const TIME = cn('text-xs font-normal text-muted-foreground tabular-nums')
 
 /** The unread dot keeps its own lane at the row's end, so a message never reflows when one is read. */
-const DOT = 'mt-1.5 size-2 shrink-0 self-start rounded-full bg-primary'
+const DOT = cn('mt-1.5 size-2 shrink-0 self-start rounded-full bg-primary')
 
 /** Nothing to show: a quiet disc, then the line that says which nothing this is. */
-const EMPTY = 'flex flex-col items-center gap-3 px-6 py-9 text-center'
-const EMPTY_DISC = 'grid size-11 place-items-center rounded-full'
+const EMPTY = cn('flex flex-col items-center gap-3 px-6 py-9 text-center')
+const EMPTY_DISC = cn('grid size-11 place-items-center rounded-full')
 
 /** The tail: what the list is not showing, set apart from the rows rather than faking one. */
-const FOOT = 'm-0 border-t border-border px-3.5 py-2.5 text-center text-xs text-muted-foreground'
+const FOOT = cn(
+  'm-0 border-t border-border px-3.5 py-2.5 text-center text-xs text-muted-foreground',
+)
 
 /**
  * Alerts popover, on the `popover` atom. Base UI owns the disclosure wiring — `aria-expanded`,
