@@ -26,7 +26,7 @@ const HERO_STATS =
 
 const HERO_BODY = 'm-0 mt-4 max-w-140 text-lg text-muted-foreground text-pretty'
 
-const HERO_NOTE = 'm-0 mt-3 max-w-[65ch] text-base font-medium text-muted-foreground text-pretty'
+const HERO_NOTE = 'm-0 mt-3 max-w-prose text-base font-medium text-muted-foreground text-pretty'
 
 /** The hero's own action row: the invite's one primary and its quiet companion. */
 const HERO_ACTIONS = 'mt-4.5 flex flex-wrap items-center justify-center gap-2.5'

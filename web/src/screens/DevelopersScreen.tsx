@@ -14,7 +14,7 @@ import type { DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { ConfirmDialog } from '@/molecules/confirm-dialog'
 import { Icon } from '@/atoms/icon'
 
-const EXPLAINER = 'mt-0 mb-0 max-w-[65ch] text-base text-muted-foreground'
+const EXPLAINER = 'mt-0 mb-0 max-w-prose text-base text-muted-foreground'
 
 /** Developers API-key page as a function of its model. Every engine state is one set of args. */
 export function DevelopersScreen({
@@ -93,11 +93,12 @@ export function DevelopersScreen({
           className="flex flex-wrap items-center gap-3 max-md:flex-col max-md:items-start"
           {...createFormProps}
         >
-          <Input
+          <div
             /* the phone stacks the form, where `flex-basis` would size the well's *height* */
-            className="min-w-60 flex-[1_1_240px] max-md:w-full max-md:min-w-0 max-md:flex-none"
-            {...labelInputProps}
-          />
+            className="min-w-60 flex-(--flex-key-card) max-md:w-full max-md:min-w-0 max-md:flex-none"
+          >
+            <Input className="w-full" {...labelInputProps} />
+          </div>
           <Button variant="primary" type="submit" className="shrink-0" {...createButtonProps}>
             <span aria-hidden="true">
               <Icon name="circle-plus" size={16} />
