@@ -1,9 +1,9 @@
 import { cn } from './cn'
 
-/** Same `minmax(230px, 1fr)` the production `.card-grid` used; 2 × 166 + 18 = 350 at the phone margin.
+/** Sheet min track is 232px (`--grid-binder`); 2 × 166 + 18 = 350 at the phone margin.
  *  No `items-start`: every slot takes its row, so every card in the row is one size. */
 export const binderGridClasses = cn(
-  'm-0 grid list-none grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-5 p-0',
+  'm-0 grid list-none grid-cols-(--grid-binder) gap-5 p-0',
   'max-sm:grid-cols-2 max-sm:gap-4.5',
 )
 

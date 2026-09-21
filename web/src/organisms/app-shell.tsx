@@ -23,7 +23,7 @@ const FOCUS = 'focus-ring'
  * carries its own reduced-motion off switch) instead of an arbitrary `[transition:top…]`.
  */
 const SKIP_LINK = cn(
-  'absolute top-3 left-3 z-[calc(var(--z-header)+10)]',
+  'absolute top-3 left-3 z-(--z-skip)',
   'rounded-lg material-raised px-4 py-2.5 text-foreground',
   '-translate-y-20 transition-lift',
   'focus:translate-y-0',
