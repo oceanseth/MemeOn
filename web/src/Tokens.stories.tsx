@@ -6,7 +6,7 @@ import '@/atoms/foil.css'
 
 /**
  * The token sheet: every colour role, the tier chips and frames, the materials, the radius steps,
- * the one container, the breakpoints and the type scale, painted with
+ * the container cuts, the layout shorthands, the breakpoints and the type scale, painted with
  * nothing but what `index.css` emits. It is the visual reference — if a token looks wrong here it
  * is wrong everywhere — and a probe: each specimen carries a `data-slot` (`swatch-<token>`,
  * `radius-<step>`, `container-<name>`, `breakpoint-<name>`, `ladder-<step>`,
@@ -141,7 +141,7 @@ const RADII: ReadonlyArray<{ step: string; className: string }> = [
   { step: 'full', className: 'rounded-full' },
 ]
 
-/* The one container left in `@theme`: a container-query cut with no class of its own. */
+/* `@theme` `--container-*` cuts: a container-query plus the named max-w measures. */
 const CONTAINERS: ReadonlyArray<{
   token: string
   spec: string
@@ -151,6 +151,26 @@ const CONTAINERS: ReadonlyArray<{
     token: 'card-narrow',
     spec: '220px · a meme card too narrow for its meta row',
     className: 'max-w-card-narrow',
+  },
+  {
+    token: 'prose',
+    spec: '65ch · the measure',
+    className: 'max-w-prose',
+  },
+  {
+    token: 'notice',
+    spec: '60ch · a notice',
+    className: 'max-w-notice',
+  },
+  {
+    token: 'aside',
+    spec: '24ch · an aside',
+    className: 'max-w-aside',
+  },
+  {
+    token: 'hero-pile',
+    spec: '405px · the landing hero pile',
+    className: 'max-w-hero-pile',
   },
 ]
 
@@ -247,14 +267,14 @@ export function TokenSheet() {
   return (
     <div className="mx-auto max-w-360 bg-background p-6 text-foreground" data-slot="token-sheet">
       <h1 className="text-5xl">Tokens</h1>
-      <p className="max-w-[65ch] text-lg text-muted-foreground">
+      <p className="max-w-prose text-lg text-muted-foreground">
         Every colour below is a <code>light-dark()</code> pair; the theme toolbar flips{' '}
         <code>data-theme</code> on <code>&lt;html&gt;</code> and the browser picks the arm. Same
         markup, both arms.
       </p>
 
       <Heading>Colour roles</Heading>
-      <ul className="grid grid-cols-[repeat(auto-fill,minmax(132px,1fr))] gap-3">
+      <ul className="grid grid-cols-(--grid-token-swatch) gap-3">
         {SEMANTIC.map((entry) => (
           <Swatch key={entry.token} {...entry} />
         ))}
@@ -347,6 +367,119 @@ export function TokenSheet() {
         ))}
       </ul>
 
+      <Heading>Layout</Heading>
+      <div className="flex flex-col gap-3">
+        <p className="max-w-prose m-0 text-sm text-muted-foreground">max-w-prose</p>
+        <p className="max-w-notice m-0 text-sm text-muted-foreground">max-w-notice</p>
+        <p className="max-w-aside m-0 text-sm text-muted-foreground">max-w-aside</p>
+        <p className="max-w-hero-pile m-0 text-sm text-muted-foreground">max-w-hero-pile</p>
+        <div
+          className={cn(
+            'max-h-(--dialog-max-h) max-w-(--dialog-max-w-sm) overflow-auto rounded-md',
+            'material-card p-3 text-sm',
+          )}
+        >
+          dialog-max-h · dialog-max-w-sm
+        </div>
+        <div className="max-w-(--dialog-max-w-md) overflow-auto rounded-md material-card p-3 text-sm">
+          dialog-max-w-md
+        </div>
+        <div className="max-h-(--alerts-max-h) overflow-auto rounded-md material-card p-3 text-sm">
+          alerts-max-h
+        </div>
+        <div className="w-(--header-popover-w) rounded-md material-pop p-3 text-sm">
+          header-popover-w
+        </div>
+        <div className="relative h-32">
+          <div
+            className={cn(
+              'absolute top-(--topbar-dock) z-(--z-skip) rounded-md material-raised',
+              'px-3 py-1 text-xs',
+            )}
+          >
+            z-skip · topbar-dock
+          </div>
+        </div>
+        <div className="grid grid-cols-(--grid-binder) gap-1">
+          <span className="h-6 rounded-xs bg-brand" />
+          <span className="h-6 rounded-xs bg-brand" />
+        </div>
+        <div className="grid grid-cols-(--grid-giphy) gap-1">
+          <span className="h-6 rounded-xs bg-brand" />
+          <span className="h-6 rounded-xs bg-brand" />
+        </div>
+        <div className="grid grid-cols-(--grid-quest) gap-1">
+          <span className="h-6 rounded-xs bg-brand" />
+          <span className="h-6 rounded-xs bg-brand" />
+        </div>
+        <div className="grid grid-cols-(--grid-memeplex) gap-1">
+          <span className="h-6 rounded-xs bg-brand" />
+          <span className="h-6 rounded-xs bg-brand" />
+        </div>
+        <div className="grid grid-cols-(--grid-landing-tiers) gap-1">
+          <span className="h-6 rounded-xs bg-brand" />
+          <span className="h-6 rounded-xs bg-brand" />
+        </div>
+        <div className="grid grid-cols-(--grid-token-swatch) gap-1">
+          <span className="h-6 rounded-xs bg-brand" />
+          <span className="h-6 rounded-xs bg-brand" />
+        </div>
+        <div className="grid grid-cols-(--grid-hero) gap-1">
+          <span className="h-6 rounded-xs bg-brand" />
+          <span className="h-6 rounded-xs bg-muted" />
+        </div>
+        <div className="grid grid-cols-(--grid-detail) gap-1">
+          <span className="h-6 rounded-xs bg-brand" />
+          <span className="h-6 rounded-xs bg-muted" />
+        </div>
+        <div className="grid grid-cols-(--grid-create) gap-1">
+          <span className="h-6 rounded-xs bg-brand" />
+          <span className="h-6 rounded-xs bg-muted" />
+        </div>
+        <div className="grid grid-cols-(--grid-trade) gap-1">
+          <span className="h-6 rounded-xs bg-brand" />
+          <span className="h-6 rounded-xs bg-muted" />
+          <span className="h-6 rounded-xs bg-brand" />
+        </div>
+        <div className="grid grid-cols-(--grid-card-action) grid-rows-(--grid-card-rows) gap-1">
+          <span className="h-6 rounded-xs bg-brand" />
+          <span className="h-6 rounded-xs bg-muted" />
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <div className="flex-(--flex-key-card) rounded-md material-card p-3 text-sm">
+            flex-key-card
+          </div>
+        </div>
+        <p
+          // `text-never-zoom` is `@utility` (coarse-pointer font-size), not `--color-never-zoom`.
+          // oxlint-disable-next-line shadcn/no-raw-colors
+          className="m-0 text-sm text-never-zoom"
+        >
+          text-never-zoom
+        </p>
+        <div className="relative aspect-(--aspect-hero-pile) max-w-hero-pile bg-muted">
+          <div className="absolute top-(--pile-1-top) w-(--pile-1-w) rounded-md material-card p-2 text-xs">
+            pile 1
+          </div>
+          <div
+            className={cn(
+              'absolute left-(--pile-2-left) w-(--pile-2-w) rotate-(--rotate-pile-2)',
+              'rounded-md material-card p-2 text-xs',
+            )}
+          >
+            pile 2
+          </div>
+          <div
+            className={cn(
+              'absolute top-(--pile-3-top) left-(--pile-3-left) w-(--pile-3-w)',
+              'rotate-(--rotate-pile-3) rounded-md material-card p-2 text-xs',
+            )}
+          >
+            pile 3
+          </div>
+        </div>
+      </div>
+
       <Heading>Breakpoints</Heading>
       <ul className="flex flex-col gap-1.5">
         {BREAKPOINTS.map(({ name, role }) => (
@@ -369,7 +502,7 @@ export function TokenSheet() {
         {STEPS.map((step) => (
           <li
             key={step}
-            className="grid gap-x-4 gap-y-1 md:grid-cols-[300px_1fr] md:items-baseline"
+            className="grid gap-x-4 gap-y-1 md:grid-cols-(--grid-token-spec) md:items-baseline"
           >
             <code data-slot={`ladder-row-spec-${step}`} className="w-fit text-xs whitespace-normal">
               {step} · {stepSpec(step)} · {STEP_ROLE[step]}
@@ -405,7 +538,7 @@ export function TokenSheet() {
         {GLYPHS.map(({ step, role, icon }) => (
           <li
             key={step}
-            className="grid gap-x-4 gap-y-1 md:grid-cols-[300px_1fr] md:items-baseline"
+            className="grid gap-x-4 gap-y-1 md:grid-cols-(--grid-token-spec) md:items-baseline"
           >
             <code className="w-fit text-xs whitespace-normal">
               {step} + leading-none · {role}
@@ -481,14 +614,20 @@ function arm(value: string, which: 'light' | 'dark'): string {
 
 /** What the browser makes of a CSS value for `property`, resolved in the document: the same serialisation a swatch gets. */
 function resolved(
-  property: 'backgroundColor' | 'boxShadow' | 'letterSpacing',
+  property: 'backgroundColor' | 'boxShadow' | 'letterSpacing' | 'maxWidth',
   value: string,
   fontSize?: string,
 ): string {
   const probe = document.createElement('span')
   probe.style.position = 'absolute'
   probe.style.visibility = 'hidden'
-  if (fontSize) probe.style.fontSize = fontSize
+  if (property === 'maxWidth') {
+    const body = getComputedStyle(document.body)
+    probe.style.fontFamily = body.fontFamily
+    probe.style.fontSize = fontSize ?? body.fontSize
+  } else if (fontSize) {
+    probe.style.fontSize = fontSize
+  }
   probe.style[property] = value
   document.body.append(probe)
   const out = getComputedStyle(probe)[property]
@@ -551,9 +690,9 @@ async function assertTokensPainted(which: 'light' | 'dark') {
       token(`--radius-${step}`),
     )
   }
-  for (const name of ['card-narrow']) {
+  for (const { token: name } of CONTAINERS) {
     await expect(getComputedStyle(slot(`container-${name}`)).maxWidth).toBe(
-      token(`--container-${name}`),
+      resolved('maxWidth', token(`--container-${name}`)),
     )
   }
 
