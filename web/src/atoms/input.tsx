@@ -16,7 +16,10 @@ import { cn } from '@/lib/cn'
  */
 export const inputVariants = cva([
   'h-12.5 min-w-0 rounded-md material-pressed px-4.5',
-  'text-base font-normal text-foreground pointer-coarse:text-[length:max(16px,1em)]',
+  'text-base font-normal text-foreground',
+  // `text-never-zoom` is `@utility` (coarse-pointer font-size), not `--color-never-zoom`.
+  // oxlint-disable-next-line shadcn/no-raw-colors
+  'text-never-zoom',
   'placeholder:font-normal placeholder:text-muted-foreground placeholder:opacity-100',
   'focus-ring disabled-look',
   'data-invalid:inset-ring-2 data-invalid:inset-ring-destructive',

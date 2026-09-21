@@ -5,7 +5,7 @@ import { cn } from '@/lib/cn'
 /** A tinted band that shrink-wraps its message; the status pair is the whole look. */
 export const alertVariants = cva(
   [
-    'inline-block max-w-[60ch] text-left px-4.5 py-4 text-base',
+    'inline-block max-w-notice text-left px-4.5 py-4 text-base',
     'contrast-more:inset-ring-1 contrast-more:inset-ring-current',
   ],
   {

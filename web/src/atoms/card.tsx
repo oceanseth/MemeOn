@@ -53,7 +53,7 @@ export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElemen
       data-slot="card-header"
       className={cn(
         'grid auto-rows-min items-start gap-1',
-        'has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto]',
+        'has-data-[slot=card-action]:grid-cols-(--grid-card-action) has-data-[slot=card-description]:grid-rows-(--grid-card-rows)',
         className,
       )}
       {...props}

@@ -46,7 +46,7 @@ export function DialogOverlay({ className, ...props }: Styled<DialogPrimitive.Ba
 export const dialogContentVariants = cva(
   cn(
     'group/dialog-content fixed inset-0 z-(--z-modal) m-auto box-border flex h-fit w-full flex-col gap-4 overflow-y-auto scrollbar-thin',
-    'max-h-[min(86dvh,86vh)]',
+    'max-h-(--dialog-max-h)',
     'rounded-lg material-modal p-6 text-foreground',
     'outline-none focus-ring',
     'data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 motion-reduce:animate-none!',
@@ -55,9 +55,9 @@ export const dialogContentVariants = cva(
     variants: {
       size: {
         /** the confirm frame */
-        sm: 'max-w-[min(440px,calc(100vw-24px))]',
+        sm: 'max-w-(--dialog-max-w-sm)',
         /** every other modal */
-        md: 'max-w-[min(640px,calc(100vw-24px))]',
+        md: 'max-w-(--dialog-max-w-md)',
       },
       variant: {
         default: '',
