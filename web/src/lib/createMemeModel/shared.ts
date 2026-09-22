@@ -58,7 +58,7 @@ export function megabyteLabel(bytes: number): number {
 
 function originLabelFor(source: CreateMemeContext['artworkSource']): string | null {
   if (!source) return null
-  const provider = source.provider === 'giphy' ? 'GIPHY' : source.provider
+  const provider = source.provider === 'giphy' ? copy.preview.giphyProvider : source.provider
   return source.author
     ? copy.preview.originFromAuthor(provider, source.author)
     : copy.preview.originFrom(provider)
@@ -94,8 +94,8 @@ export function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
     titleIsPlaceholder: !title,
     tierName: FRESH_TIER.name,
     tierLabel: copy.preview.freshlyMinted(FRESH_TIER.name),
-    statsLabel: '0 · 0',
-    valueLabel: '0',
+    statsLabel: copy.preview.zeroStats,
+    valueLabel: copy.preview.zeroValue,
     originLabel: originLabelFor(ctx.artworkSource),
   }
 }
@@ -119,16 +119,15 @@ export function nextStepFor(err: string | null): string | null {
 export function deriveMintState(ctx: CreateMemeContext, isBusy: boolean) {
   const needsVideo = ctx.mode === 'video' || (ctx.mode === 'remix' && ctx.remixOutput === 'video')
   const canMint = !!ctx.title.trim() && !!ctx.imageUrl && (!needsVideo || !!ctx.videoUrl) && !isBusy
-  const mintHint =
-    [
-      !ctx.title.trim() && copy.preview.mintHint.title,
-      !ctx.imageUrl && copy.preview.mintHint.artwork,
-      needsVideo &&
-        !ctx.videoUrl &&
-        (ctx.mode === 'remix' ? copy.preview.mintHint.animate : copy.preview.mintHint.video),
-    ]
-      .filter(Boolean)
-      .join(' · ') || '…'
+  const mintHint = [
+    !ctx.title.trim() && copy.preview.mintHint.title,
+    !ctx.imageUrl && copy.preview.mintHint.artwork,
+    needsVideo &&
+      !ctx.videoUrl &&
+      (ctx.mode === 'remix' ? copy.preview.mintHint.animate : copy.preview.mintHint.video),
+  ]
+    .filter(Boolean)
+    .join(' · ')
   return { needsVideo, canMint, mintHint }
 }
 
