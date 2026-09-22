@@ -29,6 +29,7 @@ export interface BinderIdentityModel {
 
 export interface BinderScreenModel {
   phase: BinderPhase
+  pageTitle: string
   /** the page's introduction, under the title */
   intro: string
   identity: BinderIdentityModel | null
@@ -37,6 +38,7 @@ export interface BinderScreenModel {
   /** Counted result line: what the grid is showing right now, and why. */
   statusMessage: string
   collectionHeading: string
+  toolbarAriaLabel: string
   showPrivateToggle: boolean
   privateCount: number
   privateToggleLabel: string
@@ -54,6 +56,7 @@ export interface BinderScreenModel {
   showError: boolean
   errorTitle: string
   errorMessage: string
+  retryLabel: string
   retryProps: { onClick: () => void }
   showGrid: boolean
 }
@@ -68,12 +71,15 @@ interface BinderCardModel {
   sharesPct: number
   showCreator: boolean
   showPrivate: boolean
+  mintedLabel: string
+  privateLabel: string
 }
 
 const copy = binderCopy
 
 /** How the active sort reads in the status line: plain words, never the chip's emoji. */
-const SORT_STATUS: Record<SortKey, readonly [descending: string, ascending: string]> = copy.status.sort
+const SORT_STATUS: Record<SortKey, readonly [descending: string, ascending: string]> =
+  copy.status.sort
 
 const SORT_KEYS: readonly string[] = ['new', 'views', 'reshares', 'value']
 const isSortKey = (value: string | null): value is SortKey =>
@@ -102,7 +108,11 @@ export function useBinderScreen(): BinderScreenModel {
     // The URL is the shareable seed; the machine stays the single source of truth for render.
     const sortKey = params.get('sort')
     if (isSortKey(sortKey)) {
-      send({ type: 'SET_SORT', sortKey, sortDir: params.get('dir') === 'asc' ? 'asc' : 'desc' })
+      send({
+        type: 'SET_SORT',
+        sortKey,
+        sortDir: params.get('dir') === 'asc' ? 'asc' : 'desc',
+      })
     }
     if (params.get('private') === '1') send({ type: 'SET_SHOW_PRIVATE', showPrivate: true })
     load()
@@ -162,10 +172,13 @@ export function useBinderScreen(): BinderScreenModel {
           .filter(Boolean)
           .join(copy.separator)
 
-  const emptyMessage = firstRun ? copy.emptyState.firstRun : copy.emptyState.allPrivate(privateCount)
+  const emptyMessage = firstRun
+    ? copy.emptyState.firstRun
+    : copy.emptyState.allPrivate(privateCount)
 
   return {
     phase,
+    pageTitle: copy.pageTitle,
     intro: copy.intro,
     identity: user
       ? {
@@ -177,6 +190,7 @@ export function useBinderScreen(): BinderScreenModel {
     statusProps: { role: 'status', 'aria-live': 'polite' },
     statusMessage,
     collectionHeading: copy.collection.heading,
+    toolbarAriaLabel: copy.toolbarAria,
     showPrivateToggle: privateCount > 0,
     privateCount,
     privateToggleLabel: copy.collection.showPrivate(privateCount),
@@ -214,6 +228,8 @@ export function useBinderScreen(): BinderScreenModel {
         sharesPct: Math.max(0, Math.min(100, shares)),
         showCreator: !!meme.isCreator,
         showPrivate: !!meme.private,
+        mintedLabel: copy.card.minted,
+        privateLabel: copy.card.private,
       }
     }),
     showMore:
@@ -242,6 +258,7 @@ export function useBinderScreen(): BinderScreenModel {
     showError,
     errorTitle: copy.errorState.title,
     errorMessage: copy.errorState.message,
+    retryLabel: copy.retry,
     retryProps: {
       onClick: () => {
         send({ type: 'RETRY' })

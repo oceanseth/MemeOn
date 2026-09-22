@@ -9,7 +9,7 @@ import type { TradeCardModel } from '../lib/tradeCardModel'
 /** Give/get stay left/right regardless of proposer — "You give" is always the left plate. */
 const DEAL = cn(
   /* stretch, not center: equal-height wells read as one comparison */
-  'my-3.5 grid grid-cols-[1fr_auto_1fr] items-stretch gap-3.5 *:min-w-0',
+  'my-3.5 grid grid-cols-(--grid-trade) items-stretch gap-3.5 *:min-w-0',
   'max-xl:grid-cols-1 max-xl:gap-2.5',
 )
 

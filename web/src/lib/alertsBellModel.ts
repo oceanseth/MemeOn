@@ -15,7 +15,8 @@ const MAX_BADGE = 99
  * two-line clamp then measures message and not decoration. The match is one grapheme — a
  * pictograph plus its modifiers, variation selector and any ZWJ continuation — and nothing else.
  */
-const LEADING_MARK = /^(\p{Extended_Pictographic}(?:[\p{Emoji_Modifier}\uFE0F]|\u200D\p{Extended_Pictographic})*)\s*/u
+const LEADING_MARK =
+  /^(\p{Extended_Pictographic}(?:[\p{Emoji_Modifier}\uFE0F]|\u200D\p{Extended_Pictographic})*)\s*/u
 
 /**
  * The glyph a row falls back to when its message carries no emoji — an older alert, a test
@@ -30,6 +31,17 @@ const TYPE_MARKS: Record<Alert['type'], IconName> = {
   friend: 'users',
 }
 
+/**
+ * Where a row goes. A trade alert carries no meme and no person: its subject is the proposal, and
+ * the Trades screen is the only place to read one and answer it.
+ */
+function alertTarget(alert: Alert): string | null {
+  if (alert.type === 'trade') return '/trade'
+  if (alert.memeId) return `/m/${alert.memeId}`
+  if (alert.subjectSub) return `/u/${encodeURIComponent(alert.subjectSub)}`
+  return null
+}
+
 /** Recency is the useful unit in a notification list; the exact stamp stays in the tooltip. */
 export function formatWhen(iso: string, now: number = Date.now()): string {
   const then = new Date(iso).getTime()
@@ -38,8 +50,12 @@ export function formatWhen(iso: string, now: number = Date.now()): string {
   if (Math.abs(deltaMinutes) < 1) return copy.justNow
   const relative = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' })
   if (Math.abs(deltaMinutes) < 60) return relative.format(Math.round(deltaMinutes), 'minute')
-  if (Math.abs(deltaMinutes) < 60 * 24) return relative.format(Math.round(deltaMinutes / 60), 'hour')
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(then)
+  if (Math.abs(deltaMinutes) < 60 * 24)
+    return relative.format(Math.round(deltaMinutes / 60), 'hour')
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short',
+    day: 'numeric',
+  }).format(then)
 }
 
 export interface AlertRowModel {
@@ -119,22 +135,21 @@ export function buildAlertsBellModel({
     empty: alerts.length === 0,
     emptyLabel: failed ? copy.offline : copy.empty,
     emptyTone: failed ? 'offline' : 'idle',
-    unreadLabel: unreadCount > 0 ? (unreadCount > MAX_BADGE ? `${MAX_BADGE}+` : String(unreadCount)) : null,
+    unreadLabel:
+      unreadCount > 0 ? (unreadCount > MAX_BADGE ? `${MAX_BADGE}+` : String(unreadCount)) : null,
     unreadSummaryLabel: unreadCount > 0 ? copy.unreadSummary(unreadCount) : null,
     badgeProps: { 'aria-hidden': true },
     rows: alerts.slice(0, MAX_ROWS).map((alert) => {
-      const to = alert.memeId
-        ? `/m/${alert.memeId}`
-        : alert.subjectSub
-          ? `/u/${encodeURIComponent(alert.subjectSub)}`
-          : null
+      const to = alertTarget(alert)
       const unread = !alert.read || stillUnread.has(alert.id)
       const [, emoji = null] = LEADING_MARK.exec(alert.message) ?? []
       return {
         id: alert.id,
         unread,
         statusLabel: unread ? copy.unreadRow : null,
-        mark: emoji ? { kind: 'emoji' as const, emoji } : { kind: 'glyph' as const, icon: TYPE_MARKS[alert.type] },
+        mark: emoji
+          ? { kind: 'emoji' as const, emoji }
+          : { kind: 'glyph' as const, icon: TYPE_MARKS[alert.type] },
         message: emoji ? alert.message.replace(LEADING_MARK, '') : alert.message,
         fullMessage: alert.message,
         /* a row that navigates has done its job; leaving the popover open over the new route
@@ -147,7 +162,6 @@ export function buildAlertsBellModel({
         },
       }
     }),
-    overflowLabel:
-      alerts.length > MAX_ROWS ? copy.overflow(MAX_ROWS) : null,
+    overflowLabel: alerts.length > MAX_ROWS ? copy.overflow(MAX_ROWS) : null,
   }
 }

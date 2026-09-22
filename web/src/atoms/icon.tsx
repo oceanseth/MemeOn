@@ -18,11 +18,11 @@ import { cn } from '@/lib/cn'
  * something to swap each character for. Those are stand-ins, not design artefacts: compact relative
  * commands, radius-10 circles spanning 2..22, hard rectangle corners, and dots faked as zero-length
  * round-capped lines. Glyphs since restated on the Central grid carry their own note saying so
- * (circle-check, circle-x, ban, contrast, meh, square, dna, star); the rest are
+ * (circle-check, circle-x, ban, contrast, meh, square, dna, star, globe, mail, film,
+ * playing-card, gift, square-play, theater, satellite, handshake); the rest are
  * still the raw import and still read about 8% large beside the twelve. Do not add to this half
- * without rasterising the candidate at the size its call site actually uses - party-popper,
- * satellite, theater, brain, handshake, film and medal are all unreadable at 16px, which is exactly
- * how they got in here.
+ * without rasterising the candidate at the size its call site actually uses - brain is still
+ * accepted at the Discord CTA, and unreadability at 16px is exactly how the raw imports got in.
  *
  * DISCORD IS A BRAND MARK, NOT A GLYPH - superseding the note that kept it text-only. The
  * objection there was sound and still is: stroking Discord's logo at 1.5 bloats the silhouette
@@ -85,17 +85,10 @@ export type IconName =
   | 'ban'
   | 'square'
   | 'meh'
-  // Drawn to close the gaps the emoji sweep left behind — each of these had a raw text character
-  // (▾, ✕, ☆/★) still rendering at a call site because the set had no glyph to swap in.
   | 'chevron-down'
   | 'x'
   | 'star-filled'
   | 'arrows-swap'
-  // The account menu's three undecorated rows (2026-09-17): Profile, Developers and Discord each
-  // sat in an empty 18px lane, so three of five rows read as unfinished beside Top Brains and
-  // Settings. `user` and `code` are Lucide v1.46 (ISC) verbatim, in the stand-in idiom the rest of
-  // this half already uses; `discord` is the brand mark (see the note above). All three rastered
-  // at 18px, the size the menu actually calls them at, before they landed.
   | 'user'
   | 'code'
   | 'discord'
@@ -162,34 +155,13 @@ export const ICON_NAMES: readonly IconName[] = [
   'log-out',
 ]
 
-/*
- * ARBITRATION, this pass. Three design agents returned overlapping verdicts; where they disagreed:
- *  - `target` was both normalised onto the Central ring and marked dead. Dead won: it has no call
- *    site outside this file (the greps that look live are `<a target>` attributes), and a glyph with
- *    no meaning behind it is precisely what the geometry pass was cleaning up after. Its normalised
- *    ring survives in `CENTRAL_RING`, so nothing was lost.
- *  - `gamepad-2` left with it. The emoji it was translating lives in discordLinkCopy.done
- *    ("Connected!"), a different file's success string, and the connections row's own emoji had
- *    already been deleted product-wide by 8165e4e before the sweep ran - so the icon on that row was
- *    invented by the sweep, not preserved from the design. Removing it here strands
- *    SettingsScreen's connections row until that row reverts to the bare service label.
- *  - The audit brief called the Paper extraction "the first 11". 8f07a8b's own commit message and
- *    source both say twelve: `arrow-right` is genuine Central, and both `chevron-down` and
- *    `arrows-swap` are built off its head. The docblock above records twelve.
- *  - `refresh-cw` is gone because it meant two different things at once (reshare and re-run). The
- *    replacements already exist: reshare takes `arrows-left-right`, whose rectangular repeat loop is
- *    literally the shape it replaced; Trade takes `arrows-swap`; re-run takes `rotate-cw`.
- *  - `gear`, `play`, `rotate-cw`, `volume-x` and `volume-2` have no call site yet and are kept on
- *    purpose - each is the glyph a surface still rendering a raw character is waiting on.
- */
-
-interface PathDef {
+export interface PathDef {
   d: string
   linecap?: 'round'
   linejoin?: 'round'
-  /** Paint the interior as well as the outline. Only solid/outline toggle pairs need this: the
-      filled member reuses its outline twin's exact `d`, so filling *and* stroking keeps both
-      states on the same silhouette and the glyph does not jump when the toggle flips. */
+  /** Paint the interior as well as the outline. Solid/outline toggle pairs use this so the
+      filled member reuses its outline twin's exact `d` and the glyph does not jump when the
+      toggle flips. `contrast` is a single auto-theme mark: only its half-disc is filled. */
   filled?: true
   /** A brand mark: filled with `currentColor` and *not* stroked, because a logo is reproduced as
       drawn or not at all. `discord` is the only one, and the header note says why. */
@@ -205,8 +177,34 @@ interface PathDef {
  * keeps its ring inline: its `d` welds ring and plus into a single path and that path is the
  * untouched design export, so it is left exactly as extracted.
  */
-const CENTRAL_RING =
+export const CENTRAL_RING =
   'M21.25 12C21.25 17.109 17.109 21.25 12 21.25C6.891 21.25 2.75 17.109 2.75 12C2.75 6.891 6.891 2.75 12 2.75C17.109 2.75 21.25 6.891 21.25 12Z'
+
+/** Byte-identical to the original `square` d (3.75..20.25, corner 2.75). Remainder squares alias this. */
+export const CENTRAL_BOX =
+  'M6.5 3.75H17.5C19.019 3.75 20.25 4.981 20.25 6.5V17.5C20.25 19.019 19.019 20.25 17.5 20.25H6.5C4.981 20.25 3.75 19.019 3.75 17.5V6.5C3.75 4.981 4.981 3.75 6.5 3.75Z'
+
+const CENTRAL_CORNER = 2.75
+const KAPPA = 0.5523
+
+function round3(n: number): number {
+  return Math.round(n * 1000) / 1000
+}
+
+/** Non-square remainder boxes. Kappa 0.5523, 3-decimal Central cubics, corner 2.75. */
+function roundedRect(minX: number, minY: number, maxX: number, maxY: number): string {
+  const r = CENTRAL_CORNER
+  const k = round3(KAPPA * r)
+  const left = round3(minX + r)
+  const right = round3(maxX - r)
+  const top = round3(minY + r)
+  const bottom = round3(maxY - r)
+  const x0 = round3(minX)
+  const y0 = round3(minY)
+  const x1 = round3(maxX)
+  const y1 = round3(maxY)
+  return `M${left} ${y0}H${right}C${round3(right + k)} ${y0} ${x1} ${round3(top - k)} ${x1} ${top}V${bottom}C${x1} ${round3(bottom + k)} ${round3(right + k)} ${y1} ${right} ${y1}H${left}C${round3(left - k)} ${y1} ${x0} ${round3(bottom + k)} ${x0} ${bottom}V${top}C${x0} ${round3(top - k)} ${round3(left - k)} ${y0} ${left} ${y0}Z`
+}
 
 const PATHS: Record<IconName, readonly PathDef[]> = {
   storefront: [
@@ -256,10 +254,26 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
     },
   ],
   'arrows-left-right': [
-    { d: 'M17.5 2.75L19.97 5.22C20.263 5.513 20.263 5.987 19.97 6.28L17.5 8.75', linecap: 'round', linejoin: 'round' },
-    { d: 'M6.5 21.25L4.03 18.78C3.737 18.487 3.737 18.013 4.03 17.72L6.5 15.25', linecap: 'round', linejoin: 'round' },
-    { d: 'M5.25 18.25H18.25C19.355 18.25 20.25 17.355 20.25 16.25V13.25', linecap: 'round', linejoin: 'round' },
-    { d: 'M3.75 10.25V7.75C3.75 6.645 4.645 5.75 5.75 5.75H18.75', linecap: 'round', linejoin: 'round' },
+    {
+      d: 'M17.5 2.75L19.97 5.22C20.263 5.513 20.263 5.987 19.97 6.28L17.5 8.75',
+      linecap: 'round',
+      linejoin: 'round',
+    },
+    {
+      d: 'M6.5 21.25L4.03 18.78C3.737 18.487 3.737 18.013 4.03 17.72L6.5 15.25',
+      linecap: 'round',
+      linejoin: 'round',
+    },
+    {
+      d: 'M5.25 18.25H18.25C19.355 18.25 20.25 17.355 20.25 16.25V13.25',
+      linecap: 'round',
+      linejoin: 'round',
+    },
+    {
+      d: 'M3.75 10.25V7.75C3.75 6.645 4.645 5.75 5.75 5.75H18.75',
+      linecap: 'round',
+      linejoin: 'round',
+    },
   ],
   trophy: [
     { d: 'M12 18V15', linejoin: 'round' },
@@ -345,38 +359,59 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
     { d: 'M6.003 5.125a4 4 0 0 0-2.526 5.77' },
   ],
   sparkles: [
-    { d: 'M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z' },
+    {
+      d: 'M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z',
+    },
     { d: 'M20 2v4' },
     { d: 'M22 4h-4' },
     { d: 'M 2 20 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0' },
   ],
+  // Comedy/tragedy masks on the Central grid (Invite's accept mark). Lucide's curtains were nine
+  // hairlines that vanished at the 16px the Join row actually uses; two ovals + mouths keep the
+  // 🎭 reading and the name `theater`.
   theater: [
-    { d: 'M2 10s3-3 3-8' },
-    { d: 'M22 10s-3-3-3-8' },
-    { d: 'M10 2c0 4.4-3.6 8-8 8' },
-    { d: 'M14 2c0 4.4 3.6 8 8 8' },
-    { d: 'M2 10s2 2 2 5' },
-    { d: 'M22 10s-2 2-2 5' },
-    { d: 'M8 15h8' },
-    { d: 'M2 22v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1' },
-    { d: 'M14 22v-1a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v1' },
+    {
+      d: 'M11.75 12C11.75 16.556 9.735 20.25 7.25 20.25C4.765 20.25 2.75 16.556 2.75 12C2.75 7.444 4.765 3.75 7.25 3.75C9.735 3.75 11.75 7.444 11.75 12Z',
+      linejoin: 'round',
+    },
+    { d: 'M5.25 14.75C6.25 17.25 8.25 17.25 9.25 14.75', linecap: 'round' },
+    {
+      d: 'M21.25 12C21.25 16.556 19.235 20.25 16.75 20.25C14.265 20.25 12.25 16.556 12.25 12C12.25 7.444 14.265 3.75 16.75 3.75C19.235 3.75 21.25 7.444 21.25 12Z',
+      linejoin: 'round',
+    },
+    { d: 'M14.75 15.75C15.75 13.25 17.75 13.25 18.75 15.75', linecap: 'round' },
   ],
+  // Two hands meeting. Lucide's five-path clasp collapsed to noise at 16px (Invite accept) and
+  // 18px (Profile chip). Thumbs keep it from reading as a chevron; nothing shorter than ~4 units.
   handshake: [
-    { d: 'm11 17 2 2a1 1 0 1 0 3-3' },
-    { d: 'm14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4' },
-    { d: 'm21 3 1 11h-2' },
-    { d: 'M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3' },
-    { d: 'M3 4h8' },
+    {
+      d: 'M2.75 16.25C2.75 13.5 5 12 7.75 12H12.25C14 12 14.75 13.25 14.75 14.75C14.75 17.25 12.75 19.5 10 19.5H7.5C4.75 19.5 2.75 17.5 2.75 16.25Z',
+      linejoin: 'round',
+    },
+    {
+      d: 'M21.25 16.25C21.25 13.5 19 12 16.25 12H11.75C10 12 9.25 13.25 9.25 14.75C9.25 17.25 11.25 19.5 14 19.5H16.5C19.25 19.5 21.25 17.5 21.25 16.25Z',
+      linejoin: 'round',
+    },
+    {
+      d: 'M11.5 12.15C10.25 9.25 8.25 6.75 6.25 6.25M12.5 12.15C13.75 9.25 15.75 6.75 17.75 6.25',
+      linecap: 'round',
+    },
   ],
   wrench: [
-    { d: 'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z' },
+    {
+      d: 'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z',
+    },
   ],
   eye: [
-    { d: 'M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0' },
+    {
+      d: 'M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0',
+    },
     { d: 'M 9 12 a 3 3 0 1 0 6 0 a 3 3 0 1 0 -6 0' },
   ],
   'triangle-alert': [
-    { d: 'm21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3' },
+    {
+      d: 'm21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3',
+    },
     { d: 'M12 9v4' },
     { d: 'M12 17h.01' },
   ],
@@ -387,26 +422,42 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
   // the smaller ring would have left the tick visibly lighter than the plus it sits beside.
   'circle-check': [
     { d: CENTRAL_RING, linecap: 'round' },
-    { d: 'M7.757 12L10.409 14.652L16.243 8.818', linecap: 'round', linejoin: 'round' },
+    {
+      d: 'M7.757 12L10.409 14.652L16.243 8.818',
+      linecap: 'round',
+      linejoin: 'round',
+    },
   ],
   'eye-off': [
-    { d: 'M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49' },
+    {
+      d: 'M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49',
+    },
     { d: 'M14.084 14.158a3 3 0 0 1-4.242-4.242' },
-    { d: 'M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143' },
+    {
+      d: 'M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143',
+    },
     { d: 'm2 2 20 20' },
   ],
+  // Lid+body on a Central rounded box (corner 2.75, long side 16.5); bow scaled into the
+  // leftover 3.75..8.5 band so the 16px quest-bar/Friends mark still reads as a gift.
   gift: [
-    { d: 'M12 7v14' },
-    { d: 'M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8' },
-    { d: 'M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5' },
-    { d: 'M 3 7 H 21 V 11 H 3 Z' },
+    { d: roundedRect(3.75, 8.5, 20.25, 20.25), linejoin: 'round' },
+    { d: 'M3.75 12H20.25', linecap: 'round' },
+    { d: 'M12 8.5V20.25', linecap: 'round' },
+    {
+      d: 'M12 8.5C7.75 8.5 6.5 3.75 9.75 3.75C12.25 3.75 12.75 6.75 12 8.5C11.25 6.75 11.75 3.75 14.25 3.75C17.5 3.75 16.25 8.5 12 8.5',
+      linecap: 'round',
+      linejoin: 'round',
+    },
   ],
   link: [
     { d: 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71' },
     { d: 'M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71' },
   ],
   blocks: [
-    { d: 'M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2' },
+    {
+      d: 'M10 22V7a1 1 0 0 0-1-1H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5a1 1 0 0 0-1-1H2',
+    },
     { d: 'M 14 2 H 22 V 10 H 14 Z' },
   ],
   'trash-2': [
@@ -419,13 +470,20 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
   // Ring plus the half-disc, the disc held at 0.6 of the ring (5.55 against 9.25) exactly as the
   // imported version held 6 against 10, so the light/dark split reads at the same ratio. The
   // half-disc is two cubics closed by `Z`; the closing segment IS the vertical diameter, which is
-  // why it must stay a closed subpath and not a pair of open arcs.
+  // why it must stay a closed subpath and not a pair of open arcs. Filled so the D carries at the
+  // 16/22px theme-control sizes; the ring stays a stroke.
   contrast: [
     { d: CENTRAL_RING, linecap: 'round' },
-    { d: 'M12 17.55C15.065 17.55 17.55 15.065 17.55 12C17.55 8.935 15.065 6.45 12 6.45Z', linejoin: 'round' },
+    {
+      d: 'M12 17.55C15.065 17.55 17.55 15.065 17.55 12C17.55 8.935 15.065 6.45 12 6.45Z',
+      filled: true,
+      linejoin: 'round',
+    },
   ],
   palette: [
-    { d: 'M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z' },
+    {
+      d: 'M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z',
+    },
     { d: 'M 13 6.5 a 0.5 0.5 0 1 0 1 0 a 0.5 0.5 0 1 0 -1 0' },
     { d: 'M 17 10.5 a 0.5 0.5 0 1 0 1 0 a 0.5 0.5 0 1 0 -1 0' },
     { d: 'M 6 12.5 a 0.5 0.5 0 1 0 1 0 a 0.5 0.5 0 1 0 -1 0' },
@@ -435,7 +493,9 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
     { d: 'M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2' },
     { d: 'M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2' },
     { d: 'M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8' },
-    { d: 'M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15' },
+    {
+      d: 'M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15',
+    },
   ],
   // Remix. The imported helix was eleven separate hairlines on a diagonal — four of them under two
   // units long — and it collapsed into noise at the 14px the Remix action actually renders at
@@ -448,101 +508,134 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
   // heights — 9.557/14.443 solved off the curve, 7.75/16.25 at the waist where the bow peaks — so
   // every rung lands on the strands instead of floating short of them.
   dna: [
-    { d: 'M16.25 2.75C16.25 5.833 7.75 8.917 7.75 12C7.75 15.083 16.25 18.167 16.25 21.25', linecap: 'round' },
-    { d: 'M7.75 2.75C7.75 5.833 16.25 8.917 16.25 12C16.25 15.083 7.75 18.167 7.75 21.25', linecap: 'round' },
-    { d: 'M9.557 5.5H14.443M7.75 12H16.25M9.557 18.5H14.443', linecap: 'round' },
+    {
+      d: 'M16.25 2.75C16.25 5.833 7.75 8.917 7.75 12C7.75 15.083 16.25 18.167 16.25 21.25',
+      linecap: 'round',
+    },
+    {
+      d: 'M7.75 2.75C7.75 5.833 16.25 8.917 16.25 12C16.25 15.083 7.75 18.167 7.75 21.25',
+      linecap: 'round',
+    },
+    {
+      d: 'M9.557 5.5H14.443M7.75 12H16.25M9.557 18.5H14.443',
+      linecap: 'round',
+    },
   ],
   // Redrawn off the Central construction (outer r 9.25 about a centre nudged to 12.55 so the
   // bottom points and the apex balance optically) rather than kept as the imported rounded star:
   // `star-filled` has to be the *same* contour, and a contour whose corners are already rounded
   // by 2.12u beziers loses those corners entirely once the interior is painted.
-  star: [{ d: 'M12 3.3L14.61 8.958L20.797 9.692L16.223 13.922L17.437 20.033L12 16.99L6.563 20.033L7.777 13.922L3.203 9.692L9.39 8.958Z', linecap: 'round', linejoin: 'round' }],
+  star: [
+    {
+      d: 'M12 3.3L14.61 8.958L20.797 9.692L16.223 13.922L17.437 20.033L12 16.99L6.563 20.033L7.777 13.922L3.203 9.692L9.39 8.958Z',
+      linecap: 'round',
+      linejoin: 'round',
+    },
+  ],
   hourglass: [
     { d: 'M5 22h14' },
     { d: 'M5 2h14' },
-    { d: 'M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22' },
-    { d: 'M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2' },
+    {
+      d: 'M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22',
+    },
+    {
+      d: 'M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2',
+    },
   ],
   clapperboard: [
     { d: 'm12.296 3.464 3.02 3.956' },
-    { d: 'M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3z' },
+    {
+      d: 'M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3z',
+    },
     { d: 'M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' },
     { d: 'm6.18 5.276 3.1 3.899' },
   ],
+  // Outer box is CENTRAL_BOX; Lucide sprockets scaled 16.5/18 into 3.75..20.25 so they sit on the
+  // flat sides and do not poke the 2.75 corners.
   film: [
-    { d: 'M 3 3 H 21 V 21 H 3 Z' },
-    { d: 'M7 3v18' },
-    { d: 'M3 7.5h4' },
-    { d: 'M3 12h18' },
-    { d: 'M3 16.5h4' },
-    { d: 'M17 3v18' },
-    { d: 'M17 7.5h4' },
-    { d: 'M17 16.5h4' },
+    { d: CENTRAL_BOX, linejoin: 'round' },
+    {
+      d: 'M7.417 3.75V20.25M16.583 3.75V20.25M3.75 12H20.25M3.75 7.875H7.417M3.75 16.125H7.417M16.583 7.875H20.25M16.583 16.125H20.25',
+      linecap: 'round',
+    },
   ],
+  // Ring is CENTRAL_RING; meridians and equator scaled onto the same 2.75..21.25 span so the
+  // r=10 Lucide ellipse does not sit around a r=9.25 ring.
   globe: [
-    { d: 'M 2 12 a 10 10 0 1 0 20 0 a 10 10 0 1 0 -20 0' },
-    { d: 'M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20' },
-    { d: 'M2 12h20' },
+    { d: CENTRAL_RING, linecap: 'round' },
+    {
+      d: 'M12 2.75a13.413 13.413 0 0 0 0 18.5 13.413 13.413 0 0 0 0-18.5',
+      linecap: 'round',
+    },
+    { d: 'M2.75 12H21.25', linecap: 'round' },
   ],
+  // Portrait card: same 2.75 corner, height capped at 16.5, width scaled off Lucide's 14×20.
   'playing-card': [
-    { d: 'M12.832 8.445a1 1 0 00-1.589-.098l-2.075 3.098a1 1 0 000 1.11l2 3a1 1 0 001.664 0l2-3a1 1 0 000-1.11z' },
-    { d: 'M 5 2 H 19 V 22 H 5 Z' },
+    { d: roundedRect(6.225, 3.75, 17.775, 20.25), linejoin: 'round' },
+    { d: 'M12 8.95L14.35 12L12 15.05L9.65 12Z', linejoin: 'round' },
   ],
   'scroll-text': [
     { d: 'M15 12h-5' },
     { d: 'M15 8h-5' },
     { d: 'M19 17V5a2 2 0 0 0-2-2H4' },
-    { d: 'M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3' },
+    {
+      d: 'M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3',
+    },
   ],
   upload: [
     { d: 'M12 3v12' },
     { d: 'm17 8-5-5-5 5' },
     { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' },
   ],
+  // Dish + beam. Lucide's five-path satellite (panels, dish, nested signal arcs) was unreadable
+  // at the 16px MemeDetail row. Three strokes, nothing shorter than dna's ~5 unit floor.
   satellite: [
-    { d: 'm13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5' },
-    { d: 'M16.5 7.5 19 5' },
-    { d: 'm17.5 10.5 3.148 3.148a1.205 1.205 0 0 1 0 1.704l-2.296 2.296a1.205 1.205 0 0 1-1.704 0L13.5 14.5' },
-    { d: 'M9 21a6 6 0 0 0-6-6' },
-    { d: 'M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z' },
+    { d: 'M2.75 20.25A13 13 0 0 0 21.25 3.75', linecap: 'round' },
+    { d: 'M8.75 16.5L13.5 11.25', linecap: 'round' },
+    { d: 'M15.5 7.75L18.5 4.75M17.25 9.5L21 5.75', linecap: 'round' },
   ],
+  // Landscape envelope on the Central corner; Lucide 20×16 scaled onto long side 16.5.
   mail: [
-    { d: 'm22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7' },
-    { d: 'M 2 4 H 22 V 20 H 2 Z' },
+    { d: roundedRect(3.75, 5.4, 20.25, 18.6), linejoin: 'round' },
+    { d: 'M20.25 8.15L12 13.2L3.75 8.15', linecap: 'round', linejoin: 'round' },
   ],
   'volume-x': [
-    { d: 'M11 4.702a.7.7 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.7.7 0 0 0 11 19.298z' },
+    {
+      d: 'M11 4.702a.7.7 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.7.7 0 0 0 11 19.298z',
+    },
     { d: 'm16.5 14.5 5-5' },
     { d: 'm16.5 9.5 5 5' },
   ],
   'volume-2': [
-    { d: 'M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z' },
+    {
+      d: 'M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z',
+    },
     { d: 'M16 9a5 5 0 0 1 0 6' },
     { d: 'M19.364 18.364a9 9 0 0 0 0-12.728' },
   ],
-  'rotate-cw': [
-    { d: 'M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8' },
-    { d: 'M21 3v5h-5' },
-  ],
+  'rotate-cw': [{ d: 'M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8' }, { d: 'M21 3v5h-5' }],
   download: [
     { d: 'M12 15V3' },
     { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' },
     { d: 'm7 10 5 5 5-5' },
   ],
   medal: [
-    { d: 'M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15' },
+    {
+      d: 'M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15',
+    },
     { d: 'M11 12 5.12 2.2' },
     { d: 'm13 12 5.88-9.8' },
     { d: 'M8 7h8' },
     { d: 'M 7 17 a 5 5 0 1 0 10 0 a 5 5 0 1 0 -10 0' },
-    { d: 'M12 18v-2h-.5' },
   ],
   play: [
-    { d: 'M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z' },
+    {
+      d: 'M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z',
+    },
   ],
   'square-play': [
-    { d: 'M 3 3 H 21 V 21 H 3 Z' },
-    { d: 'M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z' },
+    { d: CENTRAL_BOX, linejoin: 'round' },
+    { d: 'M9.25 8.25L16.25 12L9.25 15.75Z', linejoin: 'round' },
   ],
   // Same 1.0607 interior scale as `circle-check`, which puts the cross's arms on +/-3.182 — the x
   // positions `meh` uses for its eyes. Kept as two independent strokes: crossing them as one
@@ -566,7 +659,7 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
   // read heavier than the done state. Now 16.5 across on Central's 3.75..20.25 span (the same box
   // `storefront`'s body sits in) with a 2.75 corner (`gear`'s inner radius): ~89% of the ring's
   // diameter, which is what it takes for a square to carry the same optical weight as a circle.
-  square: [{ d: 'M6.5 3.75H17.5C19.019 3.75 20.25 4.981 20.25 6.5V17.5C20.25 19.019 19.019 20.25 17.5 20.25H6.5C4.981 20.25 3.75 19.019 3.75 17.5V6.5C3.75 4.981 4.981 3.75 6.5 3.75Z', linejoin: 'round' }],
+  square: [{ d: CENTRAL_BOX, linejoin: 'round' }],
   // Face on the Central ring, features on the same 1.0607 interior scale as the rest of the family:
   // the mouth spans 7.757..16.243 (the `circle-plus` crossbar again) at y 16.243 (its lower arm
   // tip), and the eyes sit on 8.818/15.182 (`circle-x`'s arms). Both eyes are one path — they are
@@ -580,7 +673,13 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
   // The disclosure caret, drawn as `arrow-right`'s head rotated a quarter turn so the two share a
   // corner angle. One direction is enough: the FAQ trigger already spins its indicator 180deg off
   // `data-panel-open`, so an open panel is this glyph rotated, not a separate `chevron-up`.
-  'chevron-down': [{ d: 'M5.75 8.875L12 15.125L18.25 8.875', linecap: 'round', linejoin: 'round' }],
+  'chevron-down': [
+    {
+      d: 'M5.75 8.875L12 15.125L18.25 8.875',
+      linecap: 'round',
+      linejoin: 'round',
+    },
+  ],
   // Bare close mark. Two independent strokes rather than one crossed polyline, because a polyline
   // puts a join at the centre and the round linejoin swells the waist into a blob at 16px. Held to
   // a 10.5u span (well inside the 2.75..21.25 box) so it reads as a mark inside the dialog's 40px
@@ -592,7 +691,14 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
   // Solid companion for `star`, for the follow toggle's off/on pair. Deliberately the identical
   // `d`: filled *and* stroked, it occupies the same silhouette as the outline, so following a
   // profile darkens the star in place instead of resizing it.
-  'star-filled': [{ d: 'M12 3.3L14.61 8.958L20.797 9.692L16.223 13.922L17.437 20.033L12 16.99L6.563 20.033L7.777 13.922L3.203 9.692L9.39 8.958Z', filled: true, linecap: 'round', linejoin: 'round' }],
+  'star-filled': [
+    {
+      d: 'M12 3.3L14.61 8.958L20.797 9.692L16.223 13.922L17.437 20.033L12 16.99L6.563 20.033L7.777 13.922L3.203 9.692L9.39 8.958Z',
+      filled: true,
+      linecap: 'round',
+      linejoin: 'round',
+    },
+  ],
   // Trade/swap. Two free-standing arrows passing each other in opposite directions — no connecting
   // corner, because the moment the two shafts are joined the glyph becomes a loop and collides
   // with `arrows-left-right` (rectangular loop) and `refresh-cw` (circular loop), both of which
@@ -609,8 +715,16 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
   // single-person mark that gap asked for. Lucide's circle is written as two arcs because this
   // set renders `<path>` and nothing else.
   user: [
-    { d: 'M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2', linecap: 'round', linejoin: 'round' },
-    { d: 'M8 7a4 4 0 1 0 8 0a4 4 0 1 0-8 0', linecap: 'round', linejoin: 'round' },
+    {
+      d: 'M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2',
+      linecap: 'round',
+      linejoin: 'round',
+    },
+    {
+      d: 'M8 7a4 4 0 1 0 8 0a4 4 0 1 0-8 0',
+      linecap: 'round',
+      linejoin: 'round',
+    },
   ],
   // Developers: the angle brackets, not a wrench - `gear` is Settings and sits one row above, and
   // two tool marks in a five-row menu read as two settings rows.
@@ -618,11 +732,14 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
     { d: 'M16 18L22 12L16 6', linecap: 'round', linejoin: 'round' },
     { d: 'M8 6L2 12L8 18', linecap: 'round', linejoin: 'round' },
   ],
-  // The way out of the account menu, so its last row is not the one bare lane in the column.
   'log-out': [
     { d: 'M16 17L21 12L16 7', linecap: 'round', linejoin: 'round' },
     { d: 'M21 12H9', linecap: 'round', linejoin: 'round' },
-    { d: 'M9 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H9', linecap: 'round', linejoin: 'round' },
+    {
+      d: 'M9 21H5A2 2 0 0 1 3 19V5A2 2 0 0 1 5 3H9',
+      linecap: 'round',
+      linejoin: 'round',
+    },
   ],
   // The official mark, unmodified: filled, never stroked (see the header note).
   discord: [
@@ -631,6 +748,10 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
       brand: true,
     },
   ],
+}
+
+export function iconPaths(name: IconName): readonly PathDef[] {
+  return PATHS[name]
 }
 
 export interface IconProps {

@@ -1,5 +1,24 @@
+import { appShellCopy } from './appShell'
+import { sharedCopy } from './shared'
+
 /** Every string the Developers (API keys) screen shows. Keys name the role of the string, not its content. */
 export const developersCopy = {
+  pageTitle: appShellCopy.accountMenu.developers,
+  skillButton: 'API skill.md',
+  /** Visible placeholder; `labelInput` is the field's accessible name. */
+  labelPlaceholder: 'Key label (e.g. my-trading-bot)',
+  retry: sharedCopy.tryAgain,
+  /** Text nodes of the security explainer; the screen glues `<strong>` / `<InlineLink>` / `<code>`. */
+  explainer: {
+    lede: 'API keys act as ',
+    account: 'your account',
+    powers:
+      ': they can mint memes, gift shares (including to users your own site knows only by Masky avatar id), trade, and read everything you can. Full endpoint reference lives in ',
+    skill: 'skill.md',
+    alsoAt: ' (also at ',
+    wellKnown: '/.well-known/skill.md',
+    close: ' for agents). Treat keys like passwords.',
+  },
   /** The label a key gets when the field is left blank; it comes back from the API as the key's name. */
   defaultLabel: 'my key',
   labelInput: 'API key label',
@@ -23,6 +42,7 @@ export const developersCopy = {
   row: {
     created: (date: string) => `created ${date}`,
     revoke: (label: string) => `Revoke API key ${label}`,
+    revokeLabel: 'Revoke',
   },
   revokeDialog: {
     title: 'Revoke this API key?',

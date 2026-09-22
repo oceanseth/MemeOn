@@ -8,6 +8,10 @@ import {
 } from 'firebase/auth'
 import { getDatabase } from 'firebase/database'
 
+// Public Firebase web client identifiers (apiKey, appId, databaseURL), not the
+// SSM service account. Do not rotate them out of the SPA; restrict the key in
+// the Firebase console (HTTP referrers). The secret is SSM firebase_service_account
+// via api/src/firebase.ts.
 const firebaseConfig = {
   apiKey: 'AIzaSyDCEz92k0g4qD7LID2vPfQQTnSiLluixzo',
   authDomain: 'memeon-8ab5f.firebaseapp.com',
@@ -28,7 +32,9 @@ export async function firebaseSignIn(customToken: string): Promise<void> {
 }
 
 export function firebaseSignOut(): void {
-  void signOut(firebaseAuth).catch(() => {})
+  void signOut(firebaseAuth).catch((err) => {
+    console.error('[memeon firebase] sign-out failed', err)
+  })
 }
 
 export function onFirebaseUser(cb: (user: User | null) => void): () => void {

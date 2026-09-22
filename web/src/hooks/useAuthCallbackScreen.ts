@@ -1,14 +1,13 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { IconName } from '@/atoms/icon'
 import { authStatusCopy } from '../copy/authStatus'
+import { inviteCopy } from '../copy/invite'
 import { beginMaskyLogin, completeMaskyLogin } from '../lib/auth'
 import { post } from '../lib/api'
+import { clearInviteFrom, clearPostLogin, getInviteFrom, getPostLogin } from '../lib/sessionBus'
 import { useAuth } from './useAuth'
-import { INVITE_KEY } from './useInviteScreen'
-
-/** Where a login that started from a Discord link (or another guarded route) resumes. */
-export const POST_LOGIN_KEY = 'memeon_post_login'
+import { useMountEffect } from './useMountEffect'
 
 const copy = authStatusCopy.callback
 
@@ -16,6 +15,8 @@ const copy = authStatusCopy.callback
 export interface AuthStatusScreenModel {
   /** `working` draws the ring; `error` swaps it for the failure title and an `Alert`. */
   phase: 'working' | 'error'
+  /** Tab title; distinct from on-screen `title` (no ellipsis / “MemeOn app”). */
+  documentTitle: string
   title: string
   /** the line under the title while working; `null` hides it */
   subtitle: string | null
@@ -35,20 +36,21 @@ export interface AuthStatusScreenModel {
 }
 
 /**
- * The Masky OAuth redirect: exchange the single-use code once (StrictMode replays the effect, so
- * a ref guards it), finish a pending invite, refresh the session and leave for the route the login
- * started from.
+ * The Masky OAuth redirect: exchange the single-use code once (useMountEffect + one in-flight
+ * Promise per code in lib/auth), finish a pending invite, refresh the session and leave for the
+ * route the login started from.
  */
 export function useAuthCallbackScreen(): AuthStatusScreenModel {
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const { refresh } = useAuth()
   const [err, setErr] = useState<string | null>(null)
-  const ran = useRef(false)
+  const [inviteFailed, setInviteFailed] = useState(false)
+  const [pendingInviterId, setPendingInviterId] = useState<string | null>(null)
+  const [pendingPostLogin, setPendingPostLogin] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (ran.current) return // StrictMode double-mount; codes are single-use
-    ran.current = true
+  useMountEffect(() => {
+    let cancelled = false
     const code = params.get('code')
     if (!code) {
       setErr(params.get('error') ?? copy.errors.missingCode)
@@ -56,29 +58,73 @@ export function useAuthCallbackScreen(): AuthStatusScreenModel {
     }
     completeMaskyLogin(code, params.get('state'))
       .then(async () => {
+        if (cancelled) return
         // finish an invite if this login started from an invite link
-        const inviterId = sessionStorage.getItem(INVITE_KEY)
-        sessionStorage.removeItem(INVITE_KEY)
+        const inviterId = getInviteFrom()
+        clearInviteFrom()
+        const postLogin = getPostLogin()
+        clearPostLogin()
+        setPendingInviterId(inviterId)
+        setPendingPostLogin(postLogin)
         if (inviterId) {
-          await post('/api/invites/accept', { inviterId }).catch(() => {})
+          try {
+            await post('/api/invites/accept', { inviterId })
+          } catch {
+            if (cancelled) return
+            await refresh()
+            if (cancelled) return
+            setInviteFailed(true)
+            setErr(inviteCopy.errors.accept)
+            return
+          }
         }
-        const postLogin = sessionStorage.getItem(POST_LOGIN_KEY)
-        sessionStorage.removeItem(POST_LOGIN_KEY)
+        if (cancelled) return
         await refresh()
-        navigate(postLogin ?? (inviterId ? '/friends' : '/marketplace'), { replace: true })
+        if (cancelled) return
+        navigate(postLogin ?? (inviterId ? '/friends' : '/marketplace'), {
+          replace: true,
+        })
       })
-      .catch((e) => setErr(e instanceof Error ? e.message : copy.errors.loginFailed))
-  }, [params, navigate, refresh])
+      .catch((e) => {
+        if (cancelled) return
+        setErr(e instanceof Error ? e.message : copy.errors.loginFailed)
+      })
+    return () => {
+      cancelled = true
+    }
+  })
 
-  /* Failed hand-off offers retry instead of an endless spinner. */
+  /* Failed hand-off offers retry instead of an endless spinner. Invite-fail retry re-POSTs accept. */
   const retry = () => {
+    if (inviteFailed) {
+      const inviterId = pendingInviterId
+      const postLogin = pendingPostLogin
+      setInviteFailed(false)
+      setErr(null)
+      void (async () => {
+        try {
+          if (inviterId) await post('/api/invites/accept', { inviterId })
+          await refresh()
+          navigate(postLogin ?? (inviterId ? '/friends' : '/marketplace'), {
+            replace: true,
+          })
+        } catch {
+          setInviteFailed(true)
+          setErr(inviteCopy.errors.accept)
+        }
+      })()
+      return
+    }
     setErr(null)
-    void beginMaskyLogin().catch((e) => setErr(e instanceof Error ? e.message : copy.errors.loginFailed))
+    void beginMaskyLogin().catch((e) =>
+      setErr(e instanceof Error ? e.message : copy.errors.loginFailed),
+    )
   }
 
   return {
     phase: err ? 'error' : 'working',
-    title: err ? copy.failed.title : copy.working.title,
+    documentTitle: copy.documentTitle,
+    title: err ? (inviteFailed ? copy.inviteFailed.title : copy.failed.title) : copy.working.title,
     subtitle: err ? null : copy.working.subtitle,
     error: err,
     primaryAction: null,

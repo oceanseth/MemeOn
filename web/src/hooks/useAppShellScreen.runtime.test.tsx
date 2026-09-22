@@ -1,16 +1,9 @@
 import { act, StrictMode, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { MemoryRouter } from 'react-router-dom'
-import { observer } from 'mobx-react-lite'
 import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import {
-  FIXED_NOW,
-  meLou,
-  questStepsFresh,
-  readSale,
-  unreadSale,
-} from '../../.storybook/fixtures'
+import { FIXED_NOW, meLou, questStepsFresh, readSale, unreadSale } from '../../.storybook/fixtures'
 import type { Alert, Me, QuestKey } from '../lib/types'
 import { authMachine } from '../stores/authMachine'
 import { createStores, type AppStores } from '../stores/createStores'
@@ -33,27 +26,25 @@ type AuthLoad = ReturnType<typeof deferred<Me | null>>
 
 function createControlledStores() {
   const loads: AuthLoad[] = []
-  const actor = createActor(authMachine.provide({
-    actors: {
-      loadMe: fromPromise(() => {
-        const load = deferred<Me | null>()
-        loads.push(load)
-        return load.promise
-      }),
-    },
-    actions: { clearSessionAndFirebase: () => {} },
-  }))
+  const actor = createActor(
+    authMachine.provide({
+      actors: {
+        loadMe: fromPromise(() => {
+          const load = deferred<Me | null>()
+          loads.push(load)
+          return load.promise
+        }),
+      },
+      actions: { clearSessionAndFirebase: () => {} },
+    }),
+  )
   const stores = createStores(actor)
   stores.retain()
   return { stores, loads }
 }
 
 function pathOf(input: RequestInfo | URL): string {
-  const value = typeof input === 'string'
-    ? input
-    : input instanceof URL
-      ? input.href
-      : input.url
+  const value = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
   return new URL(value, window.location.origin).pathname
 }
 
@@ -78,17 +69,19 @@ function controlledShellReads() {
   return { alerts, steps, fetchMock }
 }
 
-const Probe = observer(function Probe() {
+function Probe() {
   const model = useAppShellScreen()
   return (
     <section>
       <output data-testid="phase">{model.phase}</output>
-      <output data-testid="alerts">{model.alertsBell.rows.map((row) => row.message).join('|')}</output>
+      <output data-testid="alerts">
+        {model.alertsBell.rows.map((row) => row.message).join('|')}
+      </output>
       <output data-testid="unread">{model.alertsBell.unreadLabel ?? '0'}</output>
       <output data-testid="quest">{model.questBar?.completionLabel ?? 'none'}</output>
     </section>
   )
-})
+}
 
 function mountedProbe(stores: AppStores, children: ReactNode = <Probe />) {
   return (
@@ -108,14 +101,12 @@ async function settle() {
   await Promise.resolve()
 }
 
-async function refreshAs(
-  stores: AppStores,
-  loads: AuthLoad[],
-  user: Me,
-): Promise<void> {
+async function refreshAs(stores: AppStores, loads: AuthLoad[], user: Me): Promise<void> {
   let refresh!: Promise<void>
   const index = loads.length
-  await act(() => { refresh = stores.auth.refresh() })
+  await act(() => {
+    refresh = stores.auth.refresh()
+  })
   expect(loads).toHaveLength(index + 1)
   await act(async () => {
     loads[index]!.resolve(user)
@@ -163,7 +154,11 @@ it('keeps the newest same-account alerts and onboarding projection when older re
   const { stores, loads } = createControlledStores()
   storesToDispose.push(stores)
   const reads = controlledShellReads()
-  const userA = { ...meLou, name: 'Account read A', onboarding: { pack: 'todo' } }
+  const userA = {
+    ...meLou,
+    name: 'Account read A',
+    onboarding: { pack: 'todo' },
+  }
   const userB = { ...userA, name: 'Account read B' }
   await refreshAs(stores, loads, userA)
 
@@ -176,7 +171,10 @@ it('keeps the newest same-account alerts and onboarding projection when older re
   expect(reads.alerts).toHaveLength(2)
   expect(reads.steps).toHaveLength(2)
 
-  const completedSteps = questStepsFresh.map((step) => ({ ...step, done: true }))
+  const completedSteps = questStepsFresh.map((step) => ({
+    ...step,
+    done: true,
+  }))
   await act(async () => {
     reads.alerts[1]!.resolve(Response.json({ alerts: [alert('Current read alert', true)] }))
     reads.steps[1]!.resolve(Response.json({ steps: completedSteps }))
@@ -201,10 +199,23 @@ it('invalidates pending reads across StrictMode logout, all-done login, and true
   const { stores, loads } = createControlledStores()
   storesToDispose.push(stores)
   const reads = controlledShellReads()
-  const userA = { ...meLou, name: 'Pending account', onboarding: { pack: 'todo' } }
+  const userA = {
+    ...meLou,
+    name: 'Pending account',
+    onboarding: { pack: 'todo' },
+  }
   await refreshAs(stores, loads, userA)
 
-  await act(() => root.render(mountedProbe(stores, <StrictMode><Probe /></StrictMode>)))
+  await act(() =>
+    root.render(
+      mountedProbe(
+        stores,
+        <StrictMode>
+          <Probe />
+        </StrictMode>,
+      ),
+    ),
+  )
   const pendingAAlerts = [...reads.alerts]
   const pendingASteps = [...reads.steps]
   expect(pendingAAlerts.length).toBeGreaterThan(0)
@@ -234,7 +245,11 @@ it('invalidates pending reads across StrictMode logout, all-done login, and true
   expect(text(host, 'unread')).toBe('0')
   expect(text(host, 'quest')).toBe('none')
 
-  const userC = { ...meLou, name: 'Unmounted account', onboarding: { pack: 'todo' } }
+  const userC = {
+    ...meLou,
+    name: 'Unmounted account',
+    onboarding: { pack: 'todo' },
+  }
   await refreshAs(stores, loads, userC)
   const pendingCAlert = reads.alerts.at(-1)!
   const pendingCSteps = reads.steps.at(-1)!
@@ -254,12 +269,15 @@ it('polls every thirty seconds, resets only for a new user reference, and stops 
   const { stores, loads } = createControlledStores()
   storesToDispose.push(stores)
   const alerts = vi.fn()
-  vi.stubGlobal('fetch', vi.fn<typeof fetch>((input) => {
-    const path = pathOf(input)
-    if (path !== '/api/alerts') throw new Error(`Unexpected request: ${path}`)
-    alerts()
-    return Promise.resolve(Response.json({ alerts: [alert('Polling alert', true)] }))
-  }))
+  vi.stubGlobal(
+    'fetch',
+    vi.fn<typeof fetch>((input) => {
+      const path = pathOf(input)
+      if (path !== '/api/alerts') throw new Error(`Unexpected request: ${path}`)
+      alerts()
+      return Promise.resolve(Response.json({ alerts: [alert('Polling alert', true)] }))
+    }),
+  )
   const userA = allDoneUser('Polling account A')
   await refreshAs(stores, loads, userA)
   await act(async () => {
@@ -276,7 +294,9 @@ it('polls every thirty seconds, resets only for a new user reference, and stops 
 
   let unchangedRefresh!: Promise<void>
   const unchangedIndex = loads.length
-  await act(() => { unchangedRefresh = stores.auth.refresh() })
+  await act(() => {
+    unchangedRefresh = stores.auth.refresh()
+  })
   await act(async () => {
     loads[unchangedIndex]!.reject(new Error('transient refresh failure'))
     await unchangedRefresh
@@ -308,4 +328,91 @@ it('polls every thirty seconds, resets only for a new user reference, and stops 
   await act(() => root.unmount())
   await act(() => vi.advanceTimersByTime(60_000))
   expect(alerts).toHaveBeenCalledTimes(5)
+})
+
+it('still MARK_READs when alerts/read POST rejects and does not SET_ALERTS_FAIL', async () => {
+  const { stores, loads } = createControlledStores()
+  storesToDispose.push(stores)
+  const readPost = deferred<Response>()
+  vi.stubGlobal(
+    'fetch',
+    vi.fn<typeof fetch>((input) => {
+      const path = pathOf(input)
+      if (path === '/api/alerts') {
+        return Promise.resolve(Response.json({ alerts: [alert('Unread sale', false)] }))
+      }
+      if (path === '/api/onboarding') {
+        return Promise.resolve(Response.json({ steps: [] }))
+      }
+      if (path === '/api/alerts/read') {
+        return readPost.promise
+      }
+      throw new Error(`Unexpected request: ${path}`)
+    }),
+  )
+  await refreshAs(stores, loads, allDoneUser('Mark-read account'))
+
+  function OpenAlertsProbe() {
+    const model = useAppShellScreen()
+    return (
+      <section>
+        <output data-testid="unread">{model.alertsBell.unreadLabel ?? '0'}</output>
+        <output data-testid="tone">{model.alertsBell.emptyTone}</output>
+        <output data-testid="row-unread">
+          {String(model.alertsBell.rows.filter((row) => row.unread).length)}
+        </output>
+        <button
+          type="button"
+          data-testid="open-alerts"
+          onClick={() => void model.alertsBell.onOpenChange(true)}
+        >
+          open
+        </button>
+      </section>
+    )
+  }
+
+  await act(async () => {
+    root.render(mountedProbe(stores, <OpenAlertsProbe />))
+    await settle()
+  })
+  await act(async () => {
+    await settle()
+  })
+  expect(text(host, 'unread')).toBe('1')
+  expect(text(host, 'tone')).toBe('idle')
+
+  await act(async () => {
+    host.querySelector<HTMLButtonElement>('[data-testid="open-alerts"]')!.click()
+    await settle()
+  })
+  await act(async () => {
+    readPost.reject(new Error('offline'))
+    await settle()
+  })
+  expect(text(host, 'tone')).toBe('idle')
+  expect(text(host, 'unread')).toBe('0')
+  expect(text(host, 'row-unread')).toBe('1')
+})
+
+it('hides the quest bar when onboarding GET rejects', async () => {
+  const { stores, loads } = createControlledStores()
+  storesToDispose.push(stores)
+  const reads = controlledShellReads()
+  const user = {
+    ...meLou,
+    name: 'Quest skip',
+    onboarding: { pack: 'todo' as const },
+  }
+  await refreshAs(stores, loads, user)
+
+  await act(() => root.render(mountedProbe(stores)))
+  expect(reads.steps).toHaveLength(1)
+
+  await act(async () => {
+    reads.alerts[0]!.resolve(Response.json({ alerts: [] }))
+    reads.steps[0]!.reject(new Error('offline'))
+    await settle()
+  })
+  expect(text(host, 'quest')).toBe('none')
 })

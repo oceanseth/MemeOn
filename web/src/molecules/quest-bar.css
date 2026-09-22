@@ -9,12 +9,12 @@
    built CSS back and fails the build if any bundle ever ranks these differently. */
 @layer properties, theme, base, components, utilities;
 
-@reference '../index.css';
+@reference "../index.css";
 
 /* The ladder's angle, registered as an <angle> so a change tweens instead of snapping. It has to
    inherit: the ring is the trigger's `::before`, which reads the tweened value from its host. */
 @property --quest-angle {
-  syntax: '<angle>';
+  syntax: "<angle>";
   inherits: true;
   initial-value: 0deg;
 }
@@ -28,29 +28,53 @@
    * fifth. A conic gradient masked to its own padding is the one way to draw an arc that hugs any
    * radius at any size, which is why this is a sheet and not a utility.
    */
-  [data-slot='quest-trigger'] {
+  [data-slot="quest-trigger"] {
     --quest-angle: 0deg;
     transition: --quest-angle 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
-  [data-slot='quest-trigger'][data-progress='10'] { --quest-angle: 36deg; }
-  [data-slot='quest-trigger'][data-progress='20'] { --quest-angle: 72deg; }
-  [data-slot='quest-trigger'][data-progress='30'] { --quest-angle: 108deg; }
-  [data-slot='quest-trigger'][data-progress='40'] { --quest-angle: 144deg; }
-  [data-slot='quest-trigger'][data-progress='50'] { --quest-angle: 180deg; }
-  [data-slot='quest-trigger'][data-progress='60'] { --quest-angle: 216deg; }
-  [data-slot='quest-trigger'][data-progress='70'] { --quest-angle: 252deg; }
-  [data-slot='quest-trigger'][data-progress='80'] { --quest-angle: 288deg; }
-  [data-slot='quest-trigger'][data-progress='90'] { --quest-angle: 324deg; }
-  [data-slot='quest-trigger'][data-progress='100'] { --quest-angle: 360deg; }
+  [data-slot="quest-trigger"][data-progress="10"] {
+    --quest-angle: 36deg;
+  }
+  [data-slot="quest-trigger"][data-progress="20"] {
+    --quest-angle: 72deg;
+  }
+  [data-slot="quest-trigger"][data-progress="30"] {
+    --quest-angle: 108deg;
+  }
+  [data-slot="quest-trigger"][data-progress="40"] {
+    --quest-angle: 144deg;
+  }
+  [data-slot="quest-trigger"][data-progress="50"] {
+    --quest-angle: 180deg;
+  }
+  [data-slot="quest-trigger"][data-progress="60"] {
+    --quest-angle: 216deg;
+  }
+  [data-slot="quest-trigger"][data-progress="70"] {
+    --quest-angle: 252deg;
+  }
+  [data-slot="quest-trigger"][data-progress="80"] {
+    --quest-angle: 288deg;
+  }
+  [data-slot="quest-trigger"][data-progress="90"] {
+    --quest-angle: 324deg;
+  }
+  [data-slot="quest-trigger"][data-progress="100"] {
+    --quest-angle: 360deg;
+  }
 
-  [data-slot='quest-trigger']::before {
-    content: '';
+  [data-slot="quest-trigger"]::before {
+    content: "";
     position: absolute;
     inset: calc(var(--spacing) * -1);
     border-radius: inherit;
     padding: 2px;
-    background: conic-gradient(from -90deg, var(--color-primary) var(--quest-angle), var(--color-border) 0);
+    background: conic-gradient(
+      from -90deg,
+      var(--color-primary) var(--quest-angle),
+      var(--color-border) 0
+    );
     /* two full-box layers, composited to leave only the padding ring; the colour is irrelevant, only the alpha */
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
@@ -64,7 +88,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    [data-slot='quest-trigger'] {
+    [data-slot="quest-trigger"] {
       transition: none;
     }
   }

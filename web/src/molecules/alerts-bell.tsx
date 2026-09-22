@@ -2,7 +2,14 @@ import { Link } from 'react-router-dom'
 import { Badge } from '@/atoms/badge'
 import { Button } from '@/atoms/button'
 import { Item, ItemContent, ItemMedia } from '@/atoms/item'
-import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '@/atoms/popover'
+import {
+  headerPopoverPopupClassName,
+  headerPopoverPositionerClassName,
+  Popover,
+  PopoverContent,
+  PopoverTitle,
+  PopoverTrigger,
+} from '@/atoms/popover'
 import { PortalAnchor } from '@/atoms/portal-anchor'
 import { cn } from '@/lib/cn'
 import type { AlertsBellModel } from '../lib/alertsBellModel'
@@ -19,33 +26,14 @@ import { Icon } from '@/atoms/icon'
 const ANCHOR_ID = 'alerts-pop-anchor'
 
 /** The bell glyph on the ghost icon button; the unread bubble sits on its corner. */
-const GLYPH = 'text-xl leading-none xl:text-2xl'
+const GLYPH = cn('text-xl leading-none xl:text-2xl')
 
 /** The unread count rides the trigger's corner; the disc itself is `Badge size="count"`. */
-const BUBBLE = 'absolute -top-1 -right-1'
-
-/**
- * ≤480 the panel leaves the anchor and pins itself under the whole header, gutter to gutter: at
- * 420px a real seven-alert queue was sliced mid-row with 300px of empty page beneath it. Base UI
- * writes the anchored geometry into the positioner's `style` attribute, and an author `!important`
- * declaration is the one thing that outranks it.
- */
-const POSITIONER = cn(
-  'max-xs:fixed! max-xs:top-(--topbar-h)! max-xs:right-3! max-xs:left-3!',
-  'max-xs:w-auto! max-xs:transform-none!',
-)
-
-/**
- * The panel: 380 like the quest ladder's, because 340 of `text-base` is what turned one starter-
- * pack sentence into six lines. Three bands — title, list, tail — so the atom's own padding and
- * row gap come off: the list is flush to the edges and the hairlines run the full width. The popup
- * itself no longer scrolls; `LIST` does, which is what keeps the title in place past row one.
- */
-const PANEL = 'w-[min(380px,calc(100vw-24px))] max-xs:w-auto'
+const BUBBLE = cn('absolute -top-1 -right-1')
 
 /** Title band: the name, then the count of what is new in it. */
-const HEAD = 'flex items-baseline gap-2 px-3.5 pt-3 pb-2.5'
-const COUNT = 'text-sm font-medium text-muted-foreground tabular-nums'
+const HEAD = cn('flex items-baseline gap-2 px-3.5 pt-3 pb-2.5')
+const COUNT = cn('text-sm font-medium text-muted-foreground tabular-nums')
 
 /**
  * The list: hairline-separated rows, capped at ~7 of them so a full queue is a panel and not a
@@ -53,7 +41,7 @@ const COUNT = 'text-sm font-medium text-muted-foreground tabular-nums'
  * available height is the smaller number.
  */
 const LIST = cn(
-  'flex max-h-[min(60vh,25rem)] flex-col overflow-y-auto scrollbar-thin',
+  'flex max-h-(--alerts-max-h) flex-col overflow-y-auto scrollbar-thin',
   'border-t border-border divide-y divide-border',
 )
 
@@ -62,21 +50,23 @@ const LIST = cn(
  * the list to say is that a row does not shrink: `LIST` is a capped flex column, and without this
  * the rows share the shortfall out between them and every stamp is sliced by the hairline below.
  */
-const ROW = 'shrink-0'
+const ROW = cn('shrink-0')
 
 /** Two lines of message, then the stamp. `text-sm` is the list's step: 20 rows of `text-base` is a page. */
-const MESSAGE = 'line-clamp-2 text-sm/5 text-foreground wrap-anywhere'
-const TIME = 'text-xs font-normal text-muted-foreground tabular-nums'
+const MESSAGE = cn('line-clamp-2 text-sm/5 text-foreground wrap-anywhere')
+const TIME = cn('text-xs font-normal text-muted-foreground tabular-nums')
 
 /** The unread dot keeps its own lane at the row's end, so a message never reflows when one is read. */
-const DOT = 'mt-1.5 size-2 shrink-0 self-start rounded-full bg-primary'
+const DOT = cn('mt-1.5 size-2 shrink-0 self-start rounded-full bg-primary')
 
 /** Nothing to show: a quiet disc, then the line that says which nothing this is. */
-const EMPTY = 'flex flex-col items-center gap-3 px-6 py-9 text-center'
-const EMPTY_DISC = 'grid size-11 place-items-center rounded-full'
+const EMPTY = cn('flex flex-col items-center gap-3 px-6 py-9 text-center')
+const EMPTY_DISC = cn('grid size-11 place-items-center rounded-full')
 
 /** The tail: what the list is not showing, set apart from the rows rather than faking one. */
-const FOOT = 'm-0 border-t border-border px-3.5 py-2.5 text-center text-xs text-muted-foreground'
+const FOOT = cn(
+  'm-0 border-t border-border px-3.5 py-2.5 text-center text-xs text-muted-foreground',
+)
 
 /**
  * Alerts popover, on the `popover` atom. Base UI owns the disclosure wiring — `aria-expanded`,
@@ -122,9 +112,11 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
           /* opening a notification list must not move the caret: the popup is the next tab stop
              after the bell, exactly as the legacy panel was */
           initialFocus={false}
-          positionerClassName={POSITIONER}
+          // oxlint-disable-next-line shadcn/require-static-classes -- literal lives on the popover export
+          positionerClassName={headerPopoverPositionerClassName}
           variant="panel"
-          className={PANEL}
+          // oxlint-disable-next-line shadcn/require-static-classes -- literal lives on the popover export
+          className={headerPopoverPopupClassName}
           data-slot="alerts-pop"
           {...model.popupProps}
         >
@@ -150,7 +142,10 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
               >
                 <Icon name={model.emptyTone === 'offline' ? 'triangle-alert' : 'bell'} size={22} />
               </span>
-              <p className="m-0 text-sm text-pretty text-muted-foreground" data-slot="alerts-empty-label">
+              <p
+                className="m-0 text-sm text-pretty text-muted-foreground"
+                data-slot="alerts-empty-label"
+              >
                 {model.emptyLabel}
               </p>
             </div>
@@ -168,7 +163,11 @@ export function AlertsBell({ model }: { model: AlertsBellModel }) {
                   title={row.fullMessage}
                 >
                   <ItemMedia variant="disc" aria-hidden="true" data-slot="alert-mark">
-                    {row.mark.kind === 'emoji' ? row.mark.emoji : <Icon name={row.mark.icon} size={18} />}
+                    {row.mark.kind === 'emoji' ? (
+                      row.mark.emoji
+                    ) : (
+                      <Icon name={row.mark.icon} size={18} />
+                    )}
                   </ItemMedia>
                   <ItemContent>
                     <span

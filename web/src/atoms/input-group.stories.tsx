@@ -53,7 +53,9 @@ export const TrailingText: Story = {
     <InputGroup>
       <InputGroupInput type="number" aria-label="Braincells" defaultValue={12} />
       <InputGroupAddon align="inline-end">
-        <InputGroupText><Icon name="brain" size={16} /></InputGroupText>
+        <InputGroupText>
+          <Icon name="brain" size={16} />
+        </InputGroupText>
       </InputGroupAddon>
     </InputGroup>
   ),

@@ -60,7 +60,9 @@ export const Checked: Story = {
     const box = canvas.getByRole('checkbox', { name: 'For sale' })
     await expect(box).toBeChecked()
     await expect(box).toHaveAttribute('data-checked')
-    await expect(box.querySelector('[data-slot="checkbox-indicator"]')).not.toBeNull()
+    const indicator = box.querySelector('[data-slot="checkbox-indicator"]')
+    await expect(indicator).not.toBeNull()
+    await expect(indicator!.querySelector('svg')).not.toBeNull()
   },
 }
 

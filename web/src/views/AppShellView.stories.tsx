@@ -2,9 +2,18 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { createActor, fromPromise } from 'xstate'
-import { meLou, paperMeme, questStepsFresh, questStepsPackDone, unreadFriend, unreadSale } from '../../.storybook/fixtures'
+import {
+  meLou,
+  paperMeme,
+  questStepsFresh,
+  questStepsPackDone,
+  unreadFriend,
+  unreadSale,
+} from '../../.storybook/fixtures'
 import { createRequestGuard } from '../../.storybook/request-accounting'
 import { PageContainer } from '@/atoms/page-container'
+import { appShellCopy } from '../copy/appShell'
+import { questBarCopy } from '../copy/questBar'
 import type { Me } from '../lib/types'
 import { authMachine } from '../stores/authMachine'
 import { createStores } from '../stores/createStores'
@@ -45,51 +54,64 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('link', { name: 'MemeOn' })).toBeInTheDocument()
+    await expect(canvas.getByRole('link', { name: appShellCopy.brand })).toBeInTheDocument()
     await expect(canvas.queryByRole('link', { name: 'My Binder' })).not.toBeInTheDocument()
   },
 }
 
 const connected: Story = {
-  loaders: [() => {
-    let resolvePack!: (response: Response) => void
-    const packResponse = new Promise<Response>((resolve) => { resolvePack = resolve })
-    const requests = {
-      readIds: [] as string[],
-      packClaims: 0,
-      packClaimed: false,
-      packResponse,
-      resolvePack,
-    }
-    const actor = createActor(authMachine.provide({
-      actors: {
-        loadMe: fromPromise<Me | null>(async () => ({
-          ...meLou,
-          onboarding: requests.packClaimed ? { pack: 'done' } : {},
-        })),
-      },
-      actions: { clearSessionAndFirebase: () => {} },
-    }))
-    return { shellStores: createStores(actor), requests, requestGuard: createRequestGuard() }
-  }],
+  loaders: [
+    () => {
+      let resolvePack!: (response: Response) => void
+      const packResponse = new Promise<Response>((resolve) => {
+        resolvePack = resolve
+      })
+      const requests = {
+        readIds: [] as string[],
+        packClaims: 0,
+        packClaimed: false,
+        packResponse,
+        resolvePack,
+      }
+      const actor = createActor(
+        authMachine.provide({
+          actors: {
+            loadMe: fromPromise<Me | null>(async () => ({
+              ...meLou,
+              onboarding: requests.packClaimed ? { pack: 'done' } : {},
+            })),
+          },
+          actions: { clearSessionAndFirebase: () => {} },
+        }),
+      )
+      return {
+        shellStores: createStores(actor),
+        requests,
+        requestGuard: createRequestGuard(),
+      }
+    },
+  ],
   beforeEach: async ({ loaded }) => {
     const originalFetch = window.fetch
     window.fetch = async (input, init) => {
-      const path = typeof input === 'string' ? input : input instanceof URL ? input.pathname : input.url
+      const path =
+        typeof input === 'string' ? input : input instanceof URL ? input.pathname : input.url
       switch (path) {
-        case '/api/alerts': return Response.json({
-          alerts: [unreadSale, unreadFriend].map((alert) => ({
-            ...alert,
-            read: loaded.requests.readIds.includes(alert.id),
-          })),
-        })
+        case '/api/alerts':
+          return Response.json({
+            alerts: [unreadSale, unreadFriend].map((alert) => ({
+              ...alert,
+              read: loaded.requests.readIds.includes(alert.id),
+            })),
+          })
         case '/api/alerts/read': {
           loaded.requests.readIds.push(...JSON.parse(String(init?.body)).ids)
           return Response.json({})
         }
-        case '/api/onboarding': return Response.json({
-          steps: loaded.requests.packClaimed ? questStepsPackDone : questStepsFresh,
-        })
+        case '/api/onboarding':
+          return Response.json({
+            steps: loaded.requests.packClaimed ? questStepsPackDone : questStepsFresh,
+          })
         case '/api/onboarding/claim-pack': {
           loaded.requests.packClaims += 1
           return loaded.requests.packResponse.then((response: Response) => {
@@ -97,7 +119,8 @@ const connected: Story = {
             return response
           })
         }
-        default: return loaded.requestGuard.record(init?.method ?? 'GET', path)
+        default:
+          return loaded.requestGuard.record(init?.method ?? 'GET', path)
       }
     }
     loaded.shellStores.retain()
@@ -133,12 +156,16 @@ export const AlertsToggleAndLinks: Story = {
     // the alert row itself is the link, so its name carries the unread cue and the timestamp too
     await userEvent.click(canvas.getByText(unreadSale.message))
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
-    await expect(canvas.getByRole('status', { name: 'Current route' })).toHaveTextContent(`/m/${unreadSale.memeId}`)
+    await expect(canvas.getByRole('status', { name: 'Current route' })).toHaveTextContent(
+      `/m/${unreadSale.memeId}`,
+    )
 
     await userEvent.click(trigger)
     await userEvent.click(canvas.getByText(unreadFriend.message))
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
-    await expect(canvas.getByRole('status', { name: 'Current route' })).toHaveTextContent(`/u/${encodeURIComponent(unreadFriend.subjectSub!)}`)
+    await expect(canvas.getByRole('status', { name: 'Current route' })).toHaveTextContent(
+      `/u/${encodeURIComponent(unreadFriend.subjectSub!)}`,
+    )
     await userEvent.click(trigger)
     await userEvent.click(canvas.getByText('page body'))
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
@@ -156,21 +183,30 @@ export const ClaimPackAndDismissOverlay: Story = {
     await userEvent.click(pill)
     await userEvent.click(await canvas.findByRole('button', { name: /claim your starter pack/i }))
     /* the panel closes on claim so the positioner cannot drift once the pack dialog opens */
-    await waitFor(() => expect(canvas.queryByText('Earn your braincells')).toBeNull())
+    await waitFor(() => expect(canvas.queryByText(questBarCopy.title)).toBeNull())
     await expect(loaded.requests.packClaims).toBe(1)
 
     loaded.requests.resolvePack(Response.json({ memes: [paperMeme], reward: 20 }))
-    const modal = await canvas.findByRole('dialog', { name: /Starter pack opened/ })
+    const modal = await canvas.findByRole('dialog', {
+      name: questBarCopy.pack.title,
+    })
     await expect(within(modal).getByText(/You now hold 10 shares/)).toHaveTextContent('plus 20')
-    await expect(within(modal).getByRole('link', { name: new RegExp(paperMeme.title) })).toHaveAttribute('href', `/m/${paperMeme.id}`)
+    await expect(
+      within(modal).getByRole('link', { name: new RegExp(paperMeme.title) }),
+    ).toHaveAttribute('href', `/m/${paperMeme.id}`)
     await userEvent.click(within(modal).getByRole('heading'))
     await expect(modal).toBeInTheDocument()
     /* Escape is Base UI's own cancel path; the shell clears the pack from context */
     await userEvent.keyboard('{Escape}')
     await waitFor(() => expect(canvas.queryByRole('dialog')).not.toBeInTheDocument())
     // one step in: the pill's ring and name both moved on, and the claim is gone from the ladder
-    await expect(await canvas.findByRole('button', { name: /quests 1 of 5/ })).toHaveAttribute('data-progress', '20')
-    await expect(canvas.queryByRole('button', { name: /claim your starter pack/i })).not.toBeInTheDocument()
+    await expect(await canvas.findByRole('button', { name: /quests 1 of 5/ })).toHaveAttribute(
+      'data-progress',
+      '20',
+    )
+    await expect(
+      canvas.queryByRole('button', { name: /claim your starter pack/i }),
+    ).not.toBeInTheDocument()
   },
 }
 
@@ -181,10 +217,14 @@ export const EmptyVaultAndBinderDismiss: Story = {
     await userEvent.click(await canvas.findByRole('button', { name: /quests 0 of 5/ }))
     await userEvent.click(await canvas.findByRole('button', { name: /claim your starter pack/i }))
     loaded.requests.resolvePack(Response.json({ memes: [], reward: 20 }))
-    const modal = await canvas.findByRole('dialog', { name: /Starter pack opened/ })
+    const modal = await canvas.findByRole('dialog', {
+      name: questBarCopy.pack.title,
+    })
     await expect(within(modal).getByText(/The vault was empty/)).toHaveTextContent('20')
-    await expect(within(modal).queryByRole('link', { name: new RegExp(paperMeme.title) })).not.toBeInTheDocument()
-    await userEvent.click(within(modal).getByRole('link', { name: 'View in My Binder' }))
+    await expect(
+      within(modal).queryByRole('link', { name: new RegExp(paperMeme.title) }),
+    ).not.toBeInTheDocument()
+    await userEvent.click(within(modal).getByRole('link', { name: questBarCopy.pack.viewInBinder }))
     await waitFor(() => expect(canvas.queryByRole('dialog')).not.toBeInTheDocument())
     await expect(canvas.getByRole('status', { name: 'Current route' })).toHaveTextContent('/binder')
   },
@@ -198,9 +238,11 @@ export const LogoutClearsConnectedChrome: Story = {
     await expect(canvas.getByRole('link', { name: 'My Binder' })).toHaveAttribute('href', '/binder')
     await userEvent.click(trigger)
     await userEvent.click(await canvas.findByRole('menuitem', { name: 'Log out' }))
-    await waitFor(() => expect(canvas.queryByRole('button', { name: 'Account menu' })).not.toBeInTheDocument())
+    await waitFor(() =>
+      expect(canvas.queryByRole('button', { name: 'Account menu' })).not.toBeInTheDocument(),
+    )
     await expect(canvas.queryByRole('link', { name: 'My Binder' })).not.toBeInTheDocument()
-    await expect(canvas.getByRole('link', { name: 'MemeOn' })).toBeInTheDocument()
+    await expect(canvas.getByRole('link', { name: appShellCopy.brand })).toBeInTheDocument()
     await expect(loaded.shellStores.auth.user).toBeNull()
     await expect(loaded.requests.readIds).toEqual([])
   },

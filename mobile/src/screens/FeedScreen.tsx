@@ -47,9 +47,10 @@ export default function FeedScreen() {
     loadingRef.current = true
     setLoading(true)
     try {
-      const res = await apiFetch<{ items: FeedItem[]; nextCursor: string | null }>(
-        `/api/feed?cursor=${cursor}&limit=10`,
-      )
+      const res = await apiFetch<{
+        items: FeedItem[]
+        nextCursor: string | null
+      }>(`/api/feed?cursor=${cursor}&limit=10`)
       setItems((prev) => {
         const seen = new Set(prev.map((i) => i.id))
         return [...prev, ...res.items.filter((i) => !seen.has(i.id))]
@@ -84,7 +85,11 @@ export default function FeedScreen() {
         showsVerticalScrollIndicator={false}
         snapToInterval={height}
         decelerationRate="fast"
-        getItemLayout={(_, index) => ({ length: height, offset: height * index, index })}
+        getItemLayout={(_, index) => ({
+          length: height,
+          offset: height * index,
+          index,
+        })}
         onEndReached={loadMore}
         onEndReachedThreshold={2}
         ListEmptyComponent={
@@ -136,13 +141,7 @@ export default function FeedScreen() {
 }
 
 /** First-login hook: claim the free starter pack right from the feed. */
-function PackBanner({
-  styles,
-  top,
-}: {
-  styles: ReturnType<typeof createStyles>
-  top: number
-}) {
+function PackBanner({ styles, top }: { styles: ReturnType<typeof createStyles>; top: number }) {
   const { refresh } = useAuth()
   const [state, setState] = useState<'idle' | 'busy' | 'done'>('idle')
   const [summary, setSummary] = useState('')
@@ -248,10 +247,7 @@ function FeedCard({
     .onEnd(() => runOnJS(likeOnly)())
 
   const cardStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { rotate: `${translateX.value / 30}deg` },
-    ],
+    transform: [{ translateX: translateX.value }, { rotate: `${translateX.value / 30}deg` }],
   }))
 
   const friendLine =
@@ -290,7 +286,8 @@ function FeedCard({
             <Text style={styles.creator}>by {item.creatorName} →</Text>
           </Pressable>
           <Text style={styles.stats}>
-            👁️ {(item.views ?? item.reshares).toLocaleString()}  🔁 {(item.reshareCount ?? 0).toLocaleString()}  🧠 {item.value.toLocaleString()}
+            👁️ {(item.views ?? item.reshares).toLocaleString()} 🔁{' '}
+            {(item.reshareCount ?? 0).toLocaleString()} 🧠 {item.value.toLocaleString()}
             {item.mediaType === 'video' ? '   🎬 video' : ''}
           </Text>
         </View>
@@ -312,7 +309,11 @@ function FeedCard({
 
 function createStyles(colors: LegacyColors) {
   return {
-    card: { backgroundColor: colors.bg, overflow: 'hidden', justifyContent: 'flex-end' },
+    card: {
+      backgroundColor: colors.bg,
+      overflow: 'hidden',
+      justifyContent: 'flex-end',
+    },
     shade: {
       ...(StyleSheet.absoluteFill as object),
       backgroundColor: 'transparent',
@@ -336,7 +337,13 @@ function createStyles(colors: LegacyColors) {
     logoImg: { width: 38, height: 38 },
     topActions: { flexDirection: 'row', alignItems: 'center', gap: 14 },
     coins: { color: colors.gold, fontWeight: '700', fontSize: 15 },
-    miniAvatar: { width: 30, height: 30, borderRadius: 15, borderWidth: 1, borderColor: colors.border },
+    miniAvatar: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
     badge: {
       position: 'absolute',
       top: -4,
@@ -357,7 +364,12 @@ function createStyles(colors: LegacyColors) {
       paddingHorizontal: 14,
       paddingVertical: 10,
     },
-    packText: { color: '#fff', fontWeight: '700', fontSize: 13.5, textAlign: 'center' },
+    packText: {
+      color: '#fff',
+      fontWeight: '700',
+      fontSize: 13.5,
+      textAlign: 'center',
+    },
     hint: { position: 'absolute', alignSelf: 'center' },
     hintText: { color: 'rgba(255,255,255,0.45)', fontSize: 12 },
     friendChip: {
@@ -393,8 +405,18 @@ function createStyles(colors: LegacyColors) {
       gap: 22,
     },
     railBtn: { alignItems: 'center' },
-    railCount: { color: colors.text, fontSize: 12, fontWeight: '700', marginTop: 2 },
+    railCount: {
+      color: colors.text,
+      fontSize: 12,
+      fontWeight: '700',
+      marginTop: 2,
+    },
     empty: { alignItems: 'center', justifyContent: 'center', padding: 40 },
-    emptyText: { color: colors.dim, textAlign: 'center', fontSize: 16, lineHeight: 24 },
+    emptyText: {
+      color: colors.dim,
+      textAlign: 'center',
+      fontSize: 16,
+      lineHeight: 24,
+    },
   } as const
 }

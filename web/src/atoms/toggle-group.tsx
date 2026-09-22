@@ -33,7 +33,9 @@ export const toggleGroupVariants = cva('group/toggle-group flex items-center', {
   },
 })
 
-export type ToggleGroupProps<Value extends string = string> = Styled<ToggleGroupPrimitive.Props<Value>> &
+export type ToggleGroupProps<Value extends string = string> = Styled<
+  ToggleGroupPrimitive.Props<Value>
+> &
   ToggleGroupItemVariants
 
 export function ToggleGroup<Value extends string = string>({
@@ -53,7 +55,9 @@ export function ToggleGroup<Value extends string = string>({
       className={cn(toggleGroupVariants({ variant, orientation }), className)}
       {...props}
     >
-      <ToggleGroupContext.Provider value={{ variant, size }}>{children}</ToggleGroupContext.Provider>
+      <ToggleGroupContext.Provider value={{ variant, size }}>
+        {children}
+      </ToggleGroupContext.Provider>
     </ToggleGroupPrimitive>
   )
 }

@@ -34,12 +34,18 @@ describe('gift dialog model', () => {
     model.searchInputProps.onChange?.({ target: { value: 'paper' } } as never)
     expect(onQueryChange).toHaveBeenCalledWith('paper')
     expect(model.searchInputProps['aria-label']).toBe(copy.search)
+    expect(model.searchInputProps.placeholder).toBe(copy.searchPlaceholder)
   })
 
   it('keeps the raw share text while typing and clamps only on blur and submit', () => {
     const onSharesChange = vi.fn()
     const onSharesBlur = vi.fn()
-    const model = buildModel({ pick: { ...giftablePaper, myShares: 3 }, shares: 99, onSharesChange, onSharesBlur })
+    const model = buildModel({
+      pick: { ...giftablePaper, myShares: 3 },
+      shares: 99,
+      onSharesChange,
+      onSharesBlur,
+    })
 
     expect(model.sharesInputProps.value).toBe(3)
     model.sharesInputProps.onChange?.({ target: { value: '' } } as never)
@@ -47,7 +53,11 @@ describe('gift dialog model', () => {
     model.sharesInputProps.onBlur?.({} as never)
     expect(onSharesBlur).toHaveBeenCalledOnce()
 
-    const cleared = buildModel({ pick: { ...giftablePaper, myShares: 3 }, shares: 1, sharesInput: '' })
+    const cleared = buildModel({
+      pick: { ...giftablePaper, myShares: 3 },
+      shares: 1,
+      sharesInput: '',
+    })
     expect(cleared.sharesInputProps.value).toBe('')
 
     expect(clampGiftShares('2.8', 3)).toBe(2)
@@ -56,7 +66,10 @@ describe('gift dialog model', () => {
   })
 
   it('carries the tier ladder and the listed flag into every row', () => {
-    const model = buildModel({ memes: [giftablePaper, { ...listedHolo, myShares: 100 }], pick: null })
+    const model = buildModel({
+      memes: [giftablePaper, { ...listedHolo, myShares: 100 }],
+      pick: null,
+    })
 
     expect(model.rows[0]).toMatchObject({
       tierKey: 'paper',
@@ -64,8 +77,17 @@ describe('gift dialog model', () => {
       listed: false,
       sharesLabel: copy.sharesHeld(12),
     })
-    expect(model.rows[1]).toMatchObject({ tierKey: 'holo', listed: true, listedLabel: copy.listed })
-    expect(model.rows[0]?.imageProps).toMatchObject({ loading: 'lazy', decoding: 'async', width: 40, height: 40 })
+    expect(model.rows[1]).toMatchObject({
+      tierKey: 'holo',
+      listed: true,
+      listedLabel: copy.listed,
+    })
+    expect(model.rows[0]?.imageProps).toMatchObject({
+      loading: 'lazy',
+      decoding: 'async',
+      width: 40,
+      height: 40,
+    })
   })
 
   it('keeps row selection, overlay dismissal, and submission eligibility in the model', () => {
@@ -139,8 +161,14 @@ describe('gift dialog model', () => {
   })
 
   it('records the opener, so the frame can hand focus back on the way out', () => {
-    const opener = { focus: () => {}, isConnected: true } as unknown as HTMLElement
-    vi.stubGlobal('document', { activeElement: opener, body: { nodeName: 'BODY' } })
+    const opener = {
+      focus: () => {},
+      isConnected: true,
+    } as unknown as HTMLElement
+    vi.stubGlobal('document', {
+      activeElement: opener,
+      body: { nodeName: 'BODY' },
+    })
 
     // no recipient is not a dialog at all: nothing is open, so nothing is recorded
     expect(buildModel({ recipient: null }).opener).toBeUndefined()

@@ -24,7 +24,9 @@ type Story = StoryObj<typeof meta>
 /** The ultraviolet underline every body link wears. */
 export const Inline: Story = {
   play: async ({ canvasElement }) => {
-    const link = within(canvasElement).getByRole('link', { name: 'the leaderboard' })
+    const link = within(canvasElement).getByRole('link', {
+      name: 'the leaderboard',
+    })
     await expect(link).toHaveAttribute('data-slot', 'inline-link')
     await expect(link).toHaveAttribute('data-variant', 'inline')
     await expect(getComputedStyle(link).textDecorationLine).toBe('underline')
@@ -36,7 +38,9 @@ export const Inline: Story = {
 export const Strong: Story = {
   args: { variant: 'strong' },
   play: async ({ canvasElement }) => {
-    const link = within(canvasElement).getByRole('link', { name: 'the leaderboard' })
+    const link = within(canvasElement).getByRole('link', {
+      name: 'the leaderboard',
+    })
     await expect(link).toHaveAttribute('data-variant', 'strong')
     await expect(getComputedStyle(link).fontWeight).toBe('600')
   },
@@ -46,7 +50,9 @@ export const Strong: Story = {
 export const Quiet: Story = {
   args: { variant: 'quiet' },
   play: async ({ canvasElement }) => {
-    const link = within(canvasElement).getByRole('link', { name: 'the leaderboard' })
+    const link = within(canvasElement).getByRole('link', {
+      name: 'the leaderboard',
+    })
     const paragraph = link.parentElement!
     await expect(getComputedStyle(link).color).toBe(getComputedStyle(paragraph).color)
     await expect(getComputedStyle(link).textDecorationLine).toBe('underline')
@@ -57,7 +63,9 @@ export const Quiet: Story = {
 export const AsRouterLink: Story = {
   args: { render: <Link to="/leaderboard" /> },
   play: async ({ canvasElement }) => {
-    const link = within(canvasElement).getByRole('link', { name: 'the leaderboard' })
+    const link = within(canvasElement).getByRole('link', {
+      name: 'the leaderboard',
+    })
     await expect(link).toHaveAttribute('href', '/leaderboard')
     await expect(link).toHaveAttribute('data-slot', 'inline-link')
   },
@@ -66,8 +74,14 @@ export const AsRouterLink: Story = {
 export const Dark: Story = {
   render: () => (
     <span>
-      <InlineLink href="#">inline</InlineLink> · <InlineLink href="#" variant="strong">strong</InlineLink> ·{' '}
-      <InlineLink href="#" variant="quiet">quiet</InlineLink>
+      <InlineLink href="#">inline</InlineLink> ·{' '}
+      <InlineLink href="#" variant="strong">
+        strong
+      </InlineLink>{' '}
+      ·{' '}
+      <InlineLink href="#" variant="quiet">
+        quiet
+      </InlineLink>
     </span>
   ),
   globals: { theme: 'dark' },

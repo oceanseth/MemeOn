@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { useState } from 'react'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { Button } from '@/atoms/button'
+import { developersCopy } from '../copy/developers'
+import { memeDetailCopy } from '../copy/memeDetail'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
 import { ConfirmDialog } from '@/molecules/confirm-dialog'
 
@@ -65,11 +67,16 @@ export const Danger: Story = {
     const dialog = canvas.getByRole('alertdialog', { name: 'Delete forever?' })
     await expect(dialog).toHaveAttribute('data-variant', 'danger')
     await expect(getComputedStyle(dialog).boxShadow).toContain('inset')
-    await expect(canvas.getByRole('button', { name: 'Delete it' })).toHaveAttribute('data-slot', 'button')
+    await expect(canvas.getByRole('button', { name: 'Delete it' })).toHaveAttribute(
+      'data-slot',
+      'button',
+    )
   },
 }
 export const Busy: Story = {
-  args: { model: buildConfirmDialogModel({ ...baseInput, danger: true, busy: true }) },
+  args: {
+    model: buildConfirmDialogModel({ ...baseInput, danger: true, busy: true }),
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: 'Cancel' })).toBeDisabled()
@@ -122,7 +129,9 @@ export const RestoresFocusToItsOpener: Story = {
     for (const dismiss of Object.values(dismissals)) {
       await userEvent.click(opener)
       // the atom fades in, so visibility is a wait, not a read
-      await waitFor(() => expect(canvas.getByRole('alertdialog', { name: 'Delete forever?' })).toBeVisible())
+      await waitFor(() =>
+        expect(canvas.getByRole('alertdialog', { name: 'Delete forever?' })).toBeVisible(),
+      )
       await dismiss()
       await waitFor(() => expect(canvas.queryByRole('alertdialog')).toBeNull())
       await waitFor(() => expect(document.activeElement).toBe(opener))
@@ -136,7 +145,8 @@ export const Prompt: Story = {
       ...baseInput,
       id: 'claim-story',
       title: 'Claim this meme?',
-      message: 'This card is sitting in the archive. Tell us why it belongs to you and we’ll take a look.',
+      message:
+        'This card is sitting in the archive. Tell us why it belongs to you and we’ll take a look.',
       confirmLabel: 'File the claim',
       prompt: {
         label: 'Why is this meme yours?',
@@ -150,13 +160,75 @@ export const Prompt: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const textbox = canvas.getByRole('textbox', { name: /Why is this meme yours/ })
+    const textbox = canvas.getByRole('textbox', {
+      name: /Why is this meme yours/,
+    })
     await expect(textbox).toHaveAttribute('maxlength', '400')
     await expect(textbox).toHaveAccessibleDescription(/Links help your case/)
     for (const slot of ['field', 'field-label', 'field-description', 'field-counter']) {
       await expect(canvasElement.querySelector(`[data-slot="${slot}"]`)).not.toBeNull()
     }
     await expect(canvas.getByText('0/400')).toHaveAttribute('data-slot', 'field-counter')
+  },
+}
+
+/** Adjacent strong/code parts — copy already carries the spaces, the molecule does not insert any. */
+export const RichInlines: Story = {
+  args: {
+    model: buildConfirmDialogModel({
+      ...baseInput,
+      title: memeDetailCopy.deleteDialog.title,
+      message: [
+        {
+          kind: 'strong' as const,
+          text: memeDetailCopy.quotedTitle('fresh paper'),
+        },
+        memeDetailCopy.deleteDialog.body,
+      ],
+      confirmLabel: memeDetailCopy.deleteDialog.confirm,
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const dialog = canvas.getByRole('alertdialog', {
+      name: memeDetailCopy.deleteDialog.title,
+    })
+    await expect(dialog.querySelector('strong')).toHaveTextContent(
+      memeDetailCopy.quotedTitle('fresh paper'),
+    )
+    await expect(dialog).toHaveTextContent(memeDetailCopy.deleteDialog.body.trim())
+  },
+}
+
+/** Developers revoke-fail lives inside the open dialog because the page behind it is inert. */
+export const WithError: Story = {
+  args: {
+    model: buildConfirmDialogModel({
+      ...baseInput,
+      title: developersCopy.revokeDialog.title,
+      message: [
+        {
+          kind: 'code' as const,
+          text: developersCopy.revokeDialog.prefix('mk_3f9a2c'),
+        },
+        developersCopy.revokeDialog.body('my-trading-bot'),
+      ],
+      error: developersCopy.errors.revoke('my-trading-bot'),
+      danger: true,
+      confirmLabel: developersCopy.revokeDialog.confirm,
+    }),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const dialog = canvas.getByRole('alertdialog', {
+      name: developersCopy.revokeDialog.title,
+    })
+    await expect(dialog.querySelector('code')).toHaveTextContent(
+      developersCopy.revokeDialog.prefix('mk_3f9a2c'),
+    )
+    await expect(within(dialog).getByRole('alert')).toHaveTextContent(
+      developersCopy.errors.revoke('my-trading-bot'),
+    )
   },
 }
 

@@ -26,7 +26,10 @@ describe('uploadCreateMemeFile', () => {
         if (url === '/api/uploads') {
           expect(init?.method).toBe('POST')
           return Promise.resolve(
-            Response.json({ uploadUrl: 'https://storage.example/put', publicUrl: '/public/cat.png' }),
+            Response.json({
+              uploadUrl: 'https://storage.example/put',
+              publicUrl: '/public/cat.png',
+            }),
           )
         }
         if (url === 'https://storage.example/put') {
@@ -47,7 +50,13 @@ describe('uploadCreateMemeFile', () => {
       'fetch',
       vi.fn<typeof fetch>((input, init) => {
         const url = String(input)
-        if (url === '/api/uploads') return Promise.resolve(Response.json({ uploadUrl: 'https://storage.example/put', publicUrl: '/public/poster.png' }))
+        if (url === '/api/uploads')
+          return Promise.resolve(
+            Response.json({
+              uploadUrl: 'https://storage.example/put',
+              publicUrl: '/public/poster.png',
+            }),
+          )
         if (url === 'https://storage.example/put') {
           expect(init?.headers).toMatchObject({ 'content-type': 'image/png' })
           return Promise.resolve(new Response(null, { status: 200 }))
@@ -67,7 +76,10 @@ describe('uploadCreateMemeFile', () => {
         const url = String(input)
         if (url === '/api/uploads') {
           return Promise.resolve(
-            Response.json({ uploadUrl: 'https://storage.example/put', publicUrl: '/public/cat.png' }),
+            Response.json({
+              uploadUrl: 'https://storage.example/put',
+              publicUrl: '/public/cat.png',
+            }),
           )
         }
         if (url === 'https://storage.example/put') {

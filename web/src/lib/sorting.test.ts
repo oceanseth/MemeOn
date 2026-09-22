@@ -38,10 +38,21 @@ describe('sortMemes', () => {
 
   it('uses the incumbent fallback values for views and reshares', () => {
     const fallback = meme('fallback', { reshares: 8 })
-    const explicit = meme('explicit', { reshares: 20, views: 2, reshareCount: 1 })
+    const explicit = meme('explicit', {
+      reshares: 20,
+      views: 2,
+      reshareCount: 1,
+    })
 
     expect(sortMemes([explicit, fallback], 'views', 'desc')).toEqual([fallback, explicit])
     expect(sortMemes([fallback, explicit], 'reshares', 'desc')).toEqual([explicit, fallback])
+  })
+
+  it('sorts the reshares key by uniqueRefs, never the load counter', () => {
+    const loud = meme('loud', { reshares: 80, views: 80, reshareCount: 0 })
+    const quiet = meme('quiet', { reshares: 2, views: 2, reshareCount: 9 })
+
+    expect(sortMemes([loud, quiet], 'reshares', 'desc')).toEqual([quiet, loud])
   })
 
   it('sorts numeric values in either direction', () => {

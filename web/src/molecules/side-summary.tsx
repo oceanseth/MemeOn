@@ -5,10 +5,7 @@ import type { TradeSideSummaryModel } from '../lib/tradeCardModel'
 import { Icon } from '@/atoms/icon'
 
 /** Recessed well inside the raised proposal card. */
-const WELL = cn(
-  'rounded-lg material-pressed p-4',
-  'text-sm wrap-anywhere [&_em]:wrap-anywhere',
-)
+const WELL = cn('rounded-lg material-pressed p-4', 'text-sm wrap-anywhere [&_em]:wrap-anywhere')
 
 /** Owner label: caption, bold, ink-muted. */
 const LEGEND = 'mt-0 mb-2 font-sans text-sm font-semibold text-muted-foreground'
@@ -19,15 +16,17 @@ const THUMB = 'size-9 shrink-0 rounded-xs border-2 border-border bg-accent objec
 /** The line's own step: 14/500, a size under the row title the `Item` atom would set. */
 const MEME_LINE = 'font-sans text-sm font-medium text-foreground'
 
-/** One side of a trade: the owner legend, then an `Item` row per meme, then the coins line. */
+/** One side of a trade: the owner legend, then an `Item` row per meme, then the braincells line. */
 export function SideSummary({ model }: { model: TradeSideSummaryModel }) {
   return (
     <div data-slot="trade-side" className={WELL}>
       <h3 className={LEGEND}>{model.ownerLabel}</h3>
-      {model.empty && <div className="inline-flex items-center gap-1.5 text-muted-foreground">
-        <Icon name="meh" size={15} />
-        <span>nothing</span>
-      </div>}
+      {model.empty && (
+        <div className="inline-flex items-center gap-1.5 text-muted-foreground">
+          <Icon name="meh" size={15} />
+          <span>{model.emptyLabel}</span>
+        </div>
+      )}
       <ItemGroup>
         {model.memeLines.map((meme) => (
           <Item key={meme.id} size="flush">
@@ -50,12 +49,12 @@ export function SideSummary({ model }: { model: TradeSideSummaryModel }) {
             )}
           </Item>
         ))}
-        {model.coinsLabel && (
+        {model.braincellsLabel && (
           <div className="inline-flex items-center gap-1 text-sm font-medium text-foreground tabular-nums">
             <span aria-hidden="true">
               <Icon name="brain" size={15} />
             </span>{' '}
-            {model.coinsLabel}
+            {model.braincellsLabel}
           </div>
         )}
       </ItemGroup>

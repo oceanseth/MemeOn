@@ -37,9 +37,7 @@ export const Default: Story = {
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByLabelText('Share link')).toHaveValue(
-      'https://memeon.lol/m/meme-holo',
-    )
+    await expect(canvas.getByLabelText('Share link')).toHaveValue('https://memeon.lol/m/meme-holo')
     await expect(canvas.getByText('Share link')).toHaveAttribute('data-slot', 'field-label')
   },
 }
@@ -202,7 +200,7 @@ export const Grouped: Story = {
         </Field>
       </FieldSet>
       <FieldSet>
-        <FieldLegend>You want</FieldLegend>
+        <FieldLegend>You get</FieldLegend>
         <Field>
           <FieldLabel>Shares to get</FieldLabel>
           <Input type="number" defaultValue={1} />
@@ -244,7 +242,7 @@ export const LegendAsLabel: Story = {
 export const GroupDisabled: Story = {
   render: () => (
     <FieldSet disabled>
-      <FieldLegend>You want</FieldLegend>
+      <FieldLegend>You get</FieldLegend>
       <Field>
         <FieldLabel>Shares to get</FieldLabel>
         <Input type="number" defaultValue={1} />

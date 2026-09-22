@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn } from 'storybook/test'
 import { inviteLou, invitePal } from '../../.storybook/fixtures'
+import { inviteCopy as copy } from '../copy/invite'
 import { buildInviteStats, type InviteScreenModel } from '../hooks/useInviteScreen'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { InviteScreen } from './InviteScreen'
@@ -9,7 +10,10 @@ import { InviteScreen } from './InviteScreen'
 /** Story-local: both shared invite fixtures resolve to `picture: null`, so the image branch needs one. */
 const pictured = {
   ...invitePal,
-  inviter: { ...invitePal.inviter, picture: '/brand/memeon-logo-circle-256.png' },
+  inviter: {
+    ...invitePal.inviter,
+    picture: '/brand/memeon-logo-circle-256.png',
+  },
 }
 
 const inviteModel = (data: typeof invitePal, self = false) => ({
@@ -22,10 +26,15 @@ const inviteModel = (data: typeof invitePal, self = false) => ({
 })
 
 const cardsOf = (data: typeof invitePal) =>
-  data.topMemes.map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) }))
+  data.topMemes.map((meme) => ({
+    id: meme.id,
+    memeCard: buildMemeCardModel(meme),
+  }))
 
 const empty: InviteScreenModel = {
   phase: 'loading',
+  pageTitle: copy.pageTitle,
+  heroVerb: copy.heroVerb,
   err: null,
   showFatalError: false,
   showSpinner: true,
@@ -65,7 +74,12 @@ const ready = {
 const phone = {
   parameters: {
     viewport: {
-      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+      options: {
+        phone390: {
+          name: 'Phone 390',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
     },
   },
   globals: { viewport: { value: 'phone390', isRotated: false } },
@@ -75,7 +89,13 @@ const meta = {
   title: 'Screens/InviteScreen',
   component: InviteScreen,
   args: empty,
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 } satisfies Meta<typeof InviteScreen>
 
 export default meta
@@ -108,7 +128,11 @@ export const ErrorJoining: Story = {
     fatalActions: {
       ...empty.fatalActions,
       joinLabel: 'Opening Masky…',
-      joinButtonProps: { onClick: fn(), 'aria-disabled': true, 'aria-busy': true },
+      joinButtonProps: {
+        onClick: fn(),
+        'aria-disabled': true,
+        'aria-busy': true,
+      },
     },
   },
 }
@@ -128,7 +152,11 @@ export const Accepting: Story = {
   args: {
     ...ready,
     phase: 'accepting',
-    acceptButtonProps: { onClick: fn(), 'aria-disabled': true, 'aria-busy': true },
+    acceptButtonProps: {
+      onClick: fn(),
+      'aria-disabled': true,
+      'aria-busy': true,
+    },
     acceptLabel: 'Adding pal…',
   },
 }
@@ -141,7 +169,10 @@ export const AcceptError: Story = {
   },
   play: async ({ canvasElement }) => {
     // the hero is the Card atom and the failure band is an Alert that interrupts
-    await expect(canvasElement.querySelector('[data-slot="invite-hero"]')).toHaveAttribute('data-size', 'sm')
+    await expect(canvasElement.querySelector('[data-slot="invite-hero"]')).toHaveAttribute(
+      'data-size',
+      'sm',
+    )
     const alert = canvasElement.querySelector('[data-slot="alert"]')!
     await expect(alert).toHaveAttribute('data-variant', 'error')
     await expect(alert).toHaveAttribute('role', 'alert')
@@ -188,7 +219,11 @@ export const SelfCopied: Story = {
   },
 }
 
-export const Dark: Story = { ...Ready, name: 'Ready dark', globals: { theme: 'dark' } }
+export const Dark: Story = {
+  ...Ready,
+  name: 'Ready dark',
+  globals: { theme: 'dark' },
+}
 
 export const Phone390: Story = { ...Ready, name: 'Ready phone 390', ...phone }
 

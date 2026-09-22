@@ -43,7 +43,10 @@ export const collapsibleContentVariants = cva('', {
   defaultVariants: { variant: 'plain' },
 })
 
-export type CollapsibleProps = CollapsiblePrimitive.Root.Props & { variant?: CollapsibleVariant; className?: string }
+export type CollapsibleProps = CollapsiblePrimitive.Root.Props & {
+  variant?: CollapsibleVariant
+  className?: string
+}
 
 export function Collapsible({ variant, className, ...props }: CollapsibleProps) {
   return (
@@ -60,7 +63,10 @@ export function CollapsibleTrigger({
   variant,
   className,
   ...props
-}: CollapsiblePrimitive.Trigger.Props & { variant?: CollapsibleVariant; className?: string }) {
+}: CollapsiblePrimitive.Trigger.Props & {
+  variant?: CollapsibleVariant
+  className?: string
+}) {
   return (
     <CollapsiblePrimitive.Trigger
       data-slot="collapsible-trigger"
@@ -74,7 +80,10 @@ export function CollapsibleContent({
   variant,
   className,
   ...props
-}: CollapsiblePrimitive.Panel.Props & { variant?: CollapsibleVariant; className?: string }) {
+}: CollapsiblePrimitive.Panel.Props & {
+  variant?: CollapsibleVariant
+  className?: string
+}) {
   return (
     <CollapsiblePrimitive.Panel
       data-slot="collapsible-content"

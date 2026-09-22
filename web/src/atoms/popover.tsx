@@ -20,7 +20,10 @@ export function PopoverPortal(props: PopoverPrimitive.Portal.Props) {
 /** Above the docked bars and the header; its own stacking context so the popup's z is local. */
 const POSITIONER = 'isolate z-(--z-modal)'
 
-export function PopoverPositioner({ className, ...props }: Styled<PopoverPrimitive.Positioner.Props>) {
+export function PopoverPositioner({
+  className,
+  ...props
+}: Styled<PopoverPrimitive.Positioner.Props>) {
   return (
     <PopoverPrimitive.Positioner
       data-slot="popover-positioner"
@@ -62,8 +65,29 @@ const popoverPopupVariants = cva(
 
 type PositionerPassthrough = Pick<
   PopoverPrimitive.Positioner.Props,
-  'align' | 'alignOffset' | 'side' | 'sideOffset' | 'collisionPadding' | 'collisionAvoidance' | 'anchor'
+  | 'align'
+  | 'alignOffset'
+  | 'side'
+  | 'sideOffset'
+  | 'collisionPadding'
+  | 'collisionAvoidance'
+  | 'anchor'
 >
+
+/**
+ * Header popover pin (alerts, quest). Base UI @base-ui/react 1.8.0 `usePositioner`
+ * applies `useAnchorPositioning` positionerStyles as the positioner's inline style
+ * (position, top/left, transform, width). Default positionMethod is `absolute`
+ * once positioned (`fixed` only before the first measure). Author `!important`
+ * is the one thing that outranks it. Do not fork Base UI.
+ */
+export const headerPopoverPositionerClassName = cn(
+  'max-xs:fixed! max-xs:top-(--topbar-h)! max-xs:right-3! max-xs:left-3!',
+  'max-xs:w-auto! max-xs:transform-none!',
+)
+
+/** Companion width: 380 on desktop, stretch with the pinned gutters at ≤480. */
+export const headerPopoverPopupClassName = cn('w-(--header-popover-w) max-xs:w-auto')
 
 export interface PopoverContentProps
   extends Styled<PopoverPrimitive.Popup.Props>,
@@ -71,7 +95,7 @@ export interface PopoverContentProps
     VariantProps<typeof popoverPopupVariants> {
   /** where the portal renders; pair `PortalAnchor` with `portalAnchor(id)` to stay inside the screen */
   container?: PopoverPrimitive.Portal.Props['container']
-  /** the positioner's own classes — the one place a caller may pin the geometry (`max-xs:fixed!`) */
+  /** the positioner's own classes — pin header popovers with `headerPopoverPositionerClassName` */
   positionerClassName?: string | undefined
 }
 
@@ -118,7 +142,9 @@ export function PopoverContent({
 }
 
 export function PopoverHeader({ className, ...props }: ComponentProps<'div'>) {
-  return <div data-slot="popover-header" className={cn('flex flex-col gap-0.5', className)} {...props} />
+  return (
+    <div data-slot="popover-header" className={cn('flex flex-col gap-0.5', className)} {...props} />
+  )
 }
 
 /** Base UI renders an `<h2>`; the UI face and label step, not the display ladder a bare h2 wears. */
@@ -132,7 +158,10 @@ export function PopoverTitle({ className, ...props }: Styled<PopoverPrimitive.Ti
   )
 }
 
-export function PopoverDescription({ className, ...props }: Styled<PopoverPrimitive.Description.Props>) {
+export function PopoverDescription({
+  className,
+  ...props
+}: Styled<PopoverPrimitive.Description.Props>) {
   return (
     <PopoverPrimitive.Description
       data-slot="popover-description"

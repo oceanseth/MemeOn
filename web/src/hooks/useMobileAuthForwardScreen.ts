@@ -1,8 +1,9 @@
-import { useEffect, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { authStatusCopy } from '../copy/authStatus'
 import { forwardToDeepLink } from '../lib/authNavigation'
 import type { AuthStatusScreenModel } from './useAuthCallbackScreen'
+import { useMountEffect } from './useMountEffect'
 
 const copy = authStatusCopy.mobileForward
 
@@ -24,12 +25,13 @@ export function useMobileAuthForwardScreen(): AuthStatusScreenModel {
     return `memeon://auth?${q.toString()}`
   }, [params])
 
-  useEffect(() => {
+  useMountEffect(() => {
     forwardToDeepLink(deepLink)
-  }, [deepLink])
+  })
 
   return {
     phase: 'working',
+    documentTitle: copy.documentTitle,
     title: copy.title,
     subtitle: copy.subtitle,
     error: null,

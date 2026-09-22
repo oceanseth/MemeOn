@@ -1,15 +1,17 @@
 import { act } from 'react'
-import { createRoot, type Root } from 'react-dom/client'
+import type { Root } from 'react-dom/client'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
-import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { listedHolo, meLou, memeplexEmpty, paperMeme, silverMeme } from '../../.storybook/fixtures'
 import { marketplaceCopy } from '../copy/marketplace'
 import { memeDetailCopy } from '../copy/memeDetail'
-import type { Me, Meme } from '../lib/types'
-import { authMachine } from '../stores/authMachine'
-import { createStores, type AppStores } from '../stores/createStores'
+import { memeplexPanelCopy } from '../copy/memeplexPanel'
+import type { Meme } from '../lib/types'
+import type { AppStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
+import { button as queryButton, click } from '../test/dom'
+import { deferred, settle, stubClipboardWrite } from '../test/runtime'
+import { mountSignedInRoot, unmountSignedInRoot } from '../test/signedInHost'
 import { MemeDetailView } from '../views/MemeDetailView'
 import { MarketplaceView } from '../views/MarketplaceView'
 
@@ -18,26 +20,10 @@ vi.mock('../lib/firebase', () => ({
   firebaseSignIn: vi.fn(async () => {}),
 }))
 
-function deferred<T>() {
-  let resolve!: (value: T) => void
-  const promise = new Promise<T>((done) => { resolve = done })
-  return { promise, resolve }
-}
-
 function requestDetails(input: RequestInfo | URL, init?: RequestInit) {
-  const value = typeof input === 'string'
-    ? input
-    : input instanceof URL
-      ? input.href
-      : input.url
+  const value = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
   const url = new URL(value, window.location.origin)
   return { url, method: init?.method ?? 'GET' }
-}
-
-async function settle(): Promise<void> {
-  await Promise.resolve()
-  await Promise.resolve()
-  await Promise.resolve()
 }
 
 async function macrotask(delay = 0): Promise<void> {
@@ -90,7 +76,12 @@ class AsyncVisibleObserver implements IntersectionObserver {
   notify(): void {
     if (this.disconnected || !this.observed?.isConnected) return
     this.callback(
-      [{ isIntersecting: true, target: this.observed } as IntersectionObserverEntry],
+      [
+        {
+          isIntersecting: true,
+          target: this.observed,
+        } as IntersectionObserverEntry,
+      ],
       this,
     )
   }
@@ -115,23 +106,15 @@ function installVisibleObserver(): void {
 }
 
 function button(label: string, root: ParentNode = host): HTMLButtonElement {
-  const found = [...root.querySelectorAll<HTMLButtonElement>('button')]
-    .find((candidate) => candidate.textContent?.includes(label))
-  if (!found) throw new Error(`Missing button: ${label}`)
-  return found
-}
-
-async function click(element: HTMLElement): Promise<void> {
-  await act(async () => {
-    element.click()
-    await settle()
-  })
+  return queryButton(label, root)
 }
 
 /** Each card names itself through `aria-labelledby`, so the list reads as its accessible names. */
 function cardTitles(): string[] {
-  return [...host.querySelectorAll<HTMLElement>('article[aria-labelledby]')]
-    .map((card) => document.getElementById(card.getAttribute('aria-labelledby') ?? '')?.textContent ?? '')
+  return [...host.querySelectorAll<HTMLElement>('article[aria-labelledby]')].map(
+    (card) =>
+      document.getElementById(card.getAttribute('aria-labelledby') ?? '')?.textContent ?? '',
+  )
 }
 
 function sentinel(): HTMLElement | null {
@@ -143,29 +126,14 @@ let root: Root
 let stores: AppStores
 
 beforeEach(async () => {
-  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
-  host = document.createElement('div')
-  document.body.append(host)
-  root = createRoot(host)
-  const authActor = createActor(authMachine.provide({
-    actors: { loadMe: fromPromise(async (): Promise<Me | null> => meLou) },
-    actions: { clearSessionAndFirebase: () => {} },
-  }))
-  stores = createStores(authActor)
-  stores.retain()
-  await stores.auth.refresh()
+  const mounted = await mountSignedInRoot()
+  host = mounted.host
+  root = mounted.root
+  stores = mounted.stores
 })
 
 afterEach(async () => {
-  await act(() => root.unmount())
-  stores.auth.logout()
-  stores.dispose()
-  await Promise.resolve()
-  host.remove()
-  localStorage.clear()
-  sessionStorage.clear()
-  vi.restoreAllMocks()
-  vi.unstubAllGlobals()
+  await unmountSignedInRoot({ host, root, stores })
 })
 
 describe('MemeDetailView mutation overlap', () => {
@@ -185,38 +153,43 @@ describe('MemeDetailView mutation overlap', () => {
     }
     let detailReads = 0
     let deleteRequests = 0
-    vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
-      const { url, method } = requestDetails(input, init)
-      if (method === 'GET' && url.pathname === '/api/memes/detail-delete') {
-        detailReads += 1
-        if (detailReads === 1) {
-          return Promise.resolve(Response.json({
-            meme: ownerMeme,
-            positions: [{ userId: meLou.sub, shares: 100 }],
-          }))
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>((input, init) => {
+        const { url, method } = requestDetails(input, init)
+        if (method === 'GET' && url.pathname === '/api/memes/detail-delete') {
+          detailReads += 1
+          if (detailReads === 1) {
+            return Promise.resolve(
+              Response.json({
+                meme: ownerMeme,
+                positions: [{ userId: meLou.sub, shares: 100 }],
+              }),
+            )
+          }
+          if (detailReads === 2) return refreshedDetail.promise
         }
-        if (detailReads === 2) return refreshedDetail.promise
-      }
-      if (method === 'GET' && url.pathname === '/api/memes/detail-delete/stats') {
-        return Promise.resolve(Response.json({ views: 0, reshares: 0, sources: [] }))
-      }
-      if (method === 'GET' && url.pathname === '/api/memes/detail-delete/memeplex') {
-        return Promise.resolve(Response.json(memeplexEmpty))
-      }
-      if (method === 'GET' && url.pathname === '/api/binder') {
-        return Promise.resolve(Response.json({ memes: [] }))
-      }
-      if (method === 'POST' && url.pathname === '/api/memes/detail-delete/visibility') {
-        return Promise.resolve(Response.json({ ok: true }))
-      }
-      if (method === 'DELETE' && url.pathname === '/api/memes/detail-delete') {
-        deleteRequests += 1
-        return deleteRequests === 1
-          ? firstDelete.promise
-          : Promise.resolve(Response.json({ ok: true }))
-      }
-      throw new Error(`Unexpected request: ${method} ${url.pathname}`)
-    }))
+        if (method === 'GET' && url.pathname === '/api/memes/detail-delete/stats') {
+          return Promise.resolve(Response.json({ views: 0, reshares: 0, sources: [] }))
+        }
+        if (method === 'GET' && url.pathname === '/api/memes/detail-delete/memeplex') {
+          return Promise.resolve(Response.json(memeplexEmpty))
+        }
+        if (method === 'GET' && url.pathname === '/api/binder') {
+          return Promise.resolve(Response.json({ memes: [] }))
+        }
+        if (method === 'POST' && url.pathname === '/api/memes/detail-delete/visibility') {
+          return Promise.resolve(Response.json({ ok: true }))
+        }
+        if (method === 'DELETE' && url.pathname === '/api/memes/detail-delete') {
+          deleteRequests += 1
+          return deleteRequests === 1
+            ? firstDelete.promise
+            : Promise.resolve(Response.json({ ok: true }))
+        }
+        throw new Error(`Unexpected request: ${method} ${url.pathname}`)
+      }),
+    )
 
     await act(async () => {
       root.render(
@@ -243,16 +216,20 @@ describe('MemeDetailView mutation overlap', () => {
     expect(deleteRequests).toBe(1)
 
     await act(async () => {
-      refreshedDetail.resolve(Response.json({
-        meme: ownerMeme,
-        positions: [{ userId: meLou.sub, shares: 100 }],
-      }))
+      refreshedDetail.resolve(
+        Response.json({
+          meme: ownerMeme,
+          positions: [{ userId: meLou.sub, shares: 100 }],
+        }),
+      )
       await settle()
       firstDelete.resolve(Response.json({ error: 'delete conflicted' }, { status: 409 }))
       await settle()
     })
 
-    await eventually(() => expect(host.querySelector('[data-slot="alert"]')?.textContent).toContain('delete conflicted'))
+    await eventually(() =>
+      expect(host.querySelector('[data-slot="alert"]')?.textContent).toContain('delete conflicted'),
+    )
     expect(host.querySelector('[role="alertdialog"]')).toBeNull()
     // the failure ends the request: nothing on the page is still presented as in flight
     expect(host.querySelector('[aria-busy="true"]')).toBeNull()
@@ -261,7 +238,9 @@ describe('MemeDetailView mutation overlap', () => {
     await click(button(memeDetailCopy.actions.delete))
     dialog = host.querySelector('[role="alertdialog"]')!
     await click(button(memeDetailCopy.deleteDialog.confirm, dialog))
-    await eventually(() => expect(host.querySelector('output[aria-label="Current route"]')?.textContent).toBe('/binder'))
+    await eventually(() =>
+      expect(host.querySelector('output[aria-label="Current route"]')?.textContent).toBe('/binder'),
+    )
     expect(deleteRequests).toBe(2)
     expect(host.textContent).toContain('Binder destination')
   })
@@ -273,22 +252,35 @@ interface MarketPage {
   status?: number
 }
 
-function marketFetch(pages: Record<string, MarketPage>) {
+function marketFetch(
+  pages: Record<string, MarketPage>,
+  fallback?: (cursor: string) => Promise<Response>,
+) {
   const requests: string[] = []
-  vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
-    const { url, method } = requestDetails(input, init)
-    if (method !== 'GET' || url.pathname !== '/api/memes') {
-      throw new Error(`Unexpected request: ${method} ${url.pathname}`)
-    }
-    const cursor = url.searchParams.get('cursor') ?? 'initial'
-    requests.push(cursor)
-    const page = pages[cursor]
-    if (!page) throw new Error(`Unexpected cursor: ${cursor}`)
-    return Promise.resolve(Response.json(
-      page.status ? { error: 'page unavailable' } : { memes: page.memes, nextCursor: page.nextCursor },
-      { status: page.status ?? 200 },
-    ))
-  }))
+  vi.stubGlobal(
+    'fetch',
+    vi.fn<typeof fetch>((input, init) => {
+      const { url, method } = requestDetails(input, init)
+      if (method !== 'GET' || url.pathname !== '/api/memes') {
+        throw new Error(`Unexpected request: ${method} ${url.pathname}`)
+      }
+      const cursor = url.searchParams.get('cursor') ?? 'initial'
+      requests.push(cursor)
+      const page = pages[cursor]
+      if (page) {
+        return Promise.resolve(
+          Response.json(
+            page.status
+              ? { error: 'page unavailable' }
+              : { memes: page.memes, nextCursor: page.nextCursor },
+            { status: page.status ?? 200 },
+          ),
+        )
+      }
+      if (fallback) return fallback(cursor)
+      throw new Error(`Unexpected cursor: ${cursor}`)
+    }),
+  )
   return requests
 }
 
@@ -326,7 +318,10 @@ describe('MarketplaceView continuously visible pagination', () => {
     installVisibleObserver()
     const requests = marketFetch({
       initial: { memes: [paperMeme], nextCursor: 'cursor-a' },
-      'cursor-a': { memes: [{ ...paperMeme, title: 'duplicate paper' }], nextCursor: 'cursor-b' },
+      'cursor-a': {
+        memes: [{ ...paperMeme, title: 'duplicate paper' }],
+        nextCursor: 'cursor-b',
+      },
       'cursor-b': { memes: [silverMeme], nextCursor: null },
     })
     await renderMarketplace()
@@ -360,18 +355,10 @@ describe('MarketplaceView continuously visible pagination', () => {
   it('guards a pending continuation from duplicate callbacks and disconnects on unmount', async () => {
     installVisibleObserver()
     const continuation = deferred<Response>()
-    const requests: string[] = []
-    vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
-      const { url, method } = requestDetails(input, init)
-      if (method !== 'GET' || url.pathname !== '/api/memes') {
-        throw new Error(`Unexpected request: ${method} ${url.pathname}`)
-      }
-      const cursor = url.searchParams.get('cursor') ?? 'initial'
-      requests.push(cursor)
-      return cursor === 'initial'
-        ? Promise.resolve(Response.json({ memes: [paperMeme], nextCursor: 'cursor-a' }))
-        : continuation.promise
-    }))
+    const requests = marketFetch(
+      { initial: { memes: [paperMeme], nextCursor: 'cursor-a' } },
+      () => continuation.promise,
+    )
     await renderMarketplace()
     await eventually(() => expect(requests).toEqual(['initial', 'cursor-a']))
 
@@ -391,5 +378,173 @@ describe('MarketplaceView continuously visible pagination', () => {
     })
     expect(host.textContent).toBe('')
     expect(requests).toEqual(['initial', 'cursor-a'])
+  })
+})
+
+function jsonError(): Response {
+  return Response.json({ error: 'unavailable' }, { status: 503 })
+}
+
+function installDetailApi(options: {
+  meme: Meme
+  positions?: { userId: string; shares: number }[]
+  stats?: 'ok' | 'fail'
+  plex?: 'ok' | 'fail'
+  binder?: 'ok' | 'fail'
+  holders?: 'ok' | 'fail'
+}) {
+  const id = options.meme.id
+  const positions = options.positions ?? [{ userId: meLou.sub, shares: 100 }]
+  const requests: Array<{ method: string; path: string }> = []
+  vi.stubGlobal(
+    'fetch',
+    vi.fn<typeof fetch>((input, init) => {
+      const { url, method } = requestDetails(input, init)
+      const path = url.pathname
+      requests.push({ method, path })
+      if (method === 'GET' && path === `/api/memes/${id}`) {
+        return Promise.resolve(Response.json({ meme: options.meme, positions }))
+      }
+      if (method === 'GET' && path === `/api/memes/${id}/stats`) {
+        return options.stats === 'fail'
+          ? Promise.resolve(jsonError())
+          : Promise.resolve(Response.json({ views: 0, reshares: 0, sources: [] }))
+      }
+      if (method === 'GET' && path === `/api/memes/${id}/memeplex`) {
+        return options.plex === 'fail'
+          ? Promise.resolve(jsonError())
+          : Promise.resolve(Response.json(memeplexEmpty))
+      }
+      if (method === 'GET' && path === '/api/binder') {
+        return options.binder === 'fail'
+          ? Promise.resolve(jsonError())
+          : Promise.resolve(Response.json({ memes: [] }))
+      }
+      if (method === 'GET' && path === '/api/users') {
+        return options.holders === 'fail'
+          ? Promise.resolve(jsonError())
+          : Promise.resolve(Response.json({ users: [] }))
+      }
+      if (method === 'POST' && path === `/api/memes/${id}/memeplex`) {
+        return Promise.resolve(Response.json({ ok: true }))
+      }
+      throw new Error(`Unexpected request: ${method} ${path}`)
+    }),
+  )
+  return requests
+}
+
+async function renderDetail(id: string): Promise<void> {
+  await act(async () => {
+    root.render(
+      <StoresProvider stores={stores}>
+        <MemoryRouter initialEntries={[`/m/${id}`]}>
+          <Routes>
+            <Route path="/m/:id" element={<MemeDetailView />} />
+          </Routes>
+        </MemoryRouter>
+      </StoresProvider>,
+    )
+    await settle()
+  })
+}
+
+describe('MemeDetailView secondary failures', () => {
+  const ownerMeme: Meme = {
+    ...paperMeme,
+    id: 'detail-swallows',
+    title: 'swallow owner meme',
+    creatorId: meLou.sub,
+    creatorName: meLou.name,
+    ownerId: meLou.sub,
+    ownerName: meLou.name,
+  }
+
+  it('keeps the page ready when stats fail and hides the spreading card', async () => {
+    installDetailApi({ meme: ownerMeme, stats: 'fail' })
+    await renderDetail(ownerMeme.id)
+    await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
+    expect(host.textContent).not.toContain('Where it’s spreading')
+    expect(host.querySelector('[data-slot="alert"]')).toBeNull()
+  })
+
+  it('keeps paste-a-link working when the plex binder picker fails', async () => {
+    const requests = installDetailApi({ meme: ownerMeme, binder: 'fail' })
+    await renderDetail(ownerMeme.id)
+    await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
+    const pasted = host.querySelector<HTMLInputElement>(
+      `input[aria-label="${memeplexPanelCopy.pasted}"]`,
+    )
+    expect(pasted).not.toBeNull()
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(
+        pasted,
+        silverMeme.id,
+      )
+      pasted!.dispatchEvent(new Event('input', { bubbles: true }))
+      await settle()
+    })
+    const linkButton = [...host.querySelectorAll('button')].find(
+      (candidate) => candidate.textContent?.trim() === memeplexPanelCopy.link,
+    )
+    if (!linkButton) throw new Error('Missing memeplex Link button')
+    await click(linkButton)
+    await eventually(() =>
+      expect(
+        requests.some(
+          (request) =>
+            request.method === 'POST' && request.path === `/api/memes/${ownerMeme.id}/memeplex`,
+        ),
+      ).toBe(true),
+    )
+  })
+
+  it('falls back to holder.unknown when holder names fail', async () => {
+    installDetailApi({
+      meme: ownerMeme,
+      holders: 'fail',
+      positions: [
+        { userId: meLou.sub, shares: 60 },
+        { userId: 'user-pal', shares: 40 },
+      ],
+    })
+    await renderDetail(ownerMeme.id)
+    await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
+    await eventually(() => expect(host.textContent).toContain(memeDetailCopy.holder.unknown))
+    expect(host.textContent).toContain(memeDetailCopy.holder.you)
+  })
+
+  it('shows share.copyFailed when clipboard write rejects', async () => {
+    installDetailApi({ meme: ownerMeme })
+    stubClipboardWrite(async () => {
+      throw new Error('denied')
+    })
+    await renderDetail(ownerMeme.id)
+    await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
+    await click(button(memeDetailCopy.share.copy))
+    await eventually(() => expect(button(memeDetailCopy.share.copyFailed)).toBeTruthy())
+  })
+
+  it('copies the share link and shows share.copied', async () => {
+    installDetailApi({ meme: ownerMeme })
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    stubClipboardWrite(writeText)
+    await renderDetail(ownerMeme.id)
+    await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
+    await click(button(memeDetailCopy.share.copy))
+    await eventually(() => expect(button(memeDetailCopy.share.copied)).toBeTruthy())
+    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/m/${ownerMeme.id}`)
+  })
+
+  it('surfaces memeplex.loadFailed without FAILing the page', async () => {
+    installDetailApi({ meme: ownerMeme, plex: 'fail' })
+    await renderDetail(ownerMeme.id)
+    await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
+    await eventually(() =>
+      expect(host.querySelector('[data-slot="alert"]')?.textContent).toContain(
+        memeDetailCopy.memeplex.loadFailed,
+      ),
+    )
+    expect(host.textContent).not.toContain(memeplexPanelCopy.empty)
   })
 })

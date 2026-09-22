@@ -1,34 +1,28 @@
-import type { ImgHTMLAttributes, MouseEvent, RefCallback, VideoHTMLAttributes } from 'react'
+import type { ImgHTMLAttributes, RefCallback, VideoHTMLAttributes } from 'react'
 import { memeCardCopy as copy } from '../copy/memeCard'
-import { cardMediaRef, toggleCardMedia } from './cardMedia'
+import { cardMediaRef } from './cardMedia'
+import { memeReshareCount } from './memeMetrics'
+import { getPlayVideosSnapshot } from './playbackPreference'
 import type { Meme } from './types'
-
-export interface MemeCardMediaToggleProps {
-  type: 'button'
-  'aria-pressed': boolean
-  'aria-label': string
-  onClick: (event: MouseEvent<HTMLButtonElement>) => void
-}
 
 export type MemeCardMediaModel =
   | {
       kind: 'video'
+      backdropImageProps: Pick<
+        ImgHTMLAttributes<HTMLImageElement>,
+        'src' | 'alt' | 'aria-hidden' | 'loading'
+      >
       videoProps: Pick<
         VideoHTMLAttributes<HTMLVideoElement>,
-        | 'src'
-        | 'muted'
-        | 'loop'
-        | 'playsInline'
-        | 'autoPlay'
-        | 'preload'
-        | 'poster'
-        | 'aria-label'
+        'src' | 'muted' | 'loop' | 'playsInline' | 'autoPlay' | 'preload' | 'poster' | 'aria-label'
       >
-      /** the card's own pause/play control — the video never plays without one on screen */
-      toggleProps: MemeCardMediaToggleProps
     }
   | {
       kind: 'image'
+      backdropImageProps: Pick<
+        ImgHTMLAttributes<HTMLImageElement>,
+        'src' | 'alt' | 'aria-hidden' | 'loading'
+      >
       imageProps: Pick<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt' | 'loading'>
     }
 
@@ -81,19 +75,30 @@ const prefersReducedMotion = (): boolean => motionQuery?.matches ?? false
 
 /** Map-safe: every grid builds its cards with `memes.map(buildMemeCardModel)`. */
 export function buildMemeCardModel(meme: Meme): MemeCardModel {
-  return buildCard(meme, prefersReducedMotion())
+  return buildCard(meme, prefersReducedMotion(), getPlayVideosSnapshot().playVideos)
+}
+
+/** Same builder, with the Play videos preference supplied by the live hook. */
+export function buildMemeCardModelForPlayback(meme: Meme, playVideos: boolean): MemeCardModel {
+  return buildCard(meme, prefersReducedMotion(), playVideos)
 }
 
 /** The same card with the motion branch forced, so stories and tests can render it. */
 export function buildReducedMotionMemeCardModel(meme: Meme): MemeCardModel {
-  return buildCard(meme, true)
+  return buildCard(meme, true, false)
 }
 
-function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
+function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): MemeCardModel {
   const media: MemeCardMediaModel =
     meme.mediaType === 'video' && meme.videoUrl
       ? {
           kind: 'video',
+          backdropImageProps: {
+            src: meme.imageUrl,
+            alt: '',
+            'aria-hidden': true,
+            loading: 'lazy',
+          },
           videoProps: {
             src: meme.videoUrl,
             muted: true,
@@ -105,15 +110,15 @@ function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
             poster: meme.imageUrl,
             'aria-label': '',
           },
-          toggleProps: {
-            type: 'button',
-            'aria-pressed': false,
-            'aria-label': copy.play(meme.title),
-            onClick: toggleCardMedia,
-          },
         }
       : {
           kind: 'image',
+          backdropImageProps: {
+            src: meme.imageUrl,
+            alt: '',
+            'aria-hidden': true,
+            loading: 'lazy',
+          },
           imageProps: {
             src: meme.imageUrl,
             // the card's <article> and the link already carry the title; a third read is noise
@@ -123,8 +128,7 @@ function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
         }
 
   const viewsLabel = meme.views === undefined ? null : meme.views.toLocaleString()
-  // the reshare count drives the tier ladder, so it is never stood in for by another number
-  const resharesLabel = (meme.reshareCount ?? meme.reshares).toLocaleString()
+  const resharesLabel = memeReshareCount(meme).toLocaleString()
   const valueLabel = meme.value.toLocaleString()
 
   const listing =
@@ -145,7 +149,10 @@ function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
     tierKey: meme.tier.key,
     tierName: meme.tier.name,
     tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`,
-    detailLinkProps: { to: `/m/${meme.id}`, 'aria-label': copy.open(meme.title) },
+    detailLinkProps: {
+      to: `/m/${meme.id}`,
+      'aria-label': copy.open(meme.title),
+    },
     media,
     viewsLabel,
     resharesLabel,
@@ -154,7 +161,7 @@ function buildCard(meme: Meme, reducedMotion: boolean): MemeCardModel {
     valueA11yLabel: copy.valueA11y(valueLabel),
     listing,
     reducedMotion,
-    mediaAutoplay: media.kind === 'video' && !reducedMotion ? 'on' : 'off',
+    mediaAutoplay: media.kind === 'video' && !reducedMotion && playVideos ? 'on' : 'off',
     cardRef: cardMediaRef,
   }
 }

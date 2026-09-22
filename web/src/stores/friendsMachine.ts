@@ -12,7 +12,11 @@ export interface UserHit {
 export type GiftTarget = { sub: string; name: string }
 
 /** A destructive relationship change waiting on its confirm dialog. */
-export type PendingRemoval = { sub: string; name: string; kind: 'remove' | 'decline' }
+export type PendingRemoval = {
+  sub: string
+  name: string
+  kind: 'remove' | 'decline'
+}
 
 export interface FriendsContext {
   friends: FriendEntry[]
@@ -21,6 +25,8 @@ export interface FriendsContext {
   msg: string | null
   /** mutation failures; `err` stays reserved for the load failure that owns the error phase */
   actionErr: string | null
+  /** GET /api/users?q= failure; not actionErr and not the load `err` */
+  searchErr: string | null
   /** sub whose accept / decline / remove / cancel request is in flight */
   pendingSub: string | null
   pendingRemoval: PendingRemoval | null
@@ -36,6 +42,7 @@ export interface FriendsContext {
   giftBusy: boolean
   giftErr: string | null
   copied: boolean
+  copyFailed: boolean
   err: string | null
 }
 
@@ -44,6 +51,7 @@ export type FriendsEvent =
   | { type: 'FAIL'; err: string }
   | { type: 'SET_QUERY'; query: string }
   | { type: 'SET_HITS'; hits: UserHit[] }
+  | { type: 'SET_SEARCH_ERR'; err: string | null }
   | { type: 'SET_MSG'; msg: string | null }
   | { type: 'SET_ACTION_ERR'; err: string | null }
   | { type: 'SET_PENDING'; sub: string | null }
@@ -60,7 +68,7 @@ export type FriendsEvent =
   | { type: 'SET_GIFT_SHARES_INPUT'; value: string | null }
   | { type: 'SET_GIFT_BUSY'; busy: boolean }
   | { type: 'SET_GIFT_ERR'; err: string | null }
-  | { type: 'SET_COPIED'; copied: boolean }
+  | { type: 'SET_COPIED'; copied: boolean; failed?: boolean }
 
 /**
  * Friends list source of truth. loading → ready|empty|error.
@@ -79,6 +87,7 @@ export const friendsMachine = setup({
     hits: [],
     msg: null,
     actionErr: null,
+    searchErr: null,
     pendingSub: null,
     pendingRemoval: null,
     searching: false,
@@ -92,19 +101,33 @@ export const friendsMachine = setup({
     giftBusy: false,
     giftErr: null,
     copied: false,
+    copyFailed: false,
     err: null,
   },
   initial: 'loading',
   on: {
     SET_QUERY: { actions: assign({ query: ({ event }) => event.query }) },
-    SET_HITS: { actions: assign({ hits: ({ event }) => event.hits }) },
+    SET_HITS: {
+      actions: assign({ hits: ({ event }) => event.hits, searchErr: null }),
+    },
+    SET_SEARCH_ERR: {
+      actions: assign({ searchErr: ({ event }) => event.err }),
+    },
     SET_MSG: { actions: assign({ msg: ({ event }) => event.msg }) },
-    SET_ACTION_ERR: { actions: assign({ actionErr: ({ event }) => event.err }) },
+    SET_ACTION_ERR: {
+      actions: assign({ actionErr: ({ event }) => event.err }),
+    },
     SET_PENDING: { actions: assign({ pendingSub: ({ event }) => event.sub }) },
-    ASK_REMOVE: { actions: assign({ pendingRemoval: ({ event }) => event.removal }) },
+    ASK_REMOVE: {
+      actions: assign({ pendingRemoval: ({ event }) => event.removal }),
+    },
     CLOSE_REMOVE: { actions: assign({ pendingRemoval: null }) },
-    SET_SEARCHING: { actions: assign({ searching: ({ event }) => event.searching }) },
-    SET_ONLINE: { actions: assign({ onlineSubs: ({ event }) => event.onlineSubs }) },
+    SET_SEARCHING: {
+      actions: assign({ searching: ({ event }) => event.searching }),
+    },
+    SET_ONLINE: {
+      actions: assign({ onlineSubs: ({ event }) => event.onlineSubs }),
+    },
     OPEN_GIFT: {
       actions: assign({
         gifting: ({ event }) => event.recipient,
@@ -116,8 +139,12 @@ export const friendsMachine = setup({
       }),
     },
     CLOSE_GIFT: { actions: assign({ gifting: null }) },
-    SET_GIFT_MEMES: { actions: assign({ giftMemes: ({ event }) => event.memes }) },
-    SET_GIFT_QUERY: { actions: assign({ giftQuery: ({ event }) => event.query }) },
+    SET_GIFT_MEMES: {
+      actions: assign({ giftMemes: ({ event }) => event.memes }),
+    },
+    SET_GIFT_QUERY: {
+      actions: assign({ giftQuery: ({ event }) => event.query }),
+    },
     SET_GIFT_PICK: {
       actions: assign({
         giftPick: ({ event }) => event.pick,
@@ -125,11 +152,22 @@ export const friendsMachine = setup({
         giftSharesInput: null,
       }),
     },
-    SET_GIFT_SHARES: { actions: assign({ giftShares: ({ event }) => event.shares }) },
-    SET_GIFT_SHARES_INPUT: { actions: assign({ giftSharesInput: ({ event }) => event.value }) },
+    SET_GIFT_SHARES: {
+      actions: assign({ giftShares: ({ event }) => event.shares }),
+    },
+    SET_GIFT_SHARES_INPUT: {
+      actions: assign({ giftSharesInput: ({ event }) => event.value }),
+    },
     SET_GIFT_BUSY: { actions: assign({ giftBusy: ({ event }) => event.busy }) },
     SET_GIFT_ERR: { actions: assign({ giftErr: ({ event }) => event.err }) },
-    SET_COPIED: { actions: assign({ copied: ({ event }) => event.copied }) },
+    SET_COPIED: {
+      actions: assign({
+        copied: ({ event }) => event.copied,
+        /* a timer's {copied:false} must not clear or set copyFailed unless failed:true */
+        copyFailed: ({ context, event }) =>
+          event.failed ? true : event.copied ? false : context.copyFailed,
+      }),
+    },
     DONE: [
       {
         guard: ({ event }) => event.friends.length === 0,

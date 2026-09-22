@@ -10,6 +10,16 @@ type GiphyModeSlice = Pick<
   | 'giphyResults'
   | 'giphyPick'
   | 'giphyStatusText'
+  | 'giphyCategoryLabel'
+  | 'giphySearchLabel'
+  | 'giphyQueryPlaceholder'
+  | 'giphySearchButtonLabel'
+  | 'giphyPoweredBy'
+  | 'giphySelectedPrefix'
+  | 'giphyPickSuffix'
+  | 'giphyOptionalPromptLabel'
+  | 'giphyRemixPlaceholder'
+  | 'giphyRemixButtonLabel'
   | 'showGiphyResults'
   | 'showGiphyPick'
   | 'showGiphyRemixButton'
@@ -44,6 +54,16 @@ export function buildGiphyModeModel(
         : ctx.giphySearched
           ? copy.giphy.emptySearch(ctx.giphyQuery)
           : copy.giphy.idle,
+    giphyCategoryLabel: copy.giphy.categoryLabel,
+    giphySearchLabel: copy.giphy.searchLabel,
+    giphyQueryPlaceholder: copy.giphy.queryPlaceholder,
+    giphySearchButtonLabel: copy.giphy.search,
+    giphyPoweredBy: copy.giphy.poweredBy,
+    giphySelectedPrefix: copy.giphy.selected,
+    giphyPickSuffix: copy.giphy.pickSuffix,
+    giphyOptionalPromptLabel: copy.giphy.optionalPrompt,
+    giphyRemixPlaceholder: copy.giphy.remixPlaceholder,
+    giphyRemixButtonLabel: copy.giphy.remixWithMasky,
     showGiphyResults: ctx.giphyResults.length > 0,
     showGiphyPick: !!ctx.giphyPick,
     showGiphyRemixButton: !!ctx.prompt.trim() && !!ctx.giphyPick,
@@ -51,6 +71,13 @@ export function buildGiphyModeModel(
     giphyCategorySelectProps: {
       value: '',
       disabled: isBusy,
+      items: [
+        { value: '', label: copy.giphy.browseCategories },
+        ...ctx.giphyCategories.map((category) => ({
+          value: category,
+          label: category,
+        })),
+      ],
       onValueChange: (value) => {
         if (value) void actions.searchGiphy(value)
       },

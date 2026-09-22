@@ -51,8 +51,14 @@ export const Chips: Story = {
     await expect(newest.offsetHeight).toBe(46)
     await userEvent.click(canvas.getByRole('button', { name: 'Views' }))
     await expect(onValueChange).toHaveBeenLastCalledWith(['views'])
-    await expect(canvas.getByRole('button', { name: 'Views' })).toHaveAttribute('aria-pressed', 'true')
-    await expect(canvas.getByRole('button', { name: 'Newest' })).toHaveAttribute('aria-pressed', 'false')
+    await expect(canvas.getByRole('button', { name: 'Views' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await expect(canvas.getByRole('button', { name: 'Newest' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
     // the flip gesture: pressing the selected chip again reports an empty group
     await userEvent.click(canvas.getByRole('button', { name: 'Views' }))
     await expect(onValueChange).toHaveBeenLastCalledWith([])
@@ -61,12 +67,33 @@ export const Chips: Story = {
 
 /** The ThemeControl well: 34px segments inside a 42px pressed well; the pressed one is raised. */
 export const Segmented: Story = {
-  args: { 'aria-label': 'Theme', variant: 'segment', size: 'sm', defaultValue: ['auto'], className: 'w-56' },
+  args: {
+    'aria-label': 'Theme',
+    variant: 'segment',
+    size: 'sm',
+    defaultValue: ['auto'],
+    className: 'w-56',
+  },
   render: (args) => (
     <ToggleGroup {...args}>
-      <ToggleGroupItem value="auto"><span aria-hidden="true"><Icon name="contrast" size={16} /></span> Auto</ToggleGroupItem>
-      <ToggleGroupItem value="light"><span aria-hidden="true"><Icon name="sun" size={16} /></span> Light</ToggleGroupItem>
-      <ToggleGroupItem value="dark"><span aria-hidden="true"><Icon name="moon" size={16} /></span> Dark</ToggleGroupItem>
+      <ToggleGroupItem value="auto">
+        <span aria-hidden="true">
+          <Icon name="contrast" size={16} />
+        </span>{' '}
+        Auto
+      </ToggleGroupItem>
+      <ToggleGroupItem value="light">
+        <span aria-hidden="true">
+          <Icon name="sun" size={16} />
+        </span>{' '}
+        Light
+      </ToggleGroupItem>
+      <ToggleGroupItem value="dark">
+        <span aria-hidden="true">
+          <Icon name="moon" size={16} />
+        </span>{' '}
+        Dark
+      </ToggleGroupItem>
     </ToggleGroup>
   ),
   play: async ({ canvasElement }) => {
@@ -92,7 +119,11 @@ export const Segmented: Story = {
 
 /** `multiple`: any number pressed at once. */
 export const Multiple: Story = {
-  args: { 'aria-label': 'Media', multiple: true, defaultValue: ['image', 'video'] },
+  args: {
+    'aria-label': 'Media',
+    multiple: true,
+    defaultValue: ['image', 'video'],
+  },
   render: (args) => (
     <ToggleGroup {...args}>
       <ToggleGroupItem value="image">Images</ToggleGroupItem>
@@ -109,7 +140,11 @@ export const Multiple: Story = {
 }
 
 export const Vertical: Story = {
-  args: { 'aria-label': 'Sort by', orientation: 'vertical', defaultValue: ['newest'] },
+  args: {
+    'aria-label': 'Sort by',
+    orientation: 'vertical',
+    defaultValue: ['newest'],
+  },
   render: (args) => (
     <ToggleGroup {...args}>
       <ToggleGroupItem value="newest">Newest</ToggleGroupItem>

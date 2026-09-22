@@ -21,11 +21,14 @@
     "storybook": "turbo run storybook --filter=web",
     "build-storybook": "turbo run build-storybook --filter=web",
     "mobile:export": "pnpm --filter mobile export:ios",
-    "format": "prettier --check \"**/*.{ts,tsx,js,jsx,json,css,md}\""
+    "check:dup": "jscpd",
+    "check:biome": "biome check",
+    "format": "biome check"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "jscpd": "^5.3.0",
     "knip": "^6.35.1",
-    "prettier": "^3.3.3",
     "turbo": "2.10.12"
   }
 }

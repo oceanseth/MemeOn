@@ -56,7 +56,13 @@ export const Default: Story = {
     await expect(item).toHaveAttribute('data-variant', 'default')
     await expect(item).toHaveAttribute('data-size', 'default')
     await expect(item.offsetHeight).toBeGreaterThanOrEqual(44)
-    for (const slot of ['item-media', 'item-content', 'item-title', 'item-description', 'item-actions']) {
+    for (const slot of [
+      'item-media',
+      'item-content',
+      'item-title',
+      'item-description',
+      'item-actions',
+    ]) {
       await expect(canvasElement.querySelector(`[data-slot="${slot}"]`)).not.toBeNull()
     }
     // the media steps up to align with the title when a description follows it
@@ -84,7 +90,9 @@ export const Variants: Story = {
       <Item variant="raised">
         <ItemContent>
           <ItemTitle>Raised</ItemTitle>
-          <ItemDescription>A row that is its own card: podium tiles, the raised person row.</ItemDescription>
+          <ItemDescription>
+            A row that is its own card: podium tiles, the raised person row.
+          </ItemDescription>
         </ItemContent>
       </Item>
       <Item size="sm">
@@ -261,7 +269,10 @@ export const Rows: Story = {
     const items = canvasElement.querySelectorAll<HTMLElement>('[data-slot="item"]')
     await expect(items[0]).toHaveAttribute('data-size', 'row')
     await expect(items[0]).toHaveAttribute('data-frame', 'primary')
-    await expect(items[0]!.querySelector('[data-slot="item-title"]')).toHaveAttribute('data-size', 'lg')
+    await expect(items[0]!.querySelector('[data-slot="item-title"]')).toHaveAttribute(
+      'data-size',
+      'lg',
+    )
     await expect(items[1]).toHaveAttribute('data-tone', 'info')
     await expect(items[2]).toHaveAttribute('data-size', 'flush')
     await expect(items[2]!.clientHeight).toBeLessThan(44)

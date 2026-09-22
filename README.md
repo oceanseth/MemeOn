@@ -62,6 +62,9 @@ Tier frame art is generated with the Masky image API (`api/scripts/generate-fram
   `x-masky-token` on aigen endpoints so generation bills the user's credits.
 - `firebaseToken` — custom token for the memeon Firebase project (RTDB presence).
 
+The web client stores both `sessionToken` and `maskyAccessToken` in `localStorage`
+(`memeon_session`, `masky_access_token`); they are not cookies.
+
 The OAuth client (`mkc_…`) is registered for `memeon.ai`, `dev.memeon.ai`, and
 `localhost` with scopes `profile avatars:read generate`.
 
@@ -115,11 +118,11 @@ before touching it; the short version:
 | | |
 | --- | --- |
 | Tiers | `atoms → molecules → organisms → screens → views` under `web/src/`. Everything below `views/` is pure props → markup with a `data-slot` on its root and a sibling `*.stories.tsx`. |
-| State | `hooks/useXScreen()` per screen (exports the screen's model type and builds its copy), XState machines in `stores/*Machine.ts`, MobX for the auth/theme stores and the actor snapshot projection. Prop-bag builders (`lib/*Model.ts`) sit between API records and components. |
+| State | `hooks/useXScreen()` per screen (exports the screen's model type and builds its copy). XState machines + useSyncExternalStore (via @xstate/react useSelector and the two plain stores). Prop-bag builders (`lib/*Model.ts`) sit between API records and components. |
 | Styling | Tailwind v4, no config file, shadcn conventions on Base UI. Tokens: `web/src/index.css` `@theme`. Appearance: the component's `cva` variants. What is allowed: `web/.oxlintrc.json` (`@shadcn/lint`) — run `pnpm --filter web run lint:ds`. Co-located `.css` only for effects a utility cannot express (`atoms/foil.css`, …), each restating the layer order. |
 | Behaviour primitives | Base UI (`@base-ui/react`) for dialogs, menus, popovers, select, toggles; painted with utilities, state read from `data-*` attributes. |
 | Storybook | `pnpm run storybook` (port 6006, MSW-backed connected scenarios in `web/.storybook/`). Every component has a story; view stories drive real hooks against mocked `/api`. `Anatomy/Tokens` renders the whole token sheet. |
-| Gates | `pnpm run check` = `lint:ds` (every `@shadcn/lint` rule at error), `check-tiers` (tier/import/state rules), `check-copy` (strings outside `web/src/copy/` may only shrink), `check-contrast` (APCA on every text/surface pair, both arms), `check-tokens` (no dead `@theme` token, no `cn.ts` drift), `check-docs` (every path, token, component and script a repo document names), `check-layers` (cascade order in `dist`), proxy, unit, runtime (Playwright) and story tests. `pnpm run build` runs `check-tiers`, `tsc`, Vite and `check-layers`. Unused code: `pnpm exec knip`. |
+| Gates | `pnpm run check` = `lint:ds` (every `@shadcn/lint` rule at error, plus `memeon/no-use-effect` and `memeon/no-native-chrome`), `check-tiers` (tier/import/state rules), `check-copy` (strings outside `web/src/copy/` may only shrink), `check-contrast` (APCA on every text/surface pair, both arms), `check-tokens` (no dead `@theme` token, no `cn.ts` drift), `check-docs` (every path, token, component and script a repo document names), `check-layers` (cascade order in `dist`), proxy, unit, runtime (Playwright) and story tests. `pnpm run build` runs `check-tiers`, `tsc`, Vite and `check-layers`. Unused code: `pnpm exec knip`. |
 | Shared code | `shared/tiers.ts` is imported as `@memeon/shared/tiers` (a `workspace:*` package). |
 
 The "Making a change" table in `Anatomy.mdx` says which file a copy, style, state,

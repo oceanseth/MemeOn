@@ -4,12 +4,20 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 import type { Styled } from '@/atoms/field'
 
-export function Tabs({ className, orientation = 'horizontal', ...props }: Styled<TabsPrimitive.Root.Props>) {
+export function Tabs({
+  className,
+  orientation = 'horizontal',
+  ...props
+}: Styled<TabsPrimitive.Root.Props>) {
   return (
     <TabsPrimitive.Root
       data-slot="tabs"
       orientation={orientation}
-      className={cn('group/tabs flex gap-4.5', orientation === 'horizontal' ? 'flex-col' : 'flex-row', className)}
+      className={cn(
+        'group/tabs flex gap-4.5',
+        orientation === 'horizontal' ? 'flex-col' : 'flex-row',
+        className,
+      )}
       {...props}
     />
   )
@@ -66,7 +74,12 @@ export type TabsListVariant = NonNullable<TabsListVariants['variant']>
 /** The list hands its variant to its tabs, so a trigger never has to be told which row it is in. */
 const TabsListContext = createContext<TabsListVariants>({})
 
-export function TabsList({ className, variant, children, ...props }: Styled<TabsPrimitive.List.Props> & TabsListVariants) {
+export function TabsList({
+  className,
+  variant,
+  children,
+  ...props
+}: Styled<TabsPrimitive.List.Props> & TabsListVariants) {
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"

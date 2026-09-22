@@ -4,38 +4,27 @@ import { Alert } from '@/atoms/alert'
 import { Button, buttonVariants } from '@/atoms/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/atoms/card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
-import {
-  Field,
-  FieldCounter,
-  FieldDescription,
-  FieldFooter,
-  FieldLabel,
-  Hint,
-} from '@/atoms/field'
-import { FileDrop } from '@/atoms/file-drop'
+import { Field, FieldCounter, FieldDescription, FieldFooter, FieldLabel, Hint } from '@/atoms/field'
+import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
 import { Heading } from '@/atoms/heading'
 import { Input } from '@/atoms/input'
-/* the foil sheet and the chip, not the card atom: this screen paints a card frame out of its own
-   markup, and the mint route is code-split — pulling `meme-card.tsx` in would put its `react-router`
-   and model imports on the critical path of a `lazy()` route that renders none of them.
-   `atoms/foil.css` and `atoms/tier-chip` are the dependency-free halves of that seam. */
-import '@/atoms/foil.css'
 import { LiveRegion } from '@/atoms/live-region'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Progress } from '@/atoms/progress'
-import { Select, type SelectOption } from '@/atoms/select'
 import { SkeletonCard } from '@/atoms/skeleton'
-import { Spinner } from '@/atoms/spinner'
-import { Textarea } from '@/atoms/textarea'
 import { TierChip } from '@/atoms/tier-chip'
 import { Toolbar } from '@/atoms/toolbar'
+import { CreateMemeGeneratePanel } from '@/molecules/create-meme-generate-panel'
+import { CreateMemeGiphyPanel } from '@/molecules/create-meme-giphy-panel'
+import { CreateMemeRemixPanel } from '@/molecules/create-meme-remix-panel'
+import { CreateMemeUploadPanel } from '@/molecules/create-meme-upload-panel'
+import { CreateMemeUrlPanel } from '@/molecules/create-meme-url-panel'
 import type {
   CreateMemeCardModel,
   CreateMemeModeButtonModel,
   CreateMemeScreenModel,
 } from '../lib/createMemeModel'
-import type { CreateMemeMode } from '../stores/createMemeMachine'
 import { cn } from '../lib/cn'
 import { Icon } from '@/atoms/icon'
 
@@ -44,21 +33,10 @@ const focusOutcome = (node: HTMLHeadingElement | null): void => node?.focus()
 
 /** Form and preview columns; preview stacks below the form under 1000px. */
 const LAYOUT =
-  'grid grid-cols-1 items-start gap-5 2xl:grid-cols-[minmax(0,555fr)_minmax(0,522fr)] 2xl:gap-8'
+  'grid grid-cols-1 items-start gap-5 2xl:grid-cols-(--grid-create) 2xl:gap-8'
 /** the preview column sticks to the top of the scroll once the two columns split */
-const RAIL = 'flex flex-col gap-4 2xl:sticky 2xl:top-[calc(var(--topbar-h)+16px)]'
+const RAIL = 'flex flex-col gap-4 2xl:sticky 2xl:top-(--topbar-dock)'
 const FORM_GRID = 'flex flex-col gap-3.5'
-/* option copy is words, so it lives here with the rest of them; the model only carries the value */
-const REMIX_OUTPUT_OPTIONS: SelectOption[] = [
-  { value: 'image', label: 'New image (edit the art)' },
-  { value: 'video', label: 'New video' },
-]
-const VIDEO_REMIX_STYLE_OPTIONS: SelectOption[] = [
-  { value: 'edit', label: 'Precise edit (change something, then animate)' },
-  { value: 'restyle', label: 'Restyle the whole video (transforms the look)' },
-]
-/* the browse row reads as its own prompt, so the resting value is a real option, not a placeholder */
-const GIPHY_BROWSE_OPTION: SelectOption = { value: '', label: 'Browse categories…' }
 /**
  * A caption row sits 4px under its control on this form, where `Field`'s own rhythm is the 6px it
  * puts between a label and its control. `-mt-0.5` spends the difference, so the pair reads as one
@@ -68,51 +46,21 @@ const CAPTION_OFFSET = '-mt-0.5'
 
 const MODE_ROW = 'mb-5 flex flex-wrap items-center gap-2'
 
-/** Cost caption beside a render action. */
-const COST_NOTE = 'text-sm font-semibold text-muted-foreground'
 const FORM_NOTE = 'mt-1 text-xs font-medium text-muted-foreground'
 
-const GIPHY_MARK = 'text-xs font-semibold tracking-wider whitespace-nowrap text-muted-foreground uppercase'
-const LOADING_STATE = 'flex items-center justify-center gap-2.5 px-5 py-15 text-sm text-muted-foreground'
-
-/* a `Select` inside a `Field` names its trigger but not its listbox (LEDGER L14): the label copy
-   is written once and passed to both. */
-const OUTPUT_LABEL = 'Output'
-const VIDEO_STYLE_LABEL = 'Video remix style'
-const CATEGORY_LABEL = 'Category'
-
-/** The form card's own headline per source — the copy deck's "Make a fresh image" and its siblings. */
-const FORM_HEADING: Record<CreateMemeMode, string> = {
-  generate: 'Make a fresh image',
-  video: 'Make a fresh video',
-  remix: 'Remix a card that already works',
-  upload: 'Bring your own art',
-  giphy: 'Borrow something from GIPHY',
-  url: 'Pull it in off the web',
-}
-
-/** One source chip. The engine names the state; the chrome for that state lives here. */
-function ModeChip({
-  model,
-  children,
-}: {
-  model: CreateMemeModeButtonModel
-  children: ReactNode
-}) {
+/** One source chip. The engine names the state and label; the icon stays here. */
+function ModeChip({ model, icon }: { model: CreateMemeModeButtonModel; icon: ReactNode }) {
   return (
     <Button size="segment" {...model.buttonProps} data-slot="mode-chip">
-      {children}
+      <span aria-hidden="true">{icon}</span> {model.label}
     </Button>
   )
 }
 
 /* The mint preview's box model, spelled out here because the meme has no id, no link and no
-   `MemeCardModel` until it is minted: the card is `atoms/meme-card`'s recipe (raised surface, 8px of
-   padding, `rounded-lg`) and the frame carries the 3px tier border `atoms/foil.css` paints on
-   `.foil-frame` off the variables `cardProps.className` sets. */
+   `MemeCardModel` until it is minted. FoilCard hosts the paper frame; the raised surface stays here. */
 const PREVIEW_CARD = 'group relative isolate rounded-lg material-card p-2 @container'
 const PREVIEW_INNER = 'relative flex h-full flex-col'
-const PREVIEW_FRAME = 'foil-frame foil-media relative rounded-md bg-muted'
 /* same plate the marketplace card uses: a square, the whole meme contained */
 const PREVIEW_ART = 'block aspect-square w-full bg-muted object-contain'
 const PREVIEW_META = 'flex flex-col px-1.5 pt-3.5 pb-1.5'
@@ -141,23 +89,15 @@ function PreviewCard({ card }: { card: CreateMemeCardModel }) {
     : card.tierLabel
 
   return (
-    <div
-      {...card.cardProps}
-      data-slot="meme-card"
-      className={cn(PREVIEW_CARD, card.cardProps.className)}
-    >
+    <FoilCard data-slot="meme-card" tierKey="paper" className={PREVIEW_CARD}>
       <div data-slot="meme-card-inner" className={PREVIEW_INNER}>
-        <span data-slot="foil-media" className={PREVIEW_FRAME}>
+        <FoilMedia>
           {card.media.kind === 'video' ? (
-            <video
-              data-slot="meme-art"
-              className={PREVIEW_ART}
-              {...card.media.videoProps}
-            />
+            <video data-slot="meme-art" className={PREVIEW_ART} {...card.media.videoProps} />
           ) : (
             <img data-slot="meme-art" className={PREVIEW_ART} {...card.media.imageProps} />
           )}
-        </span>
+        </FoilMedia>
         <div data-slot="meme-meta" className={PREVIEW_META}>
           <span data-slot="meme-title" className={PREVIEW_TITLE}>
             {card.title}
@@ -182,13 +122,30 @@ function PreviewCard({ card }: { card: CreateMemeCardModel }) {
           </span>
         </div>
       </div>
-    </div>
+    </FoilCard>
   )
 }
 
 /** Mint form as a function of its model. Every engine state is one set of args. */
 export function CreateMemeScreen({
-  mode,
+  pageTitle,
+  pageSubtitle,
+  formHeading,
+  formDescription,
+  titleLabel,
+  tagsLabel,
+  promptLabel,
+  creditsNote,
+  titleFooter,
+  toMintPrefix,
+  sharesToYou,
+  mintLabel,
+  shareLinkLabel,
+  openCardLabel,
+  busyHoldText,
+  previewHeading,
+  previewDescription,
+  previewPlaceholder,
   showRemixModeButton,
   modeGroupProps,
   busy,
@@ -197,11 +154,30 @@ export function CreateMemeScreen({
   errorNextStep,
   remixSource,
   remixSourceLoadingText,
-  giphyCategories,
+  remixingPrefix,
+  remixingBy,
+  remixOutputLabel,
+  videoRemixStyleLabel,
+  approvalTitle,
+  approvalBody,
+  motionLabel,
+  motionPromptPlaceholder,
+  animateEditedLabel,
+  rerunEditLabel,
   giphyResults,
   giphyPick,
   giphyStatusText,
   giphyStatusHidden,
+  giphyCategoryLabel,
+  giphySearchLabel,
+  giphyQueryPlaceholder,
+  giphySearchButtonLabel,
+  giphyPoweredBy,
+  giphySelectedPrefix,
+  giphyPickSuffix,
+  giphyOptionalPromptLabel,
+  giphyRemixPlaceholder,
+  giphyRemixButtonLabel,
   remixPromptLabel,
   remixPromptPlaceholder,
   generatePromptPlaceholder,
@@ -209,6 +185,10 @@ export function CreateMemeScreen({
   remixButtonLabel,
   generateButtonLabel,
   fetchUrlButtonLabel,
+  urlFieldLabel,
+  urlOptionalPromptLabel,
+  urlRemixPlaceholder,
+  applyUrlEditLabel,
   mintHint,
   titlePlaceholder,
   titleHelpText,
@@ -275,6 +255,7 @@ export function CreateMemeScreen({
   mintStatus,
   successHeading,
   successBody,
+  shareCopied,
   copyShareLinkLabel,
   copyShareLinkButtonProps,
   shareUrlInputProps,
@@ -294,7 +275,9 @@ export function CreateMemeScreen({
             </span>
           </Heading>
         </div>
-        <div className="sr-only" role="status">{mintStatus}</div>
+        <div className="sr-only" role="status">
+          {mintStatus}
+        </div>
         <div className={LAYOUT}>
           <div className={RAIL}>
             <PreviewCard card={successCard} />
@@ -302,16 +285,16 @@ export function CreateMemeScreen({
           <Card className="flex flex-col gap-3.5">
             <CardDescription>{successBody}</CardDescription>
             <Field>
-              <FieldLabel>Share link</FieldLabel>
+              <FieldLabel>{shareLinkLabel}</FieldLabel>
               <Input {...shareUrlInputProps} />
             </Field>
             <Toolbar>
               <Link className={buttonVariants({ variant: 'primary' })} {...openMintedLinkProps}>
-                Open the card
+                {openCardLabel}
               </Link>
               <Button {...copyShareLinkButtonProps}>
                 <span aria-hidden="true">
-                  <Icon name="link" size={16} />
+                  <Icon name={shareCopied ? 'circle-check' : 'link'} size={16} />
                 </span>{' '}
                 {copyShareLinkLabel}
               </Button>
@@ -324,63 +307,35 @@ export function CreateMemeScreen({
 
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <PageHead
-        title="Mint a meme"
-        subtitle="Make it strange. The internet will decide what happens next."
-      />
-      <div className="sr-only" role="status">{mintStatus}</div>
+      <PageHead title={pageTitle} subtitle={pageSubtitle} />
+      <div className="sr-only" role="status">
+        {mintStatus}
+      </div>
 
       {/* the source row sits above both columns, the full width of the content column */}
       <div data-slot="mint-modes" className={MODE_ROW} {...modeGroupProps}>
         {showRemixModeButton && (
-          <ModeChip model={getModeButtonProps('remix')}>
-            <span aria-hidden="true">
-              <Icon name="dna" size={16} />
-            </span>{' '}
-            Remix
-          </ModeChip>
+          <ModeChip model={getModeButtonProps('remix')} icon={<Icon name="dna" size={16} />} />
         )}
-        <ModeChip model={getModeButtonProps('generate')}>
-          <span aria-hidden="true">
-            <Icon name="palette" size={16} />
-          </span>{' '}
-          Generate image
-        </ModeChip>
-        <ModeChip model={getModeButtonProps('video')}>
-          <span aria-hidden="true">
-            <Icon name="clapperboard" size={16} />
-          </span>{' '}
-          Generate video
-        </ModeChip>
-        <ModeChip model={getModeButtonProps('upload')}>
-          <span aria-hidden="true">
-            <Icon name="upload" size={16} />
-          </span>{' '}
-          Upload
-        </ModeChip>
-        <ModeChip model={getModeButtonProps('giphy')}>
-          <span aria-hidden="true">
-            <Icon name="film" size={16} />
-          </span>{' '}
-          From Giphy
-        </ModeChip>
-        <ModeChip model={getModeButtonProps('url')}>
-          <span aria-hidden="true">
-            <Icon name="link" size={16} />
-          </span>{' '}
-          From URL
-        </ModeChip>
+        <ModeChip model={getModeButtonProps('generate')} icon={<Icon name="palette" size={16} />} />
+        <ModeChip
+          model={getModeButtonProps('video')}
+          icon={<Icon name="clapperboard" size={16} />}
+        />
+        <ModeChip model={getModeButtonProps('upload')} icon={<Icon name="upload" size={16} />} />
+        <ModeChip model={getModeButtonProps('giphy')} icon={<Icon name="film" size={16} />} />
+        <ModeChip model={getModeButtonProps('url')} icon={<Icon name="link" size={16} />} />
       </div>
 
       <div className={LAYOUT}>
         <Card>
           <CardHeader>
-            <CardTitle size="card-title">{FORM_HEADING[mode]}</CardTitle>
-            <CardDescription>Turn a small thought into a card people can own.</CardDescription>
+            <CardTitle size="card-title">{formHeading}</CardTitle>
+            <CardDescription>{formDescription}</CardDescription>
           </CardHeader>
           <div data-slot="form-grid" className={cn(FORM_GRID, 'mt-5')} {...formProps}>
             <Field>
-              <FieldLabel>Title</FieldLabel>
+              <FieldLabel>{titleLabel}</FieldLabel>
               <Input {...titleInputProps} placeholder={titlePlaceholder} />
               <FieldFooter className={CAPTION_OFFSET}>
                 <FieldDescription id={helpIds.title}>{titleHelpText}</FieldDescription>
@@ -389,7 +344,7 @@ export function CreateMemeScreen({
             </Field>
 
             <Field>
-              <FieldLabel>Tags</FieldLabel>
+              <FieldLabel>{tagsLabel}</FieldLabel>
               <Input {...tagsInputProps} placeholder={tagsPlaceholder} />
               <FieldFooter className={CAPTION_OFFSET}>
                 <FieldDescription id={helpIds.tags}>{tagsHelpText}</FieldDescription>
@@ -398,232 +353,104 @@ export function CreateMemeScreen({
             </Field>
 
             {showRemixPanel ? (
-              <>
-                {remixSource ? (
-                  <Toolbar>
-                    <img
-                      {...remixSource.imageProps}
-                      className="size-21 rounded-md object-cover"
-                    />
-                    <Hint as="span">
-                      Remixing <Link {...remixSource.linkProps}>"{remixSource.title}"</Link> by{' '}
-                      {remixSource.creatorName}
-                    </Hint>
-                  </Toolbar>
-                ) : (
-                  <div className={LOADING_STATE} role="status">
-                    <Spinner />
-                    {remixSourceLoadingText}
-                  </div>
-                )}
-                <Field>
-                  <FieldLabel>{OUTPUT_LABEL}</FieldLabel>
-                  <Select aria-label={OUTPUT_LABEL} {...remixOutputSelectProps} items={REMIX_OUTPUT_OPTIONS} />
-                </Field>
-                {showVideoRemixStyle && (
-                  <Field>
-                    <FieldLabel>{VIDEO_STYLE_LABEL}</FieldLabel>
-                    <Select aria-label={VIDEO_STYLE_LABEL} {...videoModeSelectProps} items={VIDEO_REMIX_STYLE_OPTIONS} />
-                  </Field>
-                )}
-                <Field>
-                  <FieldLabel>{remixPromptLabel}</FieldLabel>
-                  <Textarea
-                    {...remixPromptTextareaProps}
-                    rows={3}
-                    placeholder={remixPromptPlaceholder}
-                  />
-                </Field>
-                {showEditedFrameApproval && (
-                  /* wrapper keeps the named slot the atom would otherwise own.
-                     role="none" — panel live region already announces this turn */
-                  <div data-slot="approval-card">
-                    <Empty variant="success" size="inline" role="none">
-                      <EmptyHeader>
-                        <EmptyTitle>
-                          <span aria-hidden="true">
-                            <Icon name="circle-check" size={18} />
-                          </span>{' '}
-                          Edit applied — happy with this frame?
-                        </EmptyTitle>
-                        <EmptyDescription>
-                          Keep it, then animate it or run another edit — check the card preview
-                          before you spend render credits.
-                        </EmptyDescription>
-                      </EmptyHeader>
-                      <Field className="w-full">
-                        <FieldLabel>Motion (optional — how the animated clip should move)</FieldLabel>
-                        <Textarea
-                          {...motionPromptTextareaProps}
-                          rows={3}
-                          placeholder="he sprays himself in the face with the hose, same scene, short loop"
-                        />
-                      </Field>
-                      <Toolbar>
-                        <Button variant="primary" {...animateEditedButtonProps}>
-                          <span aria-hidden="true">
-                            <Icon name="clapperboard" size={16} />
-                          </span>{' '}
-                          Looks good — animate it
-                        </Button>
-                        <Button {...rerunEditButtonProps}>
-                          <span aria-hidden="true">
-                            <Icon name="rotate-cw" size={16} />
-                          </span>{' '}
-                          Re-run the edit
-                        </Button>
-                      </Toolbar>
-                    </Empty>
-                  </div>
-                )}
-                {showRemixButton && (
-                  <Toolbar className="mt-1">
-                    <Button variant="primary" {...remixButtonProps}>
-                      {remixButtonLabel}
-                    </Button>
-                    <span className={COST_NOTE}>Uses your Masky credits</span>
-                  </Toolbar>
-                )}
-              </>
+              <CreateMemeRemixPanel
+                remixSource={remixSource}
+                remixSourceLoadingText={remixSourceLoadingText}
+                remixingPrefix={remixingPrefix}
+                remixingBy={remixingBy}
+                sourceLink={
+                  remixSource ? <Link {...remixSource.linkProps}>"{remixSource.title}"</Link> : null
+                }
+                remixOutputLabel={remixOutputLabel}
+                remixOutputSelectProps={remixOutputSelectProps}
+                showVideoRemixStyle={showVideoRemixStyle}
+                videoRemixStyleLabel={videoRemixStyleLabel}
+                videoModeSelectProps={videoModeSelectProps}
+                remixPromptLabel={remixPromptLabel}
+                remixPromptTextareaProps={remixPromptTextareaProps}
+                remixPromptPlaceholder={remixPromptPlaceholder}
+                showEditedFrameApproval={showEditedFrameApproval}
+                approvalTitle={approvalTitle}
+                approvalBody={approvalBody}
+                motionLabel={motionLabel}
+                motionPromptTextareaProps={motionPromptTextareaProps}
+                motionPromptPlaceholder={motionPromptPlaceholder}
+                animateEditedButtonProps={animateEditedButtonProps}
+                animateEditedLabel={animateEditedLabel}
+                rerunEditButtonProps={rerunEditButtonProps}
+                rerunEditLabel={rerunEditLabel}
+                showRemixButton={showRemixButton}
+                remixButtonProps={remixButtonProps}
+                remixButtonLabel={remixButtonLabel}
+                creditsNote={creditsNote}
+              />
             ) : showGiphyPanel ? (
-              <>
-                <Field>
-                  <FieldLabel>{CATEGORY_LABEL}</FieldLabel>
-                  <Select
-                    aria-label={CATEGORY_LABEL}
-                    {...giphyCategorySelectProps}
-                    items={[
-                      GIPHY_BROWSE_OPTION,
-                      ...giphyCategories.map((c) => ({ value: c, label: c })),
-                    ]}
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel>Search GIPHY</FieldLabel>
-                  <Input {...giphyQueryInputProps} placeholder="keyboard cat" />
-                </Field>
-                <Toolbar>
-                  <Button {...giphySearchButtonProps}>Search</Button>
-                  <span className={GIPHY_MARK}>Powered by GIPHY</span>
-                </Toolbar>
-
-                {showGiphyResults && (
-                  <div className="grid grid-cols-[repeat(auto-fill,minmax(130px,1fr))] gap-2.5">
-                    {giphyResults.map((g) => {
-                      const cell = getGiphyResultProps(g)
-                      return (
-                        <Button key={g.id} variant="cell" size="cell" pressed={cell.picked} {...cell.buttonProps}>
-                          <img {...cell.imageProps} className="block h-full w-full object-cover" />
-                        </Button>
-                      )
-                    })}
-                  </div>
-                )}
-
-                {/* one live region for the panel: the chrome swaps, the element never remounts.
-                    The card is never restyled away — the wrapper takes it off screen instead. */}
-                <div className={cn(giphyStatusHidden && 'sr-only')}>
-                  <Empty className="py-8" {...giphyStatusProps}>
-                    <EmptyDescription>{giphyStatusText}</EmptyDescription>
-                  </Empty>
-                </div>
-
-                {showGiphyPick && giphyPick && (
-                  <>
-                    <Hint className="mb-2">
-                      Selected: <strong>{giphyPick.title}</strong>
-                      {giphyPick.authorLabel} — mint it as-is (with GIPHY
-                      attribution) or remix it below.
-                    </Hint>
-                    <Field>
-                      <FieldLabel>
-                        Optional prompt — remix the gif with Masky (uses your credits)
-                      </FieldLabel>
-                      <Textarea
-                        {...giphyPromptTextareaProps}
-                        rows={2}
-                        placeholder="put everyone in medieval armor"
-                      />
-                    </Field>
-                    {showGiphyRemixButton && (
-                      <Toolbar className="mt-1">
-                        <Button variant="primary" {...applyGiphyEditButtonProps}>
-                          <Icon name="sparkles" size={16} /> Remix with Masky
-                        </Button>
-                        <span className={COST_NOTE}>Uses your Masky credits</span>
-                      </Toolbar>
-                    )}
-                  </>
-                )}
-              </>
+              <CreateMemeGiphyPanel
+                giphyCategoryLabel={giphyCategoryLabel}
+                giphyCategorySelectProps={giphyCategorySelectProps}
+                giphySearchLabel={giphySearchLabel}
+                giphyQueryInputProps={giphyQueryInputProps}
+                giphyQueryPlaceholder={giphyQueryPlaceholder}
+                giphySearchButtonProps={giphySearchButtonProps}
+                giphySearchButtonLabel={giphySearchButtonLabel}
+                giphyPoweredBy={giphyPoweredBy}
+                showGiphyResults={showGiphyResults}
+                giphyResults={giphyResults}
+                getGiphyResultProps={getGiphyResultProps}
+                giphyStatusHidden={giphyStatusHidden}
+                giphyStatusProps={giphyStatusProps}
+                giphyStatusText={giphyStatusText}
+                showGiphyPick={showGiphyPick}
+                giphyPick={giphyPick}
+                giphySelectedPrefix={giphySelectedPrefix}
+                giphyPickSuffix={giphyPickSuffix}
+                giphyOptionalPromptLabel={giphyOptionalPromptLabel}
+                giphyPromptTextareaProps={giphyPromptTextareaProps}
+                giphyRemixPlaceholder={giphyRemixPlaceholder}
+                showGiphyRemixButton={showGiphyRemixButton}
+                applyGiphyEditButtonProps={applyGiphyEditButtonProps}
+                giphyRemixButtonLabel={giphyRemixButtonLabel}
+                creditsNote={creditsNote}
+              />
             ) : showUrlPanel ? (
-              <>
-                <Field>
-                  <FieldLabel>Image or page URL</FieldLabel>
-                  <Input {...urlInputProps} placeholder={urlPlaceholder} />
-                  <FieldDescription className={CAPTION_OFFSET} id={helpIds.url}>
-                    {urlHelpText}
-                  </FieldDescription>
-                </Field>
-                <div>
-                  <Button {...fetchUrlButtonProps}>{fetchUrlButtonLabel}</Button>
-                </div>
-                <Field>
-                  <FieldLabel>
-                    Optional prompt — run the image through Masky image-edit (uses your credits)
-                  </FieldLabel>
-                  <Textarea
-                    {...urlPromptTextareaProps}
-                    rows={2}
-                    placeholder="same image but it's 3am and everything is on fire"
-                  />
-                </Field>
-                {showUrlApplyEdit && (
-                  <Toolbar className="mt-1">
-                    <Button variant="primary" {...applyUrlEditButtonProps}>
-                      <Icon name="sparkles" size={16} /> Apply AI edit
-                    </Button>
-                    <span className={COST_NOTE}>Uses your Masky credits</span>
-                  </Toolbar>
-                )}
-              </>
+              <CreateMemeUrlPanel
+                urlFieldLabel={urlFieldLabel}
+                urlInputProps={urlInputProps}
+                urlPlaceholder={urlPlaceholder}
+                urlHelpText={urlHelpText}
+                urlHelpId={helpIds.url}
+                fetchUrlButtonProps={fetchUrlButtonProps}
+                fetchUrlButtonLabel={fetchUrlButtonLabel}
+                urlOptionalPromptLabel={urlOptionalPromptLabel}
+                urlPromptTextareaProps={urlPromptTextareaProps}
+                urlRemixPlaceholder={urlRemixPlaceholder}
+                showUrlApplyEdit={showUrlApplyEdit}
+                applyUrlEditButtonProps={applyUrlEditButtonProps}
+                applyUrlEditLabel={applyUrlEditLabel}
+                creditsNote={creditsNote}
+              />
             ) : showUploadPanel ? (
-              <>
-                <Field>
-                  <FieldLabel>{uploadImageLabel}</FieldLabel>
-                  <FileDrop {...imageFileDropProps} />
-                  <FieldDescription className={CAPTION_OFFSET} id={helpIds.uploadImage}>
-                    {uploadImageHelpText}
-                  </FieldDescription>
-                </Field>
-                <Field>
-                  <FieldLabel>{uploadVideoLabel}</FieldLabel>
-                  <FileDrop {...videoFileDropProps} />
-                  <FieldDescription className={CAPTION_OFFSET} id={helpIds.uploadVideo}>
-                    {uploadVideoHelpText}
-                  </FieldDescription>
-                </Field>
-              </>
+              <CreateMemeUploadPanel
+                uploadImageLabel={uploadImageLabel}
+                uploadImageHelpText={uploadImageHelpText}
+                imageFileDropProps={imageFileDropProps}
+                uploadImageHelpId={helpIds.uploadImage}
+                uploadVideoLabel={uploadVideoLabel}
+                uploadVideoHelpText={uploadVideoHelpText}
+                videoFileDropProps={videoFileDropProps}
+                uploadVideoHelpId={helpIds.uploadVideo}
+              />
             ) : showGeneratePanel ? (
-              <>
-                <Field>
-                  <FieldLabel>Prompt</FieldLabel>
-                  <Textarea
-                    {...generatePromptTextareaProps}
-                    rows={3}
-                    placeholder={generatePromptPlaceholder}
-                  />
-                  <FieldDescription className={CAPTION_OFFSET} id={helpIds.prompt}>
-                    {generatePromptHelpText}
-                  </FieldDescription>
-                </Field>
-                <Toolbar className="mt-1">
-                  <Button variant="primary" {...generateButtonProps}>
-                    {generateButtonLabel}
-                  </Button>
-                  <span className={COST_NOTE}>Uses your Masky credits</span>
-                </Toolbar>
-              </>
+              <CreateMemeGeneratePanel
+                promptLabel={promptLabel}
+                generatePromptPlaceholder={generatePromptPlaceholder}
+                generatePromptHelpText={generatePromptHelpText}
+                generateButtonLabel={generateButtonLabel}
+                creditsNote={creditsNote}
+                promptHelpId={helpIds.prompt}
+                generatePromptTextareaProps={generatePromptTextareaProps}
+                generateButtonProps={generateButtonProps}
+              />
             ) : null}
 
             {/* both regions are mounted in every state and only their text swaps: a live region
@@ -641,7 +468,7 @@ export function CreateMemeScreen({
                     </EmptyHeader>
                     {/* the render has no percentage to report: an indeterminate meter */}
                     <Progress value={null} aria-hidden="true" className="w-full" />
-                    <EmptyDescription>The card stays here while the frame cooks.</EmptyDescription>
+                    <EmptyDescription>{busyHoldText}</EmptyDescription>
                   </Empty>
                 </div>
               )}
@@ -658,41 +485,45 @@ export function CreateMemeScreen({
               )}
             </LiveRegion>
 
-            <p className={FORM_NOTE}>
-              Title is 20 characters max. You mint 100 shares to yourself.
-            </p>
+            <p className={FORM_NOTE}>{titleFooter}</p>
           </div>
         </Card>
 
         <div className={RAIL}>
           <Card className="flex flex-col">
             <CardHeader>
-              <CardTitle size="card-title">Live card preview</CardTitle>
-              <CardDescription>This is what lands in the marketplace.</CardDescription>
+              <CardTitle size="card-title">{previewHeading}</CardTitle>
+              <CardDescription>{previewDescription}</CardDescription>
             </CardHeader>
             <div className="mt-5 flex flex-col gap-3">
               {/* placeholder keeps the preview column's silhouette before a card exists */}
               {!showPreviewCard && !showPreviewSkeleton && (
                 <div data-slot="preview-placeholder" className={PREVIEW_PLACEHOLDER}>
-                  Your card lands here.
+                  {previewPlaceholder}
                 </div>
               )}
               {showPreviewSkeleton && <SkeletonCard />}
               {showPreviewCard && (
                 <>
                   <PreviewCard card={previewCard} />
-                  {previewCard.originLabel && <Hint className="mt-0">{previewCard.originLabel}</Hint>}
+                  {previewCard.originLabel && (
+                    <Hint className="mt-0">{previewCard.originLabel}</Hint>
+                  )}
                 </>
               )}
-              {showMintHint && <Hint className="mt-0">To mint: {mintHint}</Hint>}
+              {showMintHint && (
+                <Hint className="mt-0">
+                  {toMintPrefix} {mintHint}
+                </Hint>
+              )}
             </div>
             {/* phone: shares line above a full-width Mint pill */}
             <div className="mt-4 flex items-center justify-between gap-3 max-md:flex-col max-md:items-stretch max-md:gap-2">
               <span className="text-sm font-semibold text-foreground max-md:font-medium max-md:text-muted-foreground">
-                100 shares to you
+                {sharesToYou}
               </span>
               <Button variant="primary" className="max-md:w-full" {...mintButtonProps}>
-                <Icon name="sparkles" size={16} /> Mint
+                <Icon name="sparkles" size={16} /> {mintLabel}
               </Button>
             </div>
           </Card>

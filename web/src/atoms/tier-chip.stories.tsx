@@ -17,7 +17,15 @@ export const All: Story = {
   render: () => (
     <div style={{ display: 'grid', gap: 16 }}>
       {(['sm', 'md'] as const).map((size) => (
-        <div key={size} style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
+        <div
+          key={size}
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
           {TIERS.map((tier) => (
             <TierChip key={tier.key} tierKey={tier.key} label={tier.name} size={size} />
           ))}

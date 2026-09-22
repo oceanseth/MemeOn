@@ -50,7 +50,9 @@ const STARTERS: { title: string; tags: string[]; prompt: string }[] = [
 ]
 
 const KEY_PARAM = process.env.MASKY_KEY_PARAM ?? '/chooseastory/production/masky_api_key'
-const ssm = new SSMClient({ region: process.env.MASKY_KEY_REGION ?? 'us-east-1' })
+const ssm = new SSMClient({
+  region: process.env.MASKY_KEY_REGION ?? 'us-east-1',
+})
 const keyRes = await ssm.send(new GetParameterCommand({ Name: KEY_PARAM, WithDecryption: true }))
 const maskyKey = keyRes.Parameter!.Value!
 
@@ -65,7 +67,10 @@ for (const s of STARTERS) {
   }
   const res = await fetch('https://masky.ai/api/images/generate', {
     method: 'POST',
-    headers: { authorization: `Bearer ${maskyKey}`, 'content-type': 'application/json' },
+    headers: {
+      authorization: `Bearer ${maskyKey}`,
+      'content-type': 'application/json',
+    },
     body: JSON.stringify({ prompt: s.prompt, aspectRatio: '1:1' }),
   })
   const data = (await res.json()) as { imageUrl?: string }

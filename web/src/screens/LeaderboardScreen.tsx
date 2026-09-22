@@ -3,7 +3,7 @@ import { Avatar } from '@/atoms/avatar'
 import { Badge } from '@/atoms/badge'
 import { Button } from '@/atoms/button'
 import { Card } from '@/atoms/card'
-import { Empty, EmptyContent, EmptyDescription } from '@/atoms/empty'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
 import { Heading } from '@/atoms/heading'
 import { Item, ItemTitle } from '@/atoms/item'
 import { PageContainer } from '@/atoms/page-container'
@@ -29,16 +29,16 @@ const BOARD = 'm-0 flex list-none flex-col gap-5 p-0 max-md:gap-3.5'
 /** A podium tile is a column on the desktop and a row on the phone; #1 wears the frame. */
 const PODIUM = 'h-full text-center md:w-54.5 md:flex-col md:items-center max-md:text-left'
 
-const RANK_NUMERAL = 'w-7 shrink-0 text-center text-lg font-semibold text-muted-foreground tabular-nums'
+const RANK_NUMERAL =
+  'w-7 shrink-0 text-center text-lg font-semibold text-muted-foreground tabular-nums'
 
 /**
- * The podium ornament: one `medal` glyph in the rank's metal, with the rank numeral beside it.
+ * The podium ornament: an empty `medal` disc in the rank's metal, with the rank numeral beside it.
  *
  * The numeral is not decoration. The 🥇🥈🥉 this replaced carried the place *inside* the disc; the
- * glyph does not — it engraves a fixed "1" at every rank (`M12 18v-2h-.5` in `atoms/icon.tsx`), so
- * the pip reads as an engraving and never as a place. Gold and bronze are then one silhouette at
- * one size with nothing but hue between them, which is a thin thread to hang third place on and no
- * thread at all in a monochrome print or a red-green eye. The numeral puts the place back on shape.
+ * glyph is an empty disc, so gold and bronze would otherwise be one silhouette at one size with
+ * nothing but hue between them — a thin thread to hang third place on and no thread at all in a
+ * monochrome print or a red-green eye. The numeral puts the place back on shape.
  *
  * The metal goes on the wrapper rather than on `Icon`: the glyph strokes in `currentColor`, so one
  * class tints medal and numeral together and both class names stay literal for the linter.
@@ -80,8 +80,9 @@ function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: 
   )
 }
 
-/** Top Brains as a function of its model. Every engine state is one set of args. */
+/** Leaderboard as a function of its model. Every engine state is one set of args. */
 export function LeaderboardScreen({
+  pageTitle,
   subtitle,
   podiumTitle,
   podiumSubtitle,
@@ -96,6 +97,7 @@ export function LeaderboardScreen({
   showEmpty,
   emptyMessage,
   showError,
+  errorTitle,
   errorMessage,
   retryLabel,
   retry,
@@ -109,7 +111,7 @@ export function LeaderboardScreen({
         level="h1"
         title={
           <span className="inline-flex items-center gap-2">
-            <Icon name="trophy" size={22} /> Top Brains
+            <Icon name="trophy" size={22} /> {pageTitle}
           </span>
         }
         subtitle={subtitle}
@@ -128,10 +130,10 @@ export function LeaderboardScreen({
             </div>
           </>
         ) : null}
-        {showList ? <span className="sr-only">{listSummary}</span> : null}
+        {showList && !showError ? <span className="sr-only">{listSummary}</span> : null}
       </div>
 
-      {showEmpty ? (
+      {showEmpty && !showError ? (
         <Empty>
           <EmptyDescription>{emptyMessage}</EmptyDescription>
         </Empty>
@@ -139,14 +141,19 @@ export function LeaderboardScreen({
 
       {showError ? (
         <Empty variant="error">
-          <EmptyDescription>{errorMessage}</EmptyDescription>
+          <EmptyHeader>
+            <EmptyTitle render={<h2 />}>{errorTitle}</EmptyTitle>
+            <EmptyDescription>{errorMessage}</EmptyDescription>
+          </EmptyHeader>
           <EmptyContent>
-            <Button onClick={retry}>{retryLabel}</Button>
+            <Button variant="primary" onClick={retry}>
+              {retryLabel}
+            </Button>
           </EmptyContent>
         </Empty>
       ) : null}
 
-      {showList ? (
+      {showList && !showError ? (
         <>
           {/* podium: head + top three; ranks 4+ continue in the list below */}
           <Card
@@ -191,7 +198,11 @@ export function LeaderboardScreen({
                       </span>
                     ) : null}
                     <Avatar name={l.name} src={l.avatarSrc} size="podium" loading="lazy" />
-                    <ItemTitle size="lg" truncate className="min-w-0 flex-1 md:w-full md:flex-none md:text-center">
+                    <ItemTitle
+                      size="lg"
+                      truncate
+                      className="min-w-0 flex-1 md:w-full md:flex-none md:text-center"
+                    >
                       {l.name}
                     </ItemTitle>
                     {l.isMe ? (

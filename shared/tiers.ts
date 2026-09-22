@@ -1,7 +1,8 @@
 /**
  * Virality tiers — the pokemon-card-style rarity ladder a meme climbs as it gets
- * reshared. A meme's tier is derived purely from its reshare count, so the same
- * thresholds must be used by the API (og frames, alerts) and the web (FAQ, cards).
+ * reshared. A meme's tier is derived purely from its view counter (DB `reshares`,
+ * share-link loads — not uniqueRefs), so the same thresholds must be used by the
+ * API (og frames, alerts) and the web (FAQ, cards).
  */
 export interface Tier {
   /** stable key; also the frame asset name (frames/{key}.png) */
@@ -10,7 +11,7 @@ export interface Tier {
   name: string
   /** rarity label, pokemon-card flavored */
   rarity: string
-  /** minimum reshares (inclusive) to hold this tier */
+  /** minimum view-counter value (DB `reshares`, inclusive) to hold this tier */
   minReshares: number
   /** base coin value of a full (100-share) meme at this tier */
   baseValue: number
@@ -105,31 +106,38 @@ export const TIERS: Tier[] = [
   },
 ]
 
-/** Index into TIERS for a given reshare count. */
+/** Index into TIERS for a given view counter (DB `reshares`). */
 export function tierIndexFor(reshares: number): number {
   let idx = 0
-  for (let i = 0; i < TIERS.length; i++) {
-    if (reshares >= TIERS[i].minReshares) idx = i
+  for (const [i, tier] of TIERS.entries()) {
+    if (reshares >= tier.minReshares) idx = i
   }
   return idx
 }
 
+/** Tier for a given view counter (DB `reshares`). Do not pass uniqueRefs. */
 export function tierFor(reshares: number): Tier {
-  return TIERS[tierIndexFor(reshares)]
+  const tier = TIERS[tierIndexFor(reshares)]
+  if (!tier) throw new Error('TIERS is empty')
+  return tier
 }
 
 /** Named glow-border profile for a tier key, with a safe Paper fallback. */
 export function glowStyleFor(tierKey: string): GlowBorderStyle {
-  return TIERS.find((tier) => tier.key === tierKey)?.glowStyle ?? TIERS[0].glowStyle
+  const paper = TIERS[0]
+  if (!paper) throw new Error('TIERS is empty')
+  return TIERS.find((tier) => tier.key === tierKey)?.glowStyle ?? paper.glowStyle
 }
 
 /**
  * Current coin value of a full meme: tier base value plus a small kicker for
- * progress toward the next tier, so value moves with every reshare.
+ * progress toward the next tier, so value moves with every view-counter tick
+ * (DB `reshares`).
  */
 export function memeValue(reshares: number): number {
   const idx = tierIndexFor(reshares)
   const tier = TIERS[idx]
+  if (!tier) throw new Error('TIERS is empty')
   const next = TIERS[idx + 1]
   if (!next) return tier.baseValue + Math.floor(Math.sqrt(Math.max(0, reshares - tier.minReshares)))
   const span = next.minReshares - tier.minReshares

@@ -6,6 +6,7 @@ import type { CreateMemeScreenActions, CreateMemeScreenModel } from './types'
 type GenerateModeSlice = Pick<
   CreateMemeScreenModel,
   | 'showGeneratePanel'
+  | 'promptLabel'
   | 'generatePromptPlaceholder'
   | 'generatePromptHelpText'
   | 'generateButtonLabel'
@@ -20,9 +21,11 @@ export function buildGenerateModeModel(
 ): GenerateModeSlice {
   return {
     showGeneratePanel: ctx.mode === 'generate' || ctx.mode === 'video',
+    promptLabel: copy.form.promptLabel,
     generatePromptPlaceholder: copy.generate.promptPlaceholder,
     generatePromptHelpText: copy.generate.promptHelp,
-    generateButtonLabel: ctx.mode === 'video' ? copy.generate.renderVideo : copy.generate.renderImage,
+    generateButtonLabel:
+      ctx.mode === 'video' ? copy.generate.renderVideo : copy.generate.renderImage,
     generatePromptTextareaProps: {
       value: ctx.prompt,
       'aria-describedby': HELP_IDS.prompt,

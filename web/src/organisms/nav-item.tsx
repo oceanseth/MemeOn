@@ -17,7 +17,7 @@ export interface NavItemProps extends useRender.ComponentProps<'a'> {
 }
 
 const currentProps = (current: boolean | undefined) =>
-  (current ? { 'aria-current': 'page' as const } : {})
+  current ? { 'aria-current': 'page' as const } : {}
 
 /**
  * Top-bar link: a 36px pill, Onest base at 500; the current page is the pressed well at 600. The
@@ -79,7 +79,10 @@ export function TabItem({ className, current, primary, render, ...props }: TabIt
   return useRender({
     defaultTagName: 'a',
     props: mergeProps<'a'>(
-      { className: cn(tabItemVariants({ primary }), className), ...currentProps(current) },
+      {
+        className: cn(tabItemVariants({ primary }), className),
+        ...currentProps(current),
+      },
       props,
     ),
     render,
@@ -104,7 +107,10 @@ export function FooterLink({ className, current, render, ...props }: NavItemProp
   return useRender({
     defaultTagName: 'a',
     props: mergeProps<'a'>(
-      { className: cn(footerLinkVariants(), className), ...currentProps(current) },
+      {
+        className: cn(footerLinkVariants(), className),
+        ...currentProps(current),
+      },
       props,
     ),
     render,

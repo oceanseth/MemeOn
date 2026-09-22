@@ -1,24 +1,22 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { glowStyleFor } from '@memeon/shared/tiers'
 import { cn } from '@/lib/cn'
 import type { MemeCardModel } from '../lib/memeCardModel'
-import { tierFrameClasses } from '@/atoms/foil'
-import { TierChip } from '@/atoms/tier-chip'
+import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
 import { Icon } from '@/atoms/icon'
-import './foil.css'
+import { TierSeal } from '@/atoms/tier-seal'
 
 /* The card is a container for its own meta row (`@max-card-narrow:` fires under 220px). The ring
    is the card's, for the link inside it: `has-[a:focus-visible]` rather than `focus-ring`, because
-   the focused element is the art link and the toggle keeps its own ring.
+   the focused element is the art link.
    Every card in a grid is the same size: the track sets the width, and the height is the same by
    construction — the title reserves its two lines and the value row reserves the two-line listing
    slot — so the card is left free to stretch to its track (no `self-start`) and a screen's own
    per-card footer cannot make a row ragged either. */
 const memeCardVariants = cva(
   [
-    'group relative isolate rounded-lg material-card p-2',
+    'group relative isolate',
     '@container',
     'transition-lift',
     'pointer-coarse:active:scale-99',
@@ -48,14 +46,14 @@ const memeCardVariants = cva(
 const memeMetaVariants = cva('flex flex-1 flex-col', {
   variants: {
     size: {
-      default: 'gap-1 px-1.5 pt-3.5 pb-1.5 @max-card-narrow:pt-2.5',
-      lg: 'gap-1.5 px-2 pt-4 pb-2',
+      default: 'gap-1 px-1 pt-3 pb-0 @max-card-narrow:pt-2.5',
+      lg: 'gap-1.5 px-1.5 pt-4 pb-1',
     },
   },
   defaultVariants: { size: 'default' },
 })
 
-const memeTitleVariants = cva('font-display font-normal text-foreground', {
+const memeTitleVariants = cva('m-0 font-display font-normal text-foreground', {
   variants: {
     size: {
       /** two lines are reserved (2 × 24, or 2 × 26 in the narrow text face), so a one-line title
@@ -75,24 +73,17 @@ export type MemeCardSize = NonNullable<VariantProps<typeof memeCardVariants>['si
 
 const INNER = 'relative flex h-full flex-col'
 
-const FRAME = 'foil-frame foil-media relative rounded-md bg-muted'
+const ART_BACKDROP =
+  'absolute inset-0 z-0 block size-full scale-110 object-cover opacity-45 blur-lg saturate-125'
 
-const ART = 'block aspect-square w-full bg-muted object-contain'
+const ART = 'block object-contain'
 
-/* 32px raised square over the art's corner; the coarse-pointer form is the full 44px target */
-const TOGGLE = cn(
-  'absolute right-2 bottom-2 z-2 inline-flex items-center justify-center',
-  'size-8 p-0 pointer-coarse:size-11',
-  'cursor-pointer whitespace-nowrap text-base leading-none text-foreground',
-  'rounded-sm material-raised',
-  'transition-press',
-  'lift press',
-  'focus-ring',
-)
+const KICKER =
+  'flex min-h-4 items-center justify-between gap-2 text-xs text-muted-foreground tabular-nums @max-card-narrow:min-h-8.5 @max-card-narrow:flex-col @max-card-narrow:items-start @max-card-narrow:justify-start @max-card-narrow:gap-0.5'
 
-const CHIP_POS = 'absolute bottom-4 left-4 z-2'
+const TIER_NAME = 'font-semibold text-foreground uppercase'
 
-const STATS = 'flex items-center text-xs text-muted-foreground tabular-nums'
+const STATS = 'flex items-center'
 
 /* the grid thumb reserves the two-line listing slot (2 × 16) whether or not it is for sale; the
    narrow form may wrap its right lane under the value (20 + 2 + 16), and reserves that instead */
@@ -127,58 +118,71 @@ export interface MemeCardProps {
   footerRight?: ReactNode | undefined
   /** `lg` is detail hero only (`MemeDetailScreen`). */
   size?: MemeCardSize | null | undefined
+  /** Detail hero only: the card title is the page's H1. */
+  titleAs?: 'h1' | undefined
 }
 
-export function MemeCard({ model, subTitle, footer, footerRight, size }: MemeCardProps) {
+export function MemeCard({ model, subTitle, footer, footerRight, size, titleAs }: MemeCardProps) {
   const scale = size ?? 'default'
+  const TitleTag = titleAs === 'h1' ? 'h1' : 'span'
   return (
-    <article
+    <FoilCard
+      as="article"
       ref={model.cardRef}
+      tierKey={model.tierKey}
+      presentation="collectible"
       data-slot="meme-card"
       data-size={scale}
-      className={cn(memeCardVariants({ size: scale }), tierFrameClasses(model.tierKey))}
+      className={cn(memeCardVariants({ size: scale }))}
       aria-labelledby={model.titleId}
-      data-glow-style={glowStyleFor(model.tierKey)}
       data-media-autoplay={model.mediaAutoplay}
     >
       <div data-slot="meme-card-inner" className={INNER}>
-        <span data-slot="foil-media" className={FRAME}>
-          <Link {...model.detailLinkProps} className="block focus-visible:outline-none">
+        <FoilMedia
+          presentation="collectible"
+          seal={<TierSeal tierKey={model.tierKey} label={model.tierLabel} />}
+        >
+          <Link
+            {...model.detailLinkProps}
+            data-slot="collectible-art-link"
+            className="block size-full focus-visible:outline-none"
+          >
+            <img
+              data-slot="meme-art-backdrop"
+              className={ART_BACKDROP}
+              {...model.media.backdropImageProps}
+            />
             {model.media.kind === 'video' ? (
               <video data-slot="meme-art" className={ART} {...model.media.videoProps} />
             ) : (
               <img data-slot="meme-art" className={ART} {...model.media.imageProps} />
             )}
           </Link>
-          <TierChip
-            tierKey={model.tierKey}
-            label={model.tierName}
-            size={scale === 'lg' ? 'md' : 'sm'}
-            className={CHIP_POS}
-          />
-          {model.media.kind === 'video' && (
-            <button data-slot="media-toggle" className={TOGGLE} {...model.media.toggleProps}>
-              <span aria-hidden="true">
-                <Icon name="square-play" size={20} />
-              </span>
-            </button>
-          )}
-        </span>
+        </FoilMedia>
         <div data-slot="meme-meta" className={cn(memeMetaVariants({ size: scale }))}>
-          <span data-slot="meme-title" className={cn(memeTitleVariants({ size: scale }))} id={model.titleId}>
+          <TitleTag
+            data-slot="meme-title"
+            className={cn(memeTitleVariants({ size: scale }))}
+            id={model.titleId}
+          >
             {model.title}
-          </span>
+          </TitleTag>
           {subTitle}
-          <span data-slot="meme-stats" className={STATS}>
-            <span aria-hidden="true" className="inline-flex items-center gap-0.5">
-              {model.viewsLabel !== null && (
-                <>
-                  <Icon name="eye" size={14} /> {model.viewsLabel} ·{' '}
-                </>
-              )}
-              <Icon name="arrows-left-right" size={14} /> {model.resharesLabel}
+          <span data-slot="meme-kicker" className={KICKER}>
+            <span data-slot="meme-tier-name" className={TIER_NAME} aria-hidden="true">
+              {model.tierName}
             </span>
-            <span className="sr-only">{model.statsA11yLabel}</span>
+            <span data-slot="meme-stats" className={STATS}>
+              <span aria-hidden="true" className="inline-flex items-center gap-0.5">
+                {model.viewsLabel !== null && (
+                  <>
+                    <Icon name="eye" size={14} /> {model.viewsLabel} ·{' '}
+                  </>
+                )}
+                <Icon name="arrows-left-right" size={14} /> {model.resharesLabel}
+              </span>
+              <span className="sr-only">{model.statsA11yLabel}</span>
+            </span>
           </span>
           <span data-slot="meme-sub" className={cn(memeSubVariants({ size: scale }))}>
             <span className={VALUE}>
@@ -204,7 +208,7 @@ export function MemeCard({ model, subTitle, footer, footerRight, size }: MemeCar
           {footer}
         </div>
       </div>
-    </article>
+    </FoilCard>
   )
 }
 

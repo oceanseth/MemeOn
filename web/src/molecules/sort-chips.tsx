@@ -5,7 +5,7 @@ import type { SortChipsModel } from '../lib/sortChipsModel'
 import type { SortKey } from '../lib/sorting'
 
 /**
- * Click a stat to sort by it; click it again to flip direction (↓/↑ indicator).
+ * Click a stat to sort by it; click it again to flip direction (chevron-down, rotate-180 when asc).
  *
  * The row is the `ToggleGroup` atom at its chip size: tabs, not buttons, so the selected chip is a
  * pressed well and never an accent colour. Single-select, so re-pressing the selected chip empties
@@ -39,16 +39,24 @@ export function SortChips({ model }: { model: SortChipsModel }) {
               </span>
             )}
             {chip.label}
-            {chip.arrow && (
-              <span aria-hidden="true" className="font-semibold">
-                {chip.arrow}
+            {chip.direction && (
+              <span aria-hidden="true">
+                {chip.direction === 'asc' ? (
+                  <Icon name="chevron-down" size={16} className="rotate-180" />
+                ) : (
+                  <Icon name="chevron-down" size={16} />
+                )}
               </span>
             )}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
       {/* the standalone description (no `<Field>` here): the group names it through `aria-describedby` */}
-      {model.reason && <Hint {...model.reasonProps}>{model.reason}</Hint>}
+      {model.reason && (
+        <Hint className="sr-only" {...model.reasonProps}>
+          {model.reason}
+        </Hint>
+      )}
     </div>
   )
 }

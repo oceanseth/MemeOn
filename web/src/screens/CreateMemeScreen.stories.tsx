@@ -84,7 +84,12 @@ function model(
 const phone = {
   parameters: {
     viewport: {
-      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+      options: {
+        phone390: {
+          name: 'Phone 390',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
     },
   },
   globals: { viewport: { value: 'phone390', isRotated: false } },
@@ -94,13 +99,22 @@ const meta = {
   title: 'Screens/CreateMemeScreen',
   component: CreateMemeScreen,
   args: model(),
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 } satisfies Meta<typeof CreateMemeScreen>
 
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const ChooseMode: Story = { name: 'Choose mode (transient)', args: model({}, 'chooseMode') }
+export const ChooseMode: Story = {
+  name: 'Choose mode (transient)',
+  args: model({}, 'chooseMode'),
+}
 
 export const Generate: Story = { args: model() }
 
@@ -110,13 +124,18 @@ export const Url: Story = { args: model({ mode: 'url' }) }
 
 export const UrlTyped: Story = {
   name: 'URL typed, not fetched yet',
-  args: model({ mode: 'url', urlDraft: 'https://www.reddit.com/r/memes/comments/abc' }),
+  args: model({
+    mode: 'url',
+    urlDraft: 'https://www.reddit.com/r/memes/comments/abc',
+  }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: 'Fetch image' })).toBeEnabled()
+    await expect(canvas.getByRole('button', { name: copy.url.fetch })).toBeEnabled()
     /* nothing is resolved yet, so the terminal action stays shut */
-    await expect(canvas.getByRole('button', { name: /Mint/ })).toBeDisabled()
-    await expect(canvas.getByText(/To mint:/)).toHaveTextContent('add artwork')
+    await expect(canvas.getByRole('button', { name: copy.form.mint })).toBeDisabled()
+    await expect(canvas.getByText(copy.form.toMint, { exact: false })).toHaveTextContent(
+      copy.preview.mintHint.artwork,
+    )
   },
 }
 
@@ -181,12 +200,14 @@ export const RemixEditedFrame: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     /* exactly one primary and one secondary: the frame-destroying remix button is gone */
-    await expect(canvas.getByRole('button', { name: /animate it/ })).toBeEnabled()
-    await expect(canvas.getByRole('button', { name: /Re-run the edit/ })).toBeEnabled()
-    await expect(canvas.queryByRole('button', { name: 'Remix into video' })).toBeNull()
+    await expect(canvas.getByRole('button', { name: copy.remix.animateIt })).toBeEnabled()
+    await expect(canvas.getByRole('button', { name: copy.remix.rerunEdit })).toBeEnabled()
+    await expect(canvas.queryByRole('button', { name: copy.remix.remixVideo })).toBeNull()
     /* "New video" was chosen, so a still frame is not mintable yet */
-    await expect(canvas.getByRole('button', { name: /Mint/ })).toBeDisabled()
-    await expect(canvas.getByText(/To mint:/)).toHaveTextContent('animate the frame')
+    await expect(canvas.getByRole('button', { name: copy.form.mint })).toBeDisabled()
+    await expect(canvas.getByText(copy.form.toMint, { exact: false })).toHaveTextContent(
+      copy.preview.mintHint.animate,
+    )
   },
 }
 
@@ -204,7 +225,9 @@ export const GiphyResults: Story = {
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const search = canvas.getByRole('searchbox', { name: 'Search GIPHY' })
+    const search = canvas.getByRole('searchbox', {
+      name: copy.giphy.searchLabel,
+    })
     search.focus()
     await userEvent.keyboard('{Enter}')
     await expect(actions.searchGiphy).toHaveBeenCalledWith('cat')
@@ -295,19 +318,21 @@ export const TitleAtLimit: Story = {
   },
 }
 
+const submittingArgs = model(
+  {
+    prompt: 'a capybara in a business suit',
+    busy: copy.busy.generatingImage,
+    busyElapsed: '12s',
+  },
+  'submitting',
+)
+
 export const Submitting: Story = {
-  args: model(
-    {
-      prompt: 'a capybara in a business suit',
-      busy: copy.busy.generatingImage,
-      busyElapsed: '12s',
-    },
-    'submitting',
-  ),
+  args: submittingArgs,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     /* the mode row locks with the rest of the form: no reshaping a running request */
-    await expect(canvas.getByRole('button', { name: /Upload/ })).toBeDisabled()
+    await expect(canvas.getByRole('button', { name: copy.modes.upload })).toBeDisabled()
     /* the busy text lands in a region that was already mounted and silent, not one inserted with it */
     const busyNotice = canvas
       .getByText(copy.busy.generatingImage)
@@ -348,12 +373,24 @@ export const ResumedRender: Story = {
 
 export const Error: Story = {
   args: model(
-    { prompt: 'a capybara in a business suit', err: 'credits exhausted' },
+    {
+      prompt: 'a capybara in a business suit',
+      err: copy.errors.creditsExhausted,
+    },
     'error',
   ),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('alert')).toHaveTextContent('Top up Masky credits')
+    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.errors.creditsExhausted)
+    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.preview.nextStep.credits)
+  },
+}
+
+export const MintFailed: Story = {
+  name: 'Error (mint fallback)',
+  args: model({ prompt: 'a capybara in a business suit', err: copy.errors.mintFailed }, 'error'),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(copy.errors.mintFailed)
   },
 }
 
@@ -374,7 +411,7 @@ export const Success: Story = {
     // the render can run minutes: the outcome takes focus and announces itself
     await expect(canvas.getByRole('heading', { name: /Minted/ })).toHaveFocus()
     await expect(canvas.getByRole('status')).toHaveTextContent('Minted. Your card is live')
-    await userEvent.click(canvas.getByRole('button', { name: /Copy share link/ }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.form.success.copyLink }))
     await expect(actions.copyShareLink).toHaveBeenCalled()
   },
 }
@@ -392,7 +429,15 @@ export const SuccessCopied: Story = {
     'success',
   ),
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByRole('status')).toHaveTextContent('Share link copied')
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('status')).toHaveTextContent('Share link copied')
+    const button = canvas.getByRole('button', { name: copy.form.copied })
+    await expect(button).toBeVisible()
+    const icon = button.querySelector('[data-slot="icon"]')
+    await expect(icon).not.toBeNull()
+    await expect(
+      icon!.querySelector('path[d*="M7.757 12L10.409 14.652L16.243 8.818"]'),
+    ).not.toBeNull()
   },
 }
 
@@ -407,14 +452,18 @@ export const Ready: Story = {
   }),
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('button', { name: /Mint/ })).toBeEnabled()
+    await expect(canvas.getByRole('button', { name: copy.form.mint })).toBeEnabled()
     const tierNote = canvasElement.querySelector('[data-slot="tier-note"]') as HTMLElement
     await expect(within(tierNote).getByText('Paper')).toBeVisible()
     await expect(within(tierNote).getByText('freshly minted')).toBeVisible()
   },
 }
 
-export const Dark: Story = { ...Ready, name: 'Ready dark', globals: { theme: 'dark' } }
+export const Dark: Story = {
+  ...Ready,
+  name: 'Ready dark',
+  globals: { theme: 'dark' },
+}
 
 export const Phone390: Story = { ...Ready, name: 'Ready phone 390', ...phone }
 
@@ -427,8 +476,196 @@ export const DarkPhone390: Story = {
 
 export const SubmittingDark: Story = {
   name: 'Rendering dark (state card)',
-  args: Submitting.args,
+  args: submittingArgs,
   globals: { theme: 'dark' },
 }
 
-export const SuccessPhone390: Story = { ...Success, name: 'Success phone 390', ...phone }
+export const SuccessPhone390: Story = {
+  ...Success,
+  name: 'Success phone 390',
+  ...phone,
+}
+
+export const VideoReady: Story = {
+  name: 'Video ready to mint',
+  args: model({
+    mode: 'video',
+    title: 'burning office',
+    imageUrl: paperMeme.imageUrl,
+    videoUrl: videoMeme.videoUrl ?? '/clip.mp4',
+  }),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('button', { name: copy.form.mint })).toBeEnabled()
+  },
+}
+
+export const VideoError: Story = {
+  name: 'Video error',
+  args: model(
+    {
+      mode: 'video',
+      prompt: 'a capybara in a business suit',
+      err: copy.errors.videoGenerationFailed,
+    },
+    'error',
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(
+      copy.errors.videoGenerationFailed,
+    )
+  },
+}
+
+export const UrlResolved: Story = {
+  name: 'URL resolved, ready to mint',
+  args: model({
+    mode: 'url',
+    urlDraft: 'https://www.reddit.com/r/memes/comments/abc',
+    imageUrl: paperMeme.imageUrl,
+    title: 'group chat energy',
+  }),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('button', { name: copy.form.mint })).toBeEnabled()
+  },
+}
+
+export const UrlResolveError: Story = {
+  name: 'URL resolve error',
+  args: model(
+    {
+      mode: 'url',
+      urlDraft: 'https://www.reddit.com/r/memes/comments/abc',
+      err: copy.errors.resolveFailed,
+    },
+    'error',
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(
+      copy.errors.resolveFailed,
+    )
+  },
+}
+
+export const ResolvingPage: Story = {
+  name: 'Resolving page',
+  args: model(
+    {
+      mode: 'url',
+      urlDraft: 'https://www.reddit.com/r/memes/comments/abc',
+      busy: copy.busy.resolvingPage,
+    },
+    'submitting',
+  ),
+  play: async ({ canvasElement }) => {
+    const busyNotice = within(canvasElement)
+      .getByText(copy.busy.resolvingPage)
+      .closest('[data-slot="live-region"]')
+    await expect(busyNotice).toHaveAttribute('role', 'status')
+  },
+}
+
+export const UploadingImage: Story = {
+  name: 'Uploading image',
+  args: model(
+    {
+      mode: 'upload',
+      imageFileName: 'cursed-capybara.png',
+      busy: copy.busy.uploadingImage,
+    },
+    'submitting',
+  ),
+  play: async ({ canvasElement }) => {
+    const busyNotice = within(canvasElement)
+      .getByText(copy.busy.uploadingImage)
+      .closest('[data-slot="live-region"]')
+    await expect(busyNotice).toHaveAttribute('role', 'status')
+  },
+}
+
+export const RemixSourceMissing: Story = {
+  name: 'Remix source missing',
+  args: model({
+    mode: 'remix',
+    remixId: paperMeme.id,
+    remixSource: null,
+    err: 'source meme not found',
+  }),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(
+      'source meme not found',
+    )
+  },
+}
+
+export const RemixVideoReady: Story = {
+  name: 'Remix video ready to mint',
+  args: model({
+    mode: 'remix',
+    remixId: videoMeme.id,
+    remixSource: videoMeme,
+    remixOutput: 'video',
+    imageUrl: videoMeme.imageUrl,
+    videoUrl: videoMeme.videoUrl ?? '/animated.mp4',
+    title: 'moving paper',
+  }),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole('button', { name: copy.form.mint })).toBeEnabled()
+  },
+}
+
+export const RemixBusy: Story = {
+  name: 'Remix busy',
+  args: model(
+    {
+      mode: 'remix',
+      remixId: paperMeme.id,
+      remixSource: paperMeme,
+      busy: copy.busy.remixImage,
+    },
+    'submitting',
+  ),
+  play: async ({ canvasElement }) => {
+    const busyNotice = within(canvasElement)
+      .getByText(copy.busy.remixImage)
+      .closest('[data-slot="live-region"]')
+    await expect(busyNotice).toHaveAttribute('role', 'status')
+  },
+}
+
+export const GiphySearchFailed: Story = {
+  name: 'Giphy search failed',
+  args: model(
+    {
+      mode: 'giphy',
+      giphyCategories,
+      giphyQuery: 'cat',
+      err: copy.errors.giphySearchFailed,
+    },
+    'error',
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.errors.giphySearchFailed)
+    /* a failed search is an alert, never the Giphy empty card */
+    await expect(canvas.queryByText(copy.giphy.emptySearch('cat'))).not.toBeInTheDocument()
+  },
+}
+
+export const SearchingGiphy: Story = {
+  name: 'Searching Giphy',
+  args: model(
+    {
+      mode: 'giphy',
+      giphyCategories,
+      giphyQuery: 'cat',
+      busy: copy.busy.searchingGiphy,
+    },
+    'submitting',
+  ),
+  play: async ({ canvasElement }) => {
+    const busyNotice = within(canvasElement)
+      .getByText(copy.busy.searchingGiphy)
+      .closest('[data-slot="live-region"]')
+    await expect(busyNotice).toHaveAttribute('role', 'status')
+  },
+}

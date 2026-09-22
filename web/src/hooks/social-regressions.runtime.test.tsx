@@ -1,24 +1,21 @@
 import { act } from 'react'
-import { createRoot, type Root } from 'react-dom/client'
-import { MemoryRouter } from 'react-router-dom'
-import { createActor, fromPromise } from 'xstate'
+import type { Root } from 'react-dom/client'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { friendAccepted, giftablePaper, meLou } from '../../.storybook/fixtures'
 import { friendsCopy as copy } from '../copy/friends'
-import type { Me } from '../lib/types'
-import { authMachine } from '../stores/authMachine'
-import { createStores, type AppStores } from '../stores/createStores'
+import { profileCopy } from '../copy/profile'
+import type { FriendEntry } from '../lib/types'
+import type { AppStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
+import { button as queryButton, click } from '../test/dom'
+import { deferred, settle, stubClipboardWrite } from '../test/runtime'
+import { mountSignedInRoot, unmountSignedInRoot } from '../test/signedInHost'
 import { FriendsView } from '../views/FriendsView'
+import { ProfileView } from '../views/ProfileView'
 
 vi.mock('../lib/firebase', () => ({ firebaseSignOut: vi.fn() }))
 vi.mock('../lib/presence', () => ({ watchPresence: () => () => {} }))
-
-function deferred<T>() {
-  let resolve!: (value: T) => void
-  const promise = new Promise<T>((done) => { resolve = done })
-  return { promise, resolve }
-}
 
 function json(body: unknown, status = 200): Response {
   return {
@@ -29,22 +26,12 @@ function json(body: unknown, status = 200): Response {
 }
 
 function details(input: RequestInfo | URL, init?: RequestInit) {
-  const value = typeof input === 'string'
-    ? input
-    : input instanceof URL
-      ? input.href
-      : input.url
+  const value = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
   return {
     url: new URL(value, window.location.origin),
     method: init?.method ?? 'GET',
-    body: init?.body ? JSON.parse(String(init.body)) as unknown : null,
+    body: init?.body ? (JSON.parse(String(init.body)) as unknown) : null,
   }
-}
-
-async function settle(): Promise<void> {
-  await Promise.resolve()
-  await Promise.resolve()
-  await Promise.resolve()
 }
 
 async function advance(ms: number): Promise<void> {
@@ -55,21 +42,13 @@ async function advance(ms: number): Promise<void> {
 }
 
 function button(label: string, parent: ParentNode = host): HTMLButtonElement {
-  const found = [...parent.querySelectorAll<HTMLButtonElement>('button')]
-    .find((candidate) => candidate.textContent?.includes(label))
-  if (!found) throw new Error(`Missing button: ${label}`)
-  return found
-}
-
-async function click(element: HTMLElement): Promise<void> {
-  await act(async () => {
-    element.click()
-    await settle()
-  })
+  return queryButton(label, parent)
 }
 
 async function search(value: string): Promise<void> {
-  const input = host.querySelector<HTMLInputElement>('input[placeholder^="Find people"]')!
+  const input = host.querySelector<HTMLInputElement>(
+    `input[placeholder="${copy.search.placeholder}"]`,
+  )!
   await act(async () => {
     Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, value)
     input.dispatchEvent(new Event('input', { bubbles: true }))
@@ -86,41 +65,68 @@ interface RecordedRequest {
 interface SocialApiOptions {
   gifts?: Array<ReturnType<typeof deferred<Response>>>
   friendRequests?: Array<ReturnType<typeof deferred<Response>>>
+  users?: (query: string) => Promise<Response>
+  friends?: FriendEntry[]
 }
 
 function installSocialApi(options: SocialApiOptions = {}) {
   const requests: RecordedRequest[] = []
   const userQueries: string[] = []
+  let friends = [...(options.friends ?? [friendAccepted])]
   let giftIndex = 0
   let requestIndex = 0
-  vi.stubGlobal('fetch', vi.fn<typeof fetch>((input, init) => {
-    const request = details(input, init)
-    requests.push({ method: request.method, path: request.url.pathname, body: request.body })
-    if (request.method === 'GET' && request.url.pathname === '/api/friends') {
-      return Promise.resolve(json({ friends: [friendAccepted] }))
-    }
-    if (request.method === 'GET' && request.url.pathname === '/api/binder') {
-      return Promise.resolve(json({ memes: [giftablePaper] }))
-    }
-    if (request.method === 'POST' && request.url.pathname === '/api/gift') {
-      const pending = options.gifts?.[giftIndex++]
-      if (!pending) throw new Error('Unexpected gift submission')
-      return pending.promise
-    }
-    if (request.method === 'POST' && request.url.pathname === '/api/friends/request') {
-      const pending = options.friendRequests?.[requestIndex++]
-      if (!pending) throw new Error('Unexpected friend request')
-      return pending.promise
-    }
-    if (request.method === 'GET' && request.url.pathname === '/api/users') {
-      const query = request.url.searchParams.get('q') ?? ''
-      userQueries.push(query)
-      return Promise.resolve(json({
-        users: [{ sub: query.toLocaleLowerCase(), name: query, picture: null }],
-      }))
-    }
-    throw new Error(`Unexpected request: ${request.method} ${request.url.pathname}`)
-  }))
+  vi.stubGlobal(
+    'fetch',
+    vi.fn<typeof fetch>((input, init) => {
+      const request = details(input, init)
+      requests.push({
+        method: request.method,
+        path: request.url.pathname,
+        body: request.body,
+      })
+      if (request.method === 'GET' && request.url.pathname === '/api/friends') {
+        return Promise.resolve(json({ friends }))
+      }
+      if (request.method === 'GET' && request.url.pathname === '/api/binder') {
+        return Promise.resolve(json({ memes: [giftablePaper] }))
+      }
+      if (request.method === 'POST' && request.url.pathname === '/api/gift') {
+        const pending = options.gifts?.[giftIndex++]
+        if (!pending) throw new Error('Unexpected gift submission')
+        return pending.promise
+      }
+      if (request.method === 'POST' && request.url.pathname === '/api/friends/request') {
+        const pending = options.friendRequests?.[requestIndex++]
+        if (!pending) throw new Error('Unexpected friend request')
+        return pending.promise
+      }
+      if (request.method === 'POST' && request.url.pathname === '/api/friends/respond') {
+        const body = request.body as { userId: string; accept: boolean }
+        friends = body.accept
+          ? friends.map((friend) =>
+              friend.sub === body.userId ? { ...friend, status: 'accepted' } : friend,
+            )
+          : friends.filter((friend) => friend.sub !== body.userId)
+        return Promise.resolve(json({ ok: true }))
+      }
+      if (request.method === 'POST' && request.url.pathname === '/api/friends/remove') {
+        const userId = (request.body as { userId: string }).userId
+        friends = friends.filter((friend) => friend.sub !== userId)
+        return Promise.resolve(json({ ok: true }))
+      }
+      if (request.method === 'GET' && request.url.pathname === '/api/users') {
+        const query = request.url.searchParams.get('q') ?? ''
+        userQueries.push(query)
+        if (options.users) return options.users(query)
+        return Promise.resolve(
+          json({
+            users: [{ sub: query.toLocaleLowerCase(), name: query, picture: null }],
+          }),
+        )
+      }
+      throw new Error(`Unexpected request: ${request.method} ${request.url.pathname}`)
+    }),
+  )
   return { requests, userQueries }
 }
 
@@ -145,31 +151,14 @@ let root: Root
 let stores: AppStores
 
 beforeEach(async () => {
-  vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true)
-  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
-  host = document.createElement('div')
-  document.body.append(host)
-  root = createRoot(host)
-  const authActor = createActor(authMachine.provide({
-    actors: { loadMe: fromPromise(async (): Promise<Me | null> => meLou) },
-    actions: { clearSessionAndFirebase: () => {} },
-  }))
-  stores = createStores(authActor)
-  stores.retain()
-  await stores.auth.refresh()
+  const mounted = await mountSignedInRoot({ fakeTimers: true })
+  host = mounted.host
+  root = mounted.root
+  stores = mounted.stores
 })
 
 afterEach(async () => {
-  await act(() => root.unmount())
-  stores.auth.logout()
-  stores.dispose()
-  await Promise.resolve()
-  host.remove()
-  localStorage.clear()
-  sessionStorage.clear()
-  vi.useRealTimers()
-  vi.restoreAllMocks()
-  vi.unstubAllGlobals()
+  await unmountSignedInRoot({ host, root, stores })
 })
 
 async function renderFriends(): Promise<void> {
@@ -194,13 +183,21 @@ describe('FriendsView gift lifetime', () => {
 
     let dialog = await openAndPickGift()
     await click(button('Gift 1 of', dialog))
-    expect(giftRequests(api.requests)).toEqual([expect.objectContaining({
-      body: { memeId: giftablePaper.id, toSub: friendAccepted.sub, shares: 1 },
-    })])
+    expect(giftRequests(api.requests)).toEqual([
+      expect.objectContaining({
+        body: {
+          memeId: giftablePaper.id,
+          toSub: friendAccepted.sub,
+          shares: 1,
+        },
+      }),
+    ])
     expect(button('Gifting', dialog).disabled).toBe(true)
 
     // in flight every control says so instead of looking operable, and the dialog stays put
-    expect(dialog.querySelector<HTMLButtonElement>('[data-slot="dialog-close"]')!.disabled).toBe(true)
+    expect(dialog.querySelector<HTMLButtonElement>('[data-slot="dialog-close"]')!.disabled).toBe(
+      true,
+    )
     expect(button('Cancel', dialog).disabled).toBe(true)
     expect(button(giftablePaper.title, dialog).disabled).toBe(true)
     await click(button('Cancel', dialog))
@@ -217,7 +214,9 @@ describe('FriendsView gift lifetime', () => {
       await settle()
     })
     expect(giftDialogOpen()).toBe(false)
-    expect(host.textContent).toContain(copy.toasts.gifted(1, giftablePaper.title, friendAccepted.name))
+    expect(host.textContent).toContain(
+      copy.toasts.gifted(1, giftablePaper.title, friendAccepted.name),
+    )
 
     dialog = await openAndPickGift()
     expect(button('Gift 1 of', dialog).disabled).toBe(false)
@@ -260,17 +259,24 @@ describe('FriendsView friend-request debounce ownership', () => {
     expect(host.textContent).toContain('Alice')
 
     await search('Bob')
-    await click(button('Add friend'))
+    await click(button(copy.search.addFriend))
     await act(async () => {
       request.resolve(json({ ok: true }))
       await settle()
     })
     await advance(300)
 
-    expect(host.querySelector<HTMLInputElement>('input[placeholder^="Find people"]')?.value).toBe('')
+    expect(
+      host.querySelector<HTMLInputElement>(`input[placeholder="${copy.search.placeholder}"]`)
+        ?.value,
+    ).toBe('')
     expect(api.userQueries).toEqual(['Alice'])
     expect(host.textContent).not.toContain('Bob')
-    expect([...host.querySelectorAll('button')].some((candidate) => candidate.textContent === 'Add friend')).toBe(false)
+    expect(
+      [...host.querySelectorAll('button')].some(
+        (candidate) => candidate.textContent === copy.search.addFriend,
+      ),
+    ).toBe(false)
   })
 
   it('preserves a scheduled Bob search when the visible Alice request fails', async () => {
@@ -280,20 +286,23 @@ describe('FriendsView friend-request debounce ownership', () => {
     await search('Alice')
     await advance(250)
     await search('Bob')
-    await click(button('Add friend'))
+    await click(button(copy.search.addFriend))
     await act(async () => {
       request.resolve(json({ error: 'request unavailable' }, 503))
       await settle()
     })
     await advance(300)
 
-    expect(host.querySelector<HTMLInputElement>('input[placeholder^="Find people"]')?.value).toBe('Bob')
+    expect(
+      host.querySelector<HTMLInputElement>(`input[placeholder="${copy.search.placeholder}"]`)
+        ?.value,
+    ).toBe('Bob')
     expect(api.userQueries).toEqual(['Alice', 'Bob'])
     // the raw API string never reaches the user; the surface names the problem and the recovery
     expect(host.textContent).toContain(copy.errors.request)
     expect(host.querySelector('[data-slot="alert"]')).not.toBeNull()
     expect(host.textContent).toContain('Bob')
-    expect(button('Add friend')).toBeTruthy()
+    expect(button(copy.search.addFriend)).toBeTruthy()
   })
 
   it('cancels scheduled searches on manual clear and true unmount', async () => {
@@ -309,5 +318,222 @@ describe('FriendsView friend-request debounce ownership', () => {
     await advance(300)
     expect(api.userQueries).toEqual([])
     expect(host.textContent).toBe('')
+  })
+})
+
+function stubShare(share: ((data: ShareData) => Promise<void>) | undefined) {
+  Object.defineProperty(navigator, 'share', {
+    configurable: true,
+    writable: true,
+    value: share,
+  })
+}
+
+const incomingPal: FriendEntry = {
+  ...friendAccepted,
+  sub: 'user-incoming',
+  name: 'incoming pal',
+  status: 'incoming',
+}
+
+describe('FriendsView unfriend and decline confirm', () => {
+  it('POSTs /api/friends/remove after confirming unfriend', async () => {
+    const api = installSocialApi()
+    await renderFriends()
+    await click(
+      host.querySelector<HTMLElement>(
+        `[aria-label="${copy.row.removeName(friendAccepted.name)}"]`,
+      )!,
+    )
+    const dialog = host.querySelector<HTMLElement>('[role="alertdialog"]')!
+    expect(dialog.textContent).toContain(copy.removeDialog.remove.title(friendAccepted.name))
+    await click(button(copy.removeDialog.remove.confirm, dialog))
+    await settle()
+    expect(api.requests).toContainEqual({
+      method: 'POST',
+      path: '/api/friends/remove',
+      body: { userId: friendAccepted.sub },
+    })
+    expect(host.querySelector('[role="alertdialog"]')).toBeNull()
+    expect(host.textContent).not.toContain(copy.row.remove)
+  })
+
+  it('POSTs /api/friends/respond {accept:false} after confirming decline', async () => {
+    const api = installSocialApi({ friends: [friendAccepted, incomingPal] })
+    await renderFriends()
+    expect(host.textContent).toContain(incomingPal.name)
+    await click(
+      host.querySelector<HTMLElement>(`[aria-label="${copy.row.decline(incomingPal.name)}"]`)!,
+    )
+    const dialog = host.querySelector<HTMLElement>('[role="alertdialog"]')!
+    expect(dialog.textContent).toContain(copy.removeDialog.decline.title(incomingPal.name))
+    await click(button(copy.removeDialog.decline.confirm, dialog))
+    await settle()
+    expect(api.requests).toContainEqual({
+      method: 'POST',
+      path: '/api/friends/respond',
+      body: { userId: incomingPal.sub, accept: false },
+    })
+    expect(host.textContent).not.toContain(incomingPal.name)
+  })
+})
+
+describe('FriendsView search failure vs empty hits', () => {
+  it('shows copy.search.failed when GET /api/users rejects, not noHits', async () => {
+    installSocialApi({
+      users: async () => Promise.reject(new Error('offline')),
+    })
+    await renderFriends()
+    await search('pal')
+    await advance(250)
+    expect(host.textContent).toContain(copy.search.failed)
+    expect(host.textContent).not.toContain(copy.search.noHits('pal'))
+    expect(host.textContent).toContain(friendAccepted.name)
+    expect(host.querySelector('[data-slot="empty"][data-variant="error"]')).toBeNull()
+  })
+
+  it('shows copy.search.failed when GET /api/users returns 500, not noHits', async () => {
+    installSocialApi({
+      users: async () => json({ error: 'search unavailable' }, 500),
+    })
+    await renderFriends()
+    await search('pal')
+    await advance(250)
+    expect(host.textContent).toContain(copy.search.failed)
+    expect(host.textContent).not.toContain('search unavailable')
+    expect(host.textContent).not.toContain(copy.search.noHits('pal'))
+  })
+
+  it('empty 200 stays no-hits', async () => {
+    installSocialApi({ users: async () => json({ users: [] }) })
+    await renderFriends()
+    await search('pal')
+    await advance(250)
+    expect(host.textContent).toContain(copy.search.noHits('pal'))
+    expect(host.textContent).not.toContain(copy.search.failed)
+  })
+})
+
+describe('FriendsView invite share and clipboard', () => {
+  it('treats AbortError as a silent cancel and does not copy', async () => {
+    installSocialApi()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    stubShare(vi.fn().mockRejectedValue(new DOMException('Share canceled', 'AbortError')))
+    stubClipboardWrite(writeText)
+    await renderFriends()
+    await click(button(copy.invite.button))
+    await advance(0)
+    expect(writeText).not.toHaveBeenCalled()
+    expect(host.textContent).toContain(copy.invite.button)
+    expect(host.textContent).not.toContain(copy.invite.copyFailed)
+  })
+
+  it('shows invite.copyFailed when clipboard write rejects', async () => {
+    installSocialApi()
+    stubShare(undefined)
+    stubClipboardWrite(async () => {
+      throw new Error('denied')
+    })
+    await renderFriends()
+    await click(button(copy.invite.button))
+    await advance(0)
+    expect(host.textContent).toContain(copy.invite.copyFailed)
+  })
+
+  it('falls through to clipboard when share fails with a non-abort error', async () => {
+    installSocialApi()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    stubShare(vi.fn().mockRejectedValue(new Error('share unavailable')))
+    stubClipboardWrite(writeText)
+    await renderFriends()
+    await click(button(copy.invite.button))
+    await advance(0)
+    expect(writeText).toHaveBeenCalled()
+    expect(host.textContent).toContain(copy.invite.copied)
+  })
+})
+
+function installOwnProfileApi() {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn<typeof fetch>((input, init) => {
+      const request = details(input, init)
+      if (
+        request.method === 'GET' &&
+        request.url.pathname === `/api/users/${encodeURIComponent(meLou.sub)}/profile`
+      ) {
+        return Promise.resolve(
+          json({
+            profile: {
+              sub: meLou.sub,
+              name: meLou.name,
+              picture: meLou.picture,
+              followers: 2,
+              collectionSize: meLou.collectionSize,
+              portfolioValue: meLou.portfolioValue,
+            },
+            followingByMe: false,
+            friendStatus: null,
+            created: [],
+            binder: [],
+          }),
+        )
+      }
+      throw new Error(`Unexpected request: ${request.method} ${request.url.pathname}`)
+    }),
+  )
+}
+
+async function renderOwnProfile(): Promise<void> {
+  await act(async () => {
+    root.render(
+      <StoresProvider stores={stores}>
+        <MemoryRouter initialEntries={[`/u/${encodeURIComponent(meLou.sub)}`]}>
+          <Routes>
+            <Route path="/u/:sub" element={<ProfileView />} />
+          </Routes>
+        </MemoryRouter>
+      </StoresProvider>,
+    )
+    await settle()
+  })
+  expect(host.textContent).toContain(meLou.name)
+}
+
+describe('ProfileView share and clipboard', () => {
+  it('treats AbortError as a silent cancel and does not copy', async () => {
+    installOwnProfileApi()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    stubShare(vi.fn().mockRejectedValue(new DOMException('Share canceled', 'AbortError')))
+    stubClipboardWrite(writeText)
+    await renderOwnProfile()
+    await click(button(profileCopy.actions.share))
+    await advance(0)
+    expect(writeText).not.toHaveBeenCalled()
+    expect(host.querySelector('[data-slot="alert"]')).toBeNull()
+  })
+
+  it('puts copy.errors.copy in actionErr when clipboard write rejects', async () => {
+    installOwnProfileApi()
+    stubShare(undefined)
+    stubClipboardWrite(async () => {
+      throw new Error('denied')
+    })
+    await renderOwnProfile()
+    await click(button(profileCopy.actions.share))
+    await advance(0)
+    expect(host.querySelector('[data-slot="alert"]')?.textContent).toBe(profileCopy.errors.copy)
+  })
+
+  it('falls through to clipboard when share fails with a non-abort error', async () => {
+    installOwnProfileApi()
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    stubShare(vi.fn().mockRejectedValue(new Error('share unavailable')))
+    stubClipboardWrite(writeText)
+    await renderOwnProfile()
+    await click(button(profileCopy.actions.share))
+    await advance(0)
+    expect(writeText).toHaveBeenCalled()
+    expect(host.querySelector('[data-slot="alert"]')).toBeNull()
   })
 })

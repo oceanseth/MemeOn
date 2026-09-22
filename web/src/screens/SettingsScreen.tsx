@@ -7,6 +7,7 @@ import { PageHead } from '@/atoms/page-head'
 import type { SettingsScreenModel } from '../hooks/useSettingsScreen'
 import { ThemeControl } from '@/molecules/theme-control'
 import { Icon } from '@/atoms/icon'
+import { Toggle } from '@/atoms/toggle'
 
 /** Account, Appearance, Connections as a function of the model. Pure props → markup. */
 export function SettingsScreen({
@@ -43,6 +44,17 @@ export function SettingsScreen({
           <div data-slot="settings-appearance" className="mt-3.5">
             <ThemeControl model={appearance.theme} />
             <p className="mt-2.5 mb-0 text-sm text-muted-foreground">{appearance.caption}</p>
+            <Item size="flush" className="mt-4" data-slot="settings-play-videos">
+              <ItemTitle>{appearance.playVideos.label}</ItemTitle>
+              <ItemDescription>{appearance.playVideos.caption}</ItemDescription>
+              <ItemActions>
+                <Toggle
+                  pressed={appearance.playVideos.checked}
+                  onPressedChange={appearance.playVideos.onCheckedChange}
+                  aria-label={appearance.playVideos.label}
+                />
+              </ItemActions>
+            </Item>
           </div>
         </Card>
 

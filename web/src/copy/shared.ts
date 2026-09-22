@@ -16,7 +16,9 @@ export const sharedCopy = {
   accept: 'Accept',
   decline: 'Decline',
   loading: 'Loading…',
-  copied: 'Copied ✓',
+  /** Auth wait and lazy-chunk Suspense share this labelled spinner — do not reuse `loading`. */
+  checkingSession: 'Checking your session…',
+  copied: 'Copied',
   browseMarketplace: 'Browse the marketplace',
   backToBrand: 'Back to MemeOn',
   checkConnection: 'Check your connection and try again.',
@@ -25,5 +27,13 @@ export const sharedCopy = {
     logInButton: 'Log in with Masky',
     redirecting: 'Redirecting…',
     redirectingTo: 'Redirecting to Masky',
+  },
+  /** Auto · Light · Dark — Settings, the public header button, and the account-menu radio. */
+  theme: {
+    group: 'Theme',
+    auto: 'Auto',
+    light: 'Light',
+    dark: 'Dark',
+    cycle: (current: string, next: string) => `Theme: ${current}. Switch to ${next}`,
   },
 } as const

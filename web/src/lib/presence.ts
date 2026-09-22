@@ -1,29 +1,32 @@
 // Online presence over the Firebase Realtime Database. Each signed-in user
 // maintains presence/{uid} while connected; onDisconnect cleans it up server-side.
-import {
-  onDisconnect,
-  onValue,
-  ref,
-  remove,
-  serverTimestamp,
-  set,
-} from 'firebase/database'
+import { onDisconnect, onValue, ref, remove, serverTimestamp, set } from 'firebase/database'
 import { rtdb } from './firebase'
 
 /** Start advertising this uid as online. Returns a stop function. */
 export function startPresence(uid: string): () => void {
   const me = ref(rtdb, `presence/${uid}`)
   const connected = ref(rtdb, '.info/connected')
-  const unsub = onValue(connected, (snap) => {
-    if (!snap.val()) return
-    void onDisconnect(me)
-      .remove()
-      .then(() => set(me, { online: true, at: serverTimestamp() }))
-      .catch(() => {})
-  })
+  const unsub = onValue(
+    connected,
+    (snap) => {
+      if (!snap.val()) return
+      void onDisconnect(me)
+        .remove()
+        .then(() => set(me, { online: true, at: serverTimestamp() }))
+        .catch((err) => {
+          console.error('[memeon presence] advertise failed', err)
+        })
+    },
+    (err) => {
+      console.error('[memeon presence] connected listener failed', err)
+    },
+  )
   return () => {
     unsub()
-    void remove(me).catch(() => {})
+    void remove(me).catch((err) => {
+      console.error('[memeon presence] stop failed', err)
+    })
   }
 }
 
@@ -74,7 +77,8 @@ export function watchPresence(cb: (onlineUids: Set<string>) => void): PresenceWa
             else online.delete(sub)
             emit()
           },
-          () => {
+          (err) => {
+            console.error('[memeon presence] watch failed', err)
             if (online.delete(sub)) emit()
           },
         ),

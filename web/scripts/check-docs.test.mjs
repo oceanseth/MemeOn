@@ -1,11 +1,11 @@
-import assert from "node:assert/strict"
-import { spawnSync } from "node:child_process"
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
-import { tmpdir } from "node:os"
-import { dirname, join, resolve } from "node:path"
-import test from "node:test"
+import assert from 'node:assert/strict'
+import { spawnSync } from 'node:child_process'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join, resolve } from 'node:path'
+import test from 'node:test'
 
-const checker = resolve(import.meta.dirname, "check-docs.mjs")
+const checker = resolve(import.meta.dirname, 'check-docs.mjs')
 
 /**
  * A miniature repo: a root package.json, a web workspace with one token sheet, one atom and one
@@ -13,46 +13,60 @@ const checker = resolve(import.meta.dirname, "check-docs.mjs")
  * against this repo, so a rule that fires here fires there.
  */
 const TREE = {
-  "package.json": JSON.stringify({ name: "memeon", packageManager: "pnpm@11.25.0", scripts: { check: "turbo run check" } }),
-  "web/package.json": JSON.stringify({ name: "web", scripts: { "lint:ds": "oxlint src", "check-docs": "node scripts/check-docs.mjs" } }),
-  "web/src/index.css": [
-    "@theme static {",
-    "  --color-primary: light-dark(oklch(80% 0.131 345), oklch(80% 0.107 235));",
-    "  --radius-lg: 24px;",
-    "}",
-    "@utility focus-ring {",
-    "  outline: 3px solid var(--color-primary);",
-    "}",
-  ].join("\n"),
-  "web/src/atoms/button.tsx": "export function Button() {\n  return <button className=\"bg-primary rounded-lg focus-ring\" />\n}\n",
-  "web/src/atoms/button.stories.tsx": "export const Default = {}\n",
-  "web/scripts/docs-allowlist.json": JSON.stringify({ allow: [] }),
+  'package.json': JSON.stringify({
+    name: 'memeon',
+    packageManager: 'pnpm@11.25.0',
+    scripts: { check: 'turbo run check' },
+  }),
+  'web/package.json': JSON.stringify({
+    name: 'web',
+    scripts: {
+      'lint:ds': 'oxlint src',
+      'check-docs': 'node scripts/check-docs.mjs',
+    },
+  }),
+  'web/src/index.css': [
+    '@theme static {',
+    '  --color-primary: light-dark(oklch(80% 0.131 345), oklch(80% 0.107 235));',
+    '  --radius-lg: 24px;',
+    '}',
+    '@utility focus-ring {',
+    '  outline: 3px solid var(--color-primary);',
+    '}',
+  ].join('\n'),
+  'web/src/atoms/button.tsx':
+    'export function Button() {\n  return <button className="bg-primary rounded-lg focus-ring" />\n}\n',
+  'web/src/atoms/button.stories.tsx': 'export const Default = {}\n',
+  'web/scripts/docs-allowlist.json': JSON.stringify({ allow: [] }),
 }
 
 const withRepo = (documents, run) => {
-  const root = mkdtempSync(join(tmpdir(), "memeon-docs-check-"))
+  const root = mkdtempSync(join(tmpdir(), 'memeon-docs-check-'))
   try {
     for (const [path, contents] of Object.entries({ ...TREE, ...documents })) {
       const file = join(root, path)
       mkdirSync(dirname(file), { recursive: true })
       writeFileSync(file, contents)
     }
-    const result = spawnSync(process.execPath, [checker, root], { encoding: "utf8" })
+    const result = spawnSync(process.execPath, [checker, root], {
+      encoding: 'utf8',
+    })
     return run({ status: result.status, output: result.stdout + result.stderr })
   } finally {
     rmSync(root, { recursive: true, force: true })
   }
 }
 
-test("passes when every name a document writes exists", () => {
+test('passes when every name a document writes exists', () => {
   withRepo(
     {
-      "README.md": [
-        "The button is `web/src/atoms/button.tsx`; it paints `bg-primary` and `rounded-lg` over `focus-ring`.",
-        "Tokens are `--color-primary` and `--radius-lg`. `Button` is the export.",
-        "Gate: `pnpm --filter web run lint:ds`, then `pnpm run check`.",
-      ].join("\n"),
-      "web/src/Anatomy.mdx": "One atom: `Button`, in `atoms/button.tsx`, with a sibling `button.stories.tsx`.\n",
+      'README.md': [
+        'The button is `web/src/atoms/button.tsx`; it paints `bg-primary` and `rounded-lg` over `focus-ring`.',
+        'Tokens are `--color-primary` and `--radius-lg`. `Button` is the export.',
+        'Gate: `pnpm --filter web run lint:ds`, then `pnpm run check`.',
+      ].join('\n'),
+      'web/src/Anatomy.mdx':
+        'One atom: `Button`, in `atoms/button.tsx`, with a sibling `button.stories.tsx`.\n',
     },
     ({ status, output }) => {
       assert.equal(status, 0, output)
@@ -63,23 +77,25 @@ test("passes when every name a document writes exists", () => {
 
 // A case-only difference (`Button.tsx` beside `button.tsx`) is invisible on APFS, so the dead path
 // a test asserts on has to differ by more than case — as the real documents' names do.
-test("fails on a dead path", () => {
-  withRepo({ "README.md": "The notice is `web/src/atoms/notice.tsx`.\n" }, ({ status, output }) => {
+test('fails on a dead path', () => {
+  withRepo({ 'README.md': 'The notice is `web/src/atoms/notice.tsx`.\n' }, ({ status, output }) => {
     assert.equal(status, 1, output)
     assert.match(output, /README\.md:1 {2}path `web\/src\/atoms\/notice\.tsx` does not exist/)
   })
 })
 
-test("fails on a dead markdown link", () => {
-  withRepo({ "README.md": "See [the anatomy](web/src/Anatomy.mdx).\n" }, ({ status, output }) => {
+test('fails on a dead markdown link', () => {
+  withRepo({ 'README.md': 'See [the anatomy](web/src/Anatomy.mdx).\n' }, ({ status, output }) => {
     assert.equal(status, 1, output)
     assert.match(output, /link target `web\/src\/Anatomy\.mdx` does not exist/)
   })
 })
 
-test("fails on an undeclared token and an undeclared class", () => {
+test('fails on an undeclared token and an undeclared class', () => {
   withRepo(
-    { "README.md": "Surfaces are `--color-canvas`, painted with `bg-canvas` and `rounded-card`.\n" },
+    {
+      'README.md': 'Surfaces are `--color-canvas`, painted with `bg-canvas` and `rounded-card`.\n',
+    },
     ({ status, output }) => {
       assert.equal(status, 1, output)
       assert.match(output, /token `--color-canvas` is declared nowhere/)
@@ -89,55 +105,78 @@ test("fails on an undeclared token and an undeclared class", () => {
   )
 })
 
-test("accepts a declared token, a stock class and an @utility", () => {
+test('accepts a declared token, a stock class and an @utility', () => {
   withRepo(
-    { "README.md": "`--color-primary` paints `bg-primary`, `rounded-lg`, `rounded-full`, `focus-ring`.\n" },
+    {
+      'README.md':
+        '`--color-primary` paints `bg-primary`, `rounded-lg`, `rounded-full`, `focus-ring`.\n',
+    },
     ({ status, output }) => assert.equal(status, 0, output),
   )
 })
 
-test("fails on a component no tier file exports", () => {
+test('fails on a component no tier file exports', () => {
   withRepo(
     {
-      "README.md": "The notice is `atoms/Notice`.\n",
-      "web/src/Anatomy.mdx": "Atoms: `Button`, `Notice`.\n",
+      'README.md': 'The notice is `atoms/Notice`.\n',
+      'web/src/Anatomy.mdx': 'Atoms: `Button`, `Notice`.\n',
     },
     ({ status, output }) => {
       assert.equal(status, 1, output)
-      assert.match(output, /component `Notice` is exported by no file in src\/atoms\|molecules\|organisms/)
+      assert.match(
+        output,
+        /component `Notice` is exported by no file in src\/atoms\|molecules\|organisms/,
+      )
       assert.match(output, /`Notice` is declared nowhere in web\/src/)
     },
   )
 })
 
-test("fails on a script the workspace does not have, and on npm in a pnpm repo", () => {
+test('fails on a script the workspace does not have, and on npm in a pnpm repo', () => {
   withRepo(
-    { "README.md": "Run `pnpm --filter web run check-tokens`, or `npm run build`.\n" },
+    {
+      'README.md': 'Run `pnpm --filter web run check-tokens`, or `npm run build`.\n',
+    },
     ({ status, output }) => {
       assert.equal(status, 1, output)
-      assert.match(output, /`pnpm --filter web run check-tokens` is not a script in web\/package\.json/)
+      assert.match(
+        output,
+        /`pnpm --filter web run check-tokens` is not a script in web\/package\.json/,
+      )
       assert.match(output, /`npm run build` — this workspace is pnpm/)
     },
   )
 })
 
-test("a document that is not in the checkout is skipped, not failed", () => {
+test('a document that is not in the checkout is skipped, not failed', () => {
   withRepo({}, ({ status, output }) => {
     assert.equal(status, 0, output)
     assert.match(output, /0 document\(s\) checked/)
   })
 })
 
-test("the allowlist excuses a name, but only in the document it is scoped to", () => {
+test('the allowlist excuses a name, but only in the document it is scoped to', () => {
   const allow = JSON.stringify({
-    allow: [{ name: "web/src/atoms/notice.tsx", file: "docs/HISTORY.md", why: "The atom this archive names was deleted with its last consumer." }],
+    allow: [
+      {
+        name: 'web/src/atoms/notice.tsx',
+        file: 'docs/HISTORY.md',
+        why: 'The atom this archive names was deleted with its last consumer.',
+      },
+    ],
   })
   withRepo(
-    { "web/scripts/docs-allowlist.json": allow, "docs/HISTORY.md": "It was `web/src/atoms/notice.tsx`.\n" },
+    {
+      'web/scripts/docs-allowlist.json': allow,
+      'docs/HISTORY.md': 'It was `web/src/atoms/notice.tsx`.\n',
+    },
     ({ status, output }) => assert.equal(status, 0, output),
   )
   withRepo(
-    { "web/scripts/docs-allowlist.json": allow, "README.md": "It is `web/src/atoms/notice.tsx`.\n" },
+    {
+      'web/scripts/docs-allowlist.json': allow,
+      'README.md': 'It is `web/src/atoms/notice.tsx`.\n',
+    },
     ({ status, output }) => {
       assert.equal(status, 1, output)
       assert.match(output, /README\.md:1 {2}path `web\/src\/atoms\/notice\.tsx` does not exist/)
@@ -149,26 +188,36 @@ test("the allowlist excuses a name, but only in the document it is scoped to", (
 // `.codex/config.toml`, all of which live in `.git/info/exclude` — so a fresh clone has no `docs/`
 // at all. A head that resolves nowhere on the way out to the repo root is not a claim this
 // checkout can check; a head that does resolve is checked all the way down.
-test("a path into a tree this checkout does not carry is not a claim", () => {
-  const doc = "See [the runbook](docs/RUNBOOK.md) and `scripts/bd`.\n"
-  withRepo({ "AGENTS.md": doc }, ({ status, output }) => assert.equal(status, 0, output))
-  withRepo({ "AGENTS.md": doc, "docs/OTHER.md": "x\n", "scripts/other.sh": "x\n" }, ({ status, output }) => {
-    assert.equal(status, 1, output)
-    assert.match(output, /link target `docs\/RUNBOOK\.md` does not exist/)
-    assert.match(output, /path `scripts\/bd` does not exist/)
-  })
+test('a path into a tree this checkout does not carry is not a claim', () => {
+  const doc = 'See [the runbook](docs/RUNBOOK.md) and `scripts/bd`.\n'
+  withRepo({ 'AGENTS.md': doc }, ({ status, output }) => assert.equal(status, 0, output))
+  withRepo(
+    { 'AGENTS.md': doc, 'docs/OTHER.md': 'x\n', 'scripts/other.sh': 'x\n' },
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /link target `docs\/RUNBOOK\.md` does not exist/)
+      assert.match(output, /path `scripts\/bd` does not exist/)
+    },
+  )
 })
 
-test("a relative path resolves from the document outward", () => {
+test('a relative path resolves from the document outward', () => {
   withRepo(
-    { "web/src/Anatomy.mdx": "`atoms/button.tsx` · `scripts/docs-allowlist.json` · `web/src/index.css`\n" },
+    {
+      'web/src/Anatomy.mdx':
+        '`atoms/button.tsx` · `scripts/docs-allowlist.json` · `web/src/index.css`\n',
+    },
     ({ status, output }) => assert.equal(status, 0, output),
   )
 })
 
-test("an allowlist entry without a reason is itself an error", () => {
+test('an allowlist entry without a reason is itself an error', () => {
   withRepo(
-    { "web/scripts/docs-allowlist.json": JSON.stringify({ allow: [{ name: "anything" }] }) },
+    {
+      'web/scripts/docs-allowlist.json': JSON.stringify({
+        allow: [{ name: 'anything' }],
+      }),
+    },
     ({ status, output }) => {
       assert.equal(status, 2, output)
       assert.match(output, /needs a `name` and a `why`/)
@@ -176,9 +225,91 @@ test("an allowlist entry without a reason is itself an error", () => {
   )
 })
 
-test("finishes well inside its budget", () => {
+test('nested docs are scanned, not skipped by a one-level glob', () => {
+  withRepo({ 'docs/reviews/archive.md': 'Then `npm run build:web`.\n' }, ({ status, output }) => {
+    assert.equal(status, 1, output)
+    assert.match(output, /docs\/reviews\/archive\.md/)
+    assert.match(output, /npm run build:web/)
+  })
+})
+
+test('a nested archive accepts a scoped allowlist row', () => {
+  const allow = JSON.stringify({
+    allow: [
+      {
+        name: 'npm run build:web',
+        file: 'docs/reviews/archive.md',
+        why: 'Quoted 2026-09-08 review; pre-pnpm.',
+      },
+    ],
+  })
+  withRepo(
+    {
+      'web/scripts/docs-allowlist.json': allow,
+      'docs/reviews/archive.md': 'Then `npm run build:web`.\n',
+    },
+    ({ status, output }) => assert.equal(status, 0, output),
+  )
+})
+
+test('an allowlist name that does not appear in its file is unused', () => {
+  const allow = JSON.stringify({
+    allow: [
+      {
+        name: 'npm run vanished',
+        file: 'README.md',
+        why: 'stale exception that no document still writes',
+      },
+    ],
+  })
+  withRepo(
+    {
+      'web/scripts/docs-allowlist.json': allow,
+      'README.md': 'The button is `web/src/atoms/button.tsx`.\n',
+    },
+    ({ status, output }) => {
+      assert.equal(status, 2, output)
+      assert.match(output, /unused allowlist/)
+      assert.match(output, /npm run vanished/)
+    },
+  )
+})
+
+test('Anatomy check-copy paragraph names the ratchet engines and JSX text, not JsxText', () => {
+  const anatomy = readFileSync(resolve(import.meta.dirname, '../src/Anatomy.mdx'), 'utf8')
+  const start = anatomy.indexOf('`check-copy` is a ratchet:')
+  assert.ok(start >= 0, 'Anatomy.mdx is missing the check-copy ratchet paragraph')
+  const rest = anatomy.slice(start)
+  const end = rest.indexOf('`pnpm run storybook`')
+  assert.ok(end >= 0, 'check-copy paragraph must end before the storybook sentence')
+  const paragraph = rest.slice(0, end)
+  for (const engine of [
+    '`hooks/`',
+    '`screens/`',
+    '`views/`',
+    '`molecules/`',
+    '`organisms/`',
+    '`lib/*Model.ts`',
+    '`lib/createMemeModel/`',
+  ]) {
+    assert.ok(paragraph.includes(engine), `check-copy paragraph must name ${engine}`)
+  }
+  const flattened = paragraph.replace(/\s+/g, ' ')
+  assert.match(flattened, /quoted literals/)
+  assert.match(flattened, /JSX text/)
+  assert.ok(paragraph.includes('`copy/`'), 'copy/ is uncounted')
+  assert.ok(paragraph.includes('`atoms/`'), 'atoms/ is not walked')
+  assert.ok(paragraph.includes('`stores/`'), 'stores/ is not walked')
+  assert.doesNotMatch(paragraph, /JsxText/)
+  assert.doesNotMatch(anatomy, /`JsxText`/)
+})
+
+test('finishes well inside its budget', () => {
   const started = Date.now()
-  const result = spawnSync(process.execPath, [checker], { encoding: "utf8" })
+  const result = spawnSync(process.execPath, [checker], { encoding: 'utf8' })
   assert.equal(result.status, 0, result.stdout + result.stderr)
-  assert.ok(Date.now() - started < 2000, `check-docs took ${Date.now() - started}ms on the real tree`)
+  assert.ok(
+    Date.now() - started < 2000,
+    `check-docs took ${Date.now() - started}ms on the real tree`,
+  )
 })

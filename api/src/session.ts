@@ -28,7 +28,9 @@ export async function issueSession(user: SessionUser): Promise<string> {
 export async function verifySession(authHeader: string | undefined): Promise<SessionUser | null> {
   if (!authHeader?.startsWith('Bearer ')) return null
   try {
-    const { payload } = await jwtVerify(authHeader.slice(7), await key(), { issuer: ISSUER })
+    const { payload } = await jwtVerify(authHeader.slice(7), await key(), {
+      issuer: ISSUER,
+    })
     if (!payload.sub) return null
     return {
       sub: payload.sub,

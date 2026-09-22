@@ -17,6 +17,8 @@ export const settingsCopy = {
   appearance: {
     heading: 'Appearance',
     caption: 'Auto follows your device.',
+    playVideos: 'Play videos',
+    playVideosCaption: 'Video memes play when they are on screen.',
   },
   connections: {
     heading: 'Connections',

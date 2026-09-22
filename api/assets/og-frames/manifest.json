@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "units": "px",
+  "canvas": {
+    "width": 960,
+    "height": 1200,
+    "cssWidth": 480,
+    "cssHeight": 600,
+    "deviceScaleFactor": 2
+  },
+  "frame": {
+    "x": 60,
+    "y": 75,
+    "width": 840,
+    "height": 1050
+  },
+  "backing": {
+    "x": 60,
+    "y": 75,
+    "width": 816,
+    "height": 1050,
+    "radius": 48
+  },
+  "aperture": {
+    "x": 98,
+    "y": 113,
+    "width": 740,
+    "height": 974,
+    "radius": 28
+  },
+  "sourceSafeRect": {
+    "x": 114,
+    "y": 129,
+    "width": 708,
+    "height": 942
+  },
+  "tiers": {
+    "paper": "paper.png",
+    "silver": "silver.png",
+    "holo": "holo.png",
+    "chrome": "chrome.png",
+    "gold": "gold.png",
+    "prismatic": "prismatic.png",
+    "shiny": "shiny.png"
+  },
+  "files": {
+    "paper": {
+      "bytes": 703557,
+      "sha256": "357908393d567d38a414284d67a79a7386f9aa99ce8d919cf1818093cc90bfc2"
+    },
+    "silver": {
+      "bytes": 504943,
+      "sha256": "0ed22982650f595ae76ede1b864dc76388189941a746ff3b9badf8407729fd86"
+    },
+    "holo": {
+      "bytes": 493227,
+      "sha256": "e6ab13335af9d9784bd16b561acb1cbf706e1915d305277eed5d0e7b32309a63"
+    },
+    "chrome": {
+      "bytes": 478098,
+      "sha256": "a89122a3659b1016bfd8bb41100f8b9669a30ec95d619f1dd5f335d5fc883159"
+    },
+    "gold": {
+      "bytes": 611760,
+      "sha256": "926010f4d6d3904e2fd976a7ea561bd06416980ef9d35c3961f0931d1fd21d47"
+    },
+    "prismatic": {
+      "bytes": 424384,
+      "sha256": "40bf8281df205415ee8cb651a53126d7d3e04d5dcde773a8b1ddb8fa059e7a08"
+    },
+    "shiny": {
+      "bytes": 547248,
+      "sha256": "e8052eef6f7daa130651ca19cc054213dc211f262c2052ae603db3c349fef025"
+    }
+  },
+  "render": {
+    "theme": "dark",
+    "reducedMotion": true
+  }
+}

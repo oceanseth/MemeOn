@@ -10,11 +10,19 @@ describe('cn', () => {
     expect(cn('p-2 text-foreground', 'p-4')).toBe('text-foreground p-4')
   })
 
-  /* the one @theme namespace cn cannot infer from the CSS; without the extend block in cn.ts
-     `max-w-card-narrow` keeps its partner and source-scan order picks the winner */
-  it('merges the one surviving container against the stock widths', () => {
+  /* `--container-*` cuts registered in cn.ts; later wins against stock widths and each other */
+  it('merges the container cuts against the stock widths and each other', () => {
     expect(cn('max-w-full', 'max-w-card-narrow')).toBe('max-w-card-narrow')
     expect(cn('max-w-card-narrow', 'max-w-full')).toBe('max-w-full')
+    expect(cn('max-w-full', 'max-w-prose')).toBe('max-w-prose')
+    expect(cn('max-w-prose', 'max-w-full')).toBe('max-w-full')
+    expect(cn('max-w-full', 'max-w-notice')).toBe('max-w-notice')
+    expect(cn('max-w-notice', 'max-w-full')).toBe('max-w-full')
+    expect(cn('max-w-full', 'max-w-aside')).toBe('max-w-aside')
+    expect(cn('max-w-aside', 'max-w-full')).toBe('max-w-full')
+    expect(cn('max-w-prose', 'max-w-notice')).toBe('max-w-notice')
+    expect(cn('max-w-notice', 'max-w-aside')).toBe('max-w-aside')
+    expect(cn('max-w-aside', 'max-w-prose')).toBe('max-w-prose')
   })
 
   /* lengths are grid steps now, so cn's own validators own every one of them; these are the
@@ -52,7 +60,9 @@ describe('cn', () => {
     expect(cn('text-2xl', 'md:text-4xl')).toBe('text-2xl md:text-4xl')
     expect(cn('text-sm', 'text-muted-foreground')).toBe('text-sm text-muted-foreground')
     expect(cn('text-xl leading-none', 'text-2xl leading-none')).toBe('text-2xl leading-none')
-    expect(cn('text-base leading-none', 'text-primary-foreground')).toBe('text-base leading-none text-primary-foreground')
+    expect(cn('text-base leading-none', 'text-primary-foreground')).toBe(
+      'text-base leading-none text-primary-foreground',
+    )
   })
 
   it('merges the stock trackings against each other', () => {
@@ -73,9 +83,17 @@ describe('cn', () => {
 
   /* the materials are one axis — one fill + relief per element — so the later one wins by merge
      rather than by where it happens to sort in the built sheet */
+  it('keeps text-never-zoom beside type steps and colours', () => {
+    expect(cn('text-sm', 'text-never-zoom')).toBe('text-sm text-never-zoom')
+    expect(cn('text-never-zoom', 'text-base')).toBe('text-never-zoom text-base')
+    expect(cn('text-foreground', 'text-never-zoom')).toBe('text-foreground text-never-zoom')
+  })
+
   it('merges the materials against each other and passes the rest through', () => {
     expect(cn('material-pressed', 'material-raised')).toBe('material-raised')
-    expect(cn('material-card', 'aria-pressed:material-pressed')).toBe('material-card aria-pressed:material-pressed')
+    expect(cn('material-card', 'aria-pressed:material-pressed')).toBe(
+      'material-card aria-pressed:material-pressed',
+    )
     expect(cn('material-card', 'focus-ring', 'bg-card')).toBe('material-card focus-ring bg-card')
     /* `glass` is a plate, not a material: `material-raised glass` is a real pair (hero-video) */
     expect(cn('material-raised', 'glass')).toBe('material-raised glass')

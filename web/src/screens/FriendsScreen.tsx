@@ -28,10 +28,7 @@ const ONLINE_STRIP = cn(
 )
 
 /** Fixed title width so avatar lanes align across strips. */
-const ONLINE_TITLE = cn(
-  'w-35 shrink-0 text-lg font-semibold text-foreground',
-  'max-sm:w-full',
-)
+const ONLINE_TITLE = cn('w-35 shrink-0 text-lg font-semibold text-foreground', 'max-sm:w-full')
 
 /** The presence dot: 10px, the success ink, never the only carrier of the fact (an sr-only says it). */
 const DOT = 'inline-block size-2.5 shrink-0 rounded-full bg-success-foreground'
@@ -104,10 +101,21 @@ function PersonRow({
 
 /** Friends list as a function of its model. Every engine state is one set of args. */
 export function FriendsScreen({
+  pageTitle,
   hits,
   msg,
   err,
   inviteLabel,
+  inviteCopied,
+  searchResultsHeading,
+  addFriendLabel,
+  onlineHeading,
+  circleHeading,
+  incomingHeading,
+  outgoingHeading,
+  acceptLabel,
+  declineLabel,
+  cancelLabel,
   onlineFriends,
   onlineCountLabel,
   incoming,
@@ -120,6 +128,7 @@ export function FriendsScreen({
   showSearching,
   showHits,
   showNoHits,
+  showSearchFailed,
   showIncoming,
   showOutgoing,
   showLoading,
@@ -129,6 +138,7 @@ export function FriendsScreen({
   showCircleHint,
   searchingLabel,
   noHitsMessage,
+  searchFailedMessage,
   loadingLabel,
   errorTitle,
   errorMessage,
@@ -145,45 +155,54 @@ export function FriendsScreen({
 }: FriendsScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
-      <PageHead level="h1" title="Friends">
+      <PageHead level="h1" title={pageTitle}>
         <Toolbar className="w-full lg:justify-start!">
           <span className={SEARCH_LANE}>
             <InputGroup>
               <InputGroupAddon>
                 <Icon name="magnifying-glass" size={20} />
               </InputGroupAddon>
-              <InputGroupInput
-                type="search"
-                placeholder="Find people by name…"
-                {...searchInputProps}
-              />
+              <InputGroupInput type="search" {...searchInputProps} />
             </InputGroup>
           </span>
           <Button variant="primary" className="max-sm:w-full" {...inviteButtonProps}>
             <span aria-hidden="true">
-              <Icon name="mail" size={16} />
+              <Icon name={inviteCopied ? 'circle-check' : 'mail'} size={16} />
             </span>{' '}
             {inviteLabel}
           </Button>
         </Toolbar>
       </PageHead>
 
-      {showMsg && <Alert variant="success" className="mt-3">{msg}</Alert>}
-      {showErr && <Alert variant="error" className="mt-3">{err}</Alert>}
+      {showMsg && (
+        <Alert variant="success" className="mt-3">
+          {msg}
+        </Alert>
+      )}
+      {showErr && !showError && (
+        <Alert variant="error" className="mt-3">
+          {err}
+        </Alert>
+      )}
 
       {showSearchPanel && (
         <Card className="mb-5">
-          <CardTitle render={<h2 />}>Search results</CardTitle>
+          <CardTitle render={<h2 />}>{searchResultsHeading}</CardTitle>
           <div role="status">
-            {showSearching && <p className="m-0 text-base text-muted-foreground">{searchingLabel}</p>}
+            {showSearching && (
+              <p className="m-0 text-base text-muted-foreground">{searchingLabel}</p>
+            )}
             {showNoHits && <p className="m-0 text-base text-muted-foreground">{noHitsMessage}</p>}
+            {showSearchFailed && (
+              <p className="m-0 text-base text-muted-foreground">{searchFailedMessage}</p>
+            )}
           </div>
           {showHits && (
             <div className={cn(SECTION, 'mt-3.5')}>
               {hits.map((u) => (
                 <PersonRow key={u.sub} {...u}>
                   <Button variant="primary" className={ROW_PILL} {...u.requestButtonProps}>
-                    Add friend
+                    {addFriendLabel}
                   </Button>
                 </PersonRow>
               ))}
@@ -192,9 +211,9 @@ export function FriendsScreen({
         </Card>
       )}
 
-      {showOnline ? (
+      {showOnline && !showError ? (
         <div className={ONLINE_STRIP} data-slot="online-now">
-          <span className={ONLINE_TITLE}>Online now</span>
+          <span className={ONLINE_TITLE}>{onlineHeading}</span>
           <div className="flex min-w-0 flex-wrap items-center gap-3">
             {onlineFriends.map((f) => (
               <Link
@@ -218,7 +237,10 @@ export function FriendsScreen({
       ) : null}
 
       {showLoading ? (
-        <div role="status" className="flex items-center justify-center gap-2.5 px-5 py-15 text-base text-muted-foreground">
+        <div
+          role="status"
+          className="flex items-center justify-center gap-2.5 px-5 py-15 text-base text-muted-foreground"
+        >
           <Spinner />
           {loadingLabel}
         </div>
@@ -242,16 +264,23 @@ export function FriendsScreen({
           </EmptyHeader>
           <EmptyContent>
             <Button variant="primary" {...emptyActionProps}>
+              {inviteCopied ? (
+                <>
+                  <span aria-hidden="true">
+                    <Icon name="circle-check" size={16} />
+                  </span>{' '}
+                </>
+              ) : null}
               {inviteLabel}
             </Button>
           </EmptyContent>
         </Empty>
       ) : null}
 
-      {showCircle && (
+      {showCircle && !showError && (
         <>
           <Heading as="h2" className="mt-8 mb-3">
-            Your circle
+            {circleHeading}
           </Heading>
           <div className={SECTION}>
             {accepted.map((f) => (
@@ -278,19 +307,19 @@ export function FriendsScreen({
         </>
       )}
 
-      {showIncoming && (
+      {showIncoming && !showError && (
         <>
           <Heading as="h2" className="mt-8 mb-3">
-            Requests for you
+            {incomingHeading}
           </Heading>
           <div className={SECTION}>
             {incoming.map((f) => (
               <PersonRow key={f.sub} {...f}>
                 <Button variant="primary" className={ROW_PILL} {...f.acceptButtonProps}>
-                  Accept
+                  {acceptLabel}
                 </Button>
                 <Button variant="link" size="sm" className="shrink-0" {...f.declineButtonProps}>
-                  Decline
+                  {declineLabel}
                 </Button>
               </PersonRow>
             ))}
@@ -298,17 +327,17 @@ export function FriendsScreen({
         </>
       )}
 
-      {showOutgoing && (
+      {showOutgoing && !showError && (
         <>
           <Heading as="h2" className="mt-8 mb-3">
-            Sent requests
+            {outgoingHeading}
           </Heading>
           <div className={SECTION}>
             {outgoing.map((f) => (
               <PersonRow key={f.sub} {...f}>
                 <span className={cn(PENDING_PILL, 'max-sm:flex-1')}>{f.pendingLabel}</span>
                 <Button variant="link" size="sm" className="shrink-0" {...f.cancelButtonProps}>
-                  Cancel
+                  {cancelLabel}
                 </Button>
               </PersonRow>
             ))}
@@ -316,7 +345,9 @@ export function FriendsScreen({
         </>
       )}
 
-      {showCircleHint ? <p className="mt-6 text-base text-muted-foreground">{circleHintMessage}</p> : null}
+      {showCircleHint && !showError ? (
+        <p className="mt-6 text-base text-muted-foreground">{circleHintMessage}</p>
+      ) : null}
 
       <GiftDialog model={giftDialog} />
       <ConfirmDialog model={removeDialog} />

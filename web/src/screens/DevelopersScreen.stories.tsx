@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, within } from 'storybook/test'
-import { Alert } from '@/atoms/alert'
+import { developersCopy as copy } from '../copy/developers'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
 import type { DeveloperKeyRowModel, DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { DevelopersScreen } from './DevelopersScreen'
@@ -18,11 +18,31 @@ const handlers = {
 
 /** story-local so the fixtures match the shipped `mk_` key format and the documented 5-key cap */
 const fixtureKeys = [
-  { prefix: 'mk_3f9a2c', label: 'my-trading-bot', createdAt: '2026-09-08T00:00:00.000Z' },
-  { prefix: 'mk_7b11de', label: 'my key', createdAt: '2026-08-21T00:00:00.000Z' },
-  { prefix: 'mk_c40e58', label: 'a-very-long-integration-label-that-has-to-wrap', createdAt: '2026-07-02T00:00:00.000Z' },
-  { prefix: 'mk_91ab07', label: 'discord-bot', createdAt: '2026-06-14T00:00:00.000Z' },
-  { prefix: 'mk_dd2f60', label: 'laptop scratch', createdAt: '2026-05-30T00:00:00.000Z' },
+  {
+    prefix: 'mk_3f9a2c',
+    label: 'my-trading-bot',
+    createdAt: '2026-09-08T00:00:00.000Z',
+  },
+  {
+    prefix: 'mk_7b11de',
+    label: 'my key',
+    createdAt: '2026-08-21T00:00:00.000Z',
+  },
+  {
+    prefix: 'mk_c40e58',
+    label: 'a-very-long-integration-label-that-has-to-wrap',
+    createdAt: '2026-07-02T00:00:00.000Z',
+  },
+  {
+    prefix: 'mk_91ab07',
+    label: 'discord-bot',
+    createdAt: '2026-06-14T00:00:00.000Z',
+  },
+  {
+    prefix: 'mk_dd2f60',
+    label: 'laptop scratch',
+    createdAt: '2026-05-30T00:00:00.000Z',
+  },
 ]
 
 const toRow = (key: (typeof fixtureKeys)[number]): DeveloperKeyRowModel => ({
@@ -34,9 +54,10 @@ const toRow = (key: (typeof fixtureKeys)[number]): DeveloperKeyRowModel => ({
     month: 'short',
     year: 'numeric',
   })}`,
+  revokeLabel: copy.row.revokeLabel,
   revokeButtonProps: {
     onClick: handlers.onRevoke,
-    'aria-label': `Revoke API key ${key.label}`,
+    'aria-label': copy.row.revoke(key.label),
   },
 })
 
@@ -45,24 +66,25 @@ const fullKeyRows = fixtureKeys.map(toRow)
 
 const confirmDialog = buildConfirmDialogModel({
   open: false,
-  title: 'Revoke this API key?',
-  message: 'This key will stop working immediately.',
+  title: copy.revokeDialog.title,
+  message: '',
   danger: true,
-  confirmLabel: 'Revoke it',
+  confirmLabel: copy.revokeDialog.confirm,
   onCancel: handlers.onRevokeCancel,
   onConfirm: handlers.onRevokeConfirm,
 })
 
-const revokeMessage = (extra?: string) => (
-  <>
-    <code>mk_3f9a2c…</code>
-    {' (my-trading-bot) will stop working immediately. Anything using it breaks.'}
-    {extra && <Alert variant="error" className="mt-3">{extra}</Alert>}
-  </>
-)
+const revokeKey = fixtureKeys[0]!
+const revokeInlines = [
+  { kind: 'code' as const, text: copy.revokeDialog.prefix(revokeKey.prefix) },
+  copy.revokeDialog.body(revokeKey.label),
+]
 
 const empty: DevelopersScreenModel = {
   phase: 'loading',
+  pageTitle: copy.pageTitle,
+  skillButtonLabel: copy.skillButton,
+  explainer: copy.explainer,
   keys: null,
   freshKey: null,
   err: null,
@@ -90,7 +112,8 @@ const empty: DevelopersScreenModel = {
     value: '',
     onChange: handlers.onLabelChange,
     maxLength: 60,
-    'aria-label': 'API key label',
+    'aria-label': copy.labelInput,
+    placeholder: copy.labelPlaceholder,
   },
   createFormProps: { onSubmit: handlers.onCreateSubmit },
   createButtonProps: { disabled: false, 'aria-busy': false },
@@ -99,6 +122,7 @@ const empty: DevelopersScreenModel = {
     disabled: true,
     'aria-busy': false,
   },
+  retryLabel: copy.retry,
   retryButtonProps: { onClick: handlers.onRetry },
   freshKeyProps: { tabIndex: 0 },
   freshKeyRegionProps: { role: 'status', 'aria-live': 'polite' },
@@ -121,7 +145,12 @@ const ready = {
 const phone = {
   parameters: {
     viewport: {
-      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
+      options: {
+        phone390: {
+          name: 'Phone 390',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
     },
   },
   globals: { viewport: { value: 'phone390', isRotated: false } },
@@ -131,7 +160,13 @@ const meta = {
   title: 'Screens/DevelopersScreen',
   component: DevelopersScreen,
   args: empty,
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 } satisfies Meta<typeof DevelopersScreen>
 
 export default meta
@@ -154,13 +189,15 @@ export const Ready: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     // one control, one tab stop: the skill.md action is a link, never a link wrapping a button
-    await expect(canvas.getByRole('link', { name: 'API skill.md' })).toBeInTheDocument()
-    await expect(canvas.queryByRole('button', { name: 'API skill.md' })).toBeNull()
+    await expect(canvas.getByRole('link', { name: copy.skillButton })).toBeInTheDocument()
+    await expect(canvas.queryByRole('button', { name: copy.skillButton })).toBeNull()
     // the route's title is the page's one h1 (the wave-3 screens took the same step); sections are h3
-    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent('Developers')
+    await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(copy.pageTitle)
     await expect(canvas.getByRole('button', { name: 'Create key' })).toBeEnabled()
     // every key is an Item row, and the two announce wrappers are LiveRegions
-    await expect(canvasElement.querySelectorAll('[data-slot="api-key-row"]').length).toBeGreaterThan(0)
+    await expect(
+      canvasElement.querySelectorAll('[data-slot="api-key-row"]').length,
+    ).toBeGreaterThan(0)
     await expect(canvasElement.querySelector('[data-slot="api-key-row"]')?.tagName).toBe('LI')
     await expect(canvasElement.querySelectorAll('[data-slot="live-region"]')).toHaveLength(2)
   },
@@ -173,7 +210,9 @@ export const ReadyPhone: Story = {
   play: async ({ canvasElement }) => {
     const root = canvasElement.ownerDocument.scrollingElement as HTMLElement
     await expect(root.scrollWidth).toBe(root.clientWidth)
-    const revoke = within(canvasElement).getByRole('button', { name: 'Revoke API key my-trading-bot' })
+    const revoke = within(canvasElement).getByRole('button', {
+      name: 'Revoke API key my-trading-bot',
+    })
     await expect(revoke.getBoundingClientRect().right).toBeLessThanOrEqual(root.clientWidth)
   },
 }
@@ -187,9 +226,12 @@ export const LoadError: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('alert')).toHaveTextContent('your keys are still active')
-    await expect(canvasElement.querySelector('[data-slot="empty"]')).toHaveAttribute('data-variant', 'error')
+    await expect(canvasElement.querySelector('[data-slot="empty"]')).toHaveAttribute(
+      'data-variant',
+      'error',
+    )
     await expect(canvas.queryByText(args.emptyCopy)).toBeNull()
-    await userEvent.click(canvas.getByRole('button', { name: 'Try again' }))
+    await userEvent.click(canvas.getByRole('button', { name: copy.retry }))
     await expect(handlers.onRetry).toHaveBeenCalled()
   },
 }
@@ -201,7 +243,9 @@ export const Creating: Story = {
     createButtonProps: { disabled: true, 'aria-busy': true },
   },
   play: async ({ canvasElement }) => {
-    const button = within(canvasElement).getByRole('button', { name: 'Creating…' })
+    const button = within(canvasElement).getByRole('button', {
+      name: 'Creating…',
+    })
     await expect(button).toBeDisabled()
     await expect(button).toHaveAttribute('aria-busy', 'true')
   },
@@ -220,22 +264,28 @@ export const AtQuota: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: 'Create key' })).toBeDisabled()
-    await expect(canvas.getByText('Key limit reached — revoke one to make room.')).toBeInTheDocument()
+    await expect(
+      canvas.getByText('Key limit reached — revoke one to make room.'),
+    ).toBeInTheDocument()
     // quota is a caption beside the heading, not a badge inside it
     await expect(canvas.getByRole('heading', { name: 'Your keys' })).toBeInTheDocument()
     await expect(canvas.getByText('5 of 5 keys')).toBeInTheDocument()
   },
 }
 
+const freshKeyArgs = {
+  ...ready,
+  freshKey: 'mk_3f9a2c8b1d7e4a05c6f9b2d3e4a5b6c7',
+  copyButtonProps: { ...empty.copyButtonProps, disabled: false },
+  showFreshKey: true,
+}
+
 export const FreshKey: Story = {
-  args: {
-    ...ready,
-    freshKey: 'mk_3f9a2c8b1d7e4a05c6f9b2d3e4a5b6c7',
-    copyButtonProps: { ...empty.copyButtonProps, disabled: false },
-    showFreshKey: true,
-  },
+  args: freshKeyArgs,
   play: async ({ canvasElement, args }) => {
-    const button = within(canvasElement).getByRole('button', { name: 'Copy key' })
+    const button = within(canvasElement).getByRole('button', {
+      name: 'Copy key',
+    })
     await expect(button).toBeEnabled()
     await userEvent.click(button)
     await expect(args.copyButtonProps.onClick).toHaveBeenCalledOnce()
@@ -305,16 +355,23 @@ export const Revoking: Story = {
     ...ready,
     confirmDialog: buildConfirmDialogModel({
       open: true,
-      title: 'Revoke this API key?',
-      message: revokeMessage(),
+      title: copy.revokeDialog.title,
+      message: revokeInlines,
       danger: true,
-      confirmLabel: 'Revoke it',
+      confirmLabel: copy.revokeDialog.confirm,
       onCancel: handlers.onRevokeCancel,
       onConfirm: handlers.onRevokeConfirm,
     }),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    const dialog = canvas.getByRole('alertdialog', {
+      name: copy.revokeDialog.title,
+    })
+    await expect(dialog.querySelector('code')).toHaveTextContent(
+      copy.revokeDialog.prefix(revokeKey.prefix),
+    )
+    await expect(dialog).toHaveTextContent(copy.revokeDialog.body(revokeKey.label).trim())
     await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }))
     await expect(handlers.onRevokeCancel).toHaveBeenCalled()
   },
@@ -327,17 +384,20 @@ export const RevokingBusy: Story = {
     confirmDialog: buildConfirmDialogModel({
       open: true,
       busy: true,
-      title: 'Revoke this API key?',
-      message: revokeMessage(),
+      title: copy.revokeDialog.title,
+      message: revokeInlines,
       danger: true,
-      confirmLabel: 'Revoke it',
+      confirmLabel: copy.revokeDialog.confirm,
       onCancel: handlers.onRevokeCancel,
       onConfirm: handlers.onRevokeConfirm,
     }),
   },
   play: async ({ canvasElement }) => {
     const dialog = within(canvasElement).getByRole('alertdialog')
-    await expect(within(dialog).getByRole('button', { name: /Working/ })).toHaveAttribute('aria-busy', 'true')
+    await expect(within(dialog).getByRole('button', { name: /Working/ })).toHaveAttribute(
+      'aria-busy',
+      'true',
+    )
   },
 }
 
@@ -347,22 +407,34 @@ export const RevokeFailed: Story = {
     ...ready,
     confirmDialog: buildConfirmDialogModel({
       open: true,
-      title: 'Revoke this API key?',
-      message: revokeMessage('Couldn’t revoke my-trading-bot — try again.'),
+      title: copy.revokeDialog.title,
+      message: revokeInlines,
+      error: copy.errors.revoke(revokeKey.label),
       danger: true,
-      confirmLabel: 'Revoke it',
+      confirmLabel: copy.revokeDialog.confirm,
       onCancel: handlers.onRevokeCancel,
       onConfirm: handlers.onRevokeConfirm,
     }),
   },
   play: async ({ canvasElement }) => {
     const dialog = within(canvasElement).getByRole('alertdialog')
-    await expect(within(dialog).getByRole('alert')).toHaveTextContent('Couldn’t revoke my-trading-bot')
-    await expect(within(dialog).getByRole('button', { name: 'Revoke it' })).toBeInTheDocument()
+    await expect(dialog.querySelector('code')).toHaveTextContent(
+      copy.revokeDialog.prefix(revokeKey.prefix),
+    )
+    await expect(within(dialog).getByRole('alert')).toHaveTextContent(
+      copy.errors.revoke(revokeKey.label),
+    )
+    await expect(
+      within(dialog).getByRole('button', { name: copy.revokeDialog.confirm }),
+    ).toBeInTheDocument()
   },
 }
 
-export const Dark: Story = { ...Ready, name: 'Ready dark', globals: { theme: 'dark' } }
+export const Dark: Story = {
+  ...Ready,
+  name: 'Ready dark',
+  globals: { theme: 'dark' },
+}
 
 /** Alias of `ReadyPhone` under the name every other family's phone twin carries. */
 export const Phone390: Story = { ...ReadyPhone, name: 'Ready phone 390' }
@@ -375,8 +447,7 @@ export const DarkPhone390: Story = {
 
 /** The one-time secret on the phone, dark: the key wraps, the copy row stays inside the card. */
 export const FreshKeyPhone390: Story = {
-  ...FreshKey,
+  args: freshKeyArgs,
   name: 'Fresh key phone 390',
   ...phone,
-  play: undefined,
 }

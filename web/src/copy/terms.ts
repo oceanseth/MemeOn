@@ -49,7 +49,10 @@ export const termsCopy = {
     signInLead: 'Sign-in and AI generation are provided by Masky under',
     maskyTerms: { text: 'their terms', href: 'https://masky.ai' },
     signInTail: '; generation spends your Masky credits. The Discord integration is subject to',
-    discordTerms: { text: 'Discord’s terms', href: 'https://discord.com/terms' },
+    discordTerms: {
+      text: 'Discord’s terms',
+      href: 'https://discord.com/terms',
+    },
     giphyLead: '. Some archive media is served by',
     giphy: { text: 'GIPHY', href: 'https://giphy.com' },
     giphyTail: 'with attribution.',

@@ -3,13 +3,7 @@ import type { AppStores } from './createStores'
 
 const StoresContext = createContext<AppStores | null>(null)
 
-export function StoresProvider({
-  stores,
-  children,
-}: {
-  stores: AppStores
-  children: ReactNode
-}) {
+export function StoresProvider({ stores, children }: { stores: AppStores; children: ReactNode }) {
   return <StoresContext.Provider value={stores}>{children}</StoresContext.Provider>
 }
 

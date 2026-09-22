@@ -1,9 +1,12 @@
 import { braincells } from '../lib/braincells'
 import { plural, pluralWord } from '../lib/plural'
+import { appShellCopy } from './appShell'
 import { sharedCopy } from './shared'
 
 /** Every string the Leaderboard (Top Brains) screen shows. Keys name the role, not the content. */
 export const leaderboardCopy = {
+  /** Same spelling as the shell nav, so the H1 and the tab title cannot drift. */
+  pageTitle: appShellCopy.nav.leaderboard,
   subtitle: 'Collect, trade, climb.',
   podium: {
     title: 'Podium',
@@ -16,7 +19,8 @@ export const leaderboardCopy = {
   row: {
     /** gold, silver, bronze — positions past the podium get no medal */
     /** The whole row as one utterance, so the emoji columns can stay decorative. */
-    label: (rank: number, name: string, count: number) => `Rank ${rank}, ${name}, ${plural(count, 'braincell')}`,
+    label: (rank: number, name: string, count: number) =>
+      `Rank ${rank}, ${name}, ${plural(count, 'braincell')}`,
     /** the signed-in player's own row leads with "You", the rest of the label lower-cased */
     youLabel: (label: string) => `You, ${label.charAt(0).toLowerCase()}${label.slice(1)}`,
     collection: (size: number) => `${size} ${pluralWord(size, 'meme')}`,
@@ -28,7 +32,10 @@ export const leaderboardCopy = {
   showMore: 'Show more brains',
   loading: 'Loading Top Brains…',
   empty: "Nobody's earned a braincell yet. The throne is empty.",
-  loadError: "Couldn't load Top Brains.",
+  loadError: {
+    title: "Couldn't load Top Brains.",
+    body: sharedCopy.checkConnection,
+  },
   retry: sharedCopy.tryAgain,
   listSummary: (count: number) => `${count} ${pluralWord(count, 'brain')} on the board`,
 } as const

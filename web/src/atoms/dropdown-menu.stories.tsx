@@ -31,7 +31,10 @@ const onLogout = fn()
 const onSettings = fn()
 
 /** The phone header's account menu, with every part the registry ships. */
-function Demo({ defaultOpen, ...content }: DropdownMenuContentProps & { defaultOpen?: boolean | undefined }) {
+function Demo({
+  defaultOpen,
+  ...content
+}: DropdownMenuContentProps & { defaultOpen?: boolean | undefined }) {
   return (
     <div className="flex min-h-96 items-start justify-end p-6">
       <DropdownMenu modal={false} defaultOpen={defaultOpen}>
@@ -103,10 +106,22 @@ export const Open: Story = {
     await expect(profile).toHaveAttribute('href', '/u/lou')
     await expect(profile).toHaveAttribute('data-slot', 'dropdown-menu-item')
     await expect(profile.offsetHeight).toBeGreaterThanOrEqual(44)
-    await expect(within(menu).getByRole('menuitem', { name: 'Top Brains' })).toHaveAttribute('href', '/leaderboard')
-    await expect(within(menu).getByRole('menuitemcheckbox', { name: 'Show read alerts' })).toHaveAttribute('aria-checked', 'true')
-    await expect(within(menu).getByRole('menuitemradio', { name: 'Light' })).toHaveAttribute('aria-checked', 'true')
-    await expect(within(menu).getByRole('menuitem', { name: 'More' })).toHaveAttribute('aria-haspopup', 'menu')
+    await expect(within(menu).getByRole('menuitem', { name: 'Top Brains' })).toHaveAttribute(
+      'href',
+      '/leaderboard',
+    )
+    const checked = within(menu).getByRole('menuitemcheckbox', {
+      name: 'Show read alerts',
+    })
+    await expect(checked).toHaveAttribute('aria-checked', 'true')
+    await expect(checked.querySelector('svg')).not.toBeNull()
+    await expect(within(menu).getByRole('menuitemradio', { name: 'Light' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    )
+    const more = within(menu).getByRole('menuitem', { name: 'More' })
+    await expect(more).toHaveAttribute('aria-haspopup', 'menu')
+    await expect(more.querySelector('svg')).not.toBeNull()
     const logout = within(menu).getByRole('menuitem', { name: 'Log out' })
     await expect(logout).toHaveAttribute('data-variant', 'destructive')
     await userEvent.click(logout)
@@ -141,9 +156,17 @@ export const KeyboardNavigation: Story = {
     // Base UI moves focus into the popup on the next frame; keys before that would hit the trigger
     await waitFor(() => expect(menu.contains(document.activeElement)).toBe(true))
     await userEvent.keyboard('{End}')
-    await waitFor(() => expect(within(menu).getByRole('menuitem', { name: 'Log out' })).toHaveAttribute('data-highlighted'))
+    await waitFor(() =>
+      expect(within(menu).getByRole('menuitem', { name: 'Log out' })).toHaveAttribute(
+        'data-highlighted',
+      ),
+    )
     await userEvent.keyboard('{Home}')
-    await waitFor(() => expect(within(menu).getByRole('menuitem', { name: 'Profile' })).toHaveAttribute('data-highlighted'))
+    await waitFor(() =>
+      expect(within(menu).getByRole('menuitem', { name: 'Profile' })).toHaveAttribute(
+        'data-highlighted',
+      ),
+    )
     // the highlighted row wears the accent fill
     const profile = within(menu).getByRole('menuitem', { name: 'Profile' })
     await expect(getComputedStyle(profile).backgroundColor).not.toBe('rgba(0, 0, 0, 0)')

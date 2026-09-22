@@ -1,7 +1,9 @@
-import { action, actionBound, computed, makeObservable, observable } from 'mobx'
-
 export type ThemePreference = 'auto' | 'light' | 'dark'
 export type ResolvedTheme = 'light' | 'dark'
+export type ThemeSnapshot = {
+  readonly preference: ThemePreference
+  readonly resolved: ResolvedTheme
+}
 
 /** The device key: the logged-out chrome's choice, and the fallback for an avatar that has none. */
 export const THEME_STORAGE_KEY = 'memeon_theme'
@@ -27,7 +29,11 @@ interface MediaQuery {
  * it nothing and every call is a no-op; tests hand it fakes; the app hands it `window`.
  */
 export interface ThemeHost {
-  readonly document?: { readonly documentElement: { readonly dataset: Record<string, string | undefined> } }
+  readonly document?: {
+    readonly documentElement: {
+      readonly dataset: Record<string, string | undefined>
+    }
+  }
   readonly localStorage?: Pick<Storage, 'getItem' | 'setItem'>
   readonly matchMedia?: (query: string) => MediaQuery
 }
@@ -40,27 +46,22 @@ const defaultHost = (): ThemeHost => (typeof window === 'undefined' ? {} : windo
  * `main.tsx` does), `connect()` (the bag's `retain()`, which also starts following the OS setting)
  * or `bindUser()` (the bag's reaction on the signed-in avatar). `resolved` is what a control shows
  * as current; `data-theme` on `<html>` is what `index.css` pins its `color-scheme` to.
+ *
+ * Not MobX: React reads `{ preference, resolved }` through `subscribe` / `getSnapshot`
+ * (`useSyncExternalStore`). Same values keep the same snapshot reference.
  */
 export class ThemeStore {
   preference: ThemePreference = 'auto'
   private systemDark = false
   private sub: string | null = null
   private media: MediaQuery | undefined = undefined
+  private snapshot: ThemeSnapshot = { preference: 'auto', resolved: 'light' }
+  private readonly listeners = new Set<() => void>()
   private readonly onMediaChange = (event: { matches: boolean }): void => {
     this.setSystemDark(event.matches)
   }
 
-  constructor(private readonly host: ThemeHost = defaultHost()) {
-    makeObservable<this, 'systemDark' | 'setSystemDark' | 'load'>(this, {
-      preference: observable,
-      systemDark: observable,
-      resolved: computed,
-      setPreference: actionBound,
-      bindUser: action,
-      setSystemDark: action,
-      load: action,
-    })
-  }
+  constructor(private readonly host: ThemeHost = defaultHost()) {}
 
   /** The arm in force: the preference, or the OS setting while `auto` (light until connected). */
   get resolved(): ResolvedTheme {
@@ -68,17 +69,28 @@ export class ThemeStore {
     return this.systemDark ? 'dark' : 'light'
   }
 
+  subscribe = (onStoreChange: () => void): (() => void) => {
+    this.listeners.add(onStoreChange)
+    return () => {
+      this.listeners.delete(onStoreChange)
+    }
+  }
+
+  getSnapshot = (): ThemeSnapshot => this.snapshot
+
   /** Re-reads the persisted choice for the bound avatar and paints it on `<html>`. Idempotent. */
   apply(): void {
     this.load()
     this.paint()
+    this.notify()
   }
 
   /** Persists for the bound avatar (and the device, so the logged-out chrome keeps the last choice). */
-  setPreference(preference: ThemePreference): void {
+  setPreference = (preference: ThemePreference): void => {
     this.preference = preference
     this.write(preference)
     this.paint()
+    this.notify()
   }
 
   /** Follows the signed-in avatar: its own persisted choice, else the device's, else `auto`. */
@@ -107,6 +119,7 @@ export class ThemeStore {
 
   private setSystemDark(matches: boolean): void {
     this.systemDark = matches
+    this.notify()
   }
 
   private load(): void {
@@ -143,5 +156,14 @@ export class ThemeStore {
     if (!root) return
     if (this.preference === 'auto') delete root.dataset.theme
     else root.dataset.theme = this.preference
+  }
+
+  private notify(): void {
+    const preference = this.preference
+    const resolved = this.resolved
+    if (this.snapshot.preference !== preference || this.snapshot.resolved !== resolved) {
+      this.snapshot = { preference, resolved }
+    }
+    for (const onStoreChange of this.listeners) onStoreChange()
   }
 }

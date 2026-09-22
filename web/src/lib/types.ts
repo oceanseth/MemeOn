@@ -1,38 +1,17 @@
 import type { Tier } from '@memeon/shared/tiers'
+import type { Meme as MemeRecord } from '@memeon/shared/types'
 
-export interface Listing {
-  sellerId: string
-  pricePerShare: number
-  shares: number
-}
+export type { Listing } from '@memeon/shared/types'
 
-export interface Meme {
-  id: string
-  title: string
-  description: string | null
-  mediaType: 'image' | 'video'
-  imageUrl: string
-  videoUrl: string | null
-  tags: string[]
-  creatorId: string
-  creatorName: string
-  ownerId: string
-  ownerName: string
-  reshares: number
-  tierKey: string
-  listing: Listing | null
-  createdAt: string
+export interface Meme extends MemeRecord {
   tier: Tier
   value: number
   /** total share-link loads (drives the tier ladder) */
   views?: number
-  /** distinct external sources — true reshares */
+  /** distinct external sources (uniqueRefs) — true reshares */
   reshareCount?: number
   myShares?: number
   isCreator?: boolean
-  remixOf?: string | null
-  private?: boolean
-  source?: { provider: string; id: string; url: string; author: string | null } | null
 }
 
 export interface Memeplex {
@@ -54,7 +33,7 @@ export interface Me {
   sub: string
   name: string
   picture: string | null
-  /** braincells — the plain number; the brain glyph is drawn by the Icon atom */
+  /** braincells — the plain number; the brain glyph is drawn by the Icon atom. Field name kept for wire compatibility. */
   coins: number
   portfolioValue: number
   collectionSize: number
@@ -90,6 +69,7 @@ export interface FriendEntry {
 
 export interface TradeSide {
   memes: { memeId: string; shares: number }[]
+  /** braincells — the plain number; field name kept for wire compatibility */
   coins: number
 }
 
@@ -99,7 +79,9 @@ export interface Trade {
   fromName: string
   toId: string
   toName: string
+  /** Wire: proposer's give. UI remaps to TradeCardModel.give (mine ? offer : ask). */
   offer: TradeSide
+  /** Wire: proposer's get. UI remaps to TradeCardModel.get (mine ? ask : offer). */
   ask: TradeSide
   status: 'proposed' | 'accepted' | 'declined' | 'cancelled'
   createdAt: string

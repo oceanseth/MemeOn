@@ -2,9 +2,18 @@ import { useProjectedActor } from './useProjectedActor'
 import { useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { discordLinkCopy } from '../copy/discordLink'
-import { ApiError, post } from '../lib/api'
+import { ApiError } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
-import { POST_LOGIN_KEY } from './useAuthCallbackScreen'
+import { hasDiscordLinkInFlight, postDiscordLink } from '../lib/discordLink'
+import {
+  clearDiscordLinkConsent,
+  clearDiscordLinkToken,
+  getDiscordLinkConsent,
+  getDiscordLinkToken,
+  setDiscordLinkConsent,
+  setDiscordLinkToken,
+  setPostLogin,
+} from '../lib/sessionBus'
 import {
   discordLinkMachine,
   type DiscordLinkFailure,
@@ -12,10 +21,6 @@ import {
 } from '../stores/discordLinkMachine'
 import { useStores } from '../stores/StoresContext'
 import { useMountEffect } from './useMountEffect'
-
-export const DISCORD_LINK_KEY = 'memeon_discord_link_token'
-/** Consent survives the Masky round trip, so nobody is asked to agree to the same join twice. */
-export const DISCORD_LINK_CONSENT_KEY = 'memeon_discord_link_consent'
 
 const copy = discordLinkCopy
 
@@ -39,6 +44,7 @@ const failureOf = (e: unknown): DiscordLinkFailure =>
 export interface DiscordLinkScreenModel {
   phase: DiscordLinkPhase
   heading: string | null
+  documentTitle: string
   showConfirm: boolean
   showBusy: boolean
   showDone: boolean
@@ -47,6 +53,16 @@ export interface DiscordLinkScreenModel {
   errTitle: string | null
   errBody: string | null
   canRetry: boolean
+  connectLabel: string
+  notNowLabel: string
+  nextHeading: string
+  command: string
+  privacyLead: string
+  privacyRest: string
+  successLead: string
+  successRest: string
+  retryLabel: string
+  homeLabel: string
   onConfirm: () => void
   onRetry: () => void
 }
@@ -56,44 +72,53 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
   const [params] = useSearchParams()
   const { auth } = useStores()
   const [snapshot, send] = useProjectedActor(discordLinkMachine)
-  const settled = useRef(false)
   const tokenRef = useRef<string | null>(null)
-  /* A fresh /memeon-connect link can land on this screen while the first one is still waiting on
-     auth, so the newest token wins until the flow settles — then it is kept, because the POST
-     clears the stashed copy and Try again still needs the token it consumed. */
-  if (!settled.current) {
-    tokenRef.current = params.get('token') ?? sessionStorage.getItem(DISCORD_LINK_KEY)
-  }
   const ctx = snapshot.context
   const phase = snapshot.value as DiscordLinkPhase
+  /* Newest /memeon-connect token wins while auth is still loading (checking). After READY/LINK
+     the token is frozen so Try again still has the one the POST consumed. */
+  if (phase === 'checking') {
+    tokenRef.current = params.get('token') ?? getDiscordLinkToken()
+  }
 
-  const link = (token: string): void => {
-    sessionStorage.removeItem(DISCORD_LINK_KEY)
-    post('/api/discord/link', { token })
-      .then(() => send({ type: 'DONE' }))
-      .catch((e) => send({ type: 'FAIL', failure: failureOf(e) }))
+  const followLink = (token: string, live: () => boolean): void => {
+    void postDiscordLink(token).then(
+      () => {
+        if (!live()) return
+        clearDiscordLinkToken()
+        send({ type: 'DONE' })
+      },
+      (e) => {
+        if (!live()) return
+        send({ type: 'FAIL', failure: failureOf(e) })
+      },
+    )
   }
 
   useMountEffect(() => {
+    let cancelled = false
     const settle = () => {
-      if (auth.loading || settled.current) return
-      settled.current = true
+      if (cancelled || auth.loading) return
       const token = tokenRef.current
       if (!token) {
         send({ type: 'FAIL', failure: 'missing-token' })
         return
       }
       // consent already given before the SSO bounce: finish the job instead of re-asking
-      if (auth.user && sessionStorage.getItem(DISCORD_LINK_CONSENT_KEY)) {
-        sessionStorage.removeItem(DISCORD_LINK_CONSENT_KEY)
+      if (auth.user && (getDiscordLinkConsent() || hasDiscordLinkInFlight(token))) {
+        clearDiscordLinkConsent()
         send({ type: 'LINK' })
-        link(token)
+        followLink(token, () => !cancelled)
         return
       }
       send({ type: 'READY' })
     }
     settle()
-    return auth.subscribe(settle)
+    const unsubscribe = auth.subscribe(settle)
+    return () => {
+      cancelled = true
+      unsubscribe()
+    }
   })
 
   const onConfirm = (): void => {
@@ -103,15 +128,15 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
       return
     }
     if (!auth.user) {
-      sessionStorage.setItem(DISCORD_LINK_KEY, token)
-      sessionStorage.setItem(DISCORD_LINK_CONSENT_KEY, '1')
-      sessionStorage.setItem(POST_LOGIN_KEY, '/discord/link')
+      setDiscordLinkToken(token)
+      setDiscordLinkConsent('1')
+      setPostLogin('/discord/link')
       send({ type: 'LOGIN' })
       void beginMaskyLogin().catch(() => send({ type: 'FAIL', failure: 'login' }))
       return
     }
     send({ type: 'LINK' })
-    link(token)
+    followLink(token, () => true)
   }
 
   const onRetry = (): void => {
@@ -121,7 +146,7 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
       return
     }
     send({ type: 'RETRY' })
-    link(token)
+    followLink(token, () => true)
   }
 
   const showError = phase === 'error'
@@ -130,6 +155,7 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
   return {
     phase,
     heading: showError ? null : showDone ? copy.done : copy.heading,
+    documentTitle: copy.documentTitle,
     showConfirm: phase === 'confirm',
     showBusy: phase === 'checking' || phase === 'redirecting' || phase === 'working',
     showDone,
@@ -138,6 +164,16 @@ export function useDiscordLinkScreen(): DiscordLinkScreenModel {
     errTitle: showError ? copy.error.title : null,
     errBody: showError && ctx.failure ? FAILURE_BODY[ctx.failure] : null,
     canRetry: showError && !!ctx.failure && RETRYABLE[ctx.failure],
+    connectLabel: copy.connect,
+    notNowLabel: copy.notNow,
+    nextHeading: copy.nextHeading,
+    command: copy.command,
+    privacyLead: copy.privacy.lead,
+    privacyRest: copy.privacy.rest,
+    successLead: copy.success.lead,
+    successRest: copy.success.rest,
+    retryLabel: copy.retry,
+    homeLabel: copy.home,
     onConfirm,
     onRetry,
   }

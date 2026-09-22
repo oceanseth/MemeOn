@@ -26,9 +26,7 @@ export default function LoginScreen() {
   return (
     <View style={styles.wrap}>
       <Text style={styles.logo}>MemeOn</Text>
-      <Text style={styles.tag}>
-        Memes are the new trading cards.{'\n'}Scroll. Like. Invest.
-      </Text>
+      <Text style={styles.tag}>Memes are the new trading cards.{'\n'}Scroll. Like. Invest.</Text>
       <Pressable style={styles.btn} onPress={login} disabled={busy}>
         <Text style={styles.btnText}>{busy ? 'Opening Masky…' : '🎭  Log in with Masky'}</Text>
       </Pressable>
@@ -48,7 +46,12 @@ function createStyles(colors: LegacyColors) {
       gap: 18,
     },
     logo: { fontSize: 44, fontWeight: '800', color: colors.accent },
-    tag: { color: colors.dim, fontSize: 16, textAlign: 'center', lineHeight: 24 },
+    tag: {
+      color: colors.dim,
+      fontSize: 16,
+      textAlign: 'center',
+      lineHeight: 24,
+    },
     btn: {
       backgroundColor: '#2c7fd8',
       paddingHorizontal: 26,

@@ -30,7 +30,9 @@ export async function embedText(text: string): Promise<number[]> {
       }),
     }),
   )
-  const parsed = JSON.parse(new TextDecoder().decode(res.body)) as { embedding: number[] }
+  const parsed = JSON.parse(new TextDecoder().decode(res.body)) as {
+    embedding: number[]
+  }
   return parsed.embedding
 }
 

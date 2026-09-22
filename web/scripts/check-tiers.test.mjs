@@ -1,59 +1,64 @@
-import assert from "node:assert/strict"
-import { spawnSync } from "node:child_process"
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
-import { tmpdir } from "node:os"
-import { dirname, join, resolve } from "node:path"
-import test from "node:test"
+import assert from 'node:assert/strict'
+import { mkdtempSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import test from 'node:test'
+import { runChecker as runCheckerOn } from './lib/checker-fixture.mjs'
 
-const checker = resolve(import.meta.dirname, "check-tiers.mjs")
+const checker = resolve(import.meta.dirname, 'check-tiers.mjs')
 
 const runChecker = (files) => {
-  const src = mkdtempSync(join(tmpdir(), "memeon-tier-check-"))
+  const src = mkdtempSync(join(tmpdir(), 'memeon-tier-check-'))
   try {
-    for (const [path, contents] of Object.entries(files)) {
-      const file = join(src, path)
-      mkdirSync(dirname(file), { recursive: true })
-      writeFileSync(file, contents)
-    }
-    const result = spawnSync(process.execPath, [checker, src], { encoding: "utf8" })
-    return { status: result.status, output: result.stdout + result.stderr }
+    return runCheckerOn(checker, src, files)
   } finally {
     rmSync(src, { recursive: true, force: true })
   }
 }
 
-const story = "export default {}\n"
-const component = "export function Example() { return <div /> }\n"
+const story = 'export default {}\n'
+const component = 'export function Example() { return <div /> }\n'
 
-test("rejects AST-recognized nested state, value edges, state libraries, missing stories, and flat components", () => {
+test('rejects AST-recognized nested state, value edges, state libraries, missing stories, and flat components', () => {
   const result = runChecker({
-    "atoms/nested/Stateful.tsx": "import { useState } from 'react'\nexport function Stateful() { const [value] = useState(0); return <div>{value}</div> }\n",
-    "atoms/nested/Stateful.stories.tsx": story,
-    "atoms/nested/GenericState.tsx": "import { useState } from 'react'\nexport function GenericState() { const [value] = useState<number>(0); return <div>{value}</div> }\n",
-    "atoms/nested/GenericState.stories.tsx": story,
-    "atoms/nested/AliasedState.tsx": "import { useState as state } from 'react'\nexport function AliasedState() { const [value] = state(0); return <div>{value}</div> }\n",
-    "atoms/nested/AliasedState.stories.tsx": story,
-    "atoms/nested/NamespacedState.tsx": "import * as React from 'react'\nexport function NamespacedState() { const [value] = React.useState<number>(0); return <div>{value}</div> }\n",
-    "atoms/nested/NamespacedState.stories.tsx": story,
-    "atoms/nested/Upward.tsx": "import { Molecule } from '../../molecules/Molecule'\nexport function Upward() { return <Molecule /> }\n",
-    "atoms/nested/Upward.stories.tsx": story,
-    "atoms/nested/SameLineUpward.tsx": "import React from 'react'; import { Molecule } from '../../molecules/Molecule'\nexport function SameLineUpward() { return <React.Fragment><Molecule /></React.Fragment> }\n",
-    "atoms/nested/SameLineUpward.stories.tsx": story,
-    "atoms/nested/ValueReexport.tsx": "export { Molecule as ValueReexport } from '../../molecules/Molecule'\n",
-    "atoms/nested/ValueReexport.stories.tsx": story,
-    "atoms/nested/StarReexport.tsx": "export * from '../../molecules/Molecule'\n",
-    "atoms/nested/StarReexport.stories.tsx": story,
-    "molecules/Molecule.tsx": "export function Molecule() { return <div /> }\n",
-    "molecules/Molecule.stories.tsx": story,
-    "molecules/nested/StateLibrary.tsx": "import { create } from 'zustand'\nexport function StateLibrary() { return <div /> }\n",
-    "molecules/nested/StateLibrary.stories.tsx": story,
-    "molecules/nested/SideEffectStateLibrary.tsx": "import 'mobx'\nexport function SideEffectStateLibrary() { return <div /> }\n",
-    "molecules/nested/SideEffectStateLibrary.stories.tsx": story,
-    "molecules/nested/DynamicStateLibrary.tsx": "export const load = () => import('mobx')\nexport function DynamicStateLibrary() { return <div /> }\n",
-    "molecules/nested/DynamicStateLibrary.stories.tsx": story,
-    "molecules/nested/Unstoried.tsx": component,
-    "atoms/nested/state.ts": "import { observable } from 'mobx'\nexport const state = observable({ value: 0 })\n",
-    "components/Forgotten.tsx": component,
+    'atoms/nested/Stateful.tsx':
+      "import { useState } from 'react'\nexport function Stateful() { const [value] = useState(0); return <div>{value}</div> }\n",
+    'atoms/nested/Stateful.stories.tsx': story,
+    'atoms/nested/GenericState.tsx':
+      "import { useState } from 'react'\nexport function GenericState() { const [value] = useState<number>(0); return <div>{value}</div> }\n",
+    'atoms/nested/GenericState.stories.tsx': story,
+    'atoms/nested/AliasedState.tsx':
+      "import { useState as state } from 'react'\nexport function AliasedState() { const [value] = state(0); return <div>{value}</div> }\n",
+    'atoms/nested/AliasedState.stories.tsx': story,
+    'atoms/nested/NamespacedState.tsx':
+      "import * as React from 'react'\nexport function NamespacedState() { const [value] = React.useState<number>(0); return <div>{value}</div> }\n",
+    'atoms/nested/NamespacedState.stories.tsx': story,
+    'atoms/nested/Upward.tsx':
+      "import { Molecule } from '../../molecules/Molecule'\nexport function Upward() { return <Molecule /> }\n",
+    'atoms/nested/Upward.stories.tsx': story,
+    'atoms/nested/SameLineUpward.tsx':
+      "import React from 'react'; import { Molecule } from '../../molecules/Molecule'\nexport function SameLineUpward() { return <React.Fragment><Molecule /></React.Fragment> }\n",
+    'atoms/nested/SameLineUpward.stories.tsx': story,
+    'atoms/nested/ValueReexport.tsx':
+      "export { Molecule as ValueReexport } from '../../molecules/Molecule'\n",
+    'atoms/nested/ValueReexport.stories.tsx': story,
+    'atoms/nested/StarReexport.tsx': "export * from '../../molecules/Molecule'\n",
+    'atoms/nested/StarReexport.stories.tsx': story,
+    'molecules/Molecule.tsx': 'export function Molecule() { return <div /> }\n',
+    'molecules/Molecule.stories.tsx': story,
+    'molecules/nested/StateLibrary.tsx':
+      "import { create } from 'zustand'\nexport function StateLibrary() { return <div /> }\n",
+    'molecules/nested/StateLibrary.stories.tsx': story,
+    'molecules/nested/SideEffectStateLibrary.tsx':
+      "import 'mobx'\nexport function SideEffectStateLibrary() { return <div /> }\n",
+    'molecules/nested/SideEffectStateLibrary.stories.tsx': story,
+    'molecules/nested/DynamicStateLibrary.tsx':
+      "export const load = () => import('mobx')\nexport function DynamicStateLibrary() { return <div /> }\n",
+    'molecules/nested/DynamicStateLibrary.stories.tsx': story,
+    'molecules/nested/Unstoried.tsx': component,
+    'atoms/nested/state.ts':
+      "import { observable } from 'mobx'\nexport const state = observable({ value: 0 })\n",
+    'components/Forgotten.tsx': component,
   })
 
   assert.equal(result.status, 1, result.output)
@@ -65,65 +70,108 @@ test("rejects AST-recognized nested state, value edges, state libraries, missing
   assert.match(result.output, /atoms\/nested\/SameLineUpward\.tsx: atoms imports from molecules/)
   assert.match(result.output, /atoms\/nested\/ValueReexport\.tsx: atoms imports from molecules/)
   assert.match(result.output, /atoms\/nested\/StarReexport\.tsx: atoms imports from molecules/)
-  assert.match(result.output, /molecules\/nested\/StateLibrary\.tsx: imports state library "zustand" below views/)
-  assert.match(result.output, /molecules\/nested\/SideEffectStateLibrary\.tsx: imports state library "mobx" below views/)
-  assert.match(result.output, /molecules\/nested\/DynamicStateLibrary\.tsx: imports state library "mobx" below views/)
+  assert.match(
+    result.output,
+    /molecules\/nested\/StateLibrary\.tsx: imports state library "zustand" below views/,
+  )
+  assert.match(
+    result.output,
+    /molecules\/nested\/SideEffectStateLibrary\.tsx: imports state library "mobx" below views/,
+  )
+  assert.match(
+    result.output,
+    /molecules\/nested\/DynamicStateLibrary\.tsx: imports state library "mobx" below views/,
+  )
   assert.match(result.output, /atoms\/nested\/state\.ts: imports state library "mobx" below views/)
-  assert.match(result.output, /molecules\/nested\/Unstoried\.tsx: no sibling Unstoried\.stories\.tsx/)
+  assert.match(
+    result.output,
+    /molecules\/nested\/Unstoried\.tsx: no sibling Unstoried\.stories\.tsx/,
+  )
   assert.match(result.output, /components\/Forgotten\.tsx: component outside a tier folder/)
 })
 
-test("allows nested tier components, type-only imports, exact integration files, and JSX-free domain modules", () => {
+test('allows useRef in a molecule as an imperative handle and still rejects useState', () => {
+  const withRef = runChecker({
+    'molecules/Handle.tsx':
+      "import { useRef } from 'react'\nexport function Handle() { const node = useRef(null); return <div ref={node} /> }\n",
+    'molecules/Handle.stories.tsx': story,
+  })
+  assert.equal(withRef.status, 0, withRef.output)
+
+  const withState = runChecker({
+    'molecules/Handle.tsx':
+      "import { useState } from 'react'\nexport function Handle() { const [value] = useState(0); return <div>{value}</div> }\n",
+    'molecules/Handle.stories.tsx': story,
+  })
+  assert.equal(withState.status, 1, withState.output)
+  assert.match(withState.output, /molecules\/Handle\.tsx: React state hook below views/)
+})
+
+test('allows nested tier components, type-only imports, exact integration files, and JSX-free domain modules', () => {
   const result = runChecker({
-    "atoms/nested/Good.tsx": component,
-    "atoms/nested/Good.stories.tsx": story,
-    "screens/nested/GoodScreen.tsx": "import type { GoodModel } from '../../hooks/useGoodScreen'\nexport function GoodScreen(_props: GoodModel) { return <div /> }\n",
-    "screens/nested/GoodScreen.stories.tsx": story,
-    "hooks/useGoodScreen.ts": "export type GoodModel = { label: string }\n",
-    "hooks/useAnotherGoodScreen.ts": "export type AnotherGoodModel = { label: string }\n",
-    "screens/nested/AnotherGoodScreen.tsx": "import { type AnotherGoodModel } from '../../hooks/useAnotherGoodScreen'\nexport function AnotherGoodScreen(_props: AnotherGoodModel) { return <div /> }\n",
-    "screens/nested/AnotherGoodScreen.stories.tsx": story,
-    "screens/nested/CommentTypeOnlyScreen.tsx": "import { /* props only */ type GoodModel } from '../../hooks/useGoodScreen'\nexport function CommentTypeOnlyScreen(_props: GoodModel) { return <div /> }\n",
-    "screens/nested/CommentTypeOnlyScreen.stories.tsx": story,
-    "screens/nested/TypeReexport.tsx": "export type { GoodModel } from '../../hooks/useGoodScreen'\nexport function TypeReexport() { return <div /> }\n",
-    "screens/nested/TypeReexport.stories.tsx": story,
-    "atoms/nested/WordsOnly.tsx": "// A former implementation called useState(0).\nexport function WordsOnly() { return <code>useState(0)</code> }\n",
-    "atoms/nested/WordsOnly.stories.tsx": story,
-    "lib/domain.ts": "export const label = (value) => value.toUpperCase()\n",
-    "components/Ignored.test.tsx": component,
-    "components/Ignored.spec.tsx": component,
-    "components/Ignored.stories.tsx": story,
-    "main.tsx": "export function Root() { return <div /> }\n",
-    "stores/StoresContext.tsx": "export function StoresProvider() { return <div /> }\n",
+    'atoms/nested/Good.tsx': component,
+    'atoms/nested/Good.stories.tsx': story,
+    'screens/nested/GoodScreen.tsx':
+      "import type { GoodModel } from '../../hooks/useGoodScreen'\nexport function GoodScreen(_props: GoodModel) { return <div /> }\n",
+    'screens/nested/GoodScreen.stories.tsx': story,
+    'hooks/useGoodScreen.ts': 'export type GoodModel = { label: string }\n',
+    'hooks/useAnotherGoodScreen.ts': 'export type AnotherGoodModel = { label: string }\n',
+    'screens/nested/AnotherGoodScreen.tsx':
+      "import { type AnotherGoodModel } from '../../hooks/useAnotherGoodScreen'\nexport function AnotherGoodScreen(_props: AnotherGoodModel) { return <div /> }\n",
+    'screens/nested/AnotherGoodScreen.stories.tsx': story,
+    'screens/nested/CommentTypeOnlyScreen.tsx':
+      "import { /* props only */ type GoodModel } from '../../hooks/useGoodScreen'\nexport function CommentTypeOnlyScreen(_props: GoodModel) { return <div /> }\n",
+    'screens/nested/CommentTypeOnlyScreen.stories.tsx': story,
+    'screens/nested/TypeReexport.tsx':
+      "export type { GoodModel } from '../../hooks/useGoodScreen'\nexport function TypeReexport() { return <div /> }\n",
+    'screens/nested/TypeReexport.stories.tsx': story,
+    'atoms/nested/WordsOnly.tsx':
+      '// A former implementation called useState(0).\nexport function WordsOnly() { return <code>useState(0)</code> }\n',
+    'atoms/nested/WordsOnly.stories.tsx': story,
+    'lib/domain.ts': 'export const label = (value) => value.toUpperCase()\n',
+    'components/Ignored.test.tsx': component,
+    'components/Ignored.spec.tsx': component,
+    'components/Ignored.stories.tsx': story,
+    'main.tsx': 'export function Root() { return <div /> }\n',
+    'stores/StoresContext.tsx': 'export function StoresProvider() { return <div /> }\n',
   })
 
   assert.equal(result.status, 0, result.output)
 })
 
-test("resolves React aliases and re-exports without mistaking a shadowed binding for a hook", () => {
+test('resolves React aliases and re-exports without mistaking a shadowed binding for a hook', () => {
   const result = runChecker({
-    "atoms/nested/DefaultAlias.tsx": "import { default as R } from 'react'\nexport function DefaultAlias() { const [value] = R.useState(0); return <div>{value}</div> }\n",
-    "atoms/nested/DefaultAlias.stories.tsx": story,
-    "atoms/nested/Destructured.tsx": "import React from 'react'\nconst { useState } = React\nexport function Destructured() { const [value] = useState(0); return <div>{value}</div> }\n",
-    "atoms/nested/Destructured.stories.tsx": story,
-    "atoms/nested/react.ts": "export { useState } from 'react'\n",
-    "atoms/nested/Reexported.tsx": "import { useState } from './react'\nexport function Reexported() { const [value] = useState(0); return <div>{value}</div> }\n",
-    "atoms/nested/Reexported.stories.tsx": story,
-    "atoms/nested/barrel.ts": "export * from './react'\n",
-    "atoms/nested/StarReexported.tsx": "import { useState } from './barrel'\nexport function StarReexported() { const [value] = useState(0); return <div>{value}</div> }\n",
-    "atoms/nested/StarReexported.stories.tsx": story,
-    "atoms/nested/pure.ts": "export const clamp = (value: number) => Math.max(0, value)\n",
-    "atoms/nested/pure-barrel.ts": "export * from './pure'\n",
-    "atoms/nested/PureBarrel.tsx": "import { clamp } from './pure-barrel'\nexport function PureBarrel() { return <div>{clamp(1)}</div> }\n",
-    "atoms/nested/PureBarrel.stories.tsx": story,
-    "atoms/nested/Parenthesized.tsx": "import { useState } from 'react'\nexport function Parenthesized() { const [value] = (useState)(0); return <div>{value}</div> }\n",
-    "atoms/nested/Parenthesized.stories.tsx": story,
-    "atoms/nested/DynamicTemplate.tsx": "export const load = () => import(`mobx`)\nexport function DynamicTemplate() { return <div /> }\n",
-    "atoms/nested/DynamicTemplate.stories.tsx": story,
-    "atoms/nested/HooksTemplate.tsx": "export const load = () => import(`../../hooks/model`)\nexport function HooksTemplate() { return <div /> }\n",
-    "atoms/nested/HooksTemplate.stories.tsx": story,
-    "atoms/nested/Shadowed.tsx": "import { useState as state } from 'react'\nexport type StateHook = typeof state\nexport function Shadowed({ state }: { state: () => number }) { return <div>{state()}</div> }\n",
-    "atoms/nested/Shadowed.stories.tsx": story,
+    'atoms/nested/DefaultAlias.tsx':
+      "import { default as R } from 'react'\nexport function DefaultAlias() { const [value] = R.useState(0); return <div>{value}</div> }\n",
+    'atoms/nested/DefaultAlias.stories.tsx': story,
+    'atoms/nested/Destructured.tsx':
+      "import React from 'react'\nconst { useState } = React\nexport function Destructured() { const [value] = useState(0); return <div>{value}</div> }\n",
+    'atoms/nested/Destructured.stories.tsx': story,
+    'atoms/nested/react.ts': "export { useState } from 'react'\n",
+    'atoms/nested/Reexported.tsx':
+      "import { useState } from './react'\nexport function Reexported() { const [value] = useState(0); return <div>{value}</div> }\n",
+    'atoms/nested/Reexported.stories.tsx': story,
+    'atoms/nested/barrel.ts': "export * from './react'\n",
+    'atoms/nested/StarReexported.tsx':
+      "import { useState } from './barrel'\nexport function StarReexported() { const [value] = useState(0); return <div>{value}</div> }\n",
+    'atoms/nested/StarReexported.stories.tsx': story,
+    'atoms/nested/pure.ts': 'export const clamp = (value: number) => Math.max(0, value)\n',
+    'atoms/nested/pure-barrel.ts': "export * from './pure'\n",
+    'atoms/nested/PureBarrel.tsx':
+      "import { clamp } from './pure-barrel'\nexport function PureBarrel() { return <div>{clamp(1)}</div> }\n",
+    'atoms/nested/PureBarrel.stories.tsx': story,
+    'atoms/nested/Parenthesized.tsx':
+      "import { useState } from 'react'\nexport function Parenthesized() { const [value] = (useState)(0); return <div>{value}</div> }\n",
+    'atoms/nested/Parenthesized.stories.tsx': story,
+    'atoms/nested/DynamicTemplate.tsx':
+      'export const load = () => import(`mobx`)\nexport function DynamicTemplate() { return <div /> }\n',
+    'atoms/nested/DynamicTemplate.stories.tsx': story,
+    'atoms/nested/HooksTemplate.tsx':
+      'export const load = () => import(`../../hooks/model`)\nexport function HooksTemplate() { return <div /> }\n',
+    'atoms/nested/HooksTemplate.stories.tsx': story,
+    'atoms/nested/Shadowed.tsx':
+      "import { useState as state } from 'react'\nexport type StateHook = typeof state\nexport function Shadowed({ state }: { state: () => number }) { return <div>{state()}</div> }\n",
+    'atoms/nested/Shadowed.stories.tsx': story,
   })
 
   assert.equal(result.status, 1, result.output)
@@ -132,43 +180,56 @@ test("resolves React aliases and re-exports without mistaking a shadowed binding
   assert.match(result.output, /atoms\/nested\/Reexported\.tsx: React state hook below views/)
   assert.match(result.output, /atoms\/nested\/StarReexported\.tsx: React state hook below views/)
   assert.match(result.output, /atoms\/nested\/Parenthesized\.tsx: React state hook below views/)
-  assert.match(result.output, /atoms\/nested\/DynamicTemplate\.tsx: imports state library "mobx" below views/)
+  assert.match(
+    result.output,
+    /atoms\/nested\/DynamicTemplate\.tsx: imports state library "mobx" below views/,
+  )
   assert.match(result.output, /atoms\/nested\/HooksTemplate\.tsx: atoms imports from hooks/)
   assert.doesNotMatch(result.output, /Shadowed\.tsx: React state hook below views/)
   assert.doesNotMatch(result.output, /PureBarrel\.tsx: React state hook below views/)
 })
 
-test("does not let a commented default import hide a runtime hooks edge", () => {
+test('does not let a commented default import hide a runtime hooks edge', () => {
   const result = runChecker({
-    "atoms/nested/RuntimeImport.tsx": "import /* model */ useModel, { type Model } from '../../hooks/useModel'\nexport function RuntimeImport(_props: Model) { return <div>{useModel()}</div> }\n",
-    "atoms/nested/RuntimeImport.stories.tsx": story,
-    "hooks/useModel.ts": "export type Model = {}\nexport default function useModel() { return 1 }\n",
+    'atoms/nested/RuntimeImport.tsx':
+      "import /* model */ useModel, { type Model } from '../../hooks/useModel'\nexport function RuntimeImport(_props: Model) { return <div>{useModel()}</div> }\n",
+    'atoms/nested/RuntimeImport.stories.tsx': story,
+    'hooks/useModel.ts':
+      'export type Model = {}\nexport default function useModel() { return 1 }\n',
   })
 
   assert.equal(result.status, 1, result.output)
   assert.match(result.output, /atoms\/nested\/RuntimeImport\.tsx: atoms imports from hooks/)
 })
 
-test("keeps copy/ plain data: tiers never import it, and it imports only copy/", () => {
+test('keeps copy/ plain data: tiers never import it, and it imports only copy/', () => {
   const result = runChecker({
-    "copy/shared.ts": "export const sharedCopy = { close: 'Close' } as const\n",
-    "copy/settings.ts": "import { sharedCopy } from './shared'\nimport type { Tier } from '../lib/types'\nexport const settingsCopy = { close: sharedCopy.close, tier: (tier: Tier) => tier } as const\n",
-    "copy/binder.ts": "import { plural } from '../lib/plural'\nimport { braincells } from '../lib/braincells'\nexport const binderCopy = { shown: (n: number) => `${plural(n, 'card')} shown`, worth: (n: number) => braincells(n) } as const\n",
-    "copy/leaky.ts": "import { cn } from '../lib/cn'\nexport const leakyCopy = { className: cn('x') } as const\n",
-    "copy/reexport.ts": "export { cn } from '../lib/cn'\n",
-    "copy/lazy.ts": "export const load = () => import('../lib/cn')\n",
-    "copy/Component.tsx": component,
-    "lib/types.ts": "export type Tier = 'fresh' | 'shiny'\n",
-    "lib/plural.ts": "export const plural = (n: number, word: string) => `${n} ${word}`\n",
-    "lib/braincells.ts": "export const braincells = (n: number) => `🧠 ${n}`\n",
-    "lib/cn.ts": "export const cn = (...c: string[]) => c.join(' ')\n",
-    "hooks/useSettingsScreen.ts": "import { settingsCopy } from '../copy/settings'\nexport const build = () => ({ close: settingsCopy.close })\n",
-    "screens/SettingsScreen.tsx": "import { settingsCopy } from '../copy/settings'\nexport function SettingsScreen() { return <button>{settingsCopy.close}</button> }\n",
-    "screens/SettingsScreen.stories.tsx": "import { settingsCopy } from '../copy/settings'\nexport default { args: { label: settingsCopy.close } }\n",
-    "views/SettingsView.tsx": "import { settingsCopy } from '../copy/settings'\nexport function SettingsView() { return <div>{settingsCopy.close}</div> }\n",
-    "views/SettingsView.stories.tsx": story,
-    "atoms/TypedLabel.tsx": "import type { settingsCopy } from '../copy/settings'\nexport function TypedLabel(_props: { label: typeof settingsCopy.close }) { return <div /> }\n",
-    "atoms/TypedLabel.stories.tsx": story,
+    'copy/shared.ts': "export const sharedCopy = { close: 'Close' } as const\n",
+    'copy/settings.ts':
+      "import { sharedCopy } from './shared'\nimport type { Tier } from '../lib/types'\nexport const settingsCopy = { close: sharedCopy.close, tier: (tier: Tier) => tier } as const\n",
+    'copy/binder.ts':
+      "import { plural } from '../lib/plural'\nimport { braincells } from '../lib/braincells'\nexport const binderCopy = { shown: (n: number) => `${plural(n, 'card')} shown`, worth: (n: number) => braincells(n) } as const\n",
+    'copy/leaky.ts':
+      "import { cn } from '../lib/cn'\nexport const leakyCopy = { className: cn('x') } as const\n",
+    'copy/reexport.ts': "export { cn } from '../lib/cn'\n",
+    'copy/lazy.ts': "export const load = () => import('../lib/cn')\n",
+    'copy/Component.tsx': component,
+    'lib/types.ts': "export type Tier = 'fresh' | 'shiny'\n",
+    'lib/plural.ts': 'export const plural = (n: number, word: string) => `${n} ${word}`\n',
+    'lib/braincells.ts': 'export const braincells = (n: number) => `🧠 ${n}`\n',
+    'lib/cn.ts': "export const cn = (...c: string[]) => c.join(' ')\n",
+    'hooks/useSettingsScreen.ts':
+      "import { settingsCopy } from '../copy/settings'\nexport const build = () => ({ close: settingsCopy.close })\n",
+    'screens/SettingsScreen.tsx':
+      "import { settingsCopy } from '../copy/settings'\nexport function SettingsScreen() { return <button>{settingsCopy.close}</button> }\n",
+    'screens/SettingsScreen.stories.tsx':
+      "import { settingsCopy } from '../copy/settings'\nexport default { args: { label: settingsCopy.close } }\n",
+    'views/SettingsView.tsx':
+      "import { settingsCopy } from '../copy/settings'\nexport function SettingsView() { return <div>{settingsCopy.close}</div> }\n",
+    'views/SettingsView.stories.tsx': story,
+    'atoms/TypedLabel.tsx':
+      "import type { settingsCopy } from '../copy/settings'\nexport function TypedLabel(_props: { label: typeof settingsCopy.close }) { return <div /> }\n",
+    'atoms/TypedLabel.stories.tsx': story,
   })
 
   assert.equal(result.status, 1, result.output)
@@ -186,16 +247,68 @@ test("keeps copy/ plain data: tiers never import it, and it imports only copy/",
   assert.doesNotMatch(result.output, /atoms\/TypedLabel\.tsx/)
 })
 
-test("rejects new components adjacent to an exact exception and retired folders", () => {
+test('rejects a screens/ file that value-imports or re-exports another screens/ module', () => {
   const result = runChecker({
-    "main.tsx": component,
-    "stores/StoresContext.tsx": component,
-    "components/HeroVideo.tsx": component,
-    "pages/AuthCallback.tsx": component,
-    "context/AuthContext.tsx": component,
-    "hooks/useUnlisted.tsx": component,
-    "stores/UnlistedProvider.tsx": component,
-    "lib/Unlisted.tsx": component,
+    'screens/PeerScreen.tsx':
+      "export function PeerScreen() { return <div /> }\nexport const shared = 'x'\n",
+    'screens/PeerScreen.stories.tsx': story,
+    'screens/HostScreen.tsx':
+      "import { shared } from './PeerScreen'\nexport function HostScreen() { return <div>{shared}</div> }\n",
+    'screens/HostScreen.stories.tsx': story,
+    'screens/HostReexport.tsx':
+      "export { PeerScreen } from './PeerScreen'\nexport function HostReexport() { return <div /> }\n",
+    'screens/HostReexport.stories.tsx': story,
+  })
+
+  assert.equal(result.status, 1, result.output)
+  assert.match(result.output, /screens\/HostScreen\.tsx: screens imports from screens/)
+  assert.match(result.output, /screens\/HostReexport\.tsx: screens imports from screens/)
+})
+
+test('allows type-only imports between screens/ and views/ that value-import screens/', () => {
+  const result = runChecker({
+    'screens/PeerScreen.tsx':
+      'export type PeerModel = { label: string }\nexport function PeerScreen(_props: PeerModel) { return <div /> }\n',
+    'screens/PeerScreen.stories.tsx': story,
+    'screens/HostScreen.tsx':
+      "import type { PeerModel } from './PeerScreen'\nimport './HostScreen.css'\nexport function HostScreen(_props: PeerModel) { return <div /> }\n",
+    'screens/HostScreen.css': '/* co-located layout; not a screens/ module */\n',
+    'screens/HostScreen.stories.tsx': story,
+    'views/PeerView.tsx':
+      "import { PeerScreen } from '../screens/PeerScreen'\nexport function PeerView() { return <PeerScreen label='x' /> }\n",
+    'views/PeerView.stories.tsx': story,
+    'atoms/Good.tsx': component,
+    'atoms/Good.stories.tsx': story,
+    'atoms/Sibling.tsx':
+      "import { Example as Good } from './Good'\nexport function Sibling() { return <Good /> }\n",
+    'atoms/Sibling.stories.tsx': story,
+    'molecules/Mol.tsx':
+      "import { Example as Good } from '../atoms/Good'\nexport function Mol() { return <Good /> }\n",
+    'molecules/Mol.stories.tsx': story,
+    'molecules/OtherMol.tsx':
+      "import { Mol } from './Mol'\nexport function OtherMol() { return <Mol /> }\n",
+    'molecules/OtherMol.stories.tsx': story,
+    'organisms/Org.tsx':
+      "import { Mol } from '../molecules/Mol'\nexport function Org() { return <Mol /> }\n",
+    'organisms/Org.stories.tsx': story,
+    'organisms/OtherOrg.tsx':
+      "import { Org } from './Org'\nexport function OtherOrg() { return <Org /> }\n",
+    'organisms/OtherOrg.stories.tsx': story,
+  })
+
+  assert.equal(result.status, 0, result.output)
+})
+
+test('rejects new components adjacent to an exact exception and retired folders', () => {
+  const result = runChecker({
+    'main.tsx': component,
+    'stores/StoresContext.tsx': component,
+    'components/HeroVideo.tsx': component,
+    'pages/AuthCallback.tsx': component,
+    'context/AuthContext.tsx': component,
+    'hooks/useUnlisted.tsx': component,
+    'stores/UnlistedProvider.tsx': component,
+    'lib/Unlisted.tsx': component,
   })
 
   assert.equal(result.status, 1, result.output)
@@ -209,29 +322,99 @@ test("rejects new components adjacent to an exact exception and retired folders"
   assert.match(result.output, /lib\/Unlisted\.tsx: component outside a tier folder/)
 })
 
-test("resolves the @/ alias like the relative form and lets only atoms use the context API", () => {
+test('resolves the @/ alias like the relative form and lets only atoms use the context API', () => {
   const result = runChecker({
-    "atoms/Variant.tsx": "import { createContext, useContext } from 'react'\nconst Ctx = createContext('sm')\nexport function Variant() { return <div>{useContext(Ctx)}</div> }\n",
-    "atoms/Variant.stories.tsx": story,
-    "atoms/Upward.tsx": "import { Molecule } from '@/molecules/Molecule'\nexport function Upward() { return <Molecule /> }\n",
-    "atoms/Upward.stories.tsx": story,
-    "atoms/Copy.tsx": "import { label } from '@/copy/thing'\nexport function Copy() { return <div>{label}</div> }\n",
-    "atoms/Copy.stories.tsx": story,
-    "copy/thing.ts": "export const label = 'Label'\n",
-    "molecules/Molecule.tsx": "import { Variant } from '@/atoms/Variant'\nexport function Molecule() { return <Variant /> }\n",
-    "molecules/Molecule.stories.tsx": story,
-    "molecules/Reader.tsx": "import { createContext, useContext } from 'react'\nconst Ctx = createContext(0)\nexport function Reader() { return <div>{useContext(Ctx)}</div> }\n",
-    "molecules/Reader.stories.tsx": story,
-    "molecules/AliasHook.tsx": "import { useState } from '@/atoms/react'\nexport function AliasHook() { const [value] = useState(0); return <div>{value}</div> }\n",
-    "molecules/AliasHook.stories.tsx": story,
-    "atoms/react.ts": "export { useState } from 'react'\n",
+    'atoms/Variant.tsx':
+      "import { createContext, useContext } from 'react'\nconst Ctx = createContext('sm')\nexport function Variant() { return <div>{useContext(Ctx)}</div> }\n",
+    'atoms/Variant.stories.tsx': story,
+    'atoms/Upward.tsx':
+      "import { Molecule } from '@/molecules/Molecule'\nexport function Upward() { return <Molecule /> }\n",
+    'atoms/Upward.stories.tsx': story,
+    'atoms/Copy.tsx':
+      "import { label } from '@/copy/thing'\nexport function Copy() { return <div>{label}</div> }\n",
+    'atoms/Copy.stories.tsx': story,
+    'copy/thing.ts': "export const label = 'Label'\n",
+    'molecules/Molecule.tsx':
+      "import { Variant } from '@/atoms/Variant'\nexport function Molecule() { return <Variant /> }\n",
+    'molecules/Molecule.stories.tsx': story,
+    'molecules/Reader.tsx':
+      "import { createContext, useContext } from 'react'\nconst Ctx = createContext(0)\nexport function Reader() { return <div>{useContext(Ctx)}</div> }\n",
+    'molecules/Reader.stories.tsx': story,
+    'molecules/AliasHook.tsx':
+      "import { useState } from '@/atoms/react'\nexport function AliasHook() { const [value] = useState(0); return <div>{value}</div> }\n",
+    'molecules/AliasHook.stories.tsx': story,
+    'atoms/react.ts': "export { useState } from 'react'\n",
   })
 
   assert.equal(result.status, 1, result.output)
   assert.doesNotMatch(result.output, /atoms\/Variant\.tsx/)
   assert.doesNotMatch(result.output, /molecules\/Molecule\.tsx/)
-  assert.match(result.output, /atoms\/Upward\.tsx: atoms imports from molecules\/ \("@\/molecules\/Molecule"\)/)
+  assert.match(
+    result.output,
+    /atoms\/Upward\.tsx: atoms imports from molecules\/ \("@\/molecules\/Molecule"\)/,
+  )
   assert.match(result.output, /atoms\/Copy\.tsx: atoms imports from copy\//)
   assert.match(result.output, /molecules\/Reader\.tsx: React context below views/)
   assert.match(result.output, /molecules\/AliasHook\.tsx: React state hook below views/)
+})
+
+test('rejects React trees and value-imported tiers in hooks/*.ts and lib/*Model.ts', () => {
+  const result = runChecker({
+    'hooks/useCreateElement.ts':
+      "import { createElement } from 'react'\nexport const node = createElement('div')\n",
+    'hooks/useFragment.ts': "import { Fragment } from 'react'\nexport const node = Fragment\n",
+    'hooks/useAlert.ts': "import { Alert } from '@/atoms/alert'\nexport const node = Alert\n",
+    'hooks/useJsx.ts': 'export const node = <div />\n',
+    'hooks/useReactCreate.ts':
+      "import React from 'react'\nexport const node = React.createElement('div')\n",
+    'hooks/useJsxs.ts': "import React from 'react'\nexport const node = React.jsxs('div', {})\n",
+    'hooks/useTyped.ts':
+      "import type { IconName } from '@/atoms/icon'\nexport type Name = IconName\nexport const label = 'ok'\n",
+    'hooks/useCopy.ts': "import { label } from '../copy/thing'\nexport const text = label\n",
+    'copy/thing.ts': "export const label = 'Label'\n",
+    'lib/confirmDialogModel.ts': "import { Fragment } from 'react'\nexport const node = Fragment\n",
+    'lib/domain.ts': "export const el = document.createElement('div')\n",
+    'lib/createMemeModel/shared.ts':
+      "import { Alert } from '@/atoms/alert'\nexport const node = Alert\n",
+    'atoms/alert.tsx': 'export function Alert() { return <div /> }\n',
+    'atoms/alert.stories.tsx': story,
+    'atoms/icon.tsx': "export type IconName = 'x'\nexport function Icon() { return <div /> }\n",
+    'atoms/icon.stories.tsx': story,
+  })
+
+  assert.equal(result.status, 1, result.output)
+  assert.match(
+    result.output,
+    /hooks\/useCreateElement\.ts: value import of createElement from react/,
+  )
+  assert.match(result.output, /hooks\/useFragment\.ts: value import of Fragment from react/)
+  assert.match(
+    result.output,
+    /hooks\/useAlert\.ts: value import from atoms\/ \("@\/atoms\/alert"\)/,
+  )
+  assert.match(result.output, /hooks\/useJsx\.ts: JSX in hooks\/ or \*Model\.ts/)
+  assert.match(result.output, /hooks\/useReactCreate\.ts: React\.createElement/)
+  assert.match(result.output, /hooks\/useJsxs\.ts: React\.jsxs/)
+  assert.match(result.output, /lib\/confirmDialogModel\.ts: value import of Fragment from react/)
+  assert.doesNotMatch(result.output, /hooks\/useTyped\.ts/)
+  assert.doesNotMatch(result.output, /hooks\/useCopy\.ts/)
+  assert.doesNotMatch(result.output, /lib\/domain\.ts/)
+  assert.doesNotMatch(result.output, /lib\/createMemeModel\/shared\.ts/)
+})
+
+test('views may import mobx-react-lite; STATE_LIBS still rejects it below views (knip/typecheck catch a views import once packages are gone)', () => {
+  const result = runChecker({
+    'views/Observed.tsx':
+      "import { observer } from 'mobx-react-lite'\nexport const Observed = observer(function Observed() { return <div /> })\n",
+    'views/Observed.stories.tsx': story,
+    'molecules/StateLibrary.tsx':
+      "import { observer } from 'mobx-react-lite'\nexport const StateLibrary = observer(function StateLibrary() { return <div /> })\n",
+    'molecules/StateLibrary.stories.tsx': story,
+  })
+  assert.equal(result.status, 1, result.output)
+  assert.match(
+    result.output,
+    /molecules\/StateLibrary\.tsx: imports state library "mobx-react-lite" below views/,
+  )
+  assert.doesNotMatch(result.output, /views\/Observed\.tsx/)
 })

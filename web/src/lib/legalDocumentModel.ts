@@ -36,19 +36,39 @@ export interface LegalDocumentModel {
   crossLink: { to: string; label: string }
 }
 
-export const legalParagraph = (...inlines: LegalInline[]): LegalBlock => ({ kind: 'paragraph', inlines })
+export const legalParagraph = (...inlines: LegalInline[]): LegalBlock => ({
+  kind: 'paragraph',
+  inlines,
+})
 
-export const legalList = (items: readonly LegalListItem[]): LegalBlock => ({ kind: 'list', items })
+export const legalList = (items: readonly LegalListItem[]): LegalBlock => ({
+  kind: 'list',
+  items,
+})
 
-export const legalListItem = (key: string, ...inlines: LegalInline[]): LegalListItem => ({ key, inlines })
+export const legalListItem = (key: string, ...inlines: LegalInline[]): LegalListItem => ({
+  key,
+  inlines,
+})
 
-export const legalStrong = (text: string): LegalInline => ({ kind: 'strong', text })
+export const legalStrong = (text: string): LegalInline => ({
+  kind: 'strong',
+  text,
+})
 
 export const legalCode = (text: string): LegalInline => ({ kind: 'code', text })
 
-export const legalInAppLink = (to: string, text: string): LegalInline => ({ kind: 'link', to, text })
+export const legalInAppLink = (to: string, text: string): LegalInline => ({
+  kind: 'link',
+  to,
+  text,
+})
 
-export const legalExternalLink = (href: string, text: string): LegalInline => ({ kind: 'external', href, text })
+export const legalExternalLink = (href: string, text: string): LegalInline => ({
+  kind: 'external',
+  href,
+  text,
+})
 
 export const legalMailto = (email: string, subject: string, text: string): LegalInline => ({
   kind: 'mailto',
@@ -57,9 +77,14 @@ export const legalMailto = (email: string, subject: string, text: string): Legal
 })
 
 /** The table of contents is the section list itself, so the two can never disagree. */
-export function buildLegalDocumentModel(input: Omit<LegalDocumentModel, 'toc'>): LegalDocumentModel {
+export function buildLegalDocumentModel(
+  input: Omit<LegalDocumentModel, 'toc'>,
+): LegalDocumentModel {
   return {
     ...input,
-    toc: input.sections.map((section) => ({ id: section.id, label: section.heading })),
+    toc: input.sections.map((section) => ({
+      id: section.id,
+      label: section.heading,
+    })),
   }
 }

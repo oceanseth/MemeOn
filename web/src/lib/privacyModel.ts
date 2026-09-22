@@ -28,7 +28,12 @@ export function buildPrivacyScreenModel(): PrivacyScreenModel {
         heading: copy.shortVersion.heading,
         blocks: [
           legalParagraph(copy.shortVersion.intro),
-          legalParagraph(copy.shortVersion.maskyLead, ' ', legalStrong(copy.shortVersion.maskyStrong), '.'),
+          legalParagraph(
+            copy.shortVersion.maskyLead,
+            ' ',
+            legalStrong(copy.shortVersion.maskyStrong),
+            '.',
+          ),
           legalParagraph(copy.shortVersion.noAds),
         ],
       },
@@ -37,8 +42,18 @@ export function buildPrivacyScreenModel(): PrivacyScreenModel {
         heading: whatWeCollect.heading,
         blocks: [
           legalList([
-            ...whatWeCollect.items.map((item) => legalListItem(item.strong, legalStrong(item.strong), ' ', item.body)),
-            legalListItem(discord.strong, legalStrong(discord.strong), ' ', discord.lead, ' ', legalCode(discord.command), discord.body),
+            ...whatWeCollect.items.map((item) =>
+              legalListItem(item.strong, legalStrong(item.strong), ' ', item.body),
+            ),
+            legalListItem(
+              discord.strong,
+              legalStrong(discord.strong),
+              ' ',
+              discord.lead,
+              ' ',
+              legalCode(discord.command),
+              discord.body,
+            ),
           ]),
         ],
       },
@@ -57,13 +72,18 @@ export function buildPrivacyScreenModel(): PrivacyScreenModel {
         heading: deletion.heading,
         blocks: [
           legalParagraph(
-            deletion.ownersLead, ' ',
-            legalInAppLink(deletion.makePrivate.to, deletion.makePrivate.text), ' ',
-            deletion.privateSuffix, ' ',
-            legalMailto(deletion.email, deletion.emailSubject, deletion.email), ' ',
+            deletion.ownersLead,
+            ' ',
+            legalInAppLink(deletion.makePrivate.to, deletion.makePrivate.text),
+            ' ',
+            deletion.privateSuffix,
+            ' ',
+            legalMailto(deletion.email, deletion.emailSubject, deletion.email),
+            ' ',
             deletion.afterEmail,
             legalExternalLink(deletion.maskyDeveloper.href, deletion.maskyDeveloper.text),
-            deletion.closing),
+            deletion.closing,
+          ),
         ],
       },
       {
@@ -75,7 +95,12 @@ export function buildPrivacyScreenModel(): PrivacyScreenModel {
         id: 'changes',
         heading: changes.heading,
         blocks: [
-          legalParagraph(changes.lead, ' ', legalMailto(changes.email, changes.emailSubject, changes.email), '.'),
+          legalParagraph(
+            changes.lead,
+            ' ',
+            legalMailto(changes.email, changes.emailSubject, changes.email),
+            '.',
+          ),
         ],
       },
     ],

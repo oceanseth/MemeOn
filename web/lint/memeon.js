@@ -18,9 +18,14 @@
  * 3. A user-agent dialog — `alert()`, `confirm()`, `prompt()`: a modal in the browser's chrome,
  *    with the browser's buttons.
  *
+ * `no-use-effect` is the other local law: never call `useEffect` / `useLayoutEffect`. Derive the
+ * value, handle the event, use a query, or call `useMountEffect` for mount-only external sync.
+ * The wrapper itself lives in `hooks/useMountEffect.ts` and is the one override for this rule.
+ *
  * Exceptions are `overrides` entries in `.oxlintrc.json`, scoped to a file, with the reason in the
- * `note` beside them. There is one: `atoms/file-drop.tsx`, where the native input is still the
- * thing that opens the OS dialog — it just may not be seen.
+ * `note` beside them. Two: `atoms/file-drop.tsx`, where the native input is still the thing that
+ * opens the OS dialog — it just may not be seen; and `hooks/useMountEffect.ts`, the mount-only
+ * wrapper around `useEffect`.
  */
 
 /** Input types whose widget — and, for several, whose sentence — the user agent owns. */
@@ -58,6 +63,8 @@ const UA_DIALOGS = new Map([
 
 const GLOBALS = new Set(['window', 'globalThis', 'self'])
 
+const EFFECT_HOOKS = new Set(['useEffect', 'useLayoutEffect'])
+
 /** A string literal's value, whether it is written as a literal or as a bare template. */
 function stringValue(node) {
   if (!node) return null
@@ -79,10 +86,8 @@ const noNativeChrome = {
     messages: {
       chromeType:
         'type="{{type}}" hands this control to the browser: its widget, its sizing, and words that never pass through copy/. Use {{fix}}.',
-      element:
-        '<{{tag}}> is painted by the user agent, not by this design system. Use {{fix}}.',
-      dialog:
-        '{{call}} opens the browser\'s own modal, in the browser\'s own words. Use {{fix}}.',
+      element: '<{{tag}}> is painted by the user agent, not by this design system. Use {{fix}}.',
+      dialog: "{{call}} opens the browser's own modal, in the browser's own words. Use {{fix}}.",
     },
   },
   create(context) {
@@ -98,7 +103,11 @@ const noNativeChrome = {
       JSXOpeningElement(node) {
         const tag = node.name.type === 'JSXIdentifier' ? node.name.name : null
         if (tag && UA_ELEMENTS.has(tag)) {
-          context.report({ node, messageId: 'element', data: { tag, fix: UA_ELEMENTS.get(tag) } })
+          context.report({
+            node,
+            messageId: 'element',
+            data: { tag, fix: UA_ELEMENTS.get(tag) },
+          })
         }
         for (const attribute of node.attributes) {
           if (attribute.type !== 'JSXAttribute') continue
@@ -136,7 +145,10 @@ const noNativeChrome = {
           context.report({
             node,
             messageId: 'dialog',
-            data: { call: `${callee.object.name}.${name}()`, fix: UA_DIALOGS.get(name) },
+            data: {
+              call: `${callee.object.name}.${name}()`,
+              fix: UA_DIALOGS.get(name),
+            },
           })
           return
         }
@@ -156,7 +168,69 @@ const noNativeChrome = {
   },
 }
 
+const identifierName = (node) => {
+  if (!node) return null
+  if (node.type === 'Identifier') return node.name
+  if (node.type === 'JSXIdentifier') return node.name
+  return stringValue(node)
+}
+
+const noUseEffect = {
+  meta: {
+    type: 'problem',
+    docs: {
+      description:
+        'Do not call useEffect or useLayoutEffect. Derive state, handle the event, or use useMountEffect.',
+    },
+    schema: [],
+    messages: {
+      used: 'Do not {{kind}} `{{name}}`. Derive state, handle the event, use a query, or call `useMountEffect` for mount-only external sync.',
+    },
+  },
+  create(context) {
+    const report = (node, name, kind) => {
+      context.report({ node, messageId: 'used', data: { name, kind } })
+    }
+
+    const reportIfEffect = (node, name, kind) => {
+      if (name && EFFECT_HOOKS.has(name)) report(node, name, kind)
+    }
+
+    return {
+      ImportDeclaration(node) {
+        for (const spec of node.specifiers) {
+          if (spec.type !== 'ImportSpecifier') continue
+          reportIfEffect(spec, identifierName(spec.imported), 'import')
+        }
+      },
+
+      MemberExpression(node) {
+        const name = node.computed ? stringValue(node.property) : identifierName(node.property)
+        reportIfEffect(node.property, name, 'call')
+      },
+
+      OptionalMemberExpression(node) {
+        const name = node.computed ? stringValue(node.property) : identifierName(node.property)
+        reportIfEffect(node.property, name, 'call')
+      },
+
+      CallExpression(node) {
+        if (node.callee.type === 'Identifier') reportIfEffect(node.callee, node.callee.name, 'call')
+      },
+
+      VariableDeclarator(node) {
+        if (node.id.type !== 'ObjectPattern') return
+        for (const prop of node.id.properties) {
+          if (prop.type !== 'Property') continue
+          const name = prop.computed ? stringValue(prop.key) : identifierName(prop.key)
+          reportIfEffect(prop, name, 'bind')
+        }
+      },
+    }
+  },
+}
+
 export default {
   meta: { name: 'memeon' },
-  rules: { 'no-native-chrome': noNativeChrome },
+  rules: { 'no-native-chrome': noNativeChrome, 'no-use-effect': noUseEffect },
 }

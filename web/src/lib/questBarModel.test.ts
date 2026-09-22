@@ -18,7 +18,10 @@ describe('buildQuestBarModel', () => {
     const opening = buildQuestBarModel({ ...fresh, busy: true })
     const done = buildQuestBarModel({ ...fresh, steps: questStepsPackDone })
     expect(freshModel.completionLabel).toBe('0/5')
-    expect(freshModel.chips[0]).toMatchObject({ kind: 'claim', buttonProps: { disabled: false } })
+    expect(freshModel.chips[0]).toMatchObject({
+      kind: 'claim',
+      buttonProps: { disabled: false },
+    })
     expect(opening.chips[0]).toMatchObject({
       kind: 'claim',
       label: copy.claim.busy,
@@ -26,15 +29,22 @@ describe('buildQuestBarModel', () => {
       buttonProps: { disabled: true, 'aria-busy': true },
     })
     expect(done.completionLabel).toBe('1/5')
-    expect(buildQuestBarModel({ ...fresh, steps: questStepsPackDone }).chips[0])
-      .toMatchObject({ kind: 'step', done: true, linkProps: null })
+    expect(buildQuestBarModel({ ...fresh, steps: questStepsPackDone }).chips[0]).toMatchObject({
+      kind: 'step',
+      done: true,
+      linkProps: null,
+    })
   })
 
   it('lists every quest inline and keeps the next step\u2019s instructions on the rail', () => {
     /* All five quests always visible — no disclosure step. */
     const packDone = buildQuestBarModel({ ...fresh, steps: questStepsPackDone })
     expect(packDone.chips).toHaveLength(5)
-    expect(packDone.chips[1]).toMatchObject({ kind: 'step', key: 'mint', done: false })
+    expect(packDone.chips[1]).toMatchObject({
+      kind: 'step',
+      key: 'mint',
+      done: false,
+    })
     expect(packDone.hint).toBe(questStepsPackDone[1]!.hint)
 
     const finished = buildQuestBarModel({
@@ -63,26 +73,37 @@ describe('buildQuestBarModel', () => {
 
   it('offers task destinations only for unfinished steps', () => {
     const model = buildQuestBarModel(fresh)
-    expect(model.chips.slice(1).map((chip) => chip.kind === 'step' ? chip.linkProps?.to : null))
-      .toEqual(['/binder/new', '/binder', '/friends', '/marketplace'])
+    expect(
+      model.chips.slice(1).map((chip) => (chip.kind === 'step' ? chip.linkProps?.to : null)),
+    ).toEqual(['/binder/new', '/binder', '/friends', '/marketplace'])
     const completed = buildQuestBarModel({
       ...fresh,
       steps: questStepsFresh.map((step) => ({ ...step, done: true })),
     })
-    expect(completed.chips.every((chip) => chip.kind === 'step' && chip.linkProps === null)).toBe(true)
+    expect(completed.chips.every((chip) => chip.kind === 'step' && chip.linkProps === null)).toBe(
+      true,
+    )
     expect(completed.completionLabel).toBe('5/5')
   })
 
   it('surfaces a failed one-shot claim instead of returning to the button', () => {
-    const failed = buildQuestBarModel({ ...fresh, claimError: "Pack didn't open — tap to try again." })
-    expect(failed.errorMessage).toBe("Pack didn't open — tap to try again.")
+    const failed = buildQuestBarModel({
+      ...fresh,
+      claimError: copy.pack.claimError,
+    })
+    expect(failed.errorMessage).toBe(copy.pack.claimError)
     expect(failed.errorProps.role).toBe('alert')
     expect(buildQuestBarModel(fresh).errorMessage).toBeNull()
   })
 
   it('keeps an empty-vault reward visible even when there are no quest steps', () => {
     const hidden = buildQuestBarModel({ ...fresh, steps: [] })
-    const emptyVault = buildQuestBarModel({ ...fresh, steps: [], packMemes: [], packReward: 20 })
+    const emptyVault = buildQuestBarModel({
+      ...fresh,
+      steps: [],
+      packMemes: [],
+      packReward: 20,
+    })
     expect(hidden.visible).toBe(false)
     /* the frame is always modelled, never conditional: it owns focus restoration, so it has to
        outlive the dismissal that closes it */
@@ -96,22 +117,38 @@ describe('buildQuestBarModel', () => {
   })
 
   it('builds reward copy, card media, and a single-element binder exit for an opened pack', () => {
-    const model = buildQuestBarModel({ ...fresh, packMemes: [paperMeme], packReward: 20 })
+    const model = buildQuestBarModel({
+      ...fresh,
+      packMemes: [paperMeme],
+      packReward: 20,
+    })
     expect(model.pack.open).toBe(true)
     expect(model.pack.showCards).toBe(true)
     expect(model.pack.description).toBe(copy.pack.withMemes(20))
     expect(model.pack.cards[0]?.detailLinkProps.to).toBe(`/m/${paperMeme.id}`)
     // the card's title and link already name it; the image is decorative inside the pack too
-    expect(model.pack.cards[0]?.media).toMatchObject({ kind: 'image', imageProps: { src: paperMeme.imageUrl, alt: '' } })
+    expect(model.pack.cards[0]?.media).toMatchObject({
+      kind: 'image',
+      imageProps: { src: paperMeme.imageUrl, alt: '' },
+    })
     expect(model.pack.binderLinkProps.to).toBe('/binder')
     expect(model.pack.id).toBe('pack')
     expect(model.pack.titleId).toBe('pack-title')
     expect(model.pack.closeLabel).toBe(copy.pack.close)
+    expect(model.title).toBe(copy.title)
+    expect(model.pack.title).toBe(copy.pack.title)
+    expect(model.pack.binderLabel).toBe(copy.pack.viewInBinder)
+    expect(model.pack.exploreLabel).toBe(copy.pack.explore)
   })
 
   it('reports every Base UI dismissal as one call to the parent, and never a re-open', () => {
     const onDismissPack = vi.fn()
-    const model = buildQuestBarModel({ ...fresh, onDismissPack, packMemes: [paperMeme], packReward: 20 })
+    const model = buildQuestBarModel({
+      ...fresh,
+      onDismissPack,
+      packMemes: [paperMeme],
+      packReward: 20,
+    })
     model.pack.onOpenChange(false)
     expect(onDismissPack).toHaveBeenCalledTimes(1)
     // only the engine opens the pack; a stray `true` from the frame is not a claim

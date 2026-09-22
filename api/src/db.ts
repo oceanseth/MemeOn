@@ -38,7 +38,12 @@ const strip = <T>(item: Record<string, unknown>): T => {
 // ---------- users ----------
 
 export async function getUser(sub: string): Promise<UserProfile | null> {
-  const res = await ddb.send(new GetCommand({ TableName: T(), Key: { PK: `USER#${sub}`, SK: 'PROFILE' } }))
+  const res = await ddb.send(
+    new GetCommand({
+      TableName: T(),
+      Key: { PK: `USER#${sub}`, SK: 'PROFILE' },
+    }),
+  )
   return res.Item ? strip<UserProfile>(res.Item) : null
 }
 
@@ -54,7 +59,10 @@ async function putAvatarLink(avatarId: string, sub: string): Promise<void> {
 
 export async function subForAvatarId(avatarId: string): Promise<string | null> {
   const res = await ddb.send(
-    new GetCommand({ TableName: T(), Key: { PK: `AVATAR#${avatarId}`, SK: 'LINK' } }),
+    new GetCommand({
+      TableName: T(),
+      Key: { PK: `AVATAR#${avatarId}`, SK: 'LINK' },
+    }),
   )
   return (res.Item?.sub as string) ?? null
 }
@@ -100,7 +108,13 @@ export async function ensureUser(profile: {
   await ddb.send(
     new PutCommand({
       TableName: T(),
-      Item: { PK: `USER#${user.sub}`, SK: 'PROFILE', GSI1PK: 'USER', GSI1SK: user.nameLower, ...user },
+      Item: {
+        PK: `USER#${user.sub}`,
+        SK: 'PROFILE',
+        GSI1PK: 'USER',
+        GSI1SK: user.nameLower,
+        ...user,
+      },
       ConditionExpression: 'attribute_not_exists(PK)',
     }),
   )
@@ -132,13 +146,31 @@ export function createdEdgeItem(creatorId: string, createdAt: string, memeId: st
   return { PK: `CREATED#${creatorId}`, SK: `${createdAt}#${memeId}`, memeId }
 }
 
-export async function putCreatedEdge(creatorId: string, createdAt: string, memeId: string): Promise<void> {
-  await ddb.send(new PutCommand({ TableName: T(), Item: createdEdgeItem(creatorId, createdAt, memeId) }))
+export async function putCreatedEdge(
+  creatorId: string,
+  createdAt: string,
+  memeId: string,
+): Promise<void> {
+  await ddb.send(
+    new PutCommand({
+      TableName: T(),
+      Item: createdEdgeItem(creatorId, createdAt, memeId),
+    }),
+  )
 }
 
-export async function deleteCreatedEdge(creatorId: string, createdAt: string, memeId: string): Promise<void> {
+export async function deleteCreatedEdge(
+  creatorId: string,
+  createdAt: string,
+  memeId: string,
+): Promise<void> {
   await ddb
-    .send(new DeleteCommand({ TableName: T(), Key: { PK: `CREATED#${creatorId}`, SK: `${createdAt}#${memeId}` } }))
+    .send(
+      new DeleteCommand({
+        TableName: T(),
+        Key: { PK: `CREATED#${creatorId}`, SK: `${createdAt}#${memeId}` },
+      }),
+    )
     .catch(() => {})
 }
 
@@ -166,7 +198,13 @@ export async function putMeme(meme: Meme): Promise<void> {
   await ddb.send(
     new PutCommand({
       TableName: T(),
-      Item: { PK: `MEME#${meme.id}`, SK: 'META', GSI1PK: 'MEME', GSI1SK: meme.createdAt, ...meme },
+      Item: {
+        PK: `MEME#${meme.id}`,
+        SK: 'META',
+        GSI1PK: 'MEME',
+        GSI1SK: meme.createdAt,
+        ...meme,
+      },
       ConditionExpression: 'attribute_not_exists(PK)',
     }),
   )
@@ -174,7 +212,9 @@ export async function putMeme(meme: Meme): Promise<void> {
 }
 
 export async function getMeme(id: string): Promise<Meme | null> {
-  const res = await ddb.send(new GetCommand({ TableName: T(), Key: { PK: `MEME#${id}`, SK: 'META' } }))
+  const res = await ddb.send(
+    new GetCommand({ TableName: T(), Key: { PK: `MEME#${id}`, SK: 'META' } }),
+  )
   return res.Item ? strip<Meme>(res.Item) : null
 }
 
@@ -186,11 +226,17 @@ export async function getMemesByIds(ids: string[]): Promise<Meme[]> {
   const results = await Promise.all(
     chunks.map(async (chunk) => {
       const memes: Meme[] = []
-      let keys: { PK: string; SK: string }[] = chunk.map((id) => ({ PK: `MEME#${id}`, SK: 'META' }))
+      let keys: { PK: string; SK: string }[] = chunk.map((id) => ({
+        PK: `MEME#${id}`,
+        SK: 'META',
+      }))
       while (keys.length > 0) {
         const res = await ddb.send(new BatchGetCommand({ RequestItems: { [T()]: { Keys: keys } } }))
         memes.push(...(res.Responses?.[T()] ?? []).map((i) => strip<Meme>(i)))
-        keys = (res.UnprocessedKeys?.[T()]?.Keys ?? []) as { PK: string; SK: string }[]
+        keys = (res.UnprocessedKeys?.[T()]?.Keys ?? []) as {
+          PK: string
+          SK: string
+        }[]
       }
       return memes
     }),
@@ -270,9 +316,7 @@ export async function updateMemeFields(id: string, fields: Partial<Meme>): Promi
  * Atomically count a reshare, then persist a tier change if one happened.
  * Returns the new count plus whether the meme just tiered up.
  */
-export async function recordReshare(
-  id: string,
-): Promise<{ meme: Meme; tieredUp: boolean } | null> {
+export async function recordReshare(id: string): Promise<{ meme: Meme; tieredUp: boolean } | null> {
   let res
   try {
     res = await ddb.send(
@@ -367,7 +411,12 @@ export function creditSharesItem(memeId: string, userId: string, shares: number)
 }
 
 export async function putPosition(memeId: string, userId: string, shares: number): Promise<void> {
-  await ddb.send(new PutCommand({ TableName: T(), Item: positionItem(memeId, userId, shares) }))
+  await ddb.send(
+    new PutCommand({
+      TableName: T(),
+      Item: positionItem(memeId, userId, shares),
+    }),
+  )
 }
 
 /** After share transfers, point ownerId at the largest holder. */
@@ -377,7 +426,10 @@ export async function refreshOwnership(memeId: string): Promise<void> {
   const top = positions.reduce((a, b) => (b.shares > a.shares ? b : a))
   if (top.userId !== meme.ownerId) {
     const owner = await getUser(top.userId)
-    await updateMemeFields(memeId, { ownerId: top.userId, ownerName: owner?.name ?? 'Unknown' })
+    await updateMemeFields(memeId, {
+      ownerId: top.userId,
+      ownerName: owner?.name ?? 'Unknown',
+    })
   }
 }
 
@@ -418,9 +470,9 @@ export async function deleteMemeCompletely(memeId: string): Promise<void> {
     await ddb.send(
       new BatchWriteCommand({
         RequestItems: {
-          [T()]: items
-            .slice(i, i + 25)
-            .map((it) => ({ DeleteRequest: { Key: { PK: it.PK, SK: it.SK } } })),
+          [T()]: items.slice(i, i + 25).map((it) => ({
+            DeleteRequest: { Key: { PK: it.PK, SK: it.SK } },
+          })),
         },
       }),
     )
@@ -515,12 +567,15 @@ export async function executeBuy(
           Update: {
             TableName: T(),
             Key: { PK: `MEME#${meme.id}`, SK: 'META' },
-            UpdateExpression:
-              remaining > 0 ? 'SET listing.shares = :rem' : 'SET listing = :null',
+            UpdateExpression: remaining > 0 ? 'SET listing.shares = :rem' : 'SET listing = :null',
             ConditionExpression: 'listing.sellerId = :seller AND listing.shares >= :n',
             ExpressionAttributeValues:
               remaining > 0
-                ? { ':rem': remaining, ':seller': listing.sellerId, ':n': shares }
+                ? {
+                    ':rem': remaining,
+                    ':seller': listing.sellerId,
+                    ':n': shares,
+                  }
                 : { ':null': null, ':seller': listing.sellerId, ':n': shares },
           },
         },
@@ -581,14 +636,28 @@ export async function createApiKey(
         {
           Put: {
             TableName: T(),
-            Item: { PK: `APIKEY#${hash}`, SK: 'KEY', sub, label, prefix, createdAt },
+            Item: {
+              PK: `APIKEY#${hash}`,
+              SK: 'KEY',
+              sub,
+              label,
+              prefix,
+              createdAt,
+            },
             ConditionExpression: 'attribute_not_exists(PK)',
           },
         },
         {
           Put: {
             TableName: T(),
-            Item: { PK: `USER#${sub}`, SK: `APIKEY#${prefix}`, hash, label, prefix, createdAt },
+            Item: {
+              PK: `USER#${sub}`,
+              SK: `APIKEY#${prefix}`,
+              hash,
+              label,
+              prefix,
+              createdAt,
+            },
           },
         },
       ],
@@ -616,15 +685,24 @@ export async function listApiKeys(
 
 export async function revokeApiKey(sub: string, prefix: string): Promise<boolean> {
   const res = await ddb.send(
-    new GetCommand({ TableName: T(), Key: { PK: `USER#${sub}`, SK: `APIKEY#${prefix}` } }),
+    new GetCommand({
+      TableName: T(),
+      Key: { PK: `USER#${sub}`, SK: `APIKEY#${prefix}` },
+    }),
   )
   if (!res.Item) return false
   await Promise.all([
     ddb.send(
-      new DeleteCommand({ TableName: T(), Key: { PK: `APIKEY#${res.Item.hash as string}`, SK: 'KEY' } }),
+      new DeleteCommand({
+        TableName: T(),
+        Key: { PK: `APIKEY#${res.Item.hash as string}`, SK: 'KEY' },
+      }),
     ),
     ddb.send(
-      new DeleteCommand({ TableName: T(), Key: { PK: `USER#${sub}`, SK: `APIKEY#${prefix}` } }),
+      new DeleteCommand({
+        TableName: T(),
+        Key: { PK: `USER#${sub}`, SK: `APIKEY#${prefix}` },
+      }),
     ),
   ])
   return true
@@ -636,7 +714,10 @@ export async function userForApiKey(token: string): Promise<UserProfile | null> 
   const { createHash } = await import('node:crypto')
   const hash = createHash('sha256').update(token).digest('hex')
   const res = await ddb.send(
-    new GetCommand({ TableName: T(), Key: { PK: `APIKEY#${hash}`, SK: 'KEY' } }),
+    new GetCommand({
+      TableName: T(),
+      Key: { PK: `APIKEY#${hash}`, SK: 'KEY' },
+    }),
   )
   if (!res.Item) return null
   return getUser(res.Item.sub as string)
@@ -657,7 +738,10 @@ export async function listFriends(userId: string): Promise<Friend[]> {
 
 export async function getFriend(userId: string, otherId: string): Promise<Friend | null> {
   const res = await ddb.send(
-    new GetCommand({ TableName: T(), Key: { PK: `USER#${userId}`, SK: `FRIEND#${otherId}` } }),
+    new GetCommand({
+      TableName: T(),
+      Key: { PK: `USER#${userId}`, SK: `FRIEND#${otherId}` },
+    }),
   )
   return res.Item ? strip<Friend>(res.Item) : null
 }
@@ -667,7 +751,12 @@ export async function setFriendEdge(
   otherId: string,
   status: FriendStatus,
 ): Promise<void> {
-  const edge: Friend = { userId, otherId, status, createdAt: new Date().toISOString() }
+  const edge: Friend = {
+    userId,
+    otherId,
+    status,
+    createdAt: new Date().toISOString(),
+  }
   await ddb.send(
     new PutCommand({
       TableName: T(),
@@ -678,7 +767,10 @@ export async function setFriendEdge(
 
 export async function deleteFriendEdge(userId: string, otherId: string): Promise<void> {
   await ddb.send(
-    new DeleteCommand({ TableName: T(), Key: { PK: `USER#${userId}`, SK: `FRIEND#${otherId}` } }),
+    new DeleteCommand({
+      TableName: T(),
+      Key: { PK: `USER#${userId}`, SK: `FRIEND#${otherId}` },
+    }),
   )
 }
 
@@ -692,7 +784,12 @@ export async function createTrade(trade: Trade): Promise<void> {
   await ddb.send(
     new TransactWriteCommand({
       TransactItems: [
-        { Put: { TableName: T(), Item: { PK: `TRADE#${trade.id}`, SK: 'META', ...trade } } },
+        {
+          Put: {
+            TableName: T(),
+            Item: { PK: `TRADE#${trade.id}`, SK: 'META', ...trade },
+          },
+        },
         { Put: { TableName: T(), Item: tradeRefItem(trade.fromId, trade) } },
         { Put: { TableName: T(), Item: tradeRefItem(trade.toId, trade) } },
       ],
@@ -701,7 +798,9 @@ export async function createTrade(trade: Trade): Promise<void> {
 }
 
 export async function getTrade(id: string): Promise<Trade | null> {
-  const res = await ddb.send(new GetCommand({ TableName: T(), Key: { PK: `TRADE#${id}`, SK: 'META' } }))
+  const res = await ddb.send(
+    new GetCommand({ TableName: T(), Key: { PK: `TRADE#${id}`, SK: 'META' } }),
+  )
   return res.Item ? strip<Trade>(res.Item) : null
 }
 
@@ -854,7 +953,11 @@ export async function acceptTrade(trade: Trade): Promise<Trade> {
  */
 export async function executeTrade(trade: Trade): Promise<void> {
   const reserved = await listingReserveMap(trade)
-  await ddb.send(new TransactWriteCommand({ TransactItems: tradeTransferItems(trade, reserved) }))
+  await ddb.send(
+    new TransactWriteCommand({
+      TransactItems: tradeTransferItems(trade, reserved),
+    }),
+  )
 }
 
 // ---------- onboarding quests ----------
@@ -888,7 +991,10 @@ export async function completeQuest(
         UpdateExpression: 'SET onboarding.#k = :now ADD coins :r',
         ConditionExpression: 'attribute_not_exists(onboarding.#k)',
         ExpressionAttributeNames: { '#k': key },
-        ExpressionAttributeValues: { ':now': new Date().toISOString(), ':r': reward },
+        ExpressionAttributeValues: {
+          ':now': new Date().toISOString(),
+          ':r': reward,
+        },
       }),
     )
     return true
@@ -915,7 +1021,9 @@ export async function topHolders(limit = 10): Promise<UserProfile[]> {
         ExclusiveStartKey: startKey,
       }),
     )
-    const page = (res.Items ?? []).map((i) => strip<UserProfile>(i)).filter((u) => !HOUSE_SUBS.has(u.sub))
+    const page = (res.Items ?? [])
+      .map((i) => strip<UserProfile>(i))
+      .filter((u) => !HOUSE_SUBS.has(u.sub))
     top = [...top, ...page].sort((a, b) => b.coins - a.coins).slice(0, limit)
     startKey = res.LastEvaluatedKey
   } while (startKey)
@@ -938,18 +1046,30 @@ export type LeaderboardRow = {
   collectionSize: number
 }
 
-export async function getLeaderboardCache(): Promise<{ leaders: LeaderboardRow[]; computedAt: string } | null> {
+export async function getLeaderboardCache(): Promise<{
+  leaders: LeaderboardRow[]
+  computedAt: string
+} | null> {
   const res = await ddb.send(
-    new GetCommand({ TableName: T(), Key: { PK: 'LEADERBOARD', SK: 'CURRENT' } }),
+    new GetCommand({
+      TableName: T(),
+      Key: { PK: 'LEADERBOARD', SK: 'CURRENT' },
+    }),
   )
   if (!res.Item) return null
-  return { leaders: res.Item.leaders as LeaderboardRow[], computedAt: res.Item.computedAt as string }
+  return {
+    leaders: res.Item.leaders as LeaderboardRow[],
+    computedAt: res.Item.computedAt as string,
+  }
 }
 
 export async function putLeaderboardCache(leaders: LeaderboardRow[]): Promise<string> {
   const computedAt = new Date().toISOString()
   await ddb.send(
-    new PutCommand({ TableName: T(), Item: { PK: 'LEADERBOARD', SK: 'CURRENT', leaders, computedAt } }),
+    new PutCommand({
+      TableName: T(),
+      Item: { PK: 'LEADERBOARD', SK: 'CURRENT', leaders, computedAt },
+    }),
   )
   return computedAt
 }
@@ -962,7 +1082,12 @@ export async function markGiphySeeded(giphyId: string): Promise<boolean> {
     await ddb.send(
       new PutCommand({
         TableName: T(),
-        Item: { PK: `GIPHY#${giphyId}`, SK: 'SEED', giphyId, at: new Date().toISOString() },
+        Item: {
+          PK: `GIPHY#${giphyId}`,
+          SK: 'SEED',
+          giphyId,
+          at: new Date().toISOString(),
+        },
         ConditionExpression: 'attribute_not_exists(PK)',
       }),
     )
@@ -974,7 +1099,10 @@ export async function markGiphySeeded(giphyId: string): Promise<boolean> {
 
 export async function archiveSeedCount(): Promise<number> {
   const res = await ddb.send(
-    new GetCommand({ TableName: T(), Key: { PK: 'ARCHIVE#STATS', SK: 'COUNT' } }),
+    new GetCommand({
+      TableName: T(),
+      Key: { PK: 'ARCHIVE#STATS', SK: 'COUNT' },
+    }),
   )
   return (res.Item?.seeded as number) ?? 0
 }
@@ -997,7 +1125,11 @@ export async function putClaim(claim: import('./types').CreatorClaim): Promise<b
     await ddb.send(
       new PutCommand({
         TableName: T(),
-        Item: { PK: `MEME#${claim.memeId}`, SK: `CLAIM#${claim.userId}`, ...claim },
+        Item: {
+          PK: `MEME#${claim.memeId}`,
+          SK: `CLAIM#${claim.userId}`,
+          ...claim,
+        },
         ConditionExpression: 'attribute_not_exists(PK)',
       }),
     )
@@ -1055,20 +1187,22 @@ export async function claimVaultPack(
       ExpressionAttributeValues: { ':empty': {} },
     }),
   )
-  const items: NonNullable<
-    ConstructorParameters<typeof TransactWriteCommand>[0]['TransactItems']
-  > = [
-    {
-      Update: {
-        TableName: T(),
-        Key: { PK: `USER#${userId}`, SK: 'PROFILE' },
-        UpdateExpression: 'SET onboarding.#k = :now ADD coins :r',
-        ConditionExpression: 'attribute_not_exists(onboarding.#k)',
-        ExpressionAttributeNames: { '#k': 'pack' },
-        ExpressionAttributeValues: { ':now': new Date().toISOString(), ':r': reward },
+  const items: NonNullable<ConstructorParameters<typeof TransactWriteCommand>[0]['TransactItems']> =
+    [
+      {
+        Update: {
+          TableName: T(),
+          Key: { PK: `USER#${userId}`, SK: 'PROFILE' },
+          UpdateExpression: 'SET onboarding.#k = :now ADD coins :r',
+          ConditionExpression: 'attribute_not_exists(onboarding.#k)',
+          ExpressionAttributeNames: { '#k': 'pack' },
+          ExpressionAttributeValues: {
+            ':now': new Date().toISOString(),
+            ':r': reward,
+          },
+        },
       },
-    },
-  ]
+    ]
   for (const memeId of memeIds) {
     items.push({
       Update: {
@@ -1230,7 +1364,10 @@ async function bumpFollowerCount(creatorId: string, delta: number): Promise<void
 
 export async function isFollowing(userId: string, creatorId: string): Promise<boolean> {
   const res = await ddb.send(
-    new GetCommand({ TableName: T(), Key: { PK: `USER#${userId}`, SK: `FOLLOW#${creatorId}` } }),
+    new GetCommand({
+      TableName: T(),
+      Key: { PK: `USER#${userId}`, SK: `FOLLOW#${creatorId}` },
+    }),
   )
   return !!res.Item
 }
@@ -1254,7 +1391,10 @@ export async function linkDiscord(discordUserId: string, sub: string): Promise<v
 
 export async function discordLinkedSub(discordUserId: string): Promise<string | null> {
   const res = await ddb.send(
-    new GetCommand({ TableName: T(), Key: { PK: `DISCORD#${discordUserId}`, SK: 'LINK' } }),
+    new GetCommand({
+      TableName: T(),
+      Key: { PK: `DISCORD#${discordUserId}`, SK: 'LINK' },
+    }),
   )
   return (res.Item?.sub as string) ?? null
 }
@@ -1336,7 +1476,14 @@ export async function addPlexEdge(a: string, b: string, addedBy: string): Promis
       ddb.send(
         new PutCommand({
           TableName: T(),
-          Item: { PK: `MEME#${from}`, SK: `PLEX#${to}`, memeId: from, otherId: to, addedBy, createdAt },
+          Item: {
+            PK: `MEME#${from}`,
+            SK: `PLEX#${to}`,
+            memeId: from,
+            otherId: to,
+            addedBy,
+            createdAt,
+          },
         }),
       ),
     ),
@@ -1405,9 +1552,21 @@ export async function addAlert(
 ): Promise<void> {
   const createdAt = new Date().toISOString()
   const id = `${createdAt}#${randomUUID().slice(0, 8)}`
-  const alert: Alert = { id, userId, type, message, memeId, subjectSub, read: false, createdAt }
+  const alert: Alert = {
+    id,
+    userId,
+    type,
+    message,
+    memeId,
+    subjectSub,
+    read: false,
+    createdAt,
+  }
   await ddb.send(
-    new PutCommand({ TableName: T(), Item: { PK: `USER#${userId}`, SK: `ALERT#${id}`, ...alert } }),
+    new PutCommand({
+      TableName: T(),
+      Item: { PK: `USER#${userId}`, SK: `ALERT#${id}`, ...alert },
+    }),
   )
 }
 

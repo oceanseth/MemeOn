@@ -11,7 +11,10 @@ let botToken = process.env.DISCORD_BOT_TOKEN
 if (!appId || !botToken) {
   const ssm = new SSMClient({ region: 'us-west-2' })
   const res = await ssm.send(
-    new GetParameterCommand({ Name: `/memeon/${envName}/discord`, WithDecryption: true }),
+    new GetParameterCommand({
+      Name: `/memeon/${envName}/discord`,
+      WithDecryption: true,
+    }),
   )
   const cfg = JSON.parse(res.Parameter.Value)
   appId = cfg.application_id
@@ -46,7 +49,10 @@ const commands = [
 
 const res = await fetch(`https://discord.com/api/v10/applications/${appId}/commands`, {
   method: 'PUT',
-  headers: { authorization: `Bot ${botToken}`, 'content-type': 'application/json' },
+  headers: {
+    authorization: `Bot ${botToken}`,
+    'content-type': 'application/json',
+  },
   body: JSON.stringify(commands),
 })
 console.log('register commands:', res.status)

@@ -1,11 +1,6 @@
 import { createActor } from 'xstate'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import {
-  maskyAccessToken,
-  sessionToken,
-  setMaskyAccessToken,
-  setSessionToken,
-} from '../lib/api'
+import { maskyAccessToken, sessionToken, setMaskyAccessToken, setSessionToken } from '../lib/api'
 import { firebaseSignOut } from '../lib/firebase'
 import type { Me } from '../lib/types'
 import { authMachine } from './authMachine'
@@ -33,7 +28,10 @@ function deferredResponse() {
   return { promise, resolve, reject }
 }
 
-function settleLate(result: 'success' | 'network failure' | '401', response: ReturnType<typeof deferredResponse>) {
+function settleLate(
+  result: 'success' | 'network failure' | '401',
+  response: ReturnType<typeof deferredResponse>,
+) {
   if (result === 'success') response.resolve(Response.json({ ...me, coins: 42 }))
   else if (result === '401') response.resolve(Response.json({ error: 'expired' }, { status: 401 }))
   else response.reject(new Error('account unavailable'))
@@ -131,7 +129,8 @@ for (const phase of ['startup', 'refresh'] as const) {
       await pending
 
       if (result === 'success') response.resolve(Response.json(me))
-      else if (result === '401') response.resolve(Response.json({ error: 'expired' }, { status: 401 }))
+      else if (result === '401')
+        response.resolve(Response.json({ error: 'expired' }, { status: 401 }))
       else response.reject(new Error('network unavailable'))
       // Drain the canceled fetch and JSON parsing before checking for stale updates.
       await new Promise((resolve) => setTimeout(resolve, 0))
@@ -163,16 +162,19 @@ test('a canceled refresh returning 401 cannot clear a subsequent login', async (
   expect(maskyAccessToken()).toBe('new-masky-token')
 })
 
-test.each(['startup', 'refresh'] as const)('%s returning 401 clears invalid credentials', async (phase) => {
-  if (phase === 'refresh') await authenticate()
-  fetchMock.mockResolvedValueOnce(Response.json({ error: 'expired' }, { status: 401 }))
-  await stores.auth.refresh()
-  expect(stores.auth.user).toBeNull()
-  expect(stores.auth.loading).toBe(false)
-  expect(stores.auth.error).toBeNull()
-  expect(sessionToken()).toBeNull()
-  expect(maskyAccessToken()).toBeNull()
-})
+test.each(['startup', 'refresh'] as const)(
+  '%s returning 401 clears invalid credentials',
+  async (phase) => {
+    if (phase === 'refresh') await authenticate()
+    fetchMock.mockResolvedValueOnce(Response.json({ error: 'expired' }, { status: 401 }))
+    await stores.auth.refresh()
+    expect(stores.auth.user).toBeNull()
+    expect(stores.auth.loading).toBe(false)
+    expect(stores.auth.error).toBeNull()
+    expect(sessionToken()).toBeNull()
+    expect(maskyAccessToken()).toBeNull()
+  },
+)
 
 test('initial authentication gates protected routes until the user is loaded', async () => {
   expect(stores.auth.loading).toBe(true)
@@ -195,7 +197,12 @@ test('background refresh keeps the authenticated projection usable while awaitin
   fetchMock.mockReturnValueOnce(response.promise)
   const pending = stores.auth.refresh()
   let settled = false
-  void pending.then(() => { settled = true }, () => {})
+  void pending.then(
+    () => {
+      settled = true
+    },
+    () => {},
+  )
 
   expect(stores.auth.loading).toBe(false)
   expect(stores.auth.user).toEqual(me)
@@ -225,7 +232,9 @@ test.each(['success', 'network failure', '401'] as const)(
     expect(firstSignal?.aborted).toBe(true)
 
     let settled = false
-    void Promise.all([firstWaiter, secondWaiter]).then(() => { settled = true })
+    void Promise.all([firstWaiter, secondWaiter]).then(() => {
+      settled = true
+    })
     settleLate(lateResult, first)
     await new Promise((resolve) => setTimeout(resolve, 0))
     expect(settled).toBe(false)
@@ -277,7 +286,8 @@ test.each(['transient failure', '401', 'logout'] as const)(
     const secondWaiter = stores.auth.refresh()
 
     if (latestOutcome === 'transient failure') second.reject(new Error('account unavailable'))
-    else if (latestOutcome === '401') second.resolve(Response.json({ error: 'expired' }, { status: 401 }))
+    else if (latestOutcome === '401')
+      second.resolve(Response.json({ error: 'expired' }, { status: 401 }))
     else stores.auth.logout()
     await Promise.all([firstWaiter, secondWaiter])
 
@@ -311,7 +321,10 @@ test.each(['transient failure', '401', 'logout'] as const)(
 for (const failure of ['network', '503'] as const) {
   function failAccountRequest() {
     if (failure === 'network') fetchMock.mockRejectedValueOnce(new Error('account unavailable'))
-    else fetchMock.mockResolvedValueOnce(Response.json({ error: 'account unavailable' }, { status: 503 }))
+    else
+      fetchMock.mockResolvedValueOnce(
+        Response.json({ error: 'account unavailable' }, { status: 503 }),
+      )
   }
 
   test(`startup ${failure} failure settles in error without a user and can retry`, async () => {

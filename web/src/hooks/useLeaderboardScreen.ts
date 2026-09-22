@@ -12,6 +12,7 @@ export type { LeaderboardPhase }
 
 export interface LeaderboardScreenModel {
   phase: LeaderboardPhase
+  pageTitle: string
   subtitle: string
   podiumTitle: string
   podiumSubtitle: string
@@ -27,6 +28,7 @@ export interface LeaderboardScreenModel {
   showEmpty: boolean
   emptyMessage: string
   showError: boolean
+  errorTitle: string
   errorMessage: string
   retryLabel: string
   retry: () => void
@@ -90,6 +92,14 @@ export function buildLeaderboardRowModel(
   }
 }
 
+/** Signed-in row only when it is sliced out of the visible window. Rank stays the unsliced index. */
+export function pinYouRow(
+  ranked: readonly LeaderboardRowModel[],
+  visibleLimit: number,
+): LeaderboardRowModel | null {
+  return ranked.slice(visibleLimit).find((row) => row.isMe) ?? null
+}
+
 /** Everything `LeaderboardScreen` renders. The hook is the engine; the screen is the terminal. */
 export function useLeaderboardScreen(): LeaderboardScreenModel {
   const [snapshot, send] = useProjectedActor(leaderboardMachine)
@@ -101,7 +111,7 @@ export function useLeaderboardScreen(): LeaderboardScreenModel {
   const load = () => {
     apiFetch<{ leaders: LeaderRow[] }>('/api/leaderboard')
       .then((r) => send({ type: 'DONE', leaders: r.leaders }))
-      .catch(() => send({ type: 'FAIL', err: copy.loadError }))
+      .catch(() => send({ type: 'FAIL', err: copy.loadError.title }))
   }
 
   useMountEffect(() => {
@@ -111,15 +121,18 @@ export function useLeaderboardScreen(): LeaderboardScreenModel {
   const ranked = ctx.leaders.map((leader, index) => buildLeaderboardRowModel(leader, index, meSub))
   const leaders = ranked.slice(0, ctx.visibleLimit)
   const hidden = ranked.length - leaders.length
-  // the pinned row is only worth a line when the reader cannot already see themselves
-  const youRow = ranked.slice(ctx.visibleLimit).find((row) => row.isMe) ?? null
+  const youRow = pinYouRow(ranked, ctx.visibleLimit)
 
   return {
     phase,
+    pageTitle: copy.pageTitle,
     subtitle: copy.subtitle,
     podiumTitle: copy.podium.title,
     podiumSubtitle: copy.podium.subtitle,
-    columnHeaders: { player: copy.columns.player, braincells: copy.columns.braincells },
+    columnHeaders: {
+      player: copy.columns.player,
+      braincells: copy.columns.braincells,
+    },
     leaders,
     youRow,
     showMore: hidden > 0,
@@ -130,7 +143,8 @@ export function useLeaderboardScreen(): LeaderboardScreenModel {
     showEmpty: phase === 'empty',
     emptyMessage: copy.empty,
     showError: phase === 'error',
-    errorMessage: ctx.err ?? copy.loadError,
+    errorTitle: copy.loadError.title,
+    errorMessage: copy.loadError.body,
     retryLabel: copy.retry,
     retry: () => {
       send({ type: 'RETRY' })

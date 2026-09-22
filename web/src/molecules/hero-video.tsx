@@ -10,8 +10,8 @@ const FRAME = cn(
   'max-md:-mx-5 max-md:rounded-none',
 )
 
-/** Where each control sits on the frame; the pill itself is `Button variant="glass"`. */
-const PLAY_PLACEMENT = 'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2'
+/** Center the wrapper so the button's hover and press translations stay independent. */
+const PLAY_PLACEMENT = 'absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2'
 const SOUND_PLACEMENT = 'absolute right-3 bottom-3 max-md:top-2 max-md:right-2 max-md:bottom-auto'
 
 /**
@@ -36,18 +36,19 @@ export function HeroVideo({ model, className }: { model: HeroVideoModel; classNa
         {...model.videoProps}
       />
       {model.showPlayPill && (
-        <Button
-          variant="glass"
-          size="pill"
-          data-slot="hero-video-play"
-          className={PLAY_PLACEMENT}
-          {...model.playButtonProps}
-        >
-          <span aria-hidden="true">
-            <Icon name="play" size={16} />
-          </span>{' '}
-          {model.playLabel}
-        </Button>
+        <div data-slot="hero-video-play-placement" className={PLAY_PLACEMENT}>
+          <Button
+            variant="glass"
+            size="pill"
+            data-slot="hero-video-play"
+            {...model.playButtonProps}
+          >
+            <span aria-hidden="true">
+              <Icon name="play" size={16} />
+            </span>{' '}
+            {model.playLabel}
+          </Button>
+        </div>
       )}
       {model.showSoundPill && (
         <Button

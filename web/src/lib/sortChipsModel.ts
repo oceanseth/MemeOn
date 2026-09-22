@@ -11,8 +11,7 @@ export interface SortChipModel {
   selected: boolean
   /** which way the selected chip sorts; null on the others */
   direction: SortDir | null
-  arrow: '↓' | '↑' | null
-  /** The arrow is decoration; direction is spoken here. */
+  /** The direction mark is decoration; direction is spoken here. */
   directionLabel: 'ascending' | 'descending' | null
   buttonProps: { 'aria-label': string }
 }
@@ -45,7 +44,11 @@ export interface BuildSortChipsModelInput {
   disabledReason?: string | null
 }
 
-const CHIP_OPTIONS: readonly { key: SortKey; label: string; icon: IconName | null }[] = [
+const CHIP_OPTIONS: readonly {
+  key: SortKey
+  label: string
+  icon: IconName | null
+}[] = [
   { key: 'new', label: copy.chips.new, icon: null },
   { key: 'views', label: copy.chips.views, icon: 'eye' },
   { key: 'reshares', label: copy.chips.reshares, icon: 'arrows-left-right' },
@@ -74,7 +77,6 @@ export function buildSortChipsModel({
         icon,
         selected,
         direction: selected ? dir : null,
-        arrow: selected ? (dir === 'desc' ? '↓' : '↑') : null,
         directionLabel,
         buttonProps: {
           'aria-label': copy.chipA11y(label, directionLabel),

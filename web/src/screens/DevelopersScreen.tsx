@@ -14,10 +14,13 @@ import type { DevelopersScreenModel } from '../hooks/useDevelopersScreen'
 import { ConfirmDialog } from '@/molecules/confirm-dialog'
 import { Icon } from '@/atoms/icon'
 
-const EXPLAINER = 'mt-0 mb-0 max-w-[65ch] text-base text-muted-foreground'
+const EXPLAINER = 'mt-0 mb-0 max-w-prose text-base text-muted-foreground'
 
 /** Developers API-key page as a function of its model. Every engine state is one set of args. */
 export function DevelopersScreen({
+  pageTitle,
+  skillButtonLabel,
+  explainer,
   keys,
   freshKey,
   err,
@@ -45,6 +48,7 @@ export function DevelopersScreen({
   createFormProps,
   createButtonProps,
   copyButtonProps,
+  retryLabel,
   retryButtonProps,
   freshKeyProps,
   freshKeyRegionProps,
@@ -60,7 +64,7 @@ export function DevelopersScreen({
         level="h1"
         title={
           <span className="inline-flex items-center gap-2">
-            <Icon name="wrench" size={20} /> Developers
+            <Icon name="wrench" size={20} /> {pageTitle}
           </span>
         }
         className="mb-5"
@@ -69,17 +73,19 @@ export function DevelopersScreen({
           <span aria-hidden="true">
             <Icon name="scroll-text" size={16} />
           </span>{' '}
-          API skill.md
+          {skillButtonLabel}
         </a>
       </PageHead>
       <p className={EXPLAINER}>
-        API keys act as <strong className="font-semibold text-foreground">your account</strong>: they can mint
-        memes, gift shares (including to users your own site knows only by Masky avatar id), trade,
-        and read everything you can. Full endpoint reference lives in{' '}
+        {explainer.lede}
+        <strong className="font-semibold text-foreground">{explainer.account}</strong>
+        {explainer.powers}
         <InlineLink href="/skill.md" target="_blank" rel="noreferrer">
-          skill.md
-        </InlineLink>{' '}
-        (also at <code>/.well-known/skill.md</code> for agents). Treat keys like passwords.
+          {explainer.skill}
+        </InlineLink>
+        {explainer.alsoAt}
+        <code>{explainer.wellKnown}</code>
+        {explainer.close}
       </p>
 
       <Card size="sm" className="mt-5">
@@ -87,12 +93,12 @@ export function DevelopersScreen({
           className="flex flex-wrap items-center gap-3 max-md:flex-col max-md:items-start"
           {...createFormProps}
         >
-          <Input
-            placeholder="Key label (e.g. my-trading-bot)"
+          <div
             /* the phone stacks the form, where `flex-basis` would size the well's *height* */
-            className="min-w-60 flex-[1_1_240px] max-md:w-full max-md:min-w-0 max-md:flex-none"
-            {...labelInputProps}
-          />
+            className="min-w-60 flex-(--flex-key-card) max-md:w-full max-md:min-w-0 max-md:flex-none"
+          >
+            <Input className="w-full" {...labelInputProps} />
+          </div>
           <Button variant="primary" type="submit" className="shrink-0" {...createButtonProps}>
             <span aria-hidden="true">
               <Icon name="circle-plus" size={16} />
@@ -104,7 +110,12 @@ export function DevelopersScreen({
       </Card>
 
       {showErr && (
-        <Alert variant="error" size="compact" className="mt-4 block max-w-none" {...errorNoticeProps}>
+        <Alert
+          variant="error"
+          size="compact"
+          className="mt-4 block max-w-none"
+          {...errorNoticeProps}
+        >
           <AlertTitle>{err}</AlertTitle>
         </Alert>
       )}
@@ -145,7 +156,11 @@ export function DevelopersScreen({
           )}
         </div>
         <LiveRegion variant="visible" {...statusRegionProps}>
-          {showOk && <Alert variant="success" className="mt-3">{okMsg}</Alert>}
+          {showOk && (
+            <Alert variant="success" className="mt-3">
+              {okMsg}
+            </Alert>
+          )}
         </LiveRegion>
         {showSpinner && (
           /* a labelled spinner row, never a bare spinner */
@@ -165,7 +180,7 @@ export function DevelopersScreen({
             </EmptyDescription>
             <EmptyContent>
               <Button variant="primary" {...retryButtonProps}>
-                Try again
+                {retryLabel}
               </Button>
             </EmptyContent>
           </Empty>
@@ -192,7 +207,7 @@ export function DevelopersScreen({
                 {/* the destructive act is tinted, never the page's primary plate */}
                 <ItemActions>
                   <Button variant="destructive" className="shrink-0" {...k.revokeButtonProps}>
-                    Revoke
+                    {k.revokeLabel}
                   </Button>
                 </ItemActions>
               </Item>

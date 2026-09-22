@@ -11,7 +11,7 @@
 
 /* This sheet is compiled on its own, so the breakpoint names `@variant` resolves below have to be
    read from the theme; `reference` loads `index.css` for its names and emits none of it. */
-@reference '../index.css';
+@reference "../index.css";
 
 @layer components {
   /*
@@ -25,7 +25,7 @@
    * `pb-[calc(…)]` is an off-token value the design-system lint (rightly) rejects. The selector
    * keys off the slots the shell writes, so it costs nothing on a page with no tab bar.
    */
-  :root:has([data-slot='bottom-nav']) [data-slot='content'] {
+  :root:has([data-slot="bottom-nav"]) [data-slot="content"] {
     @variant max-xl {
       padding-bottom: calc(var(--spacing) * 20 + env(safe-area-inset-bottom, 0px));
     }
@@ -36,7 +36,7 @@
    * bar's box and put the clearance above off by one. The header's edge is the scroll-driven
    * animation below; the tab bar's is always there, because the page is always under it.
    */
-  [data-slot='bottom-nav'] {
+  [data-slot="bottom-nav"] {
     box-shadow: 0 -1px 0 var(--color-border);
   }
 
@@ -48,7 +48,7 @@
    * state, not a fallback.
    */
   @supports (animation-timeline: scroll()) {
-    [data-slot='header'] {
+    [data-slot="header"] {
       animation: shell-header-scrolled linear both;
       animation-timeline: scroll(root);
       animation-range: 0 calc(var(--spacing) * 12);
@@ -73,19 +73,19 @@
    * 8px. `lib/viewTransition` starts the transition; it also skips it under reduced motion, and
    * the media query below stops the pseudo-elements in case one was started anyway.
    */
-  [data-slot='header'] {
+  [data-slot="header"] {
     view-transition-name: shell-header;
   }
 
-  [data-slot='bottom-nav'] {
+  [data-slot="bottom-nav"] {
     view-transition-name: shell-tab-bar;
   }
 
-  [data-slot='nav-pill'][aria-current='page'] {
+  [data-slot="nav-pill"][aria-current="page"] {
     view-transition-name: shell-nav-current;
   }
 
-  [data-slot='tab-item'][aria-current='page'] {
+  [data-slot="tab-item"][aria-current="page"] {
     view-transition-name: shell-tab-current;
   }
 

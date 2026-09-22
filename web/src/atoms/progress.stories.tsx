@@ -32,7 +32,9 @@ export const Default: Story = {
     await expect(bar).toHaveAttribute('data-slot', 'progress')
     await expect(bar).toHaveAttribute('aria-valuenow', '40')
     await expect(bar).toHaveAttribute('data-progressing')
-    await expect(canvasElement.querySelector('[data-slot="progress-value"]')).toHaveTextContent('40%')
+    await expect(canvasElement.querySelector('[data-slot="progress-value"]')).toHaveTextContent(
+      '40%',
+    )
     const track = canvasElement.querySelector<HTMLElement>('[data-slot="progress-track"]')!
     const indicator = canvasElement.querySelector<HTMLElement>('[data-slot="progress-indicator"]')!
     await expect(track.offsetHeight).toBe(6)
@@ -55,7 +57,9 @@ export const Ladder: Story = {
 export const Indeterminate: Story = {
   args: { value: null, 'aria-label': 'Uploading' },
   play: async ({ canvasElement }) => {
-    const bar = within(canvasElement).getByRole('progressbar', { name: 'Uploading' })
+    const bar = within(canvasElement).getByRole('progressbar', {
+      name: 'Uploading',
+    })
     await expect(bar).toHaveAttribute('data-indeterminate')
     await expect(bar).not.toHaveAttribute('aria-valuenow')
     const track = canvasElement.querySelector<HTMLElement>('[data-slot="progress-track"]')!

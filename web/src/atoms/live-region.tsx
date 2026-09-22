@@ -21,7 +21,9 @@ export const liveRegionVariants = cva('', {
 
 export type LiveRegionPoliteness = 'polite' | 'assertive'
 
-export interface LiveRegionProps extends ComponentProps<'div'>, VariantProps<typeof liveRegionVariants> {
+export interface LiveRegionProps
+  extends ComponentProps<'div'>,
+    VariantProps<typeof liveRegionVariants> {
   /** `polite` reads as `role="status"`, `assertive` as `role="alert"`; an explicit `role` wins. */
   politeness?: LiveRegionPoliteness | undefined
   /** @default true */

@@ -11,7 +11,11 @@ const meta = {
   title: 'Molecules/SortChips',
   component: SortChips,
   args: {
-    model: buildSortChipsModel({ sortKey: 'new', dir: 'desc', onChange: onNewestChange }),
+    model: buildSortChipsModel({
+      sortKey: 'new',
+      dir: 'desc',
+      onChange: onNewestChange,
+    }),
   },
 } satisfies Meta<typeof SortChips>
 
@@ -31,21 +35,29 @@ export const NewestDesc: Story = {
     await expect(group).toHaveAttribute('data-slot', 'sort-chips')
     /* the chip size: a 46px pill, the pressed one a well rather than a colour */
     await expect(getComputedStyle(newest).height).toBe('46px')
+    const icons = newest.querySelectorAll('[data-slot="icon"]')
+    await expect(icons).toHaveLength(1)
+    await expect(icons[0]).not.toHaveClass('rotate-180')
     await userEvent.click(newest)
     await expect(onNewestChange).toHaveBeenCalledWith('new', 'asc')
   },
 }
 export const ViewsAsc: Story = {
   args: {
-    model: buildSortChipsModel({ sortKey: 'views', dir: 'asc', onChange: onViewsChange }),
+    model: buildSortChipsModel({
+      sortKey: 'views',
+      dir: 'asc',
+      onChange: onViewsChange,
+    }),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(
-      canvas.getByRole('button', {
-        name: copy.chipA11y(copy.chips.views, copy.direction.ascending),
-      }),
-    ).toHaveAttribute('aria-pressed', 'true')
+    const views = canvas.getByRole('button', {
+      name: copy.chipA11y(copy.chips.views, copy.direction.ascending),
+    })
+    await expect(views).toHaveAttribute('aria-pressed', 'true')
+    const icons = views.querySelectorAll('[data-slot="icon"]')
+    await expect(icons[icons.length - 1]).toHaveClass('rotate-180')
     await userEvent.click(canvas.getByRole('button', { name: copy.chips.value }))
     await expect(onViewsChange).toHaveBeenCalledWith('value', 'desc')
   },
@@ -72,7 +84,11 @@ export const RankingUnavailable: Story = {
 /** The same row on the dark arm: the pressed well still reads as the selected tab. */
 export const Dark: Story = {
   args: {
-    model: buildSortChipsModel({ sortKey: 'views', dir: 'desc', onChange: fn() }),
+    model: buildSortChipsModel({
+      sortKey: 'views',
+      dir: 'desc',
+      onChange: fn(),
+    }),
   },
   globals: { theme: 'dark' },
 }

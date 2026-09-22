@@ -1,16 +1,12 @@
 import type { ChangeEvent, FocusEvent, KeyboardEvent, MouseEvent } from 'react'
+import { createActor } from 'xstate'
 import { describe, expect, it, vi } from 'vitest'
-import type { GiphyResult } from '../lib/types'
-import type { CreateMemeContext } from '../stores/createMemeMachine'
-import {
-  buildCreateMemeScreenModel,
-  draftOf,
-  MAX_VIDEO_BYTES,
-  overCapMessage,
-  pendingVideoMatchesRemix,
-  pendingVideoRecord,
-  type CreateMemeScreenActions,
-} from '../lib/createMemeModel'
+import { createMemeCopy as copy } from '../../copy/createMeme'
+import { createMemeMachine, type CreateMemeContext } from '../../stores/createMemeMachine'
+import type { GiphyResult } from '../types'
+import { buildCreateMemeScreenModel } from './buildCreateMemeScreenModel'
+import { MAX_VIDEO_BYTES, overCapMessage } from './shared'
+import type { CreateMemeScreenActions } from './types'
 
 const giphyResult: GiphyResult = {
   id: 'cat-1',
@@ -22,36 +18,9 @@ const giphyResult: GiphyResult = {
   url: 'https://giphy.com/gifs/cat-1',
 }
 
-const baseContext: CreateMemeContext = {
-  remixId: null,
-  mode: 'generate',
-  remixSource: null,
-  remixOutput: 'image',
-  videoMode: 'edit',
-  motionPrompt: '',
-  editedFrame: null,
-  title: '',
-  tags: '',
-  prompt: '',
-  urlDraft: '',
-  imageUrl: '',
-  videoUrl: '',
-  imageFileName: null,
-  videoFileName: null,
-  busy: null,
-  busyElapsed: null,
-  err: null,
-  giphyCategories: [],
-  giphyQuery: '',
-  giphyResults: [],
-  giphySearched: false,
-  giphyPick: null,
-  edited: false,
-  artworkSource: null,
-  mintedId: null,
-  shareUrl: '',
-  shareCopied: false,
-}
+const baseContext: CreateMemeContext = createActor(createMemeMachine, {
+  input: { remixId: null },
+}).getSnapshot().context
 
 function actions(): CreateMemeScreenActions {
   return {
@@ -88,39 +57,42 @@ function textareaChange(value: string) {
 }
 
 function keyEvent(key: string) {
-  return { key, preventDefault: vi.fn() } as unknown as KeyboardEvent<HTMLElement>
+  return {
+    key,
+    preventDefault: vi.fn(),
+  } as unknown as KeyboardEvent<HTMLElement>
 }
 
 function clickEvent() {
   return {} as MouseEvent<HTMLButtonElement>
 }
 
-describe('pendingVideoMatchesRemix', () => {
-  it('resumes a pending remix only from the route that started it', () => {
-    expect(pendingVideoMatchesRemix('remix-a', 'remix-b')).toBe(false)
-    expect(pendingVideoMatchesRemix('remix-a', 'remix-a')).toBe(true)
-  })
-
-  it('keeps non-remix video jobs resumable from the non-remix route', () => {
-    expect(pendingVideoMatchesRemix(null, 'remix-a')).toBe(false)
-    expect(pendingVideoMatchesRemix(undefined, null)).toBe(true)
-    expect(pendingVideoMatchesRemix(null, null)).toBe(true)
-  })
-})
-
 describe('buildCreateMemeScreenModel', () => {
   it('decodes mode, bounded title, text, and select events into domain actions', () => {
     const calls = actions()
-    const model = buildCreateMemeScreenModel('remix', {
-      ...baseContext,
-      mode: 'remix',
-      remixId: 'source-1',
-      prompt: 'current prompt',
-    }, calls)
+    const model = buildCreateMemeScreenModel(
+      'remix',
+      {
+        ...baseContext,
+        mode: 'remix',
+        remixId: 'source-1',
+        prompt: 'current prompt',
+      },
+      calls,
+    )
 
-    /* the chip's chrome is the screen's business: the model only names the state */
+    /* the chip's chrome is the screen's business: the model names the state and the label */
     const selectedMode = model.getModeButtonProps('remix')
-    expect(selectedMode).toMatchObject({ selected: true, buttonProps: { 'aria-pressed': true } })
+    expect(selectedMode).toMatchObject({
+      selected: true,
+      label: copy.modes.remix,
+      buttonProps: { 'aria-pressed': true },
+    })
+    expect(model.pageTitle).toBe(copy.page.title)
+    expect(model.remixOutputSelectProps.items).toEqual([
+      { value: 'image', label: copy.remix.outputOptions.image },
+      { value: 'video', label: copy.remix.outputOptions.video },
+    ])
     expect(selectedMode.buttonProps).not.toHaveProperty('className')
     selectedMode.buttonProps.onClick?.(clickEvent())
     expect(calls.selectMode).toHaveBeenCalledWith('remix')
@@ -164,12 +136,16 @@ describe('buildCreateMemeScreenModel', () => {
 
   it('owns Giphy category, query, Enter, button, and keyboard-pick behavior', () => {
     const calls = actions()
-    const model = buildCreateMemeScreenModel('giphy', {
-      ...baseContext,
-      mode: 'giphy',
-      giphyQuery: 'keyboard cat',
-      giphyResults: [giphyResult],
-    }, calls)
+    const model = buildCreateMemeScreenModel(
+      'giphy',
+      {
+        ...baseContext,
+        mode: 'giphy',
+        giphyQuery: 'keyboard cat',
+        giphyResults: [giphyResult],
+      },
+      calls,
+    )
 
     /* results are on screen, so the panel's status line only has to reach a screen reader */
     expect(model.giphyStatusHidden).toBe(true)
@@ -200,23 +176,33 @@ describe('buildCreateMemeScreenModel', () => {
       loading: 'lazy',
       decoding: 'async',
     })
-    expect(cell.buttonProps).toMatchObject({ type: 'button', 'aria-pressed': false })
+    expect(cell.buttonProps).toMatchObject({
+      type: 'button',
+      'aria-pressed': false,
+    })
     expect(cell.buttonProps).not.toHaveProperty('className')
     expect(cell.picked).toBe(false)
     cell.buttonProps.onClick?.(clickEvent())
     expect(calls.pickGiphy).toHaveBeenCalledWith(giphyResult)
 
-    const selected = buildCreateMemeScreenModel('giphy', {
-      ...baseContext,
-      mode: 'giphy',
-      giphyPick: giphyResult,
-    }, calls)
+    const selected = buildCreateMemeScreenModel(
+      'giphy',
+      {
+        ...baseContext,
+        mode: 'giphy',
+        giphyPick: giphyResult,
+      },
+      calls,
+    )
     expect(selected.getGiphyResultProps(giphyResult)).toMatchObject({
       picked: true,
       buttonProps: { 'aria-pressed': true },
     })
     expect(selected.getGiphyResultProps(giphyResult).imageProps.src).toBe('/cat.gif')
-    expect(selected.giphyPick).toEqual({ title: 'Keyboard cat', authorLabel: ' (@catlord)' })
+    expect(selected.giphyPick).toEqual({
+      title: 'Keyboard cat',
+      authorLabel: ' (@catlord)',
+    })
   })
 
   it('keeps a typed URL out of the artwork until it resolves', () => {
@@ -228,7 +214,12 @@ describe('buildCreateMemeScreenModel', () => {
     expect(model.mintButtonProps.disabled).toBe(true)
     const typed = buildCreateMemeScreenModel(
       'url',
-      { ...baseContext, mode: 'url', title: 'ready', urlDraft: 'https://example.com/post' },
+      {
+        ...baseContext,
+        mode: 'url',
+        title: 'ready',
+        urlDraft: 'https://example.com/post',
+      },
       calls,
     )
     expect(typed.urlInputProps.value).toBe('https://example.com/post')
@@ -250,7 +241,7 @@ describe('buildCreateMemeScreenModel', () => {
     expect(calls.resolvePageUrl).toHaveBeenCalledTimes(2)
   })
 
-  it('keeps upload MIME contracts and spells the picker in the app\'s own words', () => {
+  it("keeps upload MIME contracts and spells the picker in the app's own words", () => {
     const calls = actions()
     const model = buildCreateMemeScreenModel('upload', { ...baseContext, mode: 'upload' }, calls)
     const image = { name: 'cat.png', type: 'image/png', size: 8 } as File
@@ -270,29 +261,43 @@ describe('buildCreateMemeScreenModel', () => {
 
   it('derives disabled actions and live-region ARIA from prompt, media, and busy state', () => {
     const readyActions = actions()
-    const ready = buildCreateMemeScreenModel('generate', {
-      ...baseContext,
-      title: 'ready',
-      prompt: 'draw a cat',
-      imageUrl: '/cat.png',
-    }, readyActions)
+    const ready = buildCreateMemeScreenModel(
+      'generate',
+      {
+        ...baseContext,
+        title: 'ready',
+        prompt: 'draw a cat',
+        imageUrl: '/cat.png',
+      },
+      readyActions,
+    )
     expect(ready.generateButtonProps.disabled).toBe(false)
     expect(ready.mintButtonProps.disabled).toBe(false)
     expect(ready.formProps['aria-busy']).toBe(false)
-    expect(ready.busyNoticeProps).toMatchObject({ role: 'status', 'aria-live': 'polite' })
-    expect(ready.errorNoticeProps).toMatchObject({ role: 'alert', 'aria-live': 'assertive' })
+    expect(ready.busyNoticeProps).toMatchObject({
+      role: 'status',
+      'aria-live': 'polite',
+    })
+    expect(ready.errorNoticeProps).toMatchObject({
+      role: 'alert',
+      'aria-live': 'assertive',
+    })
     ready.generateButtonProps.onClick?.(clickEvent())
     ready.mintButtonProps.onClick?.(clickEvent())
     expect(readyActions.generate).toHaveBeenCalledOnce()
     expect(readyActions.mint).toHaveBeenCalledOnce()
 
-    const busy = buildCreateMemeScreenModel('submitting', {
-      ...baseContext,
-      title: 'ready',
-      prompt: 'draw a cat',
-      imageUrl: '/cat.png',
-      busy: 'Rendering…',
-    }, actions())
+    const busy = buildCreateMemeScreenModel(
+      'submitting',
+      {
+        ...baseContext,
+        title: 'ready',
+        prompt: 'draw a cat',
+        imageUrl: '/cat.png',
+        busy: 'Rendering…',
+      },
+      actions(),
+    )
     expect(busy.generateButtonProps.disabled).toBe(true)
     expect(busy.mintButtonProps.disabled).toBe(true)
     expect(busy.giphySearchButtonProps.disabled).toBe(true)
@@ -313,7 +318,7 @@ describe('buildCreateMemeScreenModel', () => {
     }
     const awaiting = buildCreateMemeScreenModel('remix', frameOnly, actions())
     expect(awaiting.mintButtonProps.disabled).toBe(true)
-    expect(awaiting.mintHint).toBe('animate the frame')
+    expect(awaiting.mintHint).toBe(copy.preview.mintHint.animate)
     /* the approval panel owns the only remix control while the question is open */
     expect(awaiting.showEditedFrameApproval).toBe(true)
     expect(awaiting.showRemixButton).toBe(false)
@@ -335,7 +340,12 @@ describe('buildCreateMemeScreenModel', () => {
         mode: 'upload',
         imageUrl: '/cat.gif',
         title: 'cat',
-        artworkSource: { provider: 'giphy', id: 'cat-1', url: 'https://giphy.com', author: 'catlord' },
+        artworkSource: {
+          provider: 'giphy',
+          id: 'cat-1',
+          url: 'https://giphy.com',
+          author: 'catlord',
+        },
       },
       actions(),
     )
@@ -373,34 +383,61 @@ describe('buildCreateMemeScreenModel', () => {
     )
     const failed = buildCreateMemeScreenModel(
       'error',
-      { ...baseContext, err: 'credits exhausted' },
+      { ...baseContext, err: copy.errors.creditsExhausted },
       actions(),
     )
-    expect(failed.errorNextStep).toContain('Top up Masky credits')
+    expect(failed.errorNextStep).toBe(copy.preview.nextStep.credits)
     expect(failed.uploadVideoHelpText).toContain('max 50MB')
   })
 
-  it('carries the whole draft in the pending-render record', () => {
-    const record = pendingVideoRecord(
-      { ...baseContext, mode: 'video', title: 'burning office', tags: 'chaos', prompt: 'a capybara', imageUrl: '/thumb.png' },
-      'render-a',
-      1_700_000_000_000,
+  it('hints Masky top-up from leftover credit phrases, not only the authored key', () => {
+    for (const err of ['credits exhausted', '402', 'quota', 'balance']) {
+      const failed = buildCreateMemeScreenModel('error', { ...baseContext, err }, actions())
+      expect(failed.errorNextStep).toBe(copy.preview.nextStep.credits)
+    }
+  })
+
+  it('hints a smaller file from copy.errors upload fallbacks, including a non-413 rejection', () => {
+    for (const err of [
+      copy.errors.uploadFailed,
+      copy.errors.uploadRejected(413),
+      copy.errors.uploadRejected(403),
+    ]) {
+      const failed = buildCreateMemeScreenModel('error', { ...baseContext, err }, actions())
+      expect(failed.errorNextStep).toBe(copy.preview.nextStep.tooLarge)
+    }
+  })
+
+  it('plumbs shareCopied and copyShareLinkLabel for idle vs copied success', () => {
+    const idle = buildCreateMemeScreenModel(
+      'success',
+      { ...baseContext, shareCopied: false },
+      actions(),
     )
-    expect(record).toMatchObject({ generationId: 'render-a', imageUrl: '/thumb.png' })
-    expect(record.draft).toEqual(
-      draftOf({ ...baseContext, mode: 'video', title: 'burning office', tags: 'chaos', prompt: 'a capybara' }),
+    expect(idle.shareCopied).toBe(false)
+    expect(idle.copyShareLinkLabel).toBe(copy.form.success.copyLink)
+
+    const copied = buildCreateMemeScreenModel(
+      'success',
+      { ...baseContext, shareCopied: true },
+      actions(),
     )
-    expect(record.draft.title).toBe('burning office')
+    expect(copied.shareCopied).toBe(true)
+    expect(copied.copyShareLinkLabel).toBe(copy.form.copied)
   })
 
   it('wires each creation action bundle to its domain action', () => {
     const calls = actions()
-    const model = buildCreateMemeScreenModel('generate', {
-      ...baseContext,
-      title: 'ready',
-      prompt: 'draw a cat',
-      imageUrl: '/cat.png',
-    }, calls)
+    const model = buildCreateMemeScreenModel(
+      'generate',
+      {
+        ...baseContext,
+        title: 'ready',
+        prompt: 'draw a cat',
+        imageUrl: '/cat.png',
+      },
+      calls,
+    )
 
     model.animateEditedButtonProps.onClick?.(clickEvent())
     model.rerunEditButtonProps.onClick?.(clickEvent())

@@ -1,6 +1,15 @@
-import type { ButtonHTMLAttributes, ReactNode, TextareaHTMLAttributes } from 'react'
+import type { ButtonHTMLAttributes, TextareaHTMLAttributes } from 'react'
 import { confirmDialogCopy as copy } from '../copy/confirmDialog'
 import { trackDialogOpener, type DialogOpenerRef } from './dialogOpener'
+
+/**
+ * Confirm body as data. A subset of legal inlines (no links); `ConfirmDialog` is the one place
+ * that turns these into text / `<strong>` / `<code>`. Do not reuse `LegalInline`.
+ */
+export type ConfirmDialogInline =
+  | string
+  | { kind: 'strong'; text: string }
+  | { kind: 'code'; text: string }
 
 export interface ConfirmPromptInput {
   label: string
@@ -16,7 +25,9 @@ export interface BuildConfirmDialogModelInput {
   /** unique per dialog on the page; ids for aria-labelledby / aria-describedby derive from it */
   id?: string
   title: string
-  message: ReactNode
+  message: string | readonly ConfirmDialogInline[]
+  /** failure that has to land inside the open dialog (the page behind it is inert) */
+  error?: string | null
   confirmLabel?: string
   cancelLabel?: string
   danger?: boolean
@@ -49,8 +60,10 @@ export interface ConfirmDialogModel {
   id: string
   title: string
   titleId: string
-  message: ReactNode
+  message: string | readonly ConfirmDialogInline[]
   messageId: string
+  /** rendered as `Alert` inside the molecule when set; the builder does not render */
+  error: string | null
   danger: boolean
   busy: boolean
   prompt: ConfirmPromptModel | null
@@ -74,6 +87,7 @@ export function buildConfirmDialogModel({
   id = 'confirm',
   title,
   message,
+  error = null,
   confirmLabel = copy.confirm,
   cancelLabel = copy.cancel,
   danger = false,
@@ -96,24 +110,25 @@ export function buildConfirmDialogModel({
     titleId,
     message,
     messageId,
+    error,
     danger,
     busy,
     prompt: prompt
       ? {
-        label: prompt.label,
-        hint: prompt.hint ?? null,
-        hintId,
-        counterLabel: `${prompt.value.length}/${maxLength}`,
-        textareaProps: {
-          value: prompt.value,
-          placeholder: prompt.placeholder,
-          maxLength,
-          rows: 3,
-          disabled: busy,
-          'aria-describedby': prompt.hint ? hintId : undefined,
-          onChange: (event) => prompt.onChange(event.target.value),
-        },
-      }
+          label: prompt.label,
+          hint: prompt.hint ?? null,
+          hintId,
+          counterLabel: `${prompt.value.length}/${maxLength}`,
+          textareaProps: {
+            value: prompt.value,
+            placeholder: prompt.placeholder,
+            maxLength,
+            rows: 3,
+            disabled: busy,
+            'aria-describedby': prompt.hint ? hintId : undefined,
+            onChange: (event) => prompt.onChange(event.target.value),
+          },
+        }
       : null,
     // Escape and the scrim are Base UI's to detect; whether they are obeyed is this model's call,
     // and a request in flight refuses, so the DOM and the model can never disagree about being open.

@@ -23,7 +23,12 @@ export interface FaqItemProps {
  */
 export function FaqItem({ question, children, defaultOpen = false, className }: FaqItemProps) {
   return (
-    <Collapsible variant="card" defaultOpen={defaultOpen} data-slot="faq-item" className={className}>
+    <Collapsible
+      variant="card"
+      defaultOpen={defaultOpen}
+      data-slot="faq-item"
+      {...(className === undefined ? {} : { className })}
+    >
       <CollapsibleTrigger variant="card" data-slot="faq-trigger">
         {/* One caret, not a pair: it rotates off the trigger's own `data-panel-open`. `inline-flex`
             collapses the span onto the glyph's 18px box, and the half-turn pivots about that box —

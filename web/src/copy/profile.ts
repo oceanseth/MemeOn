@@ -3,10 +3,22 @@ import { sharedCopy } from './shared'
 
 /** Every string the Profile screen spells itself; the cards read `lib/memeCardModel`. */
 export const profileCopy = {
+  /** Route names for `document.title`; never the player's display name. */
+  documentTitle: {
+    profile: 'Profile',
+    /** `/binder/:sub` public binder — not `My Binder`, not the fetched name. */
+    binder: 'Binder',
+  },
   /** tab names; the grid's accessible name leads with the current one */
-  tabs: { created: 'Created', binder: 'Binder' },
+  tabs: {
+    created: 'Created',
+    binder: 'Binder',
+    section: 'Profile section',
+    trigger: (name: string, count: number) => `${name} (${count})`,
+  },
   grid: {
-    label: (tabName: string, count: number) => `${tabName} memes, ${count} ${pluralWord(count, 'card')}`,
+    label: (tabName: string, count: number) =>
+      `${tabName} memes, ${count} ${pluralWord(count, 'card')}`,
     count: (visible: number, total: number) => `Showing ${visible} of ${total}`,
     showMore: (count: number) => `Show ${count} more`,
   },
@@ -27,6 +39,7 @@ export const profileCopy = {
     update: "Couldn't update — try again.",
     /** Fallback when the profile fetch throws without a message. */
     loadFailed: 'profile load failed',
+    copy: 'Copy failed — try again',
   },
   /** stands in for the name while the profile has not loaded */
   fallbackName: 'this player',
@@ -48,12 +61,15 @@ export const profileCopy = {
     minted: (count: number) => `${count} minted`,
     inBinder: (count: number) => `${count} in binder`,
     braincells: (portfolioValue: number) => `${portfolioValue.toLocaleString()} braincells`,
-    braincellsHeld: (portfolioValue: number) => `${portfolioValue.toLocaleString()} braincells held`,
+    braincellsHeld: (portfolioValue: number) =>
+      `${portfolioValue.toLocaleString()} braincells held`,
     collection: (count: number) => `${count} ${pluralWord(count, 'meme')}`,
     held: (portfolioValue: number) => `${portfolioValue.toLocaleString()} held`,
     followers: (count: number) => `${count} ${pluralWord(count, 'follower')}`,
   },
   actions: {
+    /** both relationship groups (other-profile and self) share this name */
+    groupLabel: 'Profile actions',
     trade: 'Trade',
     tradeWith: (name: string) => `Trade with ${name}`,
     share: 'Share binder',
@@ -84,6 +100,8 @@ export const profileCopy = {
   join: {
     trade: (name: string) => `Log in to trade with ${name}`,
     binder: 'Log in to start your own binder',
+    /** identity-card CTA on a public profile; footer keeps `trade` / `binder` via joinLabel */
+    addFriend: 'Log in to add friend',
     /** closing line under the join CTA on public profiles */
     reshareNote: 'Every reshare of these links levels the cards up.',
   },

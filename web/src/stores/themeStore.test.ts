@@ -1,4 +1,3 @@
-import { autorun, configure } from 'mobx'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { THEME_STORAGE_KEY, ThemeStore, themeStorageKey, type ThemeHost } from './themeStore'
 
@@ -11,14 +10,20 @@ function fakeHost(initial: Record<string, string> = {}, systemDark = false) {
   const dataset: Record<string, string | undefined> = {}
   const media = {
     matches: systemDark,
-    addEventListener: vi.fn((_type: 'change', listener: Listener) => { listeners.add(listener) }),
-    removeEventListener: vi.fn((_type: 'change', listener: Listener) => { listeners.delete(listener) }),
+    addEventListener: vi.fn((_type: 'change', listener: Listener) => {
+      listeners.add(listener)
+    }),
+    removeEventListener: vi.fn((_type: 'change', listener: Listener) => {
+      listeners.delete(listener)
+    }),
   }
   const host: ThemeHost = {
     document: { documentElement: { dataset } },
     localStorage: {
       getItem: vi.fn((key: string) => items.get(key) ?? null),
-      setItem: vi.fn((key: string, value: string) => { items.set(key, value) }),
+      setItem: vi.fn((key: string, value: string) => {
+        items.set(key, value)
+      }),
     },
     matchMedia: vi.fn(() => media),
   }
@@ -30,7 +35,6 @@ function fakeHost(initial: Record<string, string> = {}, systemDark = false) {
 }
 
 afterEach(() => {
-  configure({ enforceActions: 'observed' })
   vi.restoreAllMocks()
 })
 
@@ -164,21 +168,52 @@ describe('ThemeStore', () => {
     expect(items.get(themeStorageKey('user-pal'))).toBe('dark')
   })
 
-  it('is observable: preference and resolved change inside actions', () => {
-    const warning = vi.spyOn(console, 'warn')
-    configure({ enforceActions: 'always' })
+  it('subscribe() and getSnapshot() cache identity and notify on mutation', () => {
     const { host, flip } = fakeHost()
     const theme = new ThemeStore(host)
-    const seen: string[] = []
-    const stop = autorun(() => { seen.push(`${theme.preference}/${theme.resolved}`) })
+    const initial = theme.getSnapshot()
+    expect(initial).toEqual({ preference: 'auto', resolved: 'light' })
+
+    const pushed: ReturnType<ThemeStore['getSnapshot']>[] = []
+    const stop = theme.subscribe(() => {
+      pushed.push(theme.getSnapshot())
+    })
+    expect(pushed).toEqual([])
+
     try {
       theme.connect()
+      expect(pushed.length).toBeGreaterThan(0)
+      for (const snap of pushed) expect(snap).toBe(initial)
+
       flip(true)
+      const autoDark = theme.getSnapshot()
+      expect(autoDark).toEqual({ preference: 'auto', resolved: 'dark' })
+      expect(autoDark).not.toBe(initial)
+      expect(pushed.at(-1)).toBe(autoDark)
+
       theme.setPreference('light')
+      const lightLight = theme.getSnapshot()
+      expect(lightLight).toEqual({ preference: 'light', resolved: 'light' })
+      expect(lightLight).not.toBe(autoDark)
+      expect(pushed.at(-1)).toBe(lightLight)
+
       theme.bindUser('user-lou')
+      expect(theme.getSnapshot()).toBe(lightLight)
+      expect(pushed.at(-1)).toBe(lightLight)
+
       theme.setPreference('auto')
-      expect(seen).toEqual(['auto/light', 'auto/dark', 'light/light', 'auto/dark'])
-      expect(warning).not.toHaveBeenCalled()
+      const autoDarkAgain = theme.getSnapshot()
+      expect(autoDarkAgain).toEqual({ preference: 'auto', resolved: 'dark' })
+      expect(autoDarkAgain).not.toBe(lightLight)
+      expect(pushed.at(-1)).toBe(autoDarkAgain)
+
+      theme.setPreference('light')
+      const explicit = theme.getSnapshot()
+      const beforeFlip = pushed.length
+      flip(false)
+      expect(pushed.length).toBeGreaterThan(beforeFlip)
+      expect(theme.getSnapshot()).toBe(explicit)
+      expect(theme.getSnapshot()).toBe(pushed.at(-1))
     } finally {
       stop()
       theme.disconnect()
@@ -199,8 +234,12 @@ describe('ThemeStore', () => {
   it('survives a storage that throws', () => {
     const host: ThemeHost = {
       localStorage: {
-        getItem: () => { throw new Error('SecurityError') },
-        setItem: () => { throw new Error('QuotaExceededError') },
+        getItem: () => {
+          throw new Error('SecurityError')
+        },
+        setItem: () => {
+          throw new Error('QuotaExceededError')
+        },
       },
     }
     const theme = new ThemeStore(host)

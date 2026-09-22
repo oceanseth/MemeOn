@@ -31,7 +31,9 @@ const cardVariants = cva('rounded-lg material-card', {
   defaultVariants: { variant: 'default', size: 'default' },
 })
 
-export interface CardProps extends HTMLAttributes<HTMLDivElement>, VariantProps<typeof cardVariants> {}
+export interface CardProps
+  extends HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
 
 export function Card({ className, variant, size, ...props }: CardProps) {
   return (
@@ -51,7 +53,7 @@ export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElemen
       data-slot="card-header"
       className={cn(
         'grid auto-rows-min items-start gap-1',
-        'has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto]',
+        'has-data-[slot=card-action]:grid-cols-(--grid-card-action) has-data-[slot=card-description]:grid-rows-(--grid-card-rows)',
         className,
       )}
       {...props}
@@ -90,7 +92,13 @@ export function CardTitle({ className, size, render, ...props }: CardTitleProps)
 }
 
 export function CardDescription({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
-  return <p data-slot="card-description" className={cn('text-sm text-muted-foreground', className)} {...props} />
+  return (
+    <p
+      data-slot="card-description"
+      className={cn('text-sm text-muted-foreground', className)}
+      {...props}
+    />
+  )
 }
 
 export function CardAction({ className, ...props }: HTMLAttributes<HTMLDivElement>) {

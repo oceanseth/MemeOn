@@ -48,7 +48,14 @@ function Root() {
     return (
       <>
         {statusBar}
-        <View style={{ flex: 1, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' }}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: colors.bg,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <ActivityIndicator color={colors.accent} size="large" />
         </View>
       </>
@@ -66,21 +73,21 @@ function Root() {
     <>
       {statusBar}
       <NavigationContainer theme={navTheme}>
-      <Stack.Navigator
-        screenOptions={{
-          headerStyle: { backgroundColor: colors.bg },
-          headerTintColor: colors.text,
-          headerShadowVisible: false,
-        }}
-      >
-        <Stack.Screen name="Feed" component={FeedScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Invest" component={InvestScreen} options={{ title: 'Invest' }} />
-        <Stack.Screen name="Creator" component={CreatorScreen} options={{ title: 'Creator' }} />
-        <Stack.Screen name="Alerts" component={AlertsScreen} options={{ title: 'Alerts' }} />
-        <Stack.Screen name="Trades" component={TradesScreen} options={{ title: 'Trades' }} />
-        <Stack.Screen name="About" component={AboutScreen} options={{ title: 'MemeOn' }} />
-      </Stack.Navigator>
-    </NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{
+            headerStyle: { backgroundColor: colors.bg },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+          }}
+        >
+          <Stack.Screen name="Feed" component={FeedScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Invest" component={InvestScreen} options={{ title: 'Invest' }} />
+          <Stack.Screen name="Creator" component={CreatorScreen} options={{ title: 'Creator' }} />
+          <Stack.Screen name="Alerts" component={AlertsScreen} options={{ title: 'Alerts' }} />
+          <Stack.Screen name="Trades" component={TradesScreen} options={{ title: 'Trades' }} />
+          <Stack.Screen name="About" component={AboutScreen} options={{ title: 'MemeOn' }} />
+        </Stack.Navigator>
+      </NavigationContainer>
     </>
   )
 }

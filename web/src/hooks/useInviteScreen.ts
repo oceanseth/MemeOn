@@ -3,23 +3,20 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { inviteCopy } from '../copy/invite'
 import { apiFetch, post } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
-import {
-  inviteMachine,
-  type InviteData,
-  type InvitePhase,
-} from '../stores/inviteMachine'
+import { setInviteFrom } from '../lib/sessionBus'
+import { inviteMachine, type InviteData, type InvitePhase } from '../stores/inviteMachine'
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import type { ButtonHTMLAttributes } from 'react'
 import type { IconName } from '@/atoms/icon'
 
-export const INVITE_KEY = 'memeon_invite_from'
-
 const copy = inviteCopy
 
 export interface InviteScreenModel {
   phase: InvitePhase
+  pageTitle: string
+  heroVerb: string
   err: string | null
   showFatalError: boolean
   showSpinner: boolean
@@ -99,7 +96,12 @@ export function buildInviteStats(inviter: {
 }): readonly InviteStatModel[] {
   const stats = copy.stats
   return [
-    { id: 'binder', icon: 'book', value: inviter.collectionSize.toLocaleString(), label: stats.binder.label },
+    {
+      id: 'binder',
+      icon: 'book',
+      value: inviter.collectionSize.toLocaleString(),
+      label: stats.binder.label,
+    },
     {
       id: 'braincells',
       icon: 'brain',
@@ -146,11 +148,14 @@ export function useInviteScreen(): InviteScreenModel {
         navigate('/friends', { state: { invitedBy: inviter?.name ?? null } })
         return
       }
-      sessionStorage.setItem(INVITE_KEY, sub)
+      setInviteFrom(sub)
       await beginMaskyLogin()
     }
     void run().catch((e) => {
-      send({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.acceptFallback })
+      send({
+        type: 'FAIL',
+        err: e instanceof Error ? e.message : copy.errors.acceptFallback,
+      })
     })
   }
 
@@ -158,7 +163,10 @@ export function useInviteScreen(): InviteScreenModel {
     if (ctx.busy) return
     send({ type: 'JOIN' })
     void beginMaskyLogin().catch((e) => {
-      send({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.masky })
+      send({
+        type: 'FAIL',
+        err: e instanceof Error ? e.message : copy.errors.masky,
+      })
     })
   }
 
@@ -170,10 +178,16 @@ export function useInviteScreen(): InviteScreenModel {
   }
 
   const copyLabel =
-    ctx.copy === 'copied' ? copy.self.copied : ctx.copy === 'failed' ? copy.self.copyFailed : copy.self.copy
+    ctx.copy === 'copied'
+      ? copy.self.copied
+      : ctx.copy === 'failed'
+        ? copy.self.copyFailed
+        : copy.self.copy
 
   return {
     phase,
+    pageTitle: copy.pageTitle,
+    heroVerb: copy.heroVerb,
     err: ctx.err,
     showFatalError: !!ctx.err && !ctx.data,
     showSpinner: !ctx.data && !ctx.err,
@@ -202,7 +216,11 @@ export function useInviteScreen(): InviteScreenModel {
           note: copy.self.note,
           copyLabel,
           copyStatusMessage:
-            ctx.copy === 'copied' ? copy.self.copiedStatus : ctx.copy === 'failed' ? copy.self.copyFailedStatus : '',
+            ctx.copy === 'copied'
+              ? copy.self.copiedStatus
+              : ctx.copy === 'failed'
+                ? copy.self.copyFailedStatus
+                : '',
           copyButtonProps: { onClick: onCopy },
           friendsLabel: copy.self.friends,
           friendsHref: '/friends',
@@ -213,10 +231,15 @@ export function useInviteScreen(): InviteScreenModel {
           name: inviter.name,
           avatarSrc: inviter.picture,
           stats: buildInviteStats(inviter),
-          acceptanceNote: isSelf ? copy.acceptanceNote.self : copy.acceptanceNote.guest(inviter.name),
+          acceptanceNote: isSelf
+            ? copy.acceptanceNote.self
+            : copy.acceptanceNote.guest(inviter.name),
         }
       : null,
-    cards: (ctx.data?.topMemes ?? []).map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) })),
+    cards: (ctx.data?.topMemes ?? []).map((meme) => ({
+      id: meme.id,
+      memeCard: buildMemeCardModel(meme),
+    })),
     acceptButtonProps: {
       onClick: onAccept,
       'aria-disabled': ctx.busy || undefined,

@@ -1,23 +1,15 @@
 import { useProjectedActor } from './useProjectedActor'
-import { createElement, Fragment, useCallback, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 import type {
   ButtonHTMLAttributes,
   FormHTMLAttributes,
   HTMLAttributes,
   InputHTMLAttributes,
 } from 'react'
-import { Alert } from '@/atoms/alert'
 import { developersCopy } from '../copy/developers'
 import { apiFetch, post } from '../lib/api'
-import {
-  buildConfirmDialogModel,
-  type ConfirmDialogModel,
-} from '../lib/confirmDialogModel'
-import {
-  developersMachine,
-  type DevelopersPhase,
-  type KeyRow,
-} from '../stores/developersMachine'
+import { buildConfirmDialogModel, type ConfirmDialogModel } from '../lib/confirmDialogModel'
+import { developersMachine, type DevelopersPhase, type KeyRow } from '../stores/developersMachine'
 import { useMountEffect } from './useMountEffect'
 
 /** Key ceiling — shown in UI instead of letting the API reject a click. */
@@ -31,13 +23,25 @@ export interface DeveloperKeyRowModel {
   /** raw ISO for <time dateTime>, so the date is machine-readable as well as legible */
   createdAt: string
   createdLabel: string
+  revokeLabel: string
   revokeButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'aria-label'>
 }
 
 export type DeveloperLabelInputProps = Pick<
   InputHTMLAttributes<HTMLInputElement>,
-  'value' | 'onChange' | 'maxLength' | 'aria-label'
+  'value' | 'onChange' | 'maxLength' | 'aria-label' | 'placeholder'
 >
+
+/** Security explainer text nodes; the screen owns `<strong>` / `<InlineLink>` / `<code>`. */
+export interface DevelopersExplainerModel {
+  lede: string
+  account: string
+  powers: string
+  skill: string
+  alsoAt: string
+  wellKnown: string
+  close: string
+}
 
 export type DeveloperActionButtonProps = Pick<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -55,6 +59,9 @@ export type DeveloperLiveRegionProps = Pick<HTMLAttributes<HTMLDivElement>, 'rol
 
 export interface DevelopersScreenModel {
   phase: DevelopersPhase
+  pageTitle: string
+  skillButtonLabel: string
+  explainer: DevelopersExplainerModel
   keys: DeveloperKeyRowModel[] | null
   freshKey: string | null
   err: string | null
@@ -84,6 +91,7 @@ export interface DevelopersScreenModel {
   createFormProps: Pick<FormHTMLAttributes<HTMLFormElement>, 'onSubmit'>
   createButtonProps: DeveloperSubmitButtonProps
   copyButtonProps: DeveloperActionButtonProps
+  retryLabel: string
   retryButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>
   freshKeyProps: Pick<HTMLAttributes<HTMLDivElement>, 'tabIndex'>
   freshKeyRegionProps: DeveloperLiveRegionProps
@@ -133,7 +141,10 @@ export function useDevelopersScreen(): DevelopersScreenModel {
       load()
     } catch (e) {
       // Prefer server error over generic create failure
-      send({ type: 'FAIL', err: e instanceof Error ? e.message : copy.errors.create })
+      send({
+        type: 'FAIL',
+        err: e instanceof Error ? e.message : copy.errors.create,
+      })
     }
   }, [actor, load, send])
 
@@ -183,6 +194,7 @@ export function useDevelopersScreen(): DevelopersScreenModel {
         year: 'numeric',
       }),
     ),
+    revokeLabel: copy.row.revokeLabel,
     revokeButtonProps: {
       onClick: () => send({ type: 'REVOKE', row }),
       'aria-label': copy.row.revoke(row.label),
@@ -193,14 +205,15 @@ export function useDevelopersScreen(): DevelopersScreenModel {
     danger: true,
     busy: ctx.revokeBusy,
     title: copy.revokeDialog.title,
-    message: createElement(
-      Fragment,
-      null,
-      createElement('code', null, copy.revokeDialog.prefix(String(ctx.revoking?.prefix))),
+    message: [
+      {
+        kind: 'code' as const,
+        text: copy.revokeDialog.prefix(String(ctx.revoking?.prefix)),
+      },
       copy.revokeDialog.body(String(ctx.revoking?.label)),
-      // the page behind an open modal is inert, so the failure has to land inside the dialog
-      ctx.revokeErr ? createElement(Alert, { variant: 'error', className: 'mt-3' }, ctx.revokeErr) : null,
-    ),
+    ],
+    // the page behind an open modal is inert, so the failure has to land inside the dialog
+    error: ctx.revokeErr,
     confirmLabel: copy.revokeDialog.confirm,
     onCancel: onRevokeCancel,
     onConfirm: () => void onRevokeConfirm(),
@@ -208,6 +221,9 @@ export function useDevelopersScreen(): DevelopersScreenModel {
 
   return {
     phase,
+    pageTitle: copy.pageTitle,
+    skillButtonLabel: copy.skillButton,
+    explainer: copy.explainer,
     keys: keyRows ?? null,
     freshKey: ctx.freshKey,
     err: ctx.err,
@@ -236,6 +252,7 @@ export function useDevelopersScreen(): DevelopersScreenModel {
       onChange: (event) => send({ type: 'SET_LABEL', label: event.currentTarget.value }),
       maxLength: 60,
       'aria-label': copy.labelInput,
+      placeholder: copy.labelPlaceholder,
     },
     createFormProps: {
       onSubmit: (event) => {
@@ -252,6 +269,7 @@ export function useDevelopersScreen(): DevelopersScreenModel {
       disabled: !ctx.freshKey,
       'aria-busy': false,
     },
+    retryLabel: copy.retry,
     retryButtonProps: { onClick: retry },
     freshKeyProps: { tabIndex: 0 },
     freshKeyRegionProps: { role: 'status', 'aria-live': 'polite' },

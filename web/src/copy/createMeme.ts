@@ -6,6 +6,18 @@ import { sharedCopy } from './shared'
  * `lib/createMemeModel/` and `hooks/useCreateMemeScreen` read from here exclusively.
  */
 export const createMemeCopy = {
+  page: {
+    title: 'Mint a meme',
+    subtitle: 'Make it strange. The internet will decide what happens next.',
+  },
+  modes: {
+    remix: 'Remix',
+    generate: 'Generate image',
+    video: 'Generate video',
+    upload: 'Upload',
+    giphy: 'From Giphy',
+    url: 'From URL',
+  },
   /** The live status line while a job runs; every long job gets the same elapsed counter. */
   busy: {
     resumingRender: 'Resuming a video render already in progress…',
@@ -28,30 +40,52 @@ export const createMemeCopy = {
   },
   /** What the alert says when the request threw nothing the user can read. */
   errors: {
-    notALink: 'that is not a link — paste a full https:// address',
-    renderFailed: 'render failed',
-    giphySearchFailed: 'giphy search failed',
-    resolveFailed: 'could not resolve that page',
-    editFailed: 'edit failed',
-    remixFailed: 'remix failed',
-    videoGenerationFailed: 'video generation failed',
-    generationFailed: 'generation failed',
-    animationFailed: 'animation failed',
-    mintFailed: 'mint failed',
-    uploadFailed: 'upload failed',
+    notALink: 'That is not a link — paste a full https:// address.',
+    renderFailed:
+      "The video render didn't finish. Try again, or reopen this page if a job is still running.",
+    giphySearchFailed: "GIPHY search didn't work. Try another word, or pick a category.",
+    resolveFailed: "Couldn't find an image on that page. Check the link and try again.",
+    editFailed: "That Masky edit didn't finish. Try again.",
+    remixFailed: "That Masky remix didn't finish. Try again.",
+    videoGenerationFailed: "That Masky video didn't finish. Try again.",
+    generationFailed: "That Masky image didn't finish. Try again.",
+    animationFailed: "That Masky animation didn't finish. Try again.",
+    mintFailed: "The card didn't mint. Try again.",
+    creditsExhausted: 'Not enough Masky credits.',
+    uploadFailed: "That file didn't upload. Try a smaller file, or try again.",
     /** The storage PUT answered with a status the user then reads in the alert. */
-    uploadRejected: (status: number) => `upload failed (${status})`,
+    uploadRejected: (status: number) =>
+      `That file didn't upload (${status}). Try a smaller file, or try again.`,
     /** The poller gave up; the job id lets support find the render on Masky. */
     stillRendering: (generationId: string) =>
       `Still rendering after 8 minutes. It may finish on Masky (job ${generationId}) — reopen this page to pick the render back up.`,
-    lifetimeEnded: 'creation lifetime ended',
+    lifetimeEnded: 'This mint session ended. Start the render again.',
   },
   form: {
     sourceGroup: 'Source',
+    heading: {
+      generate: 'Make a fresh image',
+      video: 'Make a fresh video',
+      remix: 'Remix a card that already works',
+      upload: 'Bring your own art',
+      giphy: 'Borrow something from GIPHY',
+      url: 'Pull it in off the web',
+    },
+    description: 'Turn a small thought into a card people can own.',
+    titleLabel: 'Title',
     titlePlaceholder: 'e.g. cursed capybara',
     titleHelp: (max: number) => `Up to ${max} characters — it has to fit the card banner.`,
+    /** Same `TITLE_MAX` the title field already interpolates. */
+    titleFooter: (max: number) =>
+      `Title is ${max} characters max. You mint 100 shares to yourself.`,
+    tagsLabel: 'Tags',
     tagsPlaceholder: 'animals, chaos',
     tagsHelp: (max: number) => `Up to ${max} tags, comma-separated — this is how people find it.`,
+    promptLabel: 'Prompt',
+    creditsNote: 'Uses your Masky credits',
+    toMint: 'To mint:',
+    sharesToYou: '100 shares to you',
+    mint: 'Mint',
     success: {
       copied: 'Share link copied to your clipboard.',
       minted: 'Minted. Your card is live and the share link is ready.',
@@ -59,22 +93,48 @@ export const createMemeCopy = {
       body: 'All 100 shares are yours. Send the link — every reshare pushes the card up the tier ladder.',
       copyLink: 'Copy share link',
       shareLink: 'Share link',
+      openCard: 'Open the card',
     },
     copied: sharedCopy.copied,
   },
   generate: {
     promptPlaceholder: 'a capybara in a business suit ignoring a burning office, cinematic',
-    promptHelp: 'Describe the whole scene — subject, style, chaos level. Runs on your Masky credits.',
+    promptHelp:
+      'Describe the whole scene — subject, style, chaos level. Put exact text in "double quotes" and it appears in the image verbatim. Runs on your Masky credits.',
     renderVideo: 'Render the video',
     renderImage: 'Render the image',
   },
   giphy: {
     results: (count: number, query: string) => `${count} GIPHY results for "${query}"`,
-    emptySearch: (query: string) => `Nothing for "${query}" — try a broader word or pick a category.`,
+    emptySearch: (query: string) =>
+      `Nothing for "${query}" — try a broader word or pick a category.`,
     idle: 'Pick a category or search to browse GIPHY.',
+    categoryLabel: 'Category',
+    browseCategories: 'Browse categories…',
+    searchLabel: 'Search GIPHY',
+    queryPlaceholder: 'keyboard cat',
+    search: 'Search',
+    poweredBy: 'Powered by GIPHY',
+    selected: 'Selected:',
+    pickSuffix: '— mint it as-is (with GIPHY attribution) or remix it below.',
+    optionalPrompt: 'Optional prompt — remix the gif with Masky (uses your credits)',
+    remixPlaceholder: 'put everyone in medieval armor',
+    remixWithMasky: 'Remix with Masky',
   },
   remix: {
     loadingSource: 'Loading the meme you are remixing…',
+    remixing: 'Remixing',
+    by: ' by ',
+    outputLabel: 'Output',
+    outputOptions: {
+      image: 'New image (edit the art)',
+      video: 'New video',
+    },
+    videoStyleLabel: 'Video remix style',
+    videoStyleOptions: {
+      edit: 'Precise edit (change something, then animate)',
+      restyle: 'Restyle the whole video (transforms the look)',
+    },
     promptLabelPrecise: 'What to change (runs on your Masky credits)',
     promptLabelEdit: 'Edit prompt (runs on your Masky credits)',
     placeholder: {
@@ -84,6 +144,13 @@ export const createMemeCopy = {
     },
     remixVideo: 'Remix into video',
     remixImage: 'Remix image',
+    approvalTitle: 'Edit applied — happy with this frame?',
+    approvalBody:
+      'Keep it, then animate it or run another edit — check the card preview before you spend render credits.',
+    motionLabel: 'Motion (optional — how the animated clip should move)',
+    motionPlaceholder: 'he sprays himself in the face with the hose, same scene, short loop',
+    animateIt: 'Looks good — animate it',
+    rerunEdit: 'Re-run the edit',
   },
   upload: {
     imageHelp: (maxMb: number) =>
@@ -99,10 +166,19 @@ export const createMemeCopy = {
     dropHint: 'or drop one here',
   },
   url: {
+    fieldLabel: 'Image or page URL',
+    placeholder: 'https://…/meme.png',
     help: 'Paste a direct image link, or a giphy/imgur/reddit page — we grab the main image.',
     fetch: 'Fetch image',
+    optionalPrompt: 'Optional prompt — run the image through Masky image-edit (uses your credits)',
+    remixPlaceholder: "same image but it's 3am and everything is on fire",
+    applyEdit: 'Apply AI edit',
   },
   preview: {
+    heading: 'Live card preview',
+    description: 'This is what lands in the marketplace.',
+    placeholder: 'Your card lands here.',
+    busyHold: 'The card stays here while the frame cooks.',
     yourMeme: 'your meme',
     videoA11y: 'Video preview',
     previewOf: (label: string) => `Preview of ${label}`,

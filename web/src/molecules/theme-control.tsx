@@ -1,31 +1,12 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import { buttonVariants } from '@/atoms/button'
 import { ToggleGroup, ToggleGroupItem } from '@/atoms/toggle-group'
-import { Icon, type IconName } from '@/atoms/icon'
+import { Icon } from '@/atoms/icon'
 import { cn } from '../lib/cn'
+import type { ThemeControlModel } from '../lib/themeControlModel'
 import type { ThemePreference } from '../stores/themeStore'
 
-/**
- * What the theme control renders from. The hook builds it off `useTheme()`; `variant` picks the
- * Settings page's segmented well or the public header's one-glyph button. The account menu draws
- * the same three states as a radio from `THEME_OPTIONS`.
- */
-export interface ThemeControlModel {
-  value: ThemePreference
-  onChange: (preference: ThemePreference) => void
-  variant: 'segmented' | 'button'
-}
-
-/** The three states, in the order the button cycles them. Every glyph is a drawn Icon, and stays one. */
-export const THEME_OPTIONS: readonly { value: ThemePreference; icon: IconName; label: string }[] = [
-  { value: 'auto', icon: 'contrast', label: 'Auto' },
-  { value: 'light', icon: 'sun', label: 'Light' },
-  { value: 'dark', icon: 'moon', label: 'Dark' },
-]
-
-const optionFor = (value: ThemePreference) => THEME_OPTIONS.find((o) => o.value === value) ?? THEME_OPTIONS[0]!
-const nextAfter = (value: ThemePreference) =>
-  THEME_OPTIONS[(THEME_OPTIONS.findIndex((o) => o.value === value) + 1) % THEME_OPTIONS.length]!
+export type { ThemeControlModel }
 
 /**
  * The header square wears the Button's own icon recipe (34px, raised, the coarse-pointer halo) and
@@ -57,14 +38,18 @@ export interface ThemeControlProps extends VariantProps<typeof themeButtonVarian
  */
 export function ThemeControl({ model, size, className }: ThemeControlProps) {
   if (model.variant === 'button') {
-    const current = optionFor(model.value)
-    const next = nextAfter(model.value)
+    const current =
+      model.options.find((option) => option.value === model.value) ?? model.options[0]!
     return (
       <button
         type="button"
-        className={cn(buttonVariants({ size: 'icon-sm' }), themeButtonVariants({ size }), className)}
-        aria-label={`Theme: ${current.label}. Switch to ${next.label}`}
-        onClick={() => model.onChange(next.value)}
+        className={cn(
+          buttonVariants({ size: 'icon-sm' }),
+          themeButtonVariants({ size }),
+          className,
+        )}
+        aria-label={model.cycleLabel}
+        onClick={() => model.onChange(model.nextValue)}
         data-slot="theme-button"
         data-preference={model.value}
       >
@@ -83,18 +68,20 @@ export function ThemeControl({ model, size, className }: ThemeControlProps) {
         const [value] = next
         if (value) model.onChange(value)
       }}
-      aria-label="Theme"
+      aria-label={model.groupLabel}
       variant="segment"
       size="sm"
       /* 224: three ~70px segments breathing inside the well's 4px inset (`p-1`) */
       className={cn('w-56', className)}
       data-slot="theme-segmented"
     >
-      {THEME_OPTIONS.map((option) => (
-        <ToggleGroupItem<ThemePreference> key={option.value} value={option.value} data-slot="theme-segment">
-          <Icon name={option.icon} size={16} />
-          {' '}
-          {option.label}
+      {model.options.map((option) => (
+        <ToggleGroupItem<ThemePreference>
+          key={option.value}
+          value={option.value}
+          data-slot="theme-segment"
+        >
+          <Icon name={option.icon} size={16} /> {option.label}
         </ToggleGroupItem>
       ))}
     </ToggleGroup>

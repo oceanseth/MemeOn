@@ -11,13 +11,11 @@ import type { DiscordLinkScreenModel } from '../hooks/useDiscordLinkScreen'
 
 const COLUMN = 'mx-auto max-w-255 text-center'
 
-const TITLE = cn(
-  'm-0 font-display text-5xl font-normal text-foreground',
-  'max-md:text-2xl',
-)
+const TITLE = cn('m-0 font-display text-5xl font-normal text-foreground', 'max-md:text-2xl')
 
 /** Row label inherits the band's tone — the command is plain text, not a code chip. */
-const ROW_LABEL = 'm-0 text-sm font-semibold [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-inherit'
+const ROW_LABEL =
+  'm-0 text-sm font-semibold [&_code]:bg-transparent [&_code]:p-0 [&_code]:text-inherit'
 
 /** Each phase names its own card; the lede above the rows never moves. */
 const CARD_LEDE = 'm-0 mb-3 text-base font-semibold text-muted-foreground'
@@ -33,6 +31,16 @@ export function DiscordLinkScreen({
   errTitle,
   errBody,
   canRetry,
+  connectLabel,
+  notNowLabel,
+  nextHeading,
+  command,
+  privacyLead,
+  privacyRest,
+  successLead,
+  successRest,
+  retryLabel,
+  homeLabel,
   onConfirm,
   onRetry,
 }: DiscordLinkScreenModel) {
@@ -49,16 +57,17 @@ export function DiscordLinkScreen({
         <h1 className={cn(TITLE, 'mt-2.5')}>{heading ?? errTitle}</h1>
         {showConfirm && (
           <>
-            <p className="mx-auto mt-4 mb-0 max-w-[65ch] text-base text-muted-foreground">
-              Your Discord name is never shown to other MemeOn users — <code>/memeon</code> just
-              ranks your own binder and your friends' memes first.
+            <p className="mx-auto mt-4 mb-0 max-w-prose text-base text-muted-foreground">
+              {privacyLead}
+              <code>{command}</code>
+              {privacyRest}
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
               <Button variant="primary" onClick={onConfirm}>
-                Connect Discord
+                {connectLabel}
               </Button>
               <Link className={buttonVariants()} to="/discord">
-                Not now
+                {notNowLabel}
               </Link>
             </div>
           </>
@@ -74,7 +83,7 @@ export function DiscordLinkScreen({
       >
         {(showBusy || showDone) && (
           <Card size="sm">
-            <p className={CARD_LEDE}>What happens next</p>
+            <p className={CARD_LEDE}>{nextHeading}</p>
             {showBusy && (
               <Item variant="muted">
                 <ItemMedia>
@@ -86,12 +95,13 @@ export function DiscordLinkScreen({
             {showDone && (
               <Alert variant="success" className="block w-full max-w-none">
                 <p className={ROW_LABEL}>
-                  Head back to Discord — <code>/memeon</code> now ranks your binder and friends'
-                  memes first.
+                  {successLead}
+                  <code>{command}</code>
+                  {successRest}
                 </p>
                 <AlertAction>
                   <Link className={buttonVariants({ size: 'sm' })} to="/discord">
-                    Back to MemeOn
+                    {homeLabel}
                   </Link>
                 </AlertAction>
               </Alert>
@@ -103,17 +113,17 @@ export function DiscordLinkScreen({
       {showError && (
         <div className={cn(COLUMN, 'mt-8 text-left')}>
           <Card size="sm">
-            <p className={CARD_LEDE}>What happens next</p>
+            <p className={CARD_LEDE}>{nextHeading}</p>
             <Alert variant="error" className="block w-full max-w-none">
               <p className={ROW_LABEL}>{errBody}</p>
               <AlertAction>
                 {canRetry && (
                   <Button variant="primary" size="sm" onClick={onRetry}>
-                    Try again
+                    {retryLabel}
                   </Button>
                 )}
                 <Link className={buttonVariants({ size: 'sm' })} to="/discord">
-                  Back to MemeOn
+                  {homeLabel}
                 </Link>
               </AlertAction>
             </Alert>

@@ -17,7 +17,6 @@ import {
   paperMeme,
   proposedTrade,
   questStepsFresh,
-  tierFrames,
   unreadFriend,
   unreadSale,
 } from './fixtures'
@@ -118,7 +117,12 @@ export class ConnectedScenario {
   user: Me | null
   alerts = clone([unreadSale, unreadFriend])
   questSteps = clone(questStepsFresh)
-  memes: Meme[] = clone(marketplacePage.map((meme) => ({ ...meme, myShares: meme.id === listedHolo.id ? 100 : 8 })))
+  memes: Meme[] = clone(
+    marketplacePage.map((meme) => ({
+      ...meme,
+      myShares: meme.id === listedHolo.id ? 100 : 8,
+    })),
+  )
   trades = clone([proposedTrade])
   friends = clone([friendAccepted, incomingFriend(), outgoingFriend()])
   keys = clone(developerKeys)
@@ -131,8 +135,28 @@ export class ConnectedScenario {
   inviteData = new Map([
     ['user-pal', clone(invitePal)],
     ['user-lou', clone(inviteLou)],
-    ['inviter-a', { ...clone(invitePal), inviter: { ...clone(invitePal.inviter), sub: 'inviter-a', name: 'Client A' } }],
-    ['inviter-b', { ...clone(invitePal), inviter: { ...clone(invitePal.inviter), sub: 'inviter-b', name: 'Client B' } }],
+    [
+      'inviter-a',
+      {
+        ...clone(invitePal),
+        inviter: {
+          ...clone(invitePal.inviter),
+          sub: 'inviter-a',
+          name: 'Client A',
+        },
+      },
+    ],
+    [
+      'inviter-b',
+      {
+        ...clone(invitePal),
+        inviter: {
+          ...clone(invitePal.inviter),
+          sub: 'inviter-b',
+          name: 'Client B',
+        },
+      },
+    ],
   ])
   discordConfigured: boolean
   freshKey = 'mo_live_story_secret'
@@ -156,9 +180,13 @@ export class ConnectedScenario {
       this.friends = []
       this.keys = []
     }
-    this.stores = createStores(createActor(authMachine.provide({
-      actions: { clearSessionAndFirebase: clearSession },
-    })))
+    this.stores = createStores(
+      createActor(
+        authMachine.provide({
+          actions: { clearSessionAndFirebase: clearSession },
+        }),
+      ),
+    )
   }
 
   get unexpected(): readonly RecordedRequest[] {
@@ -216,10 +244,18 @@ export class ConnectedScenario {
     if (!['GET', 'HEAD'].includes(request.method)) {
       const text = await request.clone().text()
       if (text) {
-        try { body = JSON.parse(text) } catch { body = text }
+        try {
+          body = JSON.parse(text)
+        } catch {
+          body = text
+        }
       }
     }
-    return { method: request.method, path: `${url.pathname}${url.search}`, body }
+    return {
+      method: request.method,
+      path: `${url.pathname}${url.search}`,
+      body,
+    }
   }
 
   async handle(request: Request): Promise<Response> {
@@ -253,18 +289,20 @@ export class ConnectedScenario {
         scopes: 'openid profile',
       })
     }
-    if (method === 'GET' && path === '/api/frames') {
-      return json({ frames: Object.entries(tierFrames).map(([key, frameUrl]) => ({ key, url: frameUrl })) })
-    }
     if (method === 'GET' && path === '/api/alerts') return json({ alerts: clone(this.alerts) })
     if (method === 'POST' && path === '/api/alerts/read') {
       const ids = (body as { ids?: string[] } | null)?.ids ?? []
-      this.alerts = this.alerts.map((alert) => ids.includes(alert.id) ? { ...alert, read: true } : alert)
+      this.alerts = this.alerts.map((alert) =>
+        ids.includes(alert.id) ? { ...alert, read: true } : alert,
+      )
       return json({})
     }
-    if (method === 'GET' && path === '/api/onboarding') return json({ steps: clone(this.questSteps) })
+    if (method === 'GET' && path === '/api/onboarding')
+      return json({ steps: clone(this.questSteps) })
     if (method === 'POST' && path === '/api/onboarding/claim-pack') {
-      this.questSteps = this.questSteps.map((step) => step.key === 'pack' ? { ...step, done: true } : step)
+      this.questSteps = this.questSteps.map((step) =>
+        step.key === 'pack' ? { ...step, done: true } : step,
+      )
       return json({ memes: [clone(paperMeme)], reward: 20 })
     }
     if (method === 'GET' && path === '/api/binder') return json({ memes: clone(this.memes) })
@@ -278,7 +316,10 @@ export class ConnectedScenario {
       if (tier) memes = memes.filter((meme) => meme.tierKey === tier)
       if (listed) memes = memes.filter((meme) => !!meme.listing)
       const cursor = url.searchParams.get('cursor')
-      return json({ memes: clone(cursor ? [this.mintedMeme] : memes), nextCursor: cursor ? null : null })
+      return json({
+        memes: clone(cursor ? [this.mintedMeme] : memes),
+        nextCursor: cursor ? null : null,
+      })
     }
     if (method === 'POST' && path === '/api/memes') {
       this.mintedMeme = { ...this.mintedMeme, ...(body as Partial<Meme>) }
@@ -288,22 +329,49 @@ export class ConnectedScenario {
     const detailMatch = path.match(/^\/api\/memes\/([^/]+)$/)
     if (detailMatch && method === 'GET') {
       const id = decodeURIComponent(detailMatch[1]!)
-      const meme = this.memes.find((candidate) => candidate.id === id) ?? (id === this.mintedMeme.id ? this.mintedMeme : null)
+      const meme =
+        this.memes.find((candidate) => candidate.id === id) ??
+        (id === this.mintedMeme.id ? this.mintedMeme : null)
       return meme
-        ? json({ meme: clone(meme), positions: [{ userId: this.user?.sub ?? 'user-pal', shares: meme.id === listedHolo.id ? 100 : 8 }] })
+        ? json({
+            meme: clone(meme),
+            positions: [
+              {
+                userId: this.user?.sub ?? 'user-pal',
+                shares: meme.id === listedHolo.id ? 100 : 8,
+              },
+            ],
+          })
         : json({ error: 'not found' }, 404)
     }
     if (method === 'GET' && /^\/api\/memes\/[^/]+\/stats$/.test(path)) {
-      return json({ sources: [{ source: 'group chat', views: 12, url: 'https://example.test/source' }] })
+      return json({
+        sources: [
+          {
+            source: 'group chat',
+            views: 12,
+            url: 'https://example.test/source',
+          },
+        ],
+      })
     }
-    if (method === 'GET' && /^\/api\/memes\/[^/]+\/memeplex$/.test(path)) return json(clone(memeplexFamily))
+    if (method === 'GET' && /^\/api\/memes\/[^/]+\/memeplex$/.test(path))
+      return json(clone(memeplexFamily))
     if (method === 'POST' && /^\/api\/memes\/[^/]+\/memeplex$/.test(path)) return json({})
     const mutationMatch = path.match(/^\/api\/memes\/([^/]+)\/(buy|list|unlist|visibility|claim)$/)
     if (mutationMatch && method === 'POST') {
-      const meme = this.memes.find((candidate) => candidate.id === decodeURIComponent(mutationMatch[1]!))
-      if (meme && mutationMatch[2] === 'list') meme.listing = { sellerId: this.user?.sub ?? '', shares: Number((body as { shares: number }).shares), pricePerShare: Number((body as { pricePerShare: number }).pricePerShare) }
+      const meme = this.memes.find(
+        (candidate) => candidate.id === decodeURIComponent(mutationMatch[1]!),
+      )
+      if (meme && mutationMatch[2] === 'list')
+        meme.listing = {
+          sellerId: this.user?.sub ?? '',
+          shares: Number((body as { shares: number }).shares),
+          pricePerShare: Number((body as { pricePerShare: number }).pricePerShare),
+        }
       if (meme && mutationMatch[2] === 'unlist') meme.listing = null
-      if (meme && mutationMatch[2] === 'visibility') meme.private = Boolean((body as { private: boolean }).private)
+      if (meme && mutationMatch[2] === 'visibility')
+        meme.private = Boolean((body as { private: boolean }).private)
       return json({})
     }
     if (detailMatch && method === 'DELETE') {
@@ -312,19 +380,30 @@ export class ConnectedScenario {
     }
     if (method === 'GET' && path === '/api/trades') return json({ trades: clone(this.trades) })
     if (method === 'POST' && path === '/api/trades') {
-      this.trades.push({ ...clone(proposedTrade), id: `trade-${this.trades.length + 1}`, ...(body as Partial<Trade>) })
+      this.trades.push({
+        ...clone(proposedTrade),
+        id: `trade-${this.trades.length + 1}`,
+        ...(body as Partial<Trade>),
+      })
       return json({})
     }
     const respondMatch = path.match(/^\/api\/trades\/([^/]+)\/respond$/)
     if (respondMatch && method === 'POST') {
       const trade = this.trades.find((candidate) => candidate.id === respondMatch[1])
-      if (trade) trade.status = (body as { action: 'accept' | 'decline' }).action === 'accept' ? 'accepted' : 'declined'
+      if (trade)
+        trade.status =
+          (body as { action: 'accept' | 'decline' }).action === 'accept' ? 'accepted' : 'declined'
       return json({})
     }
     if (method === 'GET' && path === '/api/friends') return json({ friends: clone(this.friends) })
     if (method === 'POST' && path === '/api/friends/request') {
       const userId = String((body as { userId: string }).userId)
-      this.friends.push({ ...clone(friendAccepted), sub: userId, name: userId, status: 'outgoing' })
+      this.friends.push({
+        ...clone(friendAccepted),
+        sub: userId,
+        name: userId,
+        status: 'outgoing',
+      })
       const profile = this.profiles.get(userId)
       if (profile) profile.friendStatus = 'outgoing'
       return json({})
@@ -332,7 +411,9 @@ export class ConnectedScenario {
     if (method === 'POST' && path === '/api/friends/respond') {
       const response = body as { userId: string; accept: boolean }
       this.friends = response.accept
-        ? this.friends.map((friend) => friend.sub === response.userId ? { ...friend, status: 'accepted' } : friend)
+        ? this.friends.map((friend) =>
+            friend.sub === response.userId ? { ...friend, status: 'accepted' } : friend,
+          )
         : this.friends.filter((friend) => friend.sub !== response.userId)
       const profile = this.profiles.get(response.userId)
       if (profile) profile.friendStatus = response.accept ? 'accepted' : null
@@ -346,7 +427,9 @@ export class ConnectedScenario {
     if (method === 'POST' && path === '/api/gift') return json({})
     if (method === 'GET' && path === '/api/users') {
       const q = (url.searchParams.get('q') ?? '').toLowerCase()
-      const users = [...this.profiles.values()].map(({ profile }) => profile).filter((profile) => !q || profile.name.toLowerCase().includes(q))
+      const users = [...this.profiles.values()]
+        .map(({ profile }) => profile)
+        .filter((profile) => !q || profile.name.toLowerCase().includes(q))
       return json({ users: clone(users) })
     }
     const profileMatch = path.match(/^\/api\/users\/([^/]+)\/profile$/)
@@ -369,12 +452,20 @@ export class ConnectedScenario {
       return invite ? json(clone(invite)) : json({ error: 'invalid invite' }, 404)
     }
     if (method === 'POST' && path === '/api/invites/accept') return json({})
-    if (method === 'GET' && path === '/api/discord/config') return json({ configured: this.discordConfigured, installUrl: this.discordConfigured ? discordInstallUrl : null })
+    if (method === 'GET' && path === '/api/discord/config')
+      return json({
+        configured: this.discordConfigured,
+        installUrl: this.discordConfigured ? discordInstallUrl : null,
+      })
     if (method === 'POST' && path === '/api/discord/link') return json({})
     if (method === 'GET' && path === '/api/developers/keys') return json({ keys: clone(this.keys) })
     if (method === 'POST' && path === '/api/developers/keys') {
       const label = String((body as { label?: string }).label ?? 'my key')
-      this.keys.push({ prefix: 'mo_live_story', label, createdAt: '2026-09-08T00:00:00.000Z' })
+      this.keys.push({
+        prefix: 'mo_live_story',
+        label,
+        createdAt: '2026-09-08T00:00:00.000Z',
+      })
       return json({ key: this.freshKey })
     }
     const keyMatch = path.match(/^\/api\/developers\/keys\/(.+)$/)
@@ -382,15 +473,34 @@ export class ConnectedScenario {
       this.keys = this.keys.filter((key) => key.prefix !== decodeURIComponent(keyMatch[1]!))
       return json({})
     }
-    if (method === 'GET' && path === '/api/giphy/categories') return json({ categories: clone(giphyCategories) })
-    if (method === 'GET' && path === '/api/giphy/search') return json({ results: clone([giphyCat, giphyDog]) })
-    if (method === 'POST' && path === '/api/resolve-image') return json({ imageUrl: this.generatedImage, videoUrl: null, source: null })
-    if (method === 'POST' && path === '/api/aigen/image') return json({ imageUrl: this.generatedImage })
-    if (method === 'POST' && path === '/api/aigen/image-edit') return json({ imageUrl: this.generatedImage })
-    if (method === 'POST' && path === '/api/aigen/video') return json({ generationId: 'video-story' })
-    if (method === 'GET' && path === '/api/aigen/video/video-story') return json({ status: 'video', videoUrl: 'https://media.example.test/generated.mp4' })
-    if (method === 'POST' && path === '/api/uploads') return json({ uploadUrl: 'https://uploads.example.test/story', publicUrl: this.uploadedImage })
-    if (method === 'PUT' && url.origin === 'https://uploads.example.test') return new Response(null, { status: 200 })
+    if (method === 'GET' && path === '/api/giphy/categories')
+      return json({ categories: clone(giphyCategories) })
+    if (method === 'GET' && path === '/api/giphy/search')
+      return json({ results: clone([giphyCat, giphyDog]) })
+    if (method === 'POST' && path === '/api/resolve-image')
+      return json({
+        imageUrl: this.generatedImage,
+        videoUrl: null,
+        source: null,
+      })
+    if (method === 'POST' && path === '/api/aigen/image')
+      return json({ imageUrl: this.generatedImage })
+    if (method === 'POST' && path === '/api/aigen/image-edit')
+      return json({ imageUrl: this.generatedImage })
+    if (method === 'POST' && path === '/api/aigen/video')
+      return json({ generationId: 'video-story' })
+    if (method === 'GET' && path === '/api/aigen/video/video-story')
+      return json({
+        status: 'video',
+        videoUrl: 'https://media.example.test/generated.mp4',
+      })
+    if (method === 'POST' && path === '/api/uploads')
+      return json({
+        uploadUrl: 'https://uploads.example.test/story',
+        publicUrl: this.uploadedImage,
+      })
+    if (method === 'PUT' && url.origin === 'https://uploads.example.test')
+      return new Response(null, { status: 200 })
 
     return this.unexpectedLedger.record(request.method, request.path, request.body)
   }
@@ -407,6 +517,9 @@ export function getActiveScenario(): ConnectedScenario {
   return activeScenario
 }
 
-export function createConnectedScenario(id: string, options?: ConnectedScenarioOptions): ConnectedScenario {
+export function createConnectedScenario(
+  id: string,
+  options?: ConnectedScenarioOptions,
+): ConnectedScenario {
   return new ConnectedScenario(id, options)
 }

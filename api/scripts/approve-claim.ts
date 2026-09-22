@@ -12,7 +12,10 @@ const meme = await db.getMeme(memeId)
 if (!meme) throw new Error('meme not found')
 const claims = await db.listClaims(memeId)
 const claim = claims.find((c) => c.userId === claimantSub)
-if (!claim) throw new Error(`no claim by ${claimantSub}; claims: ${claims.map((c) => c.userId).join(', ') || 'none'}`)
+if (!claim)
+  throw new Error(
+    `no claim by ${claimantSub}; claims: ${claims.map((c) => c.userId).join(', ') || 'none'}`,
+  )
 const claimant = await db.getUser(claimantSub)
 if (!claimant) throw new Error('claimant not found')
 
@@ -43,5 +46,7 @@ await db.addAlert(
   `📼✅ Your creator claim on "${meme.title}" was approved — the card is yours!`,
   memeId,
 )
-console.log(`approved: ${meme.title} -> ${claimant.name} (${archivePos?.shares ?? 0} shares transferred)`)
+console.log(
+  `approved: ${meme.title} -> ${claimant.name} (${archivePos?.shares ?? 0} shares transferred)`,
+)
 process.exit(0)

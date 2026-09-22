@@ -68,7 +68,9 @@ export const WithActions: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(
-      canvas.getByRole('button', { name: 'Find your people' }).closest('[data-slot="empty-content"]'),
+      canvas
+        .getByRole('button', { name: 'Find your people' })
+        .closest('[data-slot="empty-content"]'),
     ).not.toBeNull()
   },
 }
@@ -78,7 +80,9 @@ export const WithMedia: Story = {
   render: () => (
     <Empty variant="success">
       <EmptyHeader>
-        <EmptyMedia><Icon name="gift" size={28} /></EmptyMedia>
+        <EmptyMedia>
+          <Icon name="gift" size={28} />
+        </EmptyMedia>
         <EmptyTitle>Starter pack opened!</EmptyTitle>
         <EmptyDescription>Your first cards are waiting in My Binder.</EmptyDescription>
       </EmptyHeader>

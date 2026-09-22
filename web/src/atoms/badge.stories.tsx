@@ -24,7 +24,15 @@ export const Info: Story = { args: { variant: 'info', children: 'Friends' } }
 /** The six variants, in the order a screen reaches for them. */
 export const Variants: Story = {
   render: () => (
-    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8, padding: 16 }}>
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        gap: 8,
+        padding: 16,
+      }}
+    >
       <Badge>12 held</Badge>
       <Badge variant="primary">For sale</Badge>
       <Badge variant="success">Minted</Badge>

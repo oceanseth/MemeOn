@@ -20,7 +20,13 @@ const meta = {
   title: 'Molecules/HeroVideo',
   component: HeroVideo,
   args: { model: model({ autoplay: true }) },
-  decorators: [(Story) => <div className="mx-auto max-w-220 p-5"><Story /></div>],
+  decorators: [
+    (Story) => (
+      <div className="mx-auto max-w-220 p-5">
+        <Story />
+      </div>
+    ),
+  ],
 } satisfies Meta<typeof HeroVideo>
 
 export default meta
@@ -42,7 +48,11 @@ export const Autoplaying: Story = {
   },
 }
 
-export const AutoplayingDark: Story = { ...Autoplaying, name: 'Autoplaying dark', globals: { theme: 'dark' } }
+export const AutoplayingDark: Story = {
+  ...Autoplaying,
+  name: 'Autoplaying dark',
+  globals: { theme: 'dark' },
+}
 
 /** The visitor turned the sound on: the pill names the way back. */
 export const SoundOn: Story = {

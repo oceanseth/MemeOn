@@ -54,12 +54,16 @@ export const privacyCopy = {
   deletion: {
     heading: 'Deletion',
     makePrivate: { text: 'make any meme private', to: '/binder' },
-    privateSuffix: '(removing it from all public surfaces). To delete your account and its data, email',
+    privateSuffix:
+      '(removing it from all public surfaces). To delete your account and its data, email',
     email: 'seth@voicecert.com',
     emailSubject: 'MemeOn account deletion',
     afterEmail:
       'from a message linked to your avatar identity and we’ll remove it within 30 days. Revoking MemeOn’s access from your Masky account (',
-    maskyDeveloper: { text: 'masky.ai/developer → Connected apps', href: 'https://masky.ai/developer' },
+    maskyDeveloper: {
+      text: 'masky.ai/developer → Connected apps',
+      href: 'https://masky.ai/developer',
+    },
     closing: ') ends our ability to act on your behalf immediately.',
     ownersLead: 'Sole owners can',
   },

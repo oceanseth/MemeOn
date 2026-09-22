@@ -31,7 +31,10 @@ const ROLE_PICKERS = {
   gold: (m) => m.tierKey === 'gold' && m.mediaType === 'image',
   shiny: (m) => m.tierKey === 'shiny' && m.mediaType === 'image',
   listed: (m) =>
-    m.listing?.shares > 0 && m.mediaType === 'image' && m.tierKey === 'silver' && m.title === 'pushrax',
+    m.listing?.shares > 0 &&
+    m.mediaType === 'image' &&
+    m.tierKey === 'silver' &&
+    m.title === 'pushrax',
   video: (m) => m.mediaType === 'video' && m.videoUrl,
 }
 

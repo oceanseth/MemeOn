@@ -1,11 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, within } from 'storybook/test'
+import { authStatusCopy } from '../copy/authStatus'
+import { inviteCopy } from '../copy/invite'
 import type { AuthStatusScreenModel } from '../hooks/useAuthCallbackScreen'
 import { AuthStatusScreen } from './AuthStatusScreen'
 
 const completing: AuthStatusScreenModel = {
   phase: 'working',
+  documentTitle: authStatusCopy.callback.documentTitle,
   title: 'Completing Masky login…',
   subtitle: 'Taking you back to MemeOn.',
   error: null,
@@ -21,7 +24,13 @@ const meta = {
   title: 'Screens/AuthStatusScreen',
   component: AuthStatusScreen,
   args: completing,
-  decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],
+  decorators: [
+    (Story) => (
+      <MemoryRouter>
+        <Story />
+      </MemoryRouter>
+    ),
+  ],
 } satisfies Meta<typeof AuthStatusScreen>
 
 export default meta
@@ -31,7 +40,9 @@ type Story = StoryObj<typeof meta>
 export const Completing: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('heading', { name: 'Completing Masky login…' })).toBeInTheDocument()
+    await expect(
+      canvas.getByRole('heading', { name: 'Completing Masky login…' }),
+    ).toBeInTheDocument()
     await expect(canvasElement.querySelector('[data-slot="auth-ring"]')).not.toBeNull()
     await expect(canvas.getByRole('button', { name: 'Try again' })).toBeInTheDocument()
     await expect(canvas.getByRole('link', { name: 'Back to MemeOn' })).toHaveAttribute('href', '/')
@@ -52,18 +63,57 @@ export const LoginFailed: Story = {
     await expect(canvas.getByRole('alert')).toHaveTextContent('OAuth state mismatch — try again')
     // the band is the compact Alert size, and the card is the Card atom
     await expect(canvas.getByRole('alert')).toHaveAttribute('data-variant', 'error')
-    await expect(canvasElement.querySelector('[data-slot="auth-status"]')).toHaveAttribute('data-size', 'lg')
+    await expect(canvasElement.querySelector('[data-slot="auth-status"]')).toHaveAttribute(
+      'data-size',
+      'lg',
+    )
     await expect(canvasElement.querySelector('[data-slot="auth-ring"]')).toBeNull()
     await expect(canvas.queryByText('Taking longer than usual?')).not.toBeInTheDocument()
+  },
+}
+
+/** Masky finished; the invite accept failed. Same card, different title and alert. */
+export const InviteFailed: Story = {
+  args: {
+    phase: 'error',
+    title: authStatusCopy.callback.inviteFailed.title,
+    subtitle: null,
+    error: inviteCopy.errors.accept,
+    fallback: { ...completing.fallback, prompt: null },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(
+      canvas.getByRole('heading', {
+        name: authStatusCopy.callback.inviteFailed.title,
+      }),
+    ).toBeInTheDocument()
+    await expect(
+      canvas.queryByRole('heading', {
+        name: authStatusCopy.callback.failed.title,
+      }),
+    ).not.toBeInTheDocument()
+    await expect(canvas.getByRole('alert')).toHaveTextContent(inviteCopy.errors.accept)
+    await expect(canvas.getByRole('alert')).toHaveAttribute('data-variant', 'error')
+    await expect(canvasElement.querySelector('[data-slot="auth-status"]')).toHaveAttribute(
+      'data-phase',
+      'error',
+    )
+    await expect(canvasElement.querySelector('[data-slot="auth-ring"]')).toBeNull()
   },
 }
 
 /** The mobile forward: the deep link is the page's one primary; the web is the quiet fallback. */
 export const ReturningToApp: Story = {
   args: {
+    documentTitle: authStatusCopy.mobileForward.documentTitle,
     title: 'Returning to the MemeOn app…',
     subtitle: 'Open the MemeOn app, or keep going on the web.',
-    primaryAction: { label: 'Open MemeOn', href: 'memeon://auth?code=abc&state=xyz', icon: 'arrow-right' },
+    primaryAction: {
+      label: 'Open MemeOn',
+      href: 'memeon://auth?code=abc&state=xyz',
+      icon: 'arrow-right',
+    },
     fallback: {
       prompt: 'Nothing happened?',
       retry: null,
@@ -72,10 +122,19 @@ export const ReturningToApp: Story = {
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByRole('link', { name: 'Open MemeOn' })).toHaveAttribute('href', 'memeon://auth?code=abc&state=xyz')
+    await expect(canvas.getByRole('link', { name: 'Open MemeOn' })).toHaveAttribute(
+      'href',
+      'memeon://auth?code=abc&state=xyz',
+    )
     await expect(canvas.queryByRole('button', { name: 'Try again' })).not.toBeInTheDocument()
-    await expect(canvas.getByRole('link', { name: 'Continue on the web' })).toHaveAttribute('href', '/')
+    await expect(canvas.getByRole('link', { name: 'Continue on the web' })).toHaveAttribute(
+      'href',
+      '/',
+    )
     // the inline way out is the prose link atom (its own slot is the screen's), not a hand-spelled underline
-    await expect(canvasElement.querySelector('[data-slot="auth-web-fallback"]')).toHaveAttribute('data-variant', 'inline')
+    await expect(canvasElement.querySelector('[data-slot="auth-web-fallback"]')).toHaveAttribute(
+      'data-variant',
+      'inline',
+    )
   },
 }

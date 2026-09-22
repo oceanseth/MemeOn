@@ -39,8 +39,9 @@ export interface TradeSideSummaryModel {
   /** whose side this is, read from where you are standing: "You give" / "You get" */
   ownerLabel: string
   empty: boolean
+  emptyLabel: string
   memeLines: readonly TradeMemeLineModel[]
-  coinsLabel: string | null
+  braincellsLabel: string | null
 }
 
 export interface TradeActionModel {
@@ -125,13 +126,17 @@ function relativeAge(createdAt: string, now: number): string {
   if (elapsed < DAY) return copy.time.hoursAgo(Math.floor(elapsed / HOUR))
   if (elapsed < 2 * DAY) return copy.time.yesterday
   if (elapsed < 7 * DAY) return copy.time.daysAgo(Math.floor(elapsed / DAY))
-  return new Date(then).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  return new Date(then).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+  })
 }
 
 /** One side of a deal as a sentence, for the confirmation dialog. */
 export function tradeSideSentence(side: TradeSide, memeNames: TradeMemeInfoMap): string {
   const parts = side.memes.map(
-    (meme) => `${sharesPhrase(meme.shares)} "${memeNames[meme.memeId]?.title ?? copy.pendingMemeTitle}"`,
+    (meme) =>
+      `${sharesPhrase(meme.shares)} "${memeNames[meme.memeId]?.title ?? copy.pendingMemeTitle}"`,
   )
   if (side.coins > 0) parts.push(braincells(side.coins))
   return parts.length === 0 ? copy.sideSentence.nothing : parts.join(' + ')
@@ -161,6 +166,7 @@ function buildSideSummary(
   return {
     ownerLabel: owner,
     empty: side.memes.length === 0 && side.coins === 0,
+    emptyLabel: copy.sideSentence.nothing,
     memeLines: side.memes.map((meme) => {
       const info = memeNames[meme.memeId] ?? null
       return {
@@ -175,7 +181,7 @@ function buildSideSummary(
         detailHref: `/m/${meme.memeId}`,
       }
     }),
-    coinsLabel: side.coins > 0 ? braincells(side.coins) : null,
+    braincellsLabel: side.coins > 0 ? braincells(side.coins) : null,
   }
 }
 
@@ -246,9 +252,10 @@ export function buildTradeCardModel({
             },
           ]
 
-  /* Wells are keyed to your perspective: offer/ask swap by proposer, left=give right=get. */
-  const yours = mine ? trade.offer : trade.ask
-  const theirs = mine ? trade.ask : trade.offer
+  /* Wells swap by proposer so left is always give (leaves your binder) and right is get.
+     Wire fields stay Trade.offer / Trade.ask; this remap is the UI adapter. */
+  const giveSide = mine ? trade.offer : trade.ask
+  const getSide = mine ? trade.ask : trade.offer
   return {
     id: trade.id,
     partiesLabel: open
@@ -267,9 +274,9 @@ export function buildTradeCardModel({
     createdLabel: relativeAge(trade.createdAt, now),
     createdAtIso: trade.createdAt,
     createdTitle: new Date(trade.createdAt).toLocaleString(),
-    give: buildSideSummary(yours, copy.sides.give, memeNames),
-    get: buildSideSummary(theirs, copy.sides.get, memeNames),
-    finalityLine: actions.length > 0 && !mine ? finalityLine(yours, memeNames) : null,
+    give: buildSideSummary(giveSide, copy.sides.give, memeNames),
+    get: buildSideSummary(getSide, copy.sides.get, memeNames),
+    finalityLine: actions.length > 0 && !mine ? finalityLine(giveSide, memeNames) : null,
     actions,
   }
 }

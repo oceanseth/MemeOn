@@ -4,11 +4,16 @@
 import * as db from './db'
 import { portfolioSummary } from './portfolio'
 
-export async function rebuildLeaderboard(): Promise<{ leaders: db.LeaderboardRow[]; computedAt: string }> {
+export async function rebuildLeaderboard(): Promise<{
+  leaders: db.LeaderboardRow[]
+  computedAt: string
+}> {
   const top = await db.topHolders(10)
   const leaders = await Promise.all(
     top.map(async (u) => {
-      const { value, collectionSize } = await portfolioSummary(u.sub, { priceAll: true })
+      const { value, collectionSize } = await portfolioSummary(u.sub, {
+        priceAll: true,
+      })
       return {
         sub: u.sub,
         name: u.name,

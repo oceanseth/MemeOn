@@ -51,7 +51,10 @@ export async function exchangeCode(code: string, redirectUri: string): Promise<M
 export async function fetchProfile(accessToken: string): Promise<MaskyProfile> {
   const cfg = await getMaskyOAuth()
   const res = await fetch(cfg.userinfo_url, {
-    headers: { authorization: `Bearer ${accessToken}`, accept: 'application/json' },
+    headers: {
+      authorization: `Bearer ${accessToken}`,
+      accept: 'application/json',
+    },
   })
   const raw = (await res.json().catch(() => ({}))) as Record<string, unknown>
   if (!res.ok) {
@@ -73,7 +76,11 @@ export async function publicConfig(): Promise<{
   scopes: string
 }> {
   const cfg = await getMaskyOAuth()
-  return { authorizeUrl: cfg.authorize_url, clientId: cfg.client_id, scopes: cfg.scopes }
+  return {
+    authorizeUrl: cfg.authorize_url,
+    clientId: cfg.client_id,
+    scopes: cfg.scopes,
+  }
 }
 
 async function maskyFetch<T>(token: string, path: string, init: RequestInit = {}): Promise<T> {
@@ -98,14 +105,24 @@ async function maskyFetch<T>(token: string, path: string, init: RequestInit = {}
   return data as T
 }
 
+/**
+ * Text the user put in "double quotes" (straight or curly) is a promise that it appears verbatim
+ * in the image. The default model garbles lettering, so quoted prompts route to Masky's
+ * `ideogram` typography model, which renders exact quoted text. Empty quotes don't count.
+ */
+export function hasQuotedText(prompt: string): boolean {
+  return /"[^"]*\S[^"]*"|“[^”]*\S[^”]*”/.test(prompt)
+}
+
 export function generateImage(
   token: string,
   prompt: string,
   aspectRatio = '1:1',
+  model?: 'ideogram',
 ): Promise<{ imageUrl: string; aspectRatio: string; creditCost: number }> {
   return maskyFetch(token, '/images/generate', {
     method: 'POST',
-    body: JSON.stringify({ prompt, aspectRatio }),
+    body: JSON.stringify({ prompt, aspectRatio, ...(model ? { model } : {}) }),
   })
 }
 
@@ -132,12 +149,20 @@ export function generateVideo(
     aspectRatio?: string
   },
 ): Promise<{ generationId: string; status: string; model: string }> {
-  return maskyFetch(token, '/videos/generate', { method: 'POST', body: JSON.stringify(body) })
+  return maskyFetch(token, '/videos/generate', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
 }
 
 export function videoStatus(
   token: string,
   generationId: string,
-): Promise<{ status: string; videoUrl?: string; model?: string; errorMessage?: string }> {
+): Promise<{
+  status: string
+  videoUrl?: string
+  model?: string
+  errorMessage?: string
+}> {
   return maskyFetch(token, `/videos/${generationId}`)
 }

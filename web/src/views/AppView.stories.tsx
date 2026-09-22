@@ -3,9 +3,21 @@ import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { createActor } from 'xstate'
 import { meLou, unreadSale } from '../../.storybook/fixtures'
-import { connectedBeforeEach, connectedLoader, ConnectedStory } from '../../.storybook/connected-story'
+import {
+  connectedBeforeEach,
+  connectedLoader,
+  ConnectedStory,
+} from '../../.storybook/connected-story'
 import { createRequestGuard } from '../../.storybook/request-accounting'
-import { clearSession, maskyAccessToken, sessionToken, setMaskyAccessToken, setSessionToken } from '../lib/api'
+import { appShellCopy } from '../copy/appShell'
+import { sharedCopy } from '../copy/shared'
+import {
+  clearSession,
+  maskyAccessToken,
+  sessionToken,
+  setMaskyAccessToken,
+  setSessionToken,
+} from '../lib/api'
 import { authMachine } from '../stores/authMachine'
 import { createStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
@@ -30,20 +42,31 @@ type Story = StoryObj<typeof meta>
 export const PublicLandingRoute: Story = {
   loaders: [connectedLoader({ authenticated: false })],
   beforeEach: async (context) => {
-    // the landing route is code-split: warm its chunk so the play function sees the route, not
-    // the suspense fallback, whatever else the shard is doing
+    // Landing is eager: this import is a no-op warm so the play function sees the route, not
+    // a stale suspense fallback, whatever else the shard is doing
     await import('./LandingView')
     return connectedBeforeEach(context)
   },
-  render: (_args, { loaded }) => <ConnectedStory scenario={loaded.scenario}><AppView /></ConnectedStory>,
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <AppView />
+    </ConnectedStory>
+  ),
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    await expect(await canvas.findByRole('button', { name: 'Log in with Masky' })).toBeInTheDocument()
+    await expect(
+      await canvas.findByRole('button', { name: 'Log in with Masky' }),
+    ).toBeInTheDocument()
     await expect(canvas.queryByRole('link', { name: 'My Binder' })).not.toBeInTheDocument()
     await expect(loaded.scenario.stores.auth.snapshot.matches('unauthenticated')).toBe(true)
-    await expect(loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/me')).toHaveLength(0)
+    await expect(
+      loaded.scenario.requests.filter((request: { path: string }) => request.path === '/api/me'),
+    ).toHaveLength(0)
     /* the bypass block has to land on the route's own <main>, not on a story-supplied wrapper */
-    await expect(canvas.getByRole('link', { name: 'Skip to content' })).toHaveAttribute('href', '#main')
+    await expect(canvas.getByRole('link', { name: appShellCopy.skip })).toHaveAttribute(
+      'href',
+      '#main',
+    )
     const skipTarget = canvasElement.querySelector<HTMLElement>('#main')
     await expect(skipTarget?.tagName).toBe('MAIN')
     skipTarget?.focus()
@@ -55,29 +78,42 @@ const authSetup: Story = {
   parameters: { initialEntries: ['/developers'] },
   beforeEach: async ({ loaded, parameters }) => {
     // the guarded routes are code-split: warm their chunks so a play function sees the route, not the spinner
-    await Promise.all([import('./CreateMemeView'), import('./DevelopersView'), import('./SettingsView')])
+    await Promise.all([
+      import('./CreateMemeView'),
+      import('./DevelopersView'),
+      import('./SettingsView'),
+    ])
     const originalFetch = window.fetch
     const previousSession = sessionToken()
     const previousMasky = maskyAccessToken()
     setSessionToken('story-session')
     setMaskyAccessToken('story-masky-token')
     window.fetch = async (input, init) => {
-      const path = typeof input === 'string' ? input : input instanceof URL ? input.pathname : input.url
+      const path =
+        typeof input === 'string' ? input : input instanceof URL ? input.pathname : input.url
       switch (path) {
         case '/api/me': {
           loaded.accountRequest.count += 1
-          if ((parameters.deferInitialAuth && loaded.accountRequest.count === 1) ||
-              (parameters.deferRefresh && loaded.accountRequest.count === 2)) {
+          if (
+            (parameters.deferInitialAuth && loaded.accountRequest.count === 1) ||
+            (parameters.deferRefresh && loaded.accountRequest.count === 2)
+          ) {
             return loaded.accountRequest.response
           }
           return Response.json(meLou)
         }
-        case '/api/alerts': return Response.json({ alerts: parameters.unreadAlerts ? [unreadSale] : [] })
-        case '/api/alerts/read': return Response.json({})
-        case '/api/onboarding': return Response.json({ steps: [] })
-        case '/api/developers/keys': return Response.json({ keys: [] })
-        case '/api/frames': return Response.json({ frames: [] })
-        default: return loaded.requestGuard.record(init?.method ?? 'GET', path)
+        case '/api/alerts':
+          return Response.json({
+            alerts: parameters.unreadAlerts ? [unreadSale] : [],
+          })
+        case '/api/alerts/read':
+          return Response.json({})
+        case '/api/onboarding':
+          return Response.json({ steps: [] })
+        case '/api/developers/keys':
+          return Response.json({ keys: [] })
+        default:
+          return loaded.requestGuard.record(init?.method ?? 'GET', path)
       }
     }
     loaded.authStores.retain()
@@ -90,15 +126,25 @@ const authSetup: Story = {
       if (previousMasky) setMaskyAccessToken(previousMasky)
     }
   },
-  loaders: [() => {
-    const authActor = createActor(authMachine.provide({
-      actions: { clearSessionAndFirebase: clearSession },
-    }))
-    const authStores = createStores(authActor)
-    let resolve!: (response: Response) => void
-    const response = new Promise<Response>((done) => { resolve = done })
-    return { authStores, accountRequest: { count: 0, response, resolve }, requestGuard: createRequestGuard() }
-  }],
+  loaders: [
+    () => {
+      const authActor = createActor(
+        authMachine.provide({
+          actions: { clearSessionAndFirebase: clearSession },
+        }),
+      )
+      const authStores = createStores(authActor)
+      let resolve!: (response: Response) => void
+      const response = new Promise<Response>((done) => {
+        resolve = done
+      })
+      return {
+        authStores,
+        accountRequest: { count: 0, response, resolve },
+        requestGuard: createRequestGuard(),
+      }
+    },
+  ],
   render: (_args, { loaded }) => (
     <StoresProvider stores={loaded.authStores}>
       <AppView />
@@ -149,11 +195,16 @@ export const SettingsRoute: Story = {
   parameters: { initialEntries: ['/settings'] },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(await canvas.findByRole('heading', { name: 'Settings', level: 1 })).toBeInTheDocument()
+    await expect(
+      await canvas.findByRole('heading', { name: 'Settings', level: 1 }),
+    ).toBeInTheDocument()
     await expect(canvasElement.querySelector('main#main[tabindex="-1"]')).not.toBeNull()
     // the account menu's Settings row lands on the route that now exists
     await userEvent.click(canvas.getByRole('button', { name: 'Account menu' }))
-    await expect(await canvas.findByRole('menuitem', { name: 'Settings' })).toHaveAttribute('href', '/settings')
+    await expect(await canvas.findByRole('menuitem', { name: 'Settings' })).toHaveAttribute(
+      'href',
+      '/settings',
+    )
     await userEvent.keyboard('{Escape}')
   },
 }
@@ -165,13 +216,16 @@ export const InitialAuthenticationGatesMint: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.queryByRole('textbox', { name: 'Title' })).not.toBeInTheDocument()
     await expect(loaded.authStores.auth.loading).toBe(true)
+    await expect(canvas.getByRole('status')).toHaveTextContent(sharedCopy.checkingSession)
 
     const pending = loaded.authStores.auth.refresh()
     void pending.catch(() => {})
     await expect(loaded.accountRequest.count).toBe(1)
     await expect(loaded.authStores.auth.loading).toBe(true)
     await expect(canvas.queryByRole('textbox', { name: 'Title' })).not.toBeInTheDocument()
-    await expect(canvas.queryByRole('button', { name: /Log in with Masky/ })).not.toBeInTheDocument()
+    await expect(
+      canvas.queryByRole('button', { name: /Log in with Masky/ }),
+    ).not.toBeInTheDocument()
 
     loaded.accountRequest.resolve(Response.json(meLou))
     await pending
@@ -181,7 +235,11 @@ export const InitialAuthenticationGatesMint: Story = {
 
 export const AccountRefreshPreservesMintDraft: Story = {
   ...authSetup,
-  parameters: { initialEntries: ['/binder/new'], deferRefresh: true, unreadAlerts: true },
+  parameters: {
+    initialEntries: ['/binder/new'],
+    deferRefresh: true,
+    unreadAlerts: true,
+  },
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     const title = await canvas.findByRole('textbox', { name: 'Title' })
@@ -201,7 +259,9 @@ export const AccountRefreshPreservesMintDraft: Story = {
     await expect(prompt).toHaveValue('a cat in a spacesuit')
     await userEvent.type(title, '!')
 
-    loaded.accountRequest.resolve(Response.json({ ...meLou, coins: meLou.coins + 1, unreadAlerts: 0 }))
+    loaded.accountRequest.resolve(
+      Response.json({ ...meLou, coins: meLou.coins + 1, unreadAlerts: 0 }),
+    )
     await waitFor(() => expect(loaded.authStores.auth.user.coins).toBe(meLou.coins + 1))
     await expect(canvas.getByRole('textbox', { name: 'Title' })).toBe(title)
     await expect(canvas.getByRole('textbox', { name: 'Prompt' })).toBe(prompt)
@@ -212,7 +272,11 @@ export const AccountRefreshPreservesMintDraft: Story = {
 
 export const AccountRefreshFailurePreservesMintDraft: Story = {
   ...authSetup,
-  parameters: { initialEntries: ['/binder/new'], deferRefresh: true, unreadAlerts: true },
+  parameters: {
+    initialEntries: ['/binder/new'],
+    deferRefresh: true,
+    unreadAlerts: true,
+  },
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     const title = await canvas.findByRole('textbox', { name: 'Title' })

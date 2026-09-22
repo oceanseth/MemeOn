@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./tiers": "./tiers.ts"
+    "./tiers": "./tiers.ts",
+    "./types": "./types.ts"
   }
 }

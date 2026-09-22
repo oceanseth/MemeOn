@@ -11,6 +11,8 @@ on:
       - 'mobile/**'
       - 'shared/**'
       - 'web/**'
+      - 'discord/**'
+      - '.jscpd.json'
       - '.github/workflows/web-check.yml'
       - '.github/actions/setup/**'
       - '.github/scripts/ensure-linux-rollup.sh'
@@ -57,7 +59,19 @@ jobs:
       - run: pnpm --filter web run test:check-contrast
       - run: pnpm --filter web run test:check-tokens
       - run: pnpm --filter web run test:unit
+      - run: pnpm --filter memeon-api run test
       - run: pnpm run typecheck
+
+  duplication:
+    name: duplicate code (jscpd)
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      # copy-paste gate: .jscpd.json scopes the scan (stories are excluded — a story restates its
+      # setup by design) and fails the run past the duplicated-token threshold it declares
+      - run: pnpm run check:dup
 
   build:
     name: build · proxy routing

@@ -85,19 +85,29 @@ function withCors(res: {
 }
 
 export async function handler(
-  event: APIGatewayProxyEventV2 & { action?: string; max?: number; inventoryTarget?: number },
+  event: APIGatewayProxyEventV2 & {
+    action?: string
+    max?: number
+    inventoryTarget?: number
+  },
 ): Promise<APIGatewayProxyStructuredResultV2 | Record<string, unknown>> {
   // scheduled invocations (EventBridge) carry an action instead of an http request
   if (event.action === 'giphy-seed') {
     const { runGiphySeed } = await import('./seeder')
-    const result = await runGiphySeed({ max: event.max, inventoryTarget: event.inventoryTarget })
+    const result = await runGiphySeed({
+      max: event.max,
+      inventoryTarget: event.inventoryTarget,
+    })
     console.log('giphy-seed run', result)
     return result
   }
   if (event.action === 'leaderboard-rebuild') {
     const { rebuildLeaderboard } = await import('./leaderboard')
     const result = await rebuildLeaderboard()
-    console.log('leaderboard-rebuild run', { leaders: result.leaders.length, computedAt: result.computedAt })
+    console.log('leaderboard-rebuild run', {
+      leaders: result.leaders.length,
+      computedAt: result.computedAt,
+    })
     return result
   }
 
@@ -110,8 +120,9 @@ export async function handler(
     path: event.rawPath ?? '/',
     query: (event.queryStringParameters ?? {}) as Record<string, string>,
     headers,
-    rawBody: event.isBase64Encoded && event.body
-      ? Buffer.from(event.body, 'base64').toString('utf-8')
-      : event.body,
+    rawBody:
+      event.isBase64Encoded && event.body
+        ? Buffer.from(event.body, 'base64').toString('utf-8')
+        : event.body,
   })
 }

@@ -1,4 +1,5 @@
 import { assign, setup } from 'xstate'
+import { questBarCopy } from '../copy/questBar'
 import type { Alert, Meme, QuestStep } from '../lib/types'
 
 export type AppShellPhase = 'loggedOut' | 'loggedIn'
@@ -50,7 +51,8 @@ const doneCount = (steps: QuestStep[] | null): number =>
 
 /** A poll that returns the same list must not re-render the chrome below the shell. */
 const sameAlerts = (a: Alert[], b: Alert[]): boolean =>
-  a.length === b.length && a.every((alert, index) => {
+  a.length === b.length &&
+  a.every((alert, index) => {
     const other = b[index]
     return !!other && other.id === alert.id && other.read === alert.read
   })
@@ -126,7 +128,7 @@ export const appShellMachine = setup({
         CLAIM_FAIL: {
           actions: assign({
             packBusy: false,
-            claimError: "Pack didn't open — tap to try again.",
+            claimError: questBarCopy.pack.claimError,
           }),
         },
         DISMISS_PACK: { actions: assign({ packMemes: null }) },

@@ -1,4 +1,5 @@
 import type { MouseEvent, RefCallback } from 'react'
+import { getPlayVideosSnapshot, subscribePlayVideos } from './playbackPreference'
 
 /**
  * The one genuinely imperative piece of a meme card: an IntersectionObserver, `video.play()`
@@ -55,7 +56,8 @@ export function applyCardVisibility(card: HTMLElement, visible: boolean): void {
   const video = videoIn(card)
   if (!video) return
   const intent = manualIntent.get(card)
-  const mayPlay = intent === 'playing' || (intent === undefined && card.dataset.mediaAutoplay === 'on')
+  const mayPlay =
+    intent === 'playing' || (intent === undefined && card.dataset.mediaAutoplay === 'on')
   if (visible && mayPlay) startCard(card, video)
   else stopCard(card, video)
 }
@@ -77,6 +79,26 @@ function releaseUnmountedCards(): void {
     observed.delete(card)
   }
 }
+
+function cardInView(card: HTMLElement): boolean {
+  const rect = card.getBoundingClientRect()
+  return rect.bottom > 0 && rect.top < (typeof window === 'undefined' ? 0 : window.innerHeight)
+}
+
+function resyncObservedPlayback(): void {
+  const playVideos = getPlayVideosSnapshot().playVideos
+  const motionOff =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  for (const card of observed) {
+    if (!card.isConnected) continue
+    if (videoIn(card)) {
+      card.dataset.mediaAutoplay = playVideos && !motionOff ? 'on' : 'off'
+    }
+    applyCardVisibility(card, cardInView(card))
+  }
+}
+
+if (typeof window !== 'undefined') subscribePlayVideos(resyncObservedPlayback)
 
 function sharedCardObserver(): IntersectionObserver | null {
   if (!ViewportObserver) return null

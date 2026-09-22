@@ -20,6 +20,29 @@ const flood = Array.from({ length: 1284 }, (_, index) => ({
 const rows = (canvasElement: HTMLElement) =>
   canvasElement.querySelectorAll<HTMLElement>('[data-slot="alert-row"]')
 
+/** 390×844: the same viewport globals Organisms/AppShell Phone390 uses. */
+const phone = {
+  parameters: {
+    viewport: {
+      options: {
+        phone390: {
+          name: 'Phone 390',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
+    },
+    /* padded layout adds gutters the pin's left-3/right-3 would then miss */
+    layout: 'fullscreen' as const,
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
+}
+
+function positionerStyle(popup: Element) {
+  const positioner = popup.closest('[data-slot="popover-positioner"]')
+  if (!(positioner instanceof HTMLElement)) throw new Error('missing popover-positioner')
+  return getComputedStyle(positioner)
+}
+
 const meta = {
   title: 'Molecules/AlertsBell',
   component: AlertsBell,
@@ -47,7 +70,10 @@ export const ClosedUnread: Story = {
     await expect(trigger).toHaveAttribute('data-slot', 'alerts-trigger')
     await expect(trigger).toHaveAttribute('aria-expanded', 'false')
     await expect(trigger).toHaveTextContent('2')
-    await expect(trigger.querySelector('[data-slot="bell-badge"]')).toHaveAttribute('aria-hidden', 'true')
+    await expect(trigger.querySelector('[data-slot="bell-badge"]')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    )
     await expect(canvas.queryByRole('dialog')).toBeNull()
     await userEvent.click(trigger)
     await expect(onOpenChange).toHaveBeenCalledWith(true)
@@ -67,6 +93,7 @@ export const OpenUnread: Story = {
     await expect(canvasElement.contains(popup)).toBe(true)
     await expect(popup).toHaveAttribute('data-slot', 'alerts-pop')
     await expect(popup.closest('[data-slot="popover-positioner"]')).not.toBeNull()
+    await waitFor(() => expect(positionerStyle(popup).position).toBe('absolute'))
     onOpenChange.mockClear()
     await userEvent.click(trigger)
     await expect(onOpenChange).toHaveBeenLastCalledWith(false)
@@ -85,7 +112,10 @@ export const OpenUnread: Story = {
     onOpenChange.mockClear()
 
     const friendLink = canvas.getByText(unreadFriend.message).closest('a')!
-    await expect(friendLink).toHaveAttribute('href', `/u/${encodeURIComponent(unreadFriend.subjectSub!)}`)
+    await expect(friendLink).toHaveAttribute(
+      'href',
+      `/u/${encodeURIComponent(unreadFriend.subjectSub!)}`,
+    )
     await userEvent.click(friendLink)
     await expect(onOpenChange).toHaveBeenCalledWith(false)
 
@@ -95,7 +125,9 @@ export const OpenUnread: Story = {
     const readRow = readMessage.closest('[data-slot="alert-row"]')!
     await expect(readRow).not.toHaveAttribute('data-unread')
     await expect(readRow.querySelector('[data-slot="alert-dot"]')).toBeNull()
-    await expect(getComputedStyle(readMessage).fontWeight).not.toBe(getComputedStyle(saleLink.querySelector('[data-slot="alert-message"]')!).fontWeight)
+    await expect(getComputedStyle(readMessage).fontWeight).not.toBe(
+      getComputedStyle(saleLink.querySelector('[data-slot="alert-message"]')!).fontWeight,
+    )
   },
 }
 
@@ -147,13 +179,17 @@ export const OpenUnreadStaysMarked: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: copy.title })).toBeInTheDocument()
-    await expect(canvasElement.querySelectorAll('[data-slot="alert-row"][data-unread]')).toHaveLength(2)
+    await expect(
+      canvasElement.querySelectorAll('[data-slot="alert-row"][data-unread]'),
+    ).toHaveLength(2)
     await expect(canvas.getAllByText(copy.unreadRow)).toHaveLength(2)
   },
 }
 
 export const ManyUnread: Story = {
-  args: { model: buildAlertsBellModel({ alerts: flood, open: true, onOpenChange }) },
+  args: {
+    model: buildAlertsBellModel({ alerts: flood, open: true, onOpenChange }),
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: copy.trigger(1284) })).toHaveTextContent('99+')
@@ -168,20 +204,36 @@ export const ManyUnread: Story = {
 
 /** A dead API is a problem, not an empty inbox: the same block, wearing the warning tone. */
 export const AlertsOffline: Story = {
-  args: { model: buildAlertsBellModel({ alerts: [], open: true, onOpenChange, failed: true }) },
+  args: {
+    model: buildAlertsBellModel({
+      alerts: [],
+      open: true,
+      onOpenChange,
+      failed: true,
+    }),
+  },
   play: async ({ canvasElement }) => {
-    await expect(
-      within(canvasElement).getByText(copy.offline),
-    ).toHaveAttribute('data-slot', 'alerts-empty-label')
+    await expect(within(canvasElement).getByText(copy.offline)).toHaveAttribute(
+      'data-slot',
+      'alerts-empty-label',
+    )
   },
 }
 
 export const AllRead: Story = {
-  args: { model: buildAlertsBellModel({ alerts: [readSale], open: true, onOpenChange }) },
+  args: {
+    model: buildAlertsBellModel({
+      alerts: [readSale],
+      open: true,
+      onOpenChange,
+    }),
+  },
 }
 /** Nothing yet: one quiet row says so, no bubble on the bell. */
 export const Empty: Story = {
-  args: { model: buildAlertsBellModel({ alerts: [], open: true, onOpenChange }) },
+  args: {
+    model: buildAlertsBellModel({ alerts: [], open: true, onOpenChange }),
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(rows(canvasElement)).toHaveLength(0)
@@ -207,11 +259,43 @@ export const FromTheWire: Story = {
           message:
             '🎁 Starter pack opened: 10 shares of "Doomscroll Hamster", 10 shares of "Cat.exe Has Stopped", 10 shares of "Procrastination Sloth" and +20 braincells!',
         },
-        { ...unreadSale, id: 'wire-tier', type: 'tierup', message: '🚀 "pushrax" tiered up to SILVER (Uncommon) at 10 views!' },
-        { ...readSale, id: 'wire-mint', type: 'friend', message: '🆕 CyberSeth minted "jim carey idea jobs"' },
-        { ...readSale, id: 'wire-quest', memeId: null, type: 'friend', message: '🧠 +25 braincells — make a friend ✅' },
-        { ...unreadFriend, id: 'wire-follow', message: '⭐ CyberSeth followed you' },
-        { ...unreadFriend, id: 'wire-request', read: true, message: '👋 CyberSeth sent you a friend request' },
+        {
+          ...unreadFriend,
+          id: 'wire-trade',
+          type: 'trade',
+          subjectSub: null,
+          message: '🔁 CyberSeth proposed a trade with you',
+        },
+        {
+          ...unreadSale,
+          id: 'wire-tier',
+          type: 'tierup',
+          message: '🚀 "pushrax" tiered up to SILVER (Uncommon) at 10 views!',
+        },
+        {
+          ...readSale,
+          id: 'wire-mint',
+          type: 'friend',
+          message: '🆕 CyberSeth minted "jim carey idea jobs"',
+        },
+        {
+          ...readSale,
+          id: 'wire-quest',
+          memeId: null,
+          type: 'friend',
+          message: '🧠 +25 braincells — make a friend ✅',
+        },
+        {
+          ...unreadFriend,
+          id: 'wire-follow',
+          message: '⭐ CyberSeth followed you',
+        },
+        {
+          ...unreadFriend,
+          id: 'wire-request',
+          read: true,
+          message: '👋 CyberSeth sent you a friend request',
+        },
       ],
       open: true,
       onOpenChange,
@@ -226,6 +310,28 @@ export const FromTheWire: Story = {
     await expect(row.querySelector('[data-slot="alert-mark"]')).toHaveTextContent('🎁')
     // clamped: the row stays a row no matter how long the sentence the server wrote is
     await expect(row.clientHeight).toBeLessThan(96)
+    // a trade alert names no meme and no person, and still opens the proposal it announces
+    const trade = canvas.getByText(/proposed a trade with you$/).closest('[data-slot="alert-row"]')
+    await expect(trade).toHaveAttribute('href', '/trade')
+  },
+}
+
+/** Open at 390: the shared header pin, not the desktop absolute measure. */
+export const OpenUnreadPhone390: Story = {
+  ...OpenUnread,
+  ...phone,
+  play: async ({ canvasElement }) => {
+    const popup = within(canvasElement).getByRole('dialog', {
+      name: copy.title,
+    })
+    await waitFor(() => {
+      const style = positionerStyle(popup)
+      expect(style.position).toBe('fixed')
+      expect(style.top).toBe('64px')
+      expect(style.transform).toBe('none')
+      expect(style.left).toBe('12px')
+      expect(style.right).toBe('12px')
+    })
   },
 }
 

@@ -4,8 +4,9 @@ import type { LinkProps } from 'react-router-dom'
 import type { IconName } from '@/atoms/icon'
 import { settingsCopy } from '../copy/settings'
 import type { Me } from '../lib/types'
-import type { ThemeControlModel } from '@/molecules/theme-control'
+import { buildThemeControlModel, type ThemeControlModel } from '../lib/themeControlModel'
 import { useAuth } from './useAuth'
+import { usePlayVideos } from './usePlayVideos'
 import { useTheme } from './useTheme'
 
 /** Account card: name, provider, logout. */
@@ -50,6 +51,12 @@ export interface SettingsScreenModel {
     heading: string
     caption: string
     theme: ThemeControlModel
+    playVideos: {
+      label: string
+      caption: string
+      checked: boolean
+      onCheckedChange: (checked: boolean) => void
+    }
   }
   connections: {
     heading: string
@@ -64,10 +71,12 @@ export interface SettingsScreenModel {
 export function buildSettingsScreenModel({
   user,
   theme,
+  playVideos = { checked: true, onCheckedChange: () => {} },
   onLogout,
 }: {
   user: Me | null
   theme: Pick<ThemeControlModel, 'value' | 'onChange'>
+  playVideos?: { checked: boolean; onCheckedChange: (checked: boolean) => void }
   onLogout: () => void
 }): SettingsScreenModel {
   const copy = settingsCopy
@@ -80,13 +89,26 @@ export function buildSettingsScreenModel({
           nameLabel: copy.account.name(user.name),
           providerLabel: copy.account.provider,
           logoutLabel: copy.account.logOut,
-          logoutButtonProps: { onClick: onLogout, 'aria-label': copy.account.logOut },
+          logoutButtonProps: {
+            onClick: onLogout,
+            'aria-label': copy.account.logOut,
+          },
         }
       : null,
     appearance: {
       heading: copy.appearance.heading,
       caption: copy.appearance.caption,
-      theme: { value: theme.value, onChange: theme.onChange, variant: 'segmented' },
+      theme: buildThemeControlModel({
+        value: theme.value,
+        onChange: theme.onChange,
+        variant: 'segmented',
+      }),
+      playVideos: {
+        label: copy.appearance.playVideos,
+        caption: copy.appearance.playVideosCaption,
+        checked: playVideos.checked,
+        onCheckedChange: playVideos.onCheckedChange,
+      },
     },
     connections: {
       heading: copy.connections.heading,
@@ -118,11 +140,13 @@ export function buildSettingsScreenModel({
 export function useSettingsScreen(): SettingsScreenModel {
   const { user, logout } = useAuth()
   const { preference, setPreference } = useTheme()
+  const { playVideos, setPlayVideos } = usePlayVideos()
   const navigate = useNavigate()
 
   return buildSettingsScreenModel({
     user,
     theme: { value: preference, onChange: setPreference },
+    playVideos: { checked: playVideos, onCheckedChange: setPlayVideos },
     onLogout: () => {
       logout()
       // the shell does the same: leave the guarded route before RequireAuth can bounce it

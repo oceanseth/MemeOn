@@ -1,13 +1,20 @@
 import { plural } from '../lib/plural'
+import { appShellCopy } from './appShell'
+import { sharedCopy } from './shared'
 
 /** Every string the Binder screen shows. Keys name the role of the string, not its content. */
 export const binderCopy = {
+  pageTitle: appShellCopy.nav.binder,
+  /** The toolbar's `role="group"` name. */
+  toolbarAria: 'Sort and filter your binder',
+  retry: sharedCopy.tryAgain,
   intro: 'Your corner of the internet. In card form.',
   /** The joiner between the parts of the status line and the card's announced name. */
   separator: ' · ',
   identity: {
     /** "6 cards · 72 shares" — counted from the memes the grid is rendering. */
-    stats: (cards: number, shares: number) => `${plural(cards, 'card')} · ${plural(shares, 'share')}`,
+    stats: (cards: number, shares: number) =>
+      `${plural(cards, 'card')} · ${plural(shares, 'share')}`,
   },
   /** One live status line for the whole screen. */
   status: {

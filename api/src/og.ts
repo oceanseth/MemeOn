@@ -1,45 +1,27 @@
-// OG meta frame pipeline: composited card images (tier frame + meme art + title
-// banner) served from the assets bucket, plus the crawler-facing /m/{id} page.
-import { Jimp, loadFont, measureText, measureTextHeight } from 'jimp'
-import {
-  SANS_32_BLACK,
-  SANS_32_WHITE,
-  SANS_64_BLACK,
-  SANS_64_WHITE,
-} from 'jimp/fonts'
+// OG image pipeline and crawler-facing share pages.
+import { Jimp, loadFont, measureText } from 'jimp'
+import { SANS_32_WHITE, SANS_64_BLACK, SANS_64_WHITE } from 'jimp/fonts'
 import { env } from './env'
 import { safeFetch } from './safeFetch'
 import { assetAgeSeconds, assetExists, assetUrl, putAsset, putAssetShortCache } from './s3'
 import { getSharedSecret } from './ssm'
+import {
+  composeCollectibleOgCard,
+  loadOgFrameBundle,
+  MEME_OG_HEIGHT,
+  MEME_OG_WIDTH,
+  type OgFrameBundle,
+} from './ogCard'
 import { TIERS, tierFor } from '@memeon/shared/tiers'
 import type { Meme } from './types'
 
-// Card geometry: frames are 900x1200 (3:4) with an open square art window.
-// generate-frames prompts leave the middle clear; the meme is pasted on top.
-const CARD_W = 900
-const CARD_H = 1200
-const WIN = { x: 90, y: 216, w: 720, h: 720 }
-
-// v5: landscape 1200x630 og image containing the entire portrait card, so
-// facebook's wide layout never crops the border or title
-const ogKey = (memeId: string, tierKey: string) => `og/v5/${memeId}-${tierKey}.png`
+export const MEME_OG_CACHE_VERSION = 'v6-collectible'
+export const memeOgKey = (memeId: string, tierKey: string) =>
+  `og/${MEME_OG_CACHE_VERSION}/${memeId}-${tierKey}.png`
 
 export const OG_W = 1200
 export const OG_H = 630
 export const frameKey = (tierKey: string) => `frames/${tierKey}.png`
-
-// title banner: x-range shared, but each generated frame's dark band sits at a
-// slightly different height — vertical centers measured per frame art
-const BANNER = { x: 110, w: 680 }
-const BANNER_CENTER_Y: Record<string, number> = {
-  paper: 1008,
-  silver: 1012,
-  holo: 1032,
-  chrome: 981,
-  gold: 1034,
-  prismatic: 1039,
-  shiny: 1001,
-}
 
 // bundled next to the lambda handler (see api package script); node_modules in dev
 function fontPath(bundled: string, dev: string): string {
@@ -48,14 +30,13 @@ function fontPath(bundled: string, dev: string): string {
 }
 
 const fontCache = new Map<string, Promise<Awaited<ReturnType<typeof loadFont>>>>()
-function getFont(key: 'w64' | 'b64' | 'w32' | 'b32') {
+function getFont(key: 'w64' | 'b64' | 'w32') {
   let p = fontCache.get(key)
   if (!p) {
     const paths = {
       w64: fontPath('open-sans-64-white.fnt', SANS_64_WHITE),
       b64: fontPath('open-sans-64-black.fnt', SANS_64_BLACK),
       w32: fontPath('open-sans-32-white.fnt', SANS_32_WHITE),
-      b32: fontPath('open-sans-32-black.fnt', SANS_32_BLACK),
     }
     p = loadFont(paths[key])
     fontCache.set(key, p)
@@ -63,113 +44,65 @@ function getFont(key: 'w64' | 'b64' | 'w32' | 'b32') {
   return p
 }
 
-/** Print the title centered in the tier frame's banner band, shrinking to fit. */
-async function printTitle(card: JimpImage, title: string, tierKey: string): Promise<void> {
-  try {
-    let text = title.slice(0, 24)
-    let white = await getFont('w64')
-    let black = await getFont('b64')
-    if (measureText(white, text) > BANNER.w) {
-      white = await getFont('w32')
-      black = await getFont('b32')
-      while (text.length > 4 && measureText(white, `${text}…`) > BANNER.w) {
-        text = text.slice(0, -1)
-      }
-      if (text !== title.slice(0, 24)) text = `${text}…`
-    }
-    const w = measureText(white, text)
-    const h = measureTextHeight(white, text, BANNER.w)
-    const centerY = BANNER_CENTER_Y[tierKey] ?? 1015
-    const x = BANNER.x + Math.max(0, Math.round((BANNER.w - w) / 2))
-    const y = Math.round(centerY - h / 2)
-    card.print({ font: black, x: x + 3, y: y + 3, text })
-    card.print({ font: white, x, y, text })
-  } catch (err) {
-    console.error('title print failed (fonts missing?)', err)
-  }
-}
-
 // jimp's read()/constructor types don't unify across its generics; keep these loose.
 type JimpImage = Awaited<ReturnType<typeof Jimp.read>>
 
-async function fetchImage(url: string): Promise<JimpImage> {
+async function fetchImageBuffer(url: string): Promise<Buffer> {
   // SSRF: private hosts/IPs blocked after DNS + each redirect; body capped (mo-100.5)
   const { body } = await safeFetch(url, {
     maxBytes: 8 * 1024 * 1024,
     timeoutMs: 12_000,
     headers: { accept: 'image/*' },
   })
-  return Jimp.read(body)
+  return body
 }
 
-/**
- * Ensure the composited og image for (meme, tier) exists in the assets bucket
- * and return its public URL. Composites lazily on first request per tier.
- */
-export async function ensureOgImage(meme: Meme): Promise<string> {
+async function fetchImage(url: string): Promise<JimpImage> {
+  return Jimp.read(await fetchImageBuffer(url))
+}
+
+export interface MemeOgDependencies {
+  assetExists: (key: string) => Promise<boolean>
+  assetUrl: (key: string) => string
+  putAsset: (key: string, body: Buffer, contentType: string) => Promise<string>
+  fetchArt: (url: string) => Promise<Buffer>
+  loadFrame: (tierKey: string) => Promise<OgFrameBundle>
+  compose: typeof composeCollectibleOgCard
+}
+
+const defaultMemeOgDependencies: MemeOgDependencies = {
+  assetExists,
+  assetUrl,
+  putAsset,
+  fetchArt: fetchImageBuffer,
+  loadFrame: loadOgFrameBundle,
+  compose: composeCollectibleOgCard,
+}
+
+/** Generate and immutably cache the current collectible card for one meme tier. */
+export async function ensureOgImageWithDependencies(
+  meme: Meme,
+  dependencies: MemeOgDependencies,
+): Promise<string> {
   const tier = tierFor(meme.reshares)
-  const key = ogKey(meme.id, tier.key)
-  if (await assetExists(key)) return assetUrl(key)
+  const key = memeOgKey(meme.id, tier.key)
+  if (await dependencies.assetExists(key)) return dependencies.assetUrl(key)
 
-  const art = await fetchImage(meme.imageUrl)
-  art.cover({ w: WIN.w, h: WIN.h })
+  const [art, bundle] = await Promise.all([
+    dependencies.fetchArt(meme.imageUrl),
+    dependencies.loadFrame(tier.key),
+  ])
+  const png = await dependencies.compose({
+    art,
+    frame: bundle.frame,
+    manifest: bundle.manifest,
+    mediaType: meme.mediaType,
+  })
+  return dependencies.putAsset(key, png, 'image/png')
+}
 
-  let card: JimpImage
-  try {
-    const frame = await fetchImage(assetUrl(frameKey(tier.key)))
-    frame.cover({ w: CARD_W, h: CARD_H })
-    card = frame
-  } catch {
-    // Frame art not generated yet: solid tier-colored card as fallback.
-    card = new Jimp({
-      width: CARD_W,
-      height: CARD_H,
-      color: hexToInt(tier.color),
-    }) as unknown as JimpImage
-  }
-  card.composite(art, WIN.x, WIN.y)
-
-  if (meme.mediaType === 'video') {
-    // play button centered on the art + logo badge in its corner, so shares
-    // read as "tap to watch" and carry the brand
-    try {
-      const play = await fetchImage(assetUrl('brand/play-overlay.png'))
-      play.resize({ w: 300, h: 300 })
-      card.composite(play, WIN.x + Math.round((WIN.w - 300) / 2), WIN.y + Math.round((WIN.h - 300) / 2))
-    } catch {
-      /* overlay art missing — card still works */
-    }
-    try {
-      const logo = await fetchImage(assetUrl('brand/memeon-logo-circle-256.png'))
-      logo.resize({ w: 110, h: 110 })
-      card.composite(logo, WIN.x + WIN.w - 122, WIN.y + WIN.h - 122)
-    } catch {
-      /* ditto */
-    }
-  }
-
-  await printTitle(card, meme.title, tier.key)
-
-  // wide 1.91:1 canvas with the ENTIRE card visible: blurred art fills the
-  // background, dimmed, card scaled to fit height and centered
-  const wide = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14ff }) as unknown as JimpImage
-  try {
-    const bgArt = art.clone()
-    bgArt.cover({ w: OG_W, h: OG_H })
-    bgArt.blur(12)
-    wide.composite(bgArt, 0, 0)
-    const dim = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14b8 }) as unknown as JimpImage
-    wide.composite(dim, 0, 0)
-  } catch {
-    /* solid brand background is a fine fallback */
-  }
-  const cardH = 590
-  const cardW = Math.round((CARD_W / CARD_H) * cardH)
-  card.resize({ w: cardW, h: cardH })
-  wide.composite(card, Math.round((OG_W - cardW) / 2), Math.round((OG_H - cardH) / 2))
-
-  const png = await wide.getBuffer('image/png')
-  return putAsset(key, png, 'image/png')
+export async function ensureOgImage(meme: Meme): Promise<string> {
+  return ensureOgImageWithDependencies(meme, defaultMemeOgDependencies)
 }
 
 function hexToInt(hex: string): number {
@@ -197,7 +130,7 @@ export function giphyGifUrl(videoUrl: string): string | null {
   return videoUrl.replace(/giphy\.mp4/gi, 'giphy.gif')
 }
 
-function ogMetaBlock(
+export function memeOgMetaBlock(
   meme: Meme,
   ogImageUrl: string,
   gifUrl: string | null = null,
@@ -211,7 +144,7 @@ function ogMetaBlock(
   // player so the client loops it; its dimensions aren't the card's, so omit them
   const image = gifUrl
     ? `<meta property="og:image" content="${esc(gifUrl)}">\n<meta property="og:image:type" content="image/gif">`
-    : `<meta property="og:image" content="${esc(ogImageUrl)}">\n<meta property="og:image:width" content="${OG_W}">\n<meta property="og:image:height" content="${OG_H}">`
+    : `<meta property="og:image" content="${esc(ogImageUrl)}">\n<meta property="og:image:type" content="image/png">\n<meta property="og:image:width" content="${MEME_OG_WIDTH}">\n<meta property="og:image:height" content="${MEME_OG_HEIGHT}">`
   const block = `<meta property="og:site_name" content="MemeOn">
 <meta property="og:type" content="website">
 <meta property="og:url" content="${esc(pageUrl)}">
@@ -259,14 +192,16 @@ export async function memePageHtml(
     opts.loopingGif && meme.mediaType === 'video' && meme.videoUrl
       ? giphyGifUrl(meme.videoUrl)
       : null
-  const { title, block } = ogMetaBlock(meme, ogImageUrl, gifUrl)
+  const { title, block } = memeOgMetaBlock(meme, ogImageUrl, gifUrl)
   const index = await fetchIndexHtml()
   if (index) {
-    return index
-      // drop the site-wide og/twitter tags — crawlers honor the first tag seen
-      .replace(/\s*<meta (?:property="og:|name="twitter:)[^>]*\/?>/g, '')
-      .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
-      .replace('</head>', `${block}\n</head>`)
+    return (
+      index
+        // drop the site-wide og/twitter tags — crawlers honor the first tag seen
+        .replace(/\s*<meta (?:property="og:|name="twitter:)[^>]*\/?>/g, '')
+        .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
+        .replace('</head>', `${block}\n</head>`)
+    )
   }
   // fallback when the SPA shell can't be fetched: og tags + a manual link
   const appUrl = `/m/${encodeURIComponent(meme.id)}`
@@ -284,6 +219,73 @@ ${block}
 </html>`
 }
 
+async function withCachedShareOg(
+  key: string,
+  paint: (canvas: JimpImage) => Promise<void>,
+): Promise<string> {
+  const age = await assetAgeSeconds(key)
+  if (age !== null && age < 3600) return assetUrl(key)
+  const canvas = new Jimp({
+    width: OG_W,
+    height: OG_H,
+    color: 0x0b0d14ff,
+  }) as unknown as JimpImage
+  await paint(canvas)
+  const png = await canvas.getBuffer('image/png')
+  await putAssetShortCache(key, png)
+  return assetUrl(key)
+}
+
+async function paintDimmedHomeBanner(canvas: JimpImage, dimColor: number): Promise<void> {
+  try {
+    const banner = await fetchImage(`${env.siteOrigin}/brand/og-home.png`)
+    banner.cover({ w: OG_W, h: OG_H })
+    canvas.composite(banner, 0, 0)
+    const dim = new Jimp({
+      width: OG_W,
+      height: OG_H,
+      color: dimColor,
+    }) as unknown as JimpImage
+    canvas.composite(dim, 0, 0)
+  } catch {
+    /* solid bg fallback */
+  }
+}
+
+async function paintAvatar(
+  canvas: JimpImage,
+  picture: string | null,
+  { size, x, y }: { size: number; x: number; y: number },
+): Promise<void> {
+  try {
+    const avatar = picture
+      ? await fetchImage(picture)
+      : await fetchImage(assetUrl('brand/memeon-logo-circle-256.png'))
+    avatar.cover({ w: size, h: size })
+    try {
+      ;(avatar as unknown as { circle: () => void }).circle()
+    } catch {
+      /* square avatar is fine */
+    }
+    canvas.composite(avatar, x, y)
+  } catch {
+    /* no avatar — text still carries it */
+  }
+}
+
+function injectShareHead(
+  index: string | null,
+  { title, block, pageUrl }: { title: string; block: string; pageUrl: string },
+): string {
+  if (index) {
+    return index
+      .replace(/\s*<meta (?:property="og:|name="twitter:)[^>]*\/?>/g, '')
+      .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
+      .replace('</head>', `${block}\n</head>`)
+  }
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title>${block}</head><body><a href="${esc(pageUrl)}">${esc(title)}</a></body></html>`
+}
+
 /**
  * Profile share card: avatar + name + stats over the dimmed brand banner.
  * Cached in S3, refreshed when older than an hour (stats drift).
@@ -295,62 +297,36 @@ export async function ensureProfileOgImage(profile: {
   coins: number
   collectionSize: number
 }): Promise<string> {
-  const key = `og/u/${profile.sub}.png`
-  const age = await assetAgeSeconds(key)
-  if (age !== null && age < 3600) return assetUrl(key)
+  return withCachedShareOg(`og/u/${profile.sub}.png`, async (canvas) => {
+    await paintDimmedHomeBanner(canvas, 0x0b0d14a8)
 
-  // base: the site's home banner, dimmed so the profile pops
-  const canvas = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14ff }) as unknown as JimpImage
-  try {
-    const banner = await fetchImage(`${env.siteOrigin}/brand/og-home.png`)
-    banner.cover({ w: OG_W, h: OG_H })
-    canvas.composite(banner, 0, 0)
-    const dim = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14a8 }) as unknown as JimpImage
-    canvas.composite(dim, 0, 0)
-  } catch {
-    /* solid bg fallback */
-  }
-
-  // avatar (circle when possible), centered-left
-  const AV = 250
-  try {
-    const avatar = profile.picture
-      ? await fetchImage(profile.picture)
-      : await fetchImage(assetUrl('brand/memeon-logo-circle-256.png'))
-    avatar.cover({ w: AV, h: AV })
-    try {
-      ;(avatar as unknown as { circle: () => void }).circle()
-    } catch {
-      /* square avatar is fine */
-    }
-    canvas.composite(avatar, 150, Math.round((OG_H - AV) / 2))
-  } catch {
-    /* no avatar — text still carries it */
-  }
-
-  // name + stats
-  try {
-    const big = await getFont('w64')
-    const bigShadow = await getFont('b64')
-    const small = await getFont('w32')
-    let name = profile.name.slice(0, 18)
-    while (name.length > 4 && measureText(big, name) > 680) name = name.slice(0, -1)
-    const nx = 460
-    canvas.print({ font: bigShadow, x: nx + 3, y: 233, text: name })
-    canvas.print({ font: big, x: nx, y: 230, text: name })
-    canvas.print({
-      font: small,
-      x: nx + 2,
-      y: 330,
-      text: `on MemeOn · ${profile.coins.toLocaleString()} braincells · ${profile.collectionSize} memes`,
+    // avatar (circle when possible), centered-left
+    await paintAvatar(canvas, profile.picture, {
+      size: 250,
+      x: 150,
+      y: Math.round((OG_H - 250) / 2),
     })
-  } catch (err) {
-    console.error('profile og text failed', err)
-  }
 
-  const png = await canvas.getBuffer('image/png')
-  await putAssetShortCache(key, png)
-  return assetUrl(key)
+    // name + stats
+    try {
+      const big = await getFont('w64')
+      const bigShadow = await getFont('b64')
+      const small = await getFont('w32')
+      let name = profile.name.slice(0, 18)
+      while (name.length > 4 && measureText(big, name) > 680) name = name.slice(0, -1)
+      const nx = 460
+      canvas.print({ font: bigShadow, x: nx + 3, y: 233, text: name })
+      canvas.print({ font: big, x: nx, y: 230, text: name })
+      canvas.print({
+        font: small,
+        x: nx + 2,
+        y: 330,
+        text: `on MemeOn · ${profile.coins.toLocaleString()} braincells · ${profile.collectionSize} memes`,
+      })
+    } catch (err) {
+      console.error('profile og text failed', err)
+    }
+  })
 }
 
 /**
@@ -376,13 +352,7 @@ export async function profilePageHtml(
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:image" content="${esc(ogImageUrl)}">`
   const index = await fetchIndexHtml()
-  if (index) {
-    return index
-      .replace(/\s*<meta (?:property="og:|name="twitter:)[^>]*\/?>/g, '')
-      .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
-      .replace('</head>', `${block}\n</head>`)
-  }
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title>${block}</head><body><a href="${esc(pageUrl)}">${esc(title)}</a></body></html>`
+  return injectShareHead(index, { title, block, pageUrl })
 }
 
 /** The SPA shell as-is — for share-path URLs that aren't a real user (e.g. /binder/new). */
@@ -402,95 +372,83 @@ export async function ensureBinderOgImage(
   stats: { collectionSize: number; value: number },
   topMemes: Meme[],
 ): Promise<string> {
-  const key = `og/binder/${profile.sub}.png`
-  const age = await assetAgeSeconds(key)
-  if (age !== null && age < 3600) return assetUrl(key)
+  return withCachedShareOg(`og/binder/${profile.sub}.png`, async (canvas) => {
+    await paintDimmedHomeBanner(canvas, 0x0b0d14c4)
 
-  const canvas = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14ff }) as unknown as JimpImage
-  try {
-    const banner = await fetchImage(`${env.siteOrigin}/brand/og-home.png`)
-    banner.cover({ w: OG_W, h: OG_H })
-    canvas.composite(banner, 0, 0)
-    const dim = new Jimp({ width: OG_W, height: OG_H, color: 0x0b0d14c4 }) as unknown as JimpImage
-    canvas.composite(dim, 0, 0)
-  } catch {
-    /* solid bg fallback */
-  }
-
-  // right: a binder page holding the top cards in tier-colored sleeves
-  const PANEL = { x: 600, y: 55, w: 560, h: 520 }
-  const panel = new Jimp({ width: PANEL.w, height: PANEL.h, color: 0x171b26ff }) as unknown as JimpImage
-  canvas.composite(panel, PANEL.x, PANEL.y)
-  // binder rings along the spine
-  try {
-    for (const ry of [150, 315, 480]) {
-      const ring = new Jimp({ width: 34, height: 34, color: 0x0b0d14ff }) as unknown as JimpImage
-      ;(ring as unknown as { circle: () => void }).circle()
-      canvas.composite(ring, PANEL.x - 17, ry)
-    }
-  } catch {
-    /* rings are decoration */
-  }
-  // 2×3 sleeve grid; empty sleeves stay visible so a thin binder still reads as one
-  const SLOT = { w: 160, h: 213 }
-  const GAP = 20
-  const gridX = PANEL.x + Math.round((PANEL.w - (3 * SLOT.w + 2 * GAP)) / 2)
-  const gridY = PANEL.y + Math.round((PANEL.h - (2 * SLOT.h + GAP)) / 2)
-  for (let i = 0; i < 6; i++) {
-    const x = gridX + (i % 3) * (SLOT.w + GAP)
-    const y = gridY + Math.floor(i / 3) * (SLOT.h + GAP)
-    const meme = topMemes[i]
-    const sleeveColor = meme ? hexToInt(tierFor(meme.reshares).color) : 0x212636ff
-    const sleeve = new Jimp({ width: SLOT.w, height: SLOT.h, color: sleeveColor }) as unknown as JimpImage
-    canvas.composite(sleeve, x, y)
-    if (!meme) continue
+    // right: a binder page holding the top cards in tier-colored sleeves
+    const PANEL = { x: 600, y: 55, w: 560, h: 520 }
+    const panel = new Jimp({
+      width: PANEL.w,
+      height: PANEL.h,
+      color: 0x171b26ff,
+    }) as unknown as JimpImage
+    canvas.composite(panel, PANEL.x, PANEL.y)
+    // binder rings along the spine
     try {
-      const art = await fetchImage(meme.imageUrl)
-      art.cover({ w: SLOT.w - 10, h: SLOT.h - 10 })
-      canvas.composite(art, x + 5, y + 5)
+      for (const ry of [150, 315, 480]) {
+        const ring = new Jimp({
+          width: 34,
+          height: 34,
+          color: 0x0b0d14ff,
+        }) as unknown as JimpImage
+        ;(ring as unknown as { circle: () => void }).circle()
+        canvas.composite(ring, PANEL.x - 17, ry)
+      }
     } catch {
-      /* tier-colored sleeve alone still reads as a card */
+      /* rings are decoration */
     }
-  }
+    // 2×3 sleeve grid; empty sleeves stay visible so a thin binder still reads as one
+    const SLOT = { w: 160, h: 213 }
+    const GAP = 20
+    const gridX = PANEL.x + Math.round((PANEL.w - (3 * SLOT.w + 2 * GAP)) / 2)
+    const gridY = PANEL.y + Math.round((PANEL.h - (2 * SLOT.h + GAP)) / 2)
+    for (let i = 0; i < 6; i++) {
+      const x = gridX + (i % 3) * (SLOT.w + GAP)
+      const y = gridY + Math.floor(i / 3) * (SLOT.h + GAP)
+      const meme = topMemes[i]
+      const sleeveColor = meme ? hexToInt(tierFor(meme.reshares).color) : 0x212636ff
+      const sleeve = new Jimp({
+        width: SLOT.w,
+        height: SLOT.h,
+        color: sleeveColor,
+      }) as unknown as JimpImage
+      canvas.composite(sleeve, x, y)
+      if (!meme) continue
+      try {
+        const art = await fetchImage(meme.imageUrl)
+        art.cover({ w: SLOT.w - 10, h: SLOT.h - 10 })
+        canvas.composite(art, x + 5, y + 5)
+      } catch {
+        /* tier-colored sleeve alone still reads as a card */
+      }
+    }
 
-  // left: avatar + name + stats
-  const AV = 180
-  try {
-    const avatar = profile.picture
-      ? await fetchImage(profile.picture)
-      : await fetchImage(assetUrl('brand/memeon-logo-circle-256.png'))
-    avatar.cover({ w: AV, h: AV })
+    // left: avatar + name + stats
+    await paintAvatar(canvas, profile.picture, { size: 180, x: 90, y: 100 })
     try {
-      ;(avatar as unknown as { circle: () => void }).circle()
-    } catch {
-      /* square avatar is fine */
+      const big = await getFont('w64')
+      const bigShadow = await getFont('b64')
+      const small = await getFont('w32')
+      let name = profile.name.slice(0, 18)
+      while (name.length > 4 && measureText(big, name) > 470) name = name.slice(0, -1)
+      canvas.print({ font: bigShadow, x: 93, y: 333, text: name })
+      canvas.print({ font: big, x: 90, y: 330, text: name })
+      canvas.print({
+        font: small,
+        x: 92,
+        y: 430,
+        text: 'Meme Binder on MemeOn',
+      })
+      canvas.print({
+        font: small,
+        x: 92,
+        y: 478,
+        text: `${stats.collectionSize} memes · ${stats.value.toLocaleString()} braincells`,
+      })
+    } catch (err) {
+      console.error('binder og text failed', err)
     }
-    canvas.composite(avatar, 90, 100)
-  } catch {
-    /* no avatar — text still carries it */
-  }
-  try {
-    const big = await getFont('w64')
-    const bigShadow = await getFont('b64')
-    const small = await getFont('w32')
-    let name = profile.name.slice(0, 18)
-    while (name.length > 4 && measureText(big, name) > 470) name = name.slice(0, -1)
-    canvas.print({ font: bigShadow, x: 93, y: 333, text: name })
-    canvas.print({ font: big, x: 90, y: 330, text: name })
-    canvas.print({ font: small, x: 92, y: 430, text: 'Meme Binder on MemeOn' })
-    canvas.print({
-      font: small,
-      x: 92,
-      y: 478,
-      text: `${stats.collectionSize} memes · ${stats.value.toLocaleString()} braincells`,
-    })
-  } catch (err) {
-    console.error('binder og text failed', err)
-  }
-
-  const png = await canvas.getBuffer('image/png')
-  await putAssetShortCache(key, png)
-  return assetUrl(key)
+  })
 }
 
 /** SPA shell with binder og tags injected (crawlers see the collection; humans get the app). */
@@ -519,13 +477,7 @@ export async function binderPageHtml(
 <meta name="twitter:description" content="${esc(desc)}">
 <meta name="twitter:image" content="${esc(ogImageUrl)}">`
   const index = await fetchIndexHtml()
-  if (index) {
-    return index
-      .replace(/\s*<meta (?:property="og:|name="twitter:)[^>]*\/?>/g, '')
-      .replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`)
-      .replace('</head>', `${block}\n</head>`)
-  }
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(title)}</title>${block}</head><body><a href="${esc(pageUrl)}">${esc(title)}</a></body></html>`
+  return injectShareHead(index, { title, block, pageUrl })
 }
 
 /**
@@ -547,5 +499,9 @@ export async function pingFacebookRescrape(pageUrl: string): Promise<void> {
 }
 
 export function tierFrameList(): { key: string; name: string; url: string }[] {
-  return TIERS.map((t) => ({ key: t.key, name: t.name, url: assetUrl(frameKey(t.key)) }))
+  return TIERS.map((t) => ({
+    key: t.key,
+    name: t.name,
+    url: assetUrl(frameKey(t.key)),
+  }))
 }

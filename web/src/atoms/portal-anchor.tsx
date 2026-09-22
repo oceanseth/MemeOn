@@ -1,6 +1,7 @@
 import type { ComponentPropsWithoutRef } from 'react'
 
-export interface PortalAnchorProps extends Omit<ComponentPropsWithoutRef<'span'>, 'className' | 'id'> {
+export interface PortalAnchorProps
+  extends Omit<ComponentPropsWithoutRef<'span'>, 'className' | 'id'> {
   /** the id `portalAnchor(id)` (lib/portalAnchor) resolves at portal time */
   id: string
 }

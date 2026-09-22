@@ -1,7 +1,20 @@
+import { braincells } from '../lib/braincells'
 import { sharedCopy } from './shared'
 
 /** Every string the signed-in chrome shows. Keys name the role of the string, not its content. */
 export const appShellCopy = {
+  brand: sharedCopy.brand,
+  /** Bypass block: first Tab past the chrome onto `#main`. */
+  skip: 'Skip to content',
+  /** Landmark name for the top-bar links and the phone tab bar. */
+  navAria: 'Main',
+  footerAria: 'Footer',
+  /** Short footer labels — not the legal-page titles. */
+  footer: {
+    privacy: 'Privacy',
+    terms: 'Terms',
+    api: 'API',
+  },
   /** The top bar's five links. */
   nav: {
     marketplace: 'Marketplace',
@@ -21,9 +34,9 @@ export const appShellCopy = {
     trade: 'Trade',
   },
   /** The balance figure and the name it announces: a span takes no name from a title. */
-  coins: {
-    text: (coins: number) => coins.toLocaleString(),
-    label: (coins: number) => `${coins.toLocaleString()} braincells`,
+  braincells: {
+    text: (amount: number) => braincells(amount),
+    label: (amount: number) => `${braincells(amount)} braincells`,
   },
   /** The account menu behind the header avatar, at every width. */
   accountMenu: {
@@ -33,7 +46,8 @@ export const appShellCopy = {
     settings: 'Settings',
     developers: 'Developers',
     discord: 'Discord',
-    theme: 'Theme',
+    theme: sharedCopy.theme.group,
+    playVideos: 'Play videos',
     logOut: sharedCopy.logOut,
   },
 } as const

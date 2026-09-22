@@ -1,11 +1,19 @@
 export { buildCreateMemeScreenModel } from './buildCreateMemeScreenModel'
 export {
+  DRAFT_PERSIST_MS,
+  clearPendingVideoIfOwned,
+  createDraftPersister,
   draftOf,
   elapsedLabel,
-  PENDING_VIDEO_KEY,
+  parsePendingVideo,
   pendingVideoMatchesRemix,
   pendingVideoRecord,
+  persistPendingVideo,
+  readPendingVideo,
+  takePendingVideoRestore,
+  writePendingVideo,
   type PendingVideoRecord,
+  type PendingVideoRestore,
 } from './lifecycle'
 export {
   boundTags,

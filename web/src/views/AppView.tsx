@@ -1,5 +1,4 @@
 import { lazy, Suspense, type ReactNode } from 'react'
-import { observer } from 'mobx-react-lite'
 import { Navigate, Route, Routes, useParams, useSearchParams } from 'react-router-dom'
 import { PageContainer } from '@/atoms/page-container'
 import { Spinner } from '@/atoms/spinner'
@@ -19,11 +18,19 @@ import { TermsView } from './TermsView'
 /* Landing, legal and the public share routes stay eager so first paint is unchanged;
    everything only a signed-in player can reach arrives with its route. */
 const BinderView = lazy(() => import('./BinderView').then((m) => ({ default: m.BinderView })))
-const CreateMemeView = lazy(() => import('./CreateMemeView').then((m) => ({ default: m.CreateMemeView })))
-const DevelopersView = lazy(() => import('./DevelopersView').then((m) => ({ default: m.DevelopersView })))
+const CreateMemeView = lazy(() =>
+  import('./CreateMemeView').then((m) => ({ default: m.CreateMemeView })),
+)
+const DevelopersView = lazy(() =>
+  import('./DevelopersView').then((m) => ({ default: m.DevelopersView })),
+)
 const FriendsView = lazy(() => import('./FriendsView').then((m) => ({ default: m.FriendsView })))
-const LeaderboardView = lazy(() => import('./LeaderboardView').then((m) => ({ default: m.LeaderboardView })))
-const MarketplaceView = lazy(() => import('./MarketplaceView').then((m) => ({ default: m.MarketplaceView })))
+const LeaderboardView = lazy(() =>
+  import('./LeaderboardView').then((m) => ({ default: m.LeaderboardView })),
+)
+const MarketplaceView = lazy(() =>
+  import('./MarketplaceView').then((m) => ({ default: m.MarketplaceView })),
+)
 const SettingsView = lazy(() => import('./SettingsView').then((m) => ({ default: m.SettingsView })))
 const TradesView = lazy(() => import('./TradesView').then((m) => ({ default: m.TradesView })))
 
@@ -41,10 +48,10 @@ function BinderOwnRedirect() {
 /** /binder/:sub — owner gets the management binder; anyone else gets the public profile binder. */
 function BinderRoute() {
   const { sub } = useParams<{ sub: string }>()
-  const { user } = useAuth()
+  const { user, checkingSessionLabel } = useAuth()
   if (user && sub === user.sub)
     return (
-      <Suspense fallback={<AuthSpinner />}>
+      <Suspense fallback={<AuthSpinner label={checkingSessionLabel} />}>
         <BinderView />
       </Suspense>
     )
@@ -76,7 +83,7 @@ export function InviteRoute() {
 }
 
 /** The one named waiting state for a guarded route: auth resolving, then the chunk arriving. */
-function AuthSpinner() {
+function AuthSpinner({ label }: { label: string }) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
       {/* a labelled spinner row, never a bare spinner */}
@@ -86,20 +93,20 @@ function AuthSpinner() {
         role="status"
       >
         <Spinner />
-        Checking your session…
+        {label}
       </div>
     </PageContainer>
   )
 }
 
 function RequireAuth({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth()
-  if (loading) return <AuthSpinner />
+  const { user, loading, checkingSessionLabel } = useAuth()
+  if (loading) return <AuthSpinner label={checkingSessionLabel} />
   if (!user) return <Navigate to="/" replace />
-  return <Suspense fallback={<AuthSpinner />}>{children}</Suspense>
+  return <Suspense fallback={<AuthSpinner label={checkingSessionLabel} />}>{children}</Suspense>
 }
 
-export const AppView = observer(function AppView() {
+export function AppView() {
   return (
     <AppShellView>
       <Routes>
@@ -187,4 +194,4 @@ export const AppView = observer(function AppView() {
       </Routes>
     </AppShellView>
   )
-})
+}

@@ -26,7 +26,14 @@ export interface PageHeadProps extends Omit<HTMLAttributes<HTMLDivElement>, 'tit
   level?: 'h1' | 'h2'
 }
 
-export function PageHead({ title, subtitle, level = 'h2', className, children, ...rest }: PageHeadProps) {
+export function PageHead({
+  title,
+  subtitle,
+  level = 'h2',
+  className,
+  children,
+  ...rest
+}: PageHeadProps) {
   const heading = createElement(level, { className: HEADING }, title)
   return (
     <div data-slot="page-head" className={cn(pageHeadVariants(), className)} {...rest}>

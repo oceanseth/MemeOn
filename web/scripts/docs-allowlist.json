@@ -31,11 +31,6 @@
       "why": "The CLI example folder as it stood on 2026-09-08; deleted with the ox/ui merge."
     },
     {
-      "name": "atoms/MemeCard",
-      "file": "docs/OX_UI_HANDOFF.md",
-      "why": "A PascalCase file name at `ox/ui` @ ddd05e6, before the kebab-case rename (mo-6ru); the atom is `atoms/meme-card.tsx` today."
-    },
-    {
       "name": "npm run test:og",
       "file": "docs/OG_TESTING.md",
       "why": "The flagship OG CLI is not in this checkout; the banner at the top of the document says so and the commands are its record."
@@ -59,6 +54,26 @@
       "name": "npm run dev:web",
       "file": "docs/PRISMATIC_HOME_BUTTON.md",
       "why": "Part of the same unbuilt specification (see the banner)."
+    },
+    {
+      "name": "npm run build:web",
+      "file": "docs/reviews/OX_UI_REVIEW_2026-09-08.md",
+      "why": "Quoted 2026-09-08 review; pre-pnpm. Do not rewrite the archive."
+    },
+    {
+      "name": "npm run build-storybook",
+      "file": "docs/reviews/OX_UI_REVIEW_2026-09-08.md",
+      "why": "Quoted 2026-09-08 review; pre-pnpm. Do not rewrite the archive."
+    },
+    {
+      "name": ".impeccable/design.json",
+      "file": "docs/reviews/OX_UI_REVIEW_2026-09-08.md",
+      "why": "Archive notes it is absent; .impeccable/ exists on this laptop so the span is a claim."
+    },
+    {
+      "name": "prompt.md",
+      "file": "docs/research/GASCITY_CODEX_RESEARCH.md",
+      "why": "Gas City convention filename; bare .md is always pathish; no prompt.md in this tree."
     }
   ]
 }

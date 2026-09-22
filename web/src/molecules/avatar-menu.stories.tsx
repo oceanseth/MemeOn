@@ -2,10 +2,14 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { meLou } from '../../.storybook/fixtures'
+import { appShellCopy } from '../copy/appShell'
+import { sharedCopy } from '../copy/shared'
+import { THEME_OPTIONS } from '../lib/themeControlModel'
 import { AvatarMenu, type AvatarMenuModel } from '@/molecules/avatar-menu'
 
 const onLogout = fn()
 const onThemeChange = fn()
+const onPlayVideosChange = fn()
 
 const model: AvatarMenuModel = {
   name: meLou.name,
@@ -13,13 +17,33 @@ const model: AvatarMenuModel = {
   triggerProps: { 'aria-label': 'Account menu' },
   // the shell's slot map, as the shell hands it down: every row decorated
   items: [
-    { key: 'profile', label: 'Profile', to: `/u/${encodeURIComponent(meLou.sub)}`, icon: 'user' },
-    { key: 'leaderboard', label: 'Top Brains', to: '/leaderboard', icon: 'trophy' },
+    {
+      key: 'profile',
+      label: 'Profile',
+      to: `/u/${encodeURIComponent(meLou.sub)}`,
+      icon: 'user',
+    },
+    {
+      key: 'leaderboard',
+      label: 'Top Brains',
+      to: '/leaderboard',
+      icon: 'trophy',
+    },
     { key: 'settings', label: 'Settings', to: '/settings', icon: 'gear' },
     { key: 'developers', label: 'Developers', to: '/developers', icon: 'code' },
     { key: 'discord', label: 'Discord', to: '/discord', icon: 'discord' },
   ],
-  theme: { label: 'Theme', value: 'light', onChange: onThemeChange },
+  theme: {
+    label: appShellCopy.accountMenu.theme,
+    value: 'light',
+    onChange: onThemeChange,
+    options: THEME_OPTIONS,
+  },
+  playVideos: {
+    label: appShellCopy.accountMenu.playVideos,
+    checked: true,
+    onCheckedChange: onPlayVideosChange,
+  },
   logOut: { label: 'Log out', onSelect: onLogout },
 }
 
@@ -85,18 +109,39 @@ export const Open: Story = {
     onThemeChange.mockClear()
     const menu = await canvas.findByRole('menu')
     await expect(menu).toHaveAttribute('data-slot', 'avatar-menu')
-    await expect(within(menu).getByText(meLou.name)).toHaveAttribute('data-slot', 'avatar-menu-name')
+    await expect(within(menu).getByText(meLou.name)).toHaveAttribute(
+      'data-slot',
+      'avatar-menu-name',
+    )
     const profile = within(menu).getByRole('menuitem', { name: 'Profile' })
     await expect(profile).toHaveAttribute('href', `/u/${encodeURIComponent(meLou.sub)}`)
     await expect(profile).toHaveAttribute('data-slot', 'avatar-menu-item')
     await expect(profile.offsetHeight).toBeGreaterThanOrEqual(44)
-    await expect(within(menu).getByRole('menuitem', { name: 'Top Brains' })).toHaveAttribute('href', '/leaderboard')
-    await expect(within(menu).getByRole('menuitem', { name: 'Settings' })).toHaveAttribute('href', '/settings')
-    await expect(within(menu).getByRole('menuitem', { name: 'Developers' })).toHaveAttribute('href', '/developers')
-    await expect(within(menu).getByRole('menuitem', { name: 'Discord' })).toHaveAttribute('href', '/discord')
-    const light = within(menu).getByRole('menuitemradio', { name: /Light/ })
+    await expect(within(menu).getByRole('menuitem', { name: 'Top Brains' })).toHaveAttribute(
+      'href',
+      '/leaderboard',
+    )
+    await expect(within(menu).getByRole('menuitem', { name: 'Settings' })).toHaveAttribute(
+      'href',
+      '/settings',
+    )
+    await expect(within(menu).getByRole('menuitem', { name: 'Developers' })).toHaveAttribute(
+      'href',
+      '/developers',
+    )
+    await expect(within(menu).getByRole('menuitem', { name: 'Discord' })).toHaveAttribute(
+      'href',
+      '/discord',
+    )
+    const light = within(menu).getByRole('menuitemradio', {
+      name: new RegExp(sharedCopy.theme.light),
+    })
     await expect(light).toHaveAttribute('aria-checked', 'true')
-    await userEvent.click(within(menu).getByRole('menuitemradio', { name: /Dark/ }))
+    await userEvent.click(
+      within(menu).getByRole('menuitemradio', {
+        name: new RegExp(sharedCopy.theme.dark),
+      }),
+    )
     await expect(onThemeChange).toHaveBeenCalledWith('dark')
     await expect(canvas.getByRole('menu')).toBeInTheDocument()
     const logout = within(menu).getByRole('menuitem', { name: 'Log out' })

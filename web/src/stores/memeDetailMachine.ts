@@ -12,8 +12,14 @@ export type MemeDetailPhase =
 
 export interface MemeStats {
   views: number
+  /** uniqueRefs from GET /api/memes/:id/stats — not `Meme.reshares` (the load counter) */
   reshares: number
-  sources: { source: string; url: string | null; views: number; firstSeen: string | null }[]
+  sources: {
+    source: string
+    url: string | null
+    views: number
+    firstSeen: string | null
+  }[]
 }
 
 export interface MemeDetailInput {
@@ -45,6 +51,7 @@ export interface MemeDetailContext {
   msg: string | null
   err: string | null
   copied: boolean
+  copyFailed: boolean
   confirmingDelete: boolean
   deleting: boolean
   price: number
@@ -84,7 +91,7 @@ export type MemeDetailEvent =
   | { type: 'SET_PRICE'; price: number }
   | { type: 'SET_SELL_SHARES'; shares: number }
   | { type: 'SET_BUY_SHARES'; shares: number }
-  | { type: 'SET_COPIED'; copied: boolean }
+  | { type: 'SET_COPIED'; copied: boolean; failed?: boolean }
   | { type: 'SET_CONFIRMING_DELETE'; confirming: boolean }
   | { type: 'SET_HOLDER_NAMES'; names: Record<string, string> }
   | { type: 'SET_MSG'; msg: string | null }
@@ -93,9 +100,98 @@ export type MemeDetailEvent =
   | { type: 'DELETE' }
 
 const backToReady = [
-  { guard: ({ context }: { context: MemeDetailContext }) => !!context.meme, target: 'ready' as const },
+  {
+    guard: ({ context }: { context: MemeDetailContext }) => !!context.meme,
+    target: 'ready' as const,
+  },
   { target: 'empty' as const },
 ]
+
+const listBuyDeleteOn = {
+  LIST: {
+    target: 'listing' as const,
+    actions: assign<
+      MemeDetailContext,
+      Extract<MemeDetailEvent, { type: 'LIST' }>,
+      undefined,
+      MemeDetailEvent,
+      never
+    >({
+      msg: null,
+      err: null,
+    }),
+  },
+  BUY: {
+    target: 'buying' as const,
+    actions: assign<
+      MemeDetailContext,
+      Extract<MemeDetailEvent, { type: 'BUY' }>,
+      undefined,
+      MemeDetailEvent,
+      never
+    >({
+      msg: null,
+      err: null,
+      confirmingBuy: false,
+    }),
+  },
+  DELETE: {
+    target: 'deleting' as const,
+    actions: assign<
+      MemeDetailContext,
+      Extract<MemeDetailEvent, { type: 'DELETE' }>,
+      undefined,
+      MemeDetailEvent,
+      never
+    >({
+      deleting: true,
+      err: null,
+    }),
+  },
+}
+
+const listingBuyingOn = {
+  LOADED: {
+    actions: assign<
+      MemeDetailContext,
+      Extract<MemeDetailEvent, { type: 'LOADED' }>,
+      undefined,
+      MemeDetailEvent,
+      never
+    >({
+      meme: ({ event }: { event: Extract<MemeDetailEvent, { type: 'LOADED' }> }) => event.meme,
+      positions: ({ event }: { event: Extract<MemeDetailEvent, { type: 'LOADED' }> }) =>
+        event.positions,
+      err: null,
+    }),
+  },
+  DONE: {
+    target: 'ready' as const,
+    actions: assign<
+      MemeDetailContext,
+      Extract<MemeDetailEvent, { type: 'DONE' }>,
+      undefined,
+      MemeDetailEvent,
+      never
+    >({
+      msg: ({ event }: { event: Extract<MemeDetailEvent, { type: 'DONE' }> }) => event.msg ?? null,
+      err: null,
+    }),
+  },
+  FAIL: {
+    target: 'error' as const,
+    actions: assign<
+      MemeDetailContext,
+      Extract<MemeDetailEvent, { type: 'FAIL' }>,
+      undefined,
+      MemeDetailEvent,
+      never
+    >({
+      err: ({ event }: { event: Extract<MemeDetailEvent, { type: 'FAIL' }> }) => event.err,
+      msg: null,
+    }),
+  },
+}
 
 /**
  * Meme detail source of truth. loading → ready|empty|error,
@@ -117,6 +213,7 @@ export const memeDetailMachine = setup({
     msg: null,
     err: null,
     copied: false,
+    copyFailed: false,
     confirmingDelete: false,
     deleting: false,
     price: 1,
@@ -139,28 +236,63 @@ export const memeDetailMachine = setup({
   on: {
     SET_STATS: { actions: assign({ stats: ({ event }) => event.stats }) },
     SET_PLEX: { actions: assign({ plex: ({ event }) => event.plex }) },
-    SET_PLEX_BINDER: { actions: assign({ plexBinder: ({ event }) => event.binder }) },
+    SET_PLEX_BINDER: {
+      actions: assign({ plexBinder: ({ event }) => event.binder }),
+    },
     SET_PLEX_PICK: { actions: assign({ plexPick: ({ event }) => event.pick }) },
-    SET_PLEX_PASTED: { actions: assign({ plexPasted: ({ event }) => event.pasted }) },
-    SET_PLEX_MSG: { actions: assign({ plexMsg: ({ event }) => event.msg, plexErr: null }) },
-    SET_PLEX_ERR: { actions: assign({ plexErr: ({ event }) => event.err, plexMsg: null }) },
-    SET_CLAIM_NOTE: { actions: assign({ claimNote: ({ event }) => event.note }) },
-    SET_CONFIRMING_CLAIM: { actions: assign({ confirmingClaim: ({ event }) => event.confirming }) },
-    SET_CONFIRMING_BUY: { actions: assign({ confirmingBuy: ({ event }) => event.confirming }) },
+    SET_PLEX_PASTED: {
+      actions: assign({ plexPasted: ({ event }) => event.pasted }),
+    },
+    SET_PLEX_MSG: {
+      actions: assign({ plexMsg: ({ event }) => event.msg, plexErr: null }),
+    },
+    SET_PLEX_ERR: {
+      actions: assign({ plexErr: ({ event }) => event.err, plexMsg: null }),
+    },
+    SET_CLAIM_NOTE: {
+      actions: assign({ claimNote: ({ event }) => event.note }),
+    },
+    SET_CONFIRMING_CLAIM: {
+      actions: assign({ confirmingClaim: ({ event }) => event.confirming }),
+    },
+    SET_CONFIRMING_BUY: {
+      actions: assign({ confirmingBuy: ({ event }) => event.confirming }),
+    },
     LOGIN_START: { actions: assign({ loggingIn: true, loginErr: null }) },
-    LOGIN_FAIL: { actions: assign({ loggingIn: false, loginErr: ({ event }) => event.err }) },
-    SET_PRICE: { actions: assign({ price: ({ event }) => clampPrice(event.price) }) },
-    SET_SELL_SHARES: { actions: assign({ sellShares: ({ event }) => clampShares(event.shares, 100) }) },
-    SET_BUY_SHARES: {
+    LOGIN_FAIL: {
+      actions: assign({ loggingIn: false, loginErr: ({ event }) => event.err }),
+    },
+    SET_PRICE: {
+      actions: assign({ price: ({ event }) => clampPrice(event.price) }),
+    },
+    SET_SELL_SHARES: {
       actions: assign({
-        buyShares: ({ context, event }) => clampShares(event.shares, context.meme?.listing?.shares ?? 100),
+        sellShares: ({ event }) => clampShares(event.shares, 100),
       }),
     },
-    SET_COPIED: { actions: assign({ copied: ({ event }) => event.copied }) },
-    SET_CONFIRMING_DELETE: { actions: assign({ confirmingDelete: ({ event }) => event.confirming }) },
+    SET_BUY_SHARES: {
+      actions: assign({
+        buyShares: ({ context, event }) =>
+          clampShares(event.shares, context.meme?.listing?.shares ?? 100),
+      }),
+    },
+    SET_COPIED: {
+      actions: assign({
+        copied: ({ event }) => event.copied,
+        /* a timer's {copied:false} must not clear or set copyFailed unless failed:true */
+        copyFailed: ({ context, event }) =>
+          event.failed ? true : event.copied ? false : context.copyFailed,
+      }),
+    },
+    SET_CONFIRMING_DELETE: {
+      actions: assign({ confirmingDelete: ({ event }) => event.confirming }),
+    },
     SET_HOLDER_NAMES: {
       actions: assign({
-        holderNames: ({ context, event }) => ({ ...context.holderNames, ...event.names }),
+        holderNames: ({ context, event }) => ({
+          ...context.holderNames,
+          ...event.names,
+        }),
       }),
     },
     SET_MSG: { actions: assign({ msg: ({ event }) => event.msg, err: null }) },
@@ -186,18 +318,7 @@ export const memeDetailMachine = setup({
     empty: {},
     ready: {
       on: {
-        LIST: {
-          target: 'listing',
-          actions: assign({ msg: null, err: null }),
-        },
-        BUY: {
-          target: 'buying',
-          actions: assign({ msg: null, err: null, confirmingBuy: false }),
-        },
-        DELETE: {
-          target: 'deleting',
-          actions: assign({ deleting: true, err: null }),
-        },
+        ...listBuyDeleteOn,
         FAIL: {
           target: 'error',
           actions: assign({ err: ({ event }) => event.err, msg: null }),
@@ -206,40 +327,12 @@ export const memeDetailMachine = setup({
     },
     listing: {
       on: {
-        LOADED: {
-          actions: assign({
-            meme: ({ event }) => event.meme,
-            positions: ({ event }) => event.positions,
-            err: null,
-          }),
-        },
-        DONE: {
-          target: 'ready',
-          actions: assign({ msg: ({ event }) => event.msg ?? null, err: null }),
-        },
-        FAIL: {
-          target: 'error',
-          actions: assign({ err: ({ event }) => event.err, msg: null }),
-        },
+        ...listingBuyingOn,
       },
     },
     buying: {
       on: {
-        LOADED: {
-          actions: assign({
-            meme: ({ event }) => event.meme,
-            positions: ({ event }) => event.positions,
-            err: null,
-          }),
-        },
-        DONE: {
-          target: 'ready',
-          actions: assign({ msg: ({ event }) => event.msg ?? null, err: null }),
-        },
-        FAIL: {
-          target: 'error',
-          actions: assign({ err: ({ event }) => event.err, msg: null }),
-        },
+        ...listingBuyingOn,
       },
     },
     deleting: {
@@ -268,18 +361,7 @@ export const memeDetailMachine = setup({
     },
     error: {
       on: {
-        LIST: {
-          target: 'listing',
-          actions: assign({ msg: null, err: null }),
-        },
-        BUY: {
-          target: 'buying',
-          actions: assign({ msg: null, err: null, confirmingBuy: false }),
-        },
-        DELETE: {
-          target: 'deleting',
-          actions: assign({ deleting: true, err: null }),
-        },
+        ...listBuyDeleteOn,
         DONE: backToReady.map((branch) => ({
           ...branch,
           actions: assign({ msg: ({ event }) => event.msg ?? null, err: null }),

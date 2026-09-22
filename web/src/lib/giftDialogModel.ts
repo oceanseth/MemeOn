@@ -57,7 +57,7 @@ export interface GiftDialogModel {
   cancelButtonProps: Pick<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick' | 'disabled'>
   searchInputProps: Pick<
     InputHTMLAttributes<HTMLInputElement>,
-    'value' | 'onChange' | 'aria-label' | 'disabled'
+    'value' | 'onChange' | 'aria-label' | 'placeholder' | 'disabled'
   >
   rows: readonly GiftDialogRowModel[]
   showEmpty: boolean
@@ -156,8 +156,10 @@ export function buildGiftDialogModel({
   const dismiss = () => {
     if (!busy) onClose()
   }
-  const onSearchChange: ChangeEventHandler<HTMLInputElement> = (event) => onQueryChange(event.target.value)
-  const onShareChange: ChangeEventHandler<HTMLInputElement> = (event) => onSharesChange(event.target.value)
+  const onSearchChange: ChangeEventHandler<HTMLInputElement> = (event) =>
+    onQueryChange(event.target.value)
+  const onShareChange: ChangeEventHandler<HTMLInputElement> = (event) =>
+    onSharesChange(event.target.value)
   const onShareBlur: FocusEventHandler<HTMLInputElement> = () => onSharesBlur?.()
   // a gift with no recipient is not a dialog at all, so the frame and the opener agree on one flag
   const isOpen = open && !!recipient
@@ -185,6 +187,7 @@ export function buildGiftDialogModel({
       value: query,
       onChange: onSearchChange,
       'aria-label': copy.search,
+      placeholder: copy.searchPlaceholder,
       disabled: busy,
     },
     rows,
@@ -208,7 +211,11 @@ export function buildGiftDialogModel({
       : pick
         ? copy.submit.gift(normalizedShares, pick.title)
         : copy.submit.choose,
-    submitButtonProps: { onClick: onSubmit, disabled: !canSubmit, 'aria-busy': busy },
+    submitButtonProps: {
+      onClick: onSubmit,
+      disabled: !canSubmit,
+      'aria-busy': busy,
+    },
     error,
   }
 }

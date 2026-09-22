@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/kucherenko/jscpd/master/packages/jscpd/schema.json",
+  "path": ["api/src", "api/scripts", "web/src", "web/scripts", "shared", "mobile/src", "discord"],
+  "pattern": "**/*.{ts,tsx,js,jsx,mjs,cjs}",
+  "ignore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/vendor/**",
+    "**/storybook-static/**",
+    "**/*.d.ts",
+    "**/*.stories.tsx"
+  ],
+  "minTokens": 70,
+  "minLines": 8,
+  "threshold": 0.1,
+  "gitignore": true,
+  "reporters": ["consoleFull"]
+}

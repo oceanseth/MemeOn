@@ -7,16 +7,22 @@ import { sharedCopy } from './shared'
  * `lib/giftDialogModel` and `lib/confirmDialogModel`; only what this screen hands them lives here.
  */
 export const friendsCopy = {
+  pageTitle: 'Friends',
   search: {
     inputLabel: 'Find people by name',
+    placeholder: 'Find people by name…',
     searching: 'Searching…',
     noHits: (query: string) => `No one goes by "${query}" — check the spelling, or invite them.`,
+    failed: "Couldn't find people right now. Try again.",
     /** WCAG 2.5.3: the button's visible words lead its accessible name */
     requestLabel: (name: string) => `Add friend — send ${name} a friend request`,
+    resultsHeading: 'Search results',
+    addFriend: 'Add friend',
   },
   invite: {
     button: 'Invite a friend',
-    copied: 'Invite link copied ✓',
+    copied: 'Invite link copied',
+    copyFailed: 'Copy failed — try again',
     /** the platform share sheet, when there is one */
     share: {
       title: 'Join me on MemeOn',
@@ -28,11 +34,19 @@ export const friendsCopy = {
     count: (count: number) => `${count} ${pluralWord(count, 'friend')} online`,
     label: 'Online now',
   },
+  sections: {
+    circle: 'Your circle',
+    incoming: 'Requests for you',
+    outgoing: 'Sent requests',
+  },
   row: {
     stats: (collectionSize: number, portfolioValue: number) =>
       `${collectionSize} ${pluralWord(collectionSize, 'meme')} · ${braincells(portfolioValue)} held`,
     accept: (name: string) => `Accept ${name}'s request`,
     decline: (name: string) => `Decline ${name}'s request`,
+    acceptLabel: sharedCopy.accept,
+    declineLabel: sharedCopy.decline,
+    cancelLabel: sharedCopy.cancel,
     pending: 'Pending',
     cancelRequest: (name: string) => `Cancel your request to ${name}`,
     trade: 'Trade',
@@ -58,7 +72,7 @@ export const friendsCopy = {
   loadError: {
     title: "Couldn't load your friends.",
     body: sharedCopy.checkConnection,
-    retry: sharedCopy.retry,
+    retry: sharedCopy.tryAgain,
   },
   empty: {
     title: 'No friends yet',

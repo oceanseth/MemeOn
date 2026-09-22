@@ -33,7 +33,9 @@ export const ErrorVariant: Story = {
 }
 
 export const Info: Story = { args: { variant: 'info', children: 'Heads up.' } }
-export const Warning: Story = { args: { variant: 'warning', children: 'This one is final.' } }
+export const Warning: Story = {
+  args: { variant: 'warning', children: 'This one is final.' },
+}
 
 /** A one-line message takes the field radius. */
 export const Compact: Story = {
@@ -57,7 +59,11 @@ export const WithParts: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('Trades are final.')).toHaveAttribute('data-slot', 'alert-title')
     await expect(canvasElement.querySelector('[data-slot="alert-description"]')).not.toBeNull()
-    await expect(canvas.getByRole('button', { name: 'Review the offer' }).closest('[data-slot="alert-action"]')).not.toBeNull()
+    await expect(
+      canvas
+        .getByRole('button', { name: 'Review the offer' })
+        .closest('[data-slot="alert-action"]'),
+    ).not.toBeNull()
   },
 }
 
@@ -87,4 +93,3 @@ export const RoleOverride: Story = {
     await expect(canvas.getByRole('status')).toBeInTheDocument()
   },
 }
-
