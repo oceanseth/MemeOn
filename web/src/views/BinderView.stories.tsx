@@ -164,3 +164,25 @@ export const LoadingThenReady: Story = {
     await expect(await canvas.findByRole('link', { name: /fresh paper/ })).toBeInTheDocument()
   },
 }
+
+/** A 200 with no cards is the first-run empty state, not the error Empty. */
+export const Empty: Story = {
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'GET /api/binder': () => ({ body: { memes: [] } }),
+      },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <BinderView />
+    </ConnectedStory>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByText(copy.emptyState.firstRun)).toBeInTheDocument()
+    await expect(canvas.queryByRole('alert')).toBeNull()
+  },
+}
