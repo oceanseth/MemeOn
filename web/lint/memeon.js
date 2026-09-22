@@ -42,6 +42,17 @@ const CHROME_TYPES = new Map([
   ['week', 'a control of our own'],
 ])
 
+/** Sibling keys that mark the same object as an input prop bag, not a domain record. */
+const INPUT_SIBLING_KEYS = new Set(['accept', 'onChange', 'capture', 'multiple'])
+
+/** `as` / `satisfies` / assertion / parens between an object and the binding that owns it. */
+const INPUT_BAG_WRAPPERS = new Set([
+  'TSAsExpression',
+  'TSSatisfiesExpression',
+  'TSTypeAssertion',
+  'ParenthesizedExpression',
+])
+
 /** Elements the user agent paints, and what stands in for each here. */
 const UA_ELEMENTS = new Map([
   ['select', 'atoms/select'],
@@ -119,16 +130,14 @@ const noNativeChrome = {
 
       /* the prop bag a builder returns and a screen spreads — how the file input got in */
       Property(node) {
-        if (node.computed) return
-        const key =
-          node.key.type === 'Identifier'
-            ? node.key.name
-            : node.key.type === 'Literal'
-              ? node.key.value
-              : null
+        const key = node.computed ? stringValue(node.key) : identifierName(node.key)
         if (key !== 'type') return
         const value = stringValue(node.value)
-        if (value && CHROME_TYPES.has(value)) reportType(node, value)
+        if (!value || !CHROME_TYPES.has(value)) return
+        const objectNode = node.parent
+        if (!objectNode || objectNode.type !== 'ObjectExpression') return
+        if (!hasInputSibling(objectNode, node) && !feedsInput(objectNode)) return
+        reportType(node, value)
       },
 
       CallExpression(node) {
@@ -173,6 +182,50 @@ const identifierName = (node) => {
   if (node.type === 'Identifier') return node.name
   if (node.type === 'JSXIdentifier') return node.name
   return stringValue(node)
+}
+
+function hasInputSibling(objectNode, property) {
+  for (const prop of objectNode.properties) {
+    if (prop === property || prop.type !== 'Property') continue
+    const key = prop.computed ? stringValue(prop.key) : identifierName(prop.key)
+    if (INPUT_SIBLING_KEYS.has(key)) return true
+  }
+  return false
+}
+
+/** One step above the object. Identity uses the outermost wrapper, not the inner object. */
+function feedsInput(objectNode) {
+  let node = objectNode
+  while (node.parent && INPUT_BAG_WRAPPERS.has(node.parent.type)) node = node.parent
+  const parent = node.parent
+  if (!parent) return false
+  if (parent.type === 'Property' && parent.value === node) {
+    const key = parent.computed ? stringValue(parent.key) : identifierName(parent.key)
+    return typeof key === 'string' && key.endsWith('InputProps')
+  }
+  if (
+    parent.type === 'VariableDeclarator' &&
+    parent.init === node &&
+    parent.id.type === 'Identifier'
+  ) {
+    return parent.id.name.endsWith('InputProps')
+  }
+  if (
+    parent.type === 'AssignmentExpression' &&
+    parent.right === node &&
+    parent.left.type === 'Identifier'
+  ) {
+    return parent.left.name.endsWith('InputProps')
+  }
+  if (parent.type === 'JSXSpreadAttribute' && parent.argument === node) {
+    const opening = parent.parent
+    return (
+      opening?.type === 'JSXOpeningElement' &&
+      opening.name.type === 'JSXIdentifier' &&
+      (opening.name.name === 'input' || opening.name.name === 'Input')
+    )
+  }
+  return false
 }
 
 const noUseEffect = {

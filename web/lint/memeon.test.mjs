@@ -44,6 +44,42 @@ test('flags a chrome input type set in a prop bag and spread', () => {
   )
 })
 
+test('flags a static computed type key in an input prop bag', () => {
+  lint(
+    'computed.tsx',
+    [
+      "export const imageFileInputProps = { ['type']: 'file' } as const",
+      "export const sibling = { record: { [\"type\"]: 'file', accept: 'image/png' } }",
+      "export const S = () => <Input {...{ [`type`]: 'file' }} />",
+      '',
+    ].join('\n'),
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /no-native-chrome/)
+      assert.equal(output.match(/type="file"/g)?.length, 3, output)
+    },
+  )
+})
+
+test('leaves domain records and dynamic type keys alone', () => {
+  lint(
+    'domain.ts',
+    [
+      "const type = 'type'",
+      "const k = 'type'",
+      "export const job = { type: 'file', id: 'x' } as const",
+      "export const computedJob = { ['type']: 'file', id: 'y' }",
+      "export const identKey = { [type]: 'file', accept: 'image/png' }",
+      "export const dynamic = { [k]: 'file', multiple: true }",
+      '',
+    ].join('\n'),
+    ({ status, output }) => {
+      assert.equal(status, 0, output)
+      assert.doesNotMatch(output, /no-native-chrome/)
+    },
+  )
+})
+
 test('flags a user-agent element', () => {
   lint(
     'Picker.tsx',
