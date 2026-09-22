@@ -100,7 +100,7 @@ export const createMemeCopy = {
   generate: {
     promptPlaceholder: 'a capybara in a business suit ignoring a burning office, cinematic',
     promptHelp:
-      'Describe the whole scene — subject, style, chaos level. Runs on your Masky credits.',
+      'Describe the whole scene — subject, style, chaos level. Put exact text in "double quotes" and it appears in the image verbatim. Runs on your Masky credits.',
     renderVideo: 'Render the video',
     renderImage: 'Render the image',
   },

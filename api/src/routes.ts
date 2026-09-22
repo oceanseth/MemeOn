@@ -475,7 +475,8 @@ authed('GET /api/binder', async (req) => {
 authed('POST /api/aigen/image', async (req) => {
   const prompt = requireString(req.body, 'prompt')
   const aspectRatio = typeof req.body.aspectRatio === 'string' ? req.body.aspectRatio : '1:1'
-  const out = await masky.generateImage(maskyToken(req), prompt, aspectRatio)
+  const model = masky.hasQuotedText(prompt) ? 'ideogram' : undefined
+  const out = await masky.generateImage(maskyToken(req), prompt, aspectRatio, model)
   return json(200, out)
 })
 
