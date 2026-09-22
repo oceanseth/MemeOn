@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
+    "export:og-frames": "node scripts/export-og-frames.mjs",
     "lint:ds": "oxlint src",
     "test:lint-rules": "node --test lint/memeon.test.mjs",
     "check-docs": "node scripts/check-docs.mjs",

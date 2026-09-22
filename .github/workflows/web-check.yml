@@ -59,6 +59,7 @@ jobs:
       - run: pnpm --filter web run test:check-contrast
       - run: pnpm --filter web run test:check-tokens
       - run: pnpm --filter web run test:unit
+      - run: pnpm --filter memeon-api run test
       - run: pnpm run typecheck
 
   duplication:
