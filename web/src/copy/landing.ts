@@ -6,6 +6,12 @@ export const landingCopy = {
     title: 'Memes are the new trading cards',
     body: 'Mint the moment. Watch it spread. Trade the cards everyone sends each other anyway — every meme gets a share link whose foil frame levels up as it travels.',
     loginAside: 'No email. No real name. Just your Masky avatar.',
+    /** The three figures under the title. The value is a number the builder formats; this is the noun. */
+    stats: {
+      tiers: 'rarity tiers',
+      shares: 'shares a card',
+      reshares: (topTier: string) => `reshares to ${topTier}`,
+    },
   },
   /** Distinct from sharedCopy.browseMarketplace ("Browse the marketplace"). */
   marketplaceCta: 'Enter the marketplace',

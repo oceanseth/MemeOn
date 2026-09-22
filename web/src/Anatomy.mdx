@@ -239,7 +239,7 @@ Probe these instead of a class name or copy string:
 | Leaderboard | `podium-head`, `leaderboard`, `your-rank`, `person-row` |
 | Invite | `invite-hero` |
 | Settings | `settings-sections`, `settings-account`, `settings-appearance`, `settings-connections`, `connection-row` (`data-linked`) |
-| Landing | `landing-hero`, `hero-cards`, `hero-card`, `landing-how`, `landing-film`, `landing-faq`, `landing-closing` |
+| Landing | `landing-hero`, `hero-stats`, `hero-cards`, `hero-card` (`data-fan`), `hero-card-meta`, `landing-how`, `landing-film`, `landing-faq`, `landing-closing` |
 | Create Meme | `mint-modes`, `create-meme-generate-panel`, `create-meme-remix-panel`, `create-meme-giphy-panel`, `create-meme-url-panel`, `create-meme-upload-panel`, `approval-card`, `busy-card`, `preview-placeholder` |
 | Legal (Privacy, Terms) | `legal-toc`, `legal-section` |
 | Auth (`screens/AuthStatusScreen.tsx`) | `auth-status` (`data-phase`), `auth-ring`, `auth-timeout`, `auth-web-fallback` |
@@ -265,9 +265,10 @@ Probe these instead of a class name or copy string:
   `lib/braincells`.
 - Presentation is Tailwind utilities on the component, in `@layer utilities`. Only effects no
   utility can express get a co-located `.css` file — today the card foil (`atoms/foil.css`,
-  side-effect owned by `atoms/foil-frame.tsx`), the spinner turn (`atoms/spinner.css`), the landing
-  shell's `--topbar-h` rule
-  (`organisms/app-shell.css`) — and each restates the layer order at the top.
+  side-effect owned by `atoms/foil-frame.tsx`), the spinner turn (`atoms/spinner.css`), the quest
+  ring (`molecules/quest-bar.css`), the landing hero's card fan (`organisms/landing-hero.css`) and
+  the shell's `--topbar-h` rule (`organisms/app-shell.css`) — and each restates the layer order at
+  the top.
   The cascade contract itself is the header comment of `src/index.css`.
 - Shared code (`shared/tiers.ts`) is imported as `@memeon/shared/tiers`, never by relative path.
 

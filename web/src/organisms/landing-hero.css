@@ -1,0 +1,144 @@
+/* The cascade contract `src/index.css` declares, restated because a layer's rank is fixed the first
+   time its name is seen and this file can still reach a stylesheet ahead of `index.css` (an async
+   CSS chunk of its own, a story, a second entry). `main.tsx` imports `index.css` first so the app
+   bundle already opens with this order; the restatement is what keeps every other bundle honest,
+   and re-declaring an order that already exists is a no-op. `properties` leads the list because
+   that is where Tailwind emits its own `@layer properties` block — the `@supports` fallback that
+   seeds every `--tw-*` for engines without `@property` — and it has to stay *below* `utilities`, or
+   those `initial`s would beat the utilities that set them. `scripts/check-layers.mjs` reads the
+   built CSS back and fails the build if any bundle ever ranks these differently. */
+@layer properties, theme, base, components, utilities;
+
+/* This sheet is compiled on its own, so the breakpoint names `@variant` resolves below have to be
+   read from the theme; `reference` loads `index.css` for its names and emits none of it. */
+@reference "../index.css";
+
+@layer components {
+  /*
+   * The hero's deck: the seven tier collectibles fanned like a hand of cards. Every card is pinned
+   * to the centre of the box and swung out by its seat (`data-fan`, −3…3, the model's `fan`):
+   * about a third of a card sideways per seat, an arc's worth downward (the drop grows with the
+   * square of the seat), seven degrees of tilt per seat, all about a pivot just below the card's
+   * foot so the fan opens the way a held one does. The centre card stays in flow and gives the
+   * box its height; the six absolute ones only need the drop below it. The whole hand leans
+   * back five degrees under a perspective, so the far edge reads a touch smaller.
+   *
+   * The recipe is physiohub.io's hero deck, measured: 290px cards stepped 88px / 18px / 8deg per
+   * seat about `50% 108%`, centre on top, under `perspective(1200px) rotateX(5deg)`.
+   *
+   * A sheet, not utilities: the transform is a calc over a data attribute, the lean is a
+   * `perspective()` no utility carries, and the hover lift has to ride on top of the swing.
+   */
+  [data-slot="hero-cards"] {
+    --fan-w: 224px;
+    --fan-dx: 70px;
+    --fan-dy: 6px;
+    --fan-rot: 7deg;
+    --fan-drop: 120px;
+    position: relative;
+    padding-bottom: var(--fan-drop);
+    transform: perspective(1200px) rotateX(5deg);
+
+    @variant max-xl {
+      --fan-w: 176px;
+      --fan-dx: 54px;
+      --fan-dy: 5px;
+      --fan-drop: 96px;
+    }
+
+    /* The phone shows the middle of the hand; the outer seats run into the panel's clip. */
+    @variant max-md {
+      --fan-w: 136px;
+      --fan-dx: 30px;
+      --fan-dy: 4px;
+      --fan-rot: 6deg;
+      --fan-drop: 72px;
+    }
+  }
+
+  [data-slot="hero-card"] {
+    --fan-i: 0;
+    --fan-lift: 0px;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: var(--fan-w);
+    margin-left: calc(var(--fan-w) / -2);
+    transform-origin: 50% 108%;
+    transform: translateX(calc(var(--fan-i) * var(--fan-dx)))
+      translateY(calc(var(--fan-i) * var(--fan-i) * var(--fan-dy) + var(--fan-lift)))
+      rotate(calc(var(--fan-i) * var(--fan-rot)));
+    transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* The centre seat holds the box open; the rest hang off it, nearer seats on top. */
+  [data-slot="hero-card"][data-fan="0"] {
+    position: relative;
+    left: auto;
+    z-index: 7;
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  [data-slot="hero-card"][data-fan="-1"] {
+    --fan-i: -1;
+    z-index: 6;
+  }
+  [data-slot="hero-card"][data-fan="1"] {
+    --fan-i: 1;
+    z-index: 6;
+  }
+  [data-slot="hero-card"][data-fan="-2"] {
+    --fan-i: -2;
+    z-index: 5;
+  }
+  [data-slot="hero-card"][data-fan="2"] {
+    --fan-i: 2;
+    z-index: 5;
+  }
+  [data-slot="hero-card"][data-fan="-3"] {
+    --fan-i: -3;
+    z-index: 4;
+  }
+  [data-slot="hero-card"][data-fan="3"] {
+    --fan-i: 3;
+    z-index: 4;
+  }
+
+  /* Each caption sits in the corner its seat keeps clear: the nearer neighbour covers a left
+     seat's right side and a right seat's left side, and the centre seat is covered by nothing. */
+  [data-slot="hero-card-meta"] {
+    text-align: center;
+  }
+
+  [data-slot="hero-card"][data-fan^="-"] [data-slot="hero-card-meta"] {
+    text-align: left;
+  }
+
+  [data-slot="hero-card"]:is([data-fan="1"], [data-fan="2"], [data-fan="3"])
+    [data-slot="hero-card-meta"] {
+    text-align: right;
+  }
+
+  /* On a phone the seats sit too close for seven captions to clear each other, and the deck is
+     the point there: only the centre seat keeps its caption. Every seal still names its tier. */
+  [data-slot="hero-card"]:not([data-fan="0"]) [data-slot="hero-card-meta"] {
+    @variant max-md {
+      visibility: hidden;
+    }
+  }
+
+  /* A pointer draws the card it is over up out of the hand, so every tier can be read whole. */
+  @media (hover: hover) {
+    [data-slot="hero-card"]:hover {
+      --fan-lift: -16px;
+      z-index: 8;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-slot="hero-card"] {
+      transition: none;
+    }
+  }
+}
