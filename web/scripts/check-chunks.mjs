@@ -104,8 +104,8 @@ const endsWithSrc = (source, suffix) => {
 
 const viewsBasename = (source) => {
   const value = normalizeSource(source)
-  const match = value.match(/(?:^|\/)src\/views\/([^/]+)$/)
-  return match ? match[1] : null
+  const match = value.match(/(?:^|\/)src\/views\/(.+)$/)
+  return match ? match[1].split('/').at(-1) : null
 }
 
 const isLazyView = (name) => LAZY_VIEW_BASENAMES.has(name) || CREATE_MEME_VIEW.test(name)
