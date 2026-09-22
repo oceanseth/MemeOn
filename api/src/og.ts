@@ -1,40 +1,27 @@
-// OG meta frame pipeline: composited card images (tier frame + meme art + title
-// banner) served from the assets bucket, plus the crawler-facing /m/{id} page.
-import { Jimp, loadFont, measureText, measureTextHeight } from 'jimp'
-import { SANS_32_BLACK, SANS_32_WHITE, SANS_64_BLACK, SANS_64_WHITE } from 'jimp/fonts'
+// OG image pipeline and crawler-facing share pages.
+import { Jimp, loadFont, measureText } from 'jimp'
+import { SANS_32_WHITE, SANS_64_BLACK, SANS_64_WHITE } from 'jimp/fonts'
 import { env } from './env'
 import { safeFetch } from './safeFetch'
 import { assetAgeSeconds, assetExists, assetUrl, putAsset, putAssetShortCache } from './s3'
 import { getSharedSecret } from './ssm'
+import {
+  composeCollectibleOgCard,
+  loadOgFrameBundle,
+  MEME_OG_HEIGHT,
+  MEME_OG_WIDTH,
+  type OgFrameBundle,
+} from './ogCard'
 import { TIERS, tierFor } from '@memeon/shared/tiers'
 import type { Meme } from './types'
 
-// Card geometry: frames are 900x1200 (3:4) with an open square art window.
-// generate-frames prompts leave the middle clear; the meme is pasted on top.
-const CARD_W = 900
-const CARD_H = 1200
-const WIN = { x: 90, y: 216, w: 720, h: 720 }
-
-// v5: landscape 1200x630 og image containing the entire portrait card, so
-// facebook's wide layout never crops the border or title
-const ogKey = (memeId: string, tierKey: string) => `og/v5/${memeId}-${tierKey}.png`
+export const MEME_OG_CACHE_VERSION = 'v6-collectible'
+export const memeOgKey = (memeId: string, tierKey: string) =>
+  `og/${MEME_OG_CACHE_VERSION}/${memeId}-${tierKey}.png`
 
 export const OG_W = 1200
 export const OG_H = 630
 export const frameKey = (tierKey: string) => `frames/${tierKey}.png`
-
-// title banner: x-range shared, but each generated frame's dark band sits at a
-// slightly different height — vertical centers measured per frame art
-const BANNER = { x: 110, w: 680 }
-const BANNER_CENTER_Y: Record<string, number> = {
-  paper: 1008,
-  silver: 1012,
-  holo: 1032,
-  chrome: 981,
-  gold: 1034,
-  prismatic: 1039,
-  shiny: 1001,
-}
 
 // bundled next to the lambda handler (see api package script); node_modules in dev
 function fontPath(bundled: string, dev: string): string {
@@ -43,14 +30,13 @@ function fontPath(bundled: string, dev: string): string {
 }
 
 const fontCache = new Map<string, Promise<Awaited<ReturnType<typeof loadFont>>>>()
-function getFont(key: 'w64' | 'b64' | 'w32' | 'b32') {
+function getFont(key: 'w64' | 'b64' | 'w32') {
   let p = fontCache.get(key)
   if (!p) {
     const paths = {
       w64: fontPath('open-sans-64-white.fnt', SANS_64_WHITE),
       b64: fontPath('open-sans-64-black.fnt', SANS_64_BLACK),
       w32: fontPath('open-sans-32-white.fnt', SANS_32_WHITE),
-      b32: fontPath('open-sans-32-black.fnt', SANS_32_BLACK),
     }
     p = loadFont(paths[key])
     fontCache.set(key, p)
@@ -58,125 +44,65 @@ function getFont(key: 'w64' | 'b64' | 'w32' | 'b32') {
   return p
 }
 
-/** Print the title centered in the tier frame's banner band, shrinking to fit. */
-async function printTitle(card: JimpImage, title: string, tierKey: string): Promise<void> {
-  try {
-    let text = title.slice(0, 24)
-    let white = await getFont('w64')
-    let black = await getFont('b64')
-    if (measureText(white, text) > BANNER.w) {
-      white = await getFont('w32')
-      black = await getFont('b32')
-      while (text.length > 4 && measureText(white, `${text}…`) > BANNER.w) {
-        text = text.slice(0, -1)
-      }
-      if (text !== title.slice(0, 24)) text = `${text}…`
-    }
-    const w = measureText(white, text)
-    const h = measureTextHeight(white, text, BANNER.w)
-    const centerY = BANNER_CENTER_Y[tierKey] ?? 1015
-    const x = BANNER.x + Math.max(0, Math.round((BANNER.w - w) / 2))
-    const y = Math.round(centerY - h / 2)
-    card.print({ font: black, x: x + 3, y: y + 3, text })
-    card.print({ font: white, x, y, text })
-  } catch (err) {
-    console.error('title print failed (fonts missing?)', err)
-  }
-}
-
 // jimp's read()/constructor types don't unify across its generics; keep these loose.
 type JimpImage = Awaited<ReturnType<typeof Jimp.read>>
 
-async function fetchImage(url: string): Promise<JimpImage> {
+async function fetchImageBuffer(url: string): Promise<Buffer> {
   // SSRF: private hosts/IPs blocked after DNS + each redirect; body capped (mo-100.5)
   const { body } = await safeFetch(url, {
     maxBytes: 8 * 1024 * 1024,
     timeoutMs: 12_000,
     headers: { accept: 'image/*' },
   })
-  return Jimp.read(body)
+  return body
 }
 
-/**
- * Ensure the composited og image for (meme, tier) exists in the assets bucket
- * and return its public URL. Composites lazily on first request per tier.
- */
-export async function ensureOgImage(meme: Meme): Promise<string> {
+async function fetchImage(url: string): Promise<JimpImage> {
+  return Jimp.read(await fetchImageBuffer(url))
+}
+
+export interface MemeOgDependencies {
+  assetExists: (key: string) => Promise<boolean>
+  assetUrl: (key: string) => string
+  putAsset: (key: string, body: Buffer, contentType: string) => Promise<string>
+  fetchArt: (url: string) => Promise<Buffer>
+  loadFrame: (tierKey: string) => Promise<OgFrameBundle>
+  compose: typeof composeCollectibleOgCard
+}
+
+const defaultMemeOgDependencies: MemeOgDependencies = {
+  assetExists,
+  assetUrl,
+  putAsset,
+  fetchArt: fetchImageBuffer,
+  loadFrame: loadOgFrameBundle,
+  compose: composeCollectibleOgCard,
+}
+
+/** Generate and immutably cache the current collectible card for one meme tier. */
+export async function ensureOgImageWithDependencies(
+  meme: Meme,
+  dependencies: MemeOgDependencies,
+): Promise<string> {
   const tier = tierFor(meme.reshares)
-  const key = ogKey(meme.id, tier.key)
-  if (await assetExists(key)) return assetUrl(key)
+  const key = memeOgKey(meme.id, tier.key)
+  if (await dependencies.assetExists(key)) return dependencies.assetUrl(key)
 
-  const art = await fetchImage(meme.imageUrl)
-  art.cover({ w: WIN.w, h: WIN.h })
+  const [art, bundle] = await Promise.all([
+    dependencies.fetchArt(meme.imageUrl),
+    dependencies.loadFrame(tier.key),
+  ])
+  const png = await dependencies.compose({
+    art,
+    frame: bundle.frame,
+    manifest: bundle.manifest,
+    mediaType: meme.mediaType,
+  })
+  return dependencies.putAsset(key, png, 'image/png')
+}
 
-  let card: JimpImage
-  try {
-    const frame = await fetchImage(assetUrl(frameKey(tier.key)))
-    frame.cover({ w: CARD_W, h: CARD_H })
-    card = frame
-  } catch {
-    // Frame art not generated yet: solid tier-colored card as fallback.
-    card = new Jimp({
-      width: CARD_W,
-      height: CARD_H,
-      color: hexToInt(tier.color),
-    }) as unknown as JimpImage
-  }
-  card.composite(art, WIN.x, WIN.y)
-
-  if (meme.mediaType === 'video') {
-    // play button centered on the art + logo badge in its corner, so shares
-    // read as "tap to watch" and carry the brand
-    try {
-      const play = await fetchImage(assetUrl('brand/play-overlay.png'))
-      play.resize({ w: 300, h: 300 })
-      card.composite(
-        play,
-        WIN.x + Math.round((WIN.w - 300) / 2),
-        WIN.y + Math.round((WIN.h - 300) / 2),
-      )
-    } catch {
-      /* overlay art missing — card still works */
-    }
-    try {
-      const logo = await fetchImage(assetUrl('brand/memeon-logo-circle-256.png'))
-      logo.resize({ w: 110, h: 110 })
-      card.composite(logo, WIN.x + WIN.w - 122, WIN.y + WIN.h - 122)
-    } catch {
-      /* ditto */
-    }
-  }
-
-  await printTitle(card, meme.title, tier.key)
-
-  // wide 1.91:1 canvas with the ENTIRE card visible: blurred art fills the
-  // background, dimmed, card scaled to fit height and centered
-  const wide = new Jimp({
-    width: OG_W,
-    height: OG_H,
-    color: 0x0b0d14ff,
-  }) as unknown as JimpImage
-  try {
-    const bgArt = art.clone()
-    bgArt.cover({ w: OG_W, h: OG_H })
-    bgArt.blur(12)
-    wide.composite(bgArt, 0, 0)
-    const dim = new Jimp({
-      width: OG_W,
-      height: OG_H,
-      color: 0x0b0d14b8,
-    }) as unknown as JimpImage
-    wide.composite(dim, 0, 0)
-  } catch {
-    /* solid brand background is a fine fallback */
-  }
-  const cardH = 590
-  const cardW = Math.round((CARD_W / CARD_H) * cardH)
-  card.resize({ w: cardW, h: cardH })
-  wide.composite(card, Math.round((OG_W - cardW) / 2), Math.round((OG_H - cardH) / 2))
-
-  const png = await wide.getBuffer('image/png')
-  return putAsset(key, png, 'image/png')
+export async function ensureOgImage(meme: Meme): Promise<string> {
+  return ensureOgImageWithDependencies(meme, defaultMemeOgDependencies)
 }
 
 function hexToInt(hex: string): number {
@@ -204,7 +130,7 @@ export function giphyGifUrl(videoUrl: string): string | null {
   return videoUrl.replace(/giphy\.mp4/gi, 'giphy.gif')
 }
 
-function ogMetaBlock(
+export function memeOgMetaBlock(
   meme: Meme,
   ogImageUrl: string,
   gifUrl: string | null = null,
@@ -218,7 +144,7 @@ function ogMetaBlock(
   // player so the client loops it; its dimensions aren't the card's, so omit them
   const image = gifUrl
     ? `<meta property="og:image" content="${esc(gifUrl)}">\n<meta property="og:image:type" content="image/gif">`
-    : `<meta property="og:image" content="${esc(ogImageUrl)}">\n<meta property="og:image:width" content="${OG_W}">\n<meta property="og:image:height" content="${OG_H}">`
+    : `<meta property="og:image" content="${esc(ogImageUrl)}">\n<meta property="og:image:type" content="image/png">\n<meta property="og:image:width" content="${MEME_OG_WIDTH}">\n<meta property="og:image:height" content="${MEME_OG_HEIGHT}">`
   const block = `<meta property="og:site_name" content="MemeOn">
 <meta property="og:type" content="website">
 <meta property="og:url" content="${esc(pageUrl)}">
@@ -266,7 +192,7 @@ export async function memePageHtml(
     opts.loopingGif && meme.mediaType === 'video' && meme.videoUrl
       ? giphyGifUrl(meme.videoUrl)
       : null
-  const { title, block } = ogMetaBlock(meme, ogImageUrl, gifUrl)
+  const { title, block } = memeOgMetaBlock(meme, ogImageUrl, gifUrl)
   const index = await fetchIndexHtml()
   if (index) {
     return (

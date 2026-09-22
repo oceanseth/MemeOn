@@ -9,10 +9,11 @@
   "scripts": {
     "dev": "tsx watch src/local-server.ts",
     "build": "pnpm run typecheck",
+    "test": "tsx --test src/**/*.test.ts",
     "typecheck": "tsc --project tsconfig.json --noEmit",
     "bundle": "esbuild src/handler.ts --bundle --platform=node --target=node20 --outfile=dist/handler.mjs --format=esm --external:@aws-sdk/client-dynamodb --external:@aws-sdk/lib-dynamodb --external:@aws-sdk/client-s3 --external:@aws-sdk/client-ssm --external:@aws-sdk/s3-request-presigner --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\"",
     "fonts": "node scripts/copy-fonts.mjs",
-    "package": "pnpm run bundle && pnpm run fonts && bestzip lambda.zip dist/handler.mjs fonts",
+    "package": "pnpm run bundle && pnpm run fonts && bestzip lambda.zip dist/handler.mjs fonts assets/og-frames",
     "clean": "rimraf dist lambda.zip"
   },
   "dependencies": {
