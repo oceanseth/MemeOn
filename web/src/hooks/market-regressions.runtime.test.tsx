@@ -6,10 +6,11 @@ import { listedHolo, meLou, memeplexEmpty, paperMeme, silverMeme } from '../../.
 import { marketplaceCopy } from '../copy/marketplace'
 import { memeDetailCopy } from '../copy/memeDetail'
 import { memeplexPanelCopy } from '../copy/memeplexPanel'
+import { MARKETPLACE_SEARCH_DEBOUNCE_MS } from '../lib/marketplaceQuery'
 import type { Meme } from '../lib/types'
 import type { AppStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
-import { button as queryButton, click } from '../test/dom'
+import { button as queryButton, change, click } from '../test/dom'
 import { deferred, settle, stubClipboardWrite } from '../test/runtime'
 import { mountSignedInRoot, unmountSignedInRoot } from '../test/signedInHost'
 import { MemeDetailView } from '../views/MemeDetailView'
@@ -284,6 +285,40 @@ function marketFetch(
   return requests
 }
 
+function holdCatalog() {
+  const requests: string[] = []
+  const gates: Array<ReturnType<typeof deferred<Response>>> = []
+  vi.stubGlobal(
+    'fetch',
+    vi.fn<typeof fetch>((input, init) => {
+      const { url, method } = requestDetails(input, init)
+      if (method !== 'GET' || url.pathname !== '/api/memes') {
+        throw new Error(`Unexpected request: ${method} ${url.pathname}`)
+      }
+      requests.push(url.searchParams.toString())
+      const gate = deferred<Response>()
+      gates.push(gate)
+      return gate.promise
+    }),
+  )
+  return { requests, gates }
+}
+
+/** `status` 503 matches `marketFetch`: the body is the error, not a page. */
+function catalogPage(memes: Meme[], nextCursor: string | null, status?: number): Response {
+  return Response.json(status ? { error: 'page unavailable' } : { memes, nextCursor }, {
+    status: status ?? 200,
+  })
+}
+
+function searchInput(): HTMLInputElement {
+  const input = host.querySelector<HTMLInputElement>(
+    `input[aria-label="${marketplaceCopy.search.label}"]`,
+  )
+  if (!input) throw new Error('Missing marketplace search')
+  return input
+}
+
 async function renderMarketplace(): Promise<void> {
   await act(async () => {
     root.render(
@@ -378,6 +413,166 @@ describe('MarketplaceView continuously visible pagination', () => {
     })
     expect(host.textContent).toBe('')
     expect(requests).toEqual(['initial', 'cursor-a'])
+  })
+
+  it('drops a stale catalogue load after a newer search has landed', async () => {
+    installVisibleObserver()
+    const { requests, gates } = holdCatalog()
+    await renderMarketplace()
+    await macrotask(MARKETPLACE_SEARCH_DEBOUNCE_MS)
+    await eventually(() => expect(requests).toHaveLength(1))
+    expect(requests[0]).not.toContain('q=')
+
+    await change(searchInput(), 'silver')
+    await macrotask(MARKETPLACE_SEARCH_DEBOUNCE_MS)
+    await eventually(() => {
+      expect(requests).toHaveLength(2)
+      expect(requests[1]).toContain('q=silver')
+    })
+    expect(requests[0]).not.toContain('q=')
+
+    await act(async () => {
+      gates[1]?.resolve(catalogPage([silverMeme], null))
+      await settle()
+    })
+    await eventually(() => expect(cardTitles()).toEqual([silverMeme.title]))
+
+    await act(async () => {
+      gates[0]?.resolve(catalogPage([paperMeme], 'cursor-stale'))
+      await settle()
+    })
+    await macrotask(30)
+    expect(cardTitles()).toEqual([silverMeme.title])
+    expect(cardTitles()).not.toContain(paperMeme.title)
+    expect(requests).toHaveLength(2)
+    expect(host.textContent).not.toContain(marketplaceCopy.errorHeading)
+  })
+
+  it('drops a stale catalogue failure after a newer search has landed', async () => {
+    installVisibleObserver()
+    const { requests, gates } = holdCatalog()
+    await renderMarketplace()
+    await macrotask(MARKETPLACE_SEARCH_DEBOUNCE_MS)
+    await eventually(() => expect(requests).toHaveLength(1))
+
+    await change(searchInput(), 'silver')
+    await macrotask(MARKETPLACE_SEARCH_DEBOUNCE_MS)
+    await eventually(() => {
+      expect(requests).toHaveLength(2)
+      expect(requests[1]).toContain('q=silver')
+    })
+
+    await act(async () => {
+      gates[1]?.resolve(catalogPage([silverMeme], null))
+      await settle()
+    })
+    await eventually(() => expect(cardTitles()).toEqual([silverMeme.title]))
+
+    await act(async () => {
+      gates[0]?.resolve(catalogPage([], null, 503))
+      await settle()
+    })
+    await macrotask(30)
+    expect(cardTitles()).toEqual([silverMeme.title])
+    expect(host.textContent).not.toContain(marketplaceCopy.errorHeading)
+    expect(host.textContent).not.toContain(marketplaceCopy.loadError)
+  })
+
+  it('drops a stale append so it cannot mix cards or unlock another page', async () => {
+    installVisibleObserver()
+    const { requests, gates } = holdCatalog()
+    await renderMarketplace()
+    await macrotask(MARKETPLACE_SEARCH_DEBOUNCE_MS)
+    await eventually(() => expect(requests).toHaveLength(1))
+
+    await act(async () => {
+      gates[0]?.resolve(catalogPage([paperMeme], 'cursor-a'))
+      await settle()
+    })
+    await eventually(() => {
+      expect(cardTitles()).toEqual([paperMeme.title])
+      expect(requests.some((query) => query.includes('cursor=cursor-a'))).toBe(true)
+    })
+
+    await change(searchInput(), 'holo')
+    await macrotask(MARKETPLACE_SEARCH_DEBOUNCE_MS)
+    await eventually(() => {
+      expect(requests).toHaveLength(3)
+      expect(requests[2]).toContain('q=holo')
+      expect(requests[2]).not.toContain('cursor')
+    })
+
+    await act(async () => {
+      gates[1]?.resolve(catalogPage([silverMeme], 'cursor-b'))
+      await settle()
+    })
+    expect(cardTitles()).toEqual([paperMeme.title])
+    expect(cardTitles()).not.toContain(silverMeme.title)
+
+    const active = AsyncVisibleObserver.instances.find((observer) => !observer.disconnected)
+    if (!active) throw new Error('Missing connected observer')
+    await act(async () => {
+      active.notify()
+      await settle()
+    })
+    await macrotask(30)
+    expect(requests).toHaveLength(3)
+
+    await act(async () => {
+      gates[2]?.resolve(catalogPage([listedHolo], null))
+      await settle()
+    })
+    await eventually(() => expect(cardTitles()).toEqual([listedHolo.title]))
+    expect(host.textContent).not.toContain(marketplaceCopy.loadMoreError)
+    expect(requests).toHaveLength(3)
+  })
+
+  it('drops a stale paging failure without showing the next-page error', async () => {
+    installVisibleObserver()
+    const { requests, gates } = holdCatalog()
+    await renderMarketplace()
+    await macrotask(MARKETPLACE_SEARCH_DEBOUNCE_MS)
+    await eventually(() => expect(requests).toHaveLength(1))
+
+    await act(async () => {
+      gates[0]?.resolve(catalogPage([paperMeme], 'cursor-a'))
+      await settle()
+    })
+    await eventually(() => {
+      expect(cardTitles()).toEqual([paperMeme.title])
+      expect(requests.some((query) => query.includes('cursor=cursor-a'))).toBe(true)
+    })
+
+    await change(searchInput(), 'holo')
+    await macrotask(MARKETPLACE_SEARCH_DEBOUNCE_MS)
+    await eventually(() => {
+      expect(requests).toHaveLength(3)
+      expect(requests[2]).toContain('q=holo')
+      expect(requests[2]).not.toContain('cursor')
+    })
+
+    await act(async () => {
+      gates[1]?.resolve(catalogPage([], null, 503))
+      await settle()
+    })
+    expect(host.textContent).not.toContain(marketplaceCopy.loadMoreError)
+
+    const active = AsyncVisibleObserver.instances.find((observer) => !observer.disconnected)
+    if (!active) throw new Error('Missing connected observer')
+    await act(async () => {
+      active.notify()
+      await settle()
+    })
+    await macrotask(30)
+    expect(requests).toHaveLength(3)
+
+    await act(async () => {
+      gates[2]?.resolve(catalogPage([listedHolo], null))
+      await settle()
+    })
+    await eventually(() => expect(cardTitles()).toEqual([listedHolo.title]))
+    expect(host.textContent).not.toContain(marketplaceCopy.loadMoreError)
+    expect(requests).toHaveLength(3)
   })
 })
 
