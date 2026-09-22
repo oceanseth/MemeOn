@@ -431,6 +431,30 @@ export const InitialFailureOffersRetry: Story = {
   },
 }
 
+/** a resolved empty trade list is both empty lists, not the load-error alert or the skeleton */
+export const Empty: Story = {
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'GET /api/trades': () => ({ body: { trades: [] } }),
+      },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <TradesView />
+    </ConnectedStory>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByText(copy.lists.openEmpty)).toBeInTheDocument()
+    await expect(canvas.getByText(copy.lists.historyEmpty)).toBeInTheDocument()
+    await expect(canvas.queryByRole('alert')).toBeNull()
+    await expect(canvasElement.querySelector('[data-slot="skeleton-row"]')).toBeNull()
+  },
+}
+
 export const ProposalFailureStaysInComposer: Story = {
   loaders: [
     connectedLoader({
