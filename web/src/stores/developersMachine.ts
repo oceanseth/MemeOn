@@ -38,7 +38,7 @@ export type DevelopersEvent =
   | { type: 'REVOKE_CANCEL' }
   | { type: 'REVOKE_START' }
   | { type: 'REVOKE_FAIL'; err: string }
-  | { type: 'REVOKE_OK'; label: string }
+  | { type: 'REVOKE_OK'; message: string }
 
 /**
  * Developers API-key source of truth. loading → ready|empty|error; create/revoke stay on the list
@@ -133,7 +133,7 @@ export const developersMachine = setup({
         revokeBusy: false,
         revokeErr: null,
         err: null,
-        okMsg: ({ event }) => `Revoked ${event.label}.`,
+        okMsg: ({ event }) => event.message,
       }),
     },
   },

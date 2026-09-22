@@ -51,6 +51,9 @@ export const developersCopy = {
     body: (label: string) => ` (${label}). This disconnects every app using it.`,
     confirm: 'Revoke it',
   },
+  success: {
+    revoke: (label: string) => `Revoked ${label}.`,
+  },
   errors: {
     create: 'Couldn’t create that key. Try again.',
     copy: 'Couldn’t copy — select the key and copy it manually.',
