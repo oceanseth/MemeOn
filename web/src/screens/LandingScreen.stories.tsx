@@ -111,6 +111,7 @@ type Story = StoryObj<typeof meta>
 /** Everything below the hero, plus the two sign-in buttons; the hero's captions differ by width. */
 async function expectLandingBody(canvasElement: HTMLElement) {
   const canvas = within(canvasElement)
+  handlers.onLogin.mockClear()
   const hero = canvasElement.querySelector<HTMLElement>('[data-slot="landing-hero"]')!
   const cards = within(hero).getAllByRole('listitem')
   await expect(cards).toHaveLength(TIERS.length)
@@ -157,6 +158,7 @@ const phonePlay: Story['play'] = async ({ canvasElement }) => {
 export const Ready: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
+    handlers.onLogin.mockClear()
     await expect(canvas.getByText(copy.tier.reshares(0))).toBeVisible()
     await expect(canvas.getByText(copy.tier.reshares(25_000))).toBeVisible()
     await expect(canvas.getByText('Mythic Shiny')).toBeVisible()
