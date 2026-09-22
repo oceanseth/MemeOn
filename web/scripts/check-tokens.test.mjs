@@ -92,3 +92,19 @@ test('exits 2 when the stylesheet does not exist', () => {
   assert.equal(result.status, 2, result.stdout + result.stderr)
   assert.match(result.stderr, /does not exist/)
 })
+
+test('exits 2 when the stylesheet has no @theme static block', () => {
+  withTree(
+    '/* comments only */\n:root { --color-primary: oklch(0.7 0.1 340); }\n',
+    {
+      'atoms/button.tsx': 'export const B = () => <button className="bg-primary" />\n',
+    },
+    ({ status, output }) => {
+      assert.equal(status, 2, output)
+      assert.match(output, /check-tokens: no @theme static block in /)
+      assert.match(output, /index\.css/)
+      assert.doesNotMatch(output, /all reached/)
+      assert.doesNotMatch(output, /does not exist/)
+    },
+  )
+})
