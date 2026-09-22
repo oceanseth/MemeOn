@@ -120,7 +120,7 @@ export function useBinderScreen(): BinderScreenModel {
 
   const writeUrl = (next: { sortKey: SortKey; sortDir: SortDir; showPrivate: boolean }): void => {
     const out = new URLSearchParams(params)
-    if (next.sortKey === 'new') out.delete('sort')
+    if (next.sortKey === 'new' && next.sortDir === 'desc') out.delete('sort')
     else out.set('sort', next.sortKey)
     if (next.sortDir === 'desc') out.delete('dir')
     else out.set('dir', next.sortDir)
