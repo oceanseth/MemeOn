@@ -420,13 +420,23 @@ export const InitialFailureOffersRetry: Story = {
       <TradesView />
     </ConnectedStory>
   ),
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     const alert = await canvas.findByRole('alert')
     await expect(alert).toHaveTextContent(copy.loadError.title)
     await expect(alert).toHaveTextContent(copy.loadError.body)
     await expect(alert).not.toHaveTextContent('offline')
-    await expect(canvas.getByRole('button', { name: copy.retry })).toBeInTheDocument()
+    const requestsBeforeRetry = loaded.scenario.requests.filter(
+      (request: { path: string }) => request.path === '/api/trades',
+    ).length
+    await userEvent.click(canvas.getByRole('button', { name: copy.retry }))
+    await waitFor(() =>
+      expect(
+        loaded.scenario.requests.filter(
+          (request: { path: string }) => request.path === '/api/trades',
+        ),
+      ).toHaveLength(requestsBeforeRetry + 1),
+    )
     await expect(canvas.queryByText(copy.lists.openEmpty)).not.toBeInTheDocument()
   },
 }
