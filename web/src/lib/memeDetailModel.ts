@@ -450,7 +450,7 @@ export function buildMemeDetailModel({
     creatorName: meme.creatorName,
     ownerLinkProps: { to: `/u/${encodeURIComponent(meme.ownerId)}` },
     ownerName: meme.ownerName,
-    tagsLabel: meme.tags.length ? meme.tags.map((tag) => `#${tag}`).join(' ') : null,
+    tagsLabel: meme.tags.length ? copy.tags(meme.tags) : null,
     remixLinkProps: meme.remixOf ? { to: `/m/${meme.remixOf}` } : undefined,
     sourceLinkProps: meme.source
       ? { href: meme.source.url, target: '_blank', rel: 'noreferrer' }
@@ -465,7 +465,7 @@ export function buildMemeDetailModel({
     resharesWord: copy.stats.resharesWord(reshareCount),
     statsSrLabel: copy.stats.srLabel(views, reshareCount),
     valueSrLabel: copy.stats.valueSrLabel(meme.value),
-    holdingsLabel: myShares > 0 ? `${myShares}/100` : null,
+    holdingsLabel: myShares > 0 ? copy.provenance.holdings(myShares) : null,
     shareTitle: copy.share.title,
     shareCaption: copy.share.caption,
     previewLabel: copy.share.preview,
@@ -553,7 +553,7 @@ export function buildMemeDetailModel({
     capTableNote,
     capTable: context.positions.map((position) => ({
       userId: position.userId,
-      sharesLabel: `${position.shares}/100`,
+      sharesLabel: copy.capTable.shares(position.shares),
       label: holderLabel(position.userId, user?.sub ?? null, context.holderNames, holderNameCache),
     })),
     deleteDialog: buildConfirmDialogModel({

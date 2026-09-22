@@ -150,7 +150,7 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
     title: meme.title,
     tierKey: meme.tier.key,
     tierName: meme.tier.name,
-    tierLabel: `${meme.tier.name} · ${meme.tier.rarity}`,
+    tierLabel: copy.tierLabel(meme.tier.name, meme.tier.rarity),
     detailLinkProps: {
       to: `/m/${meme.id}`,
       'aria-label': copy.open(meme.title),

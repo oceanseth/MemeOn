@@ -91,11 +91,13 @@ export const memeDetailCopy = {
   spreading: {
     title: 'Where it’s spreading',
   },
+  tags: (tags: readonly string[]) => tags.map((tag) => `#${tag}`).join(' '),
   provenance: {
     mintedBy: 'minted by',
     ownedBy: 'owned by',
     remix: 'remix',
     youHold: 'you hold',
+    holdings: (shares: number) => `${shares}/100`,
     /** U+00B7 glue between minted / owned / tags / remix / source / holdings */
     separator: ' · ',
   },
@@ -132,6 +134,7 @@ export const memeDetailCopy = {
     /** who is selling and how much; `sellerName` null means the reader is the seller */
     note: (shares: number, sellerName: string | null) =>
       `${plural(shares, 'share')} of ${sellerName === null ? 'yours' : `${sellerName}’s`} ${shares === 1 ? 'is' : 'are'} listed`,
+    shares: (shares: number) => `${shares}/100`,
   },
   signedOut: {
     title: 'Own a piece of this',
