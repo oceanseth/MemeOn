@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
-import { main } from './sync-storybook-memes.mjs'
+import { ROLE_PICKERS, main, pickRole } from './sync-storybook-memes.mjs'
 
 const MEMES_URL = 'https://dev.memeon.ai/api/memes?limit=120'
 const FRAMES_URL = 'https://dev.memeon.ai/api/frames'
@@ -119,4 +119,64 @@ test('writes an empty frames object when the 200 frames array is empty', async (
   assert.equal(writes.length, 1)
   assert.equal(writes[0].target, outPath)
   assert.match(writes[0].text, /"frames": \{\}/)
+})
+
+const video = (over = {}) => ({
+  mediaType: 'video',
+  videoUrl: 'https://example/x.mp4',
+  reshares: 1,
+  ...over,
+})
+
+test('ROLE_PICKERS.video does not require imageUrl, and pickRole does not throw', () => {
+  for (const imageUrl of [undefined, null, 1]) {
+    const meme = video(imageUrl === undefined ? {} : { imageUrl })
+    assert.ok(ROLE_PICKERS.video(meme))
+    assert.equal(pickRole([meme], ROLE_PICKERS.video), meme)
+  }
+})
+
+test('a non-string imageUrl is skipped so a non-placecats string still wins', () => {
+  const posterless = video({ reshares: 50 })
+  const real = video({ reshares: 2, imageUrl: 'https://cdn.example/b.jpg' })
+  assert.equal(pickRole([real, posterless], ROLE_PICKERS.video), real)
+})
+
+test('string imageUrls prefer one that does not include placecats.com', () => {
+  const placecats = video({ reshares: 10, imageUrl: 'https://placecats.com/a.jpg' })
+  const nested = video({
+    reshares: 9,
+    imageUrl: 'https://cdn.example/nested/placecats.com/c.jpg',
+  })
+  const real = video({ reshares: 1, imageUrl: 'https://cdn.example/b.jpg' })
+  const empty = video({ reshares: 3, imageUrl: '' })
+  const cleanHigh = video({ reshares: 6, imageUrl: 'https://cdn.example/high.jpg' })
+  const cleanLow = video({ reshares: 2, imageUrl: 'https://cdn.example/low.jpg' })
+  assert.equal(pickRole([placecats, nested, real], ROLE_PICKERS.video), real)
+  assert.equal(pickRole([placecats, empty], ROLE_PICKERS.video), empty)
+  assert.equal(pickRole([cleanLow, cleanHigh], ROLE_PICKERS.video), cleanHigh)
+})
+
+test('when every string imageUrl is a placecat, fallback is matches[0]', () => {
+  const low = video({ reshares: 1, imageUrl: 'https://placecats.com/low.jpg' })
+  const high = video({ reshares: 8, imageUrl: 'https://placecats.com/high.jpg' })
+  const posterless = video({ reshares: 4, imageUrl: null })
+  assert.equal(pickRole([low, posterless, high], ROLE_PICKERS.video), high)
+})
+
+test('when no imageUrl is a string, fallback is matches[0]', () => {
+  const low = video({ reshares: 1, imageUrl: null })
+  const high = video({ reshares: 4 })
+  assert.equal(pickRole([low, high], ROLE_PICKERS.video), high)
+})
+
+test('no video match is null', () => {
+  assert.equal(pickRole([], ROLE_PICKERS.video), null)
+  assert.equal(
+    pickRole(
+      [{ mediaType: 'image', imageUrl: 'https://cdn.example/a.jpg', reshares: 1 }],
+      ROLE_PICKERS.video,
+    ),
+    null,
+  )
 })

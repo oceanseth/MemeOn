@@ -23,7 +23,7 @@ function readToken() {
   return token
 }
 
-const ROLE_PICKERS = {
+export const ROLE_PICKERS = {
   paper: (m) => m.tierKey === 'paper' && m.mediaType === 'image',
   silver: (m) => m.tierKey === 'silver' && m.mediaType === 'image' && m.title === 'pushrax',
   holo: (m) => m.tierKey === 'holo' && m.mediaType === 'image',
@@ -38,9 +38,13 @@ const ROLE_PICKERS = {
   video: (m) => m.mediaType === 'video' && m.videoUrl,
 }
 
-function pickRole(memes, pred) {
+export function pickRole(memes, pred) {
   const matches = memes.filter(pred).sort((a, b) => b.reshares - a.reshares)
-  return matches.find((m) => !m.imageUrl.includes('placecats.com')) ?? matches[0] ?? null
+  return (
+    matches.find((m) => typeof m.imageUrl === 'string' && !m.imageUrl.includes('placecats.com')) ??
+    matches[0] ??
+    null
+  )
 }
 
 function slim(m) {
