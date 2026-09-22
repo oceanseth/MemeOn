@@ -260,6 +260,13 @@ export const FromTheWire: Story = {
             '🎁 Starter pack opened: 10 shares of "Doomscroll Hamster", 10 shares of "Cat.exe Has Stopped", 10 shares of "Procrastination Sloth" and +20 braincells!',
         },
         {
+          ...unreadFriend,
+          id: 'wire-trade',
+          type: 'trade',
+          subjectSub: null,
+          message: '🔁 CyberSeth proposed a trade with you',
+        },
+        {
           ...unreadSale,
           id: 'wire-tier',
           type: 'tierup',
@@ -303,6 +310,9 @@ export const FromTheWire: Story = {
     await expect(row.querySelector('[data-slot="alert-mark"]')).toHaveTextContent('🎁')
     // clamped: the row stays a row no matter how long the sentence the server wrote is
     await expect(row.clientHeight).toBeLessThan(96)
+    // a trade alert names no meme and no person, and still opens the proposal it announces
+    const trade = canvas.getByText(/proposed a trade with you$/).closest('[data-slot="alert-row"]')
+    await expect(trade).toHaveAttribute('href', '/trade')
   },
 }
 

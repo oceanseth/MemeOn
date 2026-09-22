@@ -31,6 +31,17 @@ const TYPE_MARKS: Record<Alert['type'], IconName> = {
   friend: 'users',
 }
 
+/**
+ * Where a row goes. A trade alert carries no meme and no person: its subject is the proposal, and
+ * the Trades screen is the only place to read one and answer it.
+ */
+function alertTarget(alert: Alert): string | null {
+  if (alert.type === 'trade') return '/trade'
+  if (alert.memeId) return `/m/${alert.memeId}`
+  if (alert.subjectSub) return `/u/${encodeURIComponent(alert.subjectSub)}`
+  return null
+}
+
 /** Recency is the useful unit in a notification list; the exact stamp stays in the tooltip. */
 export function formatWhen(iso: string, now: number = Date.now()): string {
   const then = new Date(iso).getTime()
@@ -129,11 +140,7 @@ export function buildAlertsBellModel({
     unreadSummaryLabel: unreadCount > 0 ? copy.unreadSummary(unreadCount) : null,
     badgeProps: { 'aria-hidden': true },
     rows: alerts.slice(0, MAX_ROWS).map((alert) => {
-      const to = alert.memeId
-        ? `/m/${alert.memeId}`
-        : alert.subjectSub
-          ? `/u/${encodeURIComponent(alert.subjectSub)}`
-          : null
+      const to = alertTarget(alert)
       const unread = !alert.read || stillUnread.has(alert.id)
       const [, emoji = null] = LEADING_MARK.exec(alert.message) ?? []
       return {

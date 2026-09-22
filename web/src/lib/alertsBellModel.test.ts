@@ -47,6 +47,21 @@ describe('buildAlertsBellModel', () => {
     })
   })
 
+  it('sends a trade alert to the Trades screen, where the proposal can be answered', () => {
+    const onOpenChange = vi.fn()
+    /* the API writes trade alerts with neither a meme nor a person to link */
+    const proposed = {
+      ...unreadFriend,
+      type: 'trade' as const,
+      message: '🔁 pal proposed a trade with you',
+      subjectSub: null,
+    }
+    const model = buildAlertsBellModel({ alerts: [proposed], open: true, onOpenChange })
+    expect(model.rows[0]?.linkProps?.to).toBe('/trade')
+    model.rows[0]?.linkProps?.onClick?.({} as never)
+    expect(onOpenChange).toHaveBeenCalledWith(false)
+  })
+
   it('reports recency in the unit a notification list needs', () => {
     expect(formatWhen(FIXED_NOW, NOW + 20_000)).toBe(copy.justNow)
     expect(formatWhen(FIXED_NOW, NOW + 5 * 60_000)).toBe('5 minutes ago')
