@@ -2,12 +2,6 @@ import { sharedCopy } from './shared'
 
 /** Every string the Landing screen's engine supplies. Keys name the role of the string, not its content. */
 export const landingCopy = {
-  /** Meme titles lettered on the three tilted cards of the hero pile, by tier. */
-  heroCaptions: {
-    gold: 'one braincell left',
-    silver: 'this one',
-    prismatic: 'nothing here',
-  },
   hero: {
     title: 'Memes are the new trading cards',
     body: 'Mint the moment. Watch it spread. Trade the cards everyone sends each other anyway — every meme gets a share link whose foil frame levels up as it travels.',
@@ -38,9 +32,6 @@ export const landingCopy = {
   tier: {
     /** Ladder card middle line: "0 reshares" … "25,000 reshares". */
     reshares: (count: number) => `${count.toLocaleString()} reshares`,
-  },
-  tiers: {
-    title: 'The Virality Tiers',
   },
   film: {
     /** Section heading. Play/mute/aria stay on heroVideoCopy. */

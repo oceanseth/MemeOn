@@ -167,11 +167,6 @@ const CONTAINERS: ReadonlyArray<{
     spec: '24ch · an aside',
     className: 'max-w-aside',
   },
-  {
-    token: 'hero-pile',
-    spec: '405px · the landing hero pile',
-    className: 'max-w-hero-pile',
-  },
 ]
 
 /* The scale. `text-<step>` is a complete setting — size, line-height, letter-spacing and default
@@ -372,7 +367,6 @@ export function TokenSheet() {
         <p className="max-w-prose m-0 text-sm text-muted-foreground">max-w-prose</p>
         <p className="max-w-notice m-0 text-sm text-muted-foreground">max-w-notice</p>
         <p className="max-w-aside m-0 text-sm text-muted-foreground">max-w-aside</p>
-        <p className="max-w-hero-pile m-0 text-sm text-muted-foreground">max-w-hero-pile</p>
         <div
           className={cn(
             'max-h-(--dialog-max-h) max-w-(--dialog-max-w-sm) overflow-auto rounded-md',
@@ -416,10 +410,6 @@ export function TokenSheet() {
           <span className="h-6 rounded-xs bg-brand" />
           <span className="h-6 rounded-xs bg-brand" />
         </div>
-        <div className="grid grid-cols-(--grid-landing-tiers) gap-1">
-          <span className="h-6 rounded-xs bg-brand" />
-          <span className="h-6 rounded-xs bg-brand" />
-        </div>
         <div className="grid grid-cols-(--grid-token-swatch) gap-1">
           <span className="h-6 rounded-xs bg-brand" />
           <span className="h-6 rounded-xs bg-brand" />
@@ -457,27 +447,6 @@ export function TokenSheet() {
         >
           text-never-zoom
         </p>
-        <div className="relative aspect-(--aspect-hero-pile) max-w-hero-pile bg-muted">
-          <div className="absolute top-(--pile-1-top) w-(--pile-1-w) rounded-md material-card p-2 text-xs">
-            pile 1
-          </div>
-          <div
-            className={cn(
-              'absolute left-(--pile-2-left) w-(--pile-2-w) rotate-(--rotate-pile-2)',
-              'rounded-md material-card p-2 text-xs',
-            )}
-          >
-            pile 2
-          </div>
-          <div
-            className={cn(
-              'absolute top-(--pile-3-top) left-(--pile-3-left) w-(--pile-3-w)',
-              'rotate-(--rotate-pile-3) rounded-md material-card p-2 text-xs',
-            )}
-          >
-            pile 3
-          </div>
-        </div>
       </div>
 
       <Heading>Breakpoints</Heading>

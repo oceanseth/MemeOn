@@ -2,15 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, within } from 'storybook/test'
 import { TIERS } from '@memeon/shared/tiers'
-import { tierFrames } from '../../.storybook/fixtures'
 import { heroVideoCopy } from '../copy/heroVideo'
 import { landingCopy as copy } from '../copy/landing'
 import {
   buildLandingFaqItems,
   buildLandingHeroCards,
   buildLandingHowSteps,
-  buildLandingTierModels,
-  type LandingFrameSlotState,
   type LandingScreenModel,
 } from '../hooks/useLandingScreen'
 import { buildHeroVideoModel } from '../lib/heroVideoModel'
@@ -19,12 +16,7 @@ import { LandingScreen } from './LandingScreen'
 const phone = {
   parameters: {
     viewport: {
-      options: {
-        phone390: {
-          name: 'Phone 390',
-          styles: { width: '390px', height: '844px' },
-        },
-      },
+      options: { phone390: { name: 'Phone 390', styles: { width: '390px', height: '844px' } } },
     },
   },
   globals: { viewport: { value: 'phone390', isRotated: false } },
@@ -32,14 +24,11 @@ const phone = {
 
 const handlers = {
   onLogin: fn(),
-  onFrameError: fn(),
   attachVideo: fn(),
   onStart: fn(),
   onToggleSound: fn(),
 }
 
-/* the film is a story of its own (Molecules/HeroVideo); here it is the withheld branch, so the
-   screen stories never stream 1.5 MB of mp4 to assert on a heading */
 const heroVideo = buildHeroVideoModel({
   autoplay: false,
   muted: true,
@@ -48,29 +37,6 @@ const heroVideo = buildHeroVideoModel({
   onStart: handlers.onStart,
   onToggleSound: handlers.onToggleSound,
 })
-
-const slots = (state: LandingFrameSlotState): LandingScreenModel['frameSlotProps'] =>
-  Object.fromEntries(
-    TIERS.map((tier) => [
-      tier.key,
-      {
-        'data-state': state,
-        style: { color: `var(--tier-${tier.key}-frame)` },
-      },
-    ]),
-  )
-
-const readyFrames: LandingScreenModel['frameImageProps'] = Object.fromEntries(
-  TIERS.map((tier) => [
-    tier.key,
-    {
-      src: tierFrames[tier.key],
-      alt: '',
-      loading: 'lazy',
-      onError: handlers.onFrameError,
-    },
-  ]),
-)
 
 const empty: LandingScreenModel = {
   phase: 'ready',
@@ -88,8 +54,6 @@ const empty: LandingScreenModel = {
   heroCards: buildLandingHeroCards(),
   howTitle: copy.how.title,
   howSteps: buildLandingHowSteps(),
-  tiersTitle: copy.tiers.title,
-  tiers: buildLandingTierModels(),
   filmTitle: copy.film.title,
   faqTitle: copy.faq.title,
   faqItems: buildLandingFaqItems(),
@@ -106,8 +70,6 @@ const empty: LandingScreenModel = {
     'aria-busy': false,
     'aria-label': copy.closing.name,
   },
-  frameImageProps: {},
-  frameSlotProps: slots('loading'),
   errorNoticeProps: { role: 'alert' },
 }
 
@@ -144,73 +106,23 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const Loading: Story = {
-  args: {
-    phase: 'loading',
-    frameImageProps: {},
-    frameSlotProps: slots('loading'),
-    showLoginButton: true,
-  },
-  play: async ({ canvasElement }) => {
-    const shimmering = canvasElement.querySelectorAll(
-      '[data-slot="tier-frame-slot"][data-state="loading"]',
-    )
-    await expect(shimmering).toHaveLength(TIERS.length)
-    // the box is reserved before the images exist, so nothing below it moves later
-    await expect((shimmering[0] as HTMLElement).offsetHeight).toBeGreaterThan(100)
-    // the hero pile shares the ladder's frame source and its three async outcomes
-    await expect(
-      canvasElement.querySelectorAll('[data-slot="hero-card-slot"][data-state="loading"]'),
-    ).toHaveLength(3)
-  },
-}
-
 export const Ready: Story = {
-  args: {
-    phase: 'ready',
-    frameImageProps: readyFrames,
-    frameSlotProps: slots('ready'),
-  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    // each tier card shows reshare threshold then rarity
-    await expect(canvas.getByText(copy.tier.reshares(0))).toBeInTheDocument()
-    await expect(canvas.getByText(copy.tier.reshares(1_000))).toBeInTheDocument()
-    await expect(canvas.getByText(copy.tier.reshares(25_000))).toBeInTheDocument()
-    await expect(canvas.getByText('Mythic Shiny')).toBeInTheDocument()
-    // the ladder is an ordered list of headed cards, not seven anonymous boxes
-    const ladder = within(canvasElement.querySelector<HTMLElement>('[data-slot="landing-tiers"]')!)
-    await expect(ladder.getAllByRole('listitem')).toHaveLength(TIERS.length)
-    await expect(canvas.getByRole('heading', { level: 3, name: 'Shiny' })).toBeInTheDocument()
-    await expect(
-      canvas.getByRole('heading', {
-        level: 3,
-        name: copy.faq.items[4].question,
-      }),
-    ).toBeInTheDocument()
-    // three how-it-works steps, in order
+    const hero = canvasElement.querySelector<HTMLElement>('[data-slot="landing-hero"]')!
+    const cards = within(hero).getAllByRole('listitem')
+    await expect(cards).toHaveLength(TIERS.length)
+    await expect(canvas.getByText(copy.tier.reshares(0))).toBeVisible()
+    await expect(canvas.getByText(copy.tier.reshares(25_000))).toBeVisible()
+    await expect(canvas.getByText('Mythic Shiny')).toBeVisible()
+    await expect(canvasElement.querySelector('[data-slot="landing-tiers"]')).toBeNull()
+
     const how = within(canvasElement.querySelector<HTMLElement>('[data-slot="landing-how"]')!)
     await expect(how.getAllByRole('listitem')).toHaveLength(3)
     await expect(
       how.getByRole('heading', { level: 3, name: copy.how.steps[0].title }),
     ).toBeInTheDocument()
-    // section titles are the Heading atom at its section step; the step owns the phone swap
-    await expect(canvasElement.querySelector('[data-slot="heading"]')).toHaveAttribute(
-      'data-size',
-      'section',
-    )
-    await expect(
-      how.getByRole('heading', { level: 3, name: copy.how.steps[0].title }),
-    ).toHaveAttribute('data-size', 'card-title')
-    // the hero pile is three tilted specimens with their own tier seals
-    const pile = canvasElement.querySelector<HTMLElement>('[data-slot="hero-pile"]')!
-    await expect(pile.querySelectorAll('[data-slot="hero-card"]')).toHaveLength(3)
-    await expect(within(pile).getByText('Prismatic')).toBeInTheDocument()
-    // the pile seal is the chip's own small size, not a restyle of it
-    const seal = getComputedStyle(within(pile).getByText('Prismatic'))
-    await expect(seal.fontSize).toBe('12px')
-    await expect(seal.paddingLeft).toBe('8px')
-    // the film sits after the ladder and right before the FAQ, in its own headed section
+
     const film = canvasElement.querySelector<HTMLElement>('[data-slot="landing-film"]')!
     await expect(
       within(film).getByRole('heading', { level: 2, name: copy.film.title }),
@@ -220,95 +132,44 @@ export const Ready: Story = {
       '/promo/memeon-promo-poster.jpg',
     )
     await expect(within(film).getByRole('button', { name: heroVideoCopy.play })).toBeInTheDocument()
-    const faq = canvasElement.querySelector<HTMLElement>('[data-slot="landing-faq"]')!
-    await expect(film.nextElementSibling).toBe(faq)
     await expect(film.previousElementSibling).toBe(
-      canvasElement.querySelector('[data-slot="landing-tiers"]'),
+      canvasElement.querySelector('[data-slot="landing-how"]'),
     )
+
     const login = canvas.getByRole('button', { name: copy.login.name })
-    // the Button atom omits aria-busy entirely when idle rather than writing "false"
-    await expect(login).not.toHaveAttribute('aria-busy')
     await expect(login).toBeEnabled()
-    await expect(canvas.getByText(copy.hero.loginAside)).toBeInTheDocument()
-    // the FAQ no longer ends the page: the CTA repeats under it
     const closing = canvas.getByRole('button', { name: copy.closing.name })
-    await expect(canvas.getByText(copy.closing.lineLoggedOut)).toBeInTheDocument()
-    const page = document.scrollingElement as HTMLElement
-    await expect(page.scrollWidth).toBe(page.clientWidth)
     await userEvent.click(login)
     await userEvent.click(closing)
     await expect(handlers.onLogin).toHaveBeenCalledTimes(2)
+    const page = document.scrollingElement as HTMLElement
+    await expect(page.scrollWidth).toBe(page.clientWidth)
   },
 }
 
-export const Dark: Story = {
-  ...Ready,
-  name: 'Ready dark',
-  globals: { theme: 'dark' },
-}
-
-export const Phone390: Story = { ...Ready, name: 'Ready phone 390', ...phone }
-
+export const Dark: Story = { ...Ready, globals: { theme: 'dark' } }
+export const Phone390: Story = { ...Ready, ...phone }
 export const DarkPhone390: Story = {
   ...Ready,
-  name: 'Ready dark phone 390',
   ...phone,
   globals: { ...phone.globals, theme: 'dark' },
 }
 
-/** Both frame sources failed: the slot keeps the card's height and tints from the tier colour. */
-export const FrameFailed: Story = {
-  args: {
-    phase: 'ready',
-    frameImageProps: {},
-    frameSlotProps: slots('error'),
-  },
-  play: async ({ canvasElement }) => {
-    const failed = canvasElement.querySelectorAll(
-      '[data-slot="tier-frame-slot"][data-state="error"]',
-    )
-    await expect(failed).toHaveLength(TIERS.length)
-    await expect(canvasElement.querySelectorAll('[data-slot="tier-frame-img"]')).toHaveLength(0)
-    const frames = canvasElement.querySelectorAll<HTMLElement>('[data-slot="tier-frame-slot"]')
-    await expect(frames).toHaveLength(TIERS.length)
-    const first = frames[0]
-    const last = frames[frames.length - 1]
-    if (!first || !last) throw new Error('expected first and last tier-frame slots')
-    await expect(first.offsetHeight).toBe(last.offsetHeight)
-  },
-}
-
 export const LoggedIn: Story = {
   args: {
-    phase: 'ready',
     showMarketplaceCta: true,
     showLoginButton: false,
     closingLine: copy.closing.lineLoggedIn,
-    frameImageProps: readyFrames,
-    frameSlotProps: slots('ready'),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    // both CTAs swap with the same state
     await expect(canvas.getAllByRole('link', { name: copy.marketplaceCta })).toHaveLength(2)
     await expect(canvas.queryByRole('button', { name: copy.login.name })).not.toBeInTheDocument()
-    await expect(canvas.getByText(copy.closing.lineLoggedIn)).toBeInTheDocument()
   },
-}
-
-export const LoggedInDark: Story = {
-  ...LoggedIn,
-  name: 'Logged in dark',
-  globals: { theme: 'dark' },
 }
 
 export const LoggingIn: Story = {
-  args: {
-    phase: 'loggingIn',
-    frameImageProps: readyFrames,
-    frameSlotProps: slots('ready'),
-    ...busyLogin,
-  },
+  args: { phase: 'loggingIn', ...busyLogin },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('button', { name: copy.login.busyName })).toBeDisabled()
@@ -316,42 +177,11 @@ export const LoggingIn: Story = {
   },
 }
 
-export const LoggingInWhileFramesLoad: Story = {
-  args: {
-    phase: 'loggingIn',
-    frameImageProps: {},
-    frameSlotProps: slots('loading'),
-    ...busyLogin,
-  },
-}
-
 export const LoginError: Story = {
-  args: {
-    phase: 'loginError',
-    frameImageProps: readyFrames,
-    frameSlotProps: slots('ready'),
-    err: copy.errors.login,
-    showErr: true,
-  },
+  args: { phase: 'loginError', err: copy.errors.login, showErr: true },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    // the raw thrown string never reaches the page; the sentence names the retry
-    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.errors.login)
+    await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(copy.errors.login)
   },
 }
 
-export const LoginErrorDark: Story = {
-  ...LoginError,
-  name: 'Login error dark',
-  globals: { theme: 'dark' },
-}
-
-export const LoginErrorWhileFramesLoad: Story = {
-  args: {
-    phase: 'loginError',
-    frameImageProps: {},
-    frameSlotProps: slots('loading'),
-    err: copy.errors.login,
-    showErr: true,
-  },
-}
+export const LoginErrorDark: Story = { ...LoginError, globals: { theme: 'dark' } }

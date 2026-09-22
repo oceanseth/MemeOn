@@ -18,7 +18,7 @@ or moving a component. `pnpm --filter web run check-tiers` runs recursively and 
 |---|---|---|---|
 | **Atoms** | `src/atoms/` | `Alert`, `AlertDialog`, `Avatar`, `Badge`, `Button`, `Card`, `Checkbox`, `Collapsible`, `Dialog`, `DropdownMenu`, `Empty` (+ `PageState`), `Field`, `FileDrop`, `FoilCard` (+ `FoilMedia`), `Heading`, `Icon`, `InlineLink`, `Input`, `InputGroup`, `Item`, `Label`, `LiveRegion`, `PageContainer`, `PageHead`, `Popover`, `PortalAnchor`, `Progress`, `Select`, `Separator`, `Skeleton`, `Spinner`, `Tabs`, `Textarea`, `TierChip`, `TierSeal`, `Toggle`, `ToggleGroup`, `Toolbar` | No |
 | **Molecules** | `src/molecules/` | `AlertsBell`, `AvatarMenu`, `ConfirmDialog`, `DialogFrame`, `FaqItem`, `GiftDialog`, `HeroVideo`, `LegalDocument`, `QuestBar`, `SideSummary`, `SortChips`, `ThemeControl`, `MemeCard`, `TradeCard` (`give`/`get`, not `offer`/`ask`), `CreateMemeGeneratePanel` (generate+video share), `CreateMemeRemixPanel`, `CreateMemeGiphyPanel`, `CreateMemeUrlPanel`, `CreateMemeUploadPanel` | No |
-| **Organisms** | `src/organisms/` | `AppShell` (slots `nav` / `headerEnd` / `bottomNav`), `MemeplexPanel`, `ProfileShelf`, the `nav-item.tsx` links `NavPill` / `TabItem` / `FooterLink`, `LandingHero`, `LandingHow`, `LandingTiers`, `LandingFaq`, `LandingClosing` | No |
+| **Organisms** | `src/organisms/` | `AppShell` (slots `nav` / `headerEnd` / `bottomNav`), `MemeplexPanel`, `ProfileShelf`, the `nav-item.tsx` links `NavPill` / `TabItem` / `FooterLink`, `LandingHero`, `LandingHow`, `LandingFaq`, `LandingClosing` | No |
 | **Screens** | `src/screens/` | One model object per route/chrome surface | No |
 | **Views** | `src/views/` | Engine wired to screen; plain component; hooks subscribe via `useSyncExternalStore`; `AppView` is the route switch | Via hooks |
 
@@ -73,7 +73,7 @@ main.tsx ── StoresProvider + AuthRuntime + BrowserRouter (+ PopmeltProvider 
       │   ├─ AlertsBell
       │   └─ AvatarMenu
       └─ Routes
-         ├─ LandingView ── useLandingScreen (+ useHeroVideo) → LandingScreen ── LandingHero · LandingHow · LandingTiers · HeroVideo · LandingFaq · LandingClosing
+         ├─ LandingView ── useLandingScreen (+ useHeroVideo) → LandingScreen ── LandingHero · LandingHow · HeroVideo · LandingFaq · LandingClosing
          ├─ AuthCallbackView ── useAuthCallbackScreen → AuthStatusScreen
          ├─ MobileAuthForwardView ── useMobileAuthForwardScreen → AuthStatusScreen
          ├─ CreateMemeView ── useCreateMemeScreen → CreateMemeScreen ── CreateMemeGeneratePanel · CreateMemeRemixPanel · CreateMemeGiphyPanel · CreateMemeUrlPanel · CreateMemeUploadPanel · FoilCard
@@ -154,7 +154,7 @@ touch four.
 | Pause off-screen foil / start card video | `lib/cardMedia.ts` — shared IntersectionObserver (rootMargin: '200px'), `video.play()`/pause(), inline `--glow-play-state`. `atoms/foil.css` only declares and reads the property. `MemeCard` molecule (`molecules/meme-card.tsx`) only applies `model.cardRef` (`cardMediaRef`). Play-on-screen is the Play videos preference (account menu / Settings), not a button on the card. Do not construct an observer in the card; do not wrap it in `useMountEffect` or a view hook. Leave marketplace sentinel in `useMarketplaceCatalog.ts` (rootMargin: '900px'). Do not merge `useHeroVideo`. | `pnpm --filter web run check-card-media`. Keep `applyCardVisibility` as the testable unit (`lib/cardMedia.runtime.test.tsx`). Stories `Video` and `VideoReducedMotion` stay under Molecules/MemeCard. |
 | Add a state a screen can be in | the machine in `stores/`, the derived flags in the hook, a **Screen story** for the new state first | the view story that reaches it through the connected scenario |
 | Add a new component | its tier folder, pure props → markup, `data-slot` on the root, a sibling `*.stories.tsx` | `pnpm --filter web run check-tiers` |
-| Add a shadcn / registry primitive | from web/, `pnpm dlx shadcn add <item>` (never init, never npx) | `scripts/shadcn-postadd.mjs` (`node scripts/shadcn-postadd.mjs`). Registry files import stock cn; this app's merge is `lib/cn.ts` (`createCn` with the material class group and containers `card-narrow`, `prose`, `notice`, `aside`, `hero-pile`). A second copy typechecks and skips the merge. The CLI also emits a lucide-react import because `components.json` still sets iconLibrary to lucide; do not flip iconLibrary without a throwaway-branch `pnpm dlx shadcn add` proof. Never add lucide-react to a workspace package.json; Popmelt's toolbar icons go through `popmeltLucideStub.ts`. `pnpm --filter web run test:shadcn-postadd` fails any `web/src` file that still has that import, and fails if the package is listed in a workspace manifest or the lockfile. |
+| Add a shadcn / registry primitive | from web/, `pnpm dlx shadcn add <item>` (never init, never npx) | `scripts/shadcn-postadd.mjs` (`node scripts/shadcn-postadd.mjs`). Registry files import stock cn; this app's merge is `lib/cn.ts` (`createCn` with the material class group and containers `card-narrow`, `prose`, `notice`, `aside`). A second copy typechecks and skips the merge. The CLI also emits a lucide-react import because `components.json` still sets iconLibrary to lucide; do not flip iconLibrary without a throwaway-branch `pnpm dlx shadcn add` proof. Never add lucide-react to a workspace package.json; Popmelt's toolbar icons go through `popmeltLucideStub.ts`. `pnpm --filter web run test:shadcn-postadd` fails any `web/src` file that still has that import, and fails if the package is listed in a workspace manifest or the lockfile. |
 | Add a route | a `use*Screen` hook + `*Screen` + `*View` (+ stories), then a `<Route>` in `views/AppView.tsx` (`lazy()` if it is behind `RequireAuth`) | `useDocumentTitle` in the view |
 | Need a mount-time side effect (subscribe, title, retain) | `hooks/useMountEffect.ts` — never `useEffect` / `useLayoutEffect` (`memeon/no-use-effect`) | derived state, an event handler, a query, or a keyed remount |
 | Persist a value across a route change (OAuth, invite, Discord link, remix-video resume) | `lib/sessionBus.ts` | the caller that reads or writes that key |
@@ -239,7 +239,7 @@ Probe these instead of a class name or copy string:
 | Leaderboard | `podium-head`, `leaderboard`, `your-rank`, `person-row` |
 | Invite | `invite-hero` |
 | Settings | `settings-sections`, `settings-account`, `settings-appearance`, `settings-connections`, `connection-row` (`data-linked`) |
-| Landing | `landing-hero`, `hero-pile`, `hero-card`, `hero-card-slot`, `hero-card-art`, `landing-how`, `landing-tiers`, `tier-card`, `tier-frame-slot`, `tier-frame-img`, `landing-film`, `landing-faq`, `landing-closing` |
+| Landing | `landing-hero`, `hero-cards`, `hero-card`, `landing-how`, `landing-film`, `landing-faq`, `landing-closing` |
 | Create Meme | `mint-modes`, `create-meme-generate-panel`, `create-meme-remix-panel`, `create-meme-giphy-panel`, `create-meme-url-panel`, `create-meme-upload-panel`, `approval-card`, `busy-card`, `preview-placeholder` |
 | Legal (Privacy, Terms) | `legal-toc`, `legal-section` |
 | Auth (`screens/AuthStatusScreen.tsx`) | `auth-status` (`data-phase`), `auth-ring`, `auth-timeout`, `auth-web-fallback` |
@@ -266,7 +266,7 @@ Probe these instead of a class name or copy string:
 - Presentation is Tailwind utilities on the component, in `@layer utilities`. Only effects no
   utility can express get a co-located `.css` file — today the card foil (`atoms/foil.css`,
   side-effect owned by `atoms/foil-frame.tsx`), the spinner turn (`atoms/spinner.css`), the landing
-  frame-slot shimmer (`screens/LandingScreen.css`) and the shell's `--topbar-h` rule
+  shell's `--topbar-h` rule
   (`organisms/app-shell.css`) — and each restates the layer order at the top.
   The cascade contract itself is the header comment of `src/index.css`.
 - Shared code (`shared/tiers.ts`) is imported as `@memeon/shared/tiers`, never by relative path.

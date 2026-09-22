@@ -230,7 +230,6 @@
   --container-prose: 65ch;
   --container-notice: 60ch;
   --container-aside: 24ch;
-  --container-hero-pile: 405px;
 
   /* The widths this app branches on: six named cuts, no literals. Tailwind writes `bp:` as
      (width >= N) and `max-bp:` as (width < N), so a `max-width: N` breakpoint is exact at N + 1
@@ -321,27 +320,16 @@
     --grid-giphy: repeat(auto-fill, minmax(128px, 1fr));
     --grid-quest: repeat(auto-fill, minmax(168px, 1fr));
     --grid-memeplex: repeat(auto-fill, minmax(152px, 1fr));
-    --grid-landing-tiers: repeat(auto-fill, minmax(136px, 1fr));
     --grid-token-swatch: repeat(auto-fill, minmax(132px, 1fr));
     --grid-token-spec: 300px 1fr;
-    --grid-hero: minmax(0, 570px) minmax(0, 405px);
+    --grid-hero: minmax(0, 5fr) minmax(560px, 7fr);
     --grid-detail: minmax(0, 410px) minmax(0, 1fr);
     --grid-create: minmax(0, 555fr) minmax(0, 522fr);
     --grid-trade: 1fr auto 1fr;
     --grid-card-action: 1fr auto;
     --grid-card-rows: auto auto;
-    /* Hero pile / flex. Consumed as `aspect-(--aspect-hero-pile)` / `rotate-(--rotate-pile-2)`. */
-    --aspect-hero-pile: 405 / 281;
+    /* Developers' API key cards share the row without forcing equal widths. */
     --flex-key-card: 1 1 240px;
-    --rotate-pile-2: -8deg;
-    --rotate-pile-3: 10deg;
-    --pile-1-top: 19%;
-    --pile-1-w: 38.2%;
-    --pile-2-left: 26.3%;
-    --pile-2-w: 41.8%;
-    --pile-3-left: 55.9%;
-    --pile-3-top: 23.3%;
-    --pile-3-w: 35.4%;
     /* Unbounded's heading weight, kept out of `@theme` so it cannot shadow the `font-display`
        family utility. 400: its stems already match Onest 600. The wordmark and the landing hero
        are the two poster moments and wear 500 by hand. */

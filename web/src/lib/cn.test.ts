@@ -20,12 +20,9 @@ describe('cn', () => {
     expect(cn('max-w-notice', 'max-w-full')).toBe('max-w-full')
     expect(cn('max-w-full', 'max-w-aside')).toBe('max-w-aside')
     expect(cn('max-w-aside', 'max-w-full')).toBe('max-w-full')
-    expect(cn('max-w-full', 'max-w-hero-pile')).toBe('max-w-hero-pile')
-    expect(cn('max-w-hero-pile', 'max-w-full')).toBe('max-w-full')
     expect(cn('max-w-prose', 'max-w-notice')).toBe('max-w-notice')
     expect(cn('max-w-notice', 'max-w-aside')).toBe('max-w-aside')
-    expect(cn('max-w-aside', 'max-w-hero-pile')).toBe('max-w-hero-pile')
-    expect(cn('max-w-hero-pile', 'max-w-prose')).toBe('max-w-prose')
+    expect(cn('max-w-aside', 'max-w-prose')).toBe('max-w-prose')
   })
 
   /* lengths are grid steps now, so cn's own validators own every one of them; these are the
