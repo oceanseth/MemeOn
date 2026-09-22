@@ -66,14 +66,17 @@ const preview: Preview = {
     const originalClipboard = navigator.clipboard
     const originalShare = navigator.share
     const OriginalIntersectionObserver = window.IntersectionObserver
+    const storyClipboard = {
+      // like Chromium, a detached call (`const w = clipboard.writeText; w(text)`) rejects
+      async writeText(this: unknown, value: string) {
+        if (this !== storyClipboard) throw new TypeError('Illegal invocation')
+        const { getActiveScenario } = await import('./connected-scenario')
+        getActiveScenario().copied.push(value)
+      },
+    }
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
-      value: {
-        writeText: async (value: string) => {
-          const { getActiveScenario } = await import('./connected-scenario')
-          getActiveScenario().copied.push(value)
-        },
-      },
+      value: storyClipboard,
     })
     Object.defineProperty(navigator, 'share', {
       configurable: true,

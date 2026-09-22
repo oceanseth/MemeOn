@@ -55,3 +55,25 @@ export function stubSessionStorage(): void {
     },
   })
 }
+
+/** Like Chromium, a detached call (`const w = clipboard.writeText; w(text)`) rejects with Illegal invocation. */
+export function stubClipboardWrite(writeText: (text: string) => Promise<void>): void {
+  const clipboard = {
+    writeText(this: unknown, text: string) {
+      if (this !== clipboard) return Promise.reject(new TypeError('Illegal invocation'))
+      return writeText(text)
+    },
+  }
+  try {
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      writable: true,
+      value: clipboard,
+    })
+  } catch {
+    vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(function (this: unknown, text) {
+      if (this !== navigator.clipboard) return Promise.reject(new TypeError('Illegal invocation'))
+      return writeText(text)
+    })
+  }
+}
