@@ -227,9 +227,15 @@ for (const token of declared) {
 const drift = Object.entries(registered).flatMap(([namespace, names]) => {
   const actual = [...new Set(inTheme[namespace] ?? [])].sort()
   const missing = names.filter((name) => !actual.includes(name))
-  return missing.length
-    ? [`  cn.ts registers ${namespace}: ${missing.join(', ')} — not in @theme`]
-    : []
+  const unregistered = actual.filter((name) => !names.includes(name))
+  return [
+    ...(missing.length
+      ? [`  cn.ts registers ${namespace}: ${missing.join(', ')} — not in @theme`]
+      : []),
+    ...(unregistered.length
+      ? [`  @theme declares ${namespace}: ${unregistered.join(', ')} — not registered in cn.ts`]
+      : []),
+  ]
 })
 
 const short = relative(process.cwd(), CSS_PATH)
