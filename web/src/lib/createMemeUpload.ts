@@ -3,7 +3,9 @@ import { post } from './api'
 
 const copy = createMemeCopy
 
-/** Signed PUT upload for create-meme image/video blobs; throws copy.errors.uploadRejected on failure. */
+export const UPLOAD_TIMEOUT_MS = 60_000
+
+/** Signed PUT for create-meme blobs. HTTP failure throws uploadRejected; a stalled PUT aborts. */
 export async function uploadCreateMemeFile(
   file: File | Blob,
   contentType?: string,
@@ -13,12 +15,19 @@ export async function uploadCreateMemeFile(
     uploadUrl: string
     publicUrl: string
   }>('/api/uploads', { contentType: type, size: file.size })
-  const put = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: { 'content-type': type },
-    body: file,
-  })
-  // the message is what the alert shows, so it is copy rather than a developer note
-  if (!put.ok) throw new Error(copy.errors.uploadRejected(put.status))
-  return publicUrl
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), UPLOAD_TIMEOUT_MS)
+  try {
+    const put = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: { 'content-type': type },
+      body: file,
+      signal: controller.signal,
+    })
+    // the message is what the alert shows, so it is copy rather than a developer note
+    if (!put.ok) throw new Error(copy.errors.uploadRejected(put.status))
+    return publicUrl
+  } finally {
+    clearTimeout(timer)
+  }
 }
