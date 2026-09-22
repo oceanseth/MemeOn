@@ -122,7 +122,17 @@ export const LoadFailed: Story = {
 export const Loading: Story = { args: { model: build({ plex: null }) } }
 /** Two columns at 390px: the relatives grid no longer eats the page before the cap table. */
 export const NarrowFamily: Story = {
-  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  parameters: {
+    viewport: {
+      options: {
+        phone390: {
+          name: 'Phone 390',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
+    },
+  },
+  globals: { viewport: { value: 'phone390', isRotated: false } },
   decorators: [
     (Story) => (
       <div style={{ maxWidth: 358 }}>
