@@ -220,7 +220,7 @@ test('an allowlist entry without a reason is itself an error', () => {
     },
     ({ status, output }) => {
       assert.equal(status, 2, output)
-      assert.match(output, /needs a `name` and a `why`/)
+      assert.match(output, /needs a `name`, a `file`, and a `why`/)
     },
   )
 })
@@ -234,6 +234,23 @@ test('a docs allowlist without an allow array is itself an error', () => {
       assert.doesNotMatch(output, /is not iterable/)
     })
   }
+})
+
+test('an allowlist entry without a file is itself an error', () => {
+  withRepo(
+    {
+      'web/scripts/docs-allowlist.json': JSON.stringify({
+        allow: [{ name: 'npm run vanished', why: 'unscoped exception' }],
+      }),
+      'README.md': 'Then `npm run vanished`.\n',
+    },
+    ({ status, output }) => {
+      assert.equal(status, 2, output)
+      assert.match(output, /needs a `name`, a `file`, and a `why`/)
+      assert.doesNotMatch(output, /this workspace is pnpm/)
+      assert.doesNotMatch(output, /unused allowlist/)
+    },
+  )
 })
 
 test('nested docs are scanned, not skipped by a one-level glob', () => {
