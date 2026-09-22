@@ -82,6 +82,28 @@ test('fails when cn.ts registers a namespace value @theme no longer declares', (
   )
 })
 
+test('fails when @theme declares a namespace value cn.ts does not register', () => {
+  withTree(
+    theme(
+      '--color-primary: oklch(0.7 0.1 340);',
+      '--container-card-narrow: 220px;',
+      '--container-search: 40rem;',
+    ),
+    {
+      'atoms/button.tsx':
+        'export const B = () => <button className="bg-primary max-w-card-narrow max-w-search" />\n',
+      'lib/cn.ts':
+        "export const cn = createCn({ extend: { theme: { container: ['card-narrow'] } } })\n",
+    },
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /@theme declares container: search/)
+      assert.doesNotMatch(output, /cn\.ts registers container:/)
+      assert.doesNotMatch(output, /never reached/)
+    },
+  )
+})
+
 test('exits 2 when the stylesheet does not exist', () => {
   const root = mkdtempSync(join(tmpdir(), 'memeon-token-check-absent-'))
   const missing = join(root, 'index.css')
