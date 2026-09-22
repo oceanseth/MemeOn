@@ -24,7 +24,7 @@ export const termsCopy = {
     heading: 'Your content',
     bodyBeforeLink:
       'You keep whatever rights you hold in memes you mint or upload, and you grant MemeOn a license to host, display, resize, and composite them (including into share-card images) to operate the service. Only mint content you have the right to use. Memes generated through Masky are also subject to',
-    maskyTerms: { text: 'Masky’s terms', href: 'https://masky.ai' },
+    maskyTerms: { text: 'Masky’s terms', href: 'https://masky.ai/user-agreement' },
     bodyAfterLink: '.',
   },
   claimsAndTakedowns: {
@@ -47,7 +47,7 @@ export const termsCopy = {
   thirdPartyServices: {
     heading: 'Third-party services',
     signInLead: 'Sign-in and AI generation are provided by Masky under',
-    maskyTerms: { text: 'their terms', href: 'https://masky.ai' },
+    maskyTerms: { text: 'their terms', href: 'https://masky.ai/user-agreement' },
     signInTail: '; generation spends your Masky credits. The Discord integration is subject to',
     discordTerms: {
       text: 'Discord’s terms',
