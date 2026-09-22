@@ -1,4 +1,4 @@
-import { braincells } from '../lib/braincells'
+import { humanize } from '../lib/humanize'
 import { plural, pluralWord } from '../lib/plural'
 import { appShellCopy } from './appShell'
 import { sharedCopy } from './shared'
@@ -23,9 +23,9 @@ export const leaderboardCopy = {
       `Rank ${rank}, ${name}, ${plural(count, 'braincell')}`,
     /** the signed-in player's own row leads with "You", the rest of the label lower-cased */
     youLabel: (label: string) => `You, ${label.charAt(0).toLowerCase()}${label.slice(1)}`,
-    collection: (size: number) => `${size} ${pluralWord(size, 'meme')}`,
-    portfolio: (value: number) => `portfolio ${braincells(value)}`,
-    braincells: (count: number) => braincells(count),
+    collection: (size: number) => `${humanize(size)} ${pluralWord(size, 'meme')}`,
+    portfolio: (value: number) => `portfolio ${humanize(value)}`,
+    braincells: (count: number) => humanize(count),
     /** the pinned marker beside the reader's own name */
     you: 'you',
   },

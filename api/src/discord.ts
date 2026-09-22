@@ -7,6 +7,7 @@ import * as db from './db'
 import * as vectors from './vectors'
 import { env } from './env'
 import { getJsonSecret, getSecret } from './ssm'
+import { humanize } from '@memeon/shared/humanize'
 import { memeValue, tierFor } from '@memeon/shared/tiers'
 import type { Meme } from './types'
 
@@ -188,7 +189,7 @@ async function binderAndFriendSets(
 export function memeChoiceLabel(m: Meme & { rank: number }): string {
   const tier = tierFor(m.reshares)
   const badge = m.rank === 0 ? '💼 ' : m.rank === 1 ? '🤝 ' : ''
-  const label = `${badge}${m.title} · ${tier.name} · 🔁${m.reshares} · 🧠${memeValue(m.reshares)}`
+  const label = `${badge}${m.title} · ${tier.name} · 🔁${humanize(m.reshares)} · 🧠${humanize(memeValue(m.reshares))}`
   return label.slice(0, 100) // discord choice-name cap
 }
 

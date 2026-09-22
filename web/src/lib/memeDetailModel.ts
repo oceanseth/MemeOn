@@ -4,6 +4,7 @@ import type { IconName } from '@/atoms/icon'
 import { memeDetailCopy } from '../copy/memeDetail'
 import { buildConfirmDialogModel, type ConfirmDialogModel } from './confirmDialogModel'
 import { buildMemeCardModel, type MemeCardModel } from './memeCardModel'
+import { humanize } from './humanize'
 import { memeReshareCount, memeViewCount } from './memeMetrics'
 import { buildMemeplexPanelModel, type MemeplexPanelModel } from './memeplexPanelModel'
 import type { Me, Meme } from './types'
@@ -451,9 +452,9 @@ export function buildMemeDetailModel({
     sourceLabel: meme.source
       ? copy.hero.source(meme.source.provider, meme.source.author)
       : undefined,
-    viewsLabel: views.toLocaleString(),
-    resharesLabel: reshareCount.toLocaleString(),
-    valueLabel: meme.value.toLocaleString(),
+    viewsLabel: humanize(views),
+    resharesLabel: humanize(reshareCount),
+    valueLabel: humanize(meme.value),
     viewsWord: copy.stats.viewsWord(views),
     resharesWord: copy.stats.resharesWord(reshareCount),
     statsSrLabel: copy.stats.srLabel(views, reshareCount),
@@ -526,7 +527,7 @@ export function buildMemeDetailModel({
     sources: (context.stats?.sources ?? []).map((source) => ({
       id: source.source,
       label: source.source,
-      viewsLabel: source.views.toLocaleString(),
+      viewsLabel: humanize(source.views),
       linkProps: source.url ? { href: source.url, target: '_blank', rel: 'noreferrer' } : undefined,
     })),
     plex: buildMemeplexPanelModel({

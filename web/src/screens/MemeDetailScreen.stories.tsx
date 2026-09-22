@@ -5,6 +5,7 @@ import { listedHolo, memeplexFamily, paperMeme } from '../../.storybook/fixtures
 import { memeDetailCopy as copy } from '../copy/memeDetail'
 import { memeplexPanelCopy } from '../copy/memeplexPanel'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
+import { humanize } from '../lib/humanize'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { memeReshareCount, memeViewCount } from '../lib/memeMetrics'
 import { buildMemeplexPanelModel } from '../lib/memeplexPanelModel'
@@ -614,7 +615,7 @@ export const SingleReshare: Story = {
         ...detail().card,
         viewsLabel: '1',
         resharesLabel: '1',
-        statsA11yLabel: '1 views, 1 reshares',
+        statsA11yLabel: '1 view, 1 reshare',
       },
     },
   },
@@ -629,13 +630,13 @@ export const TierLadderMaxed: Story = {
       tierName: 'Shiny',
       tierLabel: 'Shiny · Mythic Shiny',
       tierLadder: buildTierLadderModel('shiny', 41_000),
-      viewsLabel: '41,000',
+      viewsLabel: humanize(41_000),
       statsSrLabel: copy.stats.srLabel(41_000, 900),
       card: {
         ...detail().card,
         tierKey: 'shiny',
         tierLabel: 'Shiny · Mythic Shiny',
-        viewsLabel: '41,000',
+        viewsLabel: humanize(41_000),
       },
     },
   },
@@ -656,18 +657,18 @@ export const CapTableUnresolved: Story = {
 
 /** Spread sources card: where the link actually travelled. */
 const sources = [
-  { id: 'group chat', label: 'group chat', viewsLabel: '8,600' },
+  { id: 'group chat', label: 'group chat', viewsLabel: humanize(8_600) },
   {
     id: 'the void subreddit',
     label: 'the void subreddit',
-    viewsLabel: '5,920',
+    viewsLabel: humanize(5_920),
     linkProps: {
       href: 'https://example.com/r/void',
       target: '_blank' as const,
       rel: 'noreferrer' as const,
     },
   },
-  { id: 'work discord', label: 'work discord', viewsLabel: '4,380' },
+  { id: 'work discord', label: 'work discord', viewsLabel: humanize(4_380) },
 ]
 
 /** Everything a holder of all 100 shares can do: list, make private, delete forever. */

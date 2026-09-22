@@ -7,6 +7,7 @@ import { setInviteFrom } from '../lib/sessionBus'
 import { inviteMachine, type InviteData, type InvitePhase } from '../stores/inviteMachine'
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
+import { humanize } from '../lib/humanize'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import type { ButtonHTMLAttributes } from 'react'
 import type { IconName } from '@/atoms/icon'
@@ -99,19 +100,19 @@ export function buildInviteStats(inviter: {
     {
       id: 'binder',
       icon: 'book',
-      value: inviter.collectionSize.toLocaleString(),
+      value: humanize(inviter.collectionSize),
       label: stats.binder.label,
     },
     {
       id: 'braincells',
       icon: 'brain',
-      value: inviter.portfolioValue.toLocaleString(),
+      value: humanize(inviter.portfolioValue),
       label: stats.braincells.label(inviter.portfolioValue),
     },
     {
       id: 'followers',
       icon: 'star',
-      value: inviter.followers.toLocaleString(),
+      value: humanize(inviter.followers),
       label: stats.followers.label(inviter.followers),
     },
   ]

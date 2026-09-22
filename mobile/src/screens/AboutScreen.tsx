@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { TIER_GRADIENTS } from '../components/FoilCard'
 import { apiFetch } from '../lib/api'
 import { useColors, useThemedStyles, type LegacyColors } from '../lib/theme'
+import { humanize } from '@memeon/shared/humanize'
 import { TIERS } from '@memeon/shared/tiers'
 
 interface FrameInfo {
@@ -64,7 +65,7 @@ export default function AboutScreen() {
               <Text style={[styles.tierName, { color: t.color }]}>
                 {t.name} · {t.rarity}
               </Text>
-              <Text style={styles.tierReq}>{t.minReshares.toLocaleString()}+ views</Text>
+              <Text style={styles.tierReq}>{humanize(t.minReshares)}+ views</Text>
               <Text style={styles.tierHype}>{t.hype}</Text>
             </View>
           </View>

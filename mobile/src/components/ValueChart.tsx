@@ -1,5 +1,6 @@
 import { View, Text } from 'react-native'
 import Svg, { Defs, LinearGradient, Path, Stop } from 'react-native-svg'
+import { humanize } from '@memeon/shared/humanize'
 import { useColors } from '../lib/theme'
 import type { HistoryPoint } from '../lib/types'
 
@@ -53,7 +54,7 @@ export function ValueChart({
         }}
       >
         <Text style={{ color: colors.text, fontSize: 26, fontWeight: '800' }}>
-          🧠 {last.toLocaleString()}
+          🧠 {humanize(last)}
         </Text>
         <Text
           style={{
@@ -61,7 +62,7 @@ export function ValueChart({
             fontWeight: '700',
           }}
         >
-          {delta >= 0 ? '▲' : '▼'} {Math.abs(delta).toLocaleString()} ({deltaPct}%)
+          {delta >= 0 ? '▲' : '▼'} {humanize(Math.abs(delta))} ({deltaPct}%)
         </Text>
       </View>
       <Svg width={width} height={height}>

@@ -8,8 +8,8 @@
  *   - a value import or re-export from a higher tier, or hooks/ or stores/, below views/
  *   - a screens/ file that value-imports or re-exports another screens/ module
  *   - a value import from copy/ in any tier (strings reach components through the model)
- *   - a value import in copy/ that leaves copy/, other than lib/plural and lib/braincells
- *     (copy is plain data; the two formatting helpers are the one allowance)
+ *   - a value import in copy/ that leaves copy/, other than lib/plural, lib/braincells,
+ *     and lib/humanize (copy is plain data; the figure helpers are the one allowance)
  *   - a React state hook in a component or helper below views/
  *   - React context (createContext / useContext) below views/, except inside atoms/, where a
  *     compound atom (toggle group, tabs) hands its variant to its parts through a context
@@ -37,8 +37,8 @@ const ENGINES = ['hooks', 'stores']
 // User-facing strings. Read by hooks/, lib/ builders, stories and tests; never by a tier.
 const COPY = 'copy'
 // The formatting primitives copy/ may call, so a noun stays beside its sentence
-// (`${plural(n, 'card')} shown`). Pure functions with no React and no strings of their own.
-const COPY_HELPERS = new Set(['lib/plural', 'lib/braincells'])
+// (`${plural(n, 'card')} shown`, `25k`). Pure functions with no React and no strings of their own.
+const COPY_HELPERS = new Set(['lib/plural', 'lib/braincells', 'lib/humanize'])
 // Markup factories engines and *Model builders must not value-import or call.
 const TREE_NAMES = new Set(['createElement', 'Fragment', 'jsxs', 'jsx', 'jsxDEV'])
 const REACT_MODULES = new Set(['react', 'react/jsx-runtime'])

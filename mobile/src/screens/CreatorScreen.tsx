@@ -4,6 +4,7 @@ import { ActivityIndicator, FlatList, Image, Pressable, Text, View } from 'react
 import type { RootStackParamList } from '../../App'
 import { FoilCard } from '../components/FoilCard'
 import { apiFetch, post } from '../lib/api'
+import { humanize } from '@memeon/shared/humanize'
 import { useColors, useThemedStyles, type LegacyColors } from '../lib/theme'
 import type { CreatorProfile, Meme } from '../lib/types'
 
@@ -85,8 +86,8 @@ export default function CreatorScreen({ route, navigation }: Props) {
           )}
           <Text style={styles.name}>{profile.name}</Text>
           <Text style={styles.stats}>
-            ⭐ {profile.followers} followers · 📚 {profile.collectionSize} memes · 🧠{' '}
-            {profile.portfolioValue.toLocaleString()}
+            ⭐ {humanize(profile.followers)} followers · 📚 {humanize(profile.collectionSize)} memes
+            · 🧠 {humanize(profile.portfolioValue)}
           </Text>
           <View style={styles.actions}>
             <Pressable
