@@ -90,17 +90,30 @@ const CLOSE_BUTTON = cn(
   'focus-ring disabled-look',
 )
 
-export interface DialogContentProps
-  extends Styled<DialogPrimitive.Popup.Props>,
-    VariantProps<typeof dialogContentVariants> {
-  /** the ✕ in the corner; `closeLabel` is its accessible name */
-  showCloseButton?: boolean | undefined
-  closeLabel?: string | undefined
+type DialogCloseShown = {
+  /** omitted means the ✕ is shown; the accessible name is required either way */
+  showCloseButton?: true
+  closeLabel: string
   /** locks the ✕ while the dialog's work is in flight (a gift transfer, a mint) */
   closeDisabled?: boolean | undefined
-  /** where the portal renders; pair `PortalAnchor` with `portalAnchor(id)` to stay inside the screen */
-  container?: DialogPrimitive.Portal.Props['container']
 }
+
+type DialogCloseHidden = {
+  showCloseButton: false
+  /**
+   * Storybook merges meta closeLabel with `showCloseButton: false`. The button is not rendered,
+   * so this cannot name anything. `?: never` rejects WithoutCloseButton / Danger / Dark.
+   */
+  closeLabel?: string | undefined
+  /** same optional lock as the shown arm, so it is not forwarded onto the popup */
+  closeDisabled?: boolean | undefined
+}
+
+export type DialogContentProps = Styled<DialogPrimitive.Popup.Props> &
+  VariantProps<typeof dialogContentVariants> & {
+    /** where the portal renders; pair `PortalAnchor` with `portalAnchor(id)` to stay inside the screen */
+    container?: DialogPrimitive.Portal.Props['container']
+  } & (DialogCloseShown | DialogCloseHidden)
 
 /**
  * Portal + overlay + popup. `initialFocus`/`finalFocus` and `role` pass straight through to the
@@ -114,7 +127,7 @@ export function DialogContent({
   variant,
   sheet,
   showCloseButton = true,
-  closeLabel = 'Close',
+  closeLabel,
   closeDisabled,
   container,
   ...props
@@ -132,7 +145,7 @@ export function DialogContent({
         {...props}
       >
         {children}
-        {showCloseButton && (
+        {showCloseButton && closeLabel != null ? (
           <DialogPrimitive.Close
             data-slot="dialog-close"
             aria-label={closeLabel}
@@ -143,7 +156,7 @@ export function DialogContent({
               <Icon name="x" size={22} />
             </span>
           </DialogPrimitive.Close>
-        )}
+        ) : null}
       </DialogPrimitive.Popup>
     </DialogPortal>
   )
