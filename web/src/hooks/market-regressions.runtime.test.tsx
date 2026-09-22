@@ -619,7 +619,7 @@ describe('MemeDetailView secondary failures', () => {
     installDetailApi({ meme: ownerMeme, stats: 'fail' })
     await renderDetail(ownerMeme.id)
     await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
-    expect(host.textContent).not.toContain('Where it’s spreading')
+    expect(host.textContent).not.toContain(memeDetailCopy.spreading.title)
     expect(host.querySelector('[data-slot="alert"]')).toBeNull()
   })
 
