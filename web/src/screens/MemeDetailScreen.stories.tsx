@@ -54,7 +54,7 @@ const detail = (meme = paperMeme): MemeDetailModel => {
     valueLabel: String(meme.value),
     statsSrLabel: copy.stats.srLabel(views, reshareCount),
     valueSrLabel: copy.stats.valueSrLabel(meme.value),
-    holdingsLabel: '100/100',
+    holdingsLabel: copy.provenance.holdings(100),
     shareTitle: copy.share.title,
     shareCaption: copy.share.caption,
     previewLabel: copy.share.preview,
@@ -122,7 +122,7 @@ const detail = (meme = paperMeme): MemeDetailModel => {
     }),
     capTableTitle: copy.capTable.title,
     capTableNote: null,
-    capTable: [{ userId: 'me', label: copy.holder.you, sharesLabel: '100/100' }],
+    capTable: [{ userId: 'me', label: copy.holder.you, sharesLabel: copy.capTable.shares(100) }],
     deleteDialog: buildConfirmDialogModel({
       open: false,
       id: 'delete-meme',
@@ -169,7 +169,7 @@ const listed = (overrides: Partial<DetailListingModel> = {}): MemeDetailModel =>
     ...base,
     list: { ...base.list, show: false },
     holdingsLabel: null,
-    capTable: [{ userId: 'seller', label: 'lou', sharesLabel: '100/100' }],
+    capTable: [{ userId: 'seller', label: 'lou', sharesLabel: copy.capTable.shares(100) }],
     capTableNote: copy.capTable.note(LISTED_SHARES, 'lou'),
     listing,
     // the hero's "for sale" badge mirrors this mocked listing price, not listedHolo's own
@@ -323,7 +323,7 @@ export const Visitor: Story = {
         {
           userId: 'someone',
           label: copy.holder.unknown,
-          sharesLabel: '100/100',
+          sharesLabel: copy.capTable.shares(100),
         },
       ],
       signedOut,
@@ -375,7 +375,7 @@ export const ListOverHoldings: Story = {
   args: {
     detail: {
       ...detail(),
-      holdingsLabel: '40/100',
+      holdingsLabel: copy.provenance.holdings(40),
       list: {
         ...detail().list,
         disabledReason: copy.list.onlyHold(40),
@@ -645,11 +645,11 @@ export const CapTableUnresolved: Story = {
   args: {
     detail: {
       ...detail(),
-      holdingsLabel: '40/100',
+      holdingsLabel: copy.provenance.holdings(40),
       capTable: [
-        { userId: 'me', label: 'You', sharesLabel: '40/100' },
-        { userId: 'a', label: 'another collector', sharesLabel: '35/100' },
-        { userId: 'b', label: 'another collector', sharesLabel: '25/100' },
+        { userId: 'me', label: 'You', sharesLabel: copy.capTable.shares(40) },
+        { userId: 'a', label: 'another collector', sharesLabel: copy.capTable.shares(35) },
+        { userId: 'b', label: 'another collector', sharesLabel: copy.capTable.shares(25) },
       ],
     },
   },
@@ -756,9 +756,9 @@ const loggedOutArgs = {
       onAdd: noop,
     }),
     capTable: [
-      { userId: 'a', label: 'oxfern', sharesLabel: '48/100' },
-      { userId: 'b', label: 'masky.moth', sharesLabel: '28/100' },
-      { userId: 'c', label: 'meme.custodian', sharesLabel: '24/100' },
+      { userId: 'a', label: 'oxfern', sharesLabel: copy.capTable.shares(48) },
+      { userId: 'b', label: 'masky.moth', sharesLabel: copy.capTable.shares(28) },
+      { userId: 'c', label: 'meme.custodian', sharesLabel: copy.capTable.shares(24) },
     ],
     signedOut: {
       title: 'Own a piece of this',

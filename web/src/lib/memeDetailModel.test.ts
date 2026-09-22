@@ -126,3 +126,39 @@ describe('buildMemeDetailModel buy above the listing', () => {
     expect(listing?.disabledReason).not.toBe(copy.listing.short(33))
   })
 })
+
+describe('buildMemeDetailModel label formatters', () => {
+  it('formats tags, holdings, and cap rows through copy', () => {
+    const context = {
+      ...createActor(memeDetailMachine, {
+        input: { id: paperMeme.id },
+      }).getSnapshot().context,
+      positions: [
+        { memeId: paperMeme.id, userId: 'user-lou', shares: 40 },
+        { memeId: paperMeme.id, userId: 'user-pal', shares: 60 },
+      ],
+    }
+    const model = buildMemeDetailModel({
+      phase: 'ready',
+      context,
+      meme: { ...paperMeme, tags: ['cat', 'foil'] },
+      user: meLou,
+      shareUrl: `https://memeon.ai/m/${paperMeme.id}`,
+      holderNameCache: new Map(),
+      actions: actions(),
+    })
+
+    expect(model.tagsLabel).toBe(copy.tags(['cat', 'foil']))
+    expect(model.holdingsLabel).toBe(copy.provenance.holdings(40))
+    expect(model.capTable.map((row) => row.sharesLabel)).toEqual([
+      copy.capTable.shares(40),
+      copy.capTable.shares(60),
+    ])
+  })
+
+  it('leaves tags and holdings blank when the meme has none and the reader holds nothing', () => {
+    const model = detail()
+    expect(model.tagsLabel).toBeNull()
+    expect(model.holdingsLabel).toBeNull()
+  })
+})

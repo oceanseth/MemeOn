@@ -34,7 +34,7 @@ describe('buildMemeCardModel', () => {
     })
     expect(model.titleId).toBe('meme-card-title-meme-1')
     expect(model.tierName).toBe('Holo')
-    expect(model.tierLabel).toBe('Holo · Rare')
+    expect(model.tierLabel).toBe(copy.tierLabel(imageMeme.tier.name, imageMeme.tier.rarity))
     expect(model.valueLabel).toBe('5.7k')
     expect(model.valueA11yLabel).toBe(copy.valueA11y('5,678'))
     expect(model.listing).toEqual({

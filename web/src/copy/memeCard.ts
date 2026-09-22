@@ -13,4 +13,5 @@ export const memeCardCopy = {
       ? plural(reshares, 'reshare')
       : `${plural(views, 'view')}, ${plural(reshares, 'reshare')}`,
   valueA11y: (valueLabel: string) => `${valueLabel} braincells card value`,
+  tierLabel: (name: string, rarity: string) => `${name} · ${rarity}`,
 } as const
