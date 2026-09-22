@@ -81,3 +81,14 @@ test('fails when cn.ts registers a namespace value @theme no longer declares', (
     },
   )
 })
+
+test('exits 2 when the stylesheet does not exist', () => {
+  const root = mkdtempSync(join(tmpdir(), 'memeon-token-check-absent-'))
+  const missing = join(root, 'index.css')
+  rmSync(root, { recursive: true, force: true })
+  const result = spawnSync(process.execPath, [checker, missing, root], {
+    encoding: 'utf8',
+  })
+  assert.equal(result.status, 2, result.stdout + result.stderr)
+  assert.match(result.stderr, /does not exist/)
+})
