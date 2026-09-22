@@ -7,19 +7,25 @@ function Specimen({
   tierKey,
   rarityLadder,
   as,
+  presentation,
 }: {
   tierKey: string
   rarityLadder?: boolean | undefined
   as?: 'div' | 'li' | 'article' | undefined
+  presentation?: 'default' | 'collectible' | undefined
 }) {
   return (
     <FoilCard
       as={as}
       tierKey={tierKey}
       rarityLadder={rarityLadder}
-      className="w-40 rounded-lg material-card p-2"
+      presentation={presentation}
+      className={presentation === 'collectible' ? 'w-40' : 'w-40 rounded-lg material-card p-2'}
     >
-      <FoilMedia className="block overflow-hidden">
+      <FoilMedia
+        presentation={presentation}
+        className={presentation === 'collectible' ? 'block' : 'block overflow-hidden'}
+      >
         <span className="block aspect-4/3 w-full bg-muted" />
       </FoilMedia>
     </FoilCard>
@@ -95,6 +101,18 @@ export const RarityLadder: Story = {
     await expect(host).toHaveClass('foil-card', 'tier-gold', 'sheen', 'tier-card')
     await expect(host).not.toHaveAttribute('rarityladder')
     await expect(host).toHaveAttribute('data-glow-style', glowStyleFor('gold'))
+  },
+}
+
+/** The broad physical shell is opt-in; landing and creation callers keep the compact frame. */
+export const Collectible: Story = {
+  render: () => <Specimen tierKey="shiny" presentation="collectible" />,
+  play: async ({ canvasElement }) => {
+    const host = hostOf(canvasElement)
+    await expect(host).toHaveAttribute('data-presentation', 'collectible')
+    await expect(host.querySelector('[data-slot="collectible-backing"]')).not.toBeNull()
+    await expect(host.querySelector('[data-slot="collectible-rail"]')).not.toBeNull()
+    await expect(host.querySelector('[data-slot="collectible-window"]')).not.toBeNull()
   },
 }
 

@@ -6,18 +6,9 @@ import {
   connectedLoader,
   ConnectedStory,
 } from '../../.storybook/connected-story'
-import { tierFrames } from '../../.storybook/fixtures'
-import { TIERS } from '@memeon/shared/tiers'
 import { landingCopy as copy } from '../copy/landing'
 import { getMaskyOauthState } from '../lib/sessionBus'
 import { LandingView } from './LandingView'
-
-/** Frames are decorative now, so the slot's state — not an alt string — is the assertion. */
-const frameSlots = (canvasElement: HTMLElement, state: 'loading' | 'ready' | 'error') =>
-  canvasElement.querySelectorAll(`[data-slot="tier-frame-slot"][data-state="${state}"]`)
-
-const frameImages = (canvasElement: HTMLElement) =>
-  canvasElement.querySelectorAll<HTMLImageElement>('img[data-slot="tier-frame-img"]')
 
 function invokeRenderedLogin(button: HTMLButtonElement): void {
   const reactPropsKey = Object.keys(button).find((key) => key.startsWith('__reactProps$'))
@@ -25,7 +16,6 @@ function invokeRenderedLogin(button: HTMLButtonElement): void {
   const props = (button as unknown as Record<string, { onClick?: (event: MouseEvent) => void }>)[
     reactPropsKey
   ]
-  // Base UI's disabled guard reads event.preventDefault(), so the probe passes a real event
   props?.onClick?.(new MouseEvent('click'))
 }
 
@@ -58,32 +48,18 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-export const DelayedFramesLoginErrorAndRetry: Story = {
+export const LoginErrorAndRetry: Story = {
   loaders: [
     connectedLoader({
       authenticated: false,
       overrides: {
-        'GET /api/frames': async (_request, scenario) => {
-          await scenario.waitForRelease('frames')
-          return {
-            body: {
-              frames: Object.entries(tierFrames).map(([key, url]) => ({
-                key,
-                url,
-              })),
-            },
-          }
-        },
         'GET /api/auth/masky/config': async (_request, scenario) => {
           const attempt = scenario.requests.filter(
             (request) => request.path === '/api/auth/masky/config',
           ).length
           if (attempt === 1) {
             await scenario.waitForRelease('first-login')
-            return {
-              status: 503,
-              body: { error: 'Masky is unavailable. Try again.' },
-            }
+            return { status: 503, body: { error: 'Masky is unavailable. Try again.' } }
           }
           await scenario.waitForRelease('retry-login')
           return {
@@ -105,8 +81,14 @@ export const DelayedFramesLoginErrorAndRetry: Story = {
   ),
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
-    const login = canvas.getByRole('button', { name: copy.login.name })
-    await userEvent.click(login)
+    await expect(canvasElement.querySelectorAll('[data-slot="hero-card"]')).toHaveLength(7)
+    await expect(
+      loaded.scenario.requests.filter(
+        (request: { path: string }) => request.path === '/api/frames',
+      ),
+    ).toHaveLength(0)
+
+    await userEvent.click(canvas.getByRole('button', { name: copy.login.name }))
     await waitFor(() =>
       expect(
         loaded.scenario.requests.filter(
@@ -114,7 +96,6 @@ export const DelayedFramesLoginErrorAndRetry: Story = {
         ),
       ).toHaveLength(1),
     )
-    await expect(canvas.getByRole('button', { name: copy.login.busyName })).toBeDisabled()
     invokeRenderedLogin(canvas.getByRole('button', { name: copy.login.busyName }))
     invokeRenderedLogin(canvas.getByRole('button', { name: copy.login.busyName }))
     await expect(
@@ -122,18 +103,9 @@ export const DelayedFramesLoginErrorAndRetry: Story = {
         (request: { path: string }) => request.path === '/api/auth/masky/config',
       ),
     ).toHaveLength(1)
+
     loaded.scenario.release('first-login')
     await expect(await canvas.findByRole('alert')).toHaveTextContent(copy.errors.login)
-    await expect(frameSlots(canvasElement, 'loading')).toHaveLength(TIERS.length)
-    await expect(frameImages(canvasElement)).toHaveLength(0)
-    loaded.scenario.release('frames')
-    await waitFor(() => expect(frameImages(canvasElement)).toHaveLength(TIERS.length))
-    // the ladder paints the bare foil frame the API handed back, first try
-    const images = frameImages(canvasElement)
-    const first = images[0]
-    if (!first) throw new Error('expected first frame image')
-    await expect(first.getAttribute('src')).toMatch(/frames\/paper\.png/)
-    await expect(canvas.getByRole('alert')).toHaveTextContent(copy.errors.login)
     await userEvent.click(canvas.getByRole('button', { name: copy.login.name }))
     await waitFor(() =>
       expect(
@@ -142,14 +114,6 @@ export const DelayedFramesLoginErrorAndRetry: Story = {
         ),
       ).toHaveLength(2),
     )
-    await expect(canvas.getByRole('button', { name: copy.login.busyName })).toBeDisabled()
-    await expect(canvas.queryByRole('alert')).not.toBeInTheDocument()
-    invokeRenderedLogin(canvas.getByRole('button', { name: copy.login.busyName }))
-    await expect(
-      loaded.scenario.requests.filter(
-        (request: { path: string }) => request.path === '/api/auth/masky/config',
-      ),
-    ).toHaveLength(2)
     loaded.scenario.release('retry-login')
     await waitFor(() => expect(loaded.scenario.authorizationNavigations).toHaveLength(1))
     expectAuthorizationUrl(loaded.scenario.authorizationNavigations[0])
@@ -157,13 +121,8 @@ export const DelayedFramesLoginErrorAndRetry: Story = {
   },
 }
 
-export const FrameFailureStillReady: Story = {
-  loaders: [
-    connectedLoader({
-      authenticated: false,
-      failures: { 'GET /api/frames': { error: 'frames unavailable' } },
-    }),
-  ],
+export const CardsReadyWithoutFrameApi: Story = {
+  loaders: [connectedLoader({ authenticated: false })],
   beforeEach: async (context) => connectedBeforeEach(context),
   render: (_args, { loaded }) => (
     <ConnectedStory scenario={loaded.scenario}>
@@ -173,67 +132,15 @@ export const FrameFailureStillReady: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('button', { name: copy.login.name })).toBeEnabled()
-    // no payload and no composite: the slots still hold the ladder's height
-    await waitFor(() => expect(frameSlots(canvasElement, 'loading')).toHaveLength(0))
-    await expect(canvasElement.querySelectorAll('[data-slot="tier-frame-slot"]')).toHaveLength(
-      TIERS.length,
-    )
+    await expect(canvasElement.querySelectorAll('[data-slot="hero-card"]')).toHaveLength(7)
+    await expect(canvasElement.querySelector('[data-slot="landing-tiers"]')).toBeNull()
+    await expect(
+      loaded.scenario.requests.filter(
+        (request: { path: string }) => request.path === '/api/frames',
+      ),
+    ).toHaveLength(0)
     await userEvent.click(canvas.getByRole('button', { name: copy.login.name }))
     await waitFor(() => expect(loaded.scenario.authorizationNavigations).toHaveLength(1))
     expectAuthorizationUrl(loaded.scenario.authorizationNavigations[0])
-  },
-}
-
-export const FramesReadyBeforeLoginFailure: Story = {
-  loaders: [
-    connectedLoader({
-      authenticated: false,
-      overrides: {
-        'GET /api/frames': async (_request, scenario) => {
-          await scenario.waitForRelease('frames-before-login-failure')
-          return {
-            body: {
-              frames: Object.entries(tierFrames).map(([key, url]) => ({
-                key,
-                url,
-              })),
-            },
-          }
-        },
-        'GET /api/auth/masky/config': async (_request, scenario) => {
-          await scenario.waitForRelease('login-after-frames')
-          return {
-            status: 503,
-            body: { error: 'Masky is unavailable. Try again.' },
-          }
-        },
-      },
-    }),
-  ],
-  beforeEach: async (context) => connectedBeforeEach(context),
-  render: (_args, { loaded }) => (
-    <ConnectedStory scenario={loaded.scenario}>
-      <LandingView />
-    </ConnectedStory>
-  ),
-  play: async ({ canvasElement, loaded }) => {
-    const canvas = within(canvasElement)
-    await userEvent.click(canvas.getByRole('button', { name: copy.login.name }))
-    await waitFor(() =>
-      expect(
-        loaded.scenario.requests.filter(
-          (request: { path: string }) => request.path === '/api/auth/masky/config',
-        ),
-      ).toHaveLength(1),
-    )
-    await expect(canvas.getByRole('button', { name: copy.login.busyName })).toBeDisabled()
-    await expect(frameSlots(canvasElement, 'loading')).toHaveLength(TIERS.length)
-    loaded.scenario.release('frames-before-login-failure')
-    await waitFor(() => expect(frameImages(canvasElement)).toHaveLength(TIERS.length))
-    await expect(canvas.getByRole('button', { name: copy.login.busyName })).toBeDisabled()
-    await expect(canvas.queryByRole('alert')).not.toBeInTheDocument()
-    loaded.scenario.release('login-after-frames')
-    await expect(await canvas.findByRole('alert')).toHaveTextContent(copy.errors.login)
-    await expect(frameImages(canvasElement)).toHaveLength(TIERS.length)
   },
 }

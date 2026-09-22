@@ -1,63 +1,43 @@
-import { useProjectedActor } from './useProjectedActor'
-import type { ButtonHTMLAttributes, CSSProperties, HTMLAttributes, ImgHTMLAttributes } from 'react'
 import { TIERS, type Tier } from '@memeon/shared/tiers'
+import type { ButtonHTMLAttributes, HTMLAttributes, ImgHTMLAttributes, RefCallback } from 'react'
 import { landingCopy } from '../copy/landing'
-import { apiFetch } from '../lib/api'
 import { beginMaskyLogin } from '../lib/auth'
+import { cardMediaRef } from '../lib/cardMedia'
 import type { HeroVideoModel } from '../lib/heroVideoModel'
 import { landingMachine, type LandingPhase } from '../stores/landingMachine'
 import { useAuth } from './useAuth'
 import { useHeroVideo } from './useHeroVideo'
-import { useMountEffect } from './useMountEffect'
+import { useProjectedActor } from './useProjectedActor'
 
 export type LandingLoginButtonProps = Pick<
   ButtonHTMLAttributes<HTMLButtonElement>,
   'onClick' | 'disabled' | 'aria-busy' | 'aria-label'
 >
 
-export type LandingFrameImageProps = Pick<
+export type LandingHeroImageProps = Pick<
   ImgHTMLAttributes<HTMLImageElement>,
-  'src' | 'alt' | 'loading' | 'onError'
+  'src' | 'alt' | 'loading' | 'aria-hidden'
 >
 
 export type LandingErrorNoticeProps = Pick<HTMLAttributes<HTMLParagraphElement>, 'role'>
 
-/** The slot owns the box in all three outcomes, so the ladder never resizes under the reader. */
-export type LandingFrameSlotState = 'loading' | 'ready' | 'error'
-
-export interface LandingFrameSlotProps {
-  'data-state': LandingFrameSlotState
-  /**
-   * The failed placeholder tints from the tier's own frame token (`LandingScreen.css` paints
-   * `currentColor`). A token, never `shared/tiers`' hex — that ramp is tuned for the API's dark
-   * OG frames and is unreadable on the light canvas.
-   */
-  style: CSSProperties
-}
-
-export interface LandingTierModel extends Pick<Tier, 'key' | 'name' | 'glowStyle'> {
-  /** Ladder card middle line: "0 reshares" … "25,000 reshares". */
-  resharesLabel: string
-  /** Rarity caption under the reshare count. */
-  rarityLabel: string
-}
-
-/** One tilted card in the hero pile. */
 export interface LandingHeroCardModel extends Pick<Tier, 'glowStyle'> {
   tierKey: string
   tierName: string
-  /** Meme title lettered on the tilted card. */
-  caption: string
+  tierLabel: string
+  resharesLabel: string
+  rarityLabel: string
+  imageProps: LandingHeroImageProps
+  backdropImageProps: LandingHeroImageProps
+  cardRef: RefCallback<HTMLElement>
 }
 
-/** One how-it-works step. Step numbers are copy, not layout. */
 export interface LandingHowStepModel {
   step: string
   title: string
   body: string
 }
 
-/** One FAQ row. Bodies stay strings so the hook does not build trees. */
 export interface LandingFaqItemModel {
   id: string
   question: string
@@ -69,35 +49,25 @@ export interface LandingFaqItemModel {
 
 const copy = landingCopy
 const BRAINCELL_IMAGE_SRC = '/api/brand/braincell.png'
+const HERO_IMAGE_SRC = '/brand/hero-cat.webp'
 
-/** Tier thresholds are reshare counts from the db `reshares` field. */
-export function buildLandingTierModels(): LandingTierModel[] {
+export function buildLandingHeroCards(): LandingHeroCardModel[] {
   return TIERS.map((tier) => ({
-    key: tier.key,
-    name: tier.name,
+    tierKey: tier.key,
+    tierName: tier.name,
+    tierLabel: `${tier.name} · ${tier.rarity}`,
     glowStyle: tier.glowStyle,
     resharesLabel: copy.tier.reshares(tier.minReshares),
     rarityLabel: tier.rarity,
+    imageProps: { src: HERO_IMAGE_SRC, alt: '', loading: 'eager' },
+    backdropImageProps: {
+      src: HERO_IMAGE_SRC,
+      alt: '',
+      loading: 'eager',
+      'aria-hidden': true,
+    },
+    cardRef: cardMediaRef,
   }))
-}
-
-/* Hero pile is three tiers (Gold, Silver, Prismatic), not the full ladder. */
-const HERO_PILE: { tierKey: string; caption: string }[] = [
-  { tierKey: 'gold', caption: copy.heroCaptions.gold },
-  { tierKey: 'silver', caption: copy.heroCaptions.silver },
-  { tierKey: 'prismatic', caption: copy.heroCaptions.prismatic },
-]
-
-export function buildLandingHeroCards(): LandingHeroCardModel[] {
-  return HERO_PILE.map(({ tierKey, caption }) => {
-    const tier = TIERS.find((candidate) => candidate.key === tierKey)
-    return {
-      tierKey,
-      tierName: tier?.name ?? tierKey,
-      glowStyle: tier?.glowStyle ?? 'graphite-gradient-still',
-      caption,
-    }
-  })
 }
 
 export function buildLandingHowSteps(): LandingHowStepModel[] {
@@ -121,13 +91,6 @@ export function buildLandingFaqItems(): LandingFaqItemModel[] {
   })
 }
 
-/*
- * The bare foil frame from `/api/frames` is the art of both the ladder and the hero pile.
- * Composited demo cards (the same house meme inside every foil) are a deferred asset: pointing at
- * `/brand/tier-demo/*.png` before they ship costs seven 404s and a two-stage paint.
- */
-
-/** Thrown strings never reach the page: one authored sentence that names the recovery. */
 export function loginErrorCopy(err: string | null): string | null {
   return err ? copy.errors.login : null
 }
@@ -136,7 +99,6 @@ const interactiveLandingMachine = landingMachine.provide({
   actions: {
     startLogin: ({ self }) => {
       void beginMaskyLogin().catch((e) => {
-        /* the machine's err only flags the failure: `loginErrorCopy` replaces it before render */
         self.send({
           type: 'FAIL',
           err: e instanceof Error ? e.message : copy.machine.loginFailed,
@@ -155,88 +117,34 @@ export interface LandingScreenModel {
   loginLabel: string
   loginAside: string
   marketplaceCta: string
-  /** the closing card's line; the page finishes convincing there, so the CTA repeats under it */
   closingLine: string
   closingLoginLabel: string
   heroTitle: string
   heroBody: string
-  /** the hero's trading-card pile */
   heroCards: LandingHeroCardModel[]
   howTitle: string
   howSteps: readonly LandingHowStepModel[]
-  tiersTitle: string
-  tiers: LandingTierModel[]
   filmTitle: string
   faqTitle: string
   faqItems: readonly LandingFaqItemModel[]
-  /** the promo film, between the ladder and the FAQ */
   heroVideo: HeroVideoModel
   loginButtonProps: LandingLoginButtonProps
   closingLoginButtonProps: LandingLoginButtonProps
-  frameImageProps: Record<string, LandingFrameImageProps | undefined>
-  frameSlotProps: Record<string, LandingFrameSlotProps>
   errorNoticeProps: LandingErrorNoticeProps
 }
 
-/** Everything `LandingScreen` renders. The hook is the engine; the screen is the terminal. */
 export function useLandingScreen(): LandingScreenModel {
   const { user } = useAuth()
   const heroVideo = useHeroVideo()
   const [snapshot, send] = useProjectedActor(interactiveLandingMachine)
   const ctx = snapshot.context
-  const phase: LandingPhase = snapshot.matches({ login: 'loggingIn' })
+  const phase: LandingPhase = snapshot.matches('loggingIn')
     ? 'loggingIn'
-    : snapshot.matches({ login: 'loginError' })
+    : snapshot.matches('loginError')
       ? 'loginError'
-      : snapshot.matches({ frames: 'loading' })
-        ? 'loading'
-        : 'ready'
+      : 'ready'
 
-  useMountEffect(() => {
-    apiFetch<{ frames: { key: string; url: string }[] }>('/api/frames')
-      .then((r) =>
-        send({
-          type: 'SET_FRAMES',
-          frames: Object.fromEntries(r.frames.map((f) => [f.key, f.url])),
-        }),
-      )
-      .catch(() => send({ type: 'SET_FRAMES', frames: {} }))
-  })
-
-  const onLogin = () => {
-    send({ type: 'LOGIN' })
-  }
-
-  /* login activity must not mask frame readiness: the two regions settle independently */
-  const framesReady = snapshot.matches({ frames: 'ready' })
-
-  const frameImageProps: LandingScreenModel['frameImageProps'] = Object.fromEntries(
-    TIERS.map((tier) => {
-      const bareFrame = ctx.frames[tier.key]
-      const src = !framesReady || ctx.brokenFrames.includes(tier.key) ? undefined : bareFrame
-      if (!src) return [tier.key, undefined]
-      return [
-        tier.key,
-        {
-          src,
-          // decorative: the tier name beside it is the announced label
-          alt: '',
-          loading: 'lazy',
-          onError: () => send({ type: 'FRAME_FAILED', key: tier.key }),
-        } satisfies LandingFrameImageProps,
-      ]
-    }),
-  )
-
-  const frameSlotProps: LandingScreenModel['frameSlotProps'] = Object.fromEntries(
-    TIERS.map((tier) => [
-      tier.key,
-      {
-        'data-state': !framesReady ? 'loading' : frameImageProps[tier.key] ? 'ready' : 'error',
-        style: { color: `var(--tier-${tier.key}-frame)` },
-      } satisfies LandingFrameSlotProps,
-    ]),
-  )
+  const onLogin = () => send({ type: 'LOGIN' })
 
   return {
     phase,
@@ -254,8 +162,6 @@ export function useLandingScreen(): LandingScreenModel {
     heroCards: buildLandingHeroCards(),
     howTitle: copy.how.title,
     howSteps: buildLandingHowSteps(),
-    tiersTitle: copy.tiers.title,
-    tiers: buildLandingTierModels(),
     filmTitle: copy.film.title,
     faqTitle: copy.faq.title,
     faqItems: buildLandingFaqItems(),
@@ -272,8 +178,6 @@ export function useLandingScreen(): LandingScreenModel {
       'aria-busy': ctx.busy,
       'aria-label': ctx.busy ? copy.closing.busyName : copy.closing.name,
     },
-    frameImageProps,
-    frameSlotProps,
     errorNoticeProps: { role: 'alert' },
   }
 }

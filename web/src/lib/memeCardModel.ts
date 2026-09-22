@@ -8,6 +8,10 @@ import type { Meme } from './types'
 export type MemeCardMediaModel =
   | {
       kind: 'video'
+      backdropImageProps: Pick<
+        ImgHTMLAttributes<HTMLImageElement>,
+        'src' | 'alt' | 'aria-hidden' | 'loading'
+      >
       videoProps: Pick<
         VideoHTMLAttributes<HTMLVideoElement>,
         'src' | 'muted' | 'loop' | 'playsInline' | 'autoPlay' | 'preload' | 'poster' | 'aria-label'
@@ -15,6 +19,10 @@ export type MemeCardMediaModel =
     }
   | {
       kind: 'image'
+      backdropImageProps: Pick<
+        ImgHTMLAttributes<HTMLImageElement>,
+        'src' | 'alt' | 'aria-hidden' | 'loading'
+      >
       imageProps: Pick<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt' | 'loading'>
     }
 
@@ -85,6 +93,12 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
     meme.mediaType === 'video' && meme.videoUrl
       ? {
           kind: 'video',
+          backdropImageProps: {
+            src: meme.imageUrl,
+            alt: '',
+            'aria-hidden': true,
+            loading: 'lazy',
+          },
           videoProps: {
             src: meme.videoUrl,
             muted: true,
@@ -99,6 +113,12 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
         }
       : {
           kind: 'image',
+          backdropImageProps: {
+            src: meme.imageUrl,
+            alt: '',
+            'aria-hidden': true,
+            loading: 'lazy',
+          },
           imageProps: {
             src: meme.imageUrl,
             // the card's <article> and the link already carry the title; a third read is noise

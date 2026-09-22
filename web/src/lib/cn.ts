@@ -4,14 +4,14 @@ import { createCn } from 'cn/config'
    already accept is registered here, or two conflicting classes both survive a merge. `--color-*`
    (any name), `--breakpoint-*` and `--font-*` validate on their own, and so do the type steps,
    the trackings, the radii and — since the role names folded to the grid — every length. The
-   `--container-*` cuts (`card-narrow`, `prose`, `notice`, `aside`, `hero-pile`) need registering
+   `--container-*` cuts (`card-narrow`, `prose`, `notice`, `aside`) need registering
    so their `max-w-*` forms merge against stock `max-w-*`. The materials are `:root` vars that
    only the `material-*` utilities paint. `scripts/check-tokens.mjs` fails if this list and
    `@theme` ever disagree. */
 export const cn = createCn({
   extend: {
     theme: {
-      container: ['card-narrow', 'prose', 'notice', 'aside', 'hero-pile'],
+      container: ['card-narrow', 'prose', 'notice', 'aside'],
     },
     /* The materials are one axis: an element wears exactly one fill+relief. They are `@utility`
        rules cn cannot see, so without this group `cn(inputVariants(), 'material-raised')` keeps

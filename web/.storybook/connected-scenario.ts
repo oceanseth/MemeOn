@@ -17,7 +17,6 @@ import {
   paperMeme,
   proposedTrade,
   questStepsFresh,
-  tierFrames,
   unreadFriend,
   unreadSale,
 } from './fixtures'
@@ -288,14 +287,6 @@ export class ConnectedScenario {
         authorizeUrl: 'https://masky.example.test/authorize',
         clientId: 'memeon-storybook',
         scopes: 'openid profile',
-      })
-    }
-    if (method === 'GET' && path === '/api/frames') {
-      return json({
-        frames: Object.entries(tierFrames).map(([key, frameUrl]) => ({
-          key,
-          url: frameUrl,
-        })),
       })
     }
     if (method === 'GET' && path === '/api/alerts') return json({ alerts: clone(this.alerts) })

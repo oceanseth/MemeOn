@@ -112,8 +112,6 @@ const authSetup: Story = {
           return Response.json({ steps: [] })
         case '/api/developers/keys':
           return Response.json({ keys: [] })
-        case '/api/frames':
-          return Response.json({ frames: [] })
         default:
           return loaded.requestGuard.record(init?.method ?? 'GET', path)
       }

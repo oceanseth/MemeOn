@@ -19,13 +19,14 @@ export const Basic: Story = {
   },
 }
 
-/** Reserves a grid card's exact box at any track width: the square art plus the 124px of inset and meta. */
+/** A 170px track uses the card's narrow 142px metadata reserve. */
 export const Card: Story = {
   render: () => <SkeletonCard style={{ width: 170 }} />,
   play: async ({ canvasElement }) => {
     const card = canvasElement.querySelector<HTMLElement>('[data-slot="skeleton-card"]')!
     await expect(card).toHaveAttribute('data-variant', 'card')
-    await expect(card.offsetHeight).toBe(170 + 124)
+    await expect(card.offsetHeight).toBe(Math.round(170 * 1.25 + 142))
+    await expect(card.querySelector('[data-slot="skeleton-card-meta"]')).toBeInTheDocument()
   },
 }
 

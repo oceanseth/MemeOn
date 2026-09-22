@@ -9,8 +9,6 @@ import { LandingClosing } from '@/organisms/landing-closing'
 import { LandingFaq } from '@/organisms/landing-faq'
 import { LandingHero } from '@/organisms/landing-hero'
 import { LandingHow } from '@/organisms/landing-how'
-import { LandingTiers } from '@/organisms/landing-tiers'
-import './LandingScreen.css'
 
 const SECTION = 'mt-14 max-md:mt-10'
 
@@ -29,9 +27,7 @@ export function LandingScreen(model: LandingScreenModel) {
     <PageContainer as="main" id="main" tabIndex={-1}>
       <LandingHero {...model} marketplaceCta={marketplaceCta} />
       <LandingHow {...model} />
-      <LandingTiers {...model} />
-      {/* The promo film: the whole loop, framed like the cards above it, right
-          before the questions it raises. */}
+      {/* The promo film follows the mechanics and precedes the questions it raises. */}
       <section data-slot="landing-film" className={SECTION}>
         <Heading size="section">{model.filmTitle}</Heading>
         <HeroVideo model={model.heroVideo} className="mt-6 max-w-220" />

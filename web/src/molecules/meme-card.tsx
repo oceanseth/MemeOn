@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom'
 import { cn } from '@/lib/cn'
 import type { MemeCardModel } from '../lib/memeCardModel'
 import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
-import { TierChip } from '@/atoms/tier-chip'
 import { Icon } from '@/atoms/icon'
+import { TierSeal } from '@/atoms/tier-seal'
 
 /* The card is a container for its own meta row (`@max-card-narrow:` fires under 220px). The ring
    is the card's, for the link inside it: `has-[a:focus-visible]` rather than `focus-ring`, because
@@ -16,7 +16,7 @@ import { Icon } from '@/atoms/icon'
    per-card footer cannot make a row ragged either. */
 const memeCardVariants = cva(
   [
-    'group relative isolate rounded-lg material-card p-2',
+    'group relative isolate',
     '@container',
     'transition-lift',
     'pointer-coarse:active:scale-99',
@@ -46,8 +46,8 @@ const memeCardVariants = cva(
 const memeMetaVariants = cva('flex flex-1 flex-col', {
   variants: {
     size: {
-      default: 'gap-1 px-1.5 pt-3.5 pb-1.5 @max-card-narrow:pt-2.5',
-      lg: 'gap-1.5 px-2 pt-4 pb-2',
+      default: 'gap-1 px-1 pt-3 pb-0 @max-card-narrow:pt-2.5',
+      lg: 'gap-1.5 px-1.5 pt-4 pb-1',
     },
   },
   defaultVariants: { size: 'default' },
@@ -73,11 +73,17 @@ export type MemeCardSize = NonNullable<VariantProps<typeof memeCardVariants>['si
 
 const INNER = 'relative flex h-full flex-col'
 
-const ART = 'block aspect-square w-full bg-muted object-contain'
+const ART_BACKDROP =
+  'absolute inset-0 z-0 block size-full scale-110 object-cover opacity-45 blur-lg saturate-125'
 
-const CHIP_POS = 'absolute bottom-4 left-4 z-2'
+const ART = 'block object-contain'
 
-const STATS = 'flex items-center text-xs text-muted-foreground tabular-nums'
+const KICKER =
+  'flex min-h-4 items-center justify-between gap-2 text-xs text-muted-foreground tabular-nums @max-card-narrow:min-h-8.5 @max-card-narrow:flex-col @max-card-narrow:items-start @max-card-narrow:justify-start @max-card-narrow:gap-0.5'
+
+const TIER_NAME = 'font-semibold text-foreground uppercase'
+
+const STATS = 'flex items-center'
 
 /* the grid thumb reserves the two-line listing slot (2 × 16) whether or not it is for sale; the
    narrow form may wrap its right lane under the value (20 + 2 + 16), and reserves that instead */
@@ -124,6 +130,7 @@ export function MemeCard({ model, subTitle, footer, footerRight, size, titleAs }
       as="article"
       ref={model.cardRef}
       tierKey={model.tierKey}
+      presentation="collectible"
       data-slot="meme-card"
       data-size={scale}
       className={cn(memeCardVariants({ size: scale }))}
@@ -131,20 +138,26 @@ export function MemeCard({ model, subTitle, footer, footerRight, size, titleAs }
       data-media-autoplay={model.mediaAutoplay}
     >
       <div data-slot="meme-card-inner" className={INNER}>
-        <FoilMedia>
-          <Link {...model.detailLinkProps} className="block focus-visible:outline-none">
+        <FoilMedia
+          presentation="collectible"
+          seal={<TierSeal tierKey={model.tierKey} label={model.tierLabel} />}
+        >
+          <Link
+            {...model.detailLinkProps}
+            data-slot="collectible-art-link"
+            className="block size-full focus-visible:outline-none"
+          >
+            <img
+              data-slot="meme-art-backdrop"
+              className={ART_BACKDROP}
+              {...model.media.backdropImageProps}
+            />
             {model.media.kind === 'video' ? (
               <video data-slot="meme-art" className={ART} {...model.media.videoProps} />
             ) : (
               <img data-slot="meme-art" className={ART} {...model.media.imageProps} />
             )}
           </Link>
-          <TierChip
-            tierKey={model.tierKey}
-            label={model.tierName}
-            size={scale === 'lg' ? 'md' : 'sm'}
-            className={CHIP_POS}
-          />
         </FoilMedia>
         <div data-slot="meme-meta" className={cn(memeMetaVariants({ size: scale }))}>
           <TitleTag
@@ -155,16 +168,21 @@ export function MemeCard({ model, subTitle, footer, footerRight, size, titleAs }
             {model.title}
           </TitleTag>
           {subTitle}
-          <span data-slot="meme-stats" className={STATS}>
-            <span aria-hidden="true" className="inline-flex items-center gap-0.5">
-              {model.viewsLabel !== null && (
-                <>
-                  <Icon name="eye" size={14} /> {model.viewsLabel} ·{' '}
-                </>
-              )}
-              <Icon name="arrows-left-right" size={14} /> {model.resharesLabel}
+          <span data-slot="meme-kicker" className={KICKER}>
+            <span data-slot="meme-tier-name" className={TIER_NAME} aria-hidden="true">
+              {model.tierName}
             </span>
-            <span className="sr-only">{model.statsA11yLabel}</span>
+            <span data-slot="meme-stats" className={STATS}>
+              <span aria-hidden="true" className="inline-flex items-center gap-0.5">
+                {model.viewsLabel !== null && (
+                  <>
+                    <Icon name="eye" size={14} /> {model.viewsLabel} ·{' '}
+                  </>
+                )}
+                <Icon name="arrows-left-right" size={14} /> {model.resharesLabel}
+              </span>
+              <span className="sr-only">{model.statsA11yLabel}</span>
+            </span>
           </span>
           <span data-slot="meme-sub" className={cn(memeSubVariants({ size: scale }))}>
             <span className={VALUE}>

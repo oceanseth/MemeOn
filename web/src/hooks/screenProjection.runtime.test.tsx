@@ -4,7 +4,6 @@ import { MemoryRouter, Route, Routes, useNavigate, type NavigateFunction } from 
 import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { invitePal, meLou, memeplexEmpty, paperMeme } from '../../.storybook/fixtures'
-import { TIERS } from '@memeon/shared/tiers'
 import { memeDetailCopy } from '../copy/memeDetail'
 import { profileCopy } from '../copy/profile'
 import { tradesCopy } from '../copy/trades'
@@ -51,13 +50,6 @@ const fetchMock = vi.fn<typeof fetch>()
 const requests: Array<{ path: string; init?: RequestInit | undefined }> = []
 
 function response(path: string): unknown {
-  if (path === '/api/frames')
-    return {
-      frames: TIERS.map((tier) => ({
-        key: tier.key,
-        url: `/frames/${tier.key}.png`,
-      })),
-    }
   if (path === '/api/alerts') return { alerts: [] }
   if (path === '/api/onboarding') return { steps: [] }
   if (path.startsWith('/api/memes?') || path === '/api/memes' || path === '/api/binder')
@@ -143,14 +135,10 @@ it('AppShell projects alert-open events', async () => {
   expect(probe.text()).toBe('loggedIn:true')
 })
 
-it('Landing projects async frame results', async () => {
-  // every tier keeps a slot through all three states; only a ready slot carries image props
-  const probe = await mountHook(
-    useLandingScreen,
-    (m) => `${m.phase}:${Object.values(m.frameImageProps).filter(Boolean).length}`,
-  )
-  expect(probe.renders).toContain('loading:0')
-  expect(probe.text()).toBe(`ready:${TIERS.length}`)
+it('Landing projects its static seven-card hero', async () => {
+  const probe = await mountHook(useLandingScreen, (m) => `${m.phase}:${m.heroCards.length}`)
+  expect(probe.text()).toBe('ready:7')
+  expect(requests.some((request) => request.path === '/api/frames')).toBe(false)
 })
 
 it('CreateMeme projects editable draft events', async () => {
