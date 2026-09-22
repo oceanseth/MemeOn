@@ -31,3 +31,13 @@ export const Ready: Story = {
 }
 
 export const Dark: Story = { ...Ready, globals: { theme: 'dark' } }
+
+export const Empty: Story = {
+  args: { howSteps: [] },
+  play: async ({ canvasElement }) => {
+    const how = canvasElement.querySelector<HTMLElement>('[data-slot="landing-how"]')!
+    await expect(how).toBeInTheDocument()
+    await expect(within(how).queryAllByRole('listitem')).toHaveLength(0)
+    await expect(within(how).getByRole('heading', { name: copy.how.title })).toBeInTheDocument()
+  },
+}
