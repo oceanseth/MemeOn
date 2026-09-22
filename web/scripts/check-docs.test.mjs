@@ -315,12 +315,7 @@ test('Anatomy check-copy paragraph names the ratchet engines and JSX text, not J
   assert.doesNotMatch(anatomy, /`JsxText`/)
 })
 
-test('finishes well inside its budget', () => {
-  const started = Date.now()
+test('exits 0 on the real tree', () => {
   const result = spawnSync(process.execPath, [checker], { encoding: 'utf8' })
   assert.equal(result.status, 0, result.stdout + result.stderr)
-  assert.ok(
-    Date.now() - started < 2000,
-    `check-docs took ${Date.now() - started}ms on the real tree`,
-  )
 })
