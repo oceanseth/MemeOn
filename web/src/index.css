@@ -1,5 +1,5 @@
 /* The cascade contract, declared once, here, and restated by every co-located component sheet
-   (`atoms/*.css`, `organisms/app-shell.css`, `screens/LandingScreen.css`) because a layer's rank is
+   (`atoms/*.css`, `molecules/quest-bar.css`, `organisms/app-shell.css`, `organisms/landing-hero.css`) because a layer's rank is
    fixed the first time its name is seen in a bundle:
 
      properties  Tailwind's own `@property` fallback block. It has to rank BELOW `utilities`, or its
@@ -322,7 +322,6 @@
     --grid-memeplex: repeat(auto-fill, minmax(152px, 1fr));
     --grid-token-swatch: repeat(auto-fill, minmax(132px, 1fr));
     --grid-token-spec: 300px 1fr;
-    --grid-hero: minmax(0, 5fr) minmax(560px, 7fr);
     --grid-detail: minmax(0, 410px) minmax(0, 1fr);
     --grid-create: minmax(0, 555fr) minmax(0, 522fr);
     --grid-trade: 1fr auto 1fr;

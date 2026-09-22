@@ -414,10 +414,6 @@ export function TokenSheet() {
           <span className="h-6 rounded-xs bg-brand" />
           <span className="h-6 rounded-xs bg-brand" />
         </div>
-        <div className="grid grid-cols-(--grid-hero) gap-1">
-          <span className="h-6 rounded-xs bg-brand" />
-          <span className="h-6 rounded-xs bg-muted" />
-        </div>
         <div className="grid grid-cols-(--grid-detail) gap-1">
           <span className="h-6 rounded-xs bg-brand" />
           <span className="h-6 rounded-xs bg-muted" />
