@@ -226,7 +226,7 @@ test('src/atoms/file-drop.tsx keeps its scoped exception and the rest of src sta
 test('flags a useEffect call', () => {
   lint(
     'Sync.tsx',
-    "import { useState } from 'react'\nexport const S = () => { useEffect(() => {}, []) }\n",
+    "import { useEffect } from 'react'\nexport const S = () => { useEffect(() => {}, []) }\n",
     ({ status, output }) => {
       assert.equal(status, 1, output)
       assert.match(output, /no-use-effect/)
@@ -254,6 +254,7 @@ test('flags an aliased useEffect import', () => {
     ({ status, output }) => {
       assert.equal(status, 1, output)
       assert.match(output, /no-use-effect/)
+      assert.match(output, /Do not call `useEffect`/)
     },
   )
 })
@@ -296,6 +297,89 @@ test('leaves a useMountEffect call alone', () => {
     'sync.ts',
     "import { useMountEffect } from './useMountEffect'\nexport const go = () => useMountEffect(() => {})\n",
     ({ status, output }) => assert.equal(status, 0, output),
+  )
+})
+
+test('leaves a local or third-party useEffect alone', () => {
+  lint(
+    'sync.ts',
+    [
+      "import { useEffect as foreign, useLayoutEffect as foreignLayout } from 'not-react'",
+      'function useEffect() {}',
+      'const useLayoutEffect = () => 1',
+      'export const go = () => {',
+      '  useEffect()',
+      '  useLayoutEffect()',
+      '  foreign()',
+      '  foreignLayout()',
+      '  function inner() {',
+      '    const React = { useEffect() {}, useLayoutEffect() {} }',
+      '    React.useEffect()',
+      "    React['useLayoutEffect']()",
+      '    React?.useEffect()',
+      '    const { useEffect: pulled } = React',
+      '    pulled()',
+      '  }',
+      '  return inner',
+      '}',
+      '',
+    ].join('\n'),
+    ({ status, output }) => {
+      assert.equal(status, 0, output)
+      assert.doesNotMatch(output, /no-use-effect/)
+    },
+  )
+})
+
+test('leaves a shadowed useEffect call alone', () => {
+  lint(
+    'sync.ts',
+    [
+      "import { useEffect } from 'react'",
+      'export const go = () => {',
+      '  function useEffect() {}',
+      '  useEffect()',
+      '}',
+      '',
+    ].join('\n'),
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /Do not import/)
+      assert.doesNotMatch(output, /Do not call `useEffect`/)
+    },
+  )
+})
+
+test('flags a namespace React.useEffect', () => {
+  lint(
+    'sync.ts',
+    "import * as React from 'react'\nexport const go = () => React.useEffect(() => {})\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /no-use-effect/)
+    },
+  )
+})
+
+test('flags an optional React.useEffect', () => {
+  lint(
+    'sync.ts',
+    "import React from 'react'\nexport const go = () => React?.useEffect(() => {})\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+    },
+  )
+})
+
+test('flags a renamed destructure of useEffect off React', () => {
+  lint(
+    'sync.ts',
+    "import React from 'react'\nconst { useEffect: onMount } = React\nexport const go = () => onMount()\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /Do not bind `useEffect`/)
+      assert.match(output, /Do not call `useEffect`/)
+    },
   )
 })
 

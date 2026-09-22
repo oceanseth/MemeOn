@@ -277,30 +277,100 @@ const noUseEffect = {
       if (name && EFFECT_HOOKS.has(name)) report(node, name, kind)
     }
 
+    // Nearest binding wins, even when that binding is not React's hook.
+    const resolveVariable = (identifier) => {
+      for (
+        let current = context.sourceCode?.getScope?.(identifier);
+        current;
+        current = current.upper
+      ) {
+        const found = current.variables?.find((variable) => variable.name === identifier.name)
+        if (found) return found
+      }
+      return null
+    }
+
+    const isTypeImport = (node) => node?.importKind === 'type'
+
+    const reactModuleVariable = (identifier) => {
+      const variable = resolveVariable(identifier)
+      for (const def of variable?.defs ?? []) {
+        const spec = def.node
+        if (def.type !== 'ImportBinding') continue
+        if (spec?.type !== 'ImportDefaultSpecifier' && spec?.type !== 'ImportNamespaceSpecifier') {
+          continue
+        }
+        if (isTypeImport(spec) || isTypeImport(def.parent)) continue
+        if (def.parent?.source?.value === 'react') return true
+      }
+      return false
+    }
+
+    const reactEffectImport = (variable) => {
+      for (const def of variable?.defs ?? []) {
+        const spec = def.node
+        if (def.type !== 'ImportBinding' || spec?.type !== 'ImportSpecifier') continue
+        if (isTypeImport(spec) || isTypeImport(def.parent)) continue
+        if (def.parent?.source?.value !== 'react') continue
+        const exported = identifierName(spec.imported)
+        if (exported && EFFECT_HOOKS.has(exported)) return exported
+      }
+      return null
+    }
+
+    const boundName = (value) => {
+      const id = value?.type === 'AssignmentPattern' ? value.left : value
+      return id?.type === 'Identifier' ? id.name : null
+    }
+
+    const reactPatternEffect = (variable) => {
+      for (const def of variable?.defs ?? []) {
+        const declarator = def.node
+        if (def.type !== 'Variable' || declarator?.type !== 'VariableDeclarator') continue
+        if (declarator.id?.type !== 'ObjectPattern') continue
+        if (declarator.init?.type !== 'Identifier' || !reactModuleVariable(declarator.init))
+          continue
+        for (const prop of declarator.id.properties) {
+          if (prop.type !== 'Property' || boundName(prop.value) !== variable.name) continue
+          const key = prop.computed ? stringValue(prop.key) : identifierName(prop.key)
+          if (key && EFFECT_HOOKS.has(key)) return key
+        }
+      }
+      return null
+    }
+
+    const reportReactMember = (node) => {
+      if (node.object?.type !== 'Identifier' || !reactModuleVariable(node.object)) return
+      const name = node.computed ? stringValue(node.property) : identifierName(node.property)
+      reportIfEffect(node.property, name, 'call')
+    }
+
     return {
       ImportDeclaration(node) {
+        if (node.source?.value !== 'react' || isTypeImport(node)) return
         for (const spec of node.specifiers) {
-          if (spec.type !== 'ImportSpecifier') continue
+          if (spec.type !== 'ImportSpecifier' || isTypeImport(spec)) continue
           reportIfEffect(spec, identifierName(spec.imported), 'import')
         }
       },
 
-      MemberExpression(node) {
-        const name = node.computed ? stringValue(node.property) : identifierName(node.property)
-        reportIfEffect(node.property, name, 'call')
-      },
+      MemberExpression: reportReactMember,
 
-      OptionalMemberExpression(node) {
-        const name = node.computed ? stringValue(node.property) : identifierName(node.property)
-        reportIfEffect(node.property, name, 'call')
-      },
+      OptionalMemberExpression: reportReactMember,
 
       CallExpression(node) {
-        if (node.callee.type === 'Identifier') reportIfEffect(node.callee, node.callee.name, 'call')
+        if (node.callee.type !== 'Identifier') return
+        const variable = resolveVariable(node.callee)
+        reportIfEffect(
+          node.callee,
+          reactEffectImport(variable) || reactPatternEffect(variable),
+          'call',
+        )
       },
 
       VariableDeclarator(node) {
         if (node.id.type !== 'ObjectPattern') return
+        if (node.init?.type !== 'Identifier' || !reactModuleVariable(node.init)) return
         for (const prop of node.id.properties) {
           if (prop.type !== 'Property') continue
           const name = prop.computed ? stringValue(prop.key) : identifierName(prop.key)
