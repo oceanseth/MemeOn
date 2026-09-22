@@ -13,8 +13,14 @@ describe('UnexpectedRequestLedger', () => {
     await expect(response.json()).resolves.toEqual({
       error: 'Unexpected connected-story request: GET /api/unexpected',
     })
+    ledger.record('post', '/api/other', { id: 1 })
+    expect(ledger.requests).toEqual([
+      { method: 'GET', path: '/api/unexpected', body: undefined },
+      { method: 'POST', path: '/api/other', body: { id: 1 } },
+    ])
     expect(() => ledger.assertEmpty()).toThrow(
-      'Unexpected connected-story request: GET /api/unexpected',
+      'Unexpected connected-story request: GET /api/unexpected\n' +
+        'Unexpected connected-story request: POST /api/other',
     )
   })
 })
