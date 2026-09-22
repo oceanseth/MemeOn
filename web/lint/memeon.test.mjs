@@ -44,6 +44,39 @@ test('flags a chrome input type set in a prop bag and spread', () => {
   )
 })
 
+test('leaves a domain value object with type file alone', () => {
+  lint(
+    'clip.ts',
+    "export const clip = { type: 'file', id: 'clip' }\nexport const only = { type: 'file' }\n",
+    ({ status, output }) => {
+      assert.equal(status, 0, output)
+      assert.doesNotMatch(output, /no-native-chrome/)
+    },
+  )
+})
+
+test('flags a chrome type beside a control sibling with no InputProps name', () => {
+  lint(
+    'bag.ts',
+    "export const bag = { type: 'file', accept: 'image/png' }\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /type="file"/)
+    },
+  )
+})
+
+test('flags a chrome type bound as InputProps with no control sibling', () => {
+  lint(
+    'buildUploadModeModel.ts',
+    "export const build = () => ({ imageFileInputProps: { type: 'file' } })\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /type="file"/)
+    },
+  )
+})
+
 test('flags a static computed type key in an input prop bag', () => {
   lint(
     'computed.tsx',

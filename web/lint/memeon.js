@@ -10,8 +10,8 @@
  * Three signals, all of them "the browser decides what this looks like":
  *
  * 1. A chrome input type — `file`, `color`, `date`, `datetime-local`, `month`, `range`, `time`,
- *    `week`, `checkbox`, `radio`. Read from JSX (`<Input type="file">`) *and* from object
- *    literals (`{ type: 'file' }`), because the way this one reached the screen was a prop bag
+ *    `week`, `checkbox`, `radio`. Read from JSX (`<Input type="file">`) and from an input-prop
+ *    object (`*InputProps`, or a control sibling key), not every `{ type: 'file' }`. The bag is
  *    built in `lib/createMemeModel/` and spread — invisible to any rule that only walks JSX.
  * 2. A user-agent element — `<select>`, `<option>`, `<progress>`, `<details>`, `<dialog>`…, each
  *    of which has an atom that replaces it.
@@ -42,8 +42,29 @@ const CHROME_TYPES = new Map([
   ['week', 'a control of our own'],
 ])
 
-/** Sibling keys that mark the same object as an input prop bag, not a domain record. */
-const INPUT_SIBLING_KEYS = new Set(['accept', 'onChange', 'capture', 'multiple'])
+/** Binding names that own an input prop object: InputProps or inputProps. */
+const INPUT_PROPS_NAME = /[Ii]nputProps$/
+
+/** Static control keys. id, name, and value are not control keys. */
+const INPUT_SIBLING_KEYS = new Set([
+  'accept',
+  'multiple',
+  'capture',
+  'webkitdirectory',
+  'checked',
+  'defaultChecked',
+  'onChange',
+  'onInput',
+  'onBlur',
+  'onFocus',
+  'onKeyDown',
+  'placeholder',
+  'readOnly',
+  'required',
+  'min',
+  'max',
+  'step',
+])
 
 /** `as` / `satisfies` / assertion / parens between an object and the binding that owns it. */
 const INPUT_BAG_WRAPPERS = new Set([
@@ -128,7 +149,7 @@ const noNativeChrome = {
         }
       },
 
-      /* the prop bag a builder returns and a screen spreads — how the file input got in */
+      /* an input-prop object (*InputProps, or a control sibling key), not every { type: 'file' } */
       Property(node) {
         const key = node.computed ? stringValue(node.key) : identifierName(node.key)
         if (key !== 'type') return
@@ -186,9 +207,9 @@ const identifierName = (node) => {
 
 function hasInputSibling(objectNode, property) {
   for (const prop of objectNode.properties) {
-    if (prop === property || prop.type !== 'Property') continue
-    const key = prop.computed ? stringValue(prop.key) : identifierName(prop.key)
-    if (INPUT_SIBLING_KEYS.has(key)) return true
+    if (prop === property || prop.type !== 'Property' || prop.computed) continue
+    const key = identifierName(prop.key)
+    if (typeof key === 'string' && INPUT_SIBLING_KEYS.has(key)) return true
   }
   return false
 }
@@ -199,23 +220,32 @@ function feedsInput(objectNode) {
   while (node.parent && INPUT_BAG_WRAPPERS.has(node.parent.type)) node = node.parent
   const parent = node.parent
   if (!parent) return false
-  if (parent.type === 'Property' && parent.value === node) {
-    const key = parent.computed ? stringValue(parent.key) : identifierName(parent.key)
-    return typeof key === 'string' && key.endsWith('InputProps')
+  if (
+    (parent.type === 'Property' || parent.type === 'PropertyDefinition') &&
+    parent.value === node &&
+    !parent.computed
+  ) {
+    const key =
+      parent.key.type === 'Identifier'
+        ? parent.key.name
+        : parent.key.type === 'Literal'
+          ? stringValue(parent.key)
+          : null
+    return typeof key === 'string' && INPUT_PROPS_NAME.test(key)
   }
   if (
     parent.type === 'VariableDeclarator' &&
     parent.init === node &&
     parent.id.type === 'Identifier'
   ) {
-    return parent.id.name.endsWith('InputProps')
+    return INPUT_PROPS_NAME.test(parent.id.name)
   }
   if (
     parent.type === 'AssignmentExpression' &&
     parent.right === node &&
     parent.left.type === 'Identifier'
   ) {
-    return parent.left.name.endsWith('InputProps')
+    return INPUT_PROPS_NAME.test(parent.left.name)
   }
   if (parent.type === 'JSXSpreadAttribute' && parent.argument === node) {
     const opening = parent.parent
