@@ -78,6 +78,35 @@ export function tradeProposalPayload(
   }
 }
 
+/** `showNew` is intentionally not part of this predicate. */
+export function tradeProposalBlocked(
+  context: Pick<
+    TradesContext,
+    | 'toId'
+    | 'busy'
+    | 'friendsLoaded'
+    | 'friends'
+    | 'offerMeme'
+    | 'offerShares'
+    | 'offerCoins'
+    | 'askMeme'
+    | 'askShares'
+    | 'askCoins'
+  >,
+): boolean {
+  const emptyProposal =
+    !context.offerMeme && context.offerCoins <= 0 && !context.askMeme && context.askCoins <= 0
+  const zeroShares =
+    (!!context.offerMeme && context.offerShares < 1) || (!!context.askMeme && context.askShares < 1)
+  return (
+    !context.toId ||
+    context.busy ||
+    (context.friendsLoaded && context.friends.length === 0) ||
+    emptyProposal ||
+    zeroShares
+  )
+}
+
 const settleAct = {
   err: null,
   loadFailed: false,

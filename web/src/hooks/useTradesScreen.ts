@@ -18,7 +18,12 @@ import {
   type TradeAction,
   type TradeMemeInfo,
 } from '../lib/tradeCardModel'
-import { tradeProposalPayload, tradesMachine, type TradesPhase } from '../stores/tradesMachine'
+import {
+  tradeProposalBlocked,
+  tradeProposalPayload,
+  tradesMachine,
+  type TradesPhase,
+} from '../stores/tradesMachine'
 import type { SelectOption } from '@/atoms/select'
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
@@ -87,7 +92,7 @@ export interface TradeComposerModel {
   error: string | null
   errorNoticeProps: HTMLAttributes<HTMLParagraphElement>
   proposeButtonLabel: string
-  proposeButtonProps: { onClick: () => void; disabled: boolean }
+  proposeButtonProps: { disabled: boolean; 'aria-busy': boolean }
 }
 export interface TradesScreenModel {
   phase: TradesPhase
@@ -296,6 +301,7 @@ export function useTradesScreen(): TradesScreenModel {
   }
   const propose = () => {
     const live = actor.getSnapshot().context
+    if (tradeProposalBlocked(live)) return
     const generation = live.composeGeneration
     send({ type: 'SET_BUSY', busy: true, composeGeneration: generation })
     send({ type: 'SET_COMPOSE_ERR', err: null, composeGeneration: generation })
@@ -317,10 +323,6 @@ export function useTradesScreen(): TradesScreenModel {
   const offerSharesMax = heldShares > 0 ? heldShares : 100
   const availableCoins = Math.max(0, user?.coins ?? 0)
   const noFriends = context.friendsLoaded && context.friends.length === 0
-  const emptyProposal =
-    !context.offerMeme && context.offerCoins <= 0 && !context.askMeme && context.askCoins <= 0
-  const zeroShares =
-    (!!context.offerMeme && context.offerShares < 1) || (!!context.askMeme && context.askShares < 1)
   const binderOptions = context.binder.map((meme) => ({
     value: meme.id,
     label: copy.composer.binderOption(meme.title, meme.myShares ?? 0),
@@ -420,8 +422,8 @@ export function useTradesScreen(): TradesScreenModel {
         errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' },
         proposeButtonLabel: copy.newTrade,
         proposeButtonProps: {
-          onClick: propose,
-          disabled: !context.toId || context.busy || noFriends || emptyProposal || zeroShares,
+          disabled: tradeProposalBlocked(context),
+          'aria-busy': context.busy,
         },
       }
     : null

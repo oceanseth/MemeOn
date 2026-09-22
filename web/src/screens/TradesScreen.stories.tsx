@@ -36,7 +36,6 @@ const composerActions = {
   getMeme: fn(),
   getShares: fn(),
   getCoins: fn(),
-  propose: fn(),
   submit: fn(),
 }
 // story-local: a fixed clock so the relative timestamps render the same on every run
@@ -184,7 +183,7 @@ const compose: TradeComposerModel = {
   error: null,
   errorNoticeProps: { role: 'alert', 'aria-live': 'assertive' },
   proposeButtonLabel: copy.newTrade,
-  proposeButtonProps: { onClick: composerActions.propose, disabled: false },
+  proposeButtonProps: { disabled: false, 'aria-busy': false },
 }
 const openTrade = buildTradeCardModel({
   trade: proposedTrade,
@@ -367,7 +366,7 @@ const composingEmptyProposalArgs = {
     ...compose,
     showGiveShares: false,
     showGetShares: false,
-    proposeButtonProps: { onClick: composerActions.propose, disabled: true },
+    proposeButtonProps: { disabled: true, 'aria-busy': false },
   },
 }
 
