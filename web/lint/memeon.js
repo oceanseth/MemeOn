@@ -165,22 +165,26 @@ const noNativeChrome = {
         const callee = node.callee
         if (
           callee.type === 'MemberExpression' &&
-          !callee.computed &&
           callee.object.type === 'Identifier' &&
-          GLOBALS.has(callee.object.name) &&
-          callee.property.type === 'Identifier' &&
-          UA_DIALOGS.has(callee.property.name)
+          GLOBALS.has(callee.object.name)
         ) {
-          const name = callee.property.name
-          context.report({
-            node,
-            messageId: 'dialog',
-            data: {
-              call: `${callee.object.name}.${name}()`,
-              fix: UA_DIALOGS.get(name),
-            },
-          })
-          return
+          // Computed keys go through stringValue only. identifierName would treat window[confirm] as confirm.
+          const name = callee.computed
+            ? stringValue(callee.property)
+            : callee.property.type === 'Identifier'
+              ? callee.property.name
+              : null
+          if (name && UA_DIALOGS.has(name)) {
+            context.report({
+              node,
+              messageId: 'dialog',
+              data: {
+                call: `${callee.object.name}.${name}()`,
+                fix: UA_DIALOGS.get(name),
+              },
+            })
+            return
+          }
         }
         if (callee.type !== 'Identifier' || !UA_DIALOGS.has(callee.name)) return
         // a local binding of the same name is somebody's helper, not the browser's dialog

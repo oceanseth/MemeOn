@@ -178,6 +178,32 @@ test('leaves a locally bound confirm alone', () => {
   )
 })
 
+test('flags a bracket or template user-agent dialog on a global', () => {
+  lint(
+    'leave.ts',
+    [
+      'export const a = () => window["confirm"]()',
+      'export const b = () => globalThis["alert"]()',
+      'export const c = () => self["prompt"]()',
+      'export const d = () => window[`confirm`]()',
+      '',
+    ].join('\n'),
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /no-native-chrome/)
+      assert.match(output, /window\.confirm\(\)/)
+      assert.match(output, /globalThis\.alert\(\)/)
+      assert.match(output, /self\.prompt\(\)/)
+    },
+  )
+})
+
+test('leaves a dynamic window dialog name alone', () => {
+  lint('dyn.ts', 'window[name]()\n', ({ status, output }) => {
+    assert.equal(status, 0, output)
+  })
+})
+
 test('leaves the controls we draw ourselves alone', () => {
   lint(
     'Mint.tsx',
