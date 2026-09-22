@@ -73,6 +73,12 @@ describe('buildMemeCardModel', () => {
 
     expect(model.media).toEqual({
       kind: 'image',
+      backdropImageProps: {
+        src: '/foil-cat.png',
+        alt: '',
+        'aria-hidden': true,
+        loading: 'lazy',
+      },
       imageProps: { src: '/foil-cat.png', alt: '', loading: 'lazy' },
     })
     expect(model.listing).toBeNull()

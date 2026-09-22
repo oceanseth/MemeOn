@@ -62,6 +62,15 @@
     }
   }
 
+  @keyframes collectible-rail-sheen {
+    from {
+      background-position: 160% 0;
+    }
+    to {
+      background-position: -140% 0;
+    }
+  }
+
   /* Every foil variable is declared on the card, and every one of them inherits: the frame, the
      sheen and the sparkle are descendants. `--glow-play-state` is what `lib/cardMedia.ts`
      sets inline on the card to freeze an off-screen ring, so it must be *declared* here and *read*
@@ -308,7 +317,7 @@
     overflow: hidden;
   }
 
-  .sheen .foil-media::after {
+  .sheen .foil-media:not([data-presentation="collectible"])::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -327,7 +336,7 @@
     mix-blend-mode: screen;
   }
 
-  .sparkle .foil-media::before {
+  .sparkle .foil-media:not([data-presentation="collectible"])::before {
     content: "";
     position: absolute;
     inset: 0;
@@ -344,6 +353,320 @@
     mix-blend-mode: screen;
   }
 
+  /* Grid cards are small physical collectibles: a white backing sheet, a broad material rail and
+     an inset art window. The rail is intentionally much wider than the legacy 3px frame and the
+     asymmetric cuts keep its silhouette from collapsing back into a rounded rectangle. */
+  .foil-card[data-presentation="collectible"] {
+    --collectible-rail: linear-gradient(
+      135deg,
+      oklch(0.93 0.012 80),
+      oklch(0.82 0.018 75) 48%,
+      oklch(0.9 0.012 88)
+    );
+    --collectible-grain:
+      repeating-linear-gradient(17deg, transparent 0 3px, oklch(0.35 0.02 70 / 0.08) 3px 4px),
+      repeating-linear-gradient(103deg, oklch(1 0 0 / 0.08) 0 1px, transparent 1px 5px);
+    --collectible-keyline: oklch(0.42 0.03 75 / 0.72);
+    --collectible-bloom: oklch(0.55 0.03 80 / 0.18);
+    --collectible-seal: oklch(0.9 0.02 80);
+    --collectible-seal-ink: oklch(0.36 0.04 70);
+    background: transparent;
+  }
+
+  .foil-card[data-presentation="collectible"].tier-silver {
+    --collectible-rail: linear-gradient(
+      100deg,
+      oklch(0.42 0.015 260),
+      oklch(0.92 0.01 245) 18%,
+      oklch(0.58 0.02 260) 37%,
+      oklch(0.97 0.006 245) 53%,
+      oklch(0.52 0.02 265) 74%,
+      oklch(0.86 0.012 250)
+    );
+    --collectible-grain: repeating-linear-gradient(
+      0deg,
+      transparent 0 2px,
+      oklch(1 0 0 / 0.16) 2px 3px
+    );
+    --collectible-keyline: oklch(0.28 0.02 260 / 0.86);
+    --collectible-bloom: oklch(0.77 0.025 250 / 0.26);
+    --collectible-seal: oklch(0.84 0.02 250);
+    --collectible-seal-ink: oklch(0.24 0.025 265);
+  }
+
+  .foil-card[data-presentation="collectible"].tier-holo {
+    --collectible-rail: conic-gradient(
+      from 25deg,
+      oklch(0.78 0.19 225),
+      oklch(0.74 0.21 325),
+      oklch(0.87 0.16 85),
+      oklch(0.75 0.18 175),
+      oklch(0.7 0.21 280),
+      oklch(0.78 0.19 225)
+    );
+    --collectible-grain:
+      radial-gradient(circle at 18% 22%, oklch(1 0 0 / 0.75) 0 1px, transparent 1.8px),
+      radial-gradient(circle at 72% 67%, oklch(1 0 0 / 0.6) 0 1.2px, transparent 2px),
+      repeating-linear-gradient(125deg, transparent 0 7px, oklch(1 0 0 / 0.16) 8px 9px);
+    --collectible-keyline: oklch(0.32 0.16 285 / 0.9);
+    --collectible-bloom: oklch(0.7 0.21 295 / 0.4);
+    --collectible-seal: oklch(0.64 0.2 285);
+    --collectible-seal-ink: oklch(0.97 0.02 250);
+    --collectible-background-size: 23px 23px, 37px 37px, 13px 13px, 100% 100%;
+    --collectible-background-position: 0 0, 7px 11px, 0 0, 0 0;
+  }
+
+  .foil-card[data-presentation="collectible"].tier-chrome {
+    --collectible-rail: linear-gradient(
+      125deg,
+      oklch(0.15 0.015 265),
+      oklch(0.93 0.015 245) 15%,
+      oklch(0.35 0.02 260) 29%,
+      oklch(0.98 0.006 245) 45%,
+      oklch(0.18 0.018 270) 61%,
+      oklch(0.83 0.02 235) 78%,
+      oklch(0.25 0.02 265)
+    );
+    --collectible-grain: repeating-linear-gradient(
+      135deg,
+      transparent 0 12px,
+      oklch(1 0 0 / 0.2) 12px 14px,
+      transparent 14px 22px
+    );
+    --collectible-keyline: oklch(0.1 0.015 270 / 0.95);
+    --collectible-bloom: oklch(0.9 0.02 245 / 0.32);
+    --collectible-seal: oklch(0.2 0.02 270);
+    --collectible-seal-ink: oklch(0.96 0.01 245);
+  }
+
+  .foil-card[data-presentation="collectible"].tier-gold {
+    --collectible-rail: conic-gradient(
+      from 210deg,
+      oklch(0.53 0.14 70),
+      oklch(0.91 0.17 93),
+      oklch(0.68 0.15 72),
+      oklch(0.98 0.12 98),
+      oklch(0.57 0.14 68),
+      oklch(0.53 0.14 70)
+    );
+    --collectible-grain:
+      repeating-linear-gradient(32deg, transparent 0 5px, oklch(1 0 0 / 0.22) 5px 6px),
+      radial-gradient(circle at 30% 60%, oklch(1 0 0 / 0.4) 0 1px, transparent 2px);
+    --collectible-keyline: oklch(0.35 0.12 68 / 0.95);
+    --collectible-bloom: oklch(0.82 0.17 88 / 0.42);
+    --collectible-seal: oklch(0.73 0.16 78);
+    --collectible-seal-ink: oklch(0.22 0.055 62);
+  }
+
+  .foil-card[data-presentation="collectible"].tier-prismatic {
+    --collectible-rail: conic-gradient(
+      from 140deg,
+      oklch(0.7 0.24 8),
+      oklch(0.86 0.17 80),
+      oklch(0.84 0.19 150),
+      oklch(0.76 0.19 220),
+      oklch(0.65 0.24 285),
+      oklch(0.74 0.24 335),
+      oklch(0.7 0.24 8)
+    );
+    --collectible-grain:
+      linear-gradient(40deg, transparent 42%, oklch(1 0 0 / 0.38) 46% 52%, transparent 56%),
+      repeating-conic-gradient(
+        from 15deg at 50% 50%,
+        oklch(1 0 0 / 0.18) 0 5deg,
+        transparent 5deg 23deg
+      );
+    --collectible-keyline: oklch(0.3 0.17 285 / 0.95);
+    --collectible-bloom: oklch(0.7 0.25 320 / 0.46);
+    --collectible-seal: oklch(0.72 0.23 322);
+    --collectible-seal-ink: oklch(0.98 0.015 250);
+    --collectible-background-size: 220% 220%, 72px 72px, 100% 100%;
+    --collectible-background-position: 18% 42%, 0 0, 0 0;
+  }
+
+  .foil-card[data-presentation="collectible"].tier-shiny {
+    --collectible-rail: conic-gradient(
+      from 35deg,
+      oklch(0.97 0.08 200),
+      oklch(0.73 0.25 280),
+      oklch(0.85 0.21 340),
+      oklch(0.98 0.16 95),
+      oklch(0.78 0.21 165),
+      oklch(0.7 0.23 235),
+      oklch(0.97 0.08 200)
+    );
+    --collectible-grain:
+      radial-gradient(circle at 13% 18%, white 0 1.8px, transparent 2.7px),
+      radial-gradient(circle at 76% 24%, white 0 1.3px, transparent 2.2px),
+      radial-gradient(circle at 30% 82%, white 0 1.5px, transparent 2.5px),
+      repeating-linear-gradient(128deg, transparent 0 7px, oklch(1 0 0 / 0.28) 8px 9px);
+    --collectible-keyline: oklch(0.94 0.11 235 / 0.98);
+    --collectible-bloom: oklch(0.76 0.25 315 / 0.66);
+    --collectible-seal: oklch(0.89 0.2 335);
+    --collectible-seal-ink: oklch(0.25 0.12 300);
+    --collectible-background-size: 17px 17px, 29px 29px, 37px 37px, 11px 11px, 100% 100%;
+    --collectible-background-position: 0 0, 9px 5px, 4px 13px, 0 0, 0 0;
+  }
+
+  .foil-media[data-presentation="collectible"].foil-frame {
+    display: block;
+    aspect-ratio: 4 / 5;
+    overflow: visible;
+    border: 0;
+    padding: 4px 16px 4px 4px;
+    background: transparent;
+    box-shadow: none;
+    animation: none;
+  }
+
+  .foil-media[data-presentation="collectible"] [data-slot="collectible-backing"] {
+    position: absolute;
+    inset: 0 12px 0 0;
+    border: 1px solid color-mix(in oklab, var(--collectible-keyline) 28%, white);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(145deg, oklch(1 0 0), oklch(0.91 0.012 260)), var(--color-card);
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 0.9) inset,
+      0 -2px 3px oklch(0.15 0.03 270 / 0.22) inset,
+      0 8px 18px oklch(0.12 0.04 280 / 0.24),
+      0 0 26px var(--collectible-bloom);
+  }
+
+  .foil-media[data-presentation="collectible"] [data-slot="collectible-rail"] {
+    position: relative;
+    display: block;
+    height: 100%;
+    padding: 12px;
+    border: 1px solid var(--collectible-keyline);
+    border-radius: calc(var(--radius-lg) - 4px);
+    background-image: var(--collectible-grain), var(--collectible-rail);
+    background-position: var(--collectible-background-position, 0 0, 0 0);
+    background-size: var(--collectible-background-size, auto, 100% 100%);
+    box-shadow:
+      0 1px 1px oklch(1 0 0 / 0.72) inset,
+      0 -2px 2px oklch(0.12 0.03 280 / 0.32) inset,
+      0 0 0 2px oklch(1 0 0 / 0.34) inset;
+  }
+
+  .foil-media[data-presentation="collectible"] [data-slot="collectible-rail"]::before {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    top: 3px;
+    right: 3px;
+    width: 30px;
+    height: 30px;
+    pointer-events: none;
+    background: linear-gradient(135deg, oklch(1 0 0 / 0.72), oklch(1 0 0 / 0.08));
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+    mix-blend-mode: screen;
+  }
+
+  .foil-media[data-presentation="collectible"] [data-slot="collectible-rail"]::after {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    border: 1px solid oklch(1 0 0 / 0.48);
+    border-radius: calc(var(--radius-md) - 2px);
+    pointer-events: none;
+    background-image: linear-gradient(
+      112deg,
+      transparent 25%,
+      oklch(1 0 0 / 0.08) 39%,
+      oklch(1 0 0 / 0.72) 49%,
+      oklch(1 0 0 / 0.12) 59%,
+      transparent 74%
+    );
+    background-position: 160% 0;
+    background-size: 240% 100%;
+    mix-blend-mode: screen;
+  }
+
+  .sheen .foil-media[data-presentation="collectible"] [data-slot="collectible-rail"]::after {
+    animation: collectible-rail-sheen 4.8s ease-in-out infinite;
+    animation-play-state: var(--glow-play-state);
+  }
+
+  .foil-media[data-presentation="collectible"] [data-slot="collectible-window"] {
+    position: relative;
+    z-index: 3;
+    display: block;
+    height: 100%;
+    overflow: hidden;
+    border: 2px solid var(--collectible-keyline);
+    border-radius: var(--radius-md);
+    background: var(--color-muted);
+    box-shadow:
+      0 0 0 1px oklch(1 0 0 / 0.44),
+      0 3px 8px oklch(0.1 0.03 280 / 0.38) inset;
+  }
+
+  [data-slot="collectible-art-link"] {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--color-muted);
+  }
+
+  [data-slot="collectible-art-link"]::after {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    pointer-events: none;
+    background: color-mix(in oklab, var(--color-muted) 28%, transparent);
+    box-shadow: 0 0 28px oklch(0.08 0.02 280 / 0.35) inset;
+  }
+
+  [data-slot="collectible-art-link"] > [data-slot="meme-art"] {
+    position: absolute;
+    z-index: 1;
+    inset: 8px;
+    width: calc(100% - 16px);
+    height: calc(100% - 16px);
+  }
+
+  [data-slot="tier-seal"] {
+    position: absolute;
+    z-index: 4;
+    top: 11px;
+    right: 4px;
+    display: inline-flex;
+    width: 32px;
+    height: 32px;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(5deg);
+    border: 3px solid oklch(0.98 0.008 260);
+    border-radius: var(--radius-sm);
+    background: var(--collectible-seal);
+    color: var(--collectible-seal-ink);
+    box-shadow:
+      0 0 0 1px var(--collectible-keyline),
+      0 4px 9px oklch(0.12 0.03 280 / 0.38);
+  }
+
+  [data-slot="tier-seal"] svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  [data-slot="tier-seal"] [data-slot="tier-seal-crown"] {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .tier-shiny [data-slot="tier-seal"] {
+    border-color: oklch(0.98 0.07 200);
+    box-shadow:
+      0 0 0 1px var(--collectible-keyline),
+      0 4px 12px oklch(0.12 0.03 280 / 0.42),
+      0 0 20px var(--collectible-bloom);
+  }
+
   /* Freeze, never delete: the static foil stays painted, so a rarity is still legible without the
      motion that normally carries it. */
   @media (prefers-reduced-motion: reduce) {
@@ -355,21 +678,40 @@
       animation-play-state: paused;
     }
 
-    .sheen .foil-media::after {
+    .sheen .foil-media:not([data-presentation="collectible"])::after {
       animation: none;
       background-position: 50% 0;
     }
 
-    .sparkle .foil-media::before {
+    .sparkle .foil-media:not([data-presentation="collectible"])::before {
       animation: none;
       opacity: 0.6;
+    }
+
+    .sheen .foil-media[data-presentation="collectible"] [data-slot="collectible-rail"]::after {
+      animation: none;
+      background-position: 50% 0;
     }
   }
 
   @media (forced-colors: active) {
-    .sheen .foil-media::after,
-    .sparkle .foil-media::before {
+    .sheen .foil-media:not([data-presentation="collectible"])::after,
+    .sparkle .foil-media:not([data-presentation="collectible"])::before {
       display: none;
+    }
+
+    .foil-media[data-presentation="collectible"] [data-slot="collectible-backing"],
+    .foil-media[data-presentation="collectible"] [data-slot="collectible-rail"] {
+      background: Canvas;
+      box-shadow: none;
+    }
+
+    .foil-media[data-presentation="collectible"] [data-slot="collectible-window"],
+    [data-slot="tier-seal"] {
+      border-color: CanvasText;
+      background: Canvas;
+      color: CanvasText;
+      box-shadow: none;
     }
 
     .foil-frame {

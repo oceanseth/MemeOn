@@ -583,6 +583,12 @@ export const WideArt: Story = {
         ...detail().card,
         media: {
           kind: 'image',
+          backdropImageProps: {
+            src: WIDE_ART,
+            alt: '',
+            'aria-hidden': true,
+            loading: 'lazy',
+          },
           imageProps: {
             src: WIDE_ART,
             alt: 'MY IDEA / MY IDEA AFTER ASKING CHATGPT',

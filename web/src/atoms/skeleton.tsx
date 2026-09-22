@@ -14,9 +14,8 @@ export const skeletonVariants = cva(
     variants: {
       variant: {
         default: '',
-        /** a grid `MemeCard` is its square art plus 124px: the card inset (16) and the reserved
-         *  meta — two title lines, the stats line, the two-line value row and their spacing */
-        card: 'aspect-square box-content pb-31',
+        /** Children reserve the 4:5 shell and width-responsive metadata inside this container. */
+        card: '@container',
         row: 'min-h-16',
         /** stands in for an `Avatar size="hero"`: the same radius, the caller gives the size */
         avatar: 'rounded-xl',
@@ -30,7 +29,7 @@ export const skeletonVariants = cva(
 export type SkeletonProps = ComponentPropsWithoutRef<'div'> & VariantProps<typeof skeletonVariants>
 
 /** Decorative by default: the parent owns `aria-busy` or the loading text. */
-export function Skeleton({ className, variant, ...props }: SkeletonProps) {
+export function Skeleton({ className, variant, children, ...props }: SkeletonProps) {
   return (
     <div
       data-slot="skeleton"
@@ -38,7 +37,16 @@ export function Skeleton({ className, variant, ...props }: SkeletonProps) {
       aria-hidden="true"
       className={cn(skeletonVariants({ variant }), className)}
       {...props}
-    />
+    >
+      {variant === 'card' ? (
+        <>
+          <span data-slot="skeleton-card-art" className="block aspect-4/5 w-full" />
+          <span data-slot="skeleton-card-meta" className="block h-29 @max-card-narrow:h-35.5" />
+        </>
+      ) : (
+        children
+      )}
+    </div>
   )
 }
 

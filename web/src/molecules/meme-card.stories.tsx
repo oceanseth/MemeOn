@@ -17,6 +17,7 @@ import type { Meme } from '../lib/types'
 import { memeCardCopy as copy } from '../copy/memeCard'
 import { buildMemeCardModel, buildReducedMotionMemeCardModel } from '../lib/memeCardModel'
 import { MemeCard } from '@/molecules/meme-card'
+import { SkeletonCard } from '@/atoms/skeleton'
 
 /** Story-local fixtures: tier ladder uses real dev art; ids stay stable for link assertions. */
 function localMeme(partial: Pick<Meme, 'id' | 'title' | 'reshares'> & Partial<Meme>): Meme {
@@ -75,6 +76,60 @@ const noViewsMeme = localMeme({
 })
 delete noViewsMeme.views
 
+const artFixture = (width: number, height: number, caption: string) =>
+  `data:image/svg+xml,${encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">` +
+      `<defs><linearGradient id="g" x2="1" y2="1"><stop stop-color="#7028e4"/><stop offset="1" stop-color="#19c9d7"/></linearGradient></defs>` +
+      `<rect width="${width}" height="${height}" fill="url(#g)"/>` +
+      `<circle cx="${width / 2}" cy="${height / 2}" r="${Math.min(width, height) / 4}" fill="#ffd84d"/>` +
+      `<rect y="${height * 0.76}" width="${width}" height="${height * 0.24}" fill="#fff"/>` +
+      `<text x="${width / 2}" y="${height * 0.9}" text-anchor="middle" fill="#171421" font-family="system-ui" font-weight="700" font-size="${Math.max(16, Math.min(width, height) / 12)}">${caption}</text>` +
+      '</svg>',
+  )}`
+
+const mediaShapes = [
+  localMeme({
+    id: 'meme-square-art',
+    title: 'square art',
+    reshares: 1,
+    imageUrl: artFixture(400, 400, 'SQUARE'),
+  }),
+  localMeme({
+    id: 'meme-wide-art',
+    title: 'wide art',
+    reshares: 12,
+    imageUrl: artFixture(640, 300, 'WIDE CAPTION'),
+  }),
+  localMeme({
+    id: 'meme-tall-art',
+    title: 'tall art',
+    reshares: 60,
+    imageUrl: artFixture(320, 640, 'TALL'),
+  }),
+  localMeme({
+    id: 'meme-caption-art',
+    title: 'caption intact',
+    reshares: 400,
+    imageUrl: artFixture(640, 360, 'BOTTOM TEXT STAYS'),
+  }),
+] as const
+
+const apertureMeme = localMeme({
+  id: 'meme-aperture-art',
+  title: 'corner captions',
+  reshares: 60,
+  imageUrl: `data:image/svg+xml,${encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400">' +
+      '<rect width="300" height="400" fill="#34205d"/>' +
+      '<rect x="1" y="1" width="18" height="18" fill="#fff"/>' +
+      '<rect x="281" y="1" width="18" height="18" fill="#ffdc49"/>' +
+      '<rect x="1" y="381" width="18" height="18" fill="#4ee4ff"/>' +
+      '<rect x="281" y="381" width="18" height="18" fill="#ff5bbd"/>' +
+      '<text x="150" y="210" text-anchor="middle" fill="#fff" font-family="system-ui" font-size="24">ALL FOUR CORNERS</text>' +
+      '</svg>',
+  )}`,
+})
+
 const allTiers = TIERS.map((tier, index) =>
   localMeme({
     id: `meme-tier-${tier.key}`,
@@ -115,8 +170,16 @@ export const Paper: Story = {
       'href',
       '/m/meme-paper',
     )
-    // the art is named by the card and the link, never a third time by itself
-    await expect(within(card).queryByRole('img')).toBeNull()
+    // the art is named by the card and link; the only image role is the tier's corner seal
+    await expect(
+      within(card).getByRole('img', {
+        name: `${paperMeme.tier.name} · ${paperMeme.tier.rarity}`,
+      }),
+    ).toBeVisible()
+    await expect(card.querySelector('[data-slot="meme-art-backdrop"]')).toHaveAttribute(
+      'loading',
+      'lazy',
+    )
     await expect(card.querySelector('[data-slot="meme-art"]')).toHaveStyle({
       objectFit: 'contain',
     })
@@ -195,6 +258,60 @@ export const VideoReducedMotion: Story = {
   },
 }
 
+/** Square, wide, tall and caption-heavy sources share a stage without cropping the foreground. */
+export const MediaShapes: Story = {
+  args: { model: buildMemeCardModel(mediaShapes[0]) },
+  decorators: [
+    (Story) => (
+      <div
+        style={{
+          width: 'min(1000px, calc(100vw - 32px))',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: 20,
+        }}
+      >
+        <Story />
+      </div>
+    ),
+  ],
+  render: () => (
+    <>
+      {mediaShapes.map((meme) => (
+        <MemeCard key={meme.id} model={buildMemeCardModel(meme)} />
+      ))}
+    </>
+  ),
+  play: async ({ canvasElement }) => {
+    const cards = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="meme-card"]')]
+    await expect(cards).toHaveLength(4)
+    for (const card of cards) {
+      await expect(card.querySelector('[data-slot="meme-art"]')).toHaveStyle({
+        objectFit: 'contain',
+      })
+      await expect(card.querySelector('[data-slot="meme-art-backdrop"]')).toHaveAttribute(
+        'aria-hidden',
+        'true',
+      )
+    }
+  },
+}
+
+/** A 3:4 source that fills the aperture keeps all four source corners inside the rounded mask. */
+export const ApertureCorners: Story = {
+  args: { model: buildMemeCardModel(apertureMeme) },
+  play: async ({ canvasElement }) => {
+    const art = canvasElement.querySelector<HTMLElement>('[data-slot="meme-art"]')!
+    const window = canvasElement.querySelector<HTMLElement>('[data-slot="collectible-window"]')!
+    const artBox = art.getBoundingClientRect()
+    const windowBox = window.getBoundingClientRect()
+    await expect(Math.round(artBox.left - windowBox.left)).toBeGreaterThanOrEqual(8)
+    await expect(Math.round(artBox.top - windowBox.top)).toBeGreaterThanOrEqual(8)
+    await expect(Math.round(windowBox.right - artBox.right)).toBeGreaterThanOrEqual(8)
+    await expect(Math.round(windowBox.bottom - artBox.bottom)).toBeGreaterThanOrEqual(8)
+  },
+}
+
 export const Focused: Story = {
   args: { model: buildMemeCardModel(holoMeme) },
   play: async ({ canvasElement }) => {
@@ -263,6 +380,105 @@ export const Phone: Story = {
     },
   },
   globals: { viewport: { value: 'phone', isRotated: false } },
+}
+
+/** High-tier five-digit metrics stack below the tier name on a 166px phone card. */
+export const PhoneHighCounts: Story = {
+  args: { model: buildMemeCardModel(prismaticMeme) },
+  parameters: {
+    cardWidth: 350,
+    viewport: {
+      options: {
+        phone: {
+          name: 'iPhone 14',
+          styles: { width: '390px', height: '844px' },
+        },
+      },
+    },
+  },
+  globals: { viewport: { value: 'phone', isRotated: false } },
+  render: () => (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 166px)',
+        alignItems: 'start',
+        gap: 18,
+      }}
+    >
+      {[prismaticMeme, shinyMeme].map((meme) => (
+        <MemeCard key={meme.id} model={buildMemeCardModel(meme)} />
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const cards = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="meme-card"]')]
+    await expect(cards).toHaveLength(2)
+    for (const card of cards) {
+      await expect(card.scrollWidth).toBeLessThanOrEqual(card.clientWidth)
+      const kicker = card.querySelector<HTMLElement>('[data-slot="meme-kicker"]')!
+      await expect(getComputedStyle(kicker).flexDirection).toBe('column')
+    }
+  },
+}
+
+/** Loading and loaded phone cards reserve the same row height. */
+export const PhoneSkeletonParity: Story = {
+  ...PhoneHighCounts,
+  render: () => (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 166px)',
+        alignItems: 'start',
+        gap: 18,
+      }}
+    >
+      <MemeCard model={buildMemeCardModel(prismaticMeme)} />
+      <SkeletonCard />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const card = canvasElement.querySelector<HTMLElement>('[data-slot="meme-card"]')!
+    const skeleton = canvasElement.querySelector<HTMLElement>('[data-slot="skeleton-card"]')!
+    await expect(Math.abs(card.offsetHeight - skeleton.offsetHeight)).toBeLessThanOrEqual(1)
+  },
+}
+
+/** Card-width containment switches the skeleton at 220px, independent of the viewport. */
+export const SkeletonParity: Story = {
+  args: { model: buildMemeCardModel(prismaticMeme) },
+  parameters: { cardWidth: 1200 },
+  render: () => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'start', gap: 24 }}>
+      {[166, 216, 230, 280].map((width) => (
+        <div
+          key={width}
+          data-slot="skeleton-parity-pair"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(2, ${width}px)`,
+            alignItems: 'start',
+            gap: 18,
+          }}
+        >
+          <MemeCard model={buildMemeCardModel(prismaticMeme)} />
+          <SkeletonCard />
+        </div>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const pairs = [
+      ...canvasElement.querySelectorAll<HTMLElement>('[data-slot="skeleton-parity-pair"]'),
+    ]
+    await expect(pairs).toHaveLength(4)
+    for (const pair of pairs) {
+      const card = pair.querySelector<HTMLElement>('[data-slot="meme-card"]')!
+      const skeleton = pair.querySelector<HTMLElement>('[data-slot="skeleton-card"]')!
+      await expect(Math.abs(card.offsetHeight - skeleton.offsetHeight)).toBeLessThanOrEqual(1)
+    }
+  },
 }
 
 /** the whole rarity ladder in one frame — the cheapest guard against two rungs collapsing into one */
