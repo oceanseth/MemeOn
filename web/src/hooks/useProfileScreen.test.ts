@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { profileCopy as copy } from '../copy/profile'
-import { PROFILE_CARDS_ID, buildProfileTabProps } from './useProfileScreen'
+import { PROFILE_CARDS_ID, buildProfileTabLabels, buildProfileTabProps } from './useProfileScreen'
 
 describe('profile tab model props', () => {
   it('names the selected tab and sends the picked one back', () => {
@@ -23,7 +23,9 @@ describe('profile tab model props', () => {
   })
 
   it('builds the full tab trigger from the tab name and count', () => {
-    expect(copy.tabs.trigger(copy.tabs.created, 3)).toBe('Created (3)')
-    expect(copy.tabs.trigger(copy.tabs.binder, 1)).toBe('Binder (1)')
+    const labels = buildProfileTabLabels(3, 1)
+
+    expect(labels.createdTabLabel).toBe(copy.tabs.trigger(copy.tabs.created, 3))
+    expect(labels.binderTabLabel).toBe(copy.tabs.trigger(copy.tabs.binder, 1))
   })
 })

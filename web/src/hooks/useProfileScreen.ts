@@ -182,6 +182,16 @@ export function buildProfileTabProps(
   }
 }
 
+export function buildProfileTabLabels(
+  createdCount: number,
+  binderCount: number,
+): Pick<ProfileScreenModel, 'createdTabLabel' | 'binderTabLabel'> {
+  return {
+    createdTabLabel: copy.tabs.trigger(copy.tabs.created, createdCount),
+    binderTabLabel: copy.tabs.trigger(copy.tabs.binder, binderCount),
+  }
+}
+
 /** Everything `ProfileScreen` renders. The route actor owns data, errors, tabs and action state. */
 export function useProfileScreen({
   initialTab = 'created',
@@ -434,8 +444,7 @@ export function useProfileScreen({
     createdCount,
     binderCount,
     tabsListLabel: copy.tabs.section,
-    createdTabLabel: copy.tabs.trigger(copy.tabs.created, createdCount),
-    binderTabLabel: copy.tabs.trigger(copy.tabs.binder, binderCount),
+    ...buildProfileTabLabels(createdCount, binderCount),
     cards: visible.map((meme) => ({
       id: `${tab}-${meme.id}`,
       memeCard: buildMemeCardModel(meme),
