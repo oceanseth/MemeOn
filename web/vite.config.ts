@@ -6,6 +6,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
+import { configDefaults } from 'vitest/config'
 const dirname =
   typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url))
 const underVitest = Boolean(process.env.VITEST)
@@ -66,7 +67,14 @@ export default defineConfig(async ({ command, isPreview }) => ({
         test: {
           name: 'unit',
           environment: 'node',
-          include: ['src/**/*.test.ts', '.storybook/**/*.test.ts'],
+          include: [
+            'src/**/*.test.ts',
+            'src/**/*.test.tsx',
+            '.storybook/**/*.test.ts',
+            '.storybook/**/*.test.tsx',
+          ],
+          // *.test.tsx also matches *.runtime.test.tsx; those stay on project runtime.
+          exclude: [...configDefaults.exclude, '**/*.runtime.test.tsx'],
         },
       },
       {
