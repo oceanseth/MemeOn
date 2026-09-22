@@ -63,6 +63,7 @@ export const memeDetailCopy = {
     balance: (coins: number) =>
       `You’ve got ${braincells(coins)}. Pick how much of the joke you want.`,
     pickAtLeastOne: 'Pick at least 1 share.',
+    onlyListed: (shares: number) => `Only ${plural(shares, 'share')} up for grabs.`,
     short: (shortBy: number) =>
       `${braincells(shortBy)} short — sell some shares or open a pack first.`,
     buy: 'Buy shares',
