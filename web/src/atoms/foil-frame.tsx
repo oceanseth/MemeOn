@@ -1,5 +1,4 @@
 import { createElement, forwardRef, type HTMLAttributes, type ReactNode } from 'react'
-import { glowStyleFor } from '@memeon/shared/tiers'
 import { cn } from '@/lib/cn'
 import { tierFrameClasses } from '@/atoms/foil'
 import './foil.css'
@@ -16,7 +15,7 @@ export interface FoilCardProps extends HTMLAttributes<HTMLElement> {
   presentation?: 'default' | 'collectible' | undefined
 }
 
-/** Host for a foil frame. Callers pass `tierKey`; they do not set glow or foil class names. */
+/** Host for a foil frame. Callers pass `tierKey`; they do not set foil class names. */
 export const FoilCard = forwardRef<HTMLElement, FoilCardProps>(function FoilCard(
   { as = 'div', tierKey, rarityLadder, presentation = 'default', className, ...rest },
   ref,
@@ -26,7 +25,6 @@ export const FoilCard = forwardRef<HTMLElement, FoilCardProps>(function FoilCard
     ref,
     className: cn(tierFrameClasses(tierKey), rarityLadder && 'tier-card', className),
     'data-presentation': presentation,
-    'data-glow-style': glowStyleFor(tierKey),
   })
 })
 
