@@ -193,3 +193,25 @@ export const GiftFailureStaysInOverlay: Story = {
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull())
   },
 }
+
+/** A 200 with no friends is the empty state, not the error Empty. */
+export const Empty: Story = {
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'GET /api/friends': () => ({ body: { friends: [] } }),
+      },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <FriendsView />
+    </ConnectedStory>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByText(copy.empty.title)).toBeInTheDocument()
+    await expect(canvas.queryByRole('alert')).toBeNull()
+  },
+}
