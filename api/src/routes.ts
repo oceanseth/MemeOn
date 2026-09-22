@@ -205,24 +205,39 @@ const publicMeme = (m: Meme) => ({
  * Paginated marketplace query (newest first). Filters apply server-side and
  * the server keeps pulling pages until it fills `limit` matches (bounded),
  * so the client always gets a full page + a resume cursor.
+ *
+ * Text queries also hit the semantic index: the lexical scan is bounded to the
+ * newest ~1000 memes, which silently misses most of a large catalogue. Exact
+ * title/tag/creator hits rank first; semantic neighbours fill the rest.
  */
 authed('GET /api/memes', async (req) => {
   const { q, type, tier, listed } = req.query
   const limit = Math.min(Math.max(Number(req.query.limit) || 60, 1), 120)
-  const needle = (q ?? '').toLowerCase()
-  const matches = (m: Meme): boolean => {
+  const needle = (q ?? '').toLowerCase().trim()
+  const passesFilters = (m: Meme): boolean => {
     if (m.private) return false
-    if (needle) {
-      const hit =
-        m.title.toLowerCase().includes(needle) ||
-        (m.tags ?? []).some((t) => t.toLowerCase().includes(needle)) ||
-        m.creatorName.toLowerCase().includes(needle)
-      if (!hit) return false
-    }
     if ((type === 'image' || type === 'video') && m.mediaType !== type) return false
     if (tier && tierFor(m.reshares).key !== tier) return false
     if (listed === 'true' && !(m.listing && m.listing.shares > 0)) return false
     return true
+  }
+  const lexicalHit = (m: Meme): boolean =>
+    m.title.toLowerCase().includes(needle) ||
+    (m.tags ?? []).some((t) => t.toLowerCase().includes(needle)) ||
+    m.creatorName.toLowerCase().includes(needle)
+
+  // fresh text query → semantic candidates from the whole catalogue
+  let semantic: Meme[] = []
+  if (needle && !req.query.cursor) {
+    try {
+      const ids = await vectors.searchIds(needle, Math.max(limit, 60))
+      const byId = new Map((await db.getMemesByIds(ids)).map((m) => [m.id, m]))
+      semantic = ids
+        .map((id) => byId.get(id))
+        .filter((m): m is Meme => !!m && passesFilters(m))
+    } catch (err) {
+      console.error('semantic search failed, lexical scan only', err)
+    }
   }
 
   const out: Meme[] = []
@@ -231,10 +246,21 @@ authed('GET /api/memes', async (req) => {
   for (let i = 0; i < 10; i++) {
     const page = await db.listMemesPage({ cursor, limit: 100 })
     for (const m of page.memes) {
-      if (out.length < limit && matches(m)) out.push(m)
+      if (out.length < limit && passesFilters(m) && (!needle || lexicalHit(m))) out.push(m)
     }
     cursor = page.nextCursor
     if (!cursor || out.length >= limit) break
+  }
+
+  if (semantic.length) {
+    const seen = new Set(out.map((m) => m.id))
+    for (const m of semantic) {
+      if (!seen.has(m.id)) out.push(m)
+    }
+    // exact hits (either source) before semantic-only neighbours; the sort is
+    // stable, so newest-first / best-match-first order survives within groups
+    out.sort((a, b) => Number(lexicalHit(b)) - Number(lexicalHit(a)))
+    return json(200, { memes: out.slice(0, limit).map(publicMeme), nextCursor: null })
   }
   return json(200, { memes: out.map(publicMeme), nextCursor: cursor })
 })
