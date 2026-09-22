@@ -187,6 +187,10 @@ export const createMemeCopy = {
     freshlyMinted: (tierName: string) => `${tierName} · freshly minted`,
     originFromAuthor: (provider: string, author: string) => `from ${provider} · @${author}`,
     originFrom: (provider: string) => `from ${provider}`,
+    /* Preview card only: GIPHY display name, and a fresh card's zero stats and value. */
+    giphyProvider: 'GIPHY',
+    zeroStats: '0 · 0',
+    zeroValue: '0',
     overCap: (kind: 'image' | 'video', sizeMb: number, capMb: number, advice: string) =>
       `that ${kind} is ${sizeMb}MB — the cap is ${capMb}MB, ${advice}`,
     overCapAdvice: {
