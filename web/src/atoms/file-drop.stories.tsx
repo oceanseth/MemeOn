@@ -47,8 +47,13 @@ export const Picked: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByText('cursed-capybara.png')).toBeVisible()
     await expect(canvas.queryByText('or drop one here')).not.toBeInTheDocument()
+    const input = canvas.getByLabelText('Image')
     const file = new File(['x'], 'other.png', { type: 'image/png' })
-    await userEvent.upload(canvas.getByLabelText('Image'), file)
+    await userEvent.upload(input, file)
+    await expect(input).toHaveValue('')
+    await expect(args.onFile).toHaveBeenCalledTimes(1)
+    await userEvent.upload(input, file)
+    await expect(args.onFile).toHaveBeenCalledTimes(2)
     await expect(args.onFile).toHaveBeenCalledWith(file)
   },
 }
