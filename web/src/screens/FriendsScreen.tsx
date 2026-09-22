@@ -38,7 +38,7 @@ const IDENTITY = cn(
   'focus-ring',
 )
 
-const META = 'block truncate text-xs font-medium text-muted-foreground'
+const META = cn('block truncate text-xs font-medium text-muted-foreground')
 
 /* The action cluster: raised companion first, the row's one bubblegum second, the quiet exit last.
    On a phone the two pills share the 310px row and the text action keeps its own 44px target. */
@@ -50,7 +50,7 @@ const PENDING_PILL = cn(
   'material-pressed text-base font-semibold text-muted-foreground',
 )
 
-const SECTION = 'flex flex-col gap-3.5'
+const SECTION = cn('flex flex-col gap-3.5')
 
 /** One person, one card: the shared shell every section fills with its own actions. */
 function PersonRow({

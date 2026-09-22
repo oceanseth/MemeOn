@@ -36,7 +36,7 @@ const LAYOUT =
   'grid grid-cols-1 items-start gap-5 2xl:grid-cols-(--grid-create) 2xl:gap-8'
 /** the preview column sticks to the top of the scroll once the two columns split */
 const RAIL = 'flex flex-col gap-4 2xl:sticky 2xl:top-(--topbar-dock)'
-const FORM_GRID = 'flex flex-col gap-3.5'
+const FORM_GRID = cn('flex flex-col gap-3.5')
 /**
  * A caption row sits 4px under its control on this form, where `Field`'s own rhythm is the 6px it
  * puts between a label and its control. `-mt-0.5` spends the difference, so the pair reads as one
@@ -59,8 +59,8 @@ function ModeChip({ model, icon }: { model: CreateMemeModeButtonModel; icon: Rea
 
 /* The mint preview's box model, spelled out here because the meme has no id, no link and no
    `MemeCardModel` until it is minted. FoilCard hosts the paper frame; the raised surface stays here. */
-const PREVIEW_CARD = 'group relative isolate rounded-lg material-card p-2 @container'
-const PREVIEW_INNER = 'relative flex h-full flex-col'
+const PREVIEW_CARD = cn('group relative isolate rounded-lg material-card p-2 @container')
+const PREVIEW_INNER = cn('relative flex h-full flex-col')
 /* same plate the marketplace card uses: a square, the whole meme contained */
 const PREVIEW_ART = 'block aspect-square w-full bg-muted object-contain'
 const PREVIEW_META = 'flex flex-col px-1.5 pt-3.5 pb-1.5'

@@ -16,7 +16,7 @@
  * types and `new Error(…)` messages are not counted. Neither is a class list: a
  * string inside a `className=` attribute or a class-merge call (`cn`, `cx`,
  * `clsx`, `cva`, `tv`, `twMerge`, `twJoin`), or one that reads as Tailwind —
- * all-lowercase tokens, a third of them carrying a `-`, `:`, `/` or `@`. A screen may
+ * all-lowercase tokens, at least three quarters of them carrying a `-`, `:`, `/` or `@`. A screen may
  * therefore hold its own layout in ordinary strings. It over-counts a little
  * rather than missing a caption; the baseline absorbs the noise.
  */
@@ -125,12 +125,12 @@ const isClassPosition = (node) => {
   return false
 }
 
-/** Reads as a Tailwind class list: every token lowercase, a third of them carrying `-`, `:`, `/` or `@`. */
+/** Reads as a Tailwind class list: every token lowercase, at least three quarters of them carrying `-`, `:`, `/` or `@`. */
 const looksLikeClassList = (text) => {
   const tokens = text.trim().split(/\s+/)
   if (tokens.length < 2) return false
   if (!tokens.every((token) => /^[-a-z0-9:_[\]/.()#%!*&>+~,@='\\$]+$/.test(token))) return false
-  return tokens.filter((token) => /[-:/@]/.test(token)).length * 3 >= tokens.length
+  return tokens.filter((token) => /[-:/@]/.test(token)).length * 4 >= tokens.length * 3
 }
 
 const KEYBOARD_KEYS = new Set(['Enter', 'Escape', 'Tab'])

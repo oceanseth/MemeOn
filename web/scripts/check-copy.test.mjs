@@ -198,6 +198,24 @@ test('does not count class lists: className, a merge call, or a string that read
   )
 })
 
+test('counts a standalone hyphenated sentence that is not a class list', () => {
+  withSrc(
+    {
+      'screens/SignUpScreen.tsx': "export const line = 'sign-up via e-mail now'\n",
+    },
+    ({ check, baseline }) => {
+      writeFileSync(baseline, JSON.stringify({}))
+
+      const result = check()
+      assert.equal(result.status, 1, result.output)
+      assert.match(result.output, /0 → 1/)
+
+      const listed = check('--list')
+      assert.match(listed.output, /sign-up via e-mail now/)
+    },
+  )
+})
+
 test('counts copy-like JsxText in screens/', () => {
   withSrc(
     {
