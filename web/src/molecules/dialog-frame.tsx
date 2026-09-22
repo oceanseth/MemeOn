@@ -106,8 +106,13 @@ export function DialogFrame({
           sheet
           initialFocus={initialFocus}
           finalFocus={finalFocus}
-          showCloseButton={Boolean(close)}
-          {...(close ? { closeLabel: close.label, closeDisabled: close.disabled } : {})}
+          {...(close
+            ? {
+                showCloseButton: true as const,
+                closeLabel: close.label,
+                closeDisabled: close.disabled,
+              }
+            : { showCloseButton: false as const })}
           className={className}
         >
           <DialogHeader>
