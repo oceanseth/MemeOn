@@ -9,7 +9,7 @@ import type { FriendEntry } from '../lib/types'
 import type { AppStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
 import { button as queryButton, click } from '../test/dom'
-import { deferred, settle } from '../test/runtime'
+import { deferred, settle, stubClipboardWrite } from '../test/runtime'
 import { mountSignedInRoot, unmountSignedInRoot } from '../test/signedInHost'
 import { FriendsView } from '../views/FriendsView'
 import { ProfileView } from '../views/ProfileView'
@@ -327,18 +327,6 @@ function stubShare(share: ((data: ShareData) => Promise<void>) | undefined) {
     writable: true,
     value: share,
   })
-}
-
-function stubClipboardWrite(writeText: (text: string) => Promise<void>) {
-  try {
-    Object.defineProperty(navigator, 'clipboard', {
-      configurable: true,
-      writable: true,
-      value: { writeText },
-    })
-  } catch {
-    vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeText)
-  }
 }
 
 const incomingPal: FriendEntry = {

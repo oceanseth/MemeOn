@@ -10,7 +10,7 @@ import type { Meme } from '../lib/types'
 import type { AppStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
 import { button as queryButton, click } from '../test/dom'
-import { deferred, settle } from '../test/runtime'
+import { deferred, settle, stubClipboardWrite } from '../test/runtime'
 import { mountSignedInRoot, unmountSignedInRoot } from '../test/signedInHost'
 import { MemeDetailView } from '../views/MemeDetailView'
 import { MarketplaceView } from '../views/MarketplaceView'
@@ -449,18 +449,6 @@ async function renderDetail(id: string): Promise<void> {
   })
 }
 
-function stubClipboardWrite(writeText: (text: string) => Promise<void>) {
-  try {
-    Object.defineProperty(navigator, 'clipboard', {
-      configurable: true,
-      writable: true,
-      value: { writeText },
-    })
-  } catch {
-    vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeText)
-  }
-}
-
 describe('MemeDetailView secondary failures', () => {
   const ownerMeme: Meme = {
     ...paperMeme,
@@ -535,6 +523,17 @@ describe('MemeDetailView secondary failures', () => {
     await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
     await click(button(memeDetailCopy.share.copy))
     await eventually(() => expect(button(memeDetailCopy.share.copyFailed)).toBeTruthy())
+  })
+
+  it('copies the share link and shows share.copied', async () => {
+    installDetailApi({ meme: ownerMeme })
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    stubClipboardWrite(writeText)
+    await renderDetail(ownerMeme.id)
+    await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
+    await click(button(memeDetailCopy.share.copy))
+    await eventually(() => expect(button(memeDetailCopy.share.copied)).toBeTruthy())
+    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/m/${ownerMeme.id}`)
   })
 
   it('surfaces memeplex.loadFailed without FAILing the page', async () => {
