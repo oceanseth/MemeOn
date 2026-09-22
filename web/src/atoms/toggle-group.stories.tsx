@@ -173,3 +173,27 @@ export const Disabled: Story = {
 }
 
 export const Dark: Story = { ...Segmented, globals: { theme: 'dark' } }
+
+/** An omitted group look is `default` and wins over an item that sets its own. */
+export const DefaultsWin: Story = {
+  args: {
+    'aria-label': 'Look',
+    defaultValue: ['one'],
+  },
+  render: (args) => (
+    <ToggleGroup {...args}>
+      <ToggleGroupItem value="one" variant="segment" size="sm">
+        One
+      </ToggleGroupItem>
+    </ToggleGroup>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const group = canvas.getByRole('group', { name: 'Look' })
+    await expect(group).toHaveAttribute('data-variant', 'default')
+    await expect(group).toHaveAttribute('data-size', 'default')
+    const item = canvas.getByRole('button', { name: 'One' })
+    await expect(item).toHaveAttribute('data-variant', 'default')
+    await expect(item).toHaveAttribute('data-size', 'default')
+  },
+}

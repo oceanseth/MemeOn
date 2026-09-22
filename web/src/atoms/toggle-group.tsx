@@ -55,7 +55,9 @@ export function ToggleGroup<Value extends string = string>({
       className={cn(toggleGroupVariants({ variant, orientation }), className)}
       {...props}
     >
-      <ToggleGroupContext.Provider value={{ variant, size }}>
+      <ToggleGroupContext.Provider
+        value={{ variant: variant ?? 'default', size: size ?? 'default' }}
+      >
         {children}
       </ToggleGroupContext.Provider>
     </ToggleGroupPrimitive>
