@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M reads clearly as background-color negative space between two mounds, no halo, great tri-color noodle tangle. At 16px the M legs blur into the blob, ambiguous shape.",
+  "tweak": "Widen the M gap and thicken mound inner edges so the negative-space strokes survive downsampling to 16px."
+}

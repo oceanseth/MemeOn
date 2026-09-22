@@ -1,0 +1,37 @@
+Design a single logo mark for "MemeOn", a meme trading-card marketplace. One centred mark on a flat, solid, edge-to-edge background. Square composition. No text, no wordmark, no lettering of any kind, no mockup, no multiple options in one image, no watermark.
+
+THE IDEA
+The mark is a tangle of chunky spaghetti-like noodles (the brand's "noodle brain" energy) with a capital letter M die-cut out of it. Think of a stencil or a cookie cutter: start from a full mass of noodles, then punch an M-shaped hole straight through the mass. Inside the hole there is nothing at all, only the flat background colour. The M is a knockout, an absence, a gap. It is the same colour as the background because it IS the background showing through.
+
+WHAT THE M IS NOT (these are the failure modes, avoid them)
+- NOT a solid filled letter drawn on top of the noodles.
+- NOT a letter drawn with a noodle, and NOT a noodle that traces or outlines the letter's edges.
+- NOT a white, pink, blue or dark letter shape with its own fill or its own outline.
+- NOT a letter inside a plate, ring or badge.
+If the M has a colour of its own, or an outline of its own, it is wrong. The edges of the M are the cut ends of the surrounding noodles.
+If a variation asks for a pale background, the inside of the M hole is that same pale colour for the same reason: it is the background showing through. Never draw a white letter; the M is a hole even on a pale ground.
+
+THE M VOID
+- One continuous M-shaped hole in a geometric extended sans style (like the typeface Unbounded at medium weight): wide stance, vertical outer stems, flat top terminals, the middle vertex reaching all the way down to the baseline.
+- The hole is wide: each stroke of the M is at least 1/8 of the mark's width, so the letter survives at 16x16 pixels.
+- The M is optically centred and spans roughly 55 to 65 percent of the mark's width.
+- The cut noodle ends bordering the hole are rounded. No noodle crosses the hole. No noodle runs along the hole's edge.
+
+NO OUTLINE
+No white sticker outline, no keyline, no border ring, no contour stroke, no halo, no drop shadow, no outer glow. The noodle mark sits directly on the background with nothing between them.
+
+LEGIBILITY AT 16 PIXELS
+Design it as a 16x16 favicon first: few, fat noodle strands (each noodle at least 1/12 of the mark's width thick), strong contrast between the noodle colours and the background colour, no thin lines, no fine detail, no tiny highlights, no texture, no speckles, no dots. Bold, simple, symmetrical silhouette with soft rounded corners everywhere.
+Pack the noodles tightly: inside the mark's silhouette the M hole must be the only large area of background. Gaps between neighbouring noodles are hairline or nonexistent, so that at 16 pixels the mark reads as one solid coloured shape with a dark M punched out of it.
+
+COLOURS (exact, nothing else unless the variation says so)
+- Noodles: bubblegum pink #F99AD1, soft ultraviolet #B7B6F8, sky blue #74C9F9.
+- Background, and therefore the inside of the M hole: deep ink violet #19182A.
+No black, no pure white, no yellow, no green, no orange, no extra hues.
+
+STYLE
+Flat vector illustration, clean crisp edges, solid fills, at most one soft highlight per noodle. No photorealism, no 3D bevel, no gloss, unless the variation below says otherwise.
+
+VARIATION (this overrides anything above that it contradicts)
+
+Silhouette: circular. Construction: M void carved through the tangle. Style: pixel art on a 24 by 24 pixel grid scaled up with crisp square pixels, no anti-aliasing, no dithering; noodles 3 pixels thick, M void strokes 3 pixels wide. Noodles: 4 to 5 strands, tri-colour. Background: ink violet.

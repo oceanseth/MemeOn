@@ -1,0 +1,8 @@
+{
+  "legible16": "no",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "Clean negative-space M at 256/32px, noodle knot reads well, no keyline/halo. At 16px the M collapses into two faint dark slivers, unreadable as a letter.",
+  "tweak": "Widen the M's negative-space gaps and simplify its counterforms so the hole survives downsampling to 16x16."
+}

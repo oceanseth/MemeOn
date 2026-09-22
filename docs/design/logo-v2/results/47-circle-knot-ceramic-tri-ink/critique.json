@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M reads clearly at 32px via negative space, no outline/halo, good spaghetti swirl vibe; at 16px the M smears into blobby pink/blue mass, edges too soft to confirm the letter.",
+  "tweak": "Increase contrast and thicken the negative-space M edges so the letter survives aggressive downscale to 16px."
+}

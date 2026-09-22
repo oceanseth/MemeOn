@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M is clean flat-bg negative space, no keyline, chunky pink/blue noodle wreath reads playful. At 16px the m blurs into two vertical bars, arch/legs less distinct than at 32px.",
+  "tweak": "Widen the m's counters and simplify to two clear legs so the arch survives 16px downsampling."
+}

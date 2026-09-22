@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "no",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M hole matches bg color but has a hard keyline outline tracing its silhouette — reads as a drawn/traced letter, not pure negative space. 16px legibility is blurry. No sticker halo; strong noodle tangle vibe.",
+  "tweak": "Remove the outline/keyline around the M silhouette entirely — let noodle strands butt directly against bare background with zero extra stroke defining the letter edge."
+}

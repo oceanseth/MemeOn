@@ -1,0 +1,365 @@
+{
+  "model": "nano_banana_pro",
+  "resolution": "1k",
+  "aspect_ratio": "1:1",
+  "axes": {
+    "silhouette": ["circle", "square", "brain", "nest", "ring", "fullbleed"],
+    "construction": ["carved", "mounds", "contour", "knot", "strata", "twirl", "openbottom"],
+    "style": ["flat", "ceramic", "clay", "pixel", "neon-flat", "neon-glow", "paper", "marker", "gummy", "matte"],
+    "palette": ["tri", "pink", "sky", "uv", "pink-sky", "uv-pink", "inverted-pink", "inverted-sky", "inverted-gradient", "multi"],
+    "bg": ["ink", "light", "pink", "sky", "gradient"],
+    "letter": ["M", "M-big", "M-wide", "m-lower"]
+  },
+  "variations": [
+    {
+      "id": "01",
+      "slug": "circle-carved-flat-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: a solid circular badge filled edge to edge with noodles. Construction: the M-shaped void is carved straight through the tangle so the ink background shows through as the letter. Noodles: 6 to 8 fat strands weaving loosely, colours alternating pink, ultraviolet and sky. Style: flat vector. Background: deep ink violet #19182A."
+    },
+    {
+      "id": "02",
+      "slug": "circle-carved-flat-tri-light",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "flat", "palette": "tri", "bg": "light", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: a solid circular badge of noodles. Construction: M void carved straight through the tangle. Noodles: 6 to 8 fat strands, pink, ultraviolet and sky. Style: flat vector. Background and M void: near-white #F6F6FC instead of ink. Keep the noodles saturated enough to hold contrast on the pale ground; the M must still read as a pale letter cut out of the tangle."
+    },
+    {
+      "id": "03",
+      "slug": "square-carved-flat-tri-ink",
+      "tags": { "silhouette": "square", "construction": "carved", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: a rounded square, like an app icon, filled edge to edge with noodles; corner radius about 22 percent of the width. Construction: M void carved through the tangle. Noodles: 6 to 8 fat strands, tri-colour. Style: flat vector. Background: ink violet #19182A shows through the M and surrounds the square."
+    },
+    {
+      "id": "04",
+      "slug": "brain-mounds-flat-tri-ink",
+      "tags": { "silhouette": "brain", "construction": "mounds", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": true,
+      "delta": "Silhouette: a soft brain seen from above: a rounded blob whose edge is scalloped into 8 to 10 lobes. Construction: two noodle mounds, a left hemisphere and a right hemisphere; the gap between them is not a straight crease but an M: the inner edges of the two mounds trace the outer stems and the central vertex of the letter, with the floor of the M open to the background. Noodles: 5 to 7 fat strands per hemisphere, tri-colour. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "05",
+      "slug": "brain-mounds-flat-tri-light",
+      "tags": { "silhouette": "brain", "construction": "mounds", "style": "flat", "palette": "tri", "bg": "light", "letter": "M" },
+      "ref": true,
+      "delta": "Silhouette: a scalloped brain-from-above blob with 8 to 10 lobes. Construction: two noodle hemispheres whose inner edges trace an M-shaped gap, floor open. Noodles: 5 to 7 fat strands per side, tri-colour. Style: flat vector. Background and M void: near-white #F6F6FC. Noodles stay saturated so the pale M reads."
+    },
+    {
+      "id": "06",
+      "slug": "nest-carved-flat-tri-ink",
+      "tags": { "silhouette": "nest", "construction": "carved", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": true,
+      "delta": "Silhouette: no badge; a free-standing nest of noodles with a naturally lumpy but roughly circular outer edge, like a pile of cooked spaghetti seen from above. Construction: M void carved through the pile. Noodles: 7 to 9 fat strands, tri-colour, loops visible at the outer edge. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "07",
+      "slug": "circle-contour-flat-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "contour", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular badge. Construction: contour-hugging: the strands nearest the void run parallel to the edges of the M, bending around its stems and vertex like a river bending around rocks, so the letter is outlined by the flow of noodles rather than cut abruptly. Outer strands loosen into loops. Noodles: 6 to 8 fat strands, tri-colour. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "08",
+      "slug": "circle-knot-flat-pink-ink",
+      "tags": { "silhouette": "circle", "construction": "knot", "style": "flat", "palette": "pink", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: ONE single continuous fat noodle, a single strand that loops and overlaps itself inside the circle like a loose knot; its loops enclose an M-shaped hole in the middle so the background reads as the letter. Noodles: exactly one strand, monochrome bubblegum pink #F99AD1 with ultraviolet #B7B6F8 shading only where it passes under itself. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "09",
+      "slug": "circle-knot-flat-sky-ink",
+      "tags": { "silhouette": "circle", "construction": "knot", "style": "flat", "palette": "sky", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: one single continuous fat noodle looping over itself, its loops enclosing an M-shaped hole. Noodles: exactly one strand, monochrome sky blue #74C9F9 with ultraviolet #B7B6F8 shading at the under-passes. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "10",
+      "slug": "square-strata-flat-tri-ink",
+      "tags": { "silhouette": "square", "construction": "strata", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: rounded square app icon. Construction: stencil strata: the noodles lie in wavy horizontal layers stacked top to bottom, and the M void is stencilled through all layers so each layer's ends stop at the letter's edge with rounded tips. Noodles: 6 to 7 thick wavy layers, colours cycling pink, ultraviolet, sky. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "11",
+      "slug": "circle-twirl-flat-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "twirl", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: a spaghetti twirl as if wound on a fork and seen from above, strands spiralling outward from the centre; the M void is cut through the spiral so the spiral's rings stop at the letter. No fork, no plate, no cutlery. Noodles: 5 to 6 fat spiralling strands, tri-colour. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "12",
+      "slug": "ring-carved-flat-tri-ink",
+      "tags": { "silhouette": "ring", "construction": "carved", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: a thick ring, a donut of noodles: the noodles form a fat torus with an open centre. Construction: the M void is carved through the ring so its stems and vertex bite into the ring's inner edge; the ring is thick enough (at least 1/3 of the diameter) that the M still reads. Noodles: 6 to 8 fat strands, tri-colour. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "13",
+      "slug": "circle-carved-ceramic-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "ceramic", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": true,
+      "delta": "Silhouette: circular badge. Construction: M void carved through the tangle. Noodles: 6 to 8 fat strands, tri-colour. Style: glazed ceramic: each noodle reads as a smooth glazed clay tube with one soft crescent highlight along its top-left edge (white at 35 percent opacity) and nothing else; no gloss reflections, no bevel edges, no environment reflections. Background: ink violet, matte."
+    },
+    {
+      "id": "14",
+      "slug": "circle-carved-clay-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "clay", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular badge. Construction: M void carved through the tangle. Noodles: 6 to 8 fat strands, tri-colour. Style: soft claymation: rounded, slightly squashed noodle tubes with gentle matte shading from one soft top light, subtle ambient occlusion where strands touch, no hard shadows, no outline. Background: flat ink violet."
+    },
+    {
+      "id": "15",
+      "slug": "square-carved-pixel-tri-ink",
+      "tags": { "silhouette": "square", "construction": "carved", "style": "pixel", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: rounded square app icon. Construction: M void carved through the tangle. Style: 16-bit pixel art drawn on a 32 by 32 pixel grid and then scaled up with crisp square pixels; every noodle is 3 to 4 pixels thick, every stroke of the M void is 4 pixels wide, no anti-aliasing, no dithering. Noodles: 5 to 6 strands, tri-colour. Background: ink violet."
+    },
+    {
+      "id": "16",
+      "slug": "circle-carved-pixel-pinksky-light",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "pixel", "palette": "pink-sky", "bg": "light", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: M void carved through the tangle. Style: pixel art on a 32 by 32 grid scaled up with crisp square pixels, no anti-aliasing. Noodles: 5 to 6 strands using only bubblegum pink #F99AD1 and sky blue #74C9F9. Background and M void: near-white #F6F6FC."
+    },
+    {
+      "id": "17",
+      "slug": "circle-carved-neonflat-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "neon-flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": true,
+      "delta": "Silhouette: circular. Construction: M void carved through the tangle. Style: neon tube look drawn FLAT: each noodle is a fat tube with a lighter core stripe running down its centre, like a lit neon tube, but with NO glow, NO bloom, NO haze around it. Noodles: 6 to 8 strands, tri-colour with paler cores. Background: ink violet."
+    },
+    {
+      "id": "18",
+      "slug": "circle-carved-neonglow-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "neon-glow", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: M void carved through the tangle. Style: soft neon: each noodle carries a tight, subtle glow of its own colour, no more than the noodle's own thickness in radius, and the M void stays crisp and dark in the centre; the glow must not fill the letter. Noodles: 6 to 8 strands, tri-colour. Background: ink violet."
+    },
+    {
+      "id": "19",
+      "slug": "brain-carved-flat-pinksky-ink",
+      "tags": { "silhouette": "brain", "construction": "carved", "style": "flat", "palette": "pink-sky", "bg": "ink", "letter": "M" },
+      "ref": true,
+      "delta": "Silhouette: scalloped brain-from-above blob, 8 to 10 lobes. Construction: M void carved through the tangle; there is no central crease, the M replaces it. Noodles: 6 to 8 fat strands using only bubblegum pink #F99AD1 and sky blue #74C9F9, roughly half each, no ultraviolet. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "20",
+      "slug": "circle-mounds-flat-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "mounds", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": true,
+      "delta": "Silhouette: circular. Construction: two noodle mounds, left and right, whose facing inner edges trace the M: the two outer stems are the mounds' outer verticals, and the mounds' inner edges dip to the centre to form the vertex. The M's floor is open to the background. Noodles: 5 to 7 fat strands per mound, tri-colour. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "21",
+      "slug": "circle-carved-flat-inverted-pink",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "flat", "palette": "inverted-pink", "bg": "pink", "letter": "M" },
+      "ref": false,
+      "delta": "INVERTED PALETTE. Silhouette: circular. Construction: M void carved through the tangle. Noodles: deep ink violet #19182A only, with soft ultraviolet #B7B6F8 as a thin core highlight on each strand. Background and M void: bubblegum pink #F99AD1. Style: flat vector."
+    },
+    {
+      "id": "22",
+      "slug": "circle-carved-flat-inverted-sky",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "flat", "palette": "inverted-sky", "bg": "sky", "letter": "M" },
+      "ref": false,
+      "delta": "INVERTED PALETTE. Silhouette: circular. Construction: M void carved through the tangle. Noodles: deep ink violet #19182A only, with soft ultraviolet #B7B6F8 core highlights. Background and M void: sky blue #74C9F9. Style: flat vector."
+    },
+    {
+      "id": "23",
+      "slug": "circle-carved-flat-inverted-gradient",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "flat", "palette": "inverted-gradient", "bg": "gradient", "letter": "M" },
+      "ref": false,
+      "delta": "INVERTED PALETTE. Silhouette: circular. Construction: M void carved through the tangle. Noodles: deep ink violet #19182A, solid. Background and M void: one smooth 135-degree linear gradient from bubblegum pink #F99AD1 at the top-left through ultraviolet #B7B6F8 to sky blue #74C9F9 at the bottom-right. Style: flat vector."
+    },
+    {
+      "id": "24",
+      "slug": "square-carved-flat-uvpink-ink",
+      "tags": { "silhouette": "square", "construction": "carved", "style": "flat", "palette": "uv-pink", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: rounded square app icon. Construction: M void carved through the tangle. Noodles: 6 to 8 fat strands using only ultraviolet #B7B6F8 and bubblegum pink #F99AD1, no sky blue. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "25",
+      "slug": "circle-openbottom-flat-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "openbottom", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular badge. Construction: the M void is carved through the tangle AND its two feet and the central vertex break out through the bottom edge of the circle, so the letter is open at the bottom like a bite taken out of the badge; the top of the M is fully enclosed by noodles. Noodles: 6 to 8 fat strands, tri-colour. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "26",
+      "slug": "nest-mounds-flat-tri-light",
+      "tags": { "silhouette": "nest", "construction": "mounds", "style": "flat", "palette": "tri", "bg": "light", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: no badge; a free-standing lumpy noodle pile. Construction: two mounds whose inner edges trace the M-shaped gap, floor open. Noodles: 5 to 7 fat strands per mound, tri-colour. Style: flat vector. Background and M void: near-white #F6F6FC."
+    },
+    {
+      "id": "27",
+      "slug": "circle-contour-ceramic-tri-light",
+      "tags": { "silhouette": "circle", "construction": "contour", "style": "ceramic", "palette": "tri", "bg": "light", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: contour-hugging: strands nearest the void run parallel to the M's edges, bending around its stems and vertex. Noodles: 6 to 8 fat strands, tri-colour. Style: glazed ceramic, one crescent highlight per strand, no gloss. Background and M void: near-white #F6F6FC."
+    },
+    {
+      "id": "28",
+      "slug": "circle-carved-paper-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "paper", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: M void carved through the tangle. Style: layered paper cut-out: each noodle is a flat strip of coloured paper, strands stacked with a very small soft shadow where one passes over another, no outline strokes, no visible paper texture. Noodles: 6 to 8 fat strands, tri-colour. Background: ink violet."
+    },
+    {
+      "id": "29",
+      "slug": "circle-carved-marker-tri-light",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "marker", "palette": "tri", "bg": "light", "letter": "M" },
+      "ref": true,
+      "delta": "Silhouette: roughly circular. Construction: M void carved through the tangle. Style: hand-drawn with fat chisel-tip markers: bold confident strokes with slightly uneven edges, marker-flat colour, no outline pen, no sketch lines. Noodles: 5 to 7 fat marker strokes, tri-colour. Background and M void: near-white #F6F6FC."
+    },
+    {
+      "id": "30",
+      "slug": "circle-carved-gummy-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "gummy", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": true,
+      "delta": "Silhouette: circular. Construction: M void carved through the tangle. Style: gummy candy: noodles look like translucent gummy worms with a soft inner glow of their own colour and one small soft highlight; still bold, no fine detail. Noodles: 6 to 7 fat strands, tri-colour. Background: ink violet."
+    },
+    {
+      "id": "31",
+      "slug": "circle-carved-matte-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "matte", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: M void carved through the tangle. Style: matte silicone: smooth rubbery noodles lit by one soft top light, gentle shading, no specular highlights, no outline. Noodles: 6 to 8 fat strands, tri-colour. Background: ink violet."
+    },
+    {
+      "id": "32",
+      "slug": "square-knot-flat-tri-ink",
+      "tags": { "silhouette": "square", "construction": "knot", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: rounded square app icon. Construction: three continuous fat noodles, one pink, one ultraviolet, one sky, each looping over the others, their combined loops enclosing an M-shaped hole in the centre. Style: flat vector, each strand a single solid colour. Background: ink violet."
+    },
+    {
+      "id": "33",
+      "slug": "circle-3strand-flat-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: M void carved through the tangle. Noodles: EXACTLY three very fat strands, one bubblegum pink, one ultraviolet, one sky blue, each at least 1/8 of the mark's width thick, weaving around each other and around the M void; nothing finer than that. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "34",
+      "slug": "circle-5strand-flat-tri-light",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "flat", "palette": "tri", "bg": "light", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: M void carved through the tangle. Noodles: exactly five fat strands, two pink, two sky, one ultraviolet, each at least 1/10 of the mark's width thick. Style: flat vector. Background and M void: near-white #F6F6FC."
+    },
+    {
+      "id": "35",
+      "slug": "brain-contour-flat-tri-ink",
+      "tags": { "silhouette": "brain", "construction": "contour", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": true,
+      "delta": "Silhouette: scalloped brain-from-above blob, 8 to 10 lobes. Construction: contour-hugging: the inner strands bend around the M void, following its stems and vertex, and the outer strands form the lobes. Noodles: 6 to 8 fat strands, tri-colour. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "36",
+      "slug": "circle-carved-flat-tri-ink-bigM",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M-big" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: M void carved through the tangle, OVERSIZED: the M spans about 75 percent of the mark's width and 60 percent of its height, leaving only a thick noodle rim around it and noodle fills inside the M's two counters. Noodles: 5 to 7 fat strands, tri-colour. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "37",
+      "slug": "circle-carved-flat-tri-ink-lowercase",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "flat", "palette": "tri", "bg": "ink", "letter": "m-lower" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: the void is a LOWERCASE m: two rounded arches on a stem, geometric sans, wide and chunky, each stroke of the void at least 1/8 of the mark's width. Noodles: 6 to 8 fat strands, tri-colour. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "38",
+      "slug": "circle-carved-flat-tri-ink-wideM",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M-wide" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: M void carved through the tangle, ULTRA-WIDE letterform: the M is very extended, flat-topped, with a shallow central vertex that stops halfway down rather than at the baseline, stems slightly splayed outward. Noodles: 6 to 8 fat strands, tri-colour. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "39",
+      "slug": "circle-carved-flat-mono-uv-ink",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "flat", "palette": "uv", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: M void carved through the tangle. Noodles: monochrome ultraviolet #B7B6F8 with bubblegum pink #F99AD1 as a thin core highlight on every strand. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "40",
+      "slug": "circle-carved-flat-tri-ink-sparse",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": true,
+      "delta": "Silhouette: circular but AIRY: the circle is not filled solid; noodles loop loosely with plenty of ink background showing between them, like a loose nest. Construction: M void carved through the loose tangle, kept clearly distinct from the incidental gaps by being much larger and cleaner than any other gap. Noodles: 5 to 6 fat strands, tri-colour. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "41",
+      "slug": "circle-carved-flat-tri-ink-dense",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": true,
+      "delta": "Silhouette: circular. Construction: M void carved through a DENSE pack: the noodles are packed tightly with almost no background between them, like the top of a full bowl of ramen, so the M is the only dark shape. Noodles: 8 to 10 fat strands, tri-colour, each still at least 1/12 of the mark's width thick. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "42",
+      "slug": "fullbleed-carved-flat-tri-ink",
+      "tags": { "silhouette": "fullbleed", "construction": "carved", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: NO badge: the noodles fill the entire square canvas edge to edge, cropped by the canvas, like app icon artwork. Construction: M void carved through the centre of the tangle. Noodles: 7 to 9 fat strands, tri-colour. Style: flat vector. Background and M void: ink violet."
+    },
+    {
+      "id": "43",
+      "slug": "fullbleed-carved-flat-tri-light",
+      "tags": { "silhouette": "fullbleed", "construction": "carved", "style": "flat", "palette": "tri", "bg": "light", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: NO badge: noodles fill the entire square canvas edge to edge, cropped by the canvas. Construction: M void carved through the centre. Noodles: 7 to 9 fat strands, tri-colour. Style: flat vector. Background and M void: near-white #F6F6FC."
+    },
+    {
+      "id": "44",
+      "slug": "square-carved-clay-pinksky-light",
+      "tags": { "silhouette": "square", "construction": "carved", "style": "clay", "palette": "pink-sky", "bg": "light", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: rounded square app icon. Construction: M void carved through the tangle. Noodles: 6 to 8 fat strands using only bubblegum pink #F99AD1 and sky blue #74C9F9. Style: soft claymation, matte, one soft top light, no hard shadows, no outline. Background and M void: near-white #F6F6FC."
+    },
+    {
+      "id": "45",
+      "slug": "circle-carved-flat-tri-ink-udon",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: M void carved through the tangle. Noodles: EXTRA CHUNKY: 4 to 5 strands each at least 1/6 of the mark's width thick, like udon rather than spaghetti, tri-colour. Style: flat vector. Background: ink violet."
+    },
+    {
+      "id": "46",
+      "slug": "circle-mounds-ceramic-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "mounds", "style": "ceramic", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": true,
+      "delta": "Silhouette: circular. Construction: two noodle mounds whose facing inner edges trace the M, floor open to the background. Noodles: 5 to 7 fat strands per mound, tri-colour. Style: glazed ceramic, one crescent highlight per strand, no gloss. Background: ink violet."
+    },
+    {
+      "id": "47",
+      "slug": "circle-knot-ceramic-tri-ink",
+      "tags": { "silhouette": "circle", "construction": "knot", "style": "ceramic", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: one single continuous fat noodle looping over itself, its loops enclosing an M-shaped hole. Noodles: one strand shading smoothly from pink to ultraviolet to sky along its length. Style: glazed ceramic, one crescent highlight, no gloss. Background: ink violet."
+    },
+    {
+      "id": "48",
+      "slug": "square-carved-flat-tri-ink-stickerless",
+      "tags": { "silhouette": "square", "construction": "carved", "style": "flat", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": true,
+      "delta": "Silhouette: rounded square app icon. Construction: M void carved through the tangle. Style: the flat cartoon sticker look of the reference image, but with the sticker's white outline completely removed: the noodle mass meets the ink background directly with no cream or white edge anywhere. Noodles: 6 to 8 fat strands, tri-colour. Background: ink violet."
+    },
+    {
+      "id": "49",
+      "slug": "circle-carved-pixel-tri-ink-24grid",
+      "tags": { "silhouette": "circle", "construction": "carved", "style": "pixel", "palette": "tri", "bg": "ink", "letter": "M" },
+      "ref": false,
+      "delta": "Silhouette: circular. Construction: M void carved through the tangle. Style: pixel art on a 24 by 24 pixel grid scaled up with crisp square pixels, no anti-aliasing, no dithering; noodles 3 pixels thick, M void strokes 3 pixels wide. Noodles: 4 to 5 strands, tri-colour. Background: ink violet."
+    },
+    {
+      "id": "50",
+      "slug": "hero-nest-carved-flat-multi-ink",
+      "tags": { "silhouette": "brain", "construction": "carved", "style": "flat", "palette": "multi", "bg": "ink", "letter": "M" },
+      "ref": true,
+      "delta": "CLOSEST EVOLUTION OF THE CURRENT MARK. Silhouette: the reference's brain-nest silhouette simplified into a rounded blob with 6 to 8 soft lobes. Construction: the solid white M of the reference is replaced by an M-shaped VOID carved through the noodles so the ink background reads as the letter. Noodles: 7 to 9 fat strands in the reference's playful neon family: bubblegum pink, sky blue, ultraviolet, magenta and lime, all as flat solid colours (this variation may use magenta and lime). No white outline, no dots, no speckles. Style: flat vector. Background: ink violet."
+    }
+  ]
+}

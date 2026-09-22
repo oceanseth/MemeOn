@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M is a clean background-colored hole in the noodle tangle at 256/32px, no traced edges, no keyline. At 16px the M dissolves into a dark smudge, barely readable.",
+  "tweak": "Widen the M negative-space strokes and simplify its crossbar/legs so the hole survives downscaling to 16px."
+}

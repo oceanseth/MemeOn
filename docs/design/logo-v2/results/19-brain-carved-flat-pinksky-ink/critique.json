@@ -1,0 +1,8 @@
+{
+  "legible16": "no",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M is a clean negative-space cutout at 256/32px, no outline, chunky playful pink/blue noodle tangle. At 16px it collapses into a blurry blob, M unreadable.",
+  "tweak": "Widen the negative-space M gap and thicken flanking noodles so the cutout survives a 16px downscale."
+}

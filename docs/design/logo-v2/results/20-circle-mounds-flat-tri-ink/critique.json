@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M is a true negative-space hole showing flat bg, no keyline. At 16px the M mushes into a blob with the noodle knot, legs blur together, legible but not crisp.",
+  "tweak": "Widen the M's legs and gap and thicken negative space so it survives downsampling at 16px."
+}

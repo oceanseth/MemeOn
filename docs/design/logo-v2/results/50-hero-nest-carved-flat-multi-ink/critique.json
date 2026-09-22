@@ -1,0 +1,8 @@
+{
+  "legible16": "no",
+  "negativeM": "no",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "Noodle tangle and colors are strong, but the M's diagonals are clearly bent by strands to trace the letterform, not incidental negative space; at 16px the letter dissolves into a muddy blob.",
+  "tweak": "Stop shaping strand edges to trace the M; let noodles overlap normally so the M is incidental negative space, widen gaps for 16px legibility."
+}

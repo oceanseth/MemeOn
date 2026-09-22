@@ -1,0 +1,8 @@
+{
+  "legible16": "yes",
+  "negativeM": "no",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "Clean bold M reads well at 16px and no outline/halo; tangle keeps playful chunky noodle vibe. But M is a stamped flat vector cutout with rigid typeface edges, not gaps emerging organically from the strand weave.",
+  "tweak": "Remove the flat M mask; instead thin/part the noodle strands themselves so the M shape emerges from their gaps and overlaps."
+}

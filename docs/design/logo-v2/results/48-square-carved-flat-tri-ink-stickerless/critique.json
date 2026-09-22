@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M reads clean as flat-bg negative space at 32px+, no sticker rim. At 16px it dissolves into a pink/blue blob, dark M barely distinguishable from tangle noise.",
+  "tweak": "Thicken and simplify the M negative-space gap so its stroke width survives downscaling to 16px."
+}

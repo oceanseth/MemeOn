@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "Tangled noodle wreath is playful and clean; M is genuine negative-space hole with no sticker outline, but at 16px the legs blur into mush and the M reads as a vague blob.",
+  "tweak": "Thicken the M's negative-space legs and widen the gap between them so the letterform survives heavy downscaling to 16px."
+}

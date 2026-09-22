@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "Clean negative-space M carved from tangle, no keyline/halo, strong spaghetti vibe at 256/32px. At 16px the M collapses into a dark blob, notch and peaks unclear.",
+  "tweak": "Widen the M's center notch and leg gaps so the negative-space letterform survives downscaling to 16px."
+}

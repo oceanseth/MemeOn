@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M is a clean carved hole showing flat background, ringed by lively pink/blue/purple noodles, no keyline. At true 16px the hole blurs into a mottled blob, M only guessable if you already know it's there.",
+  "tweak": "Widen the M negative-space strokes and simplify noodle density right at the hole edge so contrast survives downscaling to 16px."
+}

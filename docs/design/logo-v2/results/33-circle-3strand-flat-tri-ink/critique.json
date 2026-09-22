@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "partial",
+  "notes": "Crisp solid negative-space M reads great at 256/32, no halo. But strands are faceted flat-ink shards, not rounded noodles, and the M dissolves into a fuzzy smudge at 16px.",
+  "tweak": "Round strand facets into smooth tubular noodles and widen the M counters so the letter gaps survive downscaling to 16px."
+}

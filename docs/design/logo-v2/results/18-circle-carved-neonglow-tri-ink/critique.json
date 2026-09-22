@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "At 256px the M is a clean dark negative-space hole in a glowing pink/blue/purple noodle wreath, no sticker halo. At 16px the hole blurs into a vague blob, M shape barely readable.",
+  "tweak": "Widen the negative-space M strokes and thicken the noodle ring so the letterform gap stays bold and unbroken when downsampled to 16px."
+}

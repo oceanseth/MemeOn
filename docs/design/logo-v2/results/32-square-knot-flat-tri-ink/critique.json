@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M reads clearly as flat-bg negative space at 256/32px, no halo, fun woven noodle tangle. At 16px the M thins into a blurry smudge, hard to confirm as a letter.",
+  "tweak": "Thicken the M negative-space strokes and simplify the knot weave so fewer thin gaps survive downsampling to 16px."
+}

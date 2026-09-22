@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "Wreath of tangled noodles reads well; M is a clean pink negative-space cutout, no keyline halo. At 16px the M's center V is shallow, reads more like blocky H/window than M.",
+  "tweak": "Deepen the M's center notch and taper legs thinner so the negative-space V survives downsampling to 16px."
+}

@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M is a clean true negative-space hole, no halo, glossy playful noodle tangle reads well large. At 16px the M blurs into a dark asymmetric blob, legs and crossbar are lost.",
+  "tweak": "Thicken the M negative-space strokes and simplify noodle overlap density right behind the M so it survives downsampling."
+}

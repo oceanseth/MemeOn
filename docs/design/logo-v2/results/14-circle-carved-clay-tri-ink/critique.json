@@ -1,0 +1,8 @@
+{
+  "legible16": "no",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "Chunky playful noodle wreath, true flat negative-space M with no outline. At 16px the M collapses into an indistinct dark blob inside a ring, reading as O or donut, not M.",
+  "tweak": "Thicken the M's negative-space strokes and simplify the ring to fewer, thicker noodles so the M silhouette survives downscaling to 16px."
+}

@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "no",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "Noodles leave a plain circular gap; a solid dark M with its own light keyline is drawn on top of that gap, not carved as background-colored negative space. Reads as a face at 16px, not clearly M.",
+  "tweak": "Cut the M shape directly through noodle strands so bare background shows in the M's exact silhouette; delete the separate solid M fill and its keyline."
+}

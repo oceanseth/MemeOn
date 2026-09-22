@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "no",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M is a solid drawn white shape with its own dark outline, not a hole showing the pale background. No sticker halo around the tangle. Noodle vibe strong; 16px legibility is marginal but roughly readable.",
+  "tweak": "Delete the M's fill and stroke entirely; let the tangle's gap be transparent/background-colored only, with zero separate outline on the letterform."
+}

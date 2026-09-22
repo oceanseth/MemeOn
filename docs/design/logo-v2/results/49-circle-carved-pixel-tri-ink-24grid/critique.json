@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M reads clean as negative space at 256/32; noodle tangle is lively pixel spaghetti; no outline. At 16px the M collapses into a blobby face-like shape, peaks ambiguous.",
+  "tweak": "Widen M's negative-space strokes and increase contrast so its two peaks and center V stay distinct at 16x16."
+}

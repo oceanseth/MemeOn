@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "no",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M is a solid drawn pink/blue letterform sitting on top of the tangle, not negative space cut from noodle gaps. No white halo present. Noodle tangle reads well; legibility at 16px is weak, M blurs into background noise.",
+  "tweak": "Remove the drawn M entirely; instead route/gap the noodle strands so the M shape is revealed only as background-colored negative space between them."
+}

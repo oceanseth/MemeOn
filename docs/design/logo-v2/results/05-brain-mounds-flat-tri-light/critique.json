@@ -1,0 +1,8 @@
+{
+  "legible16": "no",
+  "negativeM": "partial",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "At 16px the M dissolves into a blurry blob, no letterform visible. M interior does match background color but a dark ink keyline traces it like a drawn shape, undercutting pure void read.",
+  "tweak": "Drop the dark ink outline stroke around the M void and increase M stroke width/contrast so it survives downscaling to 16px."
+}

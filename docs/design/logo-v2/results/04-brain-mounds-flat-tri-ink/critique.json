@@ -1,0 +1,8 @@
+{
+  "legible16": "no",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M void reads clearly at 256px against ink-violet bg, no white halo. But at 16px the mark collapses into a speckled blob — M vertex and legs vanish into muddy pink/blue/purple noise.",
+  "tweak": "Fatten noodle strands and M stroke width further, and flatten colors (fewer highlights/outlines) so contrast holds at 16px."
+}

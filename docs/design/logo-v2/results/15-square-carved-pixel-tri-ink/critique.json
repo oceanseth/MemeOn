@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "Pixel style keeps tangled-noodle strand coils; M is true negative space matching flat ink bg, no keyline. At 16px the center vertex merges into one dark blob, blurring letter clarity.",
+  "tweak": "Widen the M's center notch and increase contrast between adjacent strand pixels so the vertex survives 16px downsampling."
+}

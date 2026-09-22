@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "Clean gradient-filled M void, no keyline, good tangled-noodle wreath. At 16px the M blurs into a soft blob shape, peaks and center dip barely distinguishable from noise.",
+  "tweak": "Fatten M strokes further and simplify noodle count near the hole edge to boost contrast at 16px."
+}

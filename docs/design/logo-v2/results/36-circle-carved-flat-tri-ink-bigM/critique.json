@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "Negative-space M is clean and outline-free; noodle wreath is playful. But M collapses into two dark blobs at 16px — legs read as facial dots, not a letter.",
+  "tweak": "Widen the M's counters and thicken its strokes so the negative-space legs stay distinct at 16px."
+}

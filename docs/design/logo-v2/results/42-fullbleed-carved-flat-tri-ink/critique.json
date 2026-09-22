@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "Clean negative-space M, no outline, good playful tri-color tangle. But mass sits inset with dark margin (reads badge-ish, not true full-bleed) and M smudges into noise at actual 16px.",
+  "tweak": "Push noodle mass edge-to-edge to canvas border and thicken/simplify the M gap so its silhouette survives 16px downscale."
+}

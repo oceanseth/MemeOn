@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M void reads clearly as background-color negative space, no keyline, good woven-noodle texture. At 16px the M legs blur into a muddy dark blob, top vertex unclear.",
+  "tweak": "Thicken and flatten the M's middle vertex/crossbar so it stays a solid dark block at 16px instead of thinning to a blurred point."
+}

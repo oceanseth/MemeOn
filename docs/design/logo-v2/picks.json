@@ -1,0 +1,15 @@
+{
+  "note": "Orchestrator shortlist after viewing contact-256.png and contact-16.png (16px is the deciding check). Subagent critiques are per-card; these are the ones worth a second roll.",
+  "shortlist": [
+    { "id": "38", "why": "Cleanest die-cut M, ultra-wide letterform; the best 16px read of the set. Critic docked it for typographic edges, but that is what the brief asked for." },
+    { "id": "36", "why": "Oversized M hole with a thick noodle rim; second-best at 16px." },
+    { "id": "21", "why": "Inverted: ink noodles on bubblegum, pink M. Highest 16px contrast in the set and a fresh brand read." },
+    { "id": "22", "why": "Inverted on sky. Same contrast win as 21; critic flagged a faint keyline inside the M, check the source." },
+    { "id": "33", "why": "Exactly three fat strands. Simplest mass, M still reads at 16." },
+    { "id": "42", "why": "Full-bleed app-icon treatment, no badge. Reads at 16, works as an iOS/Android icon as-is." },
+    { "id": "29", "why": "Marker wreath on pale ground. Only card the critic passed on all four; softest of the shortlist at 16." },
+    { "id": "25", "why": "Open-bottom M biting out of the circle. Distinctive silhouette, decent at 16." },
+    { "id": "45", "why": "Udon-thick strands. Chunky and friendly, M noisy but present at 16." },
+    { "id": "20", "why": "Two noodle mounds forming the M. Closest to the current brain-M feel with a real hole." }
+  ]
+}

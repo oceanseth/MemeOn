@@ -1,0 +1,28 @@
+Design a single logo mark for "MemeOn", a meme trading-card marketplace. One centred mark on a flat, solid, edge-to-edge background. Square composition. No text, no wordmark, no lettering of any kind, no mockup, no multiple options in one image, no watermark.
+
+THE IDEA
+The mark is a tangle of chunky spaghetti-like noodles (the brand's "noodle brain" energy). A capital letter M is formed ONLY by negative space: the noodles leave an M-shaped void, and the flat background colour shows through that void as the letter. Do not draw the M as a solid filled shape, do not draw it as a line, do not draw it on top of the noodles. The letter exists only as the gap between noodles.
+
+THE M VOID
+- One continuous M-shaped gap in a geometric extended sans style (like the typeface Unbounded at medium weight): wide stance, vertical outer stems, flat top terminals, the middle vertex reaching all the way down to the baseline.
+- The gap is wide: each stroke of the void is at least 1/8 of the mark's width, so the letter survives at 16x16 pixels.
+- The M is optically centred and spans roughly 55 to 65 percent of the mark's width.
+- The noodle ends that border the void are rounded, and no noodle crosses the void.
+
+NO OUTLINE
+No white sticker outline, no keyline, no border ring, no contour stroke, no halo, no drop shadow, no outer glow. The noodle mark sits directly on the background with nothing between them.
+
+LEGIBILITY AT 16 PIXELS
+Design it as a 16x16 favicon first: few, fat noodle strands (each noodle at least 1/12 of the mark's width thick), strong contrast between the noodle colours and the background colour, no thin lines, no fine detail, no tiny highlights, no texture, no speckles, no dots. Bold, simple, symmetrical silhouette with soft rounded corners everywhere.
+
+COLOURS (exact, nothing else unless the variation says so)
+- Noodles: bubblegum pink #F99AD1, soft ultraviolet #B7B6F8, sky blue #74C9F9.
+- Background, and therefore the M void: deep ink violet #19182A.
+No black, no pure white, no yellow, no green, no orange, no extra hues.
+
+STYLE
+Flat vector illustration, clean crisp edges, solid fills, at most one soft highlight per noodle. No photorealism, no 3D bevel, no gloss, unless the variation below says otherwise.
+
+VARIATION (this overrides anything above that it contradicts)
+
+Silhouette: circular. Construction: ONE single continuous fat noodle, a single strand that loops and overlaps itself inside the circle like a loose knot; its loops enclose an M-shaped hole in the middle so the background reads as the letter. Noodles: exactly one strand, monochrome bubblegum pink #F99AD1 with ultraviolet #B7B6F8 shading only where it passes under itself. Style: flat vector. Background: ink violet.

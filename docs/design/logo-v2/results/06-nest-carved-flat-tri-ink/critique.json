@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "yes",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "Noodle wreath reads clearly at large size; M negative space is clean with no outline, but at 16px the M collapses into a blurry dark blob, hard to ID as letter.",
+  "tweak": "Thicken M legs/apex negative-space channels and simplify the tangle knot count near the M so gaps stay open at 16px."
+}

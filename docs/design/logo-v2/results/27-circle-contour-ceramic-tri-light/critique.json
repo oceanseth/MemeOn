@@ -1,0 +1,8 @@
+{
+  "legible16": "partial",
+  "negativeM": "no",
+  "noOutline": "yes",
+  "noodleVibe": "yes",
+  "notes": "M interior correctly matches pale background, but a single continuous typeface-uniform outline traces the whole letterform like a stroked glyph, not organic noodle-tangle cut edges. No sticker halo; tangle colours/highlights read playful.",
+  "tweak": "Forbid one continuous outline tracing the whole M; vary noodle cut-end angles and thickness so the hole reads as tangle gaps, not a stroked letter."
+}
