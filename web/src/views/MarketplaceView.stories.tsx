@@ -249,3 +249,22 @@ export const CursorContinuation: Story = {
     ).toBe(true)
   },
 }
+
+/** Default handler only. CursorContinuation overrides GET /api/memes; this story must not. */
+export const DefaultCursorContinuation: Story = {
+  ...connected,
+  play: async ({ canvasElement, loaded }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByRole('link', { name: /fresh paper/ })).toBeInTheDocument()
+    await expect(canvas.queryByText(copy.endOfList)).not.toBeInTheDocument()
+    await waitFor(() => expect(loaded.scenario.intersectionObservers.length).toBeGreaterThan(0))
+    loaded.scenario.intersect()
+    await expect(await canvas.findByRole('link', { name: /story mint/ })).toBeInTheDocument()
+    await expect(
+      loaded.scenario.requests.some((request: { path: string }) =>
+        request.path.includes('cursor=page-2'),
+      ),
+    ).toBe(true)
+    await expect(canvas.getByText(copy.endOfList)).toBeInTheDocument()
+  },
+}
