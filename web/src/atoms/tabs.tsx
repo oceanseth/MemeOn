@@ -1,4 +1,3 @@
-import { createContext, useContext } from 'react'
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
@@ -42,37 +41,39 @@ export const tabsListVariants = cva(
   },
 )
 
+/** The list's `data-variant` paints the triggers through `group/tabs-list`, so callers set
+ * `variant` once on the list. */
 const tabsTriggerVariants = cva(
   cn(
     'inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap select-none',
     'transition-press focus-ring disabled-look',
+    'group-data-[variant=default]/tabs-list:h-8.5',
+    'group-data-[variant=default]/tabs-list:min-w-0',
+    'group-data-[variant=default]/tabs-list:flex-1',
+    'group-data-[variant=default]/tabs-list:rounded-md',
+    'group-data-[variant=default]/tabs-list:bg-transparent',
+    'group-data-[variant=default]/tabs-list:px-3',
+    'group-data-[variant=default]/tabs-list:text-sm',
+    'group-data-[variant=default]/tabs-list:font-semibold',
+    'group-data-[variant=default]/tabs-list:text-muted-foreground',
+    'group-data-[variant=default]/tabs-list:hover:text-foreground',
+    'group-data-[variant=default]/tabs-list:data-active:material-raised',
+    'group-data-[variant=default]/tabs-list:data-active:font-semibold',
+    'group-data-[variant=default]/tabs-list:data-active:text-foreground',
+    'group-data-[variant=pills]/tabs-list:h-11.5',
+    'group-data-[variant=pills]/tabs-list:rounded-lg',
+    'group-data-[variant=pills]/tabs-list:material-raised',
+    'group-data-[variant=pills]/tabs-list:px-4.5',
+    'group-data-[variant=pills]/tabs-list:text-base',
+    'group-data-[variant=pills]/tabs-list:font-semibold',
+    'group-data-[variant=pills]/tabs-list:text-foreground',
+    'group-data-[variant=pills]/tabs-list:press',
+    'group-data-[variant=pills]/tabs-list:data-active:material-pressed',
   ),
-  {
-    variants: {
-      variant: {
-        default: cn(
-          'h-8.5 min-w-0 flex-1 rounded-md bg-transparent px-3 text-sm font-semibold text-muted-foreground',
-          'hover:text-foreground',
-          'data-active:material-raised data-active:font-semibold data-active:text-foreground',
-        ),
-        pills: cn(
-          'h-11.5 rounded-lg material-raised px-4.5 text-base font-semibold text-foreground',
-          'press',
-          'data-active:material-pressed',
-        ),
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-    },
-  },
 )
 
 type TabsListVariants = VariantProps<typeof tabsListVariants>
 export type TabsListVariant = NonNullable<TabsListVariants['variant']>
-
-/** The list hands its variant to its tabs, so a trigger never has to be told which row it is in. */
-const TabsListContext = createContext<TabsListVariants>({})
 
 export function TabsList({
   className,
@@ -87,17 +88,16 @@ export function TabsList({
       className={cn(tabsListVariants({ variant }), className)}
       {...props}
     >
-      <TabsListContext.Provider value={{ variant }}>{children}</TabsListContext.Provider>
+      {children}
     </TabsPrimitive.List>
   )
 }
 
 export function TabsTrigger({ className, ...props }: Styled<TabsPrimitive.Tab.Props>) {
-  const { variant } = useContext(TabsListContext)
   return (
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
-      className={cn(tabsTriggerVariants({ variant }), className)}
+      className={cn(tabsTriggerVariants(), className)}
       {...props}
     />
   )

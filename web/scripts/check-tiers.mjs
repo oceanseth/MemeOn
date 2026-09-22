@@ -12,7 +12,7 @@
  *     and lib/humanize (copy is plain data; the figure helpers are the one allowance)
  *   - a React state hook in a component or helper below views/
  *   - React context (createContext / useContext) below views/, except inside atoms/, where a
- *     compound atom (toggle group, tabs) hands its variant to its parts through a context
+ *     compound atom (toggle group, avatar) hands its variant to its parts through a context
  *   - a state-library import below views/
  *   - a value import of createElement / Fragment from react, React.createElement / jsxs,
  *     JSX, or a value import from a markup tier, in hooks/ .ts files or lib/ *Model.ts
