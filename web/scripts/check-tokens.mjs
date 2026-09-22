@@ -51,6 +51,10 @@ function block(css, opener) {
 
 const css = stripComments(readFileSync(CSS_PATH, 'utf8'))
 const theme = block(css, '@theme static')
+if (!theme.trim()) {
+  console.error(`check-tokens: no @theme static block in ${CSS_PATH}`)
+  process.exit(2)
+}
 
 /** `--color-primary: …` → `--color-primary`, skipping the `--ns-*: initial` resets. */
 const declared = [...theme.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)]
