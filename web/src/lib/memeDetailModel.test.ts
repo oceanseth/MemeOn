@@ -1,6 +1,6 @@
 import { createActor } from 'xstate'
 import { describe, expect, it, vi } from 'vitest'
-import { paperMeme } from '../../.storybook/fixtures'
+import { listedHolo, meLou, paperMeme } from '../../.storybook/fixtures'
 import { memeDetailCopy as copy } from '../copy/memeDetail'
 import { memeDetailMachine } from '../stores/memeDetailMachine'
 import {
@@ -8,6 +8,7 @@ import {
   buildTierLadderModel,
   type MemeDetailModelActions,
 } from './memeDetailModel'
+import type { Me, Meme } from './types'
 
 describe('buildTierLadderModel', () => {
   it('places paper at 50% of the first rung at 5 views', () => {
@@ -46,19 +47,33 @@ function actions(): MemeDetailModelActions {
   }
 }
 
-function detail(overrides: { copied?: boolean; copyFailed?: boolean } = {}) {
+function detail({
+  copied,
+  copyFailed,
+  meme = paperMeme,
+  user = null,
+  buyShares,
+}: {
+  copied?: boolean
+  copyFailed?: boolean
+  meme?: Meme
+  user?: Me | null
+  buyShares?: number
+} = {}) {
   const context = {
     ...createActor(memeDetailMachine, {
-      input: { id: paperMeme.id },
+      input: { id: meme.id },
     }).getSnapshot().context,
-    ...overrides,
+    ...(copied === undefined ? {} : { copied }),
+    ...(copyFailed === undefined ? {} : { copyFailed }),
+    ...(buyShares === undefined ? {} : { buyShares }),
   }
   return buildMemeDetailModel({
     phase: 'ready',
     context,
-    meme: paperMeme,
-    user: null,
-    shareUrl: `https://memeon.ai/m/${paperMeme.id}`,
+    meme,
+    user,
+    shareUrl: `https://memeon.ai/m/${meme.id}`,
     holderNameCache: new Map(),
     actions: actions(),
   })
@@ -77,5 +92,37 @@ describe('buildMemeDetailModel copy state', () => {
     const failed = detail({ copyFailed: true })
     expect(failed.copyDone).toBe(false)
     expect(failed.copyButtonLabel).toBe(copy.share.copyFailed)
+  })
+})
+
+describe('buildMemeDetailModel buy above the listing', () => {
+  function listedBuy(buyShares: number, coins: number) {
+    const model = detail({
+      meme: listedHolo,
+      user: { ...meLou, sub: 'user-buyer', coins },
+      buyShares,
+    })
+    expect(model.listing?.showBuy).toBe(true)
+    return model.listing
+  }
+
+  it('disables a funded buy that asks for more shares than are listed', () => {
+    const listing = listedBuy(11, 100)
+    expect(listing?.disabledReason).toBe(copy.listing.onlyListed(10))
+    expect(listing?.buyButtonProps.disabled).toBe(true)
+  })
+
+  it('still asks for at least one share', () => {
+    expect(listedBuy(0, 100)?.disabledReason).toBe(copy.listing.pickAtLeastOne)
+  })
+
+  it('still reports a coin shortfall when the buy fits the listing', () => {
+    expect(listedBuy(2, 0)?.disabledReason).toBe(copy.listing.short(6))
+  })
+
+  it('prefers the listing cap over a coin shortfall', () => {
+    const listing = listedBuy(11, 0)
+    expect(listing?.disabledReason).toBe(copy.listing.onlyListed(10))
+    expect(listing?.disabledReason).not.toBe(copy.listing.short(33))
   })
 })

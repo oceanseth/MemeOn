@@ -309,7 +309,13 @@ export function buildMemeDetailModel({
   const buyTotal = Math.ceil(buyShares * pricePerShare)
   const shortBy = Math.max(0, buyTotal - held)
   const buyReason =
-    buyShares < 1 ? copy.listing.pickAtLeastOne : shortBy > 0 ? copy.listing.short(shortBy) : null
+    buyShares < 1
+      ? copy.listing.pickAtLeastOne
+      : meme.listing != null && buyShares > meme.listing.shares
+        ? copy.listing.onlyListed(meme.listing.shares)
+        : shortBy > 0
+          ? copy.listing.short(shortBy)
+          : null
   const sellShares = context.sellShares
   const listReason =
     sellShares < 1
