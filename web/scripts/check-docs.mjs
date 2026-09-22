@@ -175,7 +175,12 @@ for (const [name, dir] of Object.entries(WORKSPACES)) {
  * history in an archive cannot pass unnoticed in a live one. `why` is mandatory prose-for-humans.
  */
 const allowlistPath = join(WEB, 'scripts', 'docs-allowlist.json')
-const allowed = read(allowlistPath) ? JSON.parse(read(allowlistPath)).allow : []
+const allowlistSource = read(allowlistPath)
+const allowed = allowlistSource ? JSON.parse(allowlistSource).allow : []
+if (!Array.isArray(allowed)) {
+  console.error('check-docs: docs-allowlist.json needs an `allow` array')
+  process.exit(2)
+}
 for (const entry of allowed) {
   if (!entry.name || !entry.why) {
     console.error(
