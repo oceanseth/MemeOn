@@ -119,13 +119,13 @@ export function useFriendsScreen(): FriendsScreenModel {
         if (isAbortError(error)) return
       }
     }
-    const write = navigator.clipboard?.writeText
-    if (!write) {
+    if (!navigator.clipboard?.writeText) {
       send({ type: 'SET_COPIED', copied: false, failed: true })
       return
     }
     try {
-      await write(inviteLink)
+      // called on navigator.clipboard: a detached writeText rejects with Illegal invocation
+      await navigator.clipboard.writeText(inviteLink)
       send({ type: 'SET_COPIED', copied: true })
       if (copyTimer.current) clearTimeout(copyTimer.current)
       copyTimer.current = setTimeout(() => send({ type: 'SET_COPIED', copied: false }), 2500)

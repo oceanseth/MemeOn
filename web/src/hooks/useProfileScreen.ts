@@ -272,13 +272,13 @@ export function useProfileScreen({
         if (isAbortError(error)) return
       }
     }
-    const write = navigator.clipboard?.writeText
-    if (!write) {
+    if (!navigator.clipboard?.writeText) {
       send({ type: 'FAIL_ACTION', err: copy.errors.copy })
       return
     }
     try {
-      await write(url)
+      // called on navigator.clipboard: a detached writeText rejects with Illegal invocation
+      await navigator.clipboard.writeText(url)
     } catch {
       send({ type: 'FAIL_ACTION', err: copy.errors.copy })
     }

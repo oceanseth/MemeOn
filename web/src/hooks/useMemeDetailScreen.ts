@@ -189,12 +189,13 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
     send({ type: 'SET_PRICE', price: numberFromInput(event) })
   const onCopy = () => {
     if (!shareUrl) return
-    const write = navigator.clipboard?.writeText
-    if (!write) {
+    if (!navigator.clipboard?.writeText) {
       send({ type: 'SET_COPIED', copied: false, failed: true })
       return
     }
-    void write(shareUrl)
+    // called on navigator.clipboard: a detached writeText rejects with Illegal invocation
+    void navigator.clipboard
+      .writeText(shareUrl)
       .then(() => {
         send({ type: 'SET_COPIED', copied: true })
         if (copyTimer.current) clearTimeout(copyTimer.current)

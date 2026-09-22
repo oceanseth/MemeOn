@@ -449,15 +449,25 @@ async function renderDetail(id: string): Promise<void> {
   })
 }
 
+/** Like Chromium, a detached call (`const w = clipboard.writeText; w(text)`) rejects with Illegal invocation. */
 function stubClipboardWrite(writeText: (text: string) => Promise<void>) {
+  const clipboard = {
+    writeText(this: unknown, text: string) {
+      if (this !== clipboard) return Promise.reject(new TypeError('Illegal invocation'))
+      return writeText(text)
+    },
+  }
   try {
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
       writable: true,
-      value: { writeText },
+      value: clipboard,
     })
   } catch {
-    vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(writeText)
+    vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(function (this: unknown, text) {
+      if (this !== navigator.clipboard) return Promise.reject(new TypeError('Illegal invocation'))
+      return writeText(text)
+    })
   }
 }
 
@@ -535,6 +545,17 @@ describe('MemeDetailView secondary failures', () => {
     await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
     await click(button(memeDetailCopy.share.copy))
     await eventually(() => expect(button(memeDetailCopy.share.copyFailed)).toBeTruthy())
+  })
+
+  it('copies the share link and shows share.copied', async () => {
+    installDetailApi({ meme: ownerMeme })
+    const writeText = vi.fn().mockResolvedValue(undefined)
+    stubClipboardWrite(writeText)
+    await renderDetail(ownerMeme.id)
+    await eventually(() => expect(host.textContent).toContain(ownerMeme.title))
+    await click(button(memeDetailCopy.share.copy))
+    await eventually(() => expect(button(memeDetailCopy.share.copied)).toBeTruthy())
+    expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/m/${ownerMeme.id}`)
   })
 
   it('surfaces memeplex.loadFailed without FAILing the page', async () => {
