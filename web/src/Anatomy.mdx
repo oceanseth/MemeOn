@@ -26,7 +26,7 @@ Beside the tiers, four folders are the engine side:
 
 | Folder | What lives there |
 |---|---|
-| `src/copy/` | **Every user-facing string**, one plain-data module per surface (`settings.ts`, …) plus `shared.ts` for labels that recur. Keys name the role (`intro`, `account.logOut`), never the content; dynamic strings are small pure functions (`account.name(user.name)`, `` shown: (n) => `${plural(n, 'card')} shown` ``). `copy/` imports nothing but `copy/` and the two formatting helpers `lib/plural` and `lib/braincells`, so a noun stays beside its sentence. Hooks and `lib/*Model.ts` builders read it; tests and stories assert **through the same constant**, so a copy change touches one file. Tier components never import it — strings reach them as props. |
+| `src/copy/` | **Every user-facing string**, one plain-data module per surface (`settings.ts`, …) plus `shared.ts` for labels that recur. Keys name the role (`intro`, `account.logOut`), never the content; dynamic strings are small pure functions (`account.name(user.name)`, `` shown: (n) => `${plural(n, 'card')} shown` ``). `copy/` imports nothing but `copy/` and the formatting helpers `lib/plural`, `lib/braincells`, and `lib/humanize`, so a noun stays beside its sentence and a large count reads `25k`. Hooks and `lib/*Model.ts` builders read it; tests and stories assert **through the same constant**, so a copy change touches one file. Tier components never import it — strings reach them as props. |
 | `src/hooks/` | One `useXScreen()` per screen (exports `XScreenModel`), plus `useAuth`, `useTheme`, `useProjectedActor`, `useDocumentTitle`, `useMountEffect`. App shell composes `useAppShellQuests` / `useAppShellAlerts` (one actor, one `useMountEffect` in the composer). `ProfileScreen` uses `useProfileScreen` (`showBinderHero` selects identity Card vs `/binder/:sub` non-owner hero). |
 | `src/stores/` | XState machines (`*Machine.ts`), plain `AuthStore` / `ThemeStore` (`subscribe` / `getSnapshot`), `createStores` + `StoresContext` |
 | `src/lib/` | Everything with no React tree: the API client, auth, presence, formatting (`braincells`, `plural`), `cn()`, class maps (`lib/binderChrome.ts`; same family as `cn()` / `atoms/foil.ts` `tierFrameClasses`), the imperative `cardMedia`, and the **model builders** (`*Model.ts`) that turn API records into the prop bags molecules and atoms render (`memeCardModel`, `tradeCardModel`, `questBarModel`, `appShellModel`, …). Create-meme also keeps its signed upload PUT (`createMemeUpload`), the video-status poller (`createMemeVideoPoll`), pending-video resume (`lib/createMemeModel/lifecycle.ts`), and one-concern mode actions (`lib/createMemeModel/giphyActions.ts`, `lib/createMemeModel/urlActions.ts`, `lib/createMemeModel/imageEdit.ts`, `lib/createMemeModel/remixActions.ts`, `lib/createMemeModel/generateActions.ts`, `lib/createMemeModel/uploadActions.ts`, `lib/createMemeModel/mintActions.ts`, hosted by `lib/createMemeModel/actionHost.ts`) here so `useCreateMemeScreen` stays orchestration-only. Marketplace keeps its URL/query/filter codec (`marketplaceQuery`) here so `useMarketplaceScreen` stays orchestration-only. Tab-scoped sessionStorage is `lib/sessionBus.ts`. Hooks call the builders; components only import their types. |
@@ -113,7 +113,7 @@ records the split (entry source-map membership, plus those import specifiers).
 | `copy/<surface>.ts` | the strings themselves, as data; `copy/shared.ts` for the ones every surface shares | hooks, `lib/*Model.ts`, tests, stories |
 | `hooks/useAuth.ts` | `user`, `loading`, `error`, `refresh`, `logout` | `RequireAuth`, chrome, screens |
 | `lib/*Model.ts` | pure builders from API records to component prop bags (`buildMemeCardModel`, `buildTradeCardModel`, `buildQuestBarModel`, …); the dialog models carry their `DialogOpenerRef` via `lib/dialogOpener` | screen hooks, stories (fixtures), the components as types only |
-| `lib/cardMedia.ts` | the meme card's one imperative seam: a shared IntersectionObserver, `video.play()`, the paused foil ring; exports the stable `cardMediaRef` the card model hands to `MemeCard`. Play-on-screen is the Play videos preference, not a per-card button | `lib/memeCardModel` |
+| `lib/cardMedia.ts` | the meme card's one imperative seam: a shared IntersectionObserver, `video.play()`, the paused rail sheen; exports the stable `cardMediaRef` the card model hands to `MemeCard`. Play-on-screen is the Play videos preference, not a per-card button | `lib/memeCardModel` |
 | `hooks/useHeroVideo` + `lib/heroVideoModel` | the landing film: whether autoplay is spent (reduced motion, Data Saver, 2g/3g — a live `useSyncExternalStore` probe), started-by-hand, muted; the element is kept for `play()` behind a ref callback so the model stays a plain props bag | `useLandingScreen` → `LandingScreen` → `HeroVideo` |
 | `hooks/useMarketplaceCatalog` + `lib/marketplaceQuery` | marketplace catalogue IO: URL codec, 250ms search debounce, cursor paging, IntersectionObserver sentinel, filter/sort URL sync; labels from `copy/marketplace` | `useMarketplaceScreen` → `MarketplaceScreen` |
 | `hooks/useAppShellQuests` + `hooks/useAppShellAlerts` + `lib/appShellModel` | chrome tables and `buildAppShellScreenModel`; quest/alert IO taking the composer's one `send`/`actor`; theme stays `useTheme()` | `useAppShellScreen` → `AppShellScreen` |
@@ -239,7 +239,7 @@ Probe these instead of a class name or copy string:
 | Leaderboard | `podium-head`, `leaderboard`, `your-rank`, `person-row` |
 | Invite | `invite-hero` |
 | Settings | `settings-sections`, `settings-account`, `settings-appearance`, `settings-connections`, `connection-row` (`data-linked`) |
-| Landing | `landing-hero`, `hero-cards`, `hero-card`, `landing-how`, `landing-film`, `landing-faq`, `landing-closing` |
+| Landing | `landing-hero`, `hero-stats`, `hero-cards`, `hero-card` (`data-fan`), `hero-card-meta`, `landing-how`, `landing-film`, `landing-faq`, `landing-closing` |
 | Create Meme | `mint-modes`, `create-meme-generate-panel`, `create-meme-remix-panel`, `create-meme-giphy-panel`, `create-meme-url-panel`, `create-meme-upload-panel`, `approval-card`, `busy-card`, `preview-placeholder` |
 | Legal (Privacy, Terms) | `legal-toc`, `legal-section` |
 | Auth (`screens/AuthStatusScreen.tsx`) | `auth-status` (`data-phase`), `auth-ring`, `auth-timeout`, `auth-web-fallback` |
@@ -265,9 +265,10 @@ Probe these instead of a class name or copy string:
   `lib/braincells`.
 - Presentation is Tailwind utilities on the component, in `@layer utilities`. Only effects no
   utility can express get a co-located `.css` file — today the card foil (`atoms/foil.css`,
-  side-effect owned by `atoms/foil-frame.tsx`), the spinner turn (`atoms/spinner.css`), the landing
-  shell's `--topbar-h` rule
-  (`organisms/app-shell.css`) — and each restates the layer order at the top.
+  side-effect owned by `atoms/foil-frame.tsx`), the spinner turn (`atoms/spinner.css`), the quest
+  ring (`molecules/quest-bar.css`), the landing hero's card fan (`organisms/landing-hero.css`) and
+  the shell's `--topbar-h` rule (`organisms/app-shell.css`) — and each restates the layer order at
+  the top.
   The cascade contract itself is the header comment of `src/index.css`.
 - Shared code (`shared/tiers.ts`) is imported as `@memeon/shared/tiers`, never by relative path.
 

@@ -16,6 +16,7 @@ import { MemeMedia } from '../components/MemeMedia'
 import { ValueChart } from '../components/ValueChart'
 import { useAuth } from '../context/AuthContext'
 import { apiFetch, post } from '../lib/api'
+import { humanize } from '@memeon/shared/humanize'
 import { useColors, useThemedStyles, type LegacyColors } from '../lib/theme'
 import type { HistoryPoint, Meme, Position } from '../lib/types'
 
@@ -135,8 +136,8 @@ export default function InvestScreen({ route, navigation }: Props) {
       <View style={{ gap: 4 }}>
         <Text style={[styles.tier, { color: meme.tier.color }]}>
           {meme.tier.name.toUpperCase()} · {meme.tier.rarity} · 👁️{' '}
-          {(meme.views ?? meme.reshares).toLocaleString()} views · 🔁{' '}
-          {(meme.reshareCount ?? 0).toLocaleString()} reshares
+          {humanize(meme.views ?? meme.reshares)} views · 🔁 {humanize(meme.reshareCount ?? 0)}{' '}
+          reshares
         </Text>
         <Pressable onPress={() => navigation.navigate('Creator', { sub: meme.creatorId })}>
           <Text style={styles.creator}>

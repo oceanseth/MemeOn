@@ -110,7 +110,10 @@ export const appShellMachine = setup({
         },
         MARK_READ: {
           actions: assign({
-            alerts: ({ context }) => context.alerts.map((a) => ({ ...a, read: true })),
+            alerts: ({ context, event }) => {
+              const marked = new Set(event.ids)
+              return context.alerts.map((a) => (marked.has(a.id) ? { ...a, read: true } : a))
+            },
             wasUnread: ({ event }) => event.ids,
           }),
         },

@@ -5,6 +5,7 @@ import { listedHolo, memeplexFamily, paperMeme } from '../../.storybook/fixtures
 import { memeDetailCopy as copy } from '../copy/memeDetail'
 import { memeplexPanelCopy } from '../copy/memeplexPanel'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
+import { humanize } from '../lib/humanize'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { memeReshareCount, memeViewCount } from '../lib/memeMetrics'
 import { buildMemeplexPanelModel } from '../lib/memeplexPanelModel'
@@ -53,7 +54,7 @@ const detail = (meme = paperMeme): MemeDetailModel => {
     valueLabel: String(meme.value),
     statsSrLabel: copy.stats.srLabel(views, reshareCount),
     valueSrLabel: copy.stats.valueSrLabel(meme.value),
-    holdingsLabel: '100/100',
+    holdingsLabel: copy.provenance.holdings(100),
     shareTitle: copy.share.title,
     shareCaption: copy.share.caption,
     previewLabel: copy.share.preview,
@@ -121,7 +122,7 @@ const detail = (meme = paperMeme): MemeDetailModel => {
     }),
     capTableTitle: copy.capTable.title,
     capTableNote: null,
-    capTable: [{ userId: 'me', label: copy.holder.you, sharesLabel: '100/100' }],
+    capTable: [{ userId: 'me', label: copy.holder.you, sharesLabel: copy.capTable.shares(100) }],
     deleteDialog: buildConfirmDialogModel({
       open: false,
       id: 'delete-meme',
@@ -168,7 +169,7 @@ const listed = (overrides: Partial<DetailListingModel> = {}): MemeDetailModel =>
     ...base,
     list: { ...base.list, show: false },
     holdingsLabel: null,
-    capTable: [{ userId: 'seller', label: 'lou', sharesLabel: '100/100' }],
+    capTable: [{ userId: 'seller', label: 'lou', sharesLabel: copy.capTable.shares(100) }],
     capTableNote: copy.capTable.note(LISTED_SHARES, 'lou'),
     listing,
     // the hero's "for sale" badge mirrors this mocked listing price, not listedHolo's own
@@ -322,7 +323,7 @@ export const Visitor: Story = {
         {
           userId: 'someone',
           label: copy.holder.unknown,
-          sharesLabel: '100/100',
+          sharesLabel: copy.capTable.shares(100),
         },
       ],
       signedOut,
@@ -374,7 +375,7 @@ export const ListOverHoldings: Story = {
   args: {
     detail: {
       ...detail(),
-      holdingsLabel: '40/100',
+      holdingsLabel: copy.provenance.holdings(40),
       list: {
         ...detail().list,
         disabledReason: copy.list.onlyHold(40),
@@ -614,7 +615,7 @@ export const SingleReshare: Story = {
         ...detail().card,
         viewsLabel: '1',
         resharesLabel: '1',
-        statsA11yLabel: '1 views, 1 reshares',
+        statsA11yLabel: '1 view, 1 reshare',
       },
     },
   },
@@ -629,13 +630,13 @@ export const TierLadderMaxed: Story = {
       tierName: 'Shiny',
       tierLabel: 'Shiny · Mythic Shiny',
       tierLadder: buildTierLadderModel('shiny', 41_000),
-      viewsLabel: '41,000',
+      viewsLabel: humanize(41_000),
       statsSrLabel: copy.stats.srLabel(41_000, 900),
       card: {
         ...detail().card,
         tierKey: 'shiny',
         tierLabel: 'Shiny · Mythic Shiny',
-        viewsLabel: '41,000',
+        viewsLabel: humanize(41_000),
       },
     },
   },
@@ -644,11 +645,11 @@ export const CapTableUnresolved: Story = {
   args: {
     detail: {
       ...detail(),
-      holdingsLabel: '40/100',
+      holdingsLabel: copy.provenance.holdings(40),
       capTable: [
-        { userId: 'me', label: 'You', sharesLabel: '40/100' },
-        { userId: 'a', label: 'another collector', sharesLabel: '35/100' },
-        { userId: 'b', label: 'another collector', sharesLabel: '25/100' },
+        { userId: 'me', label: 'You', sharesLabel: copy.capTable.shares(40) },
+        { userId: 'a', label: 'another collector', sharesLabel: copy.capTable.shares(35) },
+        { userId: 'b', label: 'another collector', sharesLabel: copy.capTable.shares(25) },
       ],
     },
   },
@@ -656,18 +657,18 @@ export const CapTableUnresolved: Story = {
 
 /** Spread sources card: where the link actually travelled. */
 const sources = [
-  { id: 'group chat', label: 'group chat', viewsLabel: '8,600' },
+  { id: 'group chat', label: 'group chat', viewsLabel: humanize(8_600) },
   {
     id: 'the void subreddit',
     label: 'the void subreddit',
-    viewsLabel: '5,920',
+    viewsLabel: humanize(5_920),
     linkProps: {
       href: 'https://example.com/r/void',
       target: '_blank' as const,
       rel: 'noreferrer' as const,
     },
   },
-  { id: 'work discord', label: 'work discord', viewsLabel: '4,380' },
+  { id: 'work discord', label: 'work discord', viewsLabel: humanize(4_380) },
 ]
 
 /** Everything a holder of all 100 shares can do: list, make private, delete forever. */
@@ -755,9 +756,9 @@ const loggedOutArgs = {
       onAdd: noop,
     }),
     capTable: [
-      { userId: 'a', label: 'oxfern', sharesLabel: '48/100' },
-      { userId: 'b', label: 'masky.moth', sharesLabel: '28/100' },
-      { userId: 'c', label: 'meme.custodian', sharesLabel: '24/100' },
+      { userId: 'a', label: 'oxfern', sharesLabel: copy.capTable.shares(48) },
+      { userId: 'b', label: 'masky.moth', sharesLabel: copy.capTable.shares(28) },
+      { userId: 'c', label: 'meme.custodian', sharesLabel: copy.capTable.shares(24) },
     ],
     signedOut: {
       title: 'Own a piece of this',

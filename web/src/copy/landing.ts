@@ -1,3 +1,4 @@
+import { humanize } from '../lib/humanize'
 import { sharedCopy } from './shared'
 
 /** Every string the Landing screen's engine supplies. Keys name the role of the string, not its content. */
@@ -6,6 +7,12 @@ export const landingCopy = {
     title: 'Memes are the new trading cards',
     body: 'Mint the moment. Watch it spread. Trade the cards everyone sends each other anyway — every meme gets a share link whose foil frame levels up as it travels.',
     loginAside: 'No email. No real name. Just your Masky avatar.',
+    /** The three figures under the title. The value is a number the builder formats; this is the noun. */
+    stats: {
+      tiers: 'rarity tiers',
+      shares: 'shares a card',
+      reshares: (topTier: string) => `reshares to ${topTier}`,
+    },
   },
   /** Distinct from sharedCopy.browseMarketplace ("Browse the marketplace"). */
   marketplaceCta: 'Enter the marketplace',
@@ -30,8 +37,8 @@ export const landingCopy = {
     ],
   },
   tier: {
-    /** Ladder card middle line: "0 reshares" … "25,000 reshares". */
-    reshares: (count: number) => `${count.toLocaleString()} reshares`,
+    /** Ladder card middle line: "0 reshares" … "25k reshares". */
+    reshares: (count: number) => `${humanize(count)} reshares`,
   },
   film: {
     /** Section heading. Play/mute/aria stay on heroVideoCopy. */

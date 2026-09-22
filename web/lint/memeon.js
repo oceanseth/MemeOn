@@ -10,8 +10,8 @@
  * Three signals, all of them "the browser decides what this looks like":
  *
  * 1. A chrome input type — `file`, `color`, `date`, `datetime-local`, `month`, `range`, `time`,
- *    `week`, `checkbox`, `radio`. Read from JSX (`<Input type="file">`) *and* from object
- *    literals (`{ type: 'file' }`), because the way this one reached the screen was a prop bag
+ *    `week`, `checkbox`, `radio`. Read from JSX (`<Input type="file">`) and from an input-prop
+ *    object (`*InputProps`, or a control sibling key), not every `{ type: 'file' }`. The bag is
  *    built in `lib/createMemeModel/` and spread — invisible to any rule that only walks JSX.
  * 2. A user-agent element — `<select>`, `<option>`, `<progress>`, `<details>`, `<dialog>`…, each
  *    of which has an atom that replaces it.
@@ -40,6 +40,38 @@ const CHROME_TYPES = new Map([
   ['range', 'a control of our own'],
   ['time', 'a control of our own'],
   ['week', 'a control of our own'],
+])
+
+/** Binding names that own an input prop object: InputProps or inputProps. */
+const INPUT_PROPS_NAME = /[Ii]nputProps$/
+
+/** Static control keys. id, name, and value are not control keys. */
+const INPUT_SIBLING_KEYS = new Set([
+  'accept',
+  'multiple',
+  'capture',
+  'webkitdirectory',
+  'checked',
+  'defaultChecked',
+  'onChange',
+  'onInput',
+  'onBlur',
+  'onFocus',
+  'onKeyDown',
+  'placeholder',
+  'readOnly',
+  'required',
+  'min',
+  'max',
+  'step',
+])
+
+/** `as` / `satisfies` / assertion / parens between an object and the binding that owns it. */
+const INPUT_BAG_WRAPPERS = new Set([
+  'TSAsExpression',
+  'TSSatisfiesExpression',
+  'TSTypeAssertion',
+  'ParenthesizedExpression',
 ])
 
 /** Elements the user agent paints, and what stands in for each here. */
@@ -117,40 +149,42 @@ const noNativeChrome = {
         }
       },
 
-      /* the prop bag a builder returns and a screen spreads — how the file input got in */
+      /* an input-prop object (*InputProps, or a control sibling key), not every { type: 'file' } */
       Property(node) {
-        if (node.computed) return
-        const key =
-          node.key.type === 'Identifier'
-            ? node.key.name
-            : node.key.type === 'Literal'
-              ? node.key.value
-              : null
+        const key = node.computed ? stringValue(node.key) : identifierName(node.key)
         if (key !== 'type') return
         const value = stringValue(node.value)
-        if (value && CHROME_TYPES.has(value)) reportType(node, value)
+        if (!value || !CHROME_TYPES.has(value)) return
+        const objectNode = node.parent
+        if (!objectNode || objectNode.type !== 'ObjectExpression') return
+        if (!hasInputSibling(objectNode, node) && !feedsInput(objectNode)) return
+        reportType(node, value)
       },
 
       CallExpression(node) {
         const callee = node.callee
         if (
           callee.type === 'MemberExpression' &&
-          !callee.computed &&
           callee.object.type === 'Identifier' &&
-          GLOBALS.has(callee.object.name) &&
-          callee.property.type === 'Identifier' &&
-          UA_DIALOGS.has(callee.property.name)
+          GLOBALS.has(callee.object.name)
         ) {
-          const name = callee.property.name
-          context.report({
-            node,
-            messageId: 'dialog',
-            data: {
-              call: `${callee.object.name}.${name}()`,
-              fix: UA_DIALOGS.get(name),
-            },
-          })
-          return
+          // Computed keys go through stringValue only. identifierName would treat window[confirm] as confirm.
+          const name = callee.computed
+            ? stringValue(callee.property)
+            : callee.property.type === 'Identifier'
+              ? callee.property.name
+              : null
+          if (name && UA_DIALOGS.has(name)) {
+            context.report({
+              node,
+              messageId: 'dialog',
+              data: {
+                call: `${callee.object.name}.${name}()`,
+                fix: UA_DIALOGS.get(name),
+              },
+            })
+            return
+          }
         }
         if (callee.type !== 'Identifier' || !UA_DIALOGS.has(callee.name)) return
         // a local binding of the same name is somebody's helper, not the browser's dialog
@@ -175,6 +209,53 @@ const identifierName = (node) => {
   return stringValue(node)
 }
 
+function hasInputSibling(objectNode, property) {
+  for (const prop of objectNode.properties) {
+    if (prop === property || prop.type !== 'Property') continue
+    const key = prop.computed ? stringValue(prop.key) : identifierName(prop.key)
+    if (typeof key === 'string' && INPUT_SIBLING_KEYS.has(key)) return true
+  }
+  return false
+}
+
+/** One step above the object. Identity uses the outermost wrapper, not the inner object. */
+function feedsInput(objectNode) {
+  let node = objectNode
+  while (node.parent && INPUT_BAG_WRAPPERS.has(node.parent.type)) node = node.parent
+  const parent = node.parent
+  if (!parent) return false
+  if (
+    (parent.type === 'Property' || parent.type === 'PropertyDefinition') &&
+    parent.value === node
+  ) {
+    const key = parent.computed ? stringValue(parent.key) : identifierName(parent.key)
+    return typeof key === 'string' && INPUT_PROPS_NAME.test(key)
+  }
+  if (
+    parent.type === 'VariableDeclarator' &&
+    parent.init === node &&
+    parent.id.type === 'Identifier'
+  ) {
+    return INPUT_PROPS_NAME.test(parent.id.name)
+  }
+  if (
+    parent.type === 'AssignmentExpression' &&
+    parent.right === node &&
+    parent.left.type === 'Identifier'
+  ) {
+    return INPUT_PROPS_NAME.test(parent.left.name)
+  }
+  if (parent.type === 'JSXSpreadAttribute' && parent.argument === node) {
+    const opening = parent.parent
+    return (
+      opening?.type === 'JSXOpeningElement' &&
+      opening.name.type === 'JSXIdentifier' &&
+      (opening.name.name === 'input' || opening.name.name === 'Input')
+    )
+  }
+  return false
+}
+
 const noUseEffect = {
   meta: {
     type: 'problem',
@@ -196,30 +277,100 @@ const noUseEffect = {
       if (name && EFFECT_HOOKS.has(name)) report(node, name, kind)
     }
 
+    // Nearest binding wins, even when that binding is not React's hook.
+    const resolveVariable = (identifier) => {
+      for (
+        let current = context.sourceCode?.getScope?.(identifier);
+        current;
+        current = current.upper
+      ) {
+        const found = current.variables?.find((variable) => variable.name === identifier.name)
+        if (found) return found
+      }
+      return null
+    }
+
+    const isTypeImport = (node) => node?.importKind === 'type'
+
+    const reactModuleVariable = (identifier) => {
+      const variable = resolveVariable(identifier)
+      for (const def of variable?.defs ?? []) {
+        const spec = def.node
+        if (def.type !== 'ImportBinding') continue
+        if (spec?.type !== 'ImportDefaultSpecifier' && spec?.type !== 'ImportNamespaceSpecifier') {
+          continue
+        }
+        if (isTypeImport(spec) || isTypeImport(def.parent)) continue
+        if (def.parent?.source?.value === 'react') return true
+      }
+      return false
+    }
+
+    const reactEffectImport = (variable) => {
+      for (const def of variable?.defs ?? []) {
+        const spec = def.node
+        if (def.type !== 'ImportBinding' || spec?.type !== 'ImportSpecifier') continue
+        if (isTypeImport(spec) || isTypeImport(def.parent)) continue
+        if (def.parent?.source?.value !== 'react') continue
+        const exported = identifierName(spec.imported)
+        if (exported && EFFECT_HOOKS.has(exported)) return exported
+      }
+      return null
+    }
+
+    const boundName = (value) => {
+      const id = value?.type === 'AssignmentPattern' ? value.left : value
+      return id?.type === 'Identifier' ? id.name : null
+    }
+
+    const reactPatternEffect = (variable) => {
+      for (const def of variable?.defs ?? []) {
+        const declarator = def.node
+        if (def.type !== 'Variable' || declarator?.type !== 'VariableDeclarator') continue
+        if (declarator.id?.type !== 'ObjectPattern') continue
+        if (declarator.init?.type !== 'Identifier' || !reactModuleVariable(declarator.init))
+          continue
+        for (const prop of declarator.id.properties) {
+          if (prop.type !== 'Property' || boundName(prop.value) !== variable.name) continue
+          const key = prop.computed ? stringValue(prop.key) : identifierName(prop.key)
+          if (key && EFFECT_HOOKS.has(key)) return key
+        }
+      }
+      return null
+    }
+
+    const reportReactMember = (node) => {
+      if (node.object?.type !== 'Identifier' || !reactModuleVariable(node.object)) return
+      const name = node.computed ? stringValue(node.property) : identifierName(node.property)
+      reportIfEffect(node.property, name, 'call')
+    }
+
     return {
       ImportDeclaration(node) {
+        if (node.source?.value !== 'react' || isTypeImport(node)) return
         for (const spec of node.specifiers) {
-          if (spec.type !== 'ImportSpecifier') continue
+          if (spec.type !== 'ImportSpecifier' || isTypeImport(spec)) continue
           reportIfEffect(spec, identifierName(spec.imported), 'import')
         }
       },
 
-      MemberExpression(node) {
-        const name = node.computed ? stringValue(node.property) : identifierName(node.property)
-        reportIfEffect(node.property, name, 'call')
-      },
+      MemberExpression: reportReactMember,
 
-      OptionalMemberExpression(node) {
-        const name = node.computed ? stringValue(node.property) : identifierName(node.property)
-        reportIfEffect(node.property, name, 'call')
-      },
+      OptionalMemberExpression: reportReactMember,
 
       CallExpression(node) {
-        if (node.callee.type === 'Identifier') reportIfEffect(node.callee, node.callee.name, 'call')
+        if (node.callee.type !== 'Identifier') return
+        const variable = resolveVariable(node.callee)
+        reportIfEffect(
+          node.callee,
+          reactEffectImport(variable) || reactPatternEffect(variable),
+          'call',
+        )
       },
 
       VariableDeclarator(node) {
         if (node.id.type !== 'ObjectPattern') return
+        if (node.init?.type !== 'Identifier' || !reactModuleVariable(node.init)) return
         for (const prop of node.id.properties) {
           if (prop.type !== 'Property') continue
           const name = prop.computed ? stringValue(prop.key) : identifierName(prop.key)

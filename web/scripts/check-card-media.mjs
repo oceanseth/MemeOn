@@ -24,6 +24,8 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { basename, join, relative, resolve, sep } from 'node:path'
+import ts from 'typescript'
+import { scriptKindFor } from './lib/ts-ast.mjs'
 
 const args = process.argv.slice(2)
 const positional = args.filter((arg) => !arg.startsWith('--'))
@@ -51,12 +53,86 @@ const walk = (dir) =>
 const IO_ALLOWED = new Set(['lib/cardMedia.ts', 'hooks/useMarketplaceCatalog.ts'])
 const NEW_IO_ALLOWED = new Set(['hooks/useMarketplaceCatalog.ts'])
 const GLOW_ALLOWED = new Set(['lib/cardMedia.ts'])
-const GLOW = /(?:setProperty|removeProperty)\(\s*(['"])--glow-play-state\1/
-const NEW_IO = /new\s+IntersectionObserver\b/
-const IO_IDENT = /\bIntersectionObserver\b/
 
 const findings = []
 const report = (where, message) => findings.push(`  ${where}  ${message}`)
+
+const lineOf = (sourceFile, node) =>
+  sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1
+
+const isIntersectionObserver = (node) =>
+  !!node && ts.isIdentifier(node) && node.text === 'IntersectionObserver'
+
+const calleeName = (expression) => {
+  if (ts.isIdentifier(expression)) return expression.text
+  if (ts.isPropertyAccessExpression(expression) && ts.isIdentifier(expression.name)) {
+    return expression.name.text
+  }
+  return undefined
+}
+
+const isGlowArgument = (node) =>
+  !!node &&
+  (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) &&
+  node.text === '--glow-play-state'
+
+const isGlowCall = (node) => {
+  if (!ts.isCallExpression(node)) return false
+  const name = calleeName(node.expression)
+  return (name === 'setProperty' || name === 'removeProperty') && isGlowArgument(node.arguments[0])
+}
+
+const unwrapParens = (node) => {
+  let current = node
+  while (current && ts.isParenthesizedExpression(current)) current = current.expression
+  return current
+}
+
+const isModelCardRef = (node) => {
+  const value = unwrapParens(node)
+  return (
+    !!value &&
+    ts.isPropertyAccessExpression(value) &&
+    !value.questionDotToken &&
+    ts.isIdentifier(value.expression) &&
+    value.expression.text === 'model' &&
+    ts.isIdentifier(value.name) &&
+    value.name.text === 'cardRef'
+  )
+}
+
+const isCardRefAttribute = (node) =>
+  ts.isJsxAttribute(node) &&
+  ts.isIdentifier(node.name) &&
+  node.name.text === 'ref' &&
+  !!node.initializer &&
+  ts.isJsxExpression(node.initializer) &&
+  !!node.initializer.expression &&
+  isModelCardRef(node.initializer.expression)
+
+const reportObserver = (sourceFile, sourcePath, isCard, node, isNew) => {
+  const where = `${sourcePath}:${lineOf(sourceFile, node)}`
+  if (isCard) {
+    report(
+      where,
+      'IntersectionObserver token — the card applies model.cardRef, it does not construct an observer',
+    )
+    return
+  }
+  if (isNew && !NEW_IO_ALLOWED.has(sourcePath)) {
+    report(
+      where,
+      '`new IntersectionObserver` — use the ViewportObserver alias; the constructor stays in hooks/useMarketplaceCatalog.ts',
+    )
+    return
+  }
+  if (!isNew && !IO_ALLOWED.has(sourcePath)) {
+    report(
+      where,
+      'IntersectionObserver identifier — keep it in lib/cardMedia.ts or hooks/useMarketplaceCatalog.ts',
+    )
+  }
+}
 
 let sawCardMedia = false
 const memeCards = []
@@ -70,37 +146,38 @@ for (const file of walk(src)) {
   if (isCard) memeCards.push(sourcePath)
 
   const source = readFileSync(file, 'utf8')
-  source.split('\n').forEach((line, index) => {
-    const where = `${sourcePath}:${index + 1}`
-    const isNew = NEW_IO.test(line)
-    const isIdent = IO_IDENT.test(line)
-    if (isCard && (isNew || isIdent)) {
-      report(
-        where,
-        'IntersectionObserver token — the card applies model.cardRef, it does not construct an observer',
-      )
-    } else if (isNew && !NEW_IO_ALLOWED.has(sourcePath)) {
-      report(
-        where,
-        '`new IntersectionObserver` — use the ViewportObserver alias; the constructor stays in hooks/useMarketplaceCatalog.ts',
-      )
-    } else if (isIdent && !IO_ALLOWED.has(sourcePath)) {
-      report(
-        where,
-        'IntersectionObserver identifier — keep it in lib/cardMedia.ts or hooks/useMarketplaceCatalog.ts',
-      )
+  const sourceFile = ts.createSourceFile(
+    file,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    scriptKindFor(file),
+  )
+  let sawCardRef = false
+
+  const visit = (node) => {
+    // Classify the constructor before its callee identifier. The identifier is allowlisted in
+    // lib/cardMedia.ts, so visiting it first would hide `new IntersectionObserver`.
+    if (ts.isNewExpression(node) && isIntersectionObserver(node.expression)) {
+      reportObserver(sourceFile, sourcePath, isCard, node, true)
+      ts.forEachChild(node, (child) => {
+        if (child !== node.expression) visit(child)
+      })
+      return
     }
-    if (GLOW.test(line) && !GLOW_ALLOWED.has(sourcePath)) {
+    if (isIntersectionObserver(node)) reportObserver(sourceFile, sourcePath, isCard, node, false)
+    if (isGlowCall(node) && !GLOW_ALLOWED.has(sourcePath)) {
       report(
-        where,
+        `${sourcePath}:${lineOf(sourceFile, node)}`,
         "setProperty / removeProperty('--glow-play-state') — mutate it only in lib/cardMedia.ts",
       )
     }
-  })
-
-  if (isCard) {
-    if (!source.includes('ref={model.cardRef}')) report(sourcePath, 'missing ref={model.cardRef}')
+    if (isCard && isCardRefAttribute(node)) sawCardRef = true
+    ts.forEachChild(node, visit)
   }
+  visit(sourceFile)
+
+  if (isCard && !sawCardRef) report(sourcePath, 'missing ref={model.cardRef}')
 }
 
 if (!sawCardMedia) {

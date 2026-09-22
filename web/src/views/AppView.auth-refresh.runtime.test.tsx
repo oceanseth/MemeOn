@@ -8,7 +8,7 @@ import type { Me } from '../lib/types'
 import { createStores } from '../stores/createStores'
 import { StoresProvider } from '../stores/StoresContext'
 
-vi.mock('./lib/firebase', () => ({
+vi.mock('../lib/firebase', () => ({
   firebaseSignIn: vi.fn(async () => {}),
   firebaseSignOut: vi.fn(),
   rtdb: {},

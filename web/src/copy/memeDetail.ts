@@ -1,4 +1,5 @@
 import { braincells } from '../lib/braincells'
+import { humanize } from '../lib/humanize'
 import { plural, pluralWord } from '../lib/plural'
 import { sharedCopy } from './shared'
 
@@ -19,9 +20,9 @@ export const memeDetailCopy = {
     unknown: 'another collector',
   },
   hero: {
-    /** "Prismatic · 5,800 reshares" */
+    /** "Prismatic · 5.8k reshares" */
     tierLine: (tierName: string, reshares: number) =>
-      `${tierName} · ${reshares.toLocaleString()} ${pluralWord(reshares, 'reshare')}`,
+      `${tierName} · ${humanize(reshares)} ${pluralWord(reshares, 'reshare')}`,
     tierLabel: (tierName: string, rarity: string) => `${tierName} · ${rarity}`,
     /** "via GIPHY (@author)" */
     source: (provider: string, author: string | null | undefined) =>
@@ -30,7 +31,7 @@ export const memeDetailCopy = {
   ladder: {
     current: (tierName: string) => `${tierName} is spreading`,
     next: (remaining: number, nextTierName: string) =>
-      `${remaining.toLocaleString()} more views → ${nextTierName}`,
+      `${humanize(remaining)} more views → ${nextTierName}`,
     top: (tierName: string) => `Top of the ladder — ${tierName} is as rare as it gets`,
     meterLabel: 'Progress to the next tier',
     topValueText: (tierName: string) => `${tierName} is the top tier`,
@@ -63,6 +64,7 @@ export const memeDetailCopy = {
     balance: (coins: number) =>
       `You’ve got ${braincells(coins)}. Pick how much of the joke you want.`,
     pickAtLeastOne: 'Pick at least 1 share.',
+    onlyListed: (shares: number) => `Only ${plural(shares, 'share')} up for grabs.`,
     short: (shortBy: number) =>
       `${braincells(shortBy)} short — sell some shares or open a pack first.`,
     buy: 'Buy shares',
@@ -89,11 +91,13 @@ export const memeDetailCopy = {
   spreading: {
     title: 'Where it’s spreading',
   },
+  tags: (tags: readonly string[]) => tags.map((tag) => `#${tag}`).join(' '),
   provenance: {
     mintedBy: 'minted by',
     ownedBy: 'owned by',
     remix: 'remix',
     youHold: 'you hold',
+    holdings: (shares: number) => `${shares}/100`,
     /** U+00B7 glue between minted / owned / tags / remix / source / holdings */
     separator: ' · ',
   },
@@ -130,6 +134,7 @@ export const memeDetailCopy = {
     /** who is selling and how much; `sellerName` null means the reader is the seller */
     note: (shares: number, sellerName: string | null) =>
       `${plural(shares, 'share')} of ${sellerName === null ? 'yours' : `${sellerName}’s`} ${shares === 1 ? 'is' : 'are'} listed`,
+    shares: (shares: number) => `${shares}/100`,
   },
   signedOut: {
     title: 'Own a piece of this',

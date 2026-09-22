@@ -96,7 +96,9 @@ export function FileDrop({
         aria-describedby={describedBy}
         className={CONTROL}
         onChange={(event) => {
+          // FileList is live; capture the File before clearing or the pick is gone.
           const file = event.currentTarget.files?.[0]
+          event.currentTarget.value = ''
           if (file) onFile(file)
         }}
       />

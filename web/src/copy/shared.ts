@@ -19,6 +19,7 @@ export const sharedCopy = {
   /** Auth wait and lazy-chunk Suspense share this labelled spinner — do not reuse `loading`. */
   checkingSession: 'Checking your session…',
   copied: 'Copied',
+  avatarFallback: '?',
   browseMarketplace: 'Browse the marketplace',
   backToBrand: 'Back to MemeOn',
   checkConnection: 'Check your connection and try again.',

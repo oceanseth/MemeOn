@@ -19,4 +19,32 @@ describe('terms screen model', () => {
       copy.contact.heading,
     ])
   })
+
+  it('points both Masky terms links at the user agreement', () => {
+    const agreement = 'https://masky.ai/user-agreement'
+    expect(copy.yourContent.maskyTerms.href).toBe(agreement)
+    expect(copy.thirdPartyServices.maskyTerms.href).toBe(agreement)
+    expect(copy.thirdPartyServices.discordTerms.href).toBe('https://discord.com/terms')
+    expect(copy.thirdPartyServices.giphy.href).toBe('https://giphy.com')
+
+    const model = buildTermsScreenModel()
+    const externals = model.sections.flatMap((section) =>
+      section.blocks.flatMap((block) =>
+        block.kind === 'paragraph'
+          ? block.inlines.flatMap((inline) =>
+              typeof inline !== 'string' && inline.kind === 'external'
+                ? [{ text: inline.text, href: inline.href }]
+                : [],
+            )
+          : [],
+      ),
+    )
+    const byText = (text: string) => externals.filter((link) => link.text === text)
+    expect(byText(copy.yourContent.maskyTerms.text)).toEqual([
+      { text: copy.yourContent.maskyTerms.text, href: agreement },
+    ])
+    expect(byText(copy.thirdPartyServices.maskyTerms.text)).toEqual([
+      { text: copy.thirdPartyServices.maskyTerms.text, href: agreement },
+    ])
+  })
 })

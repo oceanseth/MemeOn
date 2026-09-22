@@ -130,6 +130,18 @@ test('rejects a lazy view that landed in the entry map', () => {
   assert.match(result.output, /index-abc123\.js\.map/)
 })
 
+test('rejects a nested lazy view that landed in the entry map', () => {
+  const result = runChecker({
+    maps: {
+      'index-abc123.js.map': [...ENTRY_SOURCES, '../../src/views/marketplace/MarketplaceView.tsx'],
+    },
+  })
+
+  assert.equal(result.status, 1, result.output)
+  assert.match(result.output, /lazy view src\/views\/MarketplaceView\.tsx/)
+  assert.match(result.output, /index-abc123\.js\.map/)
+})
+
 test('rejects CreateMemeView and a later CreateMeme mode view in the entry', () => {
   const named = runChecker({
     maps: {

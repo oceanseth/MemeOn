@@ -81,3 +81,52 @@ test('fails when cn.ts registers a namespace value @theme no longer declares', (
     },
   )
 })
+
+test('fails when @theme declares a namespace value cn.ts does not register', () => {
+  withTree(
+    theme(
+      '--color-primary: oklch(0.7 0.1 340);',
+      '--container-card-narrow: 220px;',
+      '--container-search: 40rem;',
+    ),
+    {
+      'atoms/button.tsx':
+        'export const B = () => <button className="bg-primary max-w-card-narrow max-w-search" />\n',
+      'lib/cn.ts':
+        "export const cn = createCn({ extend: { theme: { container: ['card-narrow'] } } })\n",
+    },
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /@theme declares container: search/)
+      assert.doesNotMatch(output, /cn\.ts registers container:/)
+      assert.doesNotMatch(output, /never reached/)
+    },
+  )
+})
+
+test('exits 2 when the stylesheet does not exist', () => {
+  const root = mkdtempSync(join(tmpdir(), 'memeon-token-check-absent-'))
+  const missing = join(root, 'index.css')
+  rmSync(root, { recursive: true, force: true })
+  const result = spawnSync(process.execPath, [checker, missing, root], {
+    encoding: 'utf8',
+  })
+  assert.equal(result.status, 2, result.stdout + result.stderr)
+  assert.match(result.stderr, /does not exist/)
+})
+
+test('exits 2 when the stylesheet has no @theme static block', () => {
+  withTree(
+    '/* comments only */\n:root { --color-primary: oklch(0.7 0.1 340); }\n',
+    {
+      'atoms/button.tsx': 'export const B = () => <button className="bg-primary" />\n',
+    },
+    ({ status, output }) => {
+      assert.equal(status, 2, output)
+      assert.match(output, /check-tokens: no @theme static block in /)
+      assert.match(output, /index\.css/)
+      assert.doesNotMatch(output, /all reached/)
+      assert.doesNotMatch(output, /does not exist/)
+    },
+  )
+})

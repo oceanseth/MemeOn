@@ -1,6 +1,7 @@
 import type { ButtonHTMLAttributes } from 'react'
 import { tradesCopy } from '../copy/trades'
 import { braincells } from './braincells'
+import { humanize } from './humanize'
 import type { IconName } from '@/atoms/icon'
 import type { Trade, TradeSide } from './types'
 
@@ -177,7 +178,7 @@ function buildSideSummary(
         tierKey: info?.tierKey ?? null,
         tierName: info?.tierName ?? null,
         tierLabel: info?.tierLabel ?? null,
-        resharesLabel: info ? info.reshares.toLocaleString() : null,
+        resharesLabel: info ? humanize(info.reshares) : null,
         detailHref: `/m/${meme.memeId}`,
       }
     }),

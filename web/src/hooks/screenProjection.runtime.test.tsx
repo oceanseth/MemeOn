@@ -3,7 +3,13 @@ import { createRoot, type Root } from 'react-dom/client'
 import { MemoryRouter, Route, Routes, useNavigate, type NavigateFunction } from 'react-router-dom'
 import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import { invitePal, meLou, memeplexEmpty, paperMeme } from '../../.storybook/fixtures'
+import {
+  friendAccepted,
+  invitePal,
+  meLou,
+  memeplexEmpty,
+  paperMeme,
+} from '../../.storybook/fixtures'
 import { memeDetailCopy } from '../copy/memeDetail'
 import { profileCopy } from '../copy/profile'
 import { tradesCopy } from '../copy/trades'
@@ -258,6 +264,87 @@ it('Trades compose catalog failures do not overwrite an existing friends error',
     })
   }
   expect(probe.current().compose?.error).toBe(tradesCopy.errors.friends)
+})
+
+function tradePosts(): Array<{ path: string; init?: RequestInit | undefined }> {
+  return requests.filter(
+    (request) => request.path === '/api/trades' && request.init?.method === 'POST',
+  )
+}
+
+it('an invalid trades double submit posts nothing', async () => {
+  const probe = await mountHook(useTradesScreen, (m) => `${m.phase}:${!!m.compose}`)
+  await act(() => probe.current().newTradeButtonProps.onClick())
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const compose = probe.current().compose
+    if (compose?.noFriends || compose?.proposeButtonProps.disabled) break
+    await act(async () => {
+      await Promise.resolve()
+    })
+  }
+  const compose = probe.current().compose
+  expect(compose).not.toBeNull()
+  if (!compose) return
+  const onSubmit = compose.formProps.onSubmit
+  await act(() => {
+    const event = { preventDefault() {} } as never
+    onSubmit(event)
+    onSubmit(event)
+  })
+  expect(tradePosts()).toHaveLength(0)
+  expect(probe.current().compose).not.toBeNull()
+  expect(probe.current().compose?.proposeButtonProps.disabled).toBe(true)
+})
+
+it('a valid same-turn trades double submit posts one proposal', async () => {
+  const gate = deferred<Response>()
+  fetchMock.mockImplementation(async (input, init) => {
+    const path = String(input)
+    requests.push({ path, init })
+    if (path === '/api/friends') return jsonResponse({ friends: [friendAccepted] })
+    if (path === '/api/trades' && init?.method === 'POST') return gate.promise
+    return jsonResponse(response(path))
+  })
+  const probe = await mountHook(useTradesScreen, (m) => `${m.phase}:${!!m.compose}`)
+  await act(() => probe.current().newTradeButtonProps.onClick())
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const items = probe.current().compose?.friendSelectItems ?? []
+    if (items.some((item) => item.value === friendAccepted.sub)) break
+    await act(async () => {
+      await Promise.resolve()
+    })
+  }
+  expect(
+    probe.current().compose?.friendSelectItems.some((item) => item.value === friendAccepted.sub),
+  ).toBe(true)
+  await act(() => {
+    const compose = probe.current().compose
+    compose?.friendSelectProps.onValueChange(friendAccepted.sub)
+    compose?.getCoinsInputProps.onChange({ target: { value: '1' } } as never)
+  })
+  expect(probe.current().compose?.proposeButtonProps.disabled).toBe(false)
+  const onSubmit = probe.current().compose?.formProps.onSubmit
+  expect(onSubmit).toBeTypeOf('function')
+  if (!onSubmit) return
+  await act(() => {
+    const event = { preventDefault() {} } as never
+    onSubmit(event)
+    onSubmit(event)
+  })
+  const posts = tradePosts()
+  expect(posts).toHaveLength(1)
+  expect(JSON.parse(String(posts[0]?.init?.body))).toEqual({
+    toId: friendAccepted.sub,
+    offer: { memes: [], coins: 0 },
+    ask: { memes: [], coins: 1 },
+  })
+  expect(probe.current().compose).not.toBeNull()
+  expect(probe.current().compose?.proposeButtonProps.disabled).toBe(true)
+  await act(async () => {
+    gate.resolve(jsonResponse({}))
+    await gate.promise
+  })
+  expect(tradePosts()).toHaveLength(1)
 })
 
 it('Friends projects search input events', async () => {

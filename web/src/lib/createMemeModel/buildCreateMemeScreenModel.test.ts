@@ -349,7 +349,12 @@ describe('buildCreateMemeScreenModel', () => {
       },
       actions(),
     )
-    expect(carried.previewCard.originLabel).toBe('from GIPHY · @catlord')
+    expect(carried.previewCard.originLabel).toBe(
+      copy.preview.originFromAuthor(copy.preview.giphyProvider, 'catlord'),
+    )
+    expect(carried.previewCard.statsLabel).toBe(copy.preview.zeroStats)
+    expect(carried.previewCard.valueLabel).toBe(copy.preview.zeroValue)
+    expect(carried.mintHint).toBe('')
     expect(carried.getModeButtonProps('giphy').buttonProps.disabled).toBe(false)
 
     const running = buildCreateMemeScreenModel(

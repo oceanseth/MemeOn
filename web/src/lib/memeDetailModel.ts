@@ -4,6 +4,7 @@ import type { IconName } from '@/atoms/icon'
 import { memeDetailCopy } from '../copy/memeDetail'
 import { buildConfirmDialogModel, type ConfirmDialogModel } from './confirmDialogModel'
 import { buildMemeCardModel, type MemeCardModel } from './memeCardModel'
+import { humanize } from './humanize'
 import { memeReshareCount, memeViewCount } from './memeMetrics'
 import { buildMemeplexPanelModel, type MemeplexPanelModel } from './memeplexPanelModel'
 import type { Me, Meme } from './types'
@@ -309,7 +310,13 @@ export function buildMemeDetailModel({
   const buyTotal = Math.ceil(buyShares * pricePerShare)
   const shortBy = Math.max(0, buyTotal - held)
   const buyReason =
-    buyShares < 1 ? copy.listing.pickAtLeastOne : shortBy > 0 ? copy.listing.short(shortBy) : null
+    buyShares < 1
+      ? copy.listing.pickAtLeastOne
+      : meme.listing != null && buyShares > meme.listing.shares
+        ? copy.listing.onlyListed(meme.listing.shares)
+        : shortBy > 0
+          ? copy.listing.short(shortBy)
+          : null
   const sellShares = context.sellShares
   const listReason =
     sellShares < 1
@@ -443,7 +450,7 @@ export function buildMemeDetailModel({
     creatorName: meme.creatorName,
     ownerLinkProps: { to: `/u/${encodeURIComponent(meme.ownerId)}` },
     ownerName: meme.ownerName,
-    tagsLabel: meme.tags.length ? meme.tags.map((tag) => `#${tag}`).join(' ') : null,
+    tagsLabel: meme.tags.length ? copy.tags(meme.tags) : null,
     remixLinkProps: meme.remixOf ? { to: `/m/${meme.remixOf}` } : undefined,
     sourceLinkProps: meme.source
       ? { href: meme.source.url, target: '_blank', rel: 'noreferrer' }
@@ -451,14 +458,14 @@ export function buildMemeDetailModel({
     sourceLabel: meme.source
       ? copy.hero.source(meme.source.provider, meme.source.author)
       : undefined,
-    viewsLabel: views.toLocaleString(),
-    resharesLabel: reshareCount.toLocaleString(),
-    valueLabel: meme.value.toLocaleString(),
+    viewsLabel: humanize(views),
+    resharesLabel: humanize(reshareCount),
+    valueLabel: humanize(meme.value),
     viewsWord: copy.stats.viewsWord(views),
     resharesWord: copy.stats.resharesWord(reshareCount),
     statsSrLabel: copy.stats.srLabel(views, reshareCount),
     valueSrLabel: copy.stats.valueSrLabel(meme.value),
-    holdingsLabel: myShares > 0 ? `${myShares}/100` : null,
+    holdingsLabel: myShares > 0 ? copy.provenance.holdings(myShares) : null,
     shareTitle: copy.share.title,
     shareCaption: copy.share.caption,
     previewLabel: copy.share.preview,
@@ -526,7 +533,7 @@ export function buildMemeDetailModel({
     sources: (context.stats?.sources ?? []).map((source) => ({
       id: source.source,
       label: source.source,
-      viewsLabel: source.views.toLocaleString(),
+      viewsLabel: humanize(source.views),
       linkProps: source.url ? { href: source.url, target: '_blank', rel: 'noreferrer' } : undefined,
     })),
     plex: buildMemeplexPanelModel({
@@ -546,7 +553,7 @@ export function buildMemeDetailModel({
     capTableNote,
     capTable: context.positions.map((position) => ({
       userId: position.userId,
-      sharesLabel: `${position.shares}/100`,
+      sharesLabel: copy.capTable.shares(position.shares),
       label: holderLabel(position.userId, user?.sub ?? null, context.holderNames, holderNameCache),
     })),
     deleteDialog: buildConfirmDialogModel({

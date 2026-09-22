@@ -44,6 +44,108 @@ test('flags a chrome input type set in a prop bag and spread', () => {
   )
 })
 
+test('leaves a domain value object with type file alone', () => {
+  lint(
+    'clip.ts',
+    "export const clip = { type: 'file', id: 'clip' }\nexport const only = { type: 'file' }\n",
+    ({ status, output }) => {
+      assert.equal(status, 0, output)
+      assert.doesNotMatch(output, /no-native-chrome/)
+    },
+  )
+})
+
+test('flags a chrome type beside a control sibling with no InputProps name', () => {
+  lint(
+    'bag.ts',
+    "export const bag = { type: 'file', accept: 'image/png' }\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /type="file"/)
+    },
+  )
+})
+
+test('flags a computed control sibling beside a chrome type', () => {
+  lint(
+    'bag.ts',
+    "export const bag = { type: 'file', ['accept']: 'image/png' }\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /type="file"/)
+    },
+  )
+})
+
+test('flags a chrome type bound as InputProps with no control sibling', () => {
+  lint(
+    'buildUploadModeModel.ts',
+    "export const build = () => ({ imageFileInputProps: { type: 'file' } })\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /type="file"/)
+    },
+  )
+})
+
+test('flags a computed InputProps binding', () => {
+  lint(
+    'buildUploadModeModel.ts',
+    "export const build = () => ({ ['imageFileInputProps']: { type: 'file' } })\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /type="file"/)
+    },
+  )
+})
+
+test('flags a template InputProps binding', () => {
+  lint(
+    'buildUploadModeModel.ts',
+    "export const build = () => ({ [`imageFileInputProps`]: { type: 'file' } })\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /type="file"/)
+    },
+  )
+})
+
+test('flags a static computed type key in an input prop bag', () => {
+  lint(
+    'computed.tsx',
+    [
+      "export const imageFileInputProps = { ['type']: 'file' } as const",
+      "export const sibling = { record: { [\"type\"]: 'file', accept: 'image/png' } }",
+      "export const S = () => <Input {...{ [`type`]: 'file' }} />",
+      '',
+    ].join('\n'),
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /no-native-chrome/)
+      assert.equal(output.match(/type="file"/g)?.length, 3, output)
+    },
+  )
+})
+
+test('leaves domain records and dynamic type keys alone', () => {
+  lint(
+    'domain.ts',
+    [
+      "const type = 'type'",
+      "const k = 'type'",
+      "export const job = { type: 'file', id: 'x' } as const",
+      "export const computedJob = { ['type']: 'file', id: 'y' }",
+      "export const identKey = { [type]: 'file', accept: 'image/png' }",
+      "export const dynamic = { [k]: 'file', multiple: true }",
+      '',
+    ].join('\n'),
+    ({ status, output }) => {
+      assert.equal(status, 0, output)
+      assert.doesNotMatch(output, /no-native-chrome/)
+    },
+  )
+})
+
 test('flags a user-agent element', () => {
   lint(
     'Picker.tsx',
@@ -76,6 +178,32 @@ test('leaves a locally bound confirm alone', () => {
   )
 })
 
+test('flags a bracket or template user-agent dialog on a global', () => {
+  lint(
+    'leave.ts',
+    [
+      'export const a = () => window["confirm"]()',
+      'export const b = () => globalThis["alert"]()',
+      'export const c = () => self["prompt"]()',
+      'export const d = () => window[`confirm`]()',
+      '',
+    ].join('\n'),
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /no-native-chrome/)
+      assert.match(output, /window\.confirm\(\)/)
+      assert.match(output, /globalThis\.alert\(\)/)
+      assert.match(output, /self\.prompt\(\)/)
+    },
+  )
+})
+
+test('leaves a dynamic window dialog name alone', () => {
+  lint('dyn.ts', 'window[name]()\n', ({ status, output }) => {
+    assert.equal(status, 0, output)
+  })
+})
+
 test('leaves the controls we draw ourselves alone', () => {
   lint(
     'Mint.tsx',
@@ -98,7 +226,7 @@ test('src/atoms/file-drop.tsx keeps its scoped exception and the rest of src sta
 test('flags a useEffect call', () => {
   lint(
     'Sync.tsx',
-    "import { useState } from 'react'\nexport const S = () => { useEffect(() => {}, []) }\n",
+    "import { useEffect } from 'react'\nexport const S = () => { useEffect(() => {}, []) }\n",
     ({ status, output }) => {
       assert.equal(status, 1, output)
       assert.match(output, /no-use-effect/)
@@ -126,6 +254,7 @@ test('flags an aliased useEffect import', () => {
     ({ status, output }) => {
       assert.equal(status, 1, output)
       assert.match(output, /no-use-effect/)
+      assert.match(output, /Do not call `useEffect`/)
     },
   )
 })
@@ -168,6 +297,89 @@ test('leaves a useMountEffect call alone', () => {
     'sync.ts',
     "import { useMountEffect } from './useMountEffect'\nexport const go = () => useMountEffect(() => {})\n",
     ({ status, output }) => assert.equal(status, 0, output),
+  )
+})
+
+test('leaves a local or third-party useEffect alone', () => {
+  lint(
+    'sync.ts',
+    [
+      "import { useEffect as foreign, useLayoutEffect as foreignLayout } from 'not-react'",
+      'function useEffect() {}',
+      'const useLayoutEffect = () => 1',
+      'export const go = () => {',
+      '  useEffect()',
+      '  useLayoutEffect()',
+      '  foreign()',
+      '  foreignLayout()',
+      '  function inner() {',
+      '    const React = { useEffect() {}, useLayoutEffect() {} }',
+      '    React.useEffect()',
+      "    React['useLayoutEffect']()",
+      '    React?.useEffect()',
+      '    const { useEffect: pulled } = React',
+      '    pulled()',
+      '  }',
+      '  return inner',
+      '}',
+      '',
+    ].join('\n'),
+    ({ status, output }) => {
+      assert.equal(status, 0, output)
+      assert.doesNotMatch(output, /no-use-effect/)
+    },
+  )
+})
+
+test('leaves a shadowed useEffect call alone', () => {
+  lint(
+    'sync.ts',
+    [
+      "import { useEffect } from 'react'",
+      'export const go = () => {',
+      '  function useEffect() {}',
+      '  useEffect()',
+      '}',
+      '',
+    ].join('\n'),
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /Do not import/)
+      assert.doesNotMatch(output, /Do not call `useEffect`/)
+    },
+  )
+})
+
+test('flags a namespace React.useEffect', () => {
+  lint(
+    'sync.ts',
+    "import * as React from 'react'\nexport const go = () => React.useEffect(() => {})\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /no-use-effect/)
+    },
+  )
+})
+
+test('flags an optional React.useEffect', () => {
+  lint(
+    'sync.ts',
+    "import React from 'react'\nexport const go = () => React?.useEffect(() => {})\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+    },
+  )
+})
+
+test('flags a renamed destructure of useEffect off React', () => {
+  lint(
+    'sync.ts',
+    "import React from 'react'\nconst { useEffect: onMount } = React\nexport const go = () => onMount()\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /Do not bind `useEffect`/)
+      assert.match(output, /Do not call `useEffect`/)
+    },
   )
 })
 

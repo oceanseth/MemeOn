@@ -2,7 +2,7 @@ import { createActor } from 'xstate'
 import { expect, test } from 'vitest'
 import { tierFor } from '@memeon/shared/tiers'
 import type { FriendEntry, Meme, Trade } from '../lib/types'
-import { tradeProposalPayload, tradesMachine } from './tradesMachine'
+import { tradeProposalBlocked, tradeProposalPayload, tradesMachine } from './tradesMachine'
 
 const tradeA: Trade = {
   id: 'trade-a',
@@ -262,4 +262,35 @@ test('FAIL from ready and composing enters error with loadFailed false', () => {
     actingAction: null,
   })
   actorComposing.stop()
+})
+
+test('tradeProposalBlocked matches the propose button and ignores an unloaded friend list', () => {
+  const valid = {
+    toId: friendA.sub,
+    busy: false,
+    friendsLoaded: true,
+    friends: [friendA],
+    offerMeme: '',
+    offerShares: 10,
+    offerCoins: 0,
+    askMeme: '',
+    askShares: 10,
+    askCoins: 1,
+  }
+  expect(tradeProposalBlocked(valid)).toBe(false)
+  expect(tradeProposalBlocked({ ...valid, toId: '' })).toBe(true)
+  expect(tradeProposalBlocked({ ...valid, busy: true })).toBe(true)
+  expect(tradeProposalBlocked({ ...valid, friends: [] })).toBe(true)
+  expect(tradeProposalBlocked({ ...valid, friendsLoaded: false, friends: [] })).toBe(false)
+  expect(
+    tradeProposalBlocked({
+      ...valid,
+      offerMeme: '',
+      offerCoins: 0,
+      askMeme: '',
+      askCoins: 0,
+    }),
+  ).toBe(true)
+  expect(tradeProposalBlocked({ ...valid, offerMeme: memeA.id, offerShares: 0 })).toBe(true)
+  expect(tradeProposalBlocked({ ...valid, askMeme: memeB.id, askShares: 0 })).toBe(true)
 })

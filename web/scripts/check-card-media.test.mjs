@@ -106,6 +106,24 @@ test('fails when cardMedia constructs IntersectionObserver instead of ViewportOb
   )
 })
 
+test('fails when cardMedia line-breaks new IntersectionObserver', () => {
+  withSrc(
+    {
+      ...LEGAL,
+      'lib/cardMedia.ts': CARD_MEDIA.replace(
+        'new ViewportObserver(() => {})',
+        'new\n    IntersectionObserver(() => {})',
+      ),
+    },
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /lib\/cardMedia\.ts/)
+      assert.match(output, /new IntersectionObserver/)
+      assert.match(output, /ViewportObserver alias/)
+    },
+  )
+})
+
 test('fails when --glow-play-state mutation leaves lib/cardMedia.ts', () => {
   withSrc(
     {
@@ -116,6 +134,27 @@ test('fails when --glow-play-state mutation leaves lib/cardMedia.ts', () => {
     ({ status, output }) => {
       assert.equal(status, 1, output)
       assert.match(output, /atoms\/foil\.ts:1/)
+      assert.match(output, /--glow-play-state/)
+    },
+  )
+})
+
+test('fails when a multiline setProperty of --glow-play-state leaves lib/cardMedia.ts', () => {
+  withSrc(
+    {
+      ...LEGAL,
+      'atoms/foil.ts': [
+        'export const pause = (el) =>',
+        '  el.style.setProperty(',
+        "    '--glow-play-state',",
+        "    'paused'",
+        '  )',
+        '',
+      ].join('\n'),
+    },
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /atoms\/foil\.ts/)
       assert.match(output, /--glow-play-state/)
     },
   )
@@ -132,6 +171,25 @@ test('fails when a meme-card component mentions IntersectionObserver or drops th
       assert.equal(status, 1, output)
       assert.match(output, /molecules\/meme-card\.tsx/)
       assert.match(output, /does not construct an observer/)
+      assert.match(output, /missing ref=\{model\.cardRef\}/)
+    },
+  )
+})
+
+test('fails when a meme-card only mentions ref={model.cardRef} in a comment', () => {
+  withSrc(
+    {
+      ...LEGAL,
+      'molecules/meme-card.tsx': [
+        'export function MemeCard({ model }) {',
+        '  // ref={model.cardRef}',
+        '  return <article>{model}</article>',
+        '}',
+        '',
+      ].join('\n'),
+    },
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
       assert.match(output, /missing ref=\{model\.cardRef\}/)
     },
   )

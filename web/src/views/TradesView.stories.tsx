@@ -420,14 +420,48 @@ export const InitialFailureOffersRetry: Story = {
       <TradesView />
     </ConnectedStory>
   ),
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     const alert = await canvas.findByRole('alert')
     await expect(alert).toHaveTextContent(copy.loadError.title)
     await expect(alert).toHaveTextContent(copy.loadError.body)
     await expect(alert).not.toHaveTextContent('offline')
-    await expect(canvas.getByRole('button', { name: copy.retry })).toBeInTheDocument()
+    const requestsBeforeRetry = loaded.scenario.requests.filter(
+      (request: { path: string }) => request.path === '/api/trades',
+    ).length
+    await userEvent.click(canvas.getByRole('button', { name: copy.retry }))
+    await waitFor(() =>
+      expect(
+        loaded.scenario.requests.filter(
+          (request: { path: string }) => request.path === '/api/trades',
+        ),
+      ).toHaveLength(requestsBeforeRetry + 1),
+    )
     await expect(canvas.queryByText(copy.lists.openEmpty)).not.toBeInTheDocument()
+  },
+}
+
+/** a resolved empty trade list is both empty lists, not the load-error alert or the skeleton */
+export const Empty: Story = {
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'GET /api/trades': () => ({ body: { trades: [] } }),
+      },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <TradesView />
+    </ConnectedStory>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByText(copy.lists.openEmpty)).toBeInTheDocument()
+    await expect(canvas.getByText(copy.lists.historyEmpty)).toBeInTheDocument()
+    await expect(canvas.queryByRole('alert')).toBeNull()
+    await expect(canvasElement.querySelector('[data-slot="skeleton-row"]')).toBeNull()
   },
 }
 

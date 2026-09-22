@@ -43,23 +43,35 @@ export function useMarketplaceCatalog({
   nextCursor,
 }: UseMarketplaceCatalogArgs): MarketplaceCatalog {
   const loadingRef = useRef(false)
+  // A newer refresh or unmount retires in-flight catalogue IO. Only that epoch may send or unlock.
+  const generationRef = useRef(0)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const observerRef = useRef<IntersectionObserver | null>(null)
 
   const fetchFromStart = useCallback(() => {
-    const live = actor.getSnapshot().context
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+      timerRef.current = null
+    }
+    const generation = ++generationRef.current
     loadingRef.current = true
+    const live = actor.getSnapshot().context
     send({ type: 'FETCHING', scope: 'refresh' })
     apiFetch<{ memes: Meme[]; nextCursor: string | null }>(`/api/memes?${queryString(live)}`)
-      .then((result) =>
+      .then((result) => {
+        if (generation !== generationRef.current) return
         send({
           type: 'LOADED',
           memes: result.memes,
           nextCursor: result.nextCursor,
-        }),
-      )
-      .catch(() => send({ type: 'FAIL', err: copy.machine.loadFailed }))
+        })
+      })
+      .catch(() => {
+        if (generation !== generationRef.current) return
+        send({ type: 'FAIL', err: copy.machine.loadFailed })
+      })
       .finally(() => {
+        if (generation !== generationRef.current) return
         loadingRef.current = false
       })
   }, [actor, send])
@@ -75,6 +87,7 @@ export function useMarketplaceCatalog({
       const live = actor.getSnapshot().context
       if (loadingRef.current || !live.nextCursor) return
       if (live.moreErr && !manual) return
+      const generation = generationRef.current
       loadingRef.current = true
       send({ type: 'FETCHING', scope: 'more' })
       try {
@@ -82,15 +95,17 @@ export function useMarketplaceCatalog({
           memes: Meme[]
           nextCursor: string | null
         }>(`/api/memes?${queryString(live)}&cursor=${encodeURIComponent(live.nextCursor)}`)
+        if (generation !== generationRef.current) return
         send({
           type: 'APPEND',
           memes: result.memes,
           nextCursor: result.nextCursor,
         })
       } catch {
+        if (generation !== generationRef.current) return
         send({ type: 'MORE_FAILED', err: copy.machine.appendFailed })
       } finally {
-        loadingRef.current = false
+        if (generation === generationRef.current) loadingRef.current = false
       }
     },
     [actor, send],
@@ -121,6 +136,7 @@ export function useMarketplaceCatalog({
   useMountEffect(() => {
     scheduleFetch()
     return () => {
+      generationRef.current += 1
       if (timerRef.current) clearTimeout(timerRef.current)
       observerRef.current?.disconnect()
     }

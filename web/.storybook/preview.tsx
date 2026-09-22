@@ -11,7 +11,7 @@ import { THEME_STORAGE_KEY } from '../src/stores/themeStore'
 import { FIXED_NOW } from './fixtures'
 import { connectedHandlers } from './msw-handlers'
 import type { UnexpectedRequestLedger } from './request-accounting'
-import type { ConnectedScenario } from './connected-scenario'
+import { getActiveScenario, type ConnectedScenario } from './connected-scenario'
 
 const connectedMswLoader = mswLoader(async () => {
   const worker = setupWorker(...connectedHandlers)
@@ -70,7 +70,6 @@ const preview: Preview = {
       // like Chromium, a detached call (`const w = clipboard.writeText; w(text)`) rejects
       async writeText(this: unknown, value: string) {
         if (this !== storyClipboard) throw new TypeError('Illegal invocation')
-        const { getActiveScenario } = await import('./connected-scenario')
         getActiveScenario().copied.push(value)
       },
     }
@@ -81,7 +80,6 @@ const preview: Preview = {
     Object.defineProperty(navigator, 'share', {
       configurable: true,
       value: async (data: ShareData) => {
-        const { getActiveScenario } = await import('./connected-scenario')
         getActiveScenario().shared.push(data)
       },
     })
@@ -90,13 +88,11 @@ const preview: Preview = {
       readonly rootMargin = '0px'
       readonly thresholds = [0]
       constructor(callback: IntersectionObserverCallback) {
-        void import('./connected-scenario')
-          .then(({ getActiveScenario }) => {
-            getActiveScenario().intersectionObservers.push((entries) => callback(entries, this))
-          })
-          // an atom story never starts a scenario, and every Base UI popup builds an observer:
-          // no scenario to report into means an inert observer, not a failed story
-          .catch(() => {})
+        // an atom story never starts a scenario, and every Base UI popup builds an observer:
+        // no scenario to report into means an inert observer, not a failed story
+        try {
+          getActiveScenario().intersectionObservers.push((entries) => callback(entries, this))
+        } catch {}
       }
       disconnect() {}
       observe() {}

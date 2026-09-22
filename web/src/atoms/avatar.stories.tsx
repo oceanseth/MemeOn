@@ -110,7 +110,7 @@ export const Composed: Story = {
   render: () => (
     <Avatar size="md">
       <AvatarImage src={LOGO} alt="lou" />
-      <AvatarFallback>?</AvatarFallback>
+      <AvatarFallback size="md">?</AvatarFallback>
     </Avatar>
   ),
   play: async ({ canvasElement }) => {

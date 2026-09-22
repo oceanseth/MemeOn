@@ -33,13 +33,9 @@ const AVATAR_SRC =
   )
 
 const statsFor = (profile: typeof palProfile): ProfileStat[] => [
-  { id: 'collection', glyph: 'book', text: `${profile.collectionSize} memes` },
-  {
-    id: 'portfolio',
-    glyph: 'brain',
-    text: `${profile.portfolioValue.toLocaleString()} held`,
-  },
-  { id: 'followers', glyph: 'star', text: `${profile.followers} followers` },
+  { id: 'collection', glyph: 'book', text: profileCopy.stats.collection(profile.collectionSize) },
+  { id: 'portfolio', glyph: 'brain', text: profileCopy.stats.held(profile.portfolioValue) },
+  { id: 'followers', glyph: 'star', text: profileCopy.stats.followers(profile.followers) },
 ]
 
 const handlers = {

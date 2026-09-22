@@ -171,15 +171,20 @@ for (const [name, dir] of Object.entries(WORKSPACES)) {
 // ── The rules ──────────────────────────────────────────────────────────────────────────────────
 
 /**
- * `{ allow: [{ name, file?, why }] }`. `file` scopes an entry to one document, so a name kept for
+ * `{ allow: [{ name, file, why }] }`. `file` scopes an entry to one document, so a name kept for
  * history in an archive cannot pass unnoticed in a live one. `why` is mandatory prose-for-humans.
  */
 const allowlistPath = join(WEB, 'scripts', 'docs-allowlist.json')
-const allowed = read(allowlistPath) ? JSON.parse(read(allowlistPath)).allow : []
+const allowlistSource = read(allowlistPath)
+const allowed = allowlistSource ? JSON.parse(allowlistSource).allow : []
+if (!Array.isArray(allowed)) {
+  console.error('check-docs: docs-allowlist.json needs an `allow` array')
+  process.exit(2)
+}
 for (const entry of allowed) {
-  if (!entry.name || !entry.why) {
+  if (!entry.name || !entry.file || !entry.why) {
     console.error(
-      `check-docs: every docs-allowlist.json entry needs a \`name\` and a \`why\`: ${JSON.stringify(entry)}`,
+      `check-docs: every docs-allowlist.json entry needs a \`name\`, a \`file\`, and a \`why\`: ${JSON.stringify(entry)}`,
     )
     process.exit(2)
   }
@@ -187,7 +192,6 @@ for (const entry of allowed) {
 const hasDocs = existsSync(join(ROOT, 'docs'))
 const unused = []
 for (const entry of allowed) {
-  if (!entry.file) continue
   const target = join(ROOT, entry.file)
   if (existsSync(target)) {
     if (!read(target).includes(entry.name)) {
@@ -207,8 +211,7 @@ if (unused.length) {
   )
   process.exit(2)
 }
-const allows = (file, name) =>
-  allowed.some((entry) => entry.name === name && (!entry.file || entry.file === file))
+const allows = (file, name) => allowed.some((entry) => entry.name === name && entry.file === file)
 
 /**
  * A path in a document is read the way a reader reads it: from the document's own directory

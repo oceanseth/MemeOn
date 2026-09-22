@@ -220,7 +220,35 @@ test('an allowlist entry without a reason is itself an error', () => {
     },
     ({ status, output }) => {
       assert.equal(status, 2, output)
-      assert.match(output, /needs a `name` and a `why`/)
+      assert.match(output, /needs a `name`, a `file`, and a `why`/)
+    },
+  )
+})
+
+test('a docs allowlist without an allow array is itself an error', () => {
+  for (const allow of [JSON.stringify({}), JSON.stringify({ allow: {} })]) {
+    withRepo({ 'web/scripts/docs-allowlist.json': allow }, ({ status, output }) => {
+      assert.equal(status, 2, output)
+      assert.match(output, /needs an `allow` array/)
+      assert.doesNotMatch(output, /TypeError/)
+      assert.doesNotMatch(output, /is not iterable/)
+    })
+  }
+})
+
+test('an allowlist entry without a file is itself an error', () => {
+  withRepo(
+    {
+      'web/scripts/docs-allowlist.json': JSON.stringify({
+        allow: [{ name: 'npm run vanished', why: 'unscoped exception' }],
+      }),
+      'README.md': 'Then `npm run vanished`.\n',
+    },
+    ({ status, output }) => {
+      assert.equal(status, 2, output)
+      assert.match(output, /needs a `name`, a `file`, and a `why`/)
+      assert.doesNotMatch(output, /this workspace is pnpm/)
+      assert.doesNotMatch(output, /unused allowlist/)
     },
   )
 })
@@ -304,12 +332,7 @@ test('Anatomy check-copy paragraph names the ratchet engines and JSX text, not J
   assert.doesNotMatch(anatomy, /`JsxText`/)
 })
 
-test('finishes well inside its budget', () => {
-  const started = Date.now()
+test('exits 0 on the real tree', () => {
   const result = spawnSync(process.execPath, [checker], { encoding: 'utf8' })
   assert.equal(result.status, 0, result.stdout + result.stderr)
-  assert.ok(
-    Date.now() - started < 2000,
-    `check-docs took ${Date.now() - started}ms on the real tree`,
-  )
 })

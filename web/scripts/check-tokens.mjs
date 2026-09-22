@@ -51,6 +51,10 @@ function block(css, opener) {
 
 const css = stripComments(readFileSync(CSS_PATH, 'utf8'))
 const theme = block(css, '@theme static')
+if (!theme.trim()) {
+  console.error(`check-tokens: no @theme static block in ${CSS_PATH}`)
+  process.exit(2)
+}
 
 /** `--color-primary: …` → `--color-primary`, skipping the `--ns-*: initial` resets. */
 const declared = [...theme.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)]
@@ -223,9 +227,15 @@ for (const token of declared) {
 const drift = Object.entries(registered).flatMap(([namespace, names]) => {
   const actual = [...new Set(inTheme[namespace] ?? [])].sort()
   const missing = names.filter((name) => !actual.includes(name))
-  return missing.length
-    ? [`  cn.ts registers ${namespace}: ${missing.join(', ')} — not in @theme`]
-    : []
+  const unregistered = actual.filter((name) => !names.includes(name))
+  return [
+    ...(missing.length
+      ? [`  cn.ts registers ${namespace}: ${missing.join(', ')} — not in @theme`]
+      : []),
+    ...(unregistered.length
+      ? [`  @theme declares ${namespace}: ${unregistered.join(', ')} — not registered in cn.ts`]
+      : []),
+  ]
 })
 
 const short = relative(process.cwd(), CSS_PATH)

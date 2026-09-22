@@ -1,7 +1,8 @@
-import { TIERS, type Tier } from '@memeon/shared/tiers'
+import { TIERS } from '@memeon/shared/tiers'
 import type { ButtonHTMLAttributes, HTMLAttributes, ImgHTMLAttributes, RefCallback } from 'react'
 import { landingCopy } from '../copy/landing'
 import { beginMaskyLogin } from '../lib/auth'
+import { humanize } from '../lib/humanize'
 import { cardMediaRef } from '../lib/cardMedia'
 import type { HeroVideoModel } from '../lib/heroVideoModel'
 import { landingMachine, type LandingPhase } from '../stores/landingMachine'
@@ -21,8 +22,10 @@ export type LandingHeroImageProps = Pick<
 
 export type LandingErrorNoticeProps = Pick<HTMLAttributes<HTMLParagraphElement>, 'role'>
 
-export interface LandingHeroCardModel extends Pick<Tier, 'glowStyle'> {
+export interface LandingHeroCardModel {
   tierKey: string
+  /** The card's seat in the hero fan: 0 at the centre, negative to the left (`data-fan`). */
+  fan: number
   tierName: string
   tierLabel: string
   resharesLabel: string
@@ -30,6 +33,13 @@ export interface LandingHeroCardModel extends Pick<Tier, 'glowStyle'> {
   imageProps: LandingHeroImageProps
   backdropImageProps: LandingHeroImageProps
   cardRef: RefCallback<HTMLElement>
+}
+
+export interface LandingHeroStatModel {
+  key: string
+  /** Compact magnitude (`25k`), exact under 1,000. */
+  value: string
+  label: string
 }
 
 export interface LandingHowStepModel {
@@ -50,13 +60,17 @@ export interface LandingFaqItemModel {
 const copy = landingCopy
 const BRAINCELL_IMAGE_SRC = '/api/brand/braincell.png'
 const HERO_IMAGE_SRC = '/brand/hero-cat.webp'
+/** Every minted meme is one hundred shares (`api`); the landing quotes it. */
+const SHARES_PER_CARD = 100
 
+/** The ladder in order, seated so the middle tier is the centre of the fan. */
 export function buildLandingHeroCards(): LandingHeroCardModel[] {
-  return TIERS.map((tier) => ({
+  const centre = Math.floor((TIERS.length - 1) / 2)
+  return TIERS.map((tier, index) => ({
     tierKey: tier.key,
+    fan: index - centre,
     tierName: tier.name,
     tierLabel: `${tier.name} · ${tier.rarity}`,
-    glowStyle: tier.glowStyle,
     resharesLabel: copy.tier.reshares(tier.minReshares),
     rarityLabel: tier.rarity,
     imageProps: { src: HERO_IMAGE_SRC, alt: '', loading: 'eager' },
@@ -68,6 +82,21 @@ export function buildLandingHeroCards(): LandingHeroCardModel[] {
     },
     cardRef: cardMediaRef,
   }))
+}
+
+/** Tiers, shares a card, and the reshares the top tier asks for: all read off the ladder. */
+export function buildLandingHeroStats(): LandingHeroStatModel[] {
+  const top = TIERS[TIERS.length - 1]
+  if (!top) throw new Error('TIERS is empty')
+  return [
+    { key: 'tiers', value: humanize(TIERS.length), label: copy.hero.stats.tiers },
+    { key: 'shares', value: humanize(SHARES_PER_CARD), label: copy.hero.stats.shares },
+    {
+      key: 'reshares',
+      value: humanize(top.minReshares),
+      label: copy.hero.stats.reshares(top.name),
+    },
+  ]
 }
 
 export function buildLandingHowSteps(): LandingHowStepModel[] {
@@ -122,6 +151,7 @@ export interface LandingScreenModel {
   heroTitle: string
   heroBody: string
   heroCards: LandingHeroCardModel[]
+  heroStats: LandingHeroStatModel[]
   howTitle: string
   howSteps: readonly LandingHowStepModel[]
   filmTitle: string
@@ -160,6 +190,7 @@ export function useLandingScreen(): LandingScreenModel {
     heroTitle: copy.hero.title,
     heroBody: copy.hero.body,
     heroCards: buildLandingHeroCards(),
+    heroStats: buildLandingHeroStats(),
     howTitle: copy.how.title,
     howSteps: buildLandingHowSteps(),
     filmTitle: copy.film.title,

@@ -49,11 +49,14 @@ const toRow = (key: (typeof fixtureKeys)[number]): DeveloperKeyRowModel => ({
   prefix: key.prefix,
   label: key.label,
   createdAt: key.createdAt,
-  createdLabel: `created ${new Date(key.createdAt).toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })}`,
+  createdLabel: copy.row.created(
+    new Date(key.createdAt).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }),
+  ),
   revokeLabel: copy.row.revokeLabel,
   revokeButtonProps: {
     onClick: handlers.onRevoke,
@@ -193,6 +196,7 @@ export const Ready: Story = {
     await expect(canvas.queryByRole('button', { name: copy.skillButton })).toBeNull()
     // the route's title is the page's one h1 (the wave-3 screens took the same step); sections are h3
     await expect(canvas.getByRole('heading', { level: 1 })).toHaveTextContent(copy.pageTitle)
+    await expect(canvas.getByText(copy.row.created('8 Sept 2026'))).toBeInTheDocument()
     await expect(canvas.getByRole('button', { name: 'Create key' })).toBeEnabled()
     // every key is an Item row, and the two announce wrappers are LiveRegions
     await expect(

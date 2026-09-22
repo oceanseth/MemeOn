@@ -34,8 +34,8 @@ describe('buildMemeCardModel', () => {
     })
     expect(model.titleId).toBe('meme-card-title-meme-1')
     expect(model.tierName).toBe('Holo')
-    expect(model.tierLabel).toBe('Holo · Rare')
-    expect(model.valueLabel).toBe('5,678')
+    expect(model.tierLabel).toBe(copy.tierLabel(imageMeme.tier.name, imageMeme.tier.rarity))
+    expect(model.valueLabel).toBe('5.7k')
     expect(model.valueA11yLabel).toBe(copy.valueA11y('5,678'))
     expect(model.listing).toEqual({
       shares: 10,
@@ -52,7 +52,7 @@ describe('buildMemeCardModel', () => {
 
     expect(thin.viewsLabel).toBeNull()
     expect(thin.resharesLabel).toBe('0')
-    expect(thin.statsA11yLabel).toBe(copy.stats(null, '0'))
+    expect(thin.statsA11yLabel).toBe(copy.stats(null, 0))
 
     const full = buildMemeCardModel({
       ...imageMeme,
@@ -60,9 +60,9 @@ describe('buildMemeCardModel', () => {
       reshareCount: 60,
     })
 
-    expect(full.viewsLabel).toBe('9,876')
+    expect(full.viewsLabel).toBe('9.9k')
     expect(full.resharesLabel).toBe('60')
-    expect(full.statsA11yLabel).toBe(copy.stats('9,876', '60'))
+    expect(full.statsA11yLabel).toBe(copy.stats(9876, 60))
   })
 
   it('leaves the media unnamed and excludes empty listings', () => {

@@ -120,3 +120,25 @@ export const LoadingThenReady: Story = {
     await expect(await canvas.findByRole('link', { name: /pal/ })).toBeInTheDocument()
   },
 }
+
+/** A 200 with no leaders is the empty state, not the error Empty. */
+export const Empty: Story = {
+  loaders: [
+    connectedLoader({
+      overrides: {
+        'GET /api/leaderboard': () => ({ body: { leaders: [] } }),
+      },
+    }),
+  ],
+  beforeEach: async (context) => connectedBeforeEach(context),
+  render: (_args, { loaded }) => (
+    <ConnectedStory scenario={loaded.scenario}>
+      <LeaderboardView />
+    </ConnectedStory>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    await expect(await canvas.findByText(copy.empty)).toBeInTheDocument()
+    await expect(canvas.queryByRole('alert')).toBeNull()
+  },
+}

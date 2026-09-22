@@ -1,4 +1,5 @@
-import { plural } from '../lib/plural'
+import { humanize } from '../lib/humanize'
+import { pluralWord } from '../lib/plural'
 import { appShellCopy } from './appShell'
 import { sharedCopy } from './shared'
 
@@ -14,7 +15,7 @@ export const binderCopy = {
   identity: {
     /** "6 cards · 72 shares" — counted from the memes the grid is rendering. */
     stats: (cards: number, shares: number) =>
-      `${plural(cards, 'card')} · ${plural(shares, 'share')}`,
+      `${humanize(cards)} ${pluralWord(cards, 'card')} · ${humanize(shares)} ${pluralWord(shares, 'share')}`,
   },
   /** One live status line for the whole screen. */
   status: {
@@ -22,9 +23,10 @@ export const binderCopy = {
     /** The error box owns the error copy; the status line only reports that nothing loaded. */
     failed: 'No cards loaded',
     empty: 'No cards shown',
-    shownOf: (visible: number, total: number) => `${visible} of ${plural(total, 'card')} shown`,
-    shown: (visible: number) => `${plural(visible, 'card')} shown`,
-    value: (value: number) => value.toLocaleString(),
+    shownOf: (visible: number, total: number) =>
+      `${humanize(visible)} of ${humanize(total)} ${pluralWord(total, 'card')} shown`,
+    shown: (visible: number) => `${humanize(visible)} ${pluralWord(visible, 'card')} shown`,
+    value: (value: number) => humanize(value),
     privateIncluded: 'private included',
     /** How the active sort reads: plain words, never the chip's emoji. `[descending, ascending]`. */
     sort: {

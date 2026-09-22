@@ -51,7 +51,7 @@ const NAV = 'mx-auto hidden min-w-0 items-center gap-0.5 xl:flex 2xl:gap-1'
 const HEADER_END = 'ml-auto flex shrink-0 items-center gap-2.5 xl:gap-3'
 
 /** The page: a centred 1440 column that grows, so a short route still puts the footer on the fold. */
-const FRAME = 'relative mx-auto flex w-full max-w-360 grow flex-col'
+const FRAME = cn('relative mx-auto flex w-full max-w-360 grow flex-col')
 
 /**
  * The route column. `<main>` is a screen's element, so the flex rules `#root > main` used to

@@ -1,3 +1,4 @@
+import { humanize } from '../lib/humanize'
 import { sharedCopy } from './shared'
 
 /**
@@ -105,7 +106,7 @@ export const createMemeCopy = {
     renderImage: 'Render the image',
   },
   giphy: {
-    results: (count: number, query: string) => `${count} GIPHY results for "${query}"`,
+    results: (count: number, query: string) => `${humanize(count)} GIPHY results for "${query}"`,
     emptySearch: (query: string) =>
       `Nothing for "${query}" — try a broader word or pick a category.`,
     idle: 'Pick a category or search to browse GIPHY.',
@@ -186,6 +187,10 @@ export const createMemeCopy = {
     freshlyMinted: (tierName: string) => `${tierName} · freshly minted`,
     originFromAuthor: (provider: string, author: string) => `from ${provider} · @${author}`,
     originFrom: (provider: string) => `from ${provider}`,
+    /* Preview card only: GIPHY display name, and a fresh card's zero stats and value. */
+    giphyProvider: 'GIPHY',
+    zeroStats: '0 · 0',
+    zeroValue: '0',
     overCap: (kind: 'image' | 'video', sizeMb: number, capMb: number, advice: string) =>
       `that ${kind} is ${sizeMb}MB — the cap is ${capMb}MB, ${advice}`,
     overCapAdvice: {
