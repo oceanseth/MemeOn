@@ -1,6 +1,6 @@
 import { Avatar as AvatarPrimitive } from '@base-ui/react/avatar'
 import { cva, type VariantProps } from 'class-variance-authority'
-import { createContext, useContext, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { avatarInitial } from '../lib/avatarModel'
 import { cn } from '@/lib/cn'
 
@@ -29,7 +29,7 @@ const avatarVariants = cva(
   },
 )
 
-/** The monogram's type step per disc; the fallback reads the root's size through context. */
+/** The monogram's type step per disc; pass the same size the disc was given. */
 const avatarFallbackVariants = cva(
   'flex size-full items-center justify-center font-semibold text-brand-foreground',
   {
@@ -50,8 +50,6 @@ const avatarFallbackVariants = cva(
 )
 
 export type AvatarSize = NonNullable<VariantProps<typeof avatarVariants>['size']>
-
-const AvatarSizeContext = createContext<AvatarSize>('sm')
 
 export interface AvatarProps extends Omit<AvatarPrimitive.Root.Props, 'className' | 'children'> {
   size?: AvatarSize | null | undefined
@@ -81,21 +79,19 @@ export function Avatar({
 }: AvatarProps) {
   const resolved = size ?? 'sm'
   return (
-    <AvatarSizeContext.Provider value={resolved}>
-      <AvatarPrimitive.Root
-        data-slot="avatar"
-        data-size={resolved}
-        className={cn(avatarVariants({ size: resolved }), className)}
-        {...props}
-      >
-        {children ?? (
-          <>
-            {src ? <AvatarImage src={src} alt={alt} loading={loading} /> : null}
-            <AvatarFallback>{avatarInitial(name)}</AvatarFallback>
-          </>
-        )}
-      </AvatarPrimitive.Root>
-    </AvatarSizeContext.Provider>
+    <AvatarPrimitive.Root
+      data-slot="avatar"
+      data-size={resolved}
+      className={cn(avatarVariants({ size: resolved }), className)}
+      {...props}
+    >
+      {children ?? (
+        <>
+          {src ? <AvatarImage src={src} alt={alt} loading={loading} /> : null}
+          <AvatarFallback size={resolved}>{avatarInitial(name)}</AvatarFallback>
+        </>
+      )}
+    </AvatarPrimitive.Root>
   )
 }
 
@@ -117,11 +113,11 @@ export function AvatarImage({ className, ...props }: AvatarImageProps) {
 
 export interface AvatarFallbackProps extends Omit<AvatarPrimitive.Fallback.Props, 'className'> {
   className?: string | undefined
+  size?: AvatarSize | undefined
 }
 
-/** The monogram, at the root's size; decorative, the name sits in text beside it. */
-export function AvatarFallback({ className, ...props }: AvatarFallbackProps) {
-  const size = useContext(AvatarSizeContext)
+/** The monogram, at the size it is given; decorative, the name sits in text beside it. */
+export function AvatarFallback({ className, size = 'sm', ...props }: AvatarFallbackProps) {
   return (
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
