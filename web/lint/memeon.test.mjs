@@ -66,10 +66,43 @@ test('flags a chrome type beside a control sibling with no InputProps name', () 
   )
 })
 
+test('flags a computed control sibling beside a chrome type', () => {
+  lint(
+    'bag.ts',
+    "export const bag = { type: 'file', ['accept']: 'image/png' }\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /type="file"/)
+    },
+  )
+})
+
 test('flags a chrome type bound as InputProps with no control sibling', () => {
   lint(
     'buildUploadModeModel.ts',
     "export const build = () => ({ imageFileInputProps: { type: 'file' } })\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /type="file"/)
+    },
+  )
+})
+
+test('flags a computed InputProps binding', () => {
+  lint(
+    'buildUploadModeModel.ts',
+    "export const build = () => ({ ['imageFileInputProps']: { type: 'file' } })\n",
+    ({ status, output }) => {
+      assert.equal(status, 1, output)
+      assert.match(output, /type="file"/)
+    },
+  )
+})
+
+test('flags a template InputProps binding', () => {
+  lint(
+    'buildUploadModeModel.ts',
+    "export const build = () => ({ [`imageFileInputProps`]: { type: 'file' } })\n",
     ({ status, output }) => {
       assert.equal(status, 1, output)
       assert.match(output, /type="file"/)

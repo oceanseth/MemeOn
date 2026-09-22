@@ -207,8 +207,8 @@ const identifierName = (node) => {
 
 function hasInputSibling(objectNode, property) {
   for (const prop of objectNode.properties) {
-    if (prop === property || prop.type !== 'Property' || prop.computed) continue
-    const key = identifierName(prop.key)
+    if (prop === property || prop.type !== 'Property') continue
+    const key = prop.computed ? stringValue(prop.key) : identifierName(prop.key)
     if (typeof key === 'string' && INPUT_SIBLING_KEYS.has(key)) return true
   }
   return false
@@ -222,15 +222,9 @@ function feedsInput(objectNode) {
   if (!parent) return false
   if (
     (parent.type === 'Property' || parent.type === 'PropertyDefinition') &&
-    parent.value === node &&
-    !parent.computed
+    parent.value === node
   ) {
-    const key =
-      parent.key.type === 'Identifier'
-        ? parent.key.name
-        : parent.key.type === 'Literal'
-          ? stringValue(parent.key)
-          : null
+    const key = parent.computed ? stringValue(parent.key) : identifierName(parent.key)
     return typeof key === 'string' && INPUT_PROPS_NAME.test(key)
   }
   if (
