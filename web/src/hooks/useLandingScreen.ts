@@ -1,4 +1,4 @@
-import { TIERS, type Tier } from '@memeon/shared/tiers'
+import { TIERS } from '@memeon/shared/tiers'
 import type { ButtonHTMLAttributes, HTMLAttributes, ImgHTMLAttributes, RefCallback } from 'react'
 import { landingCopy } from '../copy/landing'
 import { beginMaskyLogin } from '../lib/auth'
@@ -21,7 +21,7 @@ export type LandingHeroImageProps = Pick<
 
 export type LandingErrorNoticeProps = Pick<HTMLAttributes<HTMLParagraphElement>, 'role'>
 
-export interface LandingHeroCardModel extends Pick<Tier, 'glowStyle'> {
+export interface LandingHeroCardModel {
   tierKey: string
   tierName: string
   tierLabel: string
@@ -56,7 +56,6 @@ export function buildLandingHeroCards(): LandingHeroCardModel[] {
     tierKey: tier.key,
     tierName: tier.name,
     tierLabel: `${tier.name} · ${tier.rarity}`,
-    glowStyle: tier.glowStyle,
     resharesLabel: copy.tier.reshares(tier.minReshares),
     rarityLabel: tier.rarity,
     imageProps: { src: HERO_IMAGE_SRC, alt: '', loading: 'eager' },

@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect } from 'storybook/test'
-import { glowStyleFor } from '@memeon/shared/tiers'
 import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
 
 function Specimen({
@@ -54,7 +53,6 @@ export const Paper: Story = {
     await expect(host).not.toHaveClass('sheen')
     await expect(host).not.toHaveClass('sparkle')
     await expect(host).not.toHaveClass('tier-card')
-    await expect(host).toHaveAttribute('data-glow-style', glowStyleFor('paper'))
     await expect(host).not.toHaveAttribute('rarityladder')
     const media = host.querySelector('[data-slot="foil-media"]')
     await expect(media).toHaveClass(
@@ -67,14 +65,13 @@ export const Paper: Story = {
   },
 }
 
-/** One sheen tier (holo): turning ring, no sparkle. */
+/** One sheen tier (holo): no sparkle. */
 export const Sheen: Story = {
   render: () => <Specimen tierKey="holo" />,
   play: async ({ canvasElement }) => {
     const host = hostOf(canvasElement)
     await expect(host).toHaveClass('foil-card', 'tier-holo', 'sheen')
     await expect(host).not.toHaveClass('sparkle')
-    await expect(host).toHaveAttribute('data-glow-style', glowStyleFor('holo'))
   },
 }
 
@@ -84,7 +81,6 @@ export const Sparkle: Story = {
   play: async ({ canvasElement }) => {
     const host = hostOf(canvasElement)
     await expect(host).toHaveClass('foil-card', 'tier-shiny', 'sheen', 'sparkle')
-    await expect(host).toHaveAttribute('data-glow-style', glowStyleFor('shiny'))
   },
 }
 
@@ -100,7 +96,6 @@ export const RarityLadder: Story = {
     await expect(host.tagName).toBe('LI')
     await expect(host).toHaveClass('foil-card', 'tier-gold', 'sheen', 'tier-card')
     await expect(host).not.toHaveAttribute('rarityladder')
-    await expect(host).toHaveAttribute('data-glow-style', glowStyleFor('gold'))
   },
 }
 
