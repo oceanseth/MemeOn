@@ -40,11 +40,13 @@ export default function AlertsScreen() {
         <Pressable
           style={[styles.row, !item.read && styles.unread]}
           onPress={() =>
-            item.memeId
-              ? navigation.navigate('Invest', { memeId: item.memeId })
-              : item.subjectSub
-                ? navigation.navigate('Creator', { sub: item.subjectSub })
-                : undefined
+            item.type === 'trade'
+              ? navigation.navigate('Trades')
+              : item.memeId
+                ? navigation.navigate('Invest', { memeId: item.memeId })
+                : item.subjectSub
+                  ? navigation.navigate('Creator', { sub: item.subjectSub })
+                  : undefined
           }
         >
           <Text style={styles.msg}>{item.message}</Text>
