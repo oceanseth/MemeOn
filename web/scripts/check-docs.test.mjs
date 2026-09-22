@@ -225,6 +225,17 @@ test('an allowlist entry without a reason is itself an error', () => {
   )
 })
 
+test('a docs allowlist without an allow array is itself an error', () => {
+  for (const allow of [JSON.stringify({}), JSON.stringify({ allow: {} })]) {
+    withRepo({ 'web/scripts/docs-allowlist.json': allow }, ({ status, output }) => {
+      assert.equal(status, 2, output)
+      assert.match(output, /needs an `allow` array/)
+      assert.doesNotMatch(output, /TypeError/)
+      assert.doesNotMatch(output, /is not iterable/)
+    })
+  }
+})
+
 test('nested docs are scanned, not skipped by a one-level glob', () => {
   withRepo({ 'docs/reviews/archive.md': 'Then `npm run build:web`.\n' }, ({ status, output }) => {
     assert.equal(status, 1, output)
