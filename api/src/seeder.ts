@@ -1,10 +1,13 @@
 // Scheduled Giphy archive seeder (EventBridge → lambda with {action:"giphy-seed"}).
 // Built for BREADTH: each run pulls the term-free trending feed plus ~40 terms
-// from a ~600-word vocabulary (rotating window per hour), taking only a few
+// from a ~10k-word vocabulary (rotating window per hour), taking only a few
 // gifs per term — wide coverage of giphy instead of depth in a narrow list.
+// The vocabulary = curated meme concepts + a frequency-ordered English
+// dictionary, so eventually every common word has its top few memes on file.
 import * as db from './db'
 import { mintArchiveGif } from './archiveMint'
 import { search, trending } from './giphy'
+import { DICTIONARY } from './seedWords'
 
 const EMOTIONS = [
   'happy',
@@ -352,7 +355,7 @@ const SPORTS_HOLIDAYS = [
   'eclipse',
 ]
 
-const TERMS: string[] = [
+const CURATED: string[] = [
   ...EMOTIONS,
   ...ANIMALS,
   ...ACTIONS,
@@ -362,6 +365,11 @@ const TERMS: string[] = [
   ...INTERNET,
   ...SPORTS_HOLIDAYS,
 ].flatMap((t) => [t, `${t} meme`]) // each concept swept both raw and meme-flavored
+
+// curated concepts first, then the dictionary (frequency order, minus words the
+// curated set already covers) — one full rotation of ~10.5k terms takes ~11 days
+const CURATED_SET = new Set(CURATED)
+const TERMS: string[] = [...CURATED, ...DICTIONARY.filter((w) => !CURATED_SET.has(w))]
 
 const TERMS_PER_RUN = 40
 const MAX_PER_TERM = 3
