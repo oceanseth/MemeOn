@@ -71,19 +71,19 @@ const memeTitleVariants = cva('m-0 font-display font-normal text-foreground', {
 /** `default` grid thumb · `lg` detail hero. */
 export type MemeCardSize = NonNullable<VariantProps<typeof memeCardVariants>['size']>
 
-const INNER = 'relative flex h-full flex-col'
+const INNER = cn('relative flex h-full flex-col')
 
 const ART_BACKDROP =
   'absolute inset-0 z-0 block size-full scale-110 object-cover opacity-45 blur-lg saturate-125'
 
-const ART = 'block object-contain'
+const ART = cn('block object-contain')
 
 const KICKER =
   'flex min-h-4 items-center justify-between gap-2 text-xs text-muted-foreground tabular-nums @max-card-narrow:min-h-8.5 @max-card-narrow:flex-col @max-card-narrow:items-start @max-card-narrow:justify-start @max-card-narrow:gap-0.5'
 
-const TIER_NAME = 'font-semibold text-foreground uppercase'
+const TIER_NAME = cn('font-semibold text-foreground uppercase')
 
-const STATS = 'flex items-center'
+const STATS = cn('flex items-center')
 
 /* the grid thumb reserves the two-line listing slot (2 × 16) whether or not it is for sale; the
    narrow form may wrap its right lane under the value (20 + 2 + 16), and reserves that instead */

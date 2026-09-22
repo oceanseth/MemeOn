@@ -11,7 +11,7 @@ const FRAME = cn(
 )
 
 /** Center the wrapper so the button's hover and press translations stay independent. */
-const PLAY_PLACEMENT = 'absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2'
+const PLAY_PLACEMENT = cn('absolute top-1/2 left-1/2 flex -translate-x-1/2 -translate-y-1/2')
 const SOUND_PLACEMENT = 'absolute right-3 bottom-3 max-md:top-2 max-md:right-2 max-md:bottom-auto'
 
 /**

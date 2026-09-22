@@ -28,9 +28,9 @@ const composeGrid = cn(
   'xl:grid xl:grid-cols-2 xl:gap-x-7 xl:gap-y-5',
   'xl:[&>*:not([data-slot=field-set])]:col-span-full',
 )
-const columnFields = 'flex flex-col gap-2.5'
+const columnFields = cn('flex flex-col gap-2.5')
 /** A stack of cards, evenly spaced. */
-const rowList = 'flex flex-col gap-3.5'
+const rowList = cn('flex flex-col gap-3.5')
 const countNote = 'text-sm text-muted-foreground tabular-nums'
 const listHeadingRow = 'mb-3.5 items-baseline'
 const proposeCaption = 'text-sm text-muted-foreground'
