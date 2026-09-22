@@ -2,6 +2,7 @@ import { TIERS } from '@memeon/shared/tiers'
 import type { ButtonHTMLAttributes, HTMLAttributes, ImgHTMLAttributes, RefCallback } from 'react'
 import { landingCopy } from '../copy/landing'
 import { beginMaskyLogin } from '../lib/auth'
+import { humanize } from '../lib/humanize'
 import { cardMediaRef } from '../lib/cardMedia'
 import type { HeroVideoModel } from '../lib/heroVideoModel'
 import { landingMachine, type LandingPhase } from '../stores/landingMachine'
@@ -36,7 +37,7 @@ export interface LandingHeroCardModel {
 
 export interface LandingHeroStatModel {
   key: string
-  /** Already formatted for the locale. */
+  /** Compact magnitude (`25k`), exact under 1,000. */
   value: string
   label: string
 }
@@ -88,11 +89,11 @@ export function buildLandingHeroStats(): LandingHeroStatModel[] {
   const top = TIERS[TIERS.length - 1]
   if (!top) throw new Error('TIERS is empty')
   return [
-    { key: 'tiers', value: TIERS.length.toLocaleString(), label: copy.hero.stats.tiers },
-    { key: 'shares', value: SHARES_PER_CARD.toLocaleString(), label: copy.hero.stats.shares },
+    { key: 'tiers', value: humanize(TIERS.length), label: copy.hero.stats.tiers },
+    { key: 'shares', value: humanize(SHARES_PER_CARD), label: copy.hero.stats.shares },
     {
       key: 'reshares',
-      value: top.minReshares.toLocaleString(),
+      value: humanize(top.minReshares),
       label: copy.hero.stats.reshares(top.name),
     },
   ]

@@ -1,4 +1,5 @@
 import { braincells } from '../lib/braincells'
+import { humanize } from '../lib/humanize'
 import { sharedCopy } from './shared'
 
 /** Every string the Trades screen spells itself; the trade cards read `lib/tradeCardModel`. */
@@ -20,7 +21,7 @@ export const tradesCopy = {
     historyEmpty: 'No trade history yet.',
   },
   /** "waiting" is already the state, not a countable noun — the number is the only plural */
-  openCount: (count: number) => `${count} waiting`,
+  openCount: (count: number) => `${humanize(count)} waiting`,
   /** an id that never resolves settles here, so a line stops shimmering and never shows a raw key */
   retiredMemeTitle: 'a retired meme',
   memeTierLabel: (name: string, rarity: string) => `${name} · ${rarity}`,

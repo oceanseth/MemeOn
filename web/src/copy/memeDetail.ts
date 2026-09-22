@@ -1,4 +1,5 @@
 import { braincells } from '../lib/braincells'
+import { humanize } from '../lib/humanize'
 import { plural, pluralWord } from '../lib/plural'
 import { sharedCopy } from './shared'
 
@@ -19,9 +20,9 @@ export const memeDetailCopy = {
     unknown: 'another collector',
   },
   hero: {
-    /** "Prismatic · 5,800 reshares" */
+    /** "Prismatic · 5.8k reshares" */
     tierLine: (tierName: string, reshares: number) =>
-      `${tierName} · ${reshares.toLocaleString()} ${pluralWord(reshares, 'reshare')}`,
+      `${tierName} · ${humanize(reshares)} ${pluralWord(reshares, 'reshare')}`,
     tierLabel: (tierName: string, rarity: string) => `${tierName} · ${rarity}`,
     /** "via GIPHY (@author)" */
     source: (provider: string, author: string | null | undefined) =>
@@ -30,7 +31,7 @@ export const memeDetailCopy = {
   ladder: {
     current: (tierName: string) => `${tierName} is spreading`,
     next: (remaining: number, nextTierName: string) =>
-      `${remaining.toLocaleString()} more views → ${nextTierName}`,
+      `${humanize(remaining)} more views → ${nextTierName}`,
     top: (tierName: string) => `Top of the ladder — ${tierName} is as rare as it gets`,
     meterLabel: 'Progress to the next tier',
     topValueText: (tierName: string) => `${tierName} is the top tier`,

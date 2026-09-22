@@ -13,6 +13,7 @@ import { rebuildLeaderboard } from './leaderboard'
 import { ensureOgImage, frameKey, memePageHtml, pingFacebookRescrape, tierFrameList } from './og'
 import * as ogModule from './og'
 import { assetUrl, presignUpload, putAsset } from './s3'
+import { humanize } from '@memeon/shared/humanize'
 import { memeValue, TIERS, tierFor, tierIndexFor } from '@memeon/shared/tiers'
 import type { Meme, Trade, TradeSide } from './types'
 import { SafeFetchError, assertPublicUrl, safeFetch } from './safeFetch'
@@ -232,9 +233,7 @@ authed('GET /api/memes', async (req) => {
     try {
       const ids = await vectors.searchIds(needle, Math.max(limit, 60))
       const byId = new Map((await db.getMemesByIds(ids)).map((m) => [m.id, m]))
-      semantic = ids
-        .map((id) => byId.get(id))
-        .filter((m): m is Meme => !!m && passesFilters(m))
+      semantic = ids.map((id) => byId.get(id)).filter((m): m is Meme => !!m && passesFilters(m))
     } catch (err) {
       console.error('semantic search failed, lexical scan only', err)
     }
@@ -1563,7 +1562,7 @@ route('GET /m/:id', async (req) => {
         db.addAlert(
           h.userId,
           'tierup',
-          `🚀 "${meme.title}" tiered up to ${tier.name.toUpperCase()} (${tier.rarity}) at ${meme.reshares.toLocaleString()} views!`,
+          `🚀 "${meme.title}" tiered up to ${tier.name.toUpperCase()} (${tier.rarity}) at ${humanize(meme.reshares)} views!`,
           meme.id,
         ),
       ),

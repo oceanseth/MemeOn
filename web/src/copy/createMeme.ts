@@ -1,3 +1,4 @@
+import { humanize } from '../lib/humanize'
 import { sharedCopy } from './shared'
 
 /**
@@ -105,7 +106,7 @@ export const createMemeCopy = {
     renderImage: 'Render the image',
   },
   giphy: {
-    results: (count: number, query: string) => `${count} GIPHY results for "${query}"`,
+    results: (count: number, query: string) => `${humanize(count)} GIPHY results for "${query}"`,
     emptySearch: (query: string) =>
       `Nothing for "${query}" — try a broader word or pick a category.`,
     idle: 'Pick a category or search to browse GIPHY.',

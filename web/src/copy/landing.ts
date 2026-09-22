@@ -1,3 +1,4 @@
+import { humanize } from '../lib/humanize'
 import { sharedCopy } from './shared'
 
 /** Every string the Landing screen's engine supplies. Keys name the role of the string, not its content. */
@@ -36,8 +37,8 @@ export const landingCopy = {
     ],
   },
   tier: {
-    /** Ladder card middle line: "0 reshares" … "25,000 reshares". */
-    reshares: (count: number) => `${count.toLocaleString()} reshares`,
+    /** Ladder card middle line: "0 reshares" … "25k reshares". */
+    reshares: (count: number) => `${humanize(count)} reshares`,
   },
   film: {
     /** Section heading. Play/mute/aria stay on heroVideoCopy. */

@@ -1,4 +1,4 @@
-import { braincells } from '../lib/braincells'
+import { humanize } from '../lib/humanize'
 import { pluralWord } from '../lib/plural'
 import { sharedCopy } from './shared'
 
@@ -31,7 +31,7 @@ export const friendsCopy = {
   },
   online: {
     /** trailing caption on the online strip */
-    count: (count: number) => `${count} ${pluralWord(count, 'friend')} online`,
+    count: (count: number) => `${humanize(count)} ${pluralWord(count, 'friend')} online`,
     label: 'Online now',
   },
   sections: {
@@ -41,7 +41,7 @@ export const friendsCopy = {
   },
   row: {
     stats: (collectionSize: number, portfolioValue: number) =>
-      `${collectionSize} ${pluralWord(collectionSize, 'meme')} · ${braincells(portfolioValue)} held`,
+      `${humanize(collectionSize)} ${pluralWord(collectionSize, 'meme')} · ${humanize(portfolioValue)} held`,
     accept: (name: string) => `Accept ${name}'s request`,
     decline: (name: string) => `Decline ${name}'s request`,
     acceptLabel: sharedCopy.accept,

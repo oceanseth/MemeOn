@@ -1,6 +1,7 @@
 import type { ImgHTMLAttributes, RefCallback, VideoHTMLAttributes } from 'react'
 import { memeCardCopy as copy } from '../copy/memeCard'
 import { cardMediaRef } from './cardMedia'
+import { humanize } from './humanize'
 import { memeReshareCount } from './memeMetrics'
 import { getPlayVideosSnapshot } from './playbackPreference'
 import type { Meme } from './types'
@@ -127,9 +128,10 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
           },
         }
 
-  const viewsLabel = meme.views === undefined ? null : meme.views.toLocaleString()
-  const resharesLabel = memeReshareCount(meme).toLocaleString()
-  const valueLabel = meme.value.toLocaleString()
+  const viewsLabel = meme.views === undefined ? null : humanize(meme.views)
+  const resharesLabel = humanize(memeReshareCount(meme))
+  const valueLabel = humanize(meme.value)
+  const valueExact = meme.value.toLocaleString()
 
   const listing =
     meme.listing && meme.listing.shares > 0
@@ -157,8 +159,11 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
     viewsLabel,
     resharesLabel,
     valueLabel,
-    statsA11yLabel: copy.stats(viewsLabel, resharesLabel),
-    valueA11yLabel: copy.valueA11y(valueLabel),
+    statsA11yLabel: copy.stats(
+      meme.views === undefined ? null : meme.views,
+      memeReshareCount(meme),
+    ),
+    valueA11yLabel: copy.valueA11y(valueExact),
     listing,
     reducedMotion,
     mediaAutoplay: media.kind === 'video' && !reducedMotion && playVideos ? 'on' : 'off',

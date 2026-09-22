@@ -12,6 +12,7 @@ import {
   MEME_OG_WIDTH,
   type OgFrameBundle,
 } from './ogCard'
+import { humanize } from '@memeon/shared/humanize'
 import { TIERS, tierFor } from '@memeon/shared/tiers'
 import type { Meme } from './types'
 
@@ -137,7 +138,7 @@ export function memeOgMetaBlock(
 ): { title: string; block: string } {
   const tier = tierFor(meme.reshares)
   const title = `${meme.title} — ${tier.name.toUpperCase()} ${tier.rarity}`
-  const desc = `${meme.reshares.toLocaleString()} views · ${(meme.uniqueRefs ?? 0).toLocaleString()} reshares · ${tier.hype} Collect, trade, and invest on MemeOn.`
+  const desc = `${humanize(meme.reshares)} views · ${humanize(meme.uniqueRefs ?? 0)} reshares · ${tier.hype} Collect, trade, and invest on MemeOn.`
   const pageUrl = `${env.siteOrigin}/m/${meme.id}`
   const video = !gifUrl && meme.mediaType === 'video' && meme.videoUrl
   // gif embed (Discord): the raw animated gif replaces the branded card and the
@@ -321,7 +322,7 @@ export async function ensureProfileOgImage(profile: {
         font: small,
         x: nx + 2,
         y: 330,
-        text: `on MemeOn · ${profile.coins.toLocaleString()} braincells · ${profile.collectionSize} memes`,
+        text: `on MemeOn · ${humanize(profile.coins)} braincells · ${humanize(profile.collectionSize)} memes`,
       })
     } catch (err) {
       console.error('profile og text failed', err)
@@ -338,7 +339,7 @@ export async function profilePageHtml(
   ogImageUrl: string,
 ): Promise<string> {
   const title = `${profile.name} on MemeOn`
-  const desc = `🧠 ${profile.coins.toLocaleString()} braincells · ${profile.collectionSize} memes in the binder. Collect, trade, and invest in memes on MemeOn.`
+  const desc = `🧠 ${humanize(profile.coins)} braincells · ${humanize(profile.collectionSize)} memes in the binder. Collect, trade, and invest in memes on MemeOn.`
   const pageUrl = `${env.siteOrigin}/u/${encodeURIComponent(profile.sub)}`
   const block = `<meta property="og:site_name" content="MemeOn">
 <meta property="og:type" content="profile">
@@ -443,7 +444,7 @@ export async function ensureBinderOgImage(
         font: small,
         x: 92,
         y: 478,
-        text: `${stats.collectionSize} memes · ${stats.value.toLocaleString()} braincells`,
+        text: `${humanize(stats.collectionSize)} memes · ${humanize(stats.value)} braincells`,
       })
     } catch (err) {
       console.error('binder og text failed', err)
@@ -462,7 +463,7 @@ export async function binderPageHtml(
   const topLine = topMeme
     ? ` Top card: "${topMeme.title}" (${tierFor(topMeme.reshares).name.toUpperCase()}).`
     : ''
-  const desc = `${stats.collectionSize} memes worth 🧠 ${stats.value.toLocaleString()} braincells.${topLine} Browse the collection on MemeOn.`
+  const desc = `${humanize(stats.collectionSize)} memes worth 🧠 ${humanize(stats.value)} braincells.${topLine} Browse the collection on MemeOn.`
   const pageUrl = `${env.siteOrigin}/binder/${encodeURIComponent(profile.sub)}`
   const block = `<meta property="og:site_name" content="MemeOn">
 <meta property="og:type" content="website">

@@ -1,3 +1,4 @@
+import { humanize } from '../lib/humanize'
 import { pluralWord } from '../lib/plural'
 import { sharedCopy } from './shared'
 
@@ -14,12 +15,12 @@ export const profileCopy = {
     created: 'Created',
     binder: 'Binder',
     section: 'Profile section',
-    trigger: (name: string, count: number) => `${name} (${count})`,
+    trigger: (name: string, count: number) => `${name} (${humanize(count)})`,
   },
   grid: {
     label: (tabName: string, count: number) =>
       `${tabName} memes, ${count} ${pluralWord(count, 'card')}`,
-    count: (visible: number, total: number) => `Showing ${visible} of ${total}`,
+    count: (visible: number, total: number) => `Showing ${humanize(visible)} of ${humanize(total)}`,
     showMore: (count: number) => `Show ${count} more`,
   },
   loading: 'Loading profile',
@@ -52,20 +53,19 @@ export const profileCopy = {
     binderTitle: (name: string) => `${name}'s binder`,
     publicIntro: 'A collection worth passing around.',
     visitorIntro: (createdCount: number, binderCount: number) =>
-      `A collection worth passing around · ${createdCount} ${pluralWord(createdCount, 'meme')} · ${binderCount} in binder`,
+      `A collection worth passing around · ${humanize(createdCount)} ${pluralWord(createdCount, 'meme')} · ${humanize(binderCount)} in binder`,
     /** the identity card's line when the title did not already say it */
     identity: (name: string) => `Binder of ${name}`,
   },
   /** stat glyphs stay visible for wayfinding but never enter the accessible name */
   stats: {
-    minted: (count: number) => `${count} minted`,
-    inBinder: (count: number) => `${count} in binder`,
-    braincells: (portfolioValue: number) => `${portfolioValue.toLocaleString()} braincells`,
-    braincellsHeld: (portfolioValue: number) =>
-      `${portfolioValue.toLocaleString()} braincells held`,
-    collection: (count: number) => `${count} ${pluralWord(count, 'meme')}`,
-    held: (portfolioValue: number) => `${portfolioValue.toLocaleString()} held`,
-    followers: (count: number) => `${count} ${pluralWord(count, 'follower')}`,
+    minted: (count: number) => `${humanize(count)} minted`,
+    inBinder: (count: number) => `${humanize(count)} in binder`,
+    braincells: (portfolioValue: number) => `${humanize(portfolioValue)} braincells`,
+    braincellsHeld: (portfolioValue: number) => `${humanize(portfolioValue)} braincells held`,
+    collection: (count: number) => `${humanize(count)} ${pluralWord(count, 'meme')}`,
+    held: (portfolioValue: number) => `${humanize(portfolioValue)} held`,
+    followers: (count: number) => `${humanize(count)} ${pluralWord(count, 'follower')}`,
   },
   actions: {
     /** both relationship groups (other-profile and self) share this name */

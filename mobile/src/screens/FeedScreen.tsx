@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native'
+import { humanize } from '@memeon/shared/humanize'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   runOnJS,
@@ -286,8 +287,8 @@ function FeedCard({
             <Text style={styles.creator}>by {item.creatorName} →</Text>
           </Pressable>
           <Text style={styles.stats}>
-            👁️ {(item.views ?? item.reshares).toLocaleString()} 🔁{' '}
-            {(item.reshareCount ?? 0).toLocaleString()} 🧠 {item.value.toLocaleString()}
+            👁️ {humanize(item.views ?? item.reshares)} 🔁 {humanize(item.reshareCount ?? 0)} 🧠{' '}
+            {humanize(item.value)}
             {item.mediaType === 'video' ? '   🎬 video' : ''}
           </Text>
         </View>
@@ -295,7 +296,7 @@ function FeedCard({
         <View style={styles.rail}>
           <Pressable style={styles.railBtn} onPress={toggleLike}>
             <Text style={{ fontSize: 34 }}>{liked ? '❤️' : '🤍'}</Text>
-            <Text style={styles.railCount}>{likeCount}</Text>
+            <Text style={styles.railCount}>{humanize(likeCount)}</Text>
           </Pressable>
           <Pressable style={styles.railBtn} onPress={goInvest}>
             <Text style={{ fontSize: 30 }}>📈</Text>

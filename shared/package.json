@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./tiers": "./tiers.ts",
-    "./types": "./types.ts"
+    "./types": "./types.ts",
+    "./humanize": "./humanize.ts"
   }
 }
