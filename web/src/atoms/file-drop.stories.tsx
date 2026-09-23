@@ -59,17 +59,20 @@ export const Picked: Story = {
 }
 
 /**
- * The well is the control, so it dims as a whole. axe exempts a *disabled element* from contrast
- * but scores a dimmed container's children as ordinary text, so the rule is off for this story
- * only — the same exception the preview makes for Base UI's focus guards.
+ * The native input stays disabled and the well keeps the not-allowed cursor, but the painted
+ * label stays fully opaque. axe exempts a disabled *element* and still scores this div's
+ * children, so `--opacity-disabled` would fail them.
  */
 export const Disabled: Story = {
   args: { disabled: true },
-  parameters: {
-    a11y: { config: { rules: [{ id: 'color-contrast', enabled: false }] } },
-  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    await expect(canvas.getByLabelText('Image')).toBeDisabled()
+    const input = canvas.getByLabelText('Image')
+    await expect(input).toBeDisabled()
+    const well = input.parentElement
+    await expect(well).toHaveAttribute('data-slot', 'file-drop')
+    await expect(well).toHaveAttribute('data-disabled', 'true')
+    await expect(getComputedStyle(well as HTMLElement).opacity).toBe('1')
+    await expect(getComputedStyle(well as HTMLElement).cursor).toBe('not-allowed')
   },
 }
