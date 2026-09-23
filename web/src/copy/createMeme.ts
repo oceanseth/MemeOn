@@ -119,6 +119,7 @@ export const createMemeCopy = {
     search: 'Search',
     poweredBy: 'Powered by GIPHY',
     selected: 'Selected:',
+    authorLabel: (author: string) => ` (@${author})`,
     pickSuffix: '— mint it as-is (with GIPHY attribution) or remix it below.',
     optionalPrompt: 'Optional prompt — remix the gif with Masky (uses your credits)',
     remixPlaceholder: 'put everyone in medieval armor',
