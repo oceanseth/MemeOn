@@ -151,6 +151,38 @@ const returnToMode = [
 
 const settleBusy = { busy: null, busyElapsed: null } as const
 
+/** Fresh arrays per call so two desks never share a Giphy result list. */
+export function freshCreateMemeDefaults(): Omit<
+  CreateMemeContext,
+  'remixId' | 'mode' | 'title' | 'tags' | 'prompt' | 'imageUrl'
+> {
+  return {
+    remixSource: null,
+    remixOutput: 'image',
+    videoMode: 'edit',
+    motionPrompt: '',
+    editedFrame: null,
+    urlDraft: '',
+    videoUrl: '',
+    imageFileName: null,
+    videoFileName: null,
+    busy: null,
+    busyElapsed: null,
+    err: null,
+    giphyCategories: [],
+    giphyQuery: '',
+    giphyResults: [],
+    giphySearched: false,
+    giphyPick: null,
+    edited: false,
+    artworkSource: null,
+    mintedId: null,
+    shareUrl: '',
+    shareCopied: false,
+    shareCopyFailed: false,
+  }
+}
+
 const settleMintOn = {
   DONE: returnToMode.map((branch) => ({
     ...branch,
@@ -192,35 +224,13 @@ export const createMemeMachine = setup({
 }).createMachine({
   id: 'createMeme',
   context: ({ input }) => ({
+    ...freshCreateMemeDefaults(),
     remixId: input.remixId,
     mode: input.remixId ? 'remix' : 'generate',
-    remixSource: null,
-    remixOutput: 'image',
-    videoMode: 'edit',
-    motionPrompt: '',
-    editedFrame: null,
     title: '',
     tags: '',
     prompt: '',
-    urlDraft: '',
     imageUrl: '',
-    videoUrl: '',
-    imageFileName: null,
-    videoFileName: null,
-    busy: null,
-    busyElapsed: null,
-    err: null,
-    giphyCategories: [],
-    giphyQuery: '',
-    giphyResults: [],
-    giphySearched: false,
-    giphyPick: null,
-    edited: false,
-    artworkSource: null,
-    mintedId: null,
-    shareUrl: '',
-    shareCopied: false,
-    shareCopyFailed: false,
   }),
   initial: 'chooseMode',
   on: {

@@ -40,9 +40,9 @@ export function macrotask(): Promise<void> {
   })
 }
 
-export function stubSessionStorage(): void {
+function stubWebStorage(kind: 'localStorage' | 'sessionStorage'): void {
   const storage = new Map<string, string>()
-  vi.stubGlobal('sessionStorage', {
+  vi.stubGlobal(kind, {
     getItem: (key: string) => storage.get(key) ?? null,
     setItem: (key: string, value: string) => {
       storage.set(key, value)
@@ -54,6 +54,14 @@ export function stubSessionStorage(): void {
       storage.clear()
     },
   })
+}
+
+export function stubSessionStorage(): void {
+  stubWebStorage('sessionStorage')
+}
+
+export function stubLocalStorage(): void {
+  stubWebStorage('localStorage')
 }
 
 /** Like Chromium, a detached call (`const w = clipboard.writeText; w(text)`) rejects with Illegal invocation. */
