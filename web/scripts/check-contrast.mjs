@@ -340,7 +340,7 @@ const sources = existsSync(SRC)
   : []
 const painted = NOT_TEXT.flatMap(({ token, instead, patterns }) =>
   sources.flatMap((file) => {
-    const text = readFileSync(file, 'utf8')
+    const text = blankComments(readFileSync(file, 'utf8'))
     return text.split('\n').flatMap((line, index) =>
       patterns.some((pattern) => pattern.test(line)) && !line.trimStart().startsWith('*')
         ? [
@@ -357,15 +357,16 @@ const painted = NOT_TEXT.flatMap(({ token, instead, patterns }) =>
 
 /** `*-foreground` painted as a fill, outside the three decorative shapes that may. */
 const inkFills = sources.flatMap((file) => {
-  const text = readFileSync(file, 'utf8')
-  return text.split('\n').flatMap((line, index) =>
-    [...line.matchAll(/\bbg-[a-z-]*-foreground\b/g)]
+  const text = blankComments(readFileSync(file, 'utf8'))
+  return text.split('\n').flatMap((line, index) => {
+    if (line.trimStart().startsWith('*')) return []
+    return [...line.matchAll(/\bbg-[a-z-]*-foreground\b/g)]
       .filter((hit) => !INK_FILLS_ALLOWED.has(hit[0]))
       .map((hit) => ({
         className: hit[0],
         where: `${relative(process.cwd(), file)}:${index + 1}`,
-      })),
-  )
+      }))
+  })
 })
 
 /**
