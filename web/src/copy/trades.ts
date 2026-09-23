@@ -100,6 +100,8 @@ export const tradesCopy = {
       leaves: (list: string) =>
         `Trades are final — ${list} leave your binder the moment you accept.`,
       and: (left: string, right: string) => `${left} and ${right}`,
+      tierShares: (shares: number, tierName: string | null) =>
+        `${shares} ${tierName ? `${tierName} ` : ''}share${shares === 1 ? '' : 's'}`,
     },
     sides: {
       give: 'You give',
