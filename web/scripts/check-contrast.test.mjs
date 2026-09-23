@@ -96,21 +96,17 @@ const stylesheet = (overrides = {}) => {
 }
 
 /**
- * A stylesheet, and — when one of the source scans is under test — a small tree of markup beside it.
- * The guard reads what the app paints as well as what the palette declares, so a fixture made only
- * of CSS cannot reach half of it.
+ * Temp CSS plus an isolated src beside it. markup files are written into that src;
+ * omitted markup leaves the directory empty. The checker must not fall through to web/src.
  */
 const withStylesheet = (css, assertions, markup) => {
   const dir = mkdtempSync(join(tmpdir(), 'memeon-contrast-'))
   try {
     const path = join(dir, 'index.css')
     writeFileSync(path, css)
-    let src
-    if (markup) {
-      src = join(dir, 'src')
-      mkdirSync(src)
-      for (const [name, text] of Object.entries(markup)) writeFileSync(join(src, name), text)
-    }
+    const src = join(dir, 'src')
+    mkdirSync(src)
+    for (const [name, text] of Object.entries(markup ?? {})) writeFileSync(join(src, name), text)
     assertions(run(path, src))
   } finally {
     rmSync(dir, { recursive: true, force: true })
@@ -121,6 +117,7 @@ test("the app's own palette clears the floor on every checked pair in both arms"
   const result = run(appStylesheet)
 
   assert.equal(result.status, 0, result.output)
+  assert.match(result.output, /check-contrast: [1-9]\d* source file\(s\) scanned/)
   assert.match(result.output, /across light and dark, all >= APCA Lc 60/)
   assert.match(result.output, /--color-foreground\s+on\s+--color-background\s+light\s+Lc/)
   assert.match(result.output, /--color-foreground\s+on\s+--color-background\s+dark\s+Lc/)
@@ -182,6 +179,7 @@ test('checks each arm of a light-dark() pair on its own and names the arm that f
 test('follows var() into a light-dark() and lands on a different arm value each side', () => {
   withStylesheet(stylesheet(), (result) => {
     assert.equal(result.status, 0, result.output)
+    assert.match(result.output, /check-contrast: 0 source file\(s\) scanned/)
     const light = result.output.match(
       /--color-link\s+on\s+--color-background\s+light\s+Lc\s+(-?\d+\.\d)/,
     )
