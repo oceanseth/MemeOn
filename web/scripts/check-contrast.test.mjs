@@ -369,3 +369,18 @@ test('fails only the theme-color gate when a meta disagrees with --color-backgro
     themeHtml('#000000', '#0e0e19'),
   )
 })
+
+test('fails a declared --color-orphan-foreground that no pair audits', () => {
+  withStylesheet(
+    stylesheet({ '--color-orphan-foreground': 'oklch(22% 0.035 285)' }),
+    (result) => {
+      assert.equal(result.status, 1, result.output)
+      assert.match(result.output, /foreground token\(s\) are declared and never audited/)
+      assert.match(result.output, /--color-orphan-foreground/)
+      assert.doesNotMatch(result.output, /paint a foreground token as a fill/)
+      assert.doesNotMatch(result.output, /paint text in a token that is not a text colour/)
+      assert.doesNotMatch(result.output, /read below APCA Lc/)
+    },
+    {},
+  )
+})
