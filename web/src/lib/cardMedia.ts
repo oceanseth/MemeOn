@@ -121,8 +121,12 @@ function sharedCardObserver(): IntersectionObserver | null {
  * every render, so React would unobserve and reobserve every card in the grid each time.
  */
 export const cardMediaRef: RefCallback<HTMLElement> = (element) => {
-  // React 18 hands back `null`, not the node, on detach, so the sweep above is what releases it
-  if (!element) return
+  // React 18 calls this with null before removeChild, so isConnected is still true.
+  // Sweep on a microtask, after the commit detaches the node. Do not return a cleanup.
+  if (!element) {
+    queueMicrotask(releaseUnmountedCards)
+    return
+  }
   releaseUnmountedCards()
   const observer = sharedCardObserver()
   if (!observer) return
