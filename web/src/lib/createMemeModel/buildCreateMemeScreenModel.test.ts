@@ -5,7 +5,7 @@ import { createMemeCopy as copy } from '../../copy/createMeme'
 import { createMemeMachine, type CreateMemeContext } from '../../stores/createMemeMachine'
 import type { GiphyResult } from '../types'
 import { buildCreateMemeScreenModel } from './buildCreateMemeScreenModel'
-import { MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, overCapMessage } from './shared'
+import { boundTags, countTags, MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, overCapMessage } from './shared'
 import type { CreateMemeScreenActions } from './types'
 
 const giphyResult: GiphyResult = {
@@ -521,5 +521,18 @@ describe('buildCreateMemeScreenModel', () => {
     expect(calls.applyUrlEdit).toHaveBeenCalledOnce()
     expect(calls.generate).toHaveBeenCalledOnce()
     expect(calls.mint).toHaveBeenCalledOnce()
+  })
+
+  it('counts a tag only when its trimmed text is non-empty', () => {
+    expect(boundTags('cats,,,,,dogs')).toBe('cats,,,,,dogs')
+    expect(countTags('cats,,,,,dogs')).toBe(2)
+    expect(boundTags('a,,b,,c,,d')).toBe('a,,b,,c,,d')
+    expect(boundTags('a,b,c,d,e,f,g')).toBe('a,b,c,d,e')
+    expect(boundTags('a,,b,,c,,d,,e,,f')).toBe('a,,b,,c,,d,,e,')
+    expect(boundTags('a,b,c,d,')).toBe('a,b,c,d,')
+    expect(boundTags('a,b,c,d,e,')).toBe('a,b,c,d,e,')
+    expect(boundTags('a,b,c,d,e,   ,f')).toBe('a,b,c,d,e,   ')
+    expect(boundTags(' cats , dogs ')).toBe(' cats , dogs ')
+    expect(boundTags(',,,,,')).toBe(',,,,,')
   })
 })
