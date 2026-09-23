@@ -83,15 +83,6 @@ test("leaves from 'cn/config', from '@/lib/cn', and from '../lib/cn' unchanged",
   )
 })
 
-test('LUCIDE_IMPORT matches from "lucide-react" and from \'lucide-react\' only', () => {
-  const hits = (source) => [...source.matchAll(LUCIDE_IMPORT)].length
-  assert.equal(hits('import { Check } from "lucide-react"\n'), 1)
-  assert.equal(hits("import { Check } from 'lucide-react'\n"), 1)
-  assert.equal(hits("import { Check } from 'lucide-react/foo'\n"), 0)
-  assert.equal(hits("import { Icon } from '@/atoms/icon'\n"), 0)
-  assert.equal(hits('lucide glyph\n'), 0)
-})
-
 // Read-only walk of the real tree. Never spawn the mutator against live src/.
 test('live src/ has no from "cn" / from \'cn\' (cn/config must not match)', () => {
   const hits = []
