@@ -133,6 +133,7 @@ test('reproduces the APCA-W3 reference pairs, so the inlined math is the real th
   withStylesheet(stylesheet({ ...black, ...white }), (result) => {
     // #000 on #fff is Lc 106.04 and #fff on #000 is Lc -107.88 in the APCA-W3 reference table;
     // a plain literal is the same colour in both arms
+    assert.equal(result.status, 1, result.output)
     assert.match(
       result.output,
       /--color-foreground\s+on\s+--color-background\s+light\s+Lc\s+106\.0\b/,
