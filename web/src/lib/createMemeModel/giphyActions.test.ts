@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemeCopy } from '../../copy/createMeme'
 import type { CreateMemeEvent } from '../../stores/createMemeMachine'
-import { deferred } from '../../test/runtime'
+import { deferred, stubLocalStorage } from '../../test/runtime'
 import type { GiphyResult } from '../types'
 import type { CreateMemeActionHost } from './actionHost'
 import { onGiphySearch } from './giphyActions'
@@ -19,19 +19,6 @@ function hit(id: string): GiphyResult {
     author: null,
     url: `https://giphy.com/gifs/${id}`,
   }
-}
-
-function stubBrowser(): void {
-  const storage = new Map<string, string>()
-  vi.stubGlobal('localStorage', {
-    getItem: (key: string) => storage.get(key) ?? null,
-    setItem: (key: string, value: string) => {
-      storage.set(key, value)
-    },
-    removeItem: (key: string) => {
-      storage.delete(key)
-    },
-  })
 }
 
 function requestUrl(input: RequestInfo | URL): string {
@@ -108,7 +95,7 @@ describe('onGiphySearch', () => {
   let getCtx: ReturnType<typeof searchHost>['getCtx']
 
   beforeEach(() => {
-    stubBrowser()
+    stubLocalStorage()
     const fetchStub = installFetch()
     urls = fetchStub.urls
     methods = fetchStub.methods

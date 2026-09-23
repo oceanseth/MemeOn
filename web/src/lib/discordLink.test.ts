@@ -1,19 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { stubLocalStorage } from '../test/runtime'
 import { ApiError } from './api'
 import { DISCORD_LINK_TIMEOUT_MS, hasDiscordLinkInFlight, postDiscordLink } from './discordLink'
-
-function stubStorage(): void {
-  const storage = new Map<string, string>()
-  vi.stubGlobal('localStorage', {
-    getItem: (key: string) => storage.get(key) ?? null,
-    setItem: (key: string, value: string) => {
-      storage.set(key, value)
-    },
-    removeItem: (key: string) => {
-      storage.delete(key)
-    },
-  })
-}
 
 function deferred<T>() {
   let resolve!: (value: T) => void
@@ -29,7 +17,7 @@ describe('postDiscordLink', () => {
   let fetchMock: ReturnType<typeof vi.fn<typeof fetch>>
 
   beforeEach(() => {
-    stubStorage()
+    stubLocalStorage()
     fetchMock = vi.fn<typeof fetch>()
     vi.stubGlobal('fetch', fetchMock)
   })
