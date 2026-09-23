@@ -318,7 +318,7 @@ export class ConnectedScenario {
       const cursor = url.searchParams.get('cursor')
       return json({
         memes: clone(cursor ? [this.mintedMeme] : memes),
-        nextCursor: cursor ? null : null,
+        nextCursor: cursor ? null : 'page-2',
       })
     }
     if (method === 'POST' && path === '/api/memes') {
