@@ -7,12 +7,21 @@ import test from 'node:test'
 
 const checker = resolve(import.meta.dirname, 'check-contrast.mjs')
 const appStylesheet = resolve(import.meta.dirname, '..', 'src', 'index.css')
+const appSrc = resolve(import.meta.dirname, '..', 'src')
 
-const run = (path, srcDir) => {
-  const argv = srcDir ? [checker, path, srcDir] : [checker, path]
+const run = (path, srcDir, htmlPath) => {
+  const argv = [checker, path]
+  if (srcDir || htmlPath) argv.push(srcDir ?? appSrc)
+  if (htmlPath) argv.push(htmlPath)
   const result = spawnSync(process.execPath, argv, { encoding: 'utf8' })
   return { status: result.status, output: result.stdout + result.stderr }
 }
+
+const themeHtml = (light, dark) =>
+  [
+    `<meta name="theme-color" media="(prefers-color-scheme: light)" content="${light}" />`,
+    `<meta name="theme-color" media="(prefers-color-scheme: dark)" content="${dark}" />`,
+  ].join('\n') + '\n'
 
 /**
  * A stylesheet shaped like `src/index.css`: an `@theme static` block of Soft Press `light-dark()`
@@ -98,8 +107,10 @@ const stylesheet = (overrides = {}) => {
 /**
  * Temp CSS plus an isolated src beside it. markup files are written into that src;
  * omitted markup leaves the directory empty. The checker must not fall through to web/src.
+ * Optional html is written as index.html beside the CSS and passed as the checker's htmlPath.
+ * Omitted html leaves the checker on repo web/index.html.
  */
-const withStylesheet = (css, assertions, markup) => {
+const withStylesheet = (css, assertions, markup, html) => {
   const dir = mkdtempSync(join(tmpdir(), 'memeon-contrast-'))
   try {
     const path = join(dir, 'index.css')
@@ -107,7 +118,9 @@ const withStylesheet = (css, assertions, markup) => {
     const src = join(dir, 'src')
     mkdirSync(src)
     for (const [name, text] of Object.entries(markup ?? {})) writeFileSync(join(src, name), text)
-    assertions(run(path, src))
+    const htmlPath = html ? join(dir, 'index.html') : undefined
+    if (htmlPath) writeFileSync(htmlPath, html)
+    assertions(run(path, src, htmlPath))
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
@@ -127,23 +140,29 @@ test('reproduces the APCA-W3 reference pairs, so the inlined math is the real th
   const black = { '--color-foreground': '#000', '--color-background': '#fff' }
   const white = { '--color-muted-foreground': '#fff', '--color-card': '#000' }
 
-  withStylesheet(stylesheet({ ...black, ...white }), (result) => {
-    // #000 on #fff is Lc 106.04 and #fff on #000 is Lc -107.88 in the APCA-W3 reference table;
-    // a plain literal is the same colour in both arms
-    assert.equal(result.status, 1, result.output)
-    assert.match(
-      result.output,
-      /--color-foreground\s+on\s+--color-background\s+light\s+Lc\s+106\.0\b/,
-    )
-    assert.match(
-      result.output,
-      /--color-foreground\s+on\s+--color-background\s+dark\s+Lc\s+106\.0\b/,
-    )
-    assert.match(
-      result.output,
-      /--color-muted-foreground\s+on\s+--color-card\s+light\s+Lc\s+-107\.9\b/,
-    )
-  })
+  withStylesheet(
+    stylesheet({ ...black, ...white }),
+    (result) => {
+      // #000 on #fff is Lc 106.04 and #fff on #000 is Lc -107.88 in the APCA-W3 reference table;
+      // a plain literal is the same colour in both arms
+      assert.equal(result.status, 1, result.output)
+      assert.match(
+        result.output,
+        /--color-foreground\s+on\s+--color-background\s+light\s+Lc\s+106\.0\b/,
+      )
+      assert.match(
+        result.output,
+        /--color-foreground\s+on\s+--color-background\s+dark\s+Lc\s+106\.0\b/,
+      )
+      assert.match(
+        result.output,
+        /--color-muted-foreground\s+on\s+--color-card\s+light\s+Lc\s+-107\.9\b/,
+      )
+      assert.doesNotMatch(result.output, /theme-color meta\(s\) do not match --color-background/)
+    },
+    undefined,
+    themeHtml('#ffffff', '#ffffff'),
+  )
 })
 
 test('checks each arm of a light-dark() pair on its own and names the arm that fails', () => {
@@ -326,5 +345,27 @@ test('still fails a live foreground fill on the line after a block comment', () 
       assert.doesNotMatch(result.output, /Fill\.tsx:1/)
     },
     markup,
+  )
+})
+
+test('fails only the theme-color gate when a meta disagrees with --color-background', () => {
+  withStylesheet(
+    stylesheet(),
+    (result) => {
+      assert.equal(result.status, 1, result.output)
+      assert.match(
+        result.output,
+        /check-contrast: 1 index\.html theme-color meta\(s\) do not match --color-background:\n {2}light: #000000 should be #f6f6fc/,
+      )
+      assert.doesNotMatch(result.output, /^\s*dark: /m)
+      assert.doesNotMatch(result.output, /BELOW 60/)
+      assert.doesNotMatch(result.output, /read below APCA/)
+      assert.doesNotMatch(result.output, /paint text in a token that is not a text colour/)
+      assert.doesNotMatch(result.output, /paint a foreground token as a fill/)
+      assert.doesNotMatch(result.output, /declared and never audited/)
+      assert.doesNotMatch(result.output, /painted as text or a glyph stroke and never audited/)
+    },
+    undefined,
+    themeHtml('#000000', '#0e0e19'),
   )
 })
