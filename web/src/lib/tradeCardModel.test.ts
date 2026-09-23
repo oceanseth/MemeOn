@@ -39,4 +39,70 @@ describe('buildTradeCardModel perspective', () => {
     expect(model.give.braincellsLabel).toBeNull()
     expect(model.get.braincellsLabel).toBe(braincells(proposedTrade.ask.coins))
   })
+
+  it('incoming finality spells tier shares from copy', () => {
+    const { finality } = tradesCopy.card
+    expect(finality.tierShares(1, null)).toBe('1 share')
+    expect(finality.tierShares(2, null)).toBe('2 shares')
+    expect(finality.tierShares(2, '')).toBe('2 shares')
+    expect(finality.tierShares(1, 'Holo')).toBe('1 Holo share')
+    expect(finality.tierShares(2, 'Silver')).toBe('2 Silver shares')
+    expect(finality.tierShares(1500, null)).toBe('1500 shares')
+
+    const tierInfo = (tierName: string) => ({
+      title: tierName,
+      imageUrl: '',
+      tierKey: tierName.toLowerCase(),
+      tierName,
+      tierLabel: tierName,
+      reshares: 0,
+    })
+    const coins = braincells(proposedTrade.ask.coins)
+    const incoming = buildTradeCardModel({
+      trade: proposedTrade,
+      meSub: 'not-the-sender',
+      memeNames: { 'meme-silver': tierInfo('Silver') },
+      onRespond: () => {},
+    })
+    expect(incoming.finalityLine).toBe(
+      finality.leaves(finality.and(finality.tierShares(2, 'Silver'), coins)),
+    )
+    expect(incoming.finalityLine).not.toContain('shares of')
+
+    const unresolved = buildTradeCardModel({
+      trade: proposedTrade,
+      meSub: 'not-the-sender',
+      memeNames: {},
+      onRespond: () => {},
+    })
+    expect(unresolved.finalityLine).toBe(
+      finality.leaves(finality.and(finality.tierShares(2, null), coins)),
+    )
+
+    const oneShare = buildTradeCardModel({
+      trade: {
+        ...proposedTrade,
+        ask: { memes: [{ memeId: 'meme-holo', shares: 1 }], coins: 0 },
+      },
+      meSub: 'not-the-sender',
+      memeNames: { 'meme-holo': tierInfo('Holo') },
+      onRespond: () => {},
+    })
+    expect(oneShare.finalityLine).toBe(finality.leaves(finality.tierShares(1, 'Holo')))
+
+    const outgoing = buildTradeCardModel({
+      trade: proposedTrade,
+      meSub: proposedTrade.fromId,
+      memeNames: {},
+      onRespond: () => {},
+    })
+    expect(outgoing.finalityLine).toBeNull()
+
+    const unanswered = buildTradeCardModel({
+      trade: proposedTrade,
+      meSub: 'not-the-sender',
+      memeNames: {},
+    })
+    expect(unanswered.finalityLine).toBeNull()
+  })
 })
