@@ -125,4 +125,25 @@ describe('buildMemeCardModel', () => {
     // a still card has nothing to start either way
     expect(buildMemeCardModel(imageMeme).mediaAutoplay).toBe('off')
   })
+
+  it('speaks one share in the singular', () => {
+    expect(copy.shares(1)).toBe('1 share')
+    expect(copy.shares(2)).toBe('2 shares')
+    expect(copy.shares(10)).toBe('10 shares')
+    expect(copy.sharesForSaleAt(1, 3)).toBe('1 share for sale at 3 braincells each')
+    expect(copy.sharesForSaleAt(10, 3)).toBe('10 shares for sale at 3 braincells each')
+
+    const model = buildMemeCardModel({
+      ...imageMeme,
+      listing: { sellerId: 'seller-1', shares: 1, pricePerShare: 3 },
+    })
+
+    expect(model.listing).toEqual({
+      shares: 1,
+      pricePerShare: 3,
+      forSaleLabel: copy.forSale,
+      sharesLabel: copy.shares(1),
+      sharesA11yLabel: copy.sharesForSaleAt(1, 3),
+    })
+  })
 })
