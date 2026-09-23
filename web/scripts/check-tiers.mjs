@@ -298,7 +298,11 @@ const inspectEngineSource = (file) => {
   const text = readFileSync(file, 'utf8')
   const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
 
-  if ((sourceFile.parseDiagnostics ?? []).length > 0) {
+  // parseDiagnostics is not public. A missing list must fail the file, not skip the JSX probe.
+  const parseDiagnostics = sourceFile.parseDiagnostics
+  if (!Array.isArray(parseDiagnostics)) {
+    report(file, 'TypeScript parse diagnostics are unavailable')
+  } else if (parseDiagnostics.length > 0) {
     const tsx = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
     let reportedJsx = false
     const visitJsx = (node) => {

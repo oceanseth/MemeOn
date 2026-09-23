@@ -402,6 +402,13 @@ test('rejects React trees and value-imported tiers in hooks/*.ts and lib/*Model.
   assert.doesNotMatch(result.output, /lib\/createMemeModel\/shared\.ts/)
 })
 
+test('allows a generic arrow in a hooks .ts engine file', () => {
+  const result = runChecker({
+    'hooks/useGeneric.ts': 'export const id = <T>(x: T) => x\n',
+  })
+  assert.equal(result.status, 0, result.output)
+})
+
 test('views may import mobx-react-lite; STATE_LIBS still rejects it below views (knip/typecheck catch a views import once packages are gone)', () => {
   const result = runChecker({
     'views/Observed.tsx':
