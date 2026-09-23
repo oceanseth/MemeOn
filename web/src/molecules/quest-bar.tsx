@@ -94,7 +94,6 @@ export function QuestBar({ model, balance }: QuestBarProps) {
   const live = model !== null && model.visible && model.showSteps
   const claim = model?.chips.find((chip) => chip.kind === 'claim')
   const steps = model?.chips.filter((chip) => chip.kind === 'step') ?? []
-  const done = steps.filter((chip) => chip.done).length
   const popoverActions = useRef<PopoverPrimitive.Root.Actions | null>(null)
 
   const figure = (
@@ -167,8 +166,8 @@ export function QuestBar({ model, balance }: QuestBarProps) {
                 </div>
                 {/* the ladder as a meter, named by the title beside it; the rows below list every step */}
                 <Progress
-                  value={done}
-                  max={model.chips.length}
+                  value={model.progressValue}
+                  max={model.progressMax}
                   aria-labelledby={TITLE_ID}
                   data-slot="questbar-progress"
                 />
