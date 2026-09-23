@@ -264,3 +264,67 @@ test('says which token is missing rather than throwing a colour-parse error', ()
     assert.match(result.output, /--color-tier-gold-chip-text is not declared/)
   })
 })
+
+/**
+ * Block comments are prose, and a star-prefixed line is a note. Neither is paint. A `//` line is
+ * out of scope: blankComments only blanks block comments.
+ */
+test('ignores block comments and star lines when scanning ring text and foreground fills', () => {
+  const markup = {
+    'Note.tsx':
+      'const kept = true\n' +
+      '/* text-ring */\n' +
+      'export const Note = () => null /* color: var(--color-ring) */\n' +
+      '/* bg-error-foreground */\n' +
+      ' * bg-error-foreground\n',
+  }
+
+  withStylesheet(
+    stylesheet(),
+    (result) => {
+      assert.equal(result.status, 0, result.output)
+      assert.doesNotMatch(result.output, /Note\.tsx/)
+      assert.doesNotMatch(result.output, /text-ring/)
+      assert.doesNotMatch(result.output, /bg-error-foreground/)
+      assert.doesNotMatch(result.output, /color: var\(--color-ring\)/)
+    },
+    markup,
+  )
+})
+
+test('still fails a live text-ring on the line after a block comment', () => {
+  const markup = {
+    'Ring.tsx': '/* prose */\nexport const Ring = () => <span className="text-ring" />\n',
+  }
+
+  withStylesheet(
+    stylesheet(),
+    (result) => {
+      assert.equal(result.status, 1, result.output)
+      assert.match(result.output, /Ring\.tsx:2/)
+      assert.match(result.output, /paint text in a token that is not a text colour/)
+      assert.match(result.output, /uses --color-ring — use --color-link/)
+      assert.doesNotMatch(result.output, /Ring\.tsx:1/)
+    },
+    markup,
+  )
+})
+
+test('still fails a live foreground fill on the line after a block comment', () => {
+  const markup = {
+    'Fill.tsx': '/* prose */\nexport const Fill = () => <span className="bg-error-foreground" />\n',
+  }
+
+  withStylesheet(
+    stylesheet(),
+    (result) => {
+      assert.equal(result.status, 1, result.output)
+      assert.match(result.output, /Fill\.tsx:2/)
+      assert.match(result.output, /paint a foreground token as a fill/)
+      assert.match(result.output, /uses bg-error-foreground/)
+      assert.match(result.output, /a \*-foreground is an ink/)
+      assert.doesNotMatch(result.output, /Fill\.tsx:1/)
+    },
+    markup,
+  )
+})
