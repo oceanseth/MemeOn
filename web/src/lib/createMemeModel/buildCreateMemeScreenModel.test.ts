@@ -153,6 +153,7 @@ describe('buildCreateMemeScreenModel', () => {
       calls,
     )
 
+    expect(model.giphyPick).toBeNull()
     /* results are on screen, so the panel's status line only has to reach a screen reader */
     expect(model.giphyStatusHidden).toBe(true)
 
@@ -207,7 +208,35 @@ describe('buildCreateMemeScreenModel', () => {
     expect(selected.getGiphyResultProps(giphyResult).imageProps.src).toBe('/cat.gif')
     expect(selected.giphyPick).toEqual({
       title: 'Keyboard cat',
-      authorLabel: ' (@catlord)',
+      authorLabel: copy.giphy.authorLabel('catlord'),
+    })
+
+    const missingAuthor = buildCreateMemeScreenModel(
+      'giphy',
+      {
+        ...baseContext,
+        mode: 'giphy',
+        giphyPick: { ...giphyResult, author: null },
+      },
+      calls,
+    )
+    expect(missingAuthor.giphyPick).toEqual({
+      title: 'Keyboard cat',
+      authorLabel: null,
+    })
+
+    const blankAuthor = buildCreateMemeScreenModel(
+      'giphy',
+      {
+        ...baseContext,
+        mode: 'giphy',
+        giphyPick: { ...giphyResult, author: '' },
+      },
+      calls,
+    )
+    expect(blankAuthor.giphyPick).toEqual({
+      title: 'Keyboard cat',
+      authorLabel: null,
     })
   })
 
