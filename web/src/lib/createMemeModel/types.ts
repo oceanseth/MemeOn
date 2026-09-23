@@ -45,6 +45,7 @@ export interface CreateMemeFileDropModel {
   emptyLabel: string
   /** The picked file's name, so the row names it instead of the browser. */
   fileName: string | null
+  disabled?: boolean
   'aria-describedby': string
   onFile: (file: File) => void
 }

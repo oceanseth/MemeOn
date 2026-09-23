@@ -7,6 +7,10 @@ import { MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, overCapMessage } from './shared'
 
 const copy = createMemeCopy
 
+/* Image and video share one id. Over-cap returns before the increment, so a too-big
+   pick does not retire an in-flight put. */
+let latestUpload = 0
+
 export async function onImageFile(host: CreateMemeActionHost, file: File): Promise<void> {
   /* the row names what was picked before it judges it: the oversized file is still the one
      sitting in the picker when the alert explains why it will not do */
@@ -18,15 +22,19 @@ export async function onImageFile(host: CreateMemeActionHost, file: File): Promi
     })
     return
   }
+  const uploadId = ++latestUpload
   host.beginBusy(copy.busy.uploadingImage)
   try {
+    const imageUrl = await uploadCreateMemeFile(file)
+    if (uploadId !== latestUpload) return
     host.send({
       type: 'SET_IMAGE_URL',
-      imageUrl: await uploadCreateMemeFile(file),
+      imageUrl,
       fileName: file.name,
     })
     host.settleBusy({ type: 'DONE' })
   } catch (er) {
+    if (uploadId !== latestUpload) return
     host.settleBusy({
       type: 'FAIL',
       err: mintDeskError(er, copy.errors.uploadFailed),
@@ -43,23 +51,27 @@ export async function onVideoFile(host: CreateMemeActionHost, file: File): Promi
     })
     return
   }
+  const uploadId = ++latestUpload
   host.beginBusy(copy.busy.uploadingVideo)
   try {
+    const videoUrl = await uploadCreateMemeFile(file)
+    if (uploadId !== latestUpload) return
     host.send({
       type: 'SET_VIDEO_URL',
-      videoUrl: await uploadCreateMemeFile(file),
+      videoUrl,
       fileName: file.name,
     })
     if (!host.getCtx().imageUrl) {
       host.send({ type: 'BUSY', busy: copy.busy.extractingPoster })
       const poster = await extractPoster(file)
-      host.send({
-        type: 'SET_IMAGE_URL',
-        imageUrl: await uploadCreateMemeFile(poster, 'image/png'),
-      })
+      if (uploadId !== latestUpload) return
+      const imageUrl = await uploadCreateMemeFile(poster, 'image/png')
+      if (uploadId !== latestUpload) return
+      host.send({ type: 'SET_IMAGE_URL', imageUrl })
     }
     host.settleBusy({ type: 'DONE' })
   } catch (er) {
+    if (uploadId !== latestUpload) return
     host.settleBusy({
       type: 'FAIL',
       err: mintDeskError(er, copy.errors.uploadFailed),

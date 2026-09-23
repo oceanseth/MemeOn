@@ -24,7 +24,7 @@ export function buildCreateMemeScreenModel(
     ...buildRemixModeModel(ctx, actions, isBusy, showEditedFrameApproval),
     ...buildGiphyModeModel(ctx, actions, isBusy),
     ...buildUrlModeModel(ctx, actions, isBusy),
-    ...buildUploadModeModel(ctx, actions),
+    ...buildUploadModeModel(ctx, actions, isBusy),
     ...buildGenerateModeModel(ctx, actions, isBusy),
   }
 }
