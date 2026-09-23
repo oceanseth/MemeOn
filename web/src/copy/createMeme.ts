@@ -41,6 +41,7 @@ export const createMemeCopy = {
   },
   /** What the alert says when the request threw nothing the user can read. */
   errors: {
+    remixSourceMissing: 'source meme not found',
     notALink: 'That is not a link — paste a full https:// address.',
     renderFailed:
       "The video render didn't finish. Try again, or reopen this page if a job is still running.",
