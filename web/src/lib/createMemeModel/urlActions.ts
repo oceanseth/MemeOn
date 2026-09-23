@@ -6,6 +6,7 @@ import type { CreateMemeActionHost } from './actionHost'
 const copy = createMemeCopy
 
 export async function onResolvePageUrl(host: CreateMemeActionHost): Promise<void> {
+  if (host.getCtx().busy) return
   const url = host.getCtx().urlDraft.trim()
   if (!url) return
   if (!/^https?:\/\//.test(url)) {
