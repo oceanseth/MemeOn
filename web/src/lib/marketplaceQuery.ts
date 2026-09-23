@@ -107,14 +107,24 @@ export const isSortKey = (value: string | null): value is SortKey =>
 export const isSortDir = (value: string | null): value is SortDir =>
   value === 'asc' || value === 'desc'
 
+export function isMediaType(value: string | null): value is 'image' | 'video' {
+  return value === 'image' || value === 'video'
+}
+
+export function isTierKey(value: string | null): value is string {
+  return value !== null && TIERS.some((tier) => tier.key === value)
+}
+
 /** The shareable half of the market: everything a link has to carry to reopen the same shelf. */
 export function filtersFromUrl(params: URLSearchParams): MarketplaceInput {
   const sortKey = params.get('sort')
   const sortDir = params.get('dir')
+  const type = params.get('type')
+  const tier = params.get('tier')
   return {
     q: params.get('q') ?? '',
-    type: params.get('type') ?? '',
-    tier: params.get('tier') ?? '',
+    type: isMediaType(type) ? type : '',
+    tier: isTierKey(tier) ? tier : '',
     listed: params.get('listed') === 'true',
     ...(isSortKey(sortKey) ? { sortKey } : {}),
     ...(isSortDir(sortDir) ? { sortDir } : {}),
