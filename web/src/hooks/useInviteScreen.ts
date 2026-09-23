@@ -173,7 +173,13 @@ export function useInviteScreen(): InviteScreenModel {
 
   const onCopy = () => {
     const link = window.location.href
-    void Promise.resolve(navigator.clipboard?.writeText(link))
+    if (!navigator.clipboard?.writeText) {
+      send({ type: 'COPIED', ok: false })
+      return
+    }
+    // called on navigator.clipboard: a detached writeText rejects with Illegal invocation
+    void navigator.clipboard
+      .writeText(link)
       .then(() => send({ type: 'COPIED', ok: true }))
       .catch(() => send({ type: 'COPIED', ok: false }))
   }
