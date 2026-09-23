@@ -100,7 +100,7 @@ export const ProviderDenied: Story = {
     await expect(canvas.getByRole('alert')).toHaveTextContent('access_denied')
     await expect(canvasElement.querySelector('[data-slot="auth-ring"]')).toBeNull()
     await expect(document.title).toBe(
-      `${authStatusCopy.callback.documentTitle} — ${sharedCopy.brand}`,
+      sharedCopy.documentTitle(authStatusCopy.callback.documentTitle),
     )
   },
 }

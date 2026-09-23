@@ -6,8 +6,12 @@
  * (`lib/plural`, `lib/braincells`). It is read by hooks, `lib/*Model.ts` builders, tests and
  * stories. Tier components never import it — strings reach them as props.
  */
+const brand = 'MemeOn' as const
+
 export const sharedCopy = {
-  brand: 'MemeOn',
+  brand,
+  /** Tab title: route page name, U+2014 em dash, brand. Views pass the page name only. */
+  documentTitle: (page: string) => `${page} — ${brand}`,
   logOut: 'Log out',
   tryAgain: 'Try again',
   retry: 'Retry',

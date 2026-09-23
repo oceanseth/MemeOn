@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, within } from 'storybook/test'
+import { sharedCopy } from '../copy/shared'
+import { termsCopy } from '../copy/terms'
 import { TermsView } from './TermsView'
 
 const meta = {
@@ -27,6 +29,6 @@ export const Default: Story = {
       'href',
       'mailto:seth@voicecert.com?subject=MemeOn%20takedown%20request',
     )
-    await expect(document.title).toBe('Terms of Service — MemeOn')
+    await expect(document.title).toBe(sharedCopy.documentTitle(termsCopy.title))
   },
 }
