@@ -18,6 +18,11 @@ describe('buildQuestBarModel', () => {
     const opening = buildQuestBarModel({ ...fresh, busy: true })
     const done = buildQuestBarModel({ ...fresh, steps: questStepsPackDone })
     expect(freshModel.completionLabel).toBe('0/5')
+    expect(freshModel.progressValue).toBe(0)
+    expect(freshModel.progressMax).toBe(questStepsFresh.length)
+    expect(freshModel.chips.filter((chip) => chip.kind === 'step')).toHaveLength(4)
+    expect(freshModel.completionLabel).toBe(`${freshModel.progressValue}/${freshModel.progressMax}`)
+    expect(freshModel.progressPercent).toBe(0)
     expect(freshModel.chips[0]).toMatchObject({
       kind: 'claim',
       buttonProps: { disabled: false },
@@ -29,6 +34,9 @@ describe('buildQuestBarModel', () => {
       buttonProps: { disabled: true, 'aria-busy': true },
     })
     expect(done.completionLabel).toBe('1/5')
+    expect(done.progressValue).toBe(1)
+    expect(done.progressMax).toBe(5)
+    expect(done.progressPercent).toBe(20)
     expect(buildQuestBarModel({ ...fresh, steps: questStepsPackDone }).chips[0]).toMatchObject({
       kind: 'step',
       done: true,
@@ -84,6 +92,10 @@ describe('buildQuestBarModel', () => {
       true,
     )
     expect(completed.completionLabel).toBe('5/5')
+    expect(completed.progressValue).toBe(5)
+    expect(completed.progressMax).toBe(5)
+    expect(completed.completionLabel).toBe(`${completed.progressValue}/${completed.progressMax}`)
+    expect(completed.progressPercent).toBe(100)
   })
 
   it('surfaces a failed one-shot claim instead of returning to the button', () => {
@@ -105,6 +117,9 @@ describe('buildQuestBarModel', () => {
       packReward: 20,
     })
     expect(hidden.visible).toBe(false)
+    expect(hidden.progressValue).toBe(0)
+    expect(hidden.progressMax).toBe(0)
+    expect(hidden.completionLabel).toBe('0/0')
     /* the frame is always modelled, never conditional: it owns focus restoration, so it has to
        outlive the dismissal that closes it */
     expect(hidden.pack.open).toBe(false)
