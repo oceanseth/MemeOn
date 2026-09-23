@@ -5,7 +5,7 @@ import { createMemeCopy as copy } from '../../copy/createMeme'
 import { createMemeMachine, type CreateMemeContext } from '../../stores/createMemeMachine'
 import type { GiphyResult } from '../types'
 import { buildCreateMemeScreenModel } from './buildCreateMemeScreenModel'
-import { MAX_VIDEO_BYTES, overCapMessage } from './shared'
+import { MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, overCapMessage } from './shared'
 import type { CreateMemeScreenActions } from './types'
 
 const giphyResult: GiphyResult = {
@@ -389,6 +389,9 @@ describe('buildCreateMemeScreenModel', () => {
   })
 
   it('names the file caps and the next step out of a failure once', () => {
+    expect(overCapMessage('image', MAX_IMAGE_BYTES + 1, MAX_IMAGE_BYTES)).toBe(
+      copy.preview.overCap('image', 9, 8, copy.preview.overCapAdvice.image),
+    )
     expect(overCapMessage('video', 143 * 1024 * 1024, MAX_VIDEO_BYTES)).toBe(
       'that video is 143MB — the cap is 50MB, try a shorter clip',
     )
@@ -398,6 +401,7 @@ describe('buildCreateMemeScreenModel', () => {
       actions(),
     )
     expect(failed.errorNextStep).toBe(copy.preview.nextStep.credits)
+    expect(failed.uploadImageHelpText).toBe(copy.upload.imageHelp(8))
     expect(failed.uploadVideoHelpText).toContain('max 50MB')
   })
 

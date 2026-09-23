@@ -25,7 +25,7 @@ export const HELP_IDS = {
 
 const FRESH_TIER = tierFor(0)
 
-const megabytes = (bytes: number): number => Math.max(1, Math.round(bytes / (1024 * 1024)))
+const megabytes = (bytes: number): number => Math.max(1, Math.ceil(bytes / (1024 * 1024)))
 
 export function overCapMessage(kind: 'image' | 'video', size: number, cap: number): string {
   const advice =
