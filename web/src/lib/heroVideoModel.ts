@@ -79,9 +79,9 @@ export type HeroVideoButtonProps = Pick<
 >
 
 export interface HeroVideoModel {
-  /** the play pill over the poster: only in the withheld-autoplay branch, until the visitor starts it */
+  /** the play pill over the poster: until confirmed playback, not only when autoplay is withheld */
   showPlayPill: boolean
-  /** the sound toggle: once the film is running, by autoplay or by hand */
+  /** the sound toggle: only after `started`, never because the autoplay probe is true */
   showSoundPill: boolean
   playLabel: string
   soundLabel: string
@@ -91,13 +91,13 @@ export interface HeroVideoModel {
 }
 
 export interface HeroVideoState {
-  /** whether autoplay is spent on this visit (the environment probe, or a story's override) */
+  /** the environment probe, or a story's override; it does not mean the film is playing */
   autoplay: boolean
   muted: boolean
   /**
-   * The film is running: the visitor pressed play, or autoplay took. Set from the element's own
-   * `play` event too, so a probe that flips mid-visit (Data Saver switched on) never draws a play
-   * pill over a film that is already going.
+   * Confirmed playback from the element's `play` event: autoplay that actually started, or a
+   * later successful play. A probe that flips off mid-visit must not draw a play pill over a film
+   * that already started — pills key off `started` alone.
    */
   started: boolean
   /** receives the mounted element (and `null` on unmount); the hook keeps it for `play()` */
@@ -114,10 +114,9 @@ export function buildHeroVideoModel({
   onStart,
   onToggleSound,
 }: HeroVideoState): HeroVideoModel {
-  const running = autoplay || started
   return {
-    showPlayPill: !autoplay && !started,
-    showSoundPill: running,
+    showPlayPill: !started,
+    showSoundPill: started,
     playLabel: copy.play,
     soundLabel: muted ? copy.soundOn : copy.soundOff,
     videoProps: {
