@@ -51,6 +51,8 @@ export const Family: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('heading', { name: memeplexPanelCopy.heading })).toBeVisible()
+    const ancestry = canvas.getByText(memeplexPanelCopy.descendedFrom, { exact: false })
+    await expect(ancestry).toHaveTextContent(memeplexPanelCopy.originalLabel)
   },
 }
 export const EmptyReadOnly: Story = {

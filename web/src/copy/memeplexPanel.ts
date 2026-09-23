@@ -2,6 +2,7 @@
 export const memeplexPanelCopy = {
   heading: 'Memeplex',
   descendedFrom: 'Descended from',
+  originalLabel: ' (the original)',
   empty: 'No relatives yet — remix this meme or link related ones.',
   link: 'Link',
   picker: 'Link a meme from your binder',
