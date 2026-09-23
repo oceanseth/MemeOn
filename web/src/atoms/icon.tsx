@@ -94,67 +94,6 @@ export type IconName =
   | 'discord'
   | 'log-out'
 
-export const ICON_NAMES: readonly IconName[] = [
-  'storefront',
-  'book',
-  'users',
-  'arrows-left-right',
-  'trophy',
-  'gear',
-  'magnifying-glass',
-  'circle-plus',
-  'bell',
-  'arrow-right',
-  'sun',
-  'moon',
-  'brain',
-  'sparkles',
-  'theater',
-  'handshake',
-  'wrench',
-  'eye',
-  'triangle-alert',
-  'circle-check',
-  'eye-off',
-  'gift',
-  'link',
-  'blocks',
-  'trash-2',
-  'contrast',
-  'palette',
-  'hand',
-  'dna',
-  'star',
-  'hourglass',
-  'clapperboard',
-  'film',
-  'globe',
-  'playing-card',
-  'scroll-text',
-  'upload',
-  'satellite',
-  'mail',
-  'volume-x',
-  'volume-2',
-  'rotate-cw',
-  'download',
-  'medal',
-  'play',
-  'square-play',
-  'circle-x',
-  'ban',
-  'square',
-  'meh',
-  'chevron-down',
-  'x',
-  'star-filled',
-  'arrows-swap',
-  'user',
-  'code',
-  'discord',
-  'log-out',
-]
-
 export interface PathDef {
   d: string
   linecap?: 'round'
@@ -749,6 +688,12 @@ const PATHS: Record<IconName, readonly PathDef[]> = {
     },
   ],
 }
+
+function keysOf<Name extends string>(record: Record<Name, unknown>): Name[] {
+  return Object.keys(record) as Name[]
+}
+
+export const ICON_NAMES: readonly IconName[] = keysOf(PATHS)
 
 export function iconPaths(name: IconName): readonly PathDef[] {
   return PATHS[name]
