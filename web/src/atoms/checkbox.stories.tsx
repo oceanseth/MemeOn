@@ -53,6 +53,21 @@ export const Unchecked: Story = {
   },
 }
 
+const TICK_D = 'M7.757 12L10.409 14.652L16.243 8.818'
+const MINUS_D = 'M7.757 12H16.243'
+
+function markSvg(root: ParentNode, d: string): SVGElement | null {
+  const path = root.querySelector(`path[d="${d}"]`)
+  const svg = path?.closest('svg')
+  return svg instanceof SVGElement ? svg : null
+}
+
+/** Chrome 153 keeps offsetWidth on HTMLElement, so an svg's laid-out size is clientWidth. */
+function markWidth(svg: SVGElement): number {
+  const box = svg as SVGElement & { offsetWidth?: number }
+  return box.offsetWidth ?? svg.clientWidth
+}
+
 export const Checked: Story = {
   args: { defaultChecked: true },
   play: async ({ canvasElement }) => {
@@ -60,9 +75,36 @@ export const Checked: Story = {
     const box = canvas.getByRole('checkbox', { name: 'For sale' })
     await expect(box).toBeChecked()
     await expect(box).toHaveAttribute('data-checked')
+    await expect(box).not.toHaveAttribute('data-indeterminate')
+    await expect(box).not.toHaveAttribute('aria-checked', 'mixed')
     const indicator = box.querySelector('[data-slot="checkbox-indicator"]')
     await expect(indicator).not.toBeNull()
-    await expect(indicator!.querySelector('svg')).not.toBeNull()
+    const tick = markSvg(indicator!, TICK_D)
+    await expect(tick).not.toBeNull()
+    await expect(tick).toHaveAttribute('aria-hidden', 'true')
+    await expect(markWidth(tick!)).toBe(16)
+    const minus = markSvg(indicator!, MINUS_D)
+    await expect(minus === null || markWidth(minus) === 0).toBe(true)
+  },
+}
+
+/** Mixed paints a centered minus, not the house tick. */
+export const Indeterminate: Story = {
+  args: { indeterminate: true, label: 'Select all' },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const box = canvas.getByRole('checkbox', { name: 'Select all' })
+    await expect(box).toHaveAttribute('aria-checked', 'mixed')
+    await expect(box).toHaveAttribute('data-indeterminate')
+    await expect(box).not.toHaveAttribute('data-checked')
+    const indicator = box.querySelector('[data-slot="checkbox-indicator"]')
+    await expect(indicator).not.toBeNull()
+    const minus = markSvg(indicator!, MINUS_D)
+    await expect(minus).not.toBeNull()
+    await expect(minus).toHaveAttribute('aria-hidden', 'true')
+    await expect(markWidth(minus!)).toBe(16)
+    const tick = markSvg(indicator!, TICK_D)
+    await expect(tick === null || markWidth(tick) === 0).toBe(true)
   },
 }
 
