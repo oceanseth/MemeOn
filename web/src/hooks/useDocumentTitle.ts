@@ -1,9 +1,6 @@
 import { sharedCopy } from '../copy/shared'
 import { useMountEffect } from './useMountEffect'
 
-/** The product name every route's title ends on — the second half of `index.html`'s own title. */
-const SITE = sharedCopy.brand
-
 /**
  * WCAG 2.4.2: a single-page app keeps `index.html`'s marketing title on every route unless the route
  * says otherwise, which leaves a tab strip, a history list and a screen reader's first announcement
@@ -16,7 +13,7 @@ const SITE = sharedCopy.brand
 export function useDocumentTitle(title: string): void {
   useMountEffect(() => {
     const previous = document.title
-    document.title = `${title} — ${SITE}`
+    document.title = sharedCopy.documentTitle(title)
     return () => {
       document.title = previous
     }

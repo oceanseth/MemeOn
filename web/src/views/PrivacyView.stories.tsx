@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, within } from 'storybook/test'
+import { privacyCopy } from '../copy/privacy'
+import { sharedCopy } from '../copy/shared'
 import { PrivacyView } from './PrivacyView'
 
 const meta = {
@@ -27,6 +29,6 @@ export const Default: Story = {
       'href',
       'mailto:seth@voicecert.com?subject=MemeOn%20account%20deletion',
     )
-    await expect(document.title).toBe('Privacy Policy — MemeOn')
+    await expect(document.title).toBe(sharedCopy.documentTitle(privacyCopy.title))
   },
 }

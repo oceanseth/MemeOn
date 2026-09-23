@@ -66,7 +66,7 @@ export const FiltersSortAndStyles: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByRole('link', { name: /fresh paper/i })).toBeInTheDocument()
-    await expect(document.title).toBe(`${copy.pageTitle} — ${sharedCopy.brand}`)
+    await expect(document.title).toBe(sharedCopy.documentTitle(copy.pageTitle))
     const search = canvas.getByRole('searchbox', { name: copy.search.label })
     await userEvent.type(search, 'holo')
     await waitFor(() =>
