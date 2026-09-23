@@ -116,6 +116,12 @@ describe('buildCreateMemeScreenModel', () => {
     model.tagsInputProps.onChange?.(inputChange('a,b,c,d,e,f,g'))
     expect(calls.setTags).toHaveBeenLastCalledWith('a,b,c,d,e')
     expect(calls.setTags).toHaveBeenCalledWith('cats, chaos')
+    const fiveLongTags =
+      'photosynthesis, extraterrestrial, incomprehensible, procrastination, internationalization'
+    expect(fiveLongTags.length).toBeGreaterThan(80)
+    expect(model.tagsInputProps.maxLength).toBeUndefined()
+    model.tagsInputProps.onChange?.(inputChange(fiveLongTags))
+    expect(calls.setTags).toHaveBeenLastCalledWith(fiveLongTags)
     expect(calls.setPrompt).toHaveBeenNthCalledWith(1, 'make it blue')
     expect(calls.setPrompt).toHaveBeenNthCalledWith(2, 'make it loop')
     expect(calls.setPrompt).toHaveBeenNthCalledWith(3, 'make it late')

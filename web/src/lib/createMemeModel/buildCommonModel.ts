@@ -144,7 +144,6 @@ export function buildCommonModel(
     },
     tagsInputProps: {
       value: ctx.tags,
-      maxLength: 80,
       'aria-describedby': HELP_IDS.tags,
       onChange: (event) => actions.setTags(boundTags(event.currentTarget.value)),
     },
