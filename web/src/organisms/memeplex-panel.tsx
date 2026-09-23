@@ -39,7 +39,7 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
               <InlineLink render={<Link {...ancestor.linkProps} />}>"{ancestor.title}"</InlineLink>
             </span>
           ))}
-          {model.showOriginalLabel && ' (the original)'}
+          {model.showOriginalLabel && model.originalLabel}
         </p>
       )}
 

@@ -7,6 +7,7 @@ export interface MemeplexPanelModel {
   show: boolean
   heading: string
   descendedFrom: string
+  originalLabel: string
   empty: string
   linkLabel: string
   ancestors: readonly { id: string; title: string; linkProps: { to: string } }[]
@@ -93,6 +94,7 @@ export function buildMemeplexPanelModel({
     show: !!error || (!!plex && (family.length > 0 || plex.ancestors.length > 0 || canEdit)),
     heading: copy.heading,
     descendedFrom: copy.descendedFrom,
+    originalLabel: copy.originalLabel,
     empty: copy.empty,
     linkLabel: copy.link,
     ancestors: (plex?.ancestors ?? []).map((ancestor) => ({

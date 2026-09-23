@@ -77,6 +77,7 @@ describe('buildMemeplexPanelModel', () => {
     })
     expect(model.heading).toBe(memeplexPanelCopy.heading)
     expect(model.descendedFrom).toBe(memeplexPanelCopy.descendedFrom)
+    expect(model.originalLabel).toBe(memeplexPanelCopy.originalLabel)
     expect(model.empty).toBe(memeplexPanelCopy.empty)
     expect(model.linkLabel).toBe(memeplexPanelCopy.link)
     expect(model.pickPlaceholder).toEqual({
