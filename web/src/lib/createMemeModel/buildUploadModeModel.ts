@@ -17,6 +17,7 @@ type UploadModeSlice = Pick<
 export function buildUploadModeModel(
   ctx: CreateMemeContext,
   actions: CreateMemeScreenActions,
+  isBusy: boolean,
 ): UploadModeSlice {
   return {
     showUploadPanel: ctx.mode === 'upload',
@@ -27,6 +28,7 @@ export function buildUploadModeModel(
       chooseLabel: copy.upload.chooseImage,
       emptyLabel: copy.upload.dropHint,
       fileName: ctx.imageFileName,
+      disabled: isBusy,
       'aria-describedby': HELP_IDS.uploadImage,
       onFile: (file) => void actions.uploadImage(file),
     },
@@ -36,6 +38,7 @@ export function buildUploadModeModel(
       chooseLabel: copy.upload.chooseVideo,
       emptyLabel: copy.upload.dropHint,
       fileName: ctx.videoFileName,
+      disabled: isBusy,
       'aria-describedby': HELP_IDS.uploadVideo,
       onFile: (file) => void actions.uploadVideo(file),
     },

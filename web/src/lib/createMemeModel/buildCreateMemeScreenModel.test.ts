@@ -255,6 +255,8 @@ describe('buildCreateMemeScreenModel', () => {
 
     expect(model.imageFileDropProps.accept).toBe('image/png,image/jpeg,image/gif,image/webp')
     expect(model.videoFileDropProps.accept).toBe('video/mp4,video/quicktime,video/webm')
+    expect(model.imageFileDropProps.disabled).toBe(false)
+    expect(model.videoFileDropProps.disabled).toBe(false)
     // the words the browser used to write are the deck's now
     expect(model.imageFileDropProps.chooseLabel).toBe('Choose an image')
     expect(model.videoFileDropProps.chooseLabel).toBe('Choose a video')
@@ -307,6 +309,8 @@ describe('buildCreateMemeScreenModel', () => {
     expect(busy.generateButtonProps.disabled).toBe(true)
     expect(busy.mintButtonProps.disabled).toBe(true)
     expect(busy.giphySearchButtonProps.disabled).toBe(true)
+    expect(busy.imageFileDropProps.disabled).toBe(true)
+    expect(busy.videoFileDropProps.disabled).toBe(true)
     expect(busy.formProps['aria-busy']).toBe(true)
     expect(busy.showMintHint).toBe(false)
   })
