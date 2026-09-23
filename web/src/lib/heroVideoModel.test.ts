@@ -13,19 +13,27 @@ const state = (overrides: Partial<HeroVideoState> = {}): HeroVideoState => ({
 })
 
 describe('buildHeroVideoModel', () => {
-  it('spends autoplay where it is welcome: metadata preloads and the sound pill is the only control', () => {
-    const model = buildHeroVideoModel(state())
+  it('arms autoplay without treating the probe as confirmed playback', () => {
+    const model = buildHeroVideoModel(state({ autoplay: true, started: false }))
     expect(model.videoProps.autoPlay).toBe(true)
     expect(model.videoProps.preload).toBe('metadata')
-    expect(model.showPlayPill).toBe(false)
-    expect(model.showSoundPill).toBe(true)
+    expect(model.showPlayPill).toBe(true)
+    expect(model.showSoundPill).toBe(false)
     expect(model.soundButtonProps['aria-label']).toBe(copy.unmute)
     expect(model.soundButtonProps['aria-pressed']).toBe(false)
     expect(model.soundLabel).toBe(copy.soundOn)
   })
 
+  it('shows only the sound pill once autoplay has actually started', () => {
+    const model = buildHeroVideoModel(state({ autoplay: true, started: true }))
+    expect(model.videoProps.autoPlay).toBe(true)
+    expect(model.videoProps.preload).toBe('metadata')
+    expect(model.showPlayPill).toBe(false)
+    expect(model.showSoundPill).toBe(true)
+  })
+
   it('withholds autoplay behind the poster and a play pill, downloading nothing', () => {
-    const model = buildHeroVideoModel(state({ autoplay: false }))
+    const model = buildHeroVideoModel(state({ autoplay: false, started: false }))
     expect(model.videoProps.autoPlay).toBe(false)
     expect(model.videoProps.preload).toBe('none')
     expect(model.videoProps.poster).toBe('/promo/memeon-promo-poster.jpg')
@@ -33,14 +41,16 @@ describe('buildHeroVideoModel', () => {
     expect(model.showSoundPill).toBe(false)
   })
 
-  it('swaps the play pill for the sound toggle once the visitor started it by hand', () => {
+  it('shows only the sound pill once a withheld film has confirmed playback', () => {
     const model = buildHeroVideoModel(state({ autoplay: false, started: true }))
+    expect(model.videoProps.autoPlay).toBe(false)
+    expect(model.videoProps.preload).toBe('none')
     expect(model.showPlayPill).toBe(false)
     expect(model.showSoundPill).toBe(true)
   })
 
   it('names the way back once the sound is on', () => {
-    const model = buildHeroVideoModel(state({ muted: false }))
+    const model = buildHeroVideoModel(state({ muted: false, started: true }))
     expect(model.soundButtonProps['aria-label']).toBe(copy.mute)
     expect(model.soundButtonProps['aria-pressed']).toBe(true)
     expect(model.soundLabel).toBe(copy.soundOff)

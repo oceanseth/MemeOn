@@ -19,7 +19,7 @@ const model = (state: Partial<Pick<HeroVideoState, 'autoplay' | 'muted' | 'start
 const meta = {
   title: 'Molecules/HeroVideo',
   component: HeroVideo,
-  args: { model: model({ autoplay: true }) },
+  args: { model: model({ autoplay: true, started: true }) },
   decorators: [
     (Story) => (
       <div className="mx-auto max-w-220 p-5">
@@ -33,12 +33,14 @@ export default meta
 type Story = StoryObj<typeof meta>
 
 export const Autoplaying: Story = {
+  args: { model: model({ autoplay: true, started: true }) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     handlers.onToggleSound.mockClear()
     const video = canvasElement.querySelector('video')
     await expect(video).toBeInTheDocument()
     await expect(video).toHaveAttribute('preload', 'metadata')
+    await expect(video!.autoplay).toBe(true)
     await expect(video!.controls).toBe(false)
     await expect(canvas.queryByRole('button', { name: copy.play })).not.toBeInTheDocument()
     const sound = canvas.getByRole('button', { name: copy.unmute })
@@ -56,7 +58,7 @@ export const AutoplayingDark: Story = {
 
 /** The visitor turned the sound on: the pill names the way back. */
 export const SoundOn: Story = {
-  args: { model: model({ autoplay: true, muted: false }) },
+  args: { model: model({ autoplay: true, muted: false, started: true }) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const sound = canvas.getByRole('button', { name: copy.mute })
