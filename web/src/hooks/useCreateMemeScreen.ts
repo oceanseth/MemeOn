@@ -162,8 +162,17 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
   const onCopyShareLink = async () => {
     const { shareUrl } = actor.getSnapshot().context
     if (!shareUrl) return
-    await navigator.clipboard.writeText(shareUrl)
-    send({ type: 'SHARE_COPIED' })
+    if (!navigator.clipboard?.writeText) {
+      send({ type: 'SHARE_COPY_FAILED' })
+      return
+    }
+    try {
+      // called on navigator.clipboard: a detached writeText rejects with Illegal invocation
+      await navigator.clipboard.writeText(shareUrl)
+      send({ type: 'SHARE_COPIED' })
+    } catch {
+      send({ type: 'SHARE_COPY_FAILED' })
+    }
   }
 
   return buildCreateMemeScreenModel(phase, ctx, {

@@ -81,6 +81,7 @@ export interface CreateMemeContext {
   mintedId: string | null
   shareUrl: string
   shareCopied: boolean
+  shareCopyFailed: boolean
 }
 
 export type CreateMemeEvent =
@@ -121,6 +122,7 @@ export type CreateMemeEvent =
   | { type: 'DONE' }
   | { type: 'MINTED'; id: string; shareUrl: string }
   | { type: 'SHARE_COPIED' }
+  | { type: 'SHARE_COPY_FAILED' }
   | { type: 'FAIL'; err: string }
 
 const returnToMode = [
@@ -218,6 +220,7 @@ export const createMemeMachine = setup({
     mintedId: null,
     shareUrl: '',
     shareCopied: false,
+    shareCopyFailed: false,
   }),
   initial: 'chooseMode',
   on: {
@@ -389,7 +392,12 @@ export const createMemeMachine = setup({
     },
     success: {
       on: {
-        SHARE_COPIED: { actions: assign({ shareCopied: true }) },
+        SHARE_COPIED: {
+          actions: assign({ shareCopied: true, shareCopyFailed: false }),
+        },
+        SHARE_COPY_FAILED: {
+          actions: assign({ shareCopied: false, shareCopyFailed: true }),
+        },
       },
     },
     error: {

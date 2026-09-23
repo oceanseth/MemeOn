@@ -59,6 +59,7 @@ const baseContext: CreateMemeContext = {
   mintedId: null,
   shareUrl: '',
   shareCopied: false,
+  shareCopyFailed: false,
 }
 
 function panel(

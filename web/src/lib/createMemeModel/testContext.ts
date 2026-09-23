@@ -29,4 +29,5 @@ export const baseCreateMemeContext: CreateMemeContext = {
   mintedId: null,
   shareUrl: '',
   shareCopied: false,
+  shareCopyFailed: false,
 }

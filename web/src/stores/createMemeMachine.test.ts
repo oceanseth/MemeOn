@@ -84,10 +84,33 @@ describe('createMemeMachine submitting mode changes', () => {
       mintedId: 'meme-1',
       shareUrl: 'https://memeon.ai/m/meme-1',
       shareCopied: false,
+      shareCopyFailed: false,
+    })
+
+    actor.send({ type: 'SHARE_COPY_FAILED' })
+    expect(actor.getSnapshot().value).toBe('success')
+    expect(actor.getSnapshot().context).toMatchObject({
+      shareCopied: false,
+      shareCopyFailed: true,
+      err: null,
     })
 
     actor.send({ type: 'SHARE_COPIED' })
+    expect(actor.getSnapshot().value).toBe('success')
     expect(actor.getSnapshot().context.shareCopied).toBe(true)
+    expect(actor.getSnapshot().context.shareCopyFailed).toBe(false)
+  })
+
+  it('ignores a share-link copy failure before the card is minted', () => {
+    const actor = startedMachine()
+    const before = actor.getSnapshot().value
+    actor.send({ type: 'SHARE_COPY_FAILED' })
+
+    expect(before).not.toBe('success')
+    expect(before).not.toBe('error')
+    expect(actor.getSnapshot().value).toBe(before)
+    expect(actor.getSnapshot().context.shareCopied).toBe(false)
+    expect(actor.getSnapshot().context.shareCopyFailed).toBe(false)
   })
 
   it('from error, DONE returns to the mode left', () => {
