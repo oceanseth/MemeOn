@@ -589,11 +589,11 @@ export const RemixSourceMissing: Story = {
     mode: 'remix',
     remixId: paperMeme.id,
     remixSource: null,
-    err: 'source meme not found',
+    err: copy.errors.remixSourceMissing,
   }),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole('alert')).toHaveTextContent(
-      'source meme not found',
+      copy.errors.remixSourceMissing,
     )
   },
 }

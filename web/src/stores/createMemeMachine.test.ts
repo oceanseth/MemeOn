@@ -1,5 +1,6 @@
 import { createActor } from 'xstate'
 import { describe, expect, it } from 'vitest'
+import { createMemeCopy } from '../copy/createMeme'
 import type { GiphyResult } from '../lib/types'
 import { createMemeMachine } from './createMemeMachine'
 
@@ -190,5 +191,16 @@ describe('createMemeMachine artwork provenance', () => {
       tags: 'chaos',
       prompt: 'a capybara',
     })
+  })
+})
+
+describe('createMemeMachine remix source missing', () => {
+  it('stays on remix and reports the missing source from copy', () => {
+    const actor = startedMachine('source-1')
+    actor.send({ type: 'REMIX_SOURCE_MISSING' })
+
+    expect(actor.getSnapshot().value).toBe('remix')
+    expect(actor.getSnapshot().context.err).toBe(createMemeCopy.errors.remixSourceMissing)
+    expect(actor.getSnapshot().context.busy).toBeNull()
   })
 })

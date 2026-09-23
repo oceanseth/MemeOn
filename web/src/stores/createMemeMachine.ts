@@ -1,4 +1,5 @@
 import { assign, setup } from 'xstate'
+import { createMemeCopy } from '../copy/createMeme'
 import type { GiphyResult, Meme } from '../lib/types'
 
 export type CreateMemeMode = 'generate' | 'video' | 'url' | 'upload' | 'remix' | 'giphy'
@@ -298,7 +299,7 @@ export const createMemeMachine = setup({
         title: ({ context, event }) => context.title || boundTitle(event.meme.title),
       }),
     },
-    REMIX_SOURCE_MISSING: { actions: assign({ err: 'source meme not found' }) },
+    REMIX_SOURCE_MISSING: { actions: assign({ err: createMemeCopy.errors.remixSourceMissing }) },
     SET_GIPHY_CATEGORIES: {
       actions: assign({ giphyCategories: ({ event }) => event.categories }),
     },
