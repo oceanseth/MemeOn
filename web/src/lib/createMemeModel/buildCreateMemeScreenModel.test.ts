@@ -426,19 +426,39 @@ describe('buildCreateMemeScreenModel', () => {
   it('plumbs shareCopied and copyShareLinkLabel for idle vs copied success', () => {
     const idle = buildCreateMemeScreenModel(
       'success',
-      { ...baseContext, shareCopied: false },
+      { ...baseContext, shareCopied: false, shareCopyFailed: false },
       actions(),
     )
     expect(idle.shareCopied).toBe(false)
     expect(idle.copyShareLinkLabel).toBe(copy.form.success.copyLink)
+    expect(idle.mintStatus).toBe(copy.form.success.minted)
 
     const copied = buildCreateMemeScreenModel(
       'success',
-      { ...baseContext, shareCopied: true },
+      { ...baseContext, shareCopied: true, shareCopyFailed: false },
       actions(),
     )
     expect(copied.shareCopied).toBe(true)
     expect(copied.copyShareLinkLabel).toBe(copy.form.copied)
+    expect(copied.mintStatus).toBe(copy.form.success.copied)
+
+    const failed = buildCreateMemeScreenModel(
+      'success',
+      { ...baseContext, shareCopied: false, shareCopyFailed: true },
+      actions(),
+    )
+    expect(failed.shareCopied).toBe(false)
+    expect(failed.copyShareLinkLabel).toBe(copy.form.success.copyFailed)
+    expect(failed.mintStatus).toBe(copy.form.success.copyFailed)
+
+    const both = buildCreateMemeScreenModel(
+      'success',
+      { ...baseContext, shareCopied: true, shareCopyFailed: true },
+      actions(),
+    )
+    expect(both.shareCopied).toBe(true)
+    expect(both.copyShareLinkLabel).toBe(copy.form.copied)
+    expect(both.mintStatus).toBe(copy.form.success.copied)
   })
 
   it('wires each creation action bundle to its domain action', () => {

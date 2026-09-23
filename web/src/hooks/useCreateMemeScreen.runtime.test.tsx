@@ -2,7 +2,7 @@ import { act } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemeCopy as copy } from '../copy/createMeme'
 import { createMemeScreenHost } from '../test/createMemeScreenHost'
-import { bodyOf, deferred, pathOf, settle } from '../test/runtime'
+import { bodyOf, deferred, pathOf, settle, stubClipboardWrite } from '../test/runtime'
 
 const screen = createMemeScreenHost('mint')
 let host: HTMLDivElement
@@ -169,4 +169,127 @@ describe('CreateMemeRoute settling requests', () => {
       '/m/minted-original',
     )
   })
+
+  it('paints copyFailed when the share-link write rejects', async () => {
+    const previous = Object.getOwnPropertyDescriptor(navigator, 'clipboard')
+    try {
+      await mintOriginalShare()
+      stubClipboardWrite(async () => {
+        throw new Error('denied')
+      })
+      await click(button(copy.form.success.copyLink))
+      expectShareCopyFailed()
+    } finally {
+      restoreClipboard(previous)
+    }
+  })
+
+  it('paints copyFailed when navigator.clipboard is missing', async () => {
+    const previous = Object.getOwnPropertyDescriptor(navigator, 'clipboard')
+    try {
+      await mintOriginalShare()
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        writable: true,
+        value: undefined,
+      })
+      await click(button(copy.form.success.copyLink))
+      expectShareCopyFailed()
+    } finally {
+      restoreClipboard(previous)
+    }
+  })
+
+  it('paints copyFailed when clipboard has no writeText', async () => {
+    const previous = Object.getOwnPropertyDescriptor(navigator, 'clipboard')
+    try {
+      await mintOriginalShare()
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        writable: true,
+        value: {},
+      })
+      await click(button(copy.form.success.copyLink))
+      expectShareCopyFailed()
+    } finally {
+      restoreClipboard(previous)
+    }
+  })
+
+  it('copies the share link on the clipboard receiver', async () => {
+    const previous = Object.getOwnPropertyDescriptor(navigator, 'clipboard')
+    try {
+      await mintOriginalShare()
+      const writeText = vi.fn().mockResolvedValue(undefined)
+      stubClipboardWrite(writeText)
+      await click(button(copy.form.success.copyLink))
+      expect(writeText).toHaveBeenCalledWith(`${window.location.origin}/m/minted-original`)
+      expect(host.querySelector('[role="status"]')?.textContent?.trim()).toBe(
+        copy.form.success.copied,
+      )
+      expect(button(copy.form.copied)).toBeTruthy()
+      expect(
+        [...host.querySelectorAll('button')].some((candidate) =>
+          candidate.textContent?.includes(copy.form.success.copyFailed),
+        ),
+      ).toBe(false)
+    } finally {
+      restoreClipboard(previous)
+    }
+  })
 })
+
+const mintedShareUrl = `${window.location.origin}/m/minted-original`
+
+function restoreClipboard(previous: PropertyDescriptor | undefined): void {
+  if (previous) Object.defineProperty(navigator, 'clipboard', previous)
+  else Reflect.deleteProperty(navigator, 'clipboard')
+}
+
+async function mintOriginalShare(): Promise<void> {
+  const mint = deferred<Response>()
+  vi.stubGlobal(
+    'fetch',
+    vi.fn<typeof fetch>((input) => {
+      const path = pathOf(input)
+      if (path === '/api/aigen/image')
+        return Promise.resolve(Response.json({ imageUrl: '/generated.png' }))
+      if (path === '/api/memes') return mint.promise
+      throw new Error(`Unexpected request: ${path}`)
+    }),
+  )
+  await renderAt()
+
+  await change(host.querySelector<HTMLInputElement>('#create-title')!, 'original title')
+  await change(
+    host.querySelector<HTMLTextAreaElement>(
+      `textarea[placeholder^="${copy.generate.promptPlaceholder}"]`,
+    )!,
+    'draw it',
+  )
+  await click(button(copy.generate.renderImage))
+  await click(button(copy.form.mint))
+  await act(async () => {
+    mint.resolve(Response.json({ meme: { id: 'minted-original' } }))
+    await settle()
+  })
+  expect(button(copy.form.success.copyLink)).toBeTruthy()
+  expect(host.querySelector('output[aria-label="Current route"]')?.textContent).toBe('/binder/new')
+}
+
+function expectShareCopyFailed(): void {
+  expect(button(copy.form.success.copyFailed)).toBeTruthy()
+  const status = host.querySelector('[role="status"]')?.textContent?.trim()
+  expect(status).toBe(copy.form.success.copyFailed)
+  expect(status).not.toContain(copy.form.success.minted)
+  expect(status).not.toContain(copy.form.success.copied)
+  expect(host.textContent).not.toContain('denied')
+  expect(host.textContent).not.toContain(copy.errors.mintFailed)
+  expect(host.querySelector<HTMLInputElement>('input[readonly]')?.value).toBe(mintedShareUrl)
+  expect(host.querySelector('output[aria-label="Current route"]')?.textContent).toBe('/binder/new')
+  expect(
+    [...host.querySelectorAll('button')].some((candidate) =>
+      candidate.textContent?.includes(copy.form.copied),
+    ),
+  ).toBe(false)
+}

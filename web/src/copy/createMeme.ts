@@ -93,6 +93,7 @@ export const createMemeCopy = {
       heading: 'Minted. It is live.',
       body: 'All 100 shares are yours. Send the link — every reshare pushes the card up the tier ladder.',
       copyLink: 'Copy share link',
+      copyFailed: 'Copy failed — try again',
       shareLink: 'Share link',
       openCard: 'Open the card',
     },
