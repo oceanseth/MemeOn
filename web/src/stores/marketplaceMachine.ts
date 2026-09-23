@@ -43,6 +43,11 @@ export type MarketplaceEvent =
   | { type: 'FAIL'; err: string }
   | { type: 'MORE_FAILED'; err: string }
 
+function appendMemes(current: Meme[], incoming: Meme[]): Meme[] {
+  const seen = new Set(current.map((m) => m.id))
+  return [...current, ...incoming.filter((m) => !seen.has(m.id))]
+}
+
 /**
  * Marketplace list source of truth. loading → ready|empty|error, with `busy` carrying
  * in-flight refetches so a filter change never blanks the grid it is replacing.
@@ -117,17 +122,28 @@ export const marketplaceMachine = setup({
         }),
       },
     ],
-    APPEND: {
-      actions: assign({
-        memes: ({ context, event }) => {
-          const seen = new Set(context.memes.map((m) => m.id))
-          return [...context.memes, ...event.memes.filter((m) => !seen.has(m.id))]
-        },
-        nextCursor: ({ event }) => event.nextCursor,
-        moreErr: null,
-        busy: 'idle',
-      }),
-    },
+    APPEND: [
+      {
+        // The guard is the resulting list, not event.memes.length, so an empty continuation from ready stays ready.
+        guard: ({ context, event }) => appendMemes(context.memes, event.memes).length > 0,
+        target: '.ready',
+        actions: assign({
+          memes: ({ context, event }) => appendMemes(context.memes, event.memes),
+          nextCursor: ({ event }) => event.nextCursor,
+          moreErr: null,
+          busy: 'idle',
+        }),
+      },
+      {
+        target: '.empty',
+        actions: assign({
+          memes: ({ context, event }) => appendMemes(context.memes, event.memes),
+          nextCursor: ({ event }) => event.nextCursor,
+          moreErr: null,
+          busy: 'idle',
+        }),
+      },
+    ],
     FAIL: {
       target: '.error',
       actions: assign({
