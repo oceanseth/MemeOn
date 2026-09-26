@@ -10,6 +10,9 @@ export interface GiphyResult {
   mp4Url: string | null
   author: string | null
   url: string
+  /** intrinsic px of `images.original` (the still shares its aspect); null when giphy omits them */
+  width: number | null
+  height: number | null
 }
 
 const cache = new Map<string, { at: number; data: unknown }>()
@@ -35,11 +38,18 @@ interface RawGif {
   url: string
   username?: string
   images: {
-    original: { url?: string; mp4?: string }
+    // width/height arrive as strings, e.g. "480"
+    original: { url?: string; mp4?: string; width?: string; height?: string }
     downsized_still?: { url?: string }
     original_still?: { url?: string }
     fixed_width?: { url?: string }
   }
+}
+
+/** Giphy dimension strings → positive integer px, or null. */
+const dim = (raw: string | undefined): number | null => {
+  const n = Number(raw)
+  return Number.isInteger(n) && n > 0 ? n : null
 }
 
 function toResult(g: RawGif): GiphyResult | null {
@@ -54,6 +64,8 @@ function toResult(g: RawGif): GiphyResult | null {
     mp4Url: g.images.original.mp4 ?? null,
     author: g.username || null,
     url: g.url,
+    width: dim(g.images.original.width),
+    height: dim(g.images.original.height),
   }
 }
 

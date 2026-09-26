@@ -211,7 +211,9 @@ export const LoadingThenReady: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await waitFor(() =>
-      expect(canvasElement.querySelector('[data-slot="skeleton-card"]')).not.toBeNull(),
+      expect(
+        canvasElement.querySelector('[data-slot="masonry-item"] [data-slot="skeleton"]'),
+      ).not.toBeNull(),
     )
     await expect(canvas.getByRole('status')).toHaveTextContent(copy.results.searching)
     loaded.scenario.release('market')

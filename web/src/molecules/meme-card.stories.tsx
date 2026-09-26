@@ -17,7 +17,6 @@ import type { Meme } from '../lib/types'
 import { memeCardCopy as copy } from '../copy/memeCard'
 import { buildMemeCardModel, buildReducedMotionMemeCardModel } from '../lib/memeCardModel'
 import { MemeCard } from '@/molecules/meme-card'
-import { SkeletonCard } from '@/atoms/skeleton'
 
 /** Story-local fixtures: tier ladder uses real dev art; ids stay stable for link assertions. */
 function localMeme(partial: Pick<Meme, 'id' | 'title' | 'reshares'> & Partial<Meme>): Meme {
@@ -203,23 +202,21 @@ export const Listed: Story = {
   args: { model: buildMemeCardModel(listedHolo) },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    // two lines in the 64px slot on screen, one sentence (with the price) for a screen reader
-    await expect(canvas.getByText(copy.shares(10))).toBeVisible()
-    await expect(canvas.getByText(copy.forSale)).toBeVisible()
+    // one short badge on screen, one sentence (with the price) for a screen reader
+    await expect(canvas.getByText(copy.forSaleBadge(10))).toBeVisible()
     await expect(canvas.getByText(copy.sharesForSaleAt(10, 3))).toBeInTheDocument()
   },
 }
 
-/** Listing state in the footer right slot, not a control. */
+/** Listing state as the meta row's right badge, not a control. */
 export const ForSale: Story = {
   ...Listed,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     const slot = canvasElement.querySelector('[data-slot="for-sale"]')!
-    await expect(slot).toHaveTextContent(copy.shares(10))
-    await expect(slot).toHaveTextContent(copy.forSale)
-    // it lives in the footer row, never over the art
-    await expect(slot.closest('[data-slot="meme-sub"]')).not.toBeNull()
+    await expect(slot).toHaveTextContent(copy.forSaleBadge(10))
+    // it lives in the meta row, never over the art
+    await expect(slot.closest('[data-slot="meme-kicker"]')).not.toBeNull()
     // a label, never a button: nothing here is clickable
     await expect(canvas.queryByRole('button', { name: /for sale/i })).toBeNull()
   },
@@ -361,7 +358,7 @@ export const Hero: Story = {
     const card = canvas.getByRole('article', { name: listedHolo.title })
     await expect(card.dataset.size).toBe('lg')
     await expect(within(card).getByText('Holo')).toBeVisible()
-    await expect(within(card).getByText('for sale')).toBeVisible()
+    await expect(within(card).getByText(copy.forSaleBadge(10))).toBeVisible()
   },
 }
 
@@ -416,67 +413,6 @@ export const PhoneHighCounts: Story = {
     await expect(cards).toHaveLength(2)
     for (const card of cards) {
       await expect(card.scrollWidth).toBeLessThanOrEqual(card.clientWidth)
-      const kicker = card.querySelector<HTMLElement>('[data-slot="meme-kicker"]')!
-      await expect(getComputedStyle(kicker).flexDirection).toBe('column')
-    }
-  },
-}
-
-/** Loading and loaded phone cards reserve the same row height. */
-export const PhoneSkeletonParity: Story = {
-  ...PhoneHighCounts,
-  render: () => (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 166px)',
-        alignItems: 'start',
-        gap: 18,
-      }}
-    >
-      <MemeCard model={buildMemeCardModel(prismaticMeme)} />
-      <SkeletonCard />
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const card = canvasElement.querySelector<HTMLElement>('[data-slot="meme-card"]')!
-    const skeleton = canvasElement.querySelector<HTMLElement>('[data-slot="skeleton-card"]')!
-    await expect(Math.abs(card.offsetHeight - skeleton.offsetHeight)).toBeLessThanOrEqual(1)
-  },
-}
-
-/** Card-width containment switches the skeleton at 220px, independent of the viewport. */
-export const SkeletonParity: Story = {
-  args: { model: buildMemeCardModel(prismaticMeme) },
-  parameters: { cardWidth: 1200 },
-  render: () => (
-    <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'start', gap: 24 }}>
-      {[166, 216, 230, 280].map((width) => (
-        <div
-          key={width}
-          data-slot="skeleton-parity-pair"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(2, ${width}px)`,
-            alignItems: 'start',
-            gap: 18,
-          }}
-        >
-          <MemeCard model={buildMemeCardModel(prismaticMeme)} />
-          <SkeletonCard />
-        </div>
-      ))}
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const pairs = [
-      ...canvasElement.querySelectorAll<HTMLElement>('[data-slot="skeleton-parity-pair"]'),
-    ]
-    await expect(pairs).toHaveLength(4)
-    for (const pair of pairs) {
-      const card = pair.querySelector<HTMLElement>('[data-slot="meme-card"]')!
-      const skeleton = pair.querySelector<HTMLElement>('[data-slot="skeleton-card"]')!
-      await expect(Math.abs(card.offsetHeight - skeleton.offsetHeight)).toBeLessThanOrEqual(1)
     }
   },
 }
@@ -510,58 +446,90 @@ export const AllTiers: Story = {
 /** The same ladder on the dark arm: seven frames and seven chips that still read as seven tiers. */
 export const Dark: Story = { ...AllTiers, globals: { theme: 'dark' } }
 
-/**
- * Four neighbours whose content differs in every way a grid meets — a one-line and a two-line
- * title, a listing and none, an eye stat and none — on the market track. Every card is one size,
- * and the value row lands at the same height in each: the title and the listing slot reserve
- * their lines, and the track stretches whatever is left.
- */
-export const Uniform: Story = {
-  args: { model: buildMemeCardModel(paperMeme) },
-  decorators: [
-    (Story) => (
-      <div
-        style={{
-          width: 'min(1180px, calc(100vw - 32px))',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
-          gap: 20,
-        }}
-      >
-        <Story />
-      </div>
-    ),
-  ],
-  render: () => (
-    <>
-      {[paperMeme, longTitleMeme, listedHolo, noViewsMeme].map((meme) => (
-        <MemeCard key={meme.id} model={buildMemeCardModel(meme)} />
-      ))}
-    </>
-  ),
+/* ---- fitted frames: the window takes the meme's clamped ratio (masonry retired Uniform) ---- */
+
+const squareFit = localMeme({
+  id: 'meme-fit-square',
+  title: 'square fill',
+  reshares: 12,
+  imageUrl: artFixture(400, 400, 'SQUARE'),
+  width: 400,
+  height: 400,
+})
+const tallFit = localMeme({
+  id: 'meme-fit-tall',
+  title: 'tall fill',
+  reshares: 60,
+  imageUrl: artFixture(320, 568, 'TALL'),
+  width: 320,
+  height: 568,
+})
+const wideFit = localMeme({
+  id: 'meme-fit-wide',
+  title: 'wide fill',
+  reshares: 250,
+  imageUrl: artFixture(600, 300, 'WIDE'),
+  width: 600,
+  height: 300,
+})
+const clampedFit = localMeme({
+  id: 'meme-fit-clamped',
+  title: 'clamped strip',
+  reshares: 1000,
+  imageUrl: artFixture(900, 200, 'TOO WIDE'),
+  width: 900,
+  height: 200,
+})
+
+/** window ratio == art ratio, drawn edge to edge with no crop and no backdrop */
+const expectCoverWindow = async (canvasElement: HTMLElement, ratio: number) => {
+  const card = canvasElement.querySelector<HTMLElement>('[data-slot="meme-card"]')!
+  await expect(card.dataset['artFit']).toBe('cover')
+  await expect(card.querySelector('[data-slot="meme-art"]')).toHaveStyle({ objectFit: 'cover' })
+  await expect(card.querySelector('[data-slot="meme-art-backdrop"]')).toBeNull()
+  const art = card.querySelector<HTMLElement>('[data-slot="meme-art"]')!.getBoundingClientRect()
+  await expect(art.width / art.height).toBeCloseTo(ratio, 1)
+}
+
+export const SquareFill: Story = {
+  args: { model: buildMemeCardModel(squareFit) },
+  play: ({ canvasElement }) => expectCoverWindow(canvasElement, 1),
+}
+
+export const TallFill: Story = {
+  args: { model: buildMemeCardModel(tallFit) },
+  play: ({ canvasElement }) => expectCoverWindow(canvasElement, 320 / 568),
+}
+
+export const WideFill: Story = {
+  args: { model: buildMemeCardModel(wideFit) },
+  play: ({ canvasElement }) => expectCoverWindow(canvasElement, 2),
+}
+
+/** A 4.5:1 strip: the frame stops at the 2:1 clamp and the art falls back to contain + backdrop. */
+export const ClampedStrip: Story = {
+  args: { model: buildMemeCardModel(clampedFit) },
   play: async ({ canvasElement }) => {
-    const cards = [...canvasElement.querySelectorAll<HTMLElement>('[data-slot="meme-card"]')]
-    await expect(cards).toHaveLength(4)
-    const boxes = cards.map((card) => card.getBoundingClientRect())
-    const first = boxes[0]!
-    // the two-line title really did wrap: the long one is taller than the reserve would be alone
-    const titles = cards.map(
-      (card) => card.querySelector('[data-slot="meme-title"]')!.getBoundingClientRect().height,
-    )
-    await expect(Math.max(...titles)).toBe(Math.min(...titles))
-    for (const box of boxes) {
-      await expect(Math.round(box.width)).toBe(Math.round(first.width))
-      await expect(Math.round(box.height)).toBe(Math.round(first.height))
-    }
-    // the value row sits at one offset in every card, listing or not
-    const subTops = cards.map((card, index) => {
-      const sub = card.querySelector('[data-slot="meme-sub"]')!.getBoundingClientRect()
-      return Math.round(sub.top - boxes[index]!.top)
+    const card = canvasElement.querySelector<HTMLElement>('[data-slot="meme-card"]')!
+    await expect(card.dataset['artFit']).toBe('contain')
+    await expect(card.querySelector('[data-slot="meme-art"]')).toHaveStyle({
+      objectFit: 'contain',
     })
-    await expect(new Set(subTops).size).toBe(1)
-    const subHeights = cards.map(
-      (card) => card.querySelector('[data-slot="meme-sub"]')!.getBoundingClientRect().height,
-    )
-    await expect(Math.max(...subHeights)).toBe(Math.min(...subHeights))
+    await expect(card.querySelector('[data-slot="meme-art-backdrop"]')).not.toBeNull()
+    const link = card.querySelector<HTMLElement>('[data-slot="collectible-art-link"]')!
+    const box = link.getBoundingClientRect()
+    await expect(box.width / box.height).toBeCloseTo(2, 1)
+  },
+}
+
+/** A record with no dims at all renders as the 1:1 legacy frame, contained over the backdrop. */
+export const UnknownDims: Story = {
+  args: { model: buildMemeCardModel(holoMeme) },
+  play: async ({ canvasElement }) => {
+    const card = canvasElement.querySelector<HTMLElement>('[data-slot="meme-card"]')!
+    await expect(card.dataset['artFit']).toBe('contain')
+    const link = card.querySelector<HTMLElement>('[data-slot="collectible-art-link"]')!
+    const box = link.getBoundingClientRect()
+    await expect(box.width / box.height).toBeCloseTo(1, 1)
   },
 }

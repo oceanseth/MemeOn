@@ -156,9 +156,9 @@ export const LoadingThenReady: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await waitFor(() =>
-      expect(canvasElement.querySelectorAll('[data-slot="skeleton-card"]').length).toBeGreaterThan(
-        0,
-      ),
+      expect(
+        canvasElement.querySelectorAll('[data-slot="masonry-item"] [data-slot="skeleton"]').length,
+      ).toBeGreaterThan(0),
     )
     loaded.scenario.release('binder')
     await expect(await canvas.findByRole('link', { name: /fresh paper/ })).toBeInTheDocument()

@@ -1,0 +1,20 @@
+/* The cascade contract `src/index.css` declares, restated because a layer's rank is fixed the
+   first time its name is seen and this file can reach a stylesheet ahead of `index.css` (an async
+   chunk, a story). Re-declaring an existing order is a no-op; `scripts/check-layers.mjs` verifies. */
+@layer properties, theme, base, components, utilities;
+
+/* The masonry canvas and its slots take their geometry from inline custom properties: the layout
+   engine's arithmetic (`lib/masonry.ts` via `useMasonryLayout`), not design tokens. */
+@layer components {
+  [data-slot="masonry-canvas"] {
+    width: var(--masonry-w);
+    height: var(--masonry-h);
+  }
+
+  [data-slot="masonry-item"] {
+    left: var(--masonry-x);
+    top: var(--masonry-y);
+    width: var(--masonry-w);
+    height: var(--masonry-h);
+  }
+}

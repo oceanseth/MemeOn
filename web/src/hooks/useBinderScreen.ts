@@ -7,6 +7,8 @@ import { binderMachine, BINDER_PAGE_SIZE, type BinderPhase } from '../stores/bin
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
+import { MEME_CARD_META_HEIGHT, masonrySkeletonItems } from '../lib/masonry'
+import { useMasonryLayout, type MasonryGridModel } from './useMasonryLayout'
 import { buildSortChipsModel, type SortChipsModel } from '../lib/sortChipsModel'
 import type { CheckboxRootProps } from '@base-ui/react/checkbox'
 import { useCallback } from 'react'
@@ -47,6 +49,8 @@ export interface BinderScreenModel {
   createLinkProps: Pick<LinkProps, 'to'>
   createLabel: string
   cards: readonly BinderCardModel[]
+  /** slots for the loading skeletons and the card grid alike, index-aligned with `cards` */
+  masonry: MasonryGridModel
   /** the centred "Show N more" control under the grid; null once every card is on screen */
   showMore: { label: string; onClick: () => void } | null
   showLoading: boolean
@@ -80,6 +84,11 @@ const copy = binderCopy
 /** How the active sort reads in the status line: plain words, never the chip's emoji. */
 const SORT_STATUS: Record<SortKey, readonly [descending: string, ascending: string]> =
   copy.status.sort
+
+/** `BinderScreen`'s fixed card footer: 2 note margin + 24 note row + 4 meter padding + 6 meter. */
+export const BINDER_FOOTER_HEIGHT = 36
+
+const SKELETON_COUNT = 6
 
 const SORT_KEYS: readonly string[] = ['new', 'views', 'reshares', 'value']
 const isSortKey = (value: string | null): value is SortKey =>
@@ -176,6 +185,38 @@ export function useBinderScreen(): BinderScreenModel {
     ? copy.emptyState.firstRun
     : copy.emptyState.allPrivate(privateCount)
 
+  const cards = visible.map((meme) => {
+    const memeCard = buildMemeCardModel(meme)
+    const shares = meme.myShares ?? 0
+    const sharesLabel = copy.card.shares(shares)
+    return {
+      id: meme.id,
+      memeCard,
+      ariaLabel: [
+        meme.title,
+        memeCard.tierLabel,
+        sharesLabel,
+        meme.isCreator ? copy.card.minted : null,
+        meme.private ? copy.card.private : null,
+      ]
+        .filter(Boolean)
+        .join(copy.separator),
+      sharesLabel,
+      sharesPct: Math.max(0, Math.min(100, shares)),
+      showCreator: !!meme.isCreator,
+      showPrivate: !!meme.private,
+      mintedLabel: copy.card.minted,
+      privateLabel: copy.card.private,
+    }
+  })
+
+  const masonry = useMasonryLayout(
+    showLoading
+      ? masonrySkeletonItems(SKELETON_COUNT)
+      : cards.map((card) => ({ id: card.id, aspect: card.memeCard.aspect })),
+    MEME_CARD_META_HEIGHT + BINDER_FOOTER_HEIGHT,
+  )
+
   return {
     phase,
     pageTitle: copy.pageTitle,
@@ -208,30 +249,8 @@ export function useBinderScreen(): BinderScreenModel {
     }),
     createLinkProps: { to: '/binder/new' },
     createLabel: copy.collection.mint,
-    cards: visible.map((meme) => {
-      const memeCard = buildMemeCardModel(meme)
-      const shares = meme.myShares ?? 0
-      const sharesLabel = copy.card.shares(shares)
-      return {
-        id: meme.id,
-        memeCard,
-        ariaLabel: [
-          meme.title,
-          memeCard.tierLabel,
-          sharesLabel,
-          meme.isCreator ? copy.card.minted : null,
-          meme.private ? copy.card.private : null,
-        ]
-          .filter(Boolean)
-          .join(copy.separator),
-        sharesLabel,
-        sharesPct: Math.max(0, Math.min(100, shares)),
-        showCreator: !!meme.isCreator,
-        showPrivate: !!meme.private,
-        mintedLabel: copy.card.minted,
-        privateLabel: copy.card.private,
-      }
-    }),
+    cards,
+    masonry,
     showMore:
       showGrid && hidden > 0
         ? {

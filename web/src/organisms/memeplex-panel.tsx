@@ -44,10 +44,11 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
       )}
 
       {model.family.length > 0 ? (
-        /* tighter tracks than the market grid; the ≤560 rule still takes it 2-up */
+        /* tighter tracks than the market feed; the ≤560 rule still takes it 2-up.
+           `items-start`: fitted frames differ in height, so cards must not stretch */
         <div
           data-slot="memeplex-grid"
-          className="mt-3 grid grid-cols-(--grid-memeplex) gap-3 max-sm:grid-cols-2"
+          className="mt-3 grid grid-cols-(--grid-memeplex) items-start gap-3 max-sm:grid-cols-2"
         >
           {model.family.map((card) => (
             <MemeCard key={card.id} model={card} />

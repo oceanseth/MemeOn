@@ -185,7 +185,11 @@ export const LoadingThenReady: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await waitFor(() => expect(canvas.getByRole('status')).toHaveTextContent('Loading profile'))
-    await expect(canvasElement.querySelectorAll('[data-slot="skeleton-card"]').length).toBe(4)
+    await waitFor(() =>
+      expect(
+        canvasElement.querySelectorAll('[data-slot="masonry-item"] [data-slot="skeleton"]').length,
+      ).toBe(4),
+    )
     loaded.scenario.release('profile')
     await expect(await canvas.findByRole('heading', { name: 'pal' })).toBeInTheDocument()
   },

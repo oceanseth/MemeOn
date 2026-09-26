@@ -6,6 +6,27 @@ import { memeReshareCount } from './memeMetrics'
 import { getPlayVideosSnapshot } from './playbackPreference'
 import type { Meme } from './types'
 
+/** Frame ratio clamp: 1:2 tall … 2:1 wide. Outside it the frame stops and the art contains. */
+export const MEME_ASPECT_MIN = 0.5
+export const MEME_ASPECT_MAX = 2
+
+export type MemeArtFit = 'cover' | 'contain'
+
+/**
+ * The collectible window's ratio and how the art fills it. Inside the clamp the window takes
+ * the art's exact ratio, so `cover` fills it with no crop; unknown or clamped dims fall back
+ * to `contain` over the blurred backdrop (legacy memes render as a 1:1 frame).
+ */
+export function memeFrameAspect(
+  width: number | undefined,
+  height: number | undefined,
+): { aspect: number; artFit: MemeArtFit } {
+  if (!width || !height || width < 0 || height < 0) return { aspect: 1, artFit: 'contain' }
+  const ratio = width / height
+  const aspect = Math.min(MEME_ASPECT_MAX, Math.max(MEME_ASPECT_MIN, ratio))
+  return { aspect, artFit: aspect === ratio ? 'cover' : 'contain' }
+}
+
 export type MemeCardMediaModel =
   | {
       kind: 'video'
@@ -30,11 +51,9 @@ export type MemeCardMediaModel =
 export interface MemeCardListingModel {
   shares: number
   pricePerShare: number
-  /** Footer second line — lowercase listing state, no pill. */
-  forSaleLabel: string
-  /** first line of the same slot: `12 shares` */
-  sharesLabel: string
-  /** both lines plus the price, which the card itself no longer prints */
+  /** the one short right-side badge: `12 for sale` */
+  badgeLabel: string
+  /** the badge plus the price, which the card itself no longer prints */
   sharesA11yLabel: string
 }
 
@@ -50,6 +69,10 @@ export interface MemeCardModel {
   tierLabel: string
   detailLinkProps: { to: string; 'aria-label': string }
   media: MemeCardMediaModel
+  /** clamped `width / height` of the art window; 1 when the record carries no dims */
+  aspect: number
+  /** `cover` fills the exact-ratio window; `contain` letterboxes over the blurred backdrop */
+  artFit: MemeArtFit
   /** null when the record carries no view count — never borrowed from another metric */
   viewsLabel: string | null
   resharesLabel: string
@@ -138,11 +161,12 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
       ? {
           shares: meme.listing.shares,
           pricePerShare: meme.listing.pricePerShare,
-          forSaleLabel: copy.forSale,
-          sharesLabel: copy.shares(meme.listing.shares),
+          badgeLabel: copy.forSaleBadge(meme.listing.shares),
           sharesA11yLabel: copy.sharesForSaleAt(meme.listing.shares, meme.listing.pricePerShare),
         }
       : null
+
+  const { aspect, artFit } = memeFrameAspect(meme.width, meme.height)
 
   return {
     id: meme.id,
@@ -156,6 +180,8 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
       'aria-label': copy.open(meme.title),
     },
     media,
+    aspect,
+    artFit,
     viewsLabel,
     resharesLabel,
     valueLabel,

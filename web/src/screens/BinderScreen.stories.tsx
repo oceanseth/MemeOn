@@ -1,9 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, within } from 'storybook/test'
-import { giftablePaper, holoMeme, paperMeme, silverMeme } from '../../.storybook/fixtures'
+import {
+  giftablePaper,
+  holoMeme,
+  masonryModelAt,
+  paperMeme,
+  silverMeme,
+} from '../../.storybook/fixtures'
 import { binderCopy as copy } from '../copy/binder'
-import type { BinderScreenModel } from '../hooks/useBinderScreen'
+import { BINDER_FOOTER_HEIGHT, type BinderScreenModel } from '../hooks/useBinderScreen'
+import { MEME_CARD_META_HEIGHT, masonrySkeletonItems } from '../lib/masonry'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { buildSortChipsModel } from '../lib/sortChipsModel'
 import { BinderScreen } from './BinderScreen'
@@ -54,6 +61,22 @@ const card = (
 /** The status line the hook composes: parts joined the same way, so the story reads as the app does. */
 const status = (...parts: string[]) => parts.join(copy.separator)
 
+/** The layout the hook's `useMasonryLayout` would produce for these cards at a 1024px container. */
+const binderMasonry = (cards: readonly BinderScreenModel['cards'][number][]) =>
+  masonryModelAt(
+    1024,
+    cards.map((c) => ({ id: c.id, aspect: c.memeCard.aspect })),
+    MEME_CARD_META_HEIGHT + BINDER_FOOTER_HEIGHT,
+  )
+
+const readyCards = [
+  card(giftablePaper, 8),
+  card(silverMeme, 42, { showCreator: true }),
+  card(holoMeme, 100),
+]
+
+const privateCards = [card(paperMeme, 4, { showCreator: true, showPrivate: true })]
+
 const empty: BinderScreenModel = {
   phase: 'empty',
   pageTitle: copy.pageTitle,
@@ -90,6 +113,7 @@ const empty: BinderScreenModel = {
   retryLabel: copy.retry,
   retryProps: { onClick: fn() },
   showGrid: false,
+  masonry: binderMasonry([]),
 }
 
 const meta = {
@@ -115,11 +139,16 @@ export const Loading: Story = {
     showEmpty: false,
     emptyAction: null,
     showLoading: true,
+    masonry: masonryModelAt(
+      1024,
+      masonrySkeletonItems(6),
+      MEME_CARD_META_HEIGHT + BINDER_FOOTER_HEIGHT,
+    ),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('status')).toHaveTextContent(copy.status.loading)
-    await expect(canvasElement.querySelectorAll('[data-slot="skeleton-card"]')).toHaveLength(6)
+    await expect(canvasElement.querySelectorAll('[data-slot="skeleton"]')).toHaveLength(6)
   },
 }
 
@@ -167,11 +196,8 @@ export const Ready: Story = {
     showEmpty: false,
     emptyAction: null,
     showGrid: true,
-    cards: [
-      card(giftablePaper, 8),
-      card(silverMeme, 42, { showCreator: true }),
-      card(holoMeme, 100),
-    ],
+    cards: readyCards,
+    masonry: binderMasonry(readyCards),
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -220,7 +246,8 @@ export const ShowingPrivate: Story = {
     privateCount: 1,
     privateToggleLabel: 'Show private (1)',
     privateToggleProps: { checked: true, onCheckedChange: fn() },
-    cards: [card(paperMeme, 4, { showCreator: true, showPrivate: true })],
+    cards: privateCards,
+    masonry: binderMasonry(privateCards),
   },
 }
 

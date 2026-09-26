@@ -211,6 +211,33 @@ export async function putMeme(meme: Meme): Promise<void> {
   await putCreatedEdge(meme.creatorId, meme.createdAt, meme.id)
 }
 
+/**
+ * Backfill-only: stamp measured media dims onto a meme that has none.
+ * Conditional on `attribute_not_exists(width)` so re-runs and racing minters are no-ops;
+ * returns false when the condition rejected the write.
+ */
+export async function setMemeDimsIfAbsent(
+  id: string,
+  width: number,
+  height: number,
+): Promise<boolean> {
+  try {
+    await ddb.send(
+      new UpdateCommand({
+        TableName: T(),
+        Key: { PK: `MEME#${id}`, SK: 'META' },
+        UpdateExpression: 'SET width = :w, height = :h',
+        ConditionExpression: 'attribute_exists(PK) AND attribute_not_exists(width)',
+        ExpressionAttributeValues: { ':w': width, ':h': height },
+      }),
+    )
+    return true
+  } catch (err) {
+    if ((err as { name?: string }).name === 'ConditionalCheckFailedException') return false
+    throw err
+  }
+}
+
 export async function getMeme(id: string): Promise<Meme | null> {
   const res = await ddb.send(
     new GetCommand({ TableName: T(), Key: { PK: `MEME#${id}`, SK: 'META' } }),

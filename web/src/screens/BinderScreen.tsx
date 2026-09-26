@@ -6,27 +6,21 @@ import { Card } from '@/atoms/card'
 import { Checkbox } from '@/atoms/checkbox'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
 import { Heading } from '@/atoms/heading'
+import { MasonryGrid, MasonrySkeletonGrid } from '@/organisms/masonry-grid'
 import { MemeCard } from '@/molecules/meme-card'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Progress } from '@/atoms/progress'
-import { SkeletonCard } from '@/atoms/skeleton'
 import { Toolbar } from '@/atoms/toolbar'
 import type { BinderScreenModel } from '../hooks/useBinderScreen'
-import { binderCardSlotClasses, binderGridClasses } from '../lib/binderChrome'
 import { cn } from '../lib/cn'
 import { SortChips } from '@/molecules/sort-chips'
 import { Icon } from '@/atoms/icon'
 
-/** Skeleton tiles hold the grid geometry while the binder loads, so nothing jumps on arrival. */
-const SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6'] as const
-
-/** The creator/private row under a binder card: the atom's own footer rhythm, one line lower. It is
- *  always there, at the badge's 24px, so a card that has nothing to say here is still the same
- *  height as one that does — a grid's rows must match across rows, not only within one. */
+/** The creator/private row under a binder card. One fixed 24px line — masonry card heights are
+ *  arithmetic (`useBinderScreen` counts this row and the meter into its chrome constant). */
 const binderCardFooterClasses = cn(
-  'mt-0.5 flex min-h-6 items-start justify-between gap-2 text-xs font-medium text-foreground',
-  '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
+  'mt-0.5 flex h-6 items-center justify-between gap-2 overflow-hidden text-xs font-medium text-foreground',
 )
 
 /* reward rail lives in AppShell QuestBar — claim is a one-shot shell mutation, not duplicated here */
@@ -47,6 +41,7 @@ export function BinderScreen({
   createLinkProps,
   createLabel,
   cards,
+  masonry,
   showMore,
   showLoading,
   showEmpty,
@@ -117,13 +112,7 @@ export function BinderScreen({
       </Toolbar>
 
       {showLoading ? (
-        <ul className={binderGridClasses} aria-hidden="true">
-          {SKELETON_KEYS.map((key) => (
-            <li key={key}>
-              <SkeletonCard />
-            </li>
-          ))}
-        </ul>
+        <MasonrySkeletonGrid model={masonry} />
       ) : showError ? (
         <Empty variant="error">
           <EmptyHeader>
@@ -160,19 +149,21 @@ export function BinderScreen({
           )}
         </Empty>
       ) : showGrid ? (
-        <ul className={binderGridClasses}>
-          {cards.map((card) => (
-            <li key={card.id} className={binderCardSlotClasses} aria-label={card.ariaLabel}>
+        <MasonryGrid
+          model={masonry}
+          items={cards.map((card) => ({
+            ariaLabel: card.ariaLabel,
+            node: (
               <MemeCard
                 model={card.memeCard}
-                /* one footer row: shares count on the right */
+                /* the meta row's right lane: shares count in place of the listing badge */
                 footerRight={
                   <span className="font-semibold text-foreground">{card.sharesLabel}</span>
                 }
                 footer={
                   <>
                     <span data-slot="binder-card-note" className={binderCardFooterClasses}>
-                      <span className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
+                      <span className="flex items-center gap-1.5 whitespace-nowrap text-muted-foreground">
                         {card.showCreator && <span>{card.mintedLabel}</span>}
                         {card.showPrivate && (
                           <Badge>
@@ -185,17 +176,16 @@ export function BinderScreen({
                       </span>
                     </span>
                     {/* the ownership groove: how much of this meme the binder holds. `mt-auto` pins it
-                       to the card's bottom edge, so whatever slack a stretched row leaves sits above
-                       the meter rather than under it. */}
+                       to the card's bottom edge, so rounding slack sits above the meter, not under it. */}
                     <div data-slot="binder-meter" className="mt-auto pt-1">
                       <Progress value={card.sharesPct} variant="braincell" aria-hidden="true" />
                     </div>
                   </>
                 }
               />
-            </li>
-          ))}
-        </ul>
+            ),
+          }))}
+        />
       ) : null}
 
       {showMore && (

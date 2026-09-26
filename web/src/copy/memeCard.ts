@@ -2,8 +2,8 @@ import { plural, pluralWord } from '../lib/plural'
 
 /** Strings the meme card builder spells for listing state and stats. */
 export const memeCardCopy = {
-  forSale: 'for sale',
-  shares: (count: number) => `${count} ${pluralWord(count, 'share')}`,
+  /** the compact right-side badge on the card's one meta row */
+  forSaleBadge: (count: number) => `${count} for sale`,
   sharesForSaleAt: (shares: number, pricePerShare: number) =>
     `${shares} ${pluralWord(shares, 'share')} for sale at ${pricePerShare} braincells each`,
   open: (title: string) => `Open ${title}`,

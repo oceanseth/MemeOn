@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { listedHolo, memeplexFamily, paperMeme } from '../../.storybook/fixtures'
+import { memeCardCopy } from '../copy/memeCard'
 import { memeDetailCopy as copy } from '../copy/memeDetail'
 import { memeplexPanelCopy } from '../copy/memeplexPanel'
 import { buildConfirmDialogModel } from '../lib/confirmDialogModel'
@@ -177,7 +178,11 @@ const listed = (overrides: Partial<DetailListingModel> = {}): MemeDetailModel =>
     // the hero's "for sale" badge mirrors this mocked listing price, not listedHolo's own
     card: {
       ...base.card,
-      listing: { ...base.card.listing!, sharesLabel: '10 sh @ 4 braincells' },
+      listing: {
+        ...base.card.listing!,
+        badgeLabel: memeCardCopy.forSaleBadge(LISTED_SHARES),
+        sharesA11yLabel: memeCardCopy.sharesForSaleAt(LISTED_SHARES, LISTED_PRICE),
+      },
     },
   }
 }
@@ -813,7 +818,7 @@ export const LoggedOut: Story = {
     await expect(canvasElement.querySelector('[data-slot="detail-metadata"]')).toBeNull()
     await expect(canvas.getByRole('button', { name: 'Log in with Masky' })).toBeVisible()
     await expect(canvas.queryByText(/listed at/)).toBeNull()
-    await expect(canvas.getByText('for sale')).toBeVisible()
+    await expect(canvas.getByText('10 for sale')).toBeVisible()
     // public view: tier line uses link colour inside the hero card
     const lines = canvasElement.querySelectorAll('[data-slot="detail-tier-line"]')
     await expect(lines).toHaveLength(1)
