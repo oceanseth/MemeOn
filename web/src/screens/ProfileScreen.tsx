@@ -6,14 +6,12 @@ import { Card } from '@/atoms/card'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
-import { Skeleton, SkeletonBlock, SkeletonCard } from '@/atoms/skeleton'
+import { Skeleton, SkeletonBlock } from '@/atoms/skeleton'
 import { cn } from '../lib/cn'
 import type { ProfileScreenModel } from '../hooks/useProfileScreen'
-import { binderGridClasses } from '../lib/binderChrome'
+import { MasonrySkeletonGrid } from '@/organisms/masonry-grid'
 import { ProfileShelf } from '@/organisms/profile-shelf'
 import { Icon } from '@/atoms/icon'
-
-const SKELETON_CARDS = ['a', 'b', 'c', 'd']
 
 /* identity card: min height floor so wrapped content can grow past the avatar row */
 const IDENTITY_CARD = 'mb-5 flex flex-wrap items-center gap-x-3.5 gap-y-4'
@@ -81,6 +79,7 @@ export function ProfileScreen({
   createdTabLabel,
   binderTabLabel,
   cards,
+  masonry,
   gridCountLabel,
   showMore,
   showMoreLabel,
@@ -127,13 +126,7 @@ export function ProfileScreen({
             <SkeletonBlock className="w-65 max-w-full" />
           </div>
         </Card>
-        <ul className={binderGridClasses} aria-hidden="true">
-          {SKELETON_CARDS.map((key) => (
-            <li key={key}>
-              <SkeletonCard />
-            </li>
-          ))}
-        </ul>
+        <MasonrySkeletonGrid model={masonry} />
       </PageContainer>
     )
 
@@ -276,6 +269,7 @@ export function ProfileScreen({
         createdTabLabel={createdTabLabel}
         binderTabLabel={binderTabLabel}
         cards={cards}
+        masonry={masonry}
         gridCountLabel={gridCountLabel}
         showMore={showMore}
         showMoreLabel={showMoreLabel}

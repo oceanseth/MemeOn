@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, within } from 'storybook/test'
-import { giftablePaper, paperMeme } from '../../.storybook/fixtures'
+import { giftablePaper, masonryModelAt, paperMeme } from '../../.storybook/fixtures'
 import { profileCopy } from '../copy/profile'
 import type { ProfileShelfModel } from '../hooks/useProfileScreen'
 import { buildMemeCardModel } from '../lib/memeCardModel'
@@ -12,10 +12,18 @@ const tabLabels = (createdCount: number, binderCount: number) => ({
   binderTabLabel: profileCopy.tabs.trigger(profileCopy.tabs.binder, binderCount),
 })
 
+/** Static masonry slots for the shelf's fixed story width. */
+const shelfMasonry = (cards: readonly { id: string; memeCard: { aspect: number } }[]) =>
+  masonryModelAt(
+    1024,
+    cards.map((card) => ({ id: card.id, aspect: card.memeCard.aspect })),
+  )
+
 const emptyShelf: ProfileShelfModel = {
   tabsListLabel: profileCopy.tabs.section,
   ...tabLabels(0, 0),
   cards: [],
+  masonry: shelfMasonry([]),
   gridCountLabel: profileCopy.grid.count(0, 0),
   showMore: false,
   showMoreLabel: profileCopy.grid.showMore(12),
@@ -65,6 +73,14 @@ export const Empty: Story = {
   },
 }
 
+const gridCards = [
+  {
+    id: `created-${paperMeme.id}`,
+    memeCard: buildMemeCardModel(paperMeme),
+    sharesLabel: null,
+  },
+]
+
 export const Grid: Story = {
   args: {
     showEmpty: false,
@@ -75,15 +91,16 @@ export const Grid: Story = {
       'aria-live': 'polite',
       'aria-label': profileCopy.grid.label(profileCopy.tabs.created, 1),
     },
-    cards: [
-      {
-        id: `created-${paperMeme.id}`,
-        memeCard: buildMemeCardModel(paperMeme),
-        sharesLabel: null,
-      },
-    ],
+    cards: gridCards,
+    masonry: shelfMasonry(gridCards),
   },
 }
+
+const pagedCards = Array.from({ length: 12 }, (_value, index) => ({
+  id: `created-${paperMeme.id}-${index}`,
+  memeCard: buildMemeCardModel(paperMeme),
+  sharesLabel: null,
+}))
 
 export const Paged: Story = {
   args: {
@@ -98,13 +115,18 @@ export const Paged: Story = {
       'aria-live': 'polite',
       'aria-label': profileCopy.grid.label(profileCopy.tabs.created, 12),
     },
-    cards: Array.from({ length: 12 }, (_value, index) => ({
-      id: `created-${paperMeme.id}-${index}`,
-      memeCard: buildMemeCardModel(paperMeme),
-      sharesLabel: null,
-    })),
+    cards: pagedCards,
+    masonry: shelfMasonry(pagedCards),
   },
 }
+
+const binderCards = [
+  {
+    id: `binder-${giftablePaper.id}`,
+    memeCard: buildMemeCardModel(giftablePaper),
+    sharesLabel: profileCopy.cards.holds(12),
+  },
+]
 
 export const BinderGrid: Story = {
   args: {
@@ -117,13 +139,8 @@ export const BinderGrid: Story = {
       'aria-live': 'polite',
       'aria-label': profileCopy.grid.label(profileCopy.tabs.binder, 1),
     },
-    cards: [
-      {
-        id: `binder-${giftablePaper.id}`,
-        memeCard: buildMemeCardModel(giftablePaper),
-        sharesLabel: profileCopy.cards.holds(12),
-      },
-    ],
+    cards: binderCards,
+    masonry: shelfMasonry(binderCards),
   },
 }
 

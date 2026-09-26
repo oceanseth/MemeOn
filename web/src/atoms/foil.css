@@ -233,9 +233,12 @@
     --collectible-background-position: 0 0, 9px 5px, 4px 13px, 0 0, 0 0;
   }
 
+  /* The frame no longer fixes a 4:5 ratio: the art box below carries `--meme-aspect`
+     (set inline by `MemeCard` from the model) and every layer here shrink-wraps it.
+     `lib/masonry.ts` mirrors this chrome as MEDIA_CHROME_X/Y (50 / 38): change the
+     padding, rail or window borders and those constants move with them. */
   .foil-media[data-presentation="collectible"].foil-frame {
     display: block;
-    aspect-ratio: 4 / 5;
     overflow: visible;
     border: 0;
     padding: 4px 16px 4px 4px;
@@ -325,9 +328,13 @@
   }
 
   /* The art window's fill: the grid card's detail link, the detail hero's enlarge trigger and the
-     landing hero's inert span all host the same backdrop + vignette + inset art stack. */
+     landing hero's inert span all host the same backdrop + vignette + inset art stack.
+     The art box owns the card's ratio: the meme's clamped `w/h`, 4:5 until a model sets it. */
   :is([data-slot="collectible-art-link"], [data-slot="collectible-art-enlarge"]) {
     position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: var(--meme-aspect, 4 / 5);
     isolation: isolate;
     overflow: hidden;
     background: var(--color-muted);
@@ -348,6 +355,7 @@
     box-shadow: 0 0 28px oklch(0.08 0.02 280 / 0.35) inset;
   }
 
+  /* contain (unknown or clamped dims): an 8px matte over the blurred backdrop copy */
   :is([data-slot="collectible-art-link"], [data-slot="collectible-art-enlarge"])
     > [data-slot="meme-art"] {
     position: absolute;
@@ -355,6 +363,13 @@
     inset: 8px;
     width: calc(100% - 16px);
     height: calc(100% - 16px);
+  }
+
+  /* cover: the window ratio is the art's own, so it fills the window edge to edge, no crop */
+  [data-art-fit="cover"] [data-slot="meme-art"] {
+    inset: 0;
+    width: 100%;
+    height: 100%;
   }
 
   [data-slot="tier-seal"] {

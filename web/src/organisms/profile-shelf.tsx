@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
 import { Button, buttonVariants } from '@/atoms/button'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
+import { MasonryGrid } from '@/organisms/masonry-grid'
 import { MemeCard } from '@/molecules/meme-card'
 import { Tabs, TabsList, TabsTrigger } from '@/atoms/tabs'
-import { binderCardSlotClasses, binderGridClasses } from '../lib/binderChrome'
 import type { ProfileShelfModel } from '../hooks/useProfileScreen'
 
 const TABS = 'mb-4.5 max-sm:*:*:flex-1'
@@ -14,6 +14,7 @@ export function ProfileShelf({
   createdTabLabel,
   binderTabLabel,
   cards,
+  masonry,
   gridCountLabel,
   showMore,
   showMoreLabel,
@@ -59,21 +60,23 @@ export function ProfileShelf({
         </Empty>
       ) : showGrid ? (
         <>
-          <ul className={binderGridClasses} {...gridProps}>
-            {cards.map((card) => (
-              <li key={card.id} className={binderCardSlotClasses}>
+          <MasonryGrid
+            model={masonry}
+            {...gridProps}
+            items={cards.map((card) => ({
+              node: (
                 <MemeCard
                   model={card.memeCard}
-                  /* one footer row: shares count on the right */
+                  /* the meta row's right lane: shares count in place of the listing badge */
                   footerRight={
                     card.sharesLabel !== null ? (
                       <span className="font-semibold text-foreground">{card.sharesLabel}</span>
                     ) : undefined
                   }
                 />
-              </li>
-            ))}
-          </ul>
+              ),
+            }))}
+          />
           {showMore && (
             <div className="mt-6 flex flex-col items-center gap-2.5">
               <Button className="max-sm:w-full" {...showMoreButtonProps}>

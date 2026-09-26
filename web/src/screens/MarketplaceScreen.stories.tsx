@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, userEvent, within } from 'storybook/test'
-import { marketplacePage } from '../../.storybook/fixtures'
+import { marketplacePage, masonryItemsFor, masonryModelAt } from '../../.storybook/fixtures'
 import { marketplaceCopy as copy } from '../copy/marketplace'
+import { masonrySkeletonItems } from '../lib/masonry'
 import { buildMemeCardModel } from '../lib/memeCardModel'
 import { buildSortChipsModel } from '../lib/sortChipsModel'
 import type { MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
@@ -62,7 +63,7 @@ const empty: MarketplaceScreenModel = {
   showError: false,
   showGrid: false,
   showMore: false,
-  skeletonCount: 8,
+  masonry: masonryModelAt(1024, []),
   errorMessage: copy.loadError,
   retryButtonProps: { onClick: fn(), disabled: false },
   retryLabel: copy.retry,
@@ -73,9 +74,11 @@ const empty: MarketplaceScreenModel = {
 }
 const onType = fn()
 const onListed = fn()
+const readyCards = marketplacePage.map(buildMemeCardModel)
 const ready: Partial<MarketplaceScreenModel> = {
   phase: 'ready',
-  cards: marketplacePage.map(buildMemeCardModel),
+  cards: readyCards,
+  masonry: masonryModelAt(1024, masonryItemsFor(readyCards)),
   showEmpty: false,
   showGrid: true,
   resultsLabel: copy.results.count(marketplacePage.length),
@@ -116,6 +119,7 @@ export const Loading: Story = {
     showEmpty: false,
     showGrid: false,
     resultsLabel: copy.results.searching,
+    masonry: masonryModelAt(1024, masonrySkeletonItems(8)),
   },
 }
 export const Empty: Story = {}

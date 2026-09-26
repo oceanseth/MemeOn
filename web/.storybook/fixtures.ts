@@ -1,4 +1,6 @@
 import { memeValue, tierFor } from '../../shared/tiers'
+import type { MasonryGridModel } from '../src/hooks/useMasonryLayout'
+import { layoutMasonry, masonryGeometry, MEME_CARD_META_HEIGHT } from '../src/lib/masonry'
 import type {
   Alert,
   FriendEntry,
@@ -310,3 +312,35 @@ export const leaderboardRows: LeaderRow[] = [
     braincells: meLou.coins,
   },
 ]
+
+/** Static masonry model for stories: the layout the hook would produce at a fixed width. */
+export function masonryModelAt(
+  width: number,
+  items: readonly { id: string; aspect: number }[],
+  chromeHeight: number = MEME_CARD_META_HEIGHT,
+): MasonryGridModel {
+  const geometry = masonryGeometry(width)
+  const layout = layoutMasonry({
+    aspects: items.map((item) => item.aspect),
+    ...geometry,
+    chromeHeight,
+  })
+  return {
+    containerRef: () => {},
+    canvasWidth: geometry.columns * geometry.columnWidth + (geometry.columns - 1) * geometry.gap,
+    height: layout.height,
+    slots: layout.items.map((item, index) => ({
+      key: items[index]?.id ?? String(index),
+      x: item.x,
+      y: item.y,
+      width: item.width,
+      height: item.height,
+    })),
+  }
+}
+
+/** The `{ id, aspect }` list a card grid feeds its masonry layout. */
+export const masonryItemsFor = (
+  models: readonly { id: string; aspect: number }[],
+): { id: string; aspect: number }[] =>
+  models.map((model) => ({ id: model.id, aspect: model.aspect }))

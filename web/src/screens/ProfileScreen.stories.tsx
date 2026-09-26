@@ -1,7 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, fn, within } from 'storybook/test'
-import { friendAccepted, giftablePaper, meLou, paperMeme } from '../../.storybook/fixtures'
+import {
+  friendAccepted,
+  giftablePaper,
+  masonryModelAt,
+  meLou,
+  paperMeme,
+} from '../../.storybook/fixtures'
 import { profileCopy } from '../copy/profile'
 import type { ProfileScreenModel, ProfileStat } from '../hooks/useProfileScreen'
 import { buildMemeCardModel } from '../lib/memeCardModel'
@@ -51,6 +57,35 @@ const handlers = {
   shareButtonProps: { onClick: fn() },
   showMoreButtonProps: { onClick: fn() },
 } satisfies Partial<ProfileScreenModel>
+
+/** The layout the hook's `useMasonryLayout` would produce for these cards at a 1024px container. */
+const profileMasonry = (cards: readonly { id: string; memeCard: { aspect: number } }[]) =>
+  masonryModelAt(
+    1024,
+    cards.map((c) => ({ id: c.id, aspect: c.memeCard.aspect })),
+  )
+
+const oneCreatedCards = [
+  {
+    id: `created-${paperMeme.id}`,
+    memeCard: buildMemeCardModel(paperMeme),
+    sharesLabel: null,
+  },
+]
+
+const pagedCards = Array.from({ length: 12 }, (_value, index) => ({
+  id: `created-${paperMeme.id}-${index}`,
+  memeCard: buildMemeCardModel(paperMeme),
+  sharesLabel: null,
+}))
+
+const binderCards = [
+  {
+    id: `binder-${giftablePaper.id}`,
+    memeCard: buildMemeCardModel(giftablePaper),
+    sharesLabel: profileCopy.cards.holds(12),
+  },
+]
 
 const tabLabels = (createdCount: number, binderCount: number) => ({
   createdCount,
@@ -111,6 +146,7 @@ const emptyCreated: ProfileScreenModel = {
   tabsListLabel: profileCopy.tabs.section,
   ...tabLabels(0, 0),
   cards: [],
+  masonry: profileMasonry([]),
   showEmpty: true,
   emptyTitle: "pal hasn't minted anything yet.",
   emptyBody: 'New cards land here the moment they mint one.',
@@ -135,13 +171,8 @@ const oneCreatedCard = {
     'aria-live': 'polite',
     'aria-label': 'Created memes, 1 card',
   },
-  cards: [
-    {
-      id: `created-${paperMeme.id}`,
-      memeCard: buildMemeCardModel(paperMeme),
-      sharesLabel: null,
-    },
-  ],
+  cards: oneCreatedCards,
+  masonry: profileMasonry(oneCreatedCards),
 } satisfies Partial<ProfileScreenModel>
 
 const publicBinder: ProfileScreenModel = {
@@ -203,13 +234,8 @@ const publicBinder: ProfileScreenModel = {
   actionsGroupLabel: profileCopy.actions.groupLabel,
   tabsListLabel: profileCopy.tabs.section,
   ...tabLabels(1, 1),
-  cards: [
-    {
-      id: `binder-${giftablePaper.id}`,
-      memeCard: buildMemeCardModel(giftablePaper),
-      sharesLabel: profileCopy.cards.holds(12),
-    },
-  ],
+  cards: binderCards,
+  masonry: profileMasonry(binderCards),
   showEmpty: false,
   emptyTitle: '',
   emptyBody: '',
@@ -325,6 +351,7 @@ export const BinderTab: Story = {
         sharesLabel: 'holds 12/100',
       },
     ],
+    masonry: profileMasonry(binderCards),
   },
 }
 
@@ -519,11 +546,8 @@ export const Paged: Story = {
     showMore: true,
     showMoreLabel: 'Show 2 more',
     gridCountLabel: 'Showing 12 of 14',
-    cards: Array.from({ length: 12 }, (_value, index) => ({
-      id: `created-${paperMeme.id}-${index}`,
-      memeCard: buildMemeCardModel(paperMeme),
-      sharesLabel: null,
-    })),
+    cards: pagedCards,
+    masonry: profileMasonry(pagedCards),
   },
 }
 
