@@ -28,10 +28,6 @@ terraform.tfvars
 .env.*
 localstorage.json
 
-# Popmelt local design-layer data (annotations, threads, Imprint)
-.popmelt/
-
-
 # Expo
 mobile/.expo/
 mobile/dist/
