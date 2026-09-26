@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
-import { expect, fn, userEvent, within } from 'storybook/test'
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test'
 import { listedHolo, memeplexFamily, paperMeme } from '../../.storybook/fixtures'
 import { memeDetailCopy as copy } from '../copy/memeDetail'
 import { memeplexPanelCopy } from '../copy/memeplexPanel'
@@ -254,12 +254,15 @@ export const Enlarged: Story = {
     await userEvent.click(trigger)
     const dialog = await page.findByRole('dialog', { name: paperMeme.title })
     await expect(within(dialog).getByRole('img', { name: paperMeme.title })).toBeVisible()
+    /* the popup exits through its close animation and only then hands focus back */
     await userEvent.keyboard('{Escape}')
-    await expect(trigger).toHaveFocus()
+    await waitFor(() => expect(page.queryByRole('dialog', { name: paperMeme.title })).toBeNull())
+    await waitFor(() => expect(trigger).toHaveFocus())
     await userEvent.keyboard('{Enter}')
     await page.findByRole('dialog', { name: paperMeme.title })
     await userEvent.click(page.getByRole('button', { name: copy.hero.closeViewer }))
-    await expect(trigger).toHaveFocus()
+    await waitFor(() => expect(page.queryByRole('dialog', { name: paperMeme.title })).toBeNull())
+    await waitFor(() => expect(trigger).toHaveFocus())
   },
 }
 export const Notice: Story = {
