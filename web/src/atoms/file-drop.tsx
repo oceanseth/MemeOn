@@ -77,7 +77,12 @@ export function FileDrop({
     <div
       data-slot="file-drop"
       data-disabled={disabled || undefined}
-      className={cn(WELL, className)}
+      className={cn(
+        WELL,
+        // beats the attribute-selector specificity of disabled-look
+        disabled && 'opacity-100! cursor-not-allowed',
+        className,
+      )}
     >
       {/* decorative: the control a reader lands on is the input, named by the Field's own label */}
       <span aria-hidden="true" data-slot="file-drop-button" className={cn(PILL)}>

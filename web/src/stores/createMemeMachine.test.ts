@@ -1,5 +1,6 @@
 import { createActor } from 'xstate'
 import { describe, expect, it } from 'vitest'
+import { createMemeCopy } from '../copy/createMeme'
 import type { GiphyResult } from '../lib/types'
 import { createMemeMachine } from './createMemeMachine'
 
@@ -84,10 +85,33 @@ describe('createMemeMachine submitting mode changes', () => {
       mintedId: 'meme-1',
       shareUrl: 'https://memeon.ai/m/meme-1',
       shareCopied: false,
+      shareCopyFailed: false,
+    })
+
+    actor.send({ type: 'SHARE_COPY_FAILED' })
+    expect(actor.getSnapshot().value).toBe('success')
+    expect(actor.getSnapshot().context).toMatchObject({
+      shareCopied: false,
+      shareCopyFailed: true,
+      err: null,
     })
 
     actor.send({ type: 'SHARE_COPIED' })
+    expect(actor.getSnapshot().value).toBe('success')
     expect(actor.getSnapshot().context.shareCopied).toBe(true)
+    expect(actor.getSnapshot().context.shareCopyFailed).toBe(false)
+  })
+
+  it('ignores a share-link copy failure before the card is minted', () => {
+    const actor = startedMachine()
+    const before = actor.getSnapshot().value
+    actor.send({ type: 'SHARE_COPY_FAILED' })
+
+    expect(before).not.toBe('success')
+    expect(before).not.toBe('error')
+    expect(actor.getSnapshot().value).toBe(before)
+    expect(actor.getSnapshot().context.shareCopied).toBe(false)
+    expect(actor.getSnapshot().context.shareCopyFailed).toBe(false)
   })
 
   it('from error, DONE returns to the mode left', () => {
@@ -167,5 +191,16 @@ describe('createMemeMachine artwork provenance', () => {
       tags: 'chaos',
       prompt: 'a capybara',
     })
+  })
+})
+
+describe('createMemeMachine remix source missing', () => {
+  it('stays on remix and reports the missing source from copy', () => {
+    const actor = startedMachine('source-1')
+    actor.send({ type: 'REMIX_SOURCE_MISSING' })
+
+    expect(actor.getSnapshot().value).toBe('remix')
+    expect(actor.getSnapshot().context.err).toBe(createMemeCopy.errors.remixSourceMissing)
+    expect(actor.getSnapshot().context.busy).toBeNull()
   })
 })

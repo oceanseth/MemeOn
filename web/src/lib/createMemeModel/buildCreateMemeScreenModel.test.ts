@@ -5,7 +5,7 @@ import { createMemeCopy as copy } from '../../copy/createMeme'
 import { createMemeMachine, type CreateMemeContext } from '../../stores/createMemeMachine'
 import type { GiphyResult } from '../types'
 import { buildCreateMemeScreenModel } from './buildCreateMemeScreenModel'
-import { MAX_VIDEO_BYTES, overCapMessage } from './shared'
+import { boundTags, countTags, MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, overCapMessage } from './shared'
 import type { CreateMemeScreenActions } from './types'
 
 const giphyResult: GiphyResult = {
@@ -116,6 +116,12 @@ describe('buildCreateMemeScreenModel', () => {
     model.tagsInputProps.onChange?.(inputChange('a,b,c,d,e,f,g'))
     expect(calls.setTags).toHaveBeenLastCalledWith('a,b,c,d,e')
     expect(calls.setTags).toHaveBeenCalledWith('cats, chaos')
+    const fiveLongTags =
+      'photosynthesis, extraterrestrial, incomprehensible, procrastination, internationalization'
+    expect(fiveLongTags.length).toBeGreaterThan(80)
+    expect(model.tagsInputProps.maxLength).toBeUndefined()
+    model.tagsInputProps.onChange?.(inputChange(fiveLongTags))
+    expect(calls.setTags).toHaveBeenLastCalledWith(fiveLongTags)
     expect(calls.setPrompt).toHaveBeenNthCalledWith(1, 'make it blue')
     expect(calls.setPrompt).toHaveBeenNthCalledWith(2, 'make it loop')
     expect(calls.setPrompt).toHaveBeenNthCalledWith(3, 'make it late')
@@ -147,6 +153,7 @@ describe('buildCreateMemeScreenModel', () => {
       calls,
     )
 
+    expect(model.giphyPick).toBeNull()
     /* results are on screen, so the panel's status line only has to reach a screen reader */
     expect(model.giphyStatusHidden).toBe(true)
 
@@ -201,7 +208,35 @@ describe('buildCreateMemeScreenModel', () => {
     expect(selected.getGiphyResultProps(giphyResult).imageProps.src).toBe('/cat.gif')
     expect(selected.giphyPick).toEqual({
       title: 'Keyboard cat',
-      authorLabel: ' (@catlord)',
+      authorLabel: copy.giphy.authorLabel('catlord'),
+    })
+
+    const missingAuthor = buildCreateMemeScreenModel(
+      'giphy',
+      {
+        ...baseContext,
+        mode: 'giphy',
+        giphyPick: { ...giphyResult, author: null },
+      },
+      calls,
+    )
+    expect(missingAuthor.giphyPick).toEqual({
+      title: 'Keyboard cat',
+      authorLabel: null,
+    })
+
+    const blankAuthor = buildCreateMemeScreenModel(
+      'giphy',
+      {
+        ...baseContext,
+        mode: 'giphy',
+        giphyPick: { ...giphyResult, author: '' },
+      },
+      calls,
+    )
+    expect(blankAuthor.giphyPick).toEqual({
+      title: 'Keyboard cat',
+      authorLabel: null,
     })
   })
 
@@ -249,6 +284,8 @@ describe('buildCreateMemeScreenModel', () => {
 
     expect(model.imageFileDropProps.accept).toBe('image/png,image/jpeg,image/gif,image/webp')
     expect(model.videoFileDropProps.accept).toBe('video/mp4,video/quicktime,video/webm')
+    expect(model.imageFileDropProps.disabled).toBe(false)
+    expect(model.videoFileDropProps.disabled).toBe(false)
     // the words the browser used to write are the deck's now
     expect(model.imageFileDropProps.chooseLabel).toBe('Choose an image')
     expect(model.videoFileDropProps.chooseLabel).toBe('Choose a video')
@@ -301,6 +338,8 @@ describe('buildCreateMemeScreenModel', () => {
     expect(busy.generateButtonProps.disabled).toBe(true)
     expect(busy.mintButtonProps.disabled).toBe(true)
     expect(busy.giphySearchButtonProps.disabled).toBe(true)
+    expect(busy.imageFileDropProps.disabled).toBe(true)
+    expect(busy.videoFileDropProps.disabled).toBe(true)
     expect(busy.formProps['aria-busy']).toBe(true)
     expect(busy.showMintHint).toBe(false)
   })
@@ -352,6 +391,7 @@ describe('buildCreateMemeScreenModel', () => {
     expect(carried.previewCard.originLabel).toBe(
       copy.preview.originFromAuthor(copy.preview.giphyProvider, 'catlord'),
     )
+    expect(carried.previewCard.tierSuffix).toBe(copy.preview.freshlyMintedNote)
     expect(carried.previewCard.statsLabel).toBe(copy.preview.zeroStats)
     expect(carried.previewCard.valueLabel).toBe(copy.preview.zeroValue)
     expect(carried.mintHint).toBe('')
@@ -383,6 +423,9 @@ describe('buildCreateMemeScreenModel', () => {
   })
 
   it('names the file caps and the next step out of a failure once', () => {
+    expect(overCapMessage('image', MAX_IMAGE_BYTES + 1, MAX_IMAGE_BYTES)).toBe(
+      copy.preview.overCap('image', 9, 8, copy.preview.overCapAdvice.image),
+    )
     expect(overCapMessage('video', 143 * 1024 * 1024, MAX_VIDEO_BYTES)).toBe(
       'that video is 143MB — the cap is 50MB, try a shorter clip',
     )
@@ -392,6 +435,7 @@ describe('buildCreateMemeScreenModel', () => {
       actions(),
     )
     expect(failed.errorNextStep).toBe(copy.preview.nextStep.credits)
+    expect(failed.uploadImageHelpText).toBe(copy.upload.imageHelp(8))
     expect(failed.uploadVideoHelpText).toContain('max 50MB')
   })
 
@@ -416,19 +460,39 @@ describe('buildCreateMemeScreenModel', () => {
   it('plumbs shareCopied and copyShareLinkLabel for idle vs copied success', () => {
     const idle = buildCreateMemeScreenModel(
       'success',
-      { ...baseContext, shareCopied: false },
+      { ...baseContext, shareCopied: false, shareCopyFailed: false },
       actions(),
     )
     expect(idle.shareCopied).toBe(false)
     expect(idle.copyShareLinkLabel).toBe(copy.form.success.copyLink)
+    expect(idle.mintStatus).toBe(copy.form.success.minted)
 
     const copied = buildCreateMemeScreenModel(
       'success',
-      { ...baseContext, shareCopied: true },
+      { ...baseContext, shareCopied: true, shareCopyFailed: false },
       actions(),
     )
     expect(copied.shareCopied).toBe(true)
     expect(copied.copyShareLinkLabel).toBe(copy.form.copied)
+    expect(copied.mintStatus).toBe(copy.form.success.copied)
+
+    const failed = buildCreateMemeScreenModel(
+      'success',
+      { ...baseContext, shareCopied: false, shareCopyFailed: true },
+      actions(),
+    )
+    expect(failed.shareCopied).toBe(false)
+    expect(failed.copyShareLinkLabel).toBe(copy.form.success.copyFailed)
+    expect(failed.mintStatus).toBe(copy.form.success.copyFailed)
+
+    const both = buildCreateMemeScreenModel(
+      'success',
+      { ...baseContext, shareCopied: true, shareCopyFailed: true },
+      actions(),
+    )
+    expect(both.shareCopied).toBe(true)
+    expect(both.copyShareLinkLabel).toBe(copy.form.copied)
+    expect(both.mintStatus).toBe(copy.form.success.copied)
   })
 
   it('wires each creation action bundle to its domain action', () => {
@@ -458,5 +522,18 @@ describe('buildCreateMemeScreenModel', () => {
     expect(calls.applyUrlEdit).toHaveBeenCalledOnce()
     expect(calls.generate).toHaveBeenCalledOnce()
     expect(calls.mint).toHaveBeenCalledOnce()
+  })
+
+  it('counts a tag only when its trimmed text is non-empty', () => {
+    expect(boundTags('cats,,,,,dogs')).toBe('cats,,,,,dogs')
+    expect(countTags('cats,,,,,dogs')).toBe(2)
+    expect(boundTags('a,,b,,c,,d')).toBe('a,,b,,c,,d')
+    expect(boundTags('a,b,c,d,e,f,g')).toBe('a,b,c,d,e')
+    expect(boundTags('a,,b,,c,,d,,e,,f')).toBe('a,,b,,c,,d,,e,')
+    expect(boundTags('a,b,c,d,')).toBe('a,b,c,d,')
+    expect(boundTags('a,b,c,d,e,')).toBe('a,b,c,d,e,')
+    expect(boundTags('a,b,c,d,e,   ,f')).toBe('a,b,c,d,e,   ')
+    expect(boundTags(' cats , dogs ')).toBe(' cats , dogs ')
+    expect(boundTags(',,,,,')).toBe(',,,,,')
   })
 })

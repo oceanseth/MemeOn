@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { MemoryRouter } from 'react-router-dom'
 import { expect, userEvent, waitFor, within } from 'storybook/test'
 import { createActor } from 'xstate'
-import { meLou, unreadSale } from '../../.storybook/fixtures'
+import { friendAccepted, meLou, unreadSale } from '../../.storybook/fixtures'
 import {
   connectedBeforeEach,
   connectedLoader,
@@ -10,6 +10,9 @@ import {
 } from '../../.storybook/connected-story'
 import { createRequestGuard } from '../../.storybook/request-accounting'
 import { appShellCopy } from '../copy/appShell'
+import { binderCopy } from '../copy/binder'
+import { landingCopy } from '../copy/landing'
+import { profileCopy } from '../copy/profile'
 import { sharedCopy } from '../copy/shared'
 import {
   clearSession,
@@ -79,6 +82,7 @@ const authSetup: Story = {
   beforeEach: async ({ loaded, parameters }) => {
     // the guarded routes are code-split: warm their chunks so a play function sees the route, not the spinner
     await Promise.all([
+      import('./BinderView'),
       import('./CreateMemeView'),
       import('./DevelopersView'),
       import('./SettingsView'),
@@ -230,6 +234,135 @@ export const InitialAuthenticationGatesMint: Story = {
     loaded.accountRequest.resolve(Response.json(meLou))
     await pending
     await expect(await canvas.findByRole('textbox', { name: 'Title' })).toHaveValue('')
+  },
+}
+
+/**
+ * preview.tsx afterEach calls assertEmpty. These fetches are the proof, so they are not stubbed;
+ * drop only the expected rows when that hook runs.
+ */
+function releaseExpectedRequests(
+  requests: { method: string; path: string }[],
+  expected: (request: { method: string; path: string }) => boolean,
+): void {
+  const unexpected = requests.filter((request) => !expected(request))
+  requests.length = 0
+  requests.push(...unexpected)
+}
+
+/** Owner /binder/:sub stays on the session spinner until auth settles, then BinderView. */
+export const InitialAuthenticationGatesOwnerBinder: Story = {
+  ...authSetup,
+  parameters: { initialEntries: ['/binder/user-lou'], deferInitialAuth: true },
+  play: async ({ canvasElement, loaded }) => {
+    const canvas = within(canvasElement)
+    const profilePath = `/api/users/${meLou.sub}/profile`
+    const guard = loaded.requestGuard
+    const assertEmpty = guard.assertEmpty.bind(guard)
+    guard.assertEmpty = () => {
+      releaseExpectedRequests(
+        guard.requests,
+        (request) => request.method === 'GET' && request.path === '/api/binder',
+      )
+      assertEmpty()
+    }
+    const profileGets = () =>
+      loaded.requestGuard.requests.filter(
+        (request: { method: string; path: string }) =>
+          request.method === 'GET' && request.path === profilePath,
+      )
+
+    await expect(loaded.authStores.auth.loading).toBe(true)
+    await expect(canvas.getByRole('status')).toHaveTextContent(sharedCopy.checkingSession)
+    await expect(canvas.queryByText(profileCopy.loading)).not.toBeInTheDocument()
+    await expect(canvas.queryByText(binderCopy.status.loading)).not.toBeInTheDocument()
+    await expect(canvas.queryByText(profileCopy.hero.publicIntro)).not.toBeInTheDocument()
+    await expect(
+      canvas.queryByRole('heading', { name: profileCopy.hero.binderTitle(meLou.name) }),
+    ).not.toBeInTheDocument()
+    await expect(document.title).not.toBe(
+      `${profileCopy.documentTitle.binder} — ${sharedCopy.brand}`,
+    )
+    await expect(document.title).not.toBe(`${binderCopy.pageTitle} — ${sharedCopy.brand}`)
+    await expect(profileGets()).toHaveLength(0)
+
+    const pending = loaded.authStores.auth.refresh()
+    void pending.catch(() => {})
+    await expect(loaded.accountRequest.count).toBe(1)
+    await expect(loaded.authStores.auth.loading).toBe(true)
+    await expect(canvas.queryByRole('textbox', { name: 'Title' })).not.toBeInTheDocument()
+    await expect(
+      canvas.queryByRole('button', { name: /Log in with Masky/ }),
+    ).not.toBeInTheDocument()
+    await expect(canvas.getByRole('status')).toHaveTextContent(sharedCopy.checkingSession)
+    await expect(canvas.queryByText(profileCopy.loading)).not.toBeInTheDocument()
+    await expect(canvas.queryByText(binderCopy.status.loading)).not.toBeInTheDocument()
+    await expect(profileGets()).toHaveLength(0)
+
+    loaded.accountRequest.resolve(Response.json(meLou))
+    await pending
+    await waitFor(() => {
+      expect(
+        canvas.getByRole('heading', { level: 2, name: binderCopy.pageTitle }),
+      ).toBeInTheDocument()
+      expect(canvas.getByText(binderCopy.intro)).toBeInTheDocument()
+      expect(document.title).toBe(`${binderCopy.pageTitle} — ${sharedCopy.brand}`)
+      expect(profileGets()).toHaveLength(0)
+      expect(canvas.queryByText(profileCopy.loading)).not.toBeInTheDocument()
+      expect(canvas.queryByText(profileCopy.hero.publicIntro)).not.toBeInTheDocument()
+      expect(
+        canvas.queryByRole('heading', { name: profileCopy.hero.binderTitle(meLou.name) }),
+      ).not.toBeInTheDocument()
+      expect(canvasElement.querySelector('[data-slot="profile-identity"]')).toBeNull()
+    })
+  },
+}
+
+/** A logged-out shared binder mounts ProfileView. RequireAuth would bounce to landing instead. */
+export const LoggedOutSharedBinderStaysOnProfile: Story = {
+  ...authSetup,
+  parameters: { initialEntries: [`/binder/${friendAccepted.sub}`], deferInitialAuth: true },
+  play: async ({ canvasElement, loaded }) => {
+    const canvas = within(canvasElement)
+    const profilePath = `/api/users/${friendAccepted.sub}/profile`
+    const guard = loaded.requestGuard
+    const assertEmpty = guard.assertEmpty.bind(guard)
+    guard.assertEmpty = () => {
+      releaseExpectedRequests(
+        guard.requests,
+        (request) => request.method === 'GET' && request.path === profilePath,
+      )
+      assertEmpty()
+    }
+    const profileGets = () =>
+      loaded.requestGuard.requests.filter(
+        (request: { method: string; path: string }) =>
+          request.method === 'GET' && request.path === profilePath,
+      )
+
+    await expect(loaded.authStores.auth.loading).toBe(true)
+    await expect(canvas.getByRole('status')).toHaveTextContent(sharedCopy.checkingSession)
+    await expect(canvas.queryByText(profileCopy.loading)).not.toBeInTheDocument()
+    await expect(profileGets()).toHaveLength(0)
+
+    const pending = loaded.authStores.auth.refresh()
+    void pending.catch(() => {})
+    await expect(loaded.accountRequest.count).toBe(1)
+    await expect(loaded.authStores.auth.loading).toBe(true)
+    await expect(canvas.getByRole('status')).toHaveTextContent(sharedCopy.checkingSession)
+    await expect(canvas.queryByText(profileCopy.loading)).not.toBeInTheDocument()
+    await expect(profileGets()).toHaveLength(0)
+
+    loaded.accountRequest.resolve(Response.json({ error: 'unauthorized' }, { status: 401 }))
+    await pending
+    await waitFor(() => {
+      expect(loaded.authStores.auth.user).toBeNull()
+      expect(loaded.authStores.auth.loading).toBe(false)
+      expect(document.title).toBe(`${profileCopy.documentTitle.binder} — ${sharedCopy.brand}`)
+      expect(profileGets().length).toBeGreaterThan(0)
+      expect(canvas.queryByRole('heading', { name: binderCopy.pageTitle })).not.toBeInTheDocument()
+      expect(canvas.queryByText(landingCopy.hero.title)).not.toBeInTheDocument()
+    })
   },
 }
 

@@ -48,7 +48,8 @@ function BinderOwnRedirect() {
 /** /binder/:sub — owner gets the management binder; anyone else gets the public profile binder. */
 function BinderRoute() {
   const { sub } = useParams<{ sub: string }>()
-  const { user, checkingSessionLabel } = useAuth()
+  const { user, loading, checkingSessionLabel } = useAuth()
+  if (loading) return <AuthSpinner label={checkingSessionLabel} />
   if (user && sub === user.sub)
     return (
       <Suspense fallback={<AuthSpinner label={checkingSessionLabel} />}>

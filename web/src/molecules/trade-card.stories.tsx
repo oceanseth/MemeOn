@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, fn, within } from 'storybook/test'
 import { holoMeme, paperMeme, proposedTrade, silverMeme } from '../../.storybook/fixtures'
 import { tradesCopy } from '../copy/trades'
+import { braincells } from '../lib/braincells'
 import { TradeCard } from '@/molecules/trade-card'
 import { buildTradeCardModel, type TradeMemeInfoMap } from '../lib/tradeCardModel'
 
@@ -64,6 +65,17 @@ export const Incoming: Story = {
       'lou offered you a deal',
     )
     await expect(canvasElement.querySelector('[data-slot="card-footer"]')).not.toBeNull()
+    await expect(canvasElement.querySelector('[data-slot="trade-finality"]')).toHaveTextContent(
+      tradesCopy.card.finality.leaves(
+        tradesCopy.card.finality.and(
+          tradesCopy.card.finality.tierShares(
+            proposedTrade.ask.memes[0]!.shares,
+            resolvedNames['meme-silver']!.tierName,
+          ),
+          braincells(proposedTrade.ask.coins),
+        ),
+      ),
+    )
   },
 }
 export const Outgoing: Story = {

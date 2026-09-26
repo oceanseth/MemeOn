@@ -38,7 +38,7 @@ export const ReadsTheSignedInAvatar: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByText('lou')).toBeInTheDocument()
-    await expect(document.title).toBe(`${settingsCopy.title} — ${sharedCopy.brand}`)
+    await expect(document.title).toBe(sharedCopy.documentTitle(settingsCopy.title))
     await expect(canvas.getByText('Masky avatar')).toBeInTheDocument()
     await expect(canvas.getByRole('link', { name: 'Connect Discord' })).toHaveAttribute(
       'href',

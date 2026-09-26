@@ -49,7 +49,7 @@ export const ForwardsIntoTheApp: Story = {
       canvas.getByRole('link', { name: authStatusCopy.mobileForward.home }),
     ).toHaveAttribute('href', '/')
     await expect(document.title).toBe(
-      `${authStatusCopy.mobileForward.documentTitle} — ${sharedCopy.brand}`,
+      sharedCopy.documentTitle(authStatusCopy.mobileForward.documentTitle),
     )
   },
 }

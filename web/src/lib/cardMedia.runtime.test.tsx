@@ -123,4 +123,32 @@ describe('card media', () => {
     observe.mockRestore()
     unobserve.mockRestore()
   })
+
+  it('unobserves a card after cardMediaRef(null) and a microtask, with no later attach', async () => {
+    const released: Element[] = []
+    const unobserve = vi
+      .spyOn(IntersectionObserver.prototype, 'unobserve')
+      .mockImplementation((target: Element) => void released.push(target))
+    const observe = vi
+      .spyOn(IntersectionObserver.prototype, 'observe')
+      .mockImplementation(() => {})
+
+    try {
+      const { card } = mountCard()
+      cardMediaRef(card)
+
+      // Still connected, matching React 18 (ref(null) before removeChild).
+      cardMediaRef(null)
+      expect(released).not.toContain(card)
+
+      card.remove()
+      await Promise.resolve()
+
+      expect(card.isConnected).toBe(false)
+      expect(released).toContain(card)
+    } finally {
+      observe.mockRestore()
+      unobserve.mockRestore()
+    }
+  })
 })

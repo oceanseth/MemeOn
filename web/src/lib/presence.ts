@@ -7,13 +7,22 @@ import { rtdb } from './firebase'
 export function startPresence(uid: string): () => void {
   const me = ref(rtdb, `presence/${uid}`)
   const connected = ref(rtdb, '.info/connected')
+  let stopped = false
+  let pending = Promise.resolve()
   const unsub = onValue(
     connected,
     (snap) => {
-      if (!snap.val()) return
-      void onDisconnect(me)
-        .remove()
-        .then(() => set(me, { online: true, at: serverTimestamp() }))
+      if (stopped || !snap.val()) return
+      pending = pending
+        .then(() => {
+          if (stopped) return
+          return onDisconnect(me)
+            .remove()
+            .then(() => {
+              if (stopped) return
+              return set(me, { online: true, at: serverTimestamp() })
+            })
+        })
         .catch((err) => {
           console.error('[memeon presence] advertise failed', err)
         })
@@ -23,10 +32,13 @@ export function startPresence(uid: string): () => void {
     },
   )
   return () => {
+    stopped = true
     unsub()
-    void remove(me).catch((err) => {
-      console.error('[memeon presence] stop failed', err)
-    })
+    void pending
+      .then(() => remove(me))
+      .catch((err) => {
+        console.error('[memeon presence] stop failed', err)
+      })
   }
 }
 

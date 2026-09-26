@@ -41,6 +41,7 @@ export const createMemeCopy = {
   },
   /** What the alert says when the request threw nothing the user can read. */
   errors: {
+    remixSourceMissing: 'source meme not found',
     notALink: 'That is not a link — paste a full https:// address.',
     renderFailed:
       "The video render didn't finish. Try again, or reopen this page if a job is still running.",
@@ -93,6 +94,7 @@ export const createMemeCopy = {
       heading: 'Minted. It is live.',
       body: 'All 100 shares are yours. Send the link — every reshare pushes the card up the tier ladder.',
       copyLink: 'Copy share link',
+      copyFailed: 'Copy failed — try again',
       shareLink: 'Share link',
       openCard: 'Open the card',
     },
@@ -117,6 +119,7 @@ export const createMemeCopy = {
     search: 'Search',
     poweredBy: 'Powered by GIPHY',
     selected: 'Selected:',
+    authorLabel: (author: string) => ` (@${author})`,
     pickSuffix: '— mint it as-is (with GIPHY attribution) or remix it below.',
     optionalPrompt: 'Optional prompt — remix the gif with Masky (uses your credits)',
     remixPlaceholder: 'put everyone in medieval armor',
@@ -184,7 +187,9 @@ export const createMemeCopy = {
     videoA11y: 'Video preview',
     previewOf: (label: string) => `Preview of ${label}`,
     untitled: 'Untitled',
-    freshlyMinted: (tierName: string) => `${tierName} · freshly minted`,
+    freshlyMintedNote: 'freshly minted',
+    freshlyMinted: (tierName: string) =>
+      `${tierName} · ${createMemeCopy.preview.freshlyMintedNote}`,
     originFromAuthor: (provider: string, author: string) => `from ${provider} · @${author}`,
     originFrom: (provider: string) => `from ${provider}`,
     /* Preview card only: GIPHY display name, and a fresh card's zero stats and value. */

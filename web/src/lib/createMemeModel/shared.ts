@@ -25,7 +25,7 @@ export const HELP_IDS = {
 
 const FRESH_TIER = tierFor(0)
 
-const megabytes = (bytes: number): number => Math.max(1, Math.round(bytes / (1024 * 1024)))
+const megabytes = (bytes: number): number => Math.max(1, Math.ceil(bytes / (1024 * 1024)))
 
 export function overCapMessage(kind: 'image' | 'video', size: number, cap: number): string {
   const advice =
@@ -35,7 +35,14 @@ export function overCapMessage(kind: 'image' | 'video', size: number, cap: numbe
 
 export function boundTags(value: string): string {
   const parts = value.split(',')
-  return parts.length <= TAGS_MAX ? value : parts.slice(0, TAGS_MAX).join(',')
+  let count = 0
+  for (const [index, part] of parts.entries()) {
+    if (part.trim()) {
+      count += 1
+      if (count > TAGS_MAX) return parts.slice(0, index).join(',')
+    }
+  }
+  return value
 }
 
 export const countTags = (value: string): number =>
@@ -93,6 +100,7 @@ export function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
     title: title || copy.preview.untitled,
     titleIsPlaceholder: !title,
     tierName: FRESH_TIER.name,
+    tierSuffix: copy.preview.freshlyMintedNote,
     tierLabel: copy.preview.freshlyMinted(FRESH_TIER.name),
     statsLabel: copy.preview.zeroStats,
     valueLabel: copy.preview.zeroValue,

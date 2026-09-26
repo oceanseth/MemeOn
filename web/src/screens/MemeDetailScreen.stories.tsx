@@ -42,6 +42,8 @@ const detail = (meme = paperMeme): MemeDetailModel => {
     tierHype: meme.tier.hype,
     tierLadder: buildTierLadderModel(meme.tier.key, views),
     card: buildMemeCardModel(meme),
+    enlargeLabel: copy.hero.enlarge(meme.title),
+    closeViewerLabel: copy.hero.closeViewer,
     creatorLinkProps: { to: `/u/${meme.creatorId}` },
     creatorName: meme.creatorName,
     ownerLinkProps: { to: `/u/${meme.ownerId}` },
@@ -242,6 +244,22 @@ export const Ready: Story = {
     const canvas = within(canvasElement)
     await expect(canvas.getByRole('heading', { name: copy.share.title })).toBeVisible()
     await expect(canvas.getByText(copy.share.caption)).toBeVisible()
+  },
+}
+export const Enlarged: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const page = within(canvasElement.ownerDocument.body)
+    const trigger = canvas.getByRole('button', { name: copy.hero.enlarge(paperMeme.title) })
+    await userEvent.click(trigger)
+    const dialog = await page.findByRole('dialog', { name: paperMeme.title })
+    await expect(within(dialog).getByRole('img', { name: paperMeme.title })).toBeVisible()
+    await userEvent.keyboard('{Escape}')
+    await expect(trigger).toHaveFocus()
+    await userEvent.keyboard('{Enter}')
+    await page.findByRole('dialog', { name: paperMeme.title })
+    await userEvent.click(page.getByRole('button', { name: copy.hero.closeViewer }))
+    await expect(trigger).toHaveFocus()
   },
 }
 export const Notice: Story = {

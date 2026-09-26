@@ -2,7 +2,9 @@
 /**
  * APCA contrast floor for the palette, in both theme arms.
  *
- *   node scripts/check-contrast.mjs [indexCss] [srcDir]
+ *   node scripts/check-contrast.mjs [indexCss] [srcDir] [htmlPath]
+ *
+ * htmlPath is optional and defaults to web/index.html. The theme-color gate reads that file.
  *
  * WCAG 2.x ratios are computed from a luminance formula that badly misreads dark UI: it scores
  * light-on-dark far higher than the eye does, which is how a dim text token could read
@@ -340,7 +342,7 @@ const sources = existsSync(SRC)
   : []
 const painted = NOT_TEXT.flatMap(({ token, instead, patterns }) =>
   sources.flatMap((file) => {
-    const text = readFileSync(file, 'utf8')
+    const text = blankComments(readFileSync(file, 'utf8'))
     return text.split('\n').flatMap((line, index) =>
       patterns.some((pattern) => pattern.test(line)) && !line.trimStart().startsWith('*')
         ? [
@@ -357,15 +359,16 @@ const painted = NOT_TEXT.flatMap(({ token, instead, patterns }) =>
 
 /** `*-foreground` painted as a fill, outside the three decorative shapes that may. */
 const inkFills = sources.flatMap((file) => {
-  const text = readFileSync(file, 'utf8')
-  return text.split('\n').flatMap((line, index) =>
-    [...line.matchAll(/\bbg-[a-z-]*-foreground\b/g)]
+  const text = blankComments(readFileSync(file, 'utf8'))
+  return text.split('\n').flatMap((line, index) => {
+    if (line.trimStart().startsWith('*')) return []
+    return [...line.matchAll(/\bbg-[a-z-]*-foreground\b/g)]
       .filter((hit) => !INK_FILLS_ALLOWED.has(hit[0]))
       .map((hit) => ({
         className: hit[0],
         where: `${relative(process.cwd(), file)}:${index + 1}`,
-      })),
-  )
+      }))
+  })
 })
 
 /**
@@ -425,10 +428,10 @@ const misread = [...paintedInks].filter(([token]) => !audited.has(token))
 /**
  * `index.html`'s two `theme-color` metas paint the browser's own chrome around the app, so they
  * have to be the two arms of `--color-background` — a drifted hex is a visible seam at the top of
- * the phone that no stylesheet can explain.
+ * the phone that no stylesheet can explain. The file is argv[4], or web/index.html when omitted.
  */
 const themeColors = (() => {
-  const html = resolve(join(import.meta.dirname, '..', 'index.html'))
+  const html = resolve(process.argv[4] ?? join(import.meta.dirname, '..', 'index.html'))
   if (!existsSync(html)) return []
   const text = readFileSync(html, 'utf8')
   return ARMS.flatMap((arm) => {

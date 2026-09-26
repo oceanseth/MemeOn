@@ -175,7 +175,7 @@ export function useDevelopersScreen(): DevelopersScreenModel {
       send({ type: 'REVOKE_FAIL', err: copy.errors.revoke(row.label) })
       return
     }
-    send({ type: 'REVOKE_OK', label: row.label })
+    send({ type: 'REVOKE_OK', message: copy.success.revoke(row.label) })
     load()
   }, [actor, load, send])
 

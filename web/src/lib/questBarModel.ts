@@ -74,6 +74,10 @@ export interface QuestBarModel {
   showSteps: boolean
   title: string
   completionLabel: string
+  /** Same numerator as completionLabel: API steps with done === true. Not a count of kind === 'step' chips. */
+  progressValue: number
+  /** Same denominator as completionLabel: the API ladder length, including an unclaimed pack. Not chips.filter(kind === 'step').length. */
+  progressMax: number
   /** The ladder in tens, 0–100: the braincell pill's ring reads it as `data-progress`. */
   progressPercent: number
   /** "quests 1 of 5" — the pill's sr-only suffix while the ladder is live. */
@@ -120,6 +124,8 @@ export function buildQuestBarModel({
     showSteps: steps.length > 0,
     title: copy.title,
     completionLabel: `${done}/${steps.length}`,
+    progressValue: done,
+    progressMax: steps.length,
     progressPercent: steps.length > 0 ? Math.round((done / steps.length) * 10) * 10 : 0,
     progressLabel: copy.progress(done, steps.length),
     /* All five quests always visible — no disclosure step. */

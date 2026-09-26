@@ -144,7 +144,6 @@ export function buildCommonModel(
     },
     tagsInputProps: {
       value: ctx.tags,
-      maxLength: 80,
       'aria-describedby': HELP_IDS.tags,
       onChange: (event) => actions.setTags(boundTags(event.currentTarget.value)),
     },
@@ -161,12 +160,18 @@ export function buildCommonModel(
       phase === 'success'
         ? ctx.shareCopied
           ? copy.form.success.copied
-          : copy.form.success.minted
+          : ctx.shareCopyFailed
+            ? copy.form.success.copyFailed
+            : copy.form.success.minted
         : '',
     successHeading: copy.form.success.heading,
     successBody: copy.form.success.body,
     shareCopied: ctx.shareCopied,
-    copyShareLinkLabel: ctx.shareCopied ? copy.form.copied : copy.form.success.copyLink,
+    copyShareLinkLabel: ctx.shareCopied
+      ? copy.form.copied
+      : ctx.shareCopyFailed
+        ? copy.form.success.copyFailed
+        : copy.form.success.copyLink,
     copyShareLinkButtonProps: {
       type: 'button',
       onClick: () => void actions.copyShareLink(),

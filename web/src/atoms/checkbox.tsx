@@ -5,8 +5,8 @@ import type { ReactNode } from 'react'
 import type { Styled } from '@/atoms/field'
 import { cn } from '@/lib/cn'
 
-/** House tick, duplicated in the three primitives so they do not share a check atom. Chrome matches Icon. */
-function HouseTick() {
+/** Tick and mixed minus share one shell. A second svg body would clone the house tick. Chrome matches Icon. */
+function Glyph({ d, className }: { d: string; className: string }) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -18,8 +18,9 @@ function HouseTick() {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden
+      className={className}
     >
-      <path d="M7.757 12L10.409 14.652L16.243 8.818" />
+      <path d={d} />
     </svg>
   )
 }
@@ -68,7 +69,8 @@ export function Checkbox({ label, variant, className, ...props }: CheckboxProps)
       {...props}
     >
       <BaseCheckbox.Indicator data-slot="checkbox-indicator" className="flex">
-        <HouseTick />
+        <Glyph d="M7.757 12L10.409 14.652L16.243 8.818" className="hidden in-data-checked:block" />
+        <Glyph d="M7.757 12H16.243" className="hidden in-data-indeterminate:block" />
       </BaseCheckbox.Indicator>
     </BaseCheckbox.Root>
   )

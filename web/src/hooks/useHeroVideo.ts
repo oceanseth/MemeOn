@@ -32,8 +32,12 @@ export function useHeroVideo({ autoplay }: UseHeroVideoOptions = {}): HeroVideoM
 
   const onStart = () => {
     const v = videoRef.current
-    setStarted(true)
-    if (v?.paused) void v.play().catch(() => {})
+    if (!v) return
+    if (!v.paused) {
+      setStarted(true)
+      return
+    }
+    void v.play().catch(() => {})
   }
 
   const onToggleSound = () => {

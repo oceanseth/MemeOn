@@ -345,12 +345,14 @@ export const RevokeConfirmed: Story = {
   args: {
     ...ready,
     showOk: true,
-    okMsg: 'Revoked my-trading-bot.',
+    okMsg: copy.success.revoke(revokeKey.label),
     keys: [keyRows[1]!],
     quotaLabel: '1 of 5 keys',
   },
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getByText('Revoked my-trading-bot.')).toBeInTheDocument()
+    await expect(
+      within(canvasElement).getByText(copy.success.revoke(revokeKey.label)),
+    ).toBeInTheDocument()
   },
 }
 

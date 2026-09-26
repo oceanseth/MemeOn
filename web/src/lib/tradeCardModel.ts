@@ -147,8 +147,7 @@ export function tradeSideSentence(side: TradeSide, memeNames: TradeMemeInfoMap):
 function finalityLine(yours: TradeSide, memeNames: TradeMemeInfoMap): string | null {
   const parts = yours.memes.map((meme) => {
     const info = memeNames[meme.memeId]
-    const tier = info?.tierName ? `${info.tierName} ` : ''
-    return `${meme.shares} ${tier}share${meme.shares === 1 ? '' : 's'}`
+    return copy.finality.tierShares(meme.shares, info?.tierName ?? null)
   })
   if (yours.coins > 0) parts.push(braincells(yours.coins))
   if (parts.length === 0) {

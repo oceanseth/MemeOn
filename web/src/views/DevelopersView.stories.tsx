@@ -75,7 +75,7 @@ export const CreateCopyAndRevoke: Story = {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Revoke it' }))
     await waitFor(() => expect(canvas.queryByText('my-trading-bot')).not.toBeInTheDocument())
     // the irreversible action ends on a confirmation, not on silence
-    await expect(await canvas.findByText('Revoked my-trading-bot.')).toBeInTheDocument()
+    await expect(await canvas.findByText(copy.success.revoke('my-trading-bot'))).toBeInTheDocument()
     await expect(loaded.scenario.unexpected).toEqual([])
   },
 }

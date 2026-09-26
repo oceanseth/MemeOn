@@ -1,10 +1,9 @@
 // First import, always: a cascade layer's rank is fixed the first time its name is seen, so the
 // order statement in `index.css` has to reach the bundle ahead of every component's `@layer` block.
 import './index.css'
-import { StrictMode, type ReactNode } from 'react'
+import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, useNavigate } from 'react-router-dom'
-import { PopmeltProvider } from '@popmelt.com/core'
+import { BrowserRouter } from 'react-router-dom'
 import { AppView } from './views/AppView'
 import { useAuthRuntime } from './hooks/useAuthRuntime'
 import { useMountEffect } from './hooks/useMountEffect'
@@ -22,12 +21,6 @@ function AuthRuntime() {
   return null
 }
 
-function PopmeltRoot({ children }: { children: ReactNode }) {
-  const navigate = useNavigate()
-  if (!import.meta.env.DEV) return children
-  return <PopmeltProvider navigate={(url) => navigate(url)}>{children}</PopmeltProvider>
-}
-
 function Root() {
   useMountEffect(() => {
     stores.retain()
@@ -37,9 +30,7 @@ function Root() {
     <StoresProvider stores={stores}>
       <AuthRuntime />
       <BrowserRouter>
-        <PopmeltRoot>
-          <AppView />
-        </PopmeltRoot>
+        <AppView />
       </BrowserRouter>
     </StoresProvider>
   )

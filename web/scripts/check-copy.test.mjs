@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import test from 'node:test'
@@ -29,6 +37,12 @@ const withSrc = (files, run) => {
   } finally {
     rmSync(root, { recursive: true, force: true })
   }
+}
+
+// Explicit argv only: no mkdir, and no injected --baseline=.
+const runChecker = (checkerPath, args) => {
+  const result = spawnSync(process.execPath, [checkerPath, ...args], { encoding: 'utf8' })
+  return { status: result.status, output: result.stdout + result.stderr }
 }
 
 const hook = [
@@ -432,4 +446,85 @@ test('does not count atoms/ even when copy-like', () => {
       assert.doesNotMatch(listed.output, /Out of scope/)
     },
   )
+})
+
+test('exits 2 when the given source directory does not exist', () => {
+  const root = mkdtempSync(join(tmpdir(), 'memeon-copy-missing-'))
+  const missing = join(root, 'src')
+  try {
+    assert.equal(existsSync(missing), false)
+    const result = runChecker(checker, [missing, `--baseline=${join(root, 'copy-baseline.json')}`])
+    assert.equal(existsSync(missing), false)
+    assert.equal(result.status, 2, result.output)
+    assert.match(result.output, /does not exist/)
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('prints hard zero and exits 0 for an empty source directory and an empty baseline', () => {
+  const root = mkdtempSync(join(tmpdir(), 'memeon-copy-zero-'))
+  const src = join(root, 'src')
+  const baseline = join(root, 'copy-baseline.json')
+  try {
+    mkdirSync(src)
+    writeFileSync(baseline, '{}\n')
+    const result = runChecker(checker, [src, `--baseline=${baseline}`])
+    assert.equal(result.status, 0, result.output)
+    assert.match(result.output, /hard zero/)
+    assert.doesNotMatch(result.output, /→/)
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('reads copy-baseline.json beside the checker when --baseline= is omitted', () => {
+  const root = mkdtempSync(join(import.meta.dirname, 'memeon-copy-default-'))
+  const copied = join(root, 'check-copy.mjs')
+  const src = join(root, 'src')
+  const baseline = join(root, 'copy-baseline.json')
+  const repoBaseline = join(import.meta.dirname, 'copy-baseline.json')
+  const repoBytes = readFileSync(repoBaseline)
+  try {
+    // Beside this copy, not the repo file. No --baseline= and no --update.
+    copyFileSync(checker, copied)
+    mkdirSync(src)
+    writeFileSync(baseline, '{"screens/Nope.tsx":1}\n')
+    const result = runChecker(copied, [src])
+    assert.equal(result.status, 1, result.output)
+    assert.match(result.output, /screens\/Nope\.tsx: 1 → 0/)
+    assert.deepEqual(JSON.parse(readFileSync(baseline, 'utf8')), { 'screens/Nope.tsx': 1 })
+    assert.deepEqual(readFileSync(repoBaseline), repoBytes)
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('Anatomy check-copy paragraph names the ratchet engines and JSX text, not JsxText', () => {
+  const anatomy = readFileSync(resolve(import.meta.dirname, '../src/Anatomy.mdx'), 'utf8')
+  const start = anatomy.indexOf('`check-copy` is a ratchet:')
+  assert.ok(start >= 0, 'Anatomy.mdx is missing the check-copy ratchet paragraph')
+  const rest = anatomy.slice(start)
+  const end = rest.indexOf('`pnpm run storybook`')
+  assert.ok(end >= 0, 'check-copy paragraph must end before the storybook sentence')
+  const paragraph = rest.slice(0, end)
+  for (const engine of [
+    '`hooks/`',
+    '`screens/`',
+    '`views/`',
+    '`molecules/`',
+    '`organisms/`',
+    '`lib/*Model.ts`',
+    '`lib/createMemeModel/`',
+  ]) {
+    assert.ok(paragraph.includes(engine), `check-copy paragraph must name ${engine}`)
+  }
+  const flattened = paragraph.replace(/\s+/g, ' ')
+  assert.match(flattened, /quoted literals/)
+  assert.match(flattened, /JSX text/)
+  assert.ok(paragraph.includes('`copy/`'), 'copy/ is uncounted')
+  assert.ok(paragraph.includes('`atoms/`'), 'atoms/ is not walked')
+  assert.ok(paragraph.includes('`stores/`'), 'stores/ is not walked')
+  assert.doesNotMatch(paragraph, /JsxText/)
+  assert.doesNotMatch(anatomy, /`JsxText`/)
 })

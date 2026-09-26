@@ -1,4 +1,5 @@
 import { assign, setup } from 'xstate'
+import { createMemeCopy } from '../copy/createMeme'
 import type { GiphyResult, Meme } from '../lib/types'
 
 export type CreateMemeMode = 'generate' | 'video' | 'url' | 'upload' | 'remix' | 'giphy'
@@ -81,6 +82,7 @@ export interface CreateMemeContext {
   mintedId: string | null
   shareUrl: string
   shareCopied: boolean
+  shareCopyFailed: boolean
 }
 
 export type CreateMemeEvent =
@@ -121,6 +123,7 @@ export type CreateMemeEvent =
   | { type: 'DONE' }
   | { type: 'MINTED'; id: string; shareUrl: string }
   | { type: 'SHARE_COPIED' }
+  | { type: 'SHARE_COPY_FAILED' }
   | { type: 'FAIL'; err: string }
 
 const returnToMode = [
@@ -148,6 +151,38 @@ const returnToMode = [
 ]
 
 const settleBusy = { busy: null, busyElapsed: null } as const
+
+/** Fresh arrays per call so two desks never share a Giphy result list. */
+export function freshCreateMemeDefaults(): Omit<
+  CreateMemeContext,
+  'remixId' | 'mode' | 'title' | 'tags' | 'prompt' | 'imageUrl'
+> {
+  return {
+    remixSource: null,
+    remixOutput: 'image',
+    videoMode: 'edit',
+    motionPrompt: '',
+    editedFrame: null,
+    urlDraft: '',
+    videoUrl: '',
+    imageFileName: null,
+    videoFileName: null,
+    busy: null,
+    busyElapsed: null,
+    err: null,
+    giphyCategories: [],
+    giphyQuery: '',
+    giphyResults: [],
+    giphySearched: false,
+    giphyPick: null,
+    edited: false,
+    artworkSource: null,
+    mintedId: null,
+    shareUrl: '',
+    shareCopied: false,
+    shareCopyFailed: false,
+  }
+}
 
 const settleMintOn = {
   DONE: returnToMode.map((branch) => ({
@@ -190,34 +225,13 @@ export const createMemeMachine = setup({
 }).createMachine({
   id: 'createMeme',
   context: ({ input }) => ({
+    ...freshCreateMemeDefaults(),
     remixId: input.remixId,
     mode: input.remixId ? 'remix' : 'generate',
-    remixSource: null,
-    remixOutput: 'image',
-    videoMode: 'edit',
-    motionPrompt: '',
-    editedFrame: null,
     title: '',
     tags: '',
     prompt: '',
-    urlDraft: '',
     imageUrl: '',
-    videoUrl: '',
-    imageFileName: null,
-    videoFileName: null,
-    busy: null,
-    busyElapsed: null,
-    err: null,
-    giphyCategories: [],
-    giphyQuery: '',
-    giphyResults: [],
-    giphySearched: false,
-    giphyPick: null,
-    edited: false,
-    artworkSource: null,
-    mintedId: null,
-    shareUrl: '',
-    shareCopied: false,
   }),
   initial: 'chooseMode',
   on: {
@@ -285,7 +299,7 @@ export const createMemeMachine = setup({
         title: ({ context, event }) => context.title || boundTitle(event.meme.title),
       }),
     },
-    REMIX_SOURCE_MISSING: { actions: assign({ err: 'source meme not found' }) },
+    REMIX_SOURCE_MISSING: { actions: assign({ err: createMemeCopy.errors.remixSourceMissing }) },
     SET_GIPHY_CATEGORIES: {
       actions: assign({ giphyCategories: ({ event }) => event.categories }),
     },
@@ -389,7 +403,12 @@ export const createMemeMachine = setup({
     },
     success: {
       on: {
-        SHARE_COPIED: { actions: assign({ shareCopied: true }) },
+        SHARE_COPIED: {
+          actions: assign({ shareCopied: true, shareCopyFailed: false }),
+        },
+        SHARE_COPY_FAILED: {
+          actions: assign({ shareCopied: false, shareCopyFailed: true }),
+        },
       },
     },
     error: {

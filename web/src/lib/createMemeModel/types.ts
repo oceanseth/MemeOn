@@ -45,6 +45,7 @@ export interface CreateMemeFileDropModel {
   emptyLabel: string
   /** The picked file's name, so the row names it instead of the browser. */
   fileName: string | null
+  disabled?: boolean
   'aria-describedby': string
   onFile: (file: File) => void
 }
@@ -87,6 +88,8 @@ export interface CreateMemeCardModel {
   titleIsPlaceholder: boolean
   /** the tier's product name on its own — what the `TierChip` prints */
   tierName: string
+  /** the note beside the tier chip for a newly minted card */
+  tierSuffix: string
   /** the tier and what it means for a card this new: "Paper · freshly minted" */
   tierLabel: string
   statsLabel: string

@@ -65,6 +65,58 @@ describe('marketplaceQuery URL codec', () => {
     })
   })
 
+  it('drops unknown type and tier and keeps image, video, and holo', () => {
+    for (const raw of [
+      'type=audio',
+      'type=all',
+      'type=Image',
+      'type=VIDEO',
+      'tier=nope',
+      'tier=Holo',
+      'type=&tier=',
+    ]) {
+      expect(filtersFromUrl(new URLSearchParams(raw))).toEqual({
+        q: '',
+        type: '',
+        tier: '',
+        listed: false,
+      })
+    }
+
+    expect(filtersFromUrl(new URLSearchParams('type=image'))).toEqual({
+      q: '',
+      type: 'image',
+      tier: '',
+      listed: false,
+    })
+
+    expect(
+      filtersFromUrl(
+        new URLSearchParams('q=cats&type=video&tier=holo&listed=true&sort=views&dir=asc'),
+      ),
+    ).toEqual({
+      q: 'cats',
+      type: 'video',
+      tier: 'holo',
+      listed: true,
+      sortKey: 'views',
+      sortDir: 'asc',
+    })
+
+    expect(
+      filtersFromUrl(
+        new URLSearchParams('q=cats&type=audio&tier=nope&listed=true&sort=views&dir=asc'),
+      ),
+    ).toEqual({
+      q: 'cats',
+      type: '',
+      tier: '',
+      listed: true,
+      sortKey: 'views',
+      sortDir: 'asc',
+    })
+  })
+
   it('queryString sets limit=60, never sort/dir, and includes q/type/tier/listed when set', () => {
     expect(MARKETPLACE_PAGE_SIZE).toBe(60)
     expect(queryString({ q: '', type: '', tier: '', listed: false })).toBe('limit=60')

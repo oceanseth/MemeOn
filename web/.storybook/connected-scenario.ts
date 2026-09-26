@@ -57,6 +57,15 @@ function clone<T>(value: T): T {
   return structuredClone(value)
 }
 
+// Unsuffixed id stays so GenerateAndMint can keep /m/meme-minted.
+function allocateMintedId(memes: readonly Meme[]): string {
+  const taken = new Set(memes.map((meme) => meme.id))
+  if (!taken.has('meme-minted')) return 'meme-minted'
+  let n = 2
+  while (taken.has(`meme-minted-${n}`)) n += 1
+  return `meme-minted-${n}`
+}
+
 function incomingFriend(): FriendEntry {
   return {
     ...clone(friendAccepted),
@@ -318,13 +327,20 @@ export class ConnectedScenario {
       const cursor = url.searchParams.get('cursor')
       return json({
         memes: clone(cursor ? [this.mintedMeme] : memes),
-        nextCursor: cursor ? null : null,
+        nextCursor: cursor ? null : 'page-2',
       })
     }
     if (method === 'POST' && path === '/api/memes') {
-      this.mintedMeme = { ...this.mintedMeme, ...(body as Partial<Meme>) }
-      this.memes.push(clone(this.mintedMeme))
-      return json({ meme: clone(this.mintedMeme) })
+      const partial = (body ?? {}) as Partial<Meme>
+      const supplied = typeof partial.id === 'string' && partial.id.length > 0 ? partial.id : null
+      const created = {
+        ...clone(this.mintedMeme),
+        ...partial,
+        id: supplied ?? allocateMintedId(this.memes),
+      }
+      const stored = clone(created)
+      this.memes.push(stored)
+      return json({ meme: clone(stored) })
     }
     const detailMatch = path.match(/^\/api\/memes\/([^/]+)$/)
     if (detailMatch && method === 'GET') {

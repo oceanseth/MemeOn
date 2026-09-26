@@ -45,7 +45,7 @@ export function buildGiphyModeModel(
     giphyPick: ctx.giphyPick
       ? {
           title: ctx.giphyPick.title,
-          authorLabel: ctx.giphyPick.author ? ` (@${ctx.giphyPick.author})` : null,
+          authorLabel: ctx.giphyPick.author ? copy.giphy.authorLabel(ctx.giphyPick.author) : null,
         }
       : null,
     giphyStatusText:

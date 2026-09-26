@@ -6,9 +6,9 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
+import { configDefaults } from 'vitest/config'
 const dirname =
   typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url))
-const underVitest = Boolean(process.env.VITEST)
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 const proxy = {
@@ -23,26 +23,15 @@ const proxy = {
     secure: false,
   },
 }
-export default defineConfig(async ({ command, isPreview }) => ({
-  plugins: [
-    react(),
-    tailwindcss(),
-    ...(command === 'serve' && !isPreview && !underVitest
-      ? [(await import('@popmelt.com/core/vite')).popmelt()]
-      : []),
-  ],
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       '@': path.resolve(dirname, 'src'),
-      // Popmelt peers lucide-react; this repo never installs that package.
-      ...(!underVitest
-        ? { 'lucide-react': path.resolve(dirname, 'src/popmeltLucideStub.ts') }
-        : {}),
     },
   },
   optimizeDeps: {
     include: ['msw-storybook-addon/csf3'],
-    ...(!underVitest ? { exclude: ['lucide-react'] } : {}),
   },
   server: {
     port: 5173,
@@ -66,7 +55,14 @@ export default defineConfig(async ({ command, isPreview }) => ({
         test: {
           name: 'unit',
           environment: 'node',
-          include: ['src/**/*.test.ts', '.storybook/**/*.test.ts'],
+          include: [
+            'src/**/*.test.ts',
+            'src/**/*.test.tsx',
+            '.storybook/**/*.test.ts',
+            '.storybook/**/*.test.tsx',
+          ],
+          // *.test.tsx also matches *.runtime.test.tsx; those stay on project runtime.
+          exclude: [...configDefaults.exclude, '**/*.runtime.test.tsx'],
         },
       },
       {
@@ -112,4 +108,4 @@ export default defineConfig(async ({ command, isPreview }) => ({
       },
     ],
   },
-}))
+})

@@ -136,7 +136,7 @@ export const CloseReopenRejectsLateComposeAndProposes: Story = {
   play: async ({ canvasElement, loaded }) => {
     const canvas = within(canvasElement)
     await expect(await canvas.findByText(/fresh paper/)).toBeInTheDocument()
-    await expect(document.title).toBe(`${copy.pageTitle} — ${sharedCopy.brand}`)
+    await expect(document.title).toBe(sharedCopy.documentTitle(copy.pageTitle))
     await userEvent.click(canvas.getByRole('button', { name: copy.newTrade }))
     await userEvent.click(canvas.getByRole('button', { name: copy.closeComposer }))
     loaded.scenario.release('friends-a')

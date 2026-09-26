@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import test from 'node:test'
@@ -301,35 +301,6 @@ test('an allowlist name that does not appear in its file is unused', () => {
       assert.match(output, /npm run vanished/)
     },
   )
-})
-
-test('Anatomy check-copy paragraph names the ratchet engines and JSX text, not JsxText', () => {
-  const anatomy = readFileSync(resolve(import.meta.dirname, '../src/Anatomy.mdx'), 'utf8')
-  const start = anatomy.indexOf('`check-copy` is a ratchet:')
-  assert.ok(start >= 0, 'Anatomy.mdx is missing the check-copy ratchet paragraph')
-  const rest = anatomy.slice(start)
-  const end = rest.indexOf('`pnpm run storybook`')
-  assert.ok(end >= 0, 'check-copy paragraph must end before the storybook sentence')
-  const paragraph = rest.slice(0, end)
-  for (const engine of [
-    '`hooks/`',
-    '`screens/`',
-    '`views/`',
-    '`molecules/`',
-    '`organisms/`',
-    '`lib/*Model.ts`',
-    '`lib/createMemeModel/`',
-  ]) {
-    assert.ok(paragraph.includes(engine), `check-copy paragraph must name ${engine}`)
-  }
-  const flattened = paragraph.replace(/\s+/g, ' ')
-  assert.match(flattened, /quoted literals/)
-  assert.match(flattened, /JSX text/)
-  assert.ok(paragraph.includes('`copy/`'), 'copy/ is uncounted')
-  assert.ok(paragraph.includes('`atoms/`'), 'atoms/ is not walked')
-  assert.ok(paragraph.includes('`stores/`'), 'stores/ is not walked')
-  assert.doesNotMatch(paragraph, /JsxText/)
-  assert.doesNotMatch(anatomy, /`JsxText`/)
 })
 
 test('exits 0 on the real tree', () => {

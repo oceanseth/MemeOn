@@ -12,7 +12,7 @@
  *     and lib/humanize (copy is plain data; the figure helpers are the one allowance)
  *   - a React state hook in a component or helper below views/
  *   - React context (createContext / useContext) below views/, except inside atoms/, where a
- *     compound atom (toggle group, tabs) hands its variant to its parts through a context
+ *     compound atom (toggle group, avatar) hands its variant to its parts through a context
  *   - a state-library import below views/
  *   - a value import of createElement / Fragment from react, React.createElement / jsxs,
  *     JSX, or a value import from a markup tier, in hooks/ .ts files or lib/ *Model.ts
@@ -298,7 +298,11 @@ const inspectEngineSource = (file) => {
   const text = readFileSync(file, 'utf8')
   const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS)
 
-  if ((sourceFile.parseDiagnostics ?? []).length > 0) {
+  // parseDiagnostics is not public. A missing list must fail the file, not skip the JSX probe.
+  const parseDiagnostics = sourceFile.parseDiagnostics
+  if (!Array.isArray(parseDiagnostics)) {
+    report(file, 'TypeScript parse diagnostics are unavailable')
+  } else if (parseDiagnostics.length > 0) {
     const tsx = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
     let reportedJsx = false
     const visitJsx = (node) => {
