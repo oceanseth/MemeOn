@@ -11,7 +11,8 @@ import type { DiscordLinkScreenModel } from '../hooks/useDiscordLinkScreen'
 
 const COLUMN = 'mx-auto max-w-255 text-center'
 
-const TITLE = cn('m-0 font-display text-5xl font-normal text-foreground', 'max-md:text-2xl')
+/* the page-title step: 5xl, and the ladder's 4xl under the phone cut like every other page title */
+const TITLE = cn('m-0 font-display text-5xl font-normal text-foreground', 'max-md:text-4xl')
 
 /** Row label inherits the band's tone — the command is plain text, not a code chip. */
 const ROW_LABEL =

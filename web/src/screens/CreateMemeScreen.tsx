@@ -78,7 +78,7 @@ const PREVIEW_PLACEHOLDER = cn(
   'text-sm font-medium text-muted-foreground',
 )
 const PREVIEW_SUB = cn(
-  'mt-3 flex items-center justify-between gap-2 text-sm font-semibold text-muted-foreground tabular-nums',
+  'mt-3 flex items-center justify-between gap-2 text-sm font-semibold text-muted-foreground',
   '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
 )
 

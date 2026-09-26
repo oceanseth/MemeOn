@@ -18,7 +18,7 @@ const SKELETON_CARDS = ['a', 'b', 'c', 'd']
 /* identity card: min height floor so wrapped content can grow past the avatar row */
 const IDENTITY_CARD = 'mb-5 flex flex-wrap items-center gap-x-3.5 gap-y-4'
 
-const IDENTITY_LINE = 'm-0 truncate font-display text-3xl font-normal text-foreground wrap-anywhere'
+const IDENTITY_LINE = 'm-0 truncate font-display text-3xl font-normal text-foreground'
 
 const META_LINE =
   'm-0 mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-base font-semibold text-muted-foreground'

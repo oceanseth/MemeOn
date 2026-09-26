@@ -33,7 +33,7 @@ const BUBBLE = cn('absolute -top-1 -right-1')
 
 /** Title band: the name, then the count of what is new in it. */
 const HEAD = cn('flex items-baseline gap-2 px-3.5 pt-3 pb-2.5')
-const COUNT = cn('text-sm font-medium text-muted-foreground tabular-nums')
+const COUNT = cn('text-sm font-medium text-muted-foreground')
 
 /**
  * The list: hairline-separated rows, capped at ~7 of them so a full queue is a panel and not a
@@ -53,8 +53,8 @@ const LIST = cn(
 const ROW = cn('shrink-0')
 
 /** Two lines of message, then the stamp. `text-sm` is the list's step: 20 rows of `text-base` is a page. */
-const MESSAGE = cn('line-clamp-2 text-sm/5 text-foreground wrap-anywhere')
-const TIME = cn('text-xs font-normal text-muted-foreground tabular-nums')
+const MESSAGE = cn('line-clamp-2 text-sm text-foreground wrap-anywhere')
+const TIME = cn('text-xs font-normal text-muted-foreground')
 
 /** The unread dot keeps its own lane at the row's end, so a message never reflows when one is read. */
 const DOT = cn('mt-1.5 size-2 shrink-0 self-start rounded-full bg-primary')

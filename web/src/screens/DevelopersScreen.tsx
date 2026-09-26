@@ -150,7 +150,7 @@ export function DevelopersScreen({
         <div className="flex items-center justify-between gap-4">
           <CardTitle render={<h2 />}>{keysHeading}</CardTitle>
           {quotaLabel && (
-            <span className="shrink-0 text-sm font-medium text-muted-foreground tabular-nums">
+            <span className="shrink-0 text-sm font-medium text-muted-foreground">
               {quotaLabel}
             </span>
           )}

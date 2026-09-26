@@ -76,9 +76,10 @@ const ART_BACKDROP =
 const ART = cn('block object-contain')
 
 const KICKER =
-  'flex min-h-4 items-center justify-between gap-2 text-xs text-muted-foreground tabular-nums @max-card-narrow:min-h-8.5 @max-card-narrow:flex-col @max-card-narrow:items-start @max-card-narrow:justify-start @max-card-narrow:gap-0.5'
+  'flex min-h-4 items-center justify-between gap-2 text-xs text-muted-foreground @max-card-narrow:min-h-8.5 @max-card-narrow:flex-col @max-card-narrow:items-start @max-card-narrow:justify-start @max-card-narrow:gap-0.5'
 
-const TIER_NAME = cn('font-semibold text-foreground uppercase')
+/* the tier name is set in caps: it takes the caps tracking the other two eyebrows wear */
+const TIER_NAME = cn('font-semibold tracking-wider text-foreground uppercase')
 
 const STATS = cn('flex items-center')
 
@@ -86,7 +87,7 @@ const STATS = cn('flex items-center')
    narrow form may wrap its right lane under the value (20 + 2 + 16), and reserves that instead */
 const memeSubVariants = cva(
   [
-    'flex items-start justify-between gap-2 text-xs font-medium text-foreground tabular-nums',
+    'flex items-start justify-between gap-2 text-xs font-medium text-foreground',
     '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
   ],
   {

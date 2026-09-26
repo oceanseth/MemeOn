@@ -75,7 +75,7 @@ export function LandingHero({
               )}
             >
               <dt className="text-xs text-muted-foreground">{stat.label}</dt>
-              <dd className="m-0 font-display text-3xl text-foreground tabular-nums max-md:text-xl">
+              <dd className="m-0 font-display text-3xl text-foreground max-md:text-xl">
                 {stat.value}
               </dd>
             </div>
@@ -120,7 +120,7 @@ export function LandingHero({
               >
                 {card.tierName}
               </p>
-              <p className="m-0 text-xs font-semibold text-foreground tabular-nums">
+              <p className="m-0 text-xs font-semibold text-foreground">
                 {card.resharesLabel}
               </p>
               <p className="m-0 text-xs text-muted-foreground">{card.rarityLabel}</p>

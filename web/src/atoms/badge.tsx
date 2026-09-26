@@ -21,7 +21,7 @@ const badgeVariants = cva(
       size: {
         default: '',
         /** a 16px disc on the corner of a 34px trigger: a number, nothing else */
-        count: 'h-4 min-w-4 rounded-full px-1 leading-none tabular-nums',
+        count: 'h-4 min-w-4 rounded-full px-1 leading-none',
       },
     },
     defaultVariants: { variant: 'default', size: 'default' },

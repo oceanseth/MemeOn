@@ -93,7 +93,7 @@ export function ProgressValue({ className, ...props }: Styled<ProgressPrimitive.
   return (
     <ProgressPrimitive.Value
       data-slot="progress-value"
-      className={cn('ml-auto text-sm text-muted-foreground tabular-nums', className)}
+      className={cn('ml-auto text-sm text-muted-foreground', className)}
       {...props}
     />
   )
