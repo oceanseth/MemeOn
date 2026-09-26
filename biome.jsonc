@@ -14,7 +14,6 @@
       "!!**/dist",
       "!!**/storybook-static",
       "!!**/.turbo",
-      "!!**/.popmelt",
       "!!**/coverage",
       "!!**/.hermes",
       "!!**/api/vendor",
