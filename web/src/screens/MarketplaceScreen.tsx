@@ -33,9 +33,12 @@ import { cn } from '../lib/cn'
  * The control plate docks under the topbar while the grid scrolls. It bleeds only into the page
  * container's own gutter (`-mx-5 px-5`). A phone has no vertical budget to pin filters,
  * so ≤720 the whole treatment is absent.
+ * The gap to the grid is split: 8px of glass under the chips (`pb-2`) and 10px of unpainted
+ * margin (`mb-2.5`), so a first-row card's hover lift (4px up, 1% larger: about 7px at the
+ * widest track) rises into clear page rather than under the plate's glass.
  */
 const marketControls = cn(
-  'flex flex-col gap-3.5 pt-0 pb-3.5',
+  'flex flex-col gap-3.5 pt-0 pb-2 mb-2.5',
   /* it docks under the sticky bar (`--topbar-h`, the same 64 at every width) */
   'lg:docked lg:-mx-5 lg:px-5',
 )
