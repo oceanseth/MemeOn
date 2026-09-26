@@ -454,7 +454,7 @@ export function TokenSheet() {
             className="flex flex-wrap items-baseline gap-x-3"
           >
             <code className="w-24 shrink-0 text-xs">{name}</code>
-            <code className="w-20 shrink-0 text-xs tabular-nums">
+            <code className="w-20 shrink-0 text-xs">
               {token(`--breakpoint-${name}`)}
             </code>
             <span className="min-w-0 text-sm text-muted-foreground">{role}</span>
@@ -525,9 +525,10 @@ export function TokenSheet() {
           2,480,000 · 9876543210
         </p>
         <p className="m-0 mt-2 text-sm text-muted-foreground">
-          <code>font-variant-numeric: tabular-nums</code> on <code>body</code>: every number in this
-          app is a count, a price or a holding, so the two lines above are exactly as wide as each
-          other. Prose opts out with <code>proportional-nums</code>.
+          <code>font-variant-numeric: proportional-nums</code> on <code>body</code>: Onest&apos;s
+          tabular figures are all 0.672em wide against a 0.363em proportional 1, so a tabular count
+          reads as &quot;1 0&quot;. Every number sets as one word; a column aligns on its right
+          edge. Nothing wears <code>tabular-nums</code>.
         </p>
       </div>
 
@@ -716,13 +717,15 @@ async function assertTokensPainted(which: 'light' | 'dark') {
   await expect(h4.fontFamily).toContain('Onest Variable')
   await expect(h4.fontWeight).toBe(token('--font-weight-semibold'))
 
-  /* every number is a count, a price or a holding: figures are tabular, so two lines of the same
-     length are exactly as wide as each other */
-  await expect(getComputedStyle(slot('numerals')).fontVariantNumeric).toContain('tabular-nums')
-  await expect(slot('numerals-a').getBoundingClientRect().width).toBeCloseTo(
-    slot('numerals-b').getBoundingClientRect().width,
-    1,
-  )
+  /* figures are proportional: the line of ones is narrower than the line of eights and nines,
+     which is the tell that no tabular set is in force */
+  await expect(getComputedStyle(slot('numerals')).fontVariantNumeric).toContain('proportional-nums')
+  const inkWidth = (el: Element) => {
+    const range = document.createRange()
+    range.selectNodeContents(el)
+    return range.getBoundingClientRect().width
+  }
+  await expect(inkWidth(slot('numerals-a'))).toBeLessThan(inkWidth(slot('numerals-b')))
 
   await document.fonts.ready
   await expect(document.fonts.check("400 16px 'Unbounded Variable'")).toBe(true)

@@ -105,7 +105,7 @@ function TierLadder({ model, hype }: { model: DetailTierLadderModel; hype: strin
     <div data-slot="tier-progression" className="mt-3">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
         <span className="text-sm font-semibold text-success-foreground">{model.currentLabel}</span>
-        <span className="text-xs font-medium text-muted-foreground tabular-nums">
+        <span className="text-xs font-medium text-muted-foreground">
           {model.nextLabel}
         </span>
       </div>
@@ -408,7 +408,7 @@ export function MemeDetailScreen({
                             source.label
                           )}
                         </span>
-                        <span className="ml-auto inline-flex shrink-0 items-center gap-0.5 text-muted-foreground tabular-nums">
+                        <span className="ml-auto inline-flex shrink-0 items-center gap-0.5 text-muted-foreground">
                           <span aria-hidden="true">
                             <Icon name="eye" size={14} />
                           </span>{' '}
@@ -428,7 +428,7 @@ export function MemeDetailScreen({
               </CardTitle>
               <div className={rowList}>
                 {detail.capTable.map((holder) => (
-                  <div key={holder.userId} className={cn(personRow, 'tabular-nums')}>
+                  <div key={holder.userId} className={personRow}>
                     <span className="truncate font-semibold">{holder.label}</span>
                     <span className="ml-auto shrink-0">{holder.sharesLabel}</span>
                   </div>

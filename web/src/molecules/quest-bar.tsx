@@ -42,7 +42,7 @@ const ANCHOR_ID = 'quest-pop-anchor'
  */
 const PILL = cn(
   'inline-flex h-10 shrink-0 items-center gap-1 rounded-full px-4',
-  'text-base font-semibold whitespace-nowrap text-foreground tabular-nums',
+  'text-base font-semibold whitespace-nowrap text-foreground',
   'max-xl:h-9 max-xl:px-3 max-xl:text-sm',
 )
 const PILL_STATIC = cn(PILL, 'material-raised')
@@ -147,7 +147,7 @@ export function QuestBar({ model, balance }: QuestBarProps) {
                     />
                     <span className="truncate">{model.title}</span>
                     <span
-                      className="text-sm font-medium text-muted-foreground tabular-nums"
+                      className="text-sm font-medium text-muted-foreground"
                       data-slot="questbar-count"
                     >
                       {model.completionLabel}
@@ -201,7 +201,7 @@ export function QuestBar({ model, balance }: QuestBarProps) {
                         <span className="sr-only">{chip.statusLabel} </span>
                         <span className="min-w-0 flex-1">{chip.title}</span>
                         <em
-                          className="inline-flex items-center gap-1 text-sm not-italic tabular-nums"
+                          className="inline-flex items-center gap-1 text-sm"
                           aria-hidden="true"
                         >
                           <Icon name="brain" size={14} />

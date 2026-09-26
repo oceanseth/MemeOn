@@ -31,7 +31,7 @@ const composeGrid = cn(
 const columnFields = cn('flex flex-col gap-2.5')
 /** A stack of cards, evenly spaced. */
 const rowList = cn('flex flex-col gap-3.5')
-const countNote = 'text-sm text-muted-foreground tabular-nums'
+const countNote = 'text-sm text-muted-foreground'
 const listHeadingRow = 'mb-3.5 items-baseline'
 const proposeCaption = 'text-sm text-muted-foreground'
 

@@ -16,7 +16,7 @@ import { Icon } from '@/atoms/icon'
 const skeletonRows = [0, 1, 2, 3, 4]
 
 /** Braincell count colour: bubblegum ramp flips with theme. */
-const COUNT = 'font-sans font-semibold text-braincell tabular-nums'
+const COUNT = 'font-sans font-semibold text-braincell'
 
 /**
  * Two lists, not one: the podium is inside the panel and the ladder continues beside it. Each row's
@@ -30,7 +30,7 @@ const BOARD = 'm-0 flex list-none flex-col gap-5 p-0 max-md:gap-3.5'
 const PODIUM = 'h-full text-center md:w-54.5 md:flex-col md:items-center max-md:text-left'
 
 const RANK_NUMERAL =
-  'w-7 shrink-0 text-center text-lg font-semibold text-muted-foreground tabular-nums'
+  'w-7 shrink-0 text-center text-lg font-semibold text-muted-foreground'
 
 /**
  * The podium ornament: an empty `medal` disc in the rank's metal, with the rank numeral beside it.
@@ -46,7 +46,7 @@ const RANK_NUMERAL =
  * visual restatement of something already spoken, not a second voice.
  */
 const PODIUM_MEDAL = 'inline-flex items-center gap-0.5 leading-none'
-const PODIUM_RANK = 'text-lg font-semibold tabular-nums max-md:text-base'
+const PODIUM_RANK = 'text-lg font-semibold max-md:text-base'
 
 function RankRow({ leader, youLabel }: { leader: LeaderboardRowModel; youLabel: string }) {
   return (

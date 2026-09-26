@@ -28,6 +28,30 @@
    `@utility`/`@theme` sheet: nothing is emitted until a class asks for it. */
 @import "tw-animate-css";
 
+/* Metric-compatible fallbacks, so the swap from the first-paint face to the real one does not
+   reflow the page: Arial (Liberation Sans on Linux) scaled to each face's average advance and
+   given the face's own ascent and descent. The numbers come from the fonts themselves (fontTools,
+   English letter frequency), then calibrated on a rendered pangram-plus-digits line in Chromium:
+   Onest sets 5.2% wider than Arial, Unbounded 33.4%; the vertical overrides are each face's hhea
+   ascent and descent divided by that scale. Where no `local()` face exists (Android) the stack
+   falls through to `system-ui` as before. */
+@font-face {
+  font-family: "Onest Fallback";
+  src: local("Arial"), local("Liberation Sans"), local("Helvetica");
+  size-adjust: 105.2%;
+  ascent-override: 92.2%;
+  descent-override: 29%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Unbounded Fallback";
+  src: local("Arial"), local("Liberation Sans"), local("Helvetica");
+  size-adjust: 133.4%;
+  ascent-override: 74.6%;
+  descent-override: 18.4%;
+  line-gap-override: 0%;
+}
+
 /* Auto source detection reads every file as markup and mines class names out of it. `cn`'s fixtures
    are class-name literals that no markup wears; each one Tailwind emitted would ship a utility
    nothing asks for. Path is relative to this file. */
@@ -176,9 +200,11 @@
      and the landing hero. 700 does not exist in this typeset. Neither face carries an `opsz`
      axis, so `font-optical-sizing` has nothing to do and the per-step tracking below is the
      optical-size substitute. No `--tracking-*` role token survives: a step carries its tracking
-     and the stock `tracking-wider` / `tracking-normal` are the only escapes. */
-  --font-display: "Unbounded Variable", "Unbounded", system-ui, sans-serif;
-  --font-sans: "Onest Variable", "Onest", system-ui, sans-serif;
+     and the stock `tracking-wider` / `tracking-normal` are the only escapes. Figures are
+     proportional (`body`, below): neither face's tabular set is fit for running text. The two
+     `* Fallback` families are Arial with each face's metrics, declared under the imports. */
+  --font-display: "Unbounded Variable", "Unbounded", "Unbounded Fallback", system-ui, sans-serif;
+  --font-sans: "Onest Variable", "Onest", "Onest Fallback", system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --text-*: initial;
@@ -405,9 +431,15 @@
        part of why Unbounded 500 read as a bold. Light-on-dark gains the most. */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* every number in this app is a count, a price or a holding: figures line up by default;
-       prose that wants proportional figures opts out with `proportional-nums` */
-    font-variant-numeric: tabular-nums;
+    /* Proportional figures. Onest's tabular set is one 0.672em advance for every digit — its
+       proportional 1 is 0.363em and its 2 is 0.566em — so `tabular-nums` letter-spaces every
+       count into "1 0" and "2 2" (Unbounded: 0.78em against a 0.471em 1). Nothing in this app
+       needs digit-by-digit alignment: a column of numbers aligns on its right edge (`ml-auto`,
+       `text-right`) and each number reads as one word. `tabular-nums` is not for either face. */
+    font-variant-numeric: proportional-nums;
+    /* Neither face ships an italic and every weight the ladder names sits on the variable axis:
+       never a synthesised slant or bold. `em` and `strong` are set below. */
+    font-synthesis: none;
     min-height: 100dvh;
   }
 
@@ -483,6 +515,20 @@
   p {
     line-height: var(--text-base--line-height);
     text-wrap: pretty;
+  }
+
+  /* Inline emphasis in a typeset with no italic: `em` is Onest 500 upright and `strong` is 600.
+     Preflight's `bolder` would reach 700 (900 inside a 600 label), weights this ladder does not
+     have. */
+  em,
+  i {
+    font-style: normal;
+    font-weight: var(--font-weight-medium);
+  }
+
+  b,
+  strong {
+    font-weight: var(--font-weight-semibold);
   }
 
   /* the one thing a user must type verbatim never breaks mid-token */

@@ -86,7 +86,7 @@ export function FieldCounter({ className, ...props }: ComponentPropsWithoutRef<'
     <span
       data-slot="field-counter"
       className={cn(
-        'ml-auto shrink-0 text-sm font-normal text-muted-foreground tabular-nums',
+        'ml-auto shrink-0 text-sm font-normal text-muted-foreground',
         className,
       )}
       {...props}

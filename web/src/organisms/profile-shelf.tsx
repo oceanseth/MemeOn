@@ -79,7 +79,7 @@ export function ProfileShelf({
               <Button className="max-sm:w-full" {...showMoreButtonProps}>
                 {showMoreLabel}
               </Button>
-              <p className="m-0 text-xs text-muted-foreground tabular-nums">{gridCountLabel}</p>
+              <p className="m-0 text-xs text-muted-foreground">{gridCountLabel}</p>
             </div>
           )}
         </>

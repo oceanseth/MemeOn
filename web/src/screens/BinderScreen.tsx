@@ -25,7 +25,7 @@ const SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6'] as const
  *  always there, at the badge's 24px, so a card that has nothing to say here is still the same
  *  height as one that does — a grid's rows must match across rows, not only within one. */
 const binderCardFooterClasses = cn(
-  'mt-0.5 flex min-h-6 items-start justify-between gap-2 text-xs font-medium text-foreground tabular-nums',
+  'mt-0.5 flex min-h-6 items-start justify-between gap-2 text-xs font-medium text-foreground',
   '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
 )
 
@@ -78,7 +78,7 @@ export function BinderScreen({
             >
               {identity.name}
             </p>
-            <p className="m-0 mt-2 text-sm font-medium text-muted-foreground tabular-nums">
+            <p className="m-0 mt-2 text-sm font-medium text-muted-foreground">
               {identity.statsLabel}
             </p>
           </div>
@@ -89,7 +89,7 @@ export function BinderScreen({
         <div className="min-w-0">
           <Heading as="h3">{collectionHeading}</Heading>
           {/* mounted in every state, text swapped: a live region inserted with its content is missed */}
-          <span className="mt-1 block text-sm text-muted-foreground tabular-nums" {...statusProps}>
+          <span className="mt-1 block text-sm text-muted-foreground" {...statusProps}>
             {statusMessage}
           </span>
         </div>
