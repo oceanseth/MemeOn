@@ -37,7 +37,8 @@ Tier frame art is generated with the Masky image API (`api/scripts/generate-fram
   Settings (theme, connections), Developers (API keys), Discord link, invite landing,
   public `/u/:sub` and `/binder/:sub`, meme detail with cap table, listing, buying,
   share link, and click-to-enlarge artwork. The enlarged viewer fits the full image
-  or video to the viewport; dismiss with Escape, the close button, or the backdrop.
+  or video to the viewport; click anywhere or press Escape to dismiss. Enlarged
+  videos play muted without controls so the entire viewer remains click-to-close.
   Structure and rules: [`web/src/Anatomy.mdx`](web/src/Anatomy.mdx)
   (also the "Anatomy" page in Storybook). See [Web UI](#web-ui) below.
 - `api/` – Lambda (esbuild-bundled) + Express dev bridge. DynamoDB single-table,

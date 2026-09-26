@@ -4,7 +4,7 @@ import { Alert } from '@/atoms/alert'
 import { Badge } from '@/atoms/badge'
 import { Button, buttonVariants } from '@/atoms/button'
 import { Card, CardTitle } from '@/atoms/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/atoms/dialog'
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from '@/atoms/dialog'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
 import { Field, FieldLabel, Hint } from '@/atoms/field'
 import { InlineLink } from '@/atoms/inline-link'
@@ -210,7 +210,7 @@ export function MemeDetailScreen({
                 }
                 footer={<TierLadder model={detail.tierLadder} hype={detail.tierHype} />}
               />
-              <DialogContent size="media" closeLabel={detail.closeViewerLabel}>
+              <DialogContent size="media" showCloseButton={false}>
                 <DialogHeader className="shrink-0">
                   <DialogTitle>{detail.title}</DialogTitle>
                 </DialogHeader>
@@ -224,7 +224,9 @@ export function MemeDetailScreen({
                       src={detail.card.media.videoProps.src}
                       poster={detail.card.media.videoProps.poster}
                       aria-label={detail.title}
-                      controls
+                      autoPlay
+                      muted
+                      loop
                       playsInline
                       preload="metadata"
                     />
@@ -236,6 +238,10 @@ export function MemeDetailScreen({
                     />
                   )}
                 </div>
+                <DialogClose
+                  aria-label={detail.closeViewerLabel}
+                  className="absolute inset-0 size-full cursor-zoom-out"
+                />
               </DialogContent>
             </Dialog>
           </div>
