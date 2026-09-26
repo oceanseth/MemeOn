@@ -240,7 +240,7 @@ export function MemeDetailScreen({
                 </div>
                 <DialogClose
                   aria-label={detail.closeViewerLabel}
-                  className="absolute inset-0 size-full cursor-zoom-out"
+                  className="absolute inset-0 size-full cursor-default"
                 />
               </DialogContent>
             </Dialog>
