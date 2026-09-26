@@ -324,14 +324,21 @@
       0 3px 8px oklch(0.1 0.03 280 / 0.38) inset;
   }
 
-  [data-slot="collectible-art-link"] {
+  /* The art window's fill: the grid card's detail link, the detail hero's enlarge trigger and the
+     landing hero's inert span all host the same backdrop + vignette + inset art stack. */
+  :is([data-slot="collectible-art-link"], [data-slot="collectible-art-enlarge"]) {
     position: relative;
     isolation: isolate;
     overflow: hidden;
     background: var(--color-muted);
   }
 
-  [data-slot="collectible-art-link"]::after {
+  /* the card draws the ring (`focus-ring-within`); the trigger's own would only be clipped by the window */
+  [data-slot="collectible-art-enlarge"]:focus-visible {
+    outline: none;
+  }
+
+  :is([data-slot="collectible-art-link"], [data-slot="collectible-art-enlarge"])::after {
     content: "";
     position: absolute;
     z-index: 0;
@@ -341,7 +348,8 @@
     box-shadow: 0 0 28px oklch(0.08 0.02 280 / 0.35) inset;
   }
 
-  [data-slot="collectible-art-link"] > [data-slot="meme-art"] {
+  :is([data-slot="collectible-art-link"], [data-slot="collectible-art-enlarge"])
+    > [data-slot="meme-art"] {
     position: absolute;
     z-index: 1;
     inset: 8px;
