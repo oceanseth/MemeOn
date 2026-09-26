@@ -84,10 +84,6 @@ const PREVIEW_SUB = cn(
 
 /** The meme as it will ship, assembled while you type. */
 function PreviewCard({ card }: { card: CreateMemeCardModel }) {
-  const tierSuffix = card.tierLabel.startsWith(`${card.tierName} · `)
-    ? card.tierLabel.slice(card.tierName.length + 3)
-    : card.tierLabel
-
   return (
     <FoilCard data-slot="meme-card" tierKey="paper" className={PREVIEW_CARD}>
       <div data-slot="meme-card-inner" className={PREVIEW_INNER}>
@@ -104,7 +100,7 @@ function PreviewCard({ card }: { card: CreateMemeCardModel }) {
           </span>
           <span data-slot="tier-note" className={PREVIEW_TIER_ROW}>
             <TierChip tierKey="paper" label={card.tierName} size="sm" />
-            <span className={PREVIEW_TIER_NOTE}>{tierSuffix}</span>
+            <span className={PREVIEW_TIER_NOTE}>{card.tierSuffix}</span>
           </span>
           <span data-slot="meme-sub" className={PREVIEW_SUB}>
             <span className="inline-flex items-center gap-0.5">

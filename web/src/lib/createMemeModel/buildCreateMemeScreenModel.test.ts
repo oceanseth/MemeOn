@@ -391,6 +391,7 @@ describe('buildCreateMemeScreenModel', () => {
     expect(carried.previewCard.originLabel).toBe(
       copy.preview.originFromAuthor(copy.preview.giphyProvider, 'catlord'),
     )
+    expect(carried.previewCard.tierSuffix).toBe(copy.preview.freshlyMintedNote)
     expect(carried.previewCard.statsLabel).toBe(copy.preview.zeroStats)
     expect(carried.previewCard.valueLabel).toBe(copy.preview.zeroValue)
     expect(carried.mintHint).toBe('')

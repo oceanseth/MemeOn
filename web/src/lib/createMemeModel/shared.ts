@@ -100,6 +100,7 @@ export function buildCard(ctx: CreateMemeContext): CreateMemeCardModel {
     title: title || copy.preview.untitled,
     titleIsPlaceholder: !title,
     tierName: FRESH_TIER.name,
+    tierSuffix: copy.preview.freshlyMintedNote,
     tierLabel: copy.preview.freshlyMinted(FRESH_TIER.name),
     statsLabel: copy.preview.zeroStats,
     valueLabel: copy.preview.zeroValue,

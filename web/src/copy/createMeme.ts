@@ -187,7 +187,9 @@ export const createMemeCopy = {
     videoA11y: 'Video preview',
     previewOf: (label: string) => `Preview of ${label}`,
     untitled: 'Untitled',
-    freshlyMinted: (tierName: string) => `${tierName} · freshly minted`,
+    freshlyMintedNote: 'freshly minted',
+    freshlyMinted: (tierName: string) =>
+      `${tierName} · ${createMemeCopy.preview.freshlyMintedNote}`,
     originFromAuthor: (provider: string, author: string) => `from ${provider} · @${author}`,
     originFrom: (provider: string) => `from ${provider}`,
     /* Preview card only: GIPHY display name, and a fresh card's zero stats and value. */
