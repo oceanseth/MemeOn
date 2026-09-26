@@ -4,6 +4,7 @@ import { Alert } from '@/atoms/alert'
 import { Badge } from '@/atoms/badge'
 import { Button, buttonVariants } from '@/atoms/button'
 import { Card, CardTitle } from '@/atoms/card'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/atoms/dialog'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
 import { Field, FieldLabel, Hint } from '@/atoms/field'
 import { InlineLink } from '@/atoms/inline-link'
@@ -28,10 +29,7 @@ import { Icon } from '@/atoms/icon'
  * pair only splits once the window can afford both (≥1100); below that the rail would be narrower
  * than the card it sits beside, so the page is one column.
  */
-const detailGrid = cn(
-  'grid grid-cols-1 gap-4.5',
-  '2xl:grid-cols-(--grid-detail) 2xl:gap-8',
-)
+const detailGrid = cn('grid grid-cols-1 gap-4.5', '2xl:grid-cols-(--grid-detail) 2xl:gap-8')
 
 const rail = 'flex min-w-0 flex-col gap-4.5'
 
@@ -196,20 +194,50 @@ export function MemeDetailScreen({
         <div className={detailGrid}>
           <div data-slot="detail-hero" className={cn('self-start', heroPlacement)}>
             {/* MemeCard lg with tier line + meter in footer so they sit inside the card padding */}
-            <MemeCard
-              model={detail.card}
-              size="lg"
-              titleAs="h1"
-              subTitle={
-                <p
-                  data-slot="detail-tier-line"
-                  className={cn(heroTierLine, isPublic ? 'text-link' : 'text-success-foreground')}
+            <Dialog>
+              <MemeCard
+                model={detail.card}
+                size="lg"
+                titleAs="h1"
+                enlargeLabel={detail.enlargeLabel}
+                subTitle={
+                  <p
+                    data-slot="detail-tier-line"
+                    className={cn(heroTierLine, isPublic ? 'text-link' : 'text-success-foreground')}
+                  >
+                    {detail.tierLine}
+                  </p>
+                }
+                footer={<TierLadder model={detail.tierLadder} hype={detail.tierHype} />}
+              />
+              <DialogContent size="media" closeLabel={detail.closeViewerLabel}>
+                <DialogHeader className="shrink-0">
+                  <DialogTitle>{detail.title}</DialogTitle>
+                </DialogHeader>
+                <div
+                  data-slot="detail-enlarged-media"
+                  className="flex min-h-0 flex-1 items-center justify-center"
                 >
-                  {detail.tierLine}
-                </p>
-              }
-              footer={<TierLadder model={detail.tierLadder} hype={detail.tierHype} />}
-            />
+                  {detail.card.media.kind === 'video' ? (
+                    <video
+                      className="size-full object-contain"
+                      src={detail.card.media.videoProps.src}
+                      poster={detail.card.media.videoProps.poster}
+                      aria-label={detail.title}
+                      controls
+                      playsInline
+                      preload="metadata"
+                    />
+                  ) : (
+                    <img
+                      className="size-full object-contain"
+                      src={detail.card.media.imageProps.src}
+                      alt={detail.title}
+                    />
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div data-slot="detail-rail" className={cn(rail, railPlacement)}>

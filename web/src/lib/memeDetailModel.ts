@@ -137,6 +137,8 @@ export interface MemeDetailModel {
   tierLadder: DetailTierLadderModel
   /** the hero frame: the same `MemeCardModel` every grid thumb renders, at `size="lg"` */
   card: MemeCardModel
+  enlargeLabel: string
+  closeViewerLabel: string
   creatorLinkProps: { to: string }
   creatorName: string
   ownerLinkProps: { to: string }
@@ -446,6 +448,8 @@ export function buildMemeDetailModel({
        since the hero is always above the fold and the factory's `lazy` default is a grid thumb's
        assumption, not this page's. */
     card: eagerHeroCard(meme),
+    enlargeLabel: copy.hero.enlarge(meme.title),
+    closeViewerLabel: copy.hero.closeViewer,
     creatorLinkProps: { to: `/u/${encodeURIComponent(meme.creatorId)}` },
     creatorName: meme.creatorName,
     ownerLinkProps: { to: `/u/${encodeURIComponent(meme.ownerId)}` },

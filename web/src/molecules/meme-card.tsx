@@ -6,10 +6,10 @@ import type { MemeCardModel } from '../lib/memeCardModel'
 import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
 import { Icon } from '@/atoms/icon'
 import { TierSeal } from '@/atoms/tier-seal'
+import { DialogTrigger } from '@/atoms/dialog'
 
-/* The card is a container for its own meta row (`@max-card-narrow:` fires under 220px). The ring
-   is the card's, for the link inside it: `has-[a:focus-visible]` rather than `focus-ring`, because
-   the focused element is the art link.
+/* The card is a container for its own meta row (`@max-card-narrow:` fires under 220px). Its
+   focus ring follows the artwork's navigation link or enlargement button.
    Every card in a grid is the same size: the track sets the width, and the height is the same by
    construction — the title reserves its two lines and the value row reserves the two-line listing
    slot — so the card is left free to stretch to its track (no `self-start`) and a screen's own
@@ -20,10 +20,7 @@ const memeCardVariants = cva(
     '@container',
     'transition-lift',
     'pointer-coarse:active:scale-99',
-    'has-[a:focus-visible]:outline-3 has-[a:focus-visible]:outline-ring',
-    'has-[a:focus-visible]:outline-offset-2',
-    'contrast-more:has-[a:focus-visible]:outline-4',
-    'forced-colors:has-[a:focus-visible]:outline-fc-highlight',
+    'focus-ring-within',
   ],
   {
     variants: {
@@ -120,11 +117,35 @@ export interface MemeCardProps {
   size?: MemeCardSize | null | undefined
   /** Detail hero only: the card title is the page's H1. */
   titleAs?: 'h1' | undefined
+  /** Replaces detail navigation with the enclosing dialog's artwork trigger. */
+  enlargeLabel?: string | undefined
 }
 
-export function MemeCard({ model, subTitle, footer, footerRight, size, titleAs }: MemeCardProps) {
+export function MemeCard({
+  model,
+  subTitle,
+  footer,
+  footerRight,
+  size,
+  titleAs,
+  enlargeLabel,
+}: MemeCardProps) {
   const scale = size ?? 'default'
   const TitleTag = titleAs === 'h1' ? 'h1' : 'span'
+  const art = (
+    <>
+      <img
+        data-slot="meme-art-backdrop"
+        className={ART_BACKDROP}
+        {...model.media.backdropImageProps}
+      />
+      {model.media.kind === 'video' ? (
+        <video data-slot="meme-art" className={ART} {...model.media.videoProps} />
+      ) : (
+        <img data-slot="meme-art" className={ART} {...model.media.imageProps} />
+      )}
+    </>
+  )
   return (
     <FoilCard
       as="article"
@@ -142,22 +163,23 @@ export function MemeCard({ model, subTitle, footer, footerRight, size, titleAs }
           presentation="collectible"
           seal={<TierSeal tierKey={model.tierKey} label={model.tierLabel} />}
         >
-          <Link
-            {...model.detailLinkProps}
-            data-slot="collectible-art-link"
-            className="block size-full focus-visible:outline-none"
-          >
-            <img
-              data-slot="meme-art-backdrop"
-              className={ART_BACKDROP}
-              {...model.media.backdropImageProps}
-            />
-            {model.media.kind === 'video' ? (
-              <video data-slot="meme-art" className={ART} {...model.media.videoProps} />
-            ) : (
-              <img data-slot="meme-art" className={ART} {...model.media.imageProps} />
-            )}
-          </Link>
+          {enlargeLabel ? (
+            <DialogTrigger
+              data-slot="collectible-art-enlarge"
+              aria-label={enlargeLabel}
+              className="block size-full cursor-zoom-in"
+            >
+              {art}
+            </DialogTrigger>
+          ) : (
+            <Link
+              {...model.detailLinkProps}
+              data-slot="collectible-art-link"
+              className="block size-full focus-visible:outline-none"
+            >
+              {art}
+            </Link>
+          )}
         </FoilMedia>
         <div data-slot="meme-meta" className={cn(memeMetaVariants({ size: scale }))}>
           <TitleTag

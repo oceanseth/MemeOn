@@ -20,6 +20,8 @@ export const memeDetailCopy = {
     unknown: 'another collector',
   },
   hero: {
+    enlarge: (title: string) => `Enlarge ${title}`,
+    closeViewer: 'Close enlarged meme',
     /** "Prismatic · 5.8k reshares" */
     tierLine: (tierName: string, reshares: number) =>
       `${tierName} · ${humanize(reshares)} ${pluralWord(reshares, 'reshare')}`,
