@@ -8,8 +8,9 @@ import { Icon } from '@/atoms/icon'
 import { TierSeal } from '@/atoms/tier-seal'
 import { DialogTrigger } from '@/atoms/dialog'
 
-/* The card is a masonry citizen: its art window carries the meme's clamped aspect
-   (`--meme-aspect`, read by `atoms/foil.css`), and the meta below is two fixed-height lines —
+/* The card is a masonry citizen: its art window carries the meme's own ratio (`--meme-aspect`,
+   read by `atoms/foil.css`) and the art covers it edge to edge, and the meta below is two
+   fixed-height lines —
    title, then tier · value on the left with stats and the listing badge on the right — so a
    card's full height is arithmetic (`lib/masonry.ts`), never measured. Its focus ring follows
    the artwork's navigation link or enlargement button. */
@@ -73,12 +74,9 @@ export type MemeCardSize = NonNullable<VariantProps<typeof memeCardVariants>['si
 
 const INNER = cn('relative flex h-full flex-col')
 
-const ART_BACKDROP =
-  'absolute inset-0 z-0 block size-full scale-110 object-cover opacity-45 blur-lg saturate-125'
-
-const ART_COVER = cn('block object-cover')
-
-const ART_CONTAIN = cn('block object-contain')
+/* the window already has the art's ratio, so `cover` fills it without cropping (past the clamp it
+   centre-crops); the size and position are `atoms/foil.css`'s */
+const ART = cn('block object-cover')
 
 const TIER_VALUE_LANE = 'flex min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap'
 
@@ -117,24 +115,12 @@ export function MemeCard({
 }: MemeCardProps) {
   const scale = size ?? 'default'
   const TitleTag = titleAs === 'h1' ? 'h1' : 'span'
-  const artClass = model.artFit === 'cover' ? ART_COVER : ART_CONTAIN
-  const art = (
-    <>
-      {/* the blurred backdrop exists only to fill a letterboxed window */}
-      {model.artFit === 'contain' && (
-        <img
-          data-slot="meme-art-backdrop"
-          className={ART_BACKDROP}
-          {...model.media.backdropImageProps}
-        />
-      )}
-      {model.media.kind === 'video' ? (
-        <video data-slot="meme-art" className={artClass} {...model.media.videoProps} />
-      ) : (
-        <img data-slot="meme-art" className={artClass} {...model.media.imageProps} />
-      )}
-    </>
-  )
+  const art =
+    model.media.kind === 'video' ? (
+      <video data-slot="meme-art" className={ART} {...model.media.videoProps} />
+    ) : (
+      <img data-slot="meme-art" className={ART} {...model.media.imageProps} />
+    )
   return (
     <FoilCard
       as="article"
@@ -143,8 +129,7 @@ export function MemeCard({
       presentation="collectible"
       data-slot="meme-card"
       data-size={scale}
-      data-art-fit={model.artFit}
-      style={{ '--meme-aspect': model.aspect } as CSSProperties}
+      style={{ '--meme-aspect': model.aspect ?? undefined } as CSSProperties}
       className={cn(memeCardVariants({ size: scale }))}
       aria-labelledby={model.titleId}
       data-media-autoplay={model.mediaAutoplay}

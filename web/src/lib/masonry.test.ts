@@ -5,8 +5,11 @@ import {
   masonryCardHeight,
   masonryGeometry,
   MASONRY_COLUMN_WIDTH,
+  MASONRY_SKELETON_ASPECTS,
   MEDIA_CHROME_X,
   MEDIA_CHROME_Y,
+  placeMasonryFeed,
+  type MasonryFeedItem,
 } from './masonry'
 
 /** Aspect whose card comes out exactly `h` tall at `columnWidth` with zero chrome rows. */
@@ -109,5 +112,64 @@ describe('layoutMasonry', () => {
     })
     // col0: 50 + 16 + 50 = 116; col1: 50
     expect(layout.height).toBe(116)
+  })
+})
+
+describe('placeMasonryFeed (the placement gate)', () => {
+  const geometry = { columns: 3, columnWidth: COL_W, gap: 10 }
+  const feed = (...aspects: (number | null)[]): MasonryFeedItem[] =>
+    aspects.map((aspect, index) => ({ id: `m${index}`, aspect }))
+
+  it('places the longest prefix whose ratios are known and lays the rest out as skeletons', () => {
+    const placed = placeMasonryFeed(null, feed(1, 0.5, null, 2, 1), geometry, 0)
+    expect(placed.placed).toBe(2)
+    expect(placed.placement.ids).toEqual(['m0', 'm1'])
+    // m3 is known but sits behind m2: placing it now would move it when m2 lands
+    expect(placed.placement.layout.items).toHaveLength(2)
+    expect(placed.layout.items).toHaveLength(5)
+    // the skeleton tail is sized by feed index, after the placed run
+    const tail = layoutMasonry({
+      aspects: [1, 0.5, ...[2, 3, 4].map((i) => MASONRY_SKELETON_ASPECTS[i % 4] as number)],
+      ...geometry,
+      chromeHeight: 0,
+    })
+    expect(placed.layout.items).toEqual(tail.items)
+  })
+
+  it('a late measurement extends the run by appending, never moving a placed card', () => {
+    const first = placeMasonryFeed(null, feed(1, 0.5, null, 2, 1), geometry, 0)
+    const later = placeMasonryFeed(first.placement, feed(1, 0.5, 1.5, 2, 1), geometry, 0)
+    expect(later.placed).toBe(5)
+    expect(later.layout.items.slice(0, 2)).toEqual(first.placement.layout.items)
+    // and it is the same layout the whole feed gets when laid out in one go
+    expect(later.layout).toEqual(
+      layoutMasonry({ aspects: [1, 0.5, 1.5, 2, 1], ...geometry, chromeHeight: 0 }),
+    )
+    // an unchanged feed returns the kept layout itself
+    expect(placeMasonryFeed(later.placement, feed(1, 0.5, 1.5, 2, 1), geometry, 0).layout).toBe(
+      later.placement.layout,
+    )
+  })
+
+  it('a timed-out measurement resolves as a square and releases the rest of the feed', () => {
+    const waiting = placeMasonryFeed(null, feed(null, 0.5, 2), geometry, 0)
+    expect(waiting.placed).toBe(0)
+    expect(waiting.layout.items).toHaveLength(3)
+    // the budget ran out on m0: `memeFrameAspect('failed')` is 1
+    const released = placeMasonryFeed(waiting.placement, feed(1, 0.5, 2), geometry, 0)
+    expect(released.placed).toBe(3)
+    expect(released.layout.items[0]?.height).toBe(masonryCardHeight(1, COL_W, 0))
+  })
+
+  it('re-lays everything when the geometry changes, and nothing when it does not', () => {
+    const first = placeMasonryFeed(null, feed(1, 0.5, 2), geometry, 0)
+    const wider = placeMasonryFeed(first.placement, feed(1, 0.5, 2), { ...geometry, columns: 2 }, 0)
+    expect(wider.layout).toEqual(
+      layoutMasonry({ aspects: [1, 0.5, 2], ...geometry, columns: 2, chromeHeight: 0 }),
+    )
+    // a different feed (a new sort) is not a prefix: laid out from scratch
+    const resorted = placeMasonryFeed(first.placement, feed(2, 0.5, 1).reverse(), geometry, 0)
+    expect(resorted.placement.ids).toEqual(['m2', 'm1', 'm0'])
+    expect(resorted.layout.items[0]?.column).toBe(0)
   })
 })

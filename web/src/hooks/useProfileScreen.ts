@@ -11,6 +11,7 @@ import { profileMachine, type ProfileData, type ProfileTab } from '../stores/pro
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import { MEME_CARD_META_HEIGHT, masonrySkeletonItems } from '../lib/masonry'
 import { useMasonryLayout, type MasonryGridModel } from './useMasonryLayout'
+import { useMemeMediaSizes } from './useMemeMediaSizes'
 import type { ButtonVariant } from '@/atoms/button'
 import type { IconName } from '@/atoms/icon'
 import type { ButtonHTMLAttributes } from 'react'
@@ -369,6 +370,7 @@ export function useProfileScreen({
   const friendIsPrimary = friendStatus === null || friendStatus === 'incoming'
 
   const showLoadingState = !err && !data
+  useMemeMediaSizes(visible)
   const cards = visible.map((meme) => ({
     id: `${tab}-${meme.id}`,
     memeCard: buildMemeCardModel(meme),

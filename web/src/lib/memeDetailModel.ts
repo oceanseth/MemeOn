@@ -3,7 +3,8 @@ import { TIERS } from '@memeon/shared/tiers'
 import type { IconName } from '@/atoms/icon'
 import { memeDetailCopy } from '../copy/memeDetail'
 import { buildConfirmDialogModel, type ConfirmDialogModel } from './confirmDialogModel'
-import { buildMemeCardModel, type MemeCardModel } from './memeCardModel'
+import { buildMemeCardModel, memeFrameAspect, type MemeCardModel } from './memeCardModel'
+import { memeMediaSize } from './memeMediaSize'
 import { humanize } from './humanize'
 import { memeReshareCount, memeViewCount } from './memeMetrics'
 import { buildMemeplexPanelModel, type MemeplexPanelModel } from './memeplexPanelModel'
@@ -279,8 +280,13 @@ export function buildTierLadderModel(tierKey: string, views: number): DetailTier
   }
 }
 
+/* The hero is where a meme is seen whole: its frame takes the media's true ratio, unclamped, and
+   the enlarged view reuses it. */
 function eagerHeroCard(meme: Meme): MemeCardModel {
-  const built = buildMemeCardModel(meme)
+  const built = {
+    ...buildMemeCardModel(meme),
+    aspect: memeFrameAspect(memeMediaSize(meme), 'whole'),
+  }
   return built.media.kind === 'image'
     ? {
         ...built,

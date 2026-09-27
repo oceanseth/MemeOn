@@ -15,6 +15,7 @@ import {
   type MemeStats,
 } from '../stores/memeDetailMachine'
 import { useAuth } from './useAuth'
+import { useMemeMediaSizes } from './useMemeMediaSizes'
 import { useMountEffect } from './useMountEffect'
 import { useStores } from '../stores/StoresContext'
 
@@ -179,6 +180,8 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
     },
     loadingLabel: copy.loading,
   }
+  // the hero and the memeplex cards are framed to their memes' sizes: measure the ones with none
+  useMemeMediaSizes([meme, ...(context.plex?.remixes ?? []), ...(context.plex?.related ?? [])])
   if (!meme) return { ...screen, detail: null }
 
   const buySharesChange: ChangeEventHandler<HTMLInputElement> = (event) =>

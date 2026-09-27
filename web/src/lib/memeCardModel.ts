@@ -2,38 +2,49 @@ import type { ImgHTMLAttributes, RefCallback, VideoHTMLAttributes } from 'react'
 import { memeCardCopy as copy } from '../copy/memeCard'
 import { cardMediaRef } from './cardMedia'
 import { humanize } from './humanize'
+import { isMediaSize, memeMediaSize, type MediaMeasure } from './memeMediaSize'
 import { memeReshareCount } from './memeMetrics'
 import { getPlayVideosSnapshot } from './playbackPreference'
 import type { Meme } from './types'
 
-/** Frame ratio clamp: 1:2 tall … 2:1 wide. Outside it the frame stops and the art contains. */
+/** Grid frame ratio clamp: 1:2 tall … 2:1 wide. Past it the frame stops and the art centre-crops. */
 export const MEME_ASPECT_MIN = 0.5
 export const MEME_ASPECT_MAX = 2
 
-export type MemeArtFit = 'cover' | 'contain'
-
 /**
- * The collectible window's ratio and how the art fills it. Inside the clamp the window takes
- * the art's exact ratio, so `cover` fills it with no crop; unknown or clamped dims fall back
- * to `contain` over the blurred backdrop (legacy memes render as a 1:1 frame).
+ * The art window's ratio for a meme's media size. The window takes the media's own `w/h`, so the
+ * art covers it edge to edge and crops nothing. A grid (`'grid'`) stops the frame at the clamp and
+ * the art centre-crops past it; the detail hero (`'whole'`) shows every meme whole, unclamped. A
+ * failed measurement is a square the art covers; `null` means the size is not known yet, and a
+ * grid holds that card back until it is (`memeMediaSize`).
  */
 export function memeFrameAspect(
-  width: number | undefined,
-  height: number | undefined,
-): { aspect: number; artFit: MemeArtFit } {
-  if (!width || !height || width < 0 || height < 0) return { aspect: 1, artFit: 'contain' }
-  const ratio = width / height
-  const aspect = Math.min(MEME_ASPECT_MAX, Math.max(MEME_ASPECT_MIN, ratio))
-  return { aspect, artFit: aspect === ratio ? 'cover' : 'contain' }
+  size: MediaMeasure | undefined,
+  fit: 'grid' | 'whole' = 'grid',
+): number | null {
+  if (size === undefined) return null
+  if (size === 'failed' || !isMediaSize(size.width, size.height)) return 1
+  const ratio = size.width / size.height
+  return fit === 'whole' ? ratio : Math.min(MEME_ASPECT_MAX, Math.max(MEME_ASPECT_MIN, ratio))
+}
+
+/**
+ * Fixed grids place cards in feed order, so a card still being measured holds back every card
+ * after it: the grid shows the measured run and one skeleton per card still waiting. A later
+ * card landing never moves one already shown (those grids align their rows to the top).
+ */
+export function splitMeasured<T>(
+  items: readonly T[],
+  aspectOf: (item: T) => number | null,
+): { placed: T[]; waiting: T[] } {
+  const firstWaiting = items.findIndex((item) => aspectOf(item) === null)
+  const cut = firstWaiting === -1 ? items.length : firstWaiting
+  return { placed: items.slice(0, cut), waiting: items.slice(cut) }
 }
 
 export type MemeCardMediaModel =
   | {
       kind: 'video'
-      backdropImageProps: Pick<
-        ImgHTMLAttributes<HTMLImageElement>,
-        'src' | 'alt' | 'aria-hidden' | 'loading'
-      >
       videoProps: Pick<
         VideoHTMLAttributes<HTMLVideoElement>,
         'src' | 'muted' | 'loop' | 'playsInline' | 'autoPlay' | 'preload' | 'poster' | 'aria-label'
@@ -41,10 +52,6 @@ export type MemeCardMediaModel =
     }
   | {
       kind: 'image'
-      backdropImageProps: Pick<
-        ImgHTMLAttributes<HTMLImageElement>,
-        'src' | 'alt' | 'aria-hidden' | 'loading'
-      >
       imageProps: Pick<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt' | 'loading'>
     }
 
@@ -69,10 +76,11 @@ export interface MemeCardModel {
   tierLabel: string
   detailLinkProps: { to: string; 'aria-label': string }
   media: MemeCardMediaModel
-  /** clamped `width / height` of the art window; 1 when the record carries no dims */
-  aspect: number
-  /** `cover` fills the exact-ratio window; `contain` letterboxes over the blurred backdrop */
-  artFit: MemeArtFit
+  /**
+   * `width / height` of the art window, which the art covers edge to edge: the media's own ratio
+   * clamped to the grid's range, 1 when it could not be measured, `null` while it is being measured
+   */
+  aspect: number | null
   /** null when the record carries no view count — never borrowed from another metric */
   viewsLabel: string | null
   resharesLabel: string
@@ -117,12 +125,6 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
     meme.mediaType === 'video' && meme.videoUrl
       ? {
           kind: 'video',
-          backdropImageProps: {
-            src: meme.imageUrl,
-            alt: '',
-            'aria-hidden': true,
-            loading: 'lazy',
-          },
           videoProps: {
             src: meme.videoUrl,
             muted: true,
@@ -137,12 +139,6 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
         }
       : {
           kind: 'image',
-          backdropImageProps: {
-            src: meme.imageUrl,
-            alt: '',
-            'aria-hidden': true,
-            loading: 'lazy',
-          },
           imageProps: {
             src: meme.imageUrl,
             // the card's <article> and the link already carry the title; a third read is noise
@@ -166,7 +162,7 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
         }
       : null
 
-  const { aspect, artFit } = memeFrameAspect(meme.width, meme.height)
+  const aspect = memeFrameAspect(memeMediaSize(meme))
 
   return {
     id: meme.id,
@@ -181,7 +177,6 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
     },
     media,
     aspect,
-    artFit,
     viewsLabel,
     resharesLabel,
     valueLabel,

@@ -6,9 +6,10 @@ import { beginMaskyLogin } from '../lib/auth'
 import { setInviteFrom } from '../lib/sessionBus'
 import { inviteMachine, type InviteData, type InvitePhase } from '../stores/inviteMachine'
 import { useAuth } from './useAuth'
+import { useMemeMediaSizes } from './useMemeMediaSizes'
 import { useMountEffect } from './useMountEffect'
 import { humanize } from '../lib/humanize'
-import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
+import { buildMemeCardModel, splitMeasured, type MemeCardModel } from '../lib/memeCardModel'
 import type { ButtonHTMLAttributes } from 'react'
 import type { IconName } from '@/atoms/icon'
 
@@ -35,7 +36,10 @@ export interface InviteScreenModel {
   fatalActions: InviteFatalActions
   selfActions: InviteSelfActions | null
   inviter: InviteInviterModel | null
+  /** the highlight cards, in order, up to the first still being measured */
   cards: readonly InviteCardModel[]
+  /** ids of the highlights after that, which wait as skeletons (`splitMeasured`) */
+  waitingCards: readonly string[]
   acceptButtonProps: InviteButtonProps
   acceptLabel: string
   /** the accept button's lead glyph: a friend wave when the reader is signed in, a mask while joining */
@@ -126,6 +130,7 @@ export function useInviteScreen(): InviteScreenModel {
   const [snapshot, send] = useProjectedActor(inviteMachine)
   const ctx = snapshot.context
   const phase = snapshot.value as InvitePhase
+  useMemeMediaSizes(ctx.data?.topMemes ?? [])
 
   useMountEffect(() => {
     if (!sub) return
@@ -183,6 +188,11 @@ export function useInviteScreen(): InviteScreenModel {
       .then(() => send({ type: 'COPIED', ok: true }))
       .catch(() => send({ type: 'COPIED', ok: false }))
   }
+
+  const highlights = splitMeasured(
+    (ctx.data?.topMemes ?? []).map((meme) => ({ id: meme.id, memeCard: buildMemeCardModel(meme) })),
+    (card) => card.memeCard.aspect,
+  )
 
   const copyLabel =
     ctx.copy === 'copied'
@@ -243,10 +253,8 @@ export function useInviteScreen(): InviteScreenModel {
             : copy.acceptanceNote.guest(inviter.name),
         }
       : null,
-    cards: (ctx.data?.topMemes ?? []).map((meme) => ({
-      id: meme.id,
-      memeCard: buildMemeCardModel(meme),
-    })),
+    cards: highlights.placed,
+    waitingCards: highlights.waiting.map((card) => card.id),
     acceptButtonProps: {
       onClick: onAccept,
       'aria-disabled': ctx.busy || undefined,

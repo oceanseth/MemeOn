@@ -16,12 +16,20 @@ export const FIXED_NOW = '2026-09-08T00:00:00.000Z'
 
 const media = devMemeMedia.roles
 
+/**
+ * The recorded art's pixel size, measured from the files 2026-09-27: what the server stores for a
+ * new mint. The stills are 1024 × 1024, the video's poster 480 × 480.
+ */
+const STILL_SIZE = { width: 1024, height: 1024 }
+const VIDEO_SIZE = { width: 480, height: 480 }
+
 function meme(partial: Pick<Meme, 'id' | 'title' | 'reshares'> & Partial<Meme>): Meme {
   const tier = tierFor(partial.reshares)
   return {
     description: null,
     mediaType: 'image',
     imageUrl: media.paper.imageUrl,
+    ...STILL_SIZE,
     videoUrl: null,
     tags: [],
     creatorId: 'user-lou',
@@ -190,6 +198,7 @@ export const videoMeme: Meme = meme({
   reshares: media.video.reshares,
   mediaType: 'video',
   imageUrl: media.video.imageUrl,
+  ...VIDEO_SIZE,
   videoUrl: media.video.videoUrl,
   creatorId: media.video.creatorId,
   creatorName: media.video.creatorName,

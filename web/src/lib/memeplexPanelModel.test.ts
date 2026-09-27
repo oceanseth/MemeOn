@@ -88,4 +88,31 @@ describe('buildMemeplexPanelModel', () => {
     expect(model.pastedProps['aria-label']).toBe(memeplexPanelCopy.pasted)
     expect(model.pickerProps['aria-label']).toBe(memeplexPanelCopy.picker)
   })
+  it('shows the family up to the first card still being measured, the rest as waiting ids', () => {
+    const sized = (id: string): Meme => ({ ...meme, id, width: 400, height: 300 })
+    const model = buildMemeplexPanelModel({
+      meme,
+      // `meme-b` has no stored size and nothing has measured it yet
+      plex: {
+        original: null,
+        ancestors: [],
+        remixes: [
+          sized('meme-a1'),
+          { ...meme, id: 'meme-b', imageUrl: 'https://example.test/b.png' },
+        ],
+        related: [sized('meme-c')],
+      },
+      canEdit: false,
+      binder: [],
+      pick: '',
+      pasted: '',
+      notice: null,
+      error: null,
+      ...handlers,
+    })
+    expect(model.hasFamily).toBe(true)
+    expect(model.family.map((card) => card.id)).toEqual(['meme-a1'])
+    expect(model.family[0]?.aspect).toBeCloseTo(4 / 3)
+    expect(model.familyWaiting).toEqual(['meme-b', 'meme-c'])
+  })
 })

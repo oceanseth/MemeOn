@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { Alert } from '@/atoms/alert'
 import { Badge } from '@/atoms/badge'
 import { Button, buttonVariants } from '@/atoms/button'
@@ -193,57 +193,71 @@ export function MemeDetailScreen({
         </div>
         <div className={detailGrid}>
           <div data-slot="detail-hero" className={cn('self-start', heroPlacement)}>
-            {/* MemeCard lg with tier line + meter in footer so they sit inside the card padding */}
-            <Dialog>
-              <MemeCard
-                model={detail.card}
-                size="lg"
-                titleAs="h1"
-                enlargeLabel={detail.enlargeLabel}
-                subTitle={
-                  <p
-                    data-slot="detail-tier-line"
-                    className={cn(heroTierLine, isPublic ? 'text-link' : 'text-success-foreground')}
-                  >
-                    {detail.tierLine}
-                  </p>
-                }
-                footer={<TierLadder model={detail.tierLadder} hype={detail.tierHype} />}
-              />
-              <DialogContent size="media" showCloseButton={false}>
-                <DialogHeader className="shrink-0">
-                  <DialogTitle>{detail.title}</DialogTitle>
-                </DialogHeader>
-                <div
-                  data-slot="detail-enlarged-media"
-                  className="flex min-h-0 flex-1 items-center justify-center"
-                >
-                  {detail.card.media.kind === 'video' ? (
-                    <video
-                      className="size-full object-contain"
-                      src={detail.card.media.videoProps.src}
-                      poster={detail.card.media.videoProps.poster}
-                      aria-label={detail.title}
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      preload="metadata"
-                    />
-                  ) : (
-                    <img
-                      className="size-full object-contain"
-                      src={detail.card.media.imageProps.src}
-                      alt={detail.title}
-                    />
-                  )}
-                </div>
-                <DialogClose
-                  aria-label={detail.closeViewerLabel}
-                  className="absolute inset-0 size-full cursor-default"
+            {/* MemeCard lg with tier line + meter in footer so they sit inside the card padding.
+                Its frame is the meme's own ratio, so until that is measured the hero is the
+                loading skeleton it replaces — it never appears at one size and jumps to another. */}
+            {detail.card.aspect === null ? (
+              <Skeleton data-slot="detail-hero-waiting" className="aspect-square" />
+            ) : (
+              <Dialog>
+                <MemeCard
+                  model={detail.card}
+                  size="lg"
+                  titleAs="h1"
+                  enlargeLabel={detail.enlargeLabel}
+                  subTitle={
+                    <p
+                      data-slot="detail-tier-line"
+                      className={cn(
+                        heroTierLine,
+                        isPublic ? 'text-link' : 'text-success-foreground',
+                      )}
+                    >
+                      {detail.tierLine}
+                    </p>
+                  }
+                  footer={<TierLadder model={detail.tierLadder} hype={detail.tierHype} />}
                 />
-              </DialogContent>
-            </Dialog>
+                <DialogContent size="media" showCloseButton={false}>
+                  {/* one line, and no wider than the meme: `meme-fit` counts on both */}
+                  <DialogHeader className="w-0 min-w-full shrink-0">
+                    <DialogTitle>
+                      <span className="block truncate">{detail.title}</span>
+                    </DialogTitle>
+                  </DialogHeader>
+                  {/* the meme whole, at its own ratio, as large as the viewport allows; the
+                      dialog hugs it, so nothing frames it but the dialog's own padding */}
+                  <div
+                    data-slot="detail-enlarged-media"
+                    style={{ '--meme-aspect': detail.card.aspect } as CSSProperties}
+                  >
+                    {detail.card.media.kind === 'video' ? (
+                      <video
+                        className="block meme-fit object-cover"
+                        src={detail.card.media.videoProps.src}
+                        poster={detail.card.media.videoProps.poster}
+                        aria-label={detail.title}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                      />
+                    ) : (
+                      <img
+                        className="block meme-fit object-cover"
+                        src={detail.card.media.imageProps.src}
+                        alt={detail.title}
+                      />
+                    )}
+                  </div>
+                  <DialogClose
+                    aria-label={detail.closeViewerLabel}
+                    className="absolute inset-0 size-full cursor-default"
+                  />
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
 
           <div data-slot="detail-rail" className={cn(rail, railPlacement)}>

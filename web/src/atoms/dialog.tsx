@@ -58,8 +58,8 @@ export const dialogContentVariants = cva(
         sm: 'max-w-(--dialog-max-w-sm)',
         /** every other modal */
         md: 'max-w-(--dialog-max-w-md)',
-        /** viewport-fitted artwork, with room for the title and close button */
-        media: 'mx-4 h-(--dialog-max-h) w-auto max-w-none sm:mx-8',
+        /** hugs its artwork: the content sizes itself to the viewport (`meme-fit` in `index.css`) */
+        media: 'w-fit max-w-none',
       },
       variant: {
         default: '',
