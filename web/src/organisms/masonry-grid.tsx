@@ -33,7 +33,9 @@ export interface MasonryGridProps extends HTMLAttributes<HTMLDivElement> {
 /**
  * Giphy-style masonry canvas: a measured full-width wrapper, a centred fixed-width canvas,
  * and absolutely-positioned slots in DOM feed order — Tab and screen-reader order follow the
- * feed, not the columns. All geometry arrives via the model; this renders it.
+ * feed, not the columns. A slot the model marks `waiting` (its card's ratio is still being
+ * measured) is a hidden skeleton until the card is placed. All geometry arrives via the model;
+ * this renders it.
  */
 export function MasonryGrid({ model, items, className, ...rest }: MasonryGridProps) {
   return (
@@ -57,21 +59,32 @@ export function MasonryGrid({ model, items, className, ...rest }: MasonryGridPro
         {model.slots.map((slot, index) => {
           const item = items[index]
           if (!item) return null
-          return (
+          const position = {
+            '--masonry-x': `${slot.x}px`,
+            '--masonry-y': `${slot.y}px`,
+            '--masonry-w': `${slot.width}px`,
+            '--masonry-h': `${slot.height}px`,
+          } as CSSProperties
+          // a card still being measured holds its place in the feed as the loading skeleton
+          return slot.waiting ? (
+            <div
+              key={slot.key}
+              data-slot="masonry-item"
+              data-waiting=""
+              aria-hidden="true"
+              className={slotClasses}
+              style={position}
+            >
+              <Skeleton className="h-full" />
+            </div>
+          ) : (
             <div
               key={slot.key}
               data-slot="masonry-item"
               role="listitem"
               aria-label={item.ariaLabel}
               className={slotClasses}
-              style={
-                {
-                  '--masonry-x': `${slot.x}px`,
-                  '--masonry-y': `${slot.y}px`,
-                  '--masonry-w': `${slot.width}px`,
-                  '--masonry-h': `${slot.height}px`,
-                } as CSSProperties
-              }
+              style={position}
             >
               {item.node}
             </div>

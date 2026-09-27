@@ -32,6 +32,7 @@ function modelAt(containerWidth: number, aspects: readonly number[]): MasonryGri
       y: item.y,
       width: item.width,
       height: item.height,
+      waiting: false,
     })),
   }
 }
@@ -51,7 +52,7 @@ async function mount(containerWidth: number): Promise<HTMLElement[]> {
         <MasonryGrid
           model={modelAt(
             containerWidth,
-            cards.map((card) => card.aspect),
+            cards.map((card) => card.aspect ?? 1),
           )}
           items={cards.map((card) => ({ node: <MemeCard model={card} /> }))}
         />
