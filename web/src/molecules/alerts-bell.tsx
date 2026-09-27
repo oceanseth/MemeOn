@@ -19,7 +19,7 @@ import { Icon } from '@/atoms/icon'
 /**
  * There is one bell on a page — it lives in the shell's header — so one id is enough. The portal
  * renders into this anchor instead of `<body>` so the popover stays inside the shell it belongs
- * to: a consumer's `within(canvasElement)` still finds the rows, and `position: fixed` inside
+ * to: a query scoped to the shell still finds the rows, and `position: fixed` inside
  * resolves against the same containing block the phone header makes (`backdrop-filter` makes it
  * one).
  */

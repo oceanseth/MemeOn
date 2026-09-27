@@ -44,7 +44,7 @@ export function routeFamily(pathname: string, sub: string | null): RouteFamily |
 /**
  * What a chrome link spreads onto its `<Link>`: the route, and — from the live hook — the click
  * handler that runs the navigation inside a View Transition (`lib/viewTransition`). The pure
- * builder leaves `onClick` out, so a story's link is a plain router link.
+ * builder leaves `onClick` out, so its link is a plain router link.
  */
 export type ShellLinkProps = Pick<LinkProps, 'to' | 'onClick'>
 

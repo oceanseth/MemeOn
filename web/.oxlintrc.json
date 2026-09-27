@@ -72,10 +72,6 @@
     {
       "files": ["src/hooks/useMountEffect.ts"],
       "rules": { "memeon/no-use-effect": "off" }
-    },
-    {
-      "files": ["**/*.stories.tsx"],
-      "rules": { "shadcn/no-inline-styles": "off", "shadcn/no-restyle": "off" }
     }
   ]
 }

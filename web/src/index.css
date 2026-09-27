@@ -94,19 +94,13 @@
   --color-background: light-dark(oklch(97.5% 0.008 285), oklch(17% 0.022 285));
   --color-foreground: light-dark(oklch(22% 0.035 285), oklch(95% 0.01 285));
   --color-card: light-dark(oklch(99.5% 0.002 285), oklch(23% 0.027 285));
-  --color-card-foreground: var(--color-foreground);
   --color-popover: var(--color-card);
-  --color-popover-foreground: var(--color-foreground);
   --color-accent: light-dark(oklch(98.5% 0.006 285), oklch(27% 0.03 285));
-  --color-accent-foreground: var(--color-foreground);
-  --color-secondary: var(--color-accent);
-  --color-secondary-foreground: var(--color-foreground);
   --color-muted: light-dark(oklch(92.5% 0.016 285), oklch(13.5% 0.018 285));
   --color-muted-foreground: light-dark(oklch(45% 0.03 285), oklch(79% 0.03 285));
 
-  /* hairlines, the field edge, the focus ring (bubblegum in light, sky in dark), the anchor */
+  /* hairlines, the focus ring (bubblegum in light, sky in dark), the anchor */
   --color-border: light-dark(oklch(86% 0.02 285), oklch(40% 0.04 285));
-  --color-input: var(--color-border);
   --color-ring: light-dark(oklch(48% 0.184 345), oklch(72% 0.137 235));
   /* dark arm is ultraviolet-200, not 300: 300 reads Lc -58 on the dark canvas */
   --color-link: light-dark(var(--ramp-ultraviolet-700), var(--ramp-ultraviolet-200));

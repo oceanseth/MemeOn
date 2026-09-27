@@ -19,7 +19,7 @@
  *   - every *meme-card* component file contains zero IntersectionObserver tokens and still
  *     has ref={model.cardRef}
  *
- * Tests, stories and mdx are skipped (they may mock IntersectionObserver). CSS may declare
+ * Tests and mdx are skipped (they may mock IntersectionObserver). CSS may declare
  * and read `--glow-play-state`; mutation is a JS concern.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
@@ -37,7 +37,7 @@ if (!existsSync(src)) {
 }
 
 const toSourcePath = (file) => relative(src, file).split(sep).join('/')
-const isSkipped = (name) => /\.(test|spec|stories)\./.test(name) || /\.mdx$/.test(name)
+const isSkipped = (name) => /\.(test|spec)\./.test(name) || /\.mdx$/.test(name)
 const isSource = (name) => /\.tsx?$/.test(name) && !isSkipped(name)
 const SKIP_DIRS = new Set(['node_modules', 'dist', 'coverage', '.turbo'])
 

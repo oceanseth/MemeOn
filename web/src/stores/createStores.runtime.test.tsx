@@ -2,7 +2,7 @@ import { act, StrictMode, Suspense, useState, type ReactNode } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import { ConnectedScenario } from '../../.storybook/connected-scenario'
+import { ConnectedScenario } from '../test/connected-scenario'
 import { maskyAccessToken, sessionToken } from '../lib/api'
 import type { Me } from '../lib/types'
 import { useAuth } from '../hooks/useAuth'
@@ -136,7 +136,7 @@ function factory() {
   return record.stores
 }
 
-// Root and FreshStores both construct in useState and retain only after commit.
+// A committed owner: constructs in useState and retains only after commit.
 function OwnedStores({ children }: { children: ReactNode }) {
   const [stores] = useState(factory)
   useMountEffect(() => {
@@ -332,7 +332,7 @@ it('processes the actual child AuthRuntime refresh queued before parent retentio
   expect(adapters.stopPresence).toHaveBeenCalledTimes(2)
 })
 
-it('keeps a committed FreshStores bag idle without fetching or invoking auth', async () => {
+it('keeps a committed stores bag idle without fetching or invoking auth', async () => {
   await act(() =>
     root.render(
       <OwnedStores>

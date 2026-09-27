@@ -68,8 +68,8 @@ export type HeroVideoElementProps = Pick<
   VideoHTMLAttributes<HTMLVideoElement>,
   'src' | 'poster' | 'autoPlay' | 'preload' | 'aria-label' | 'onPlay'
 > & {
-  /* a callback, not a ref object: the model must stay a plain props bag (stories put it in args,
-     and a ref object would carry the mounted element back out with it) */
+  /* a callback, not a ref object: the model must stay a plain props bag, and a ref object would
+     carry the mounted element back out with it */
   ref: RefCallback<HTMLVideoElement>
 }
 
@@ -91,7 +91,7 @@ export interface HeroVideoModel {
 }
 
 export interface HeroVideoState {
-  /** the environment probe, or a story's override; it does not mean the film is playing */
+  /** the environment probe, or the caller's override; it does not mean the film is playing */
   autoplay: boolean
   muted: boolean
   /**

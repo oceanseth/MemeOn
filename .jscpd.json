@@ -6,9 +6,7 @@
     "**/node_modules/**",
     "**/dist/**",
     "**/vendor/**",
-    "**/storybook-static/**",
-    "**/*.d.ts",
-    "**/*.stories.tsx"
+    "**/*.d.ts"
   ],
   "minTokens": 70,
   "minLines": 8,

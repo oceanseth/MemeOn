@@ -3,7 +3,7 @@ import { createConnectedScenario } from './connected-scenario'
 
 function postMeme(scenario: ReturnType<typeof createConnectedScenario>, body: unknown) {
   return scenario.handle(
-    new Request('https://story.test/api/memes', {
+    new Request('https://scenario.test/api/memes', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body),
@@ -12,13 +12,13 @@ function postMeme(scenario: ReturnType<typeof createConnectedScenario>, body: un
 }
 
 describe('ConnectedScenario POST /api/memes', () => {
-  it('mints a distinct id without rewriting the story-mint fixture', async () => {
+  it('mints a distinct id without rewriting the minted fixture', async () => {
     const scenario = createConnectedScenario('unique-mint')
     const snapshot = structuredClone(scenario.mintedMeme)
-    expect(snapshot).toMatchObject({ id: 'meme-minted', title: 'story mint' })
+    expect(snapshot).toMatchObject({ id: 'meme-minted', title: 'scenario mint' })
 
     const first = await postMeme(scenario, {
-      title: 'generated story',
+      title: 'generated meme',
       imageUrl: 'https://media.example.test/one.png',
       source: {
         provider: 'giphy',
@@ -31,7 +31,7 @@ describe('ConnectedScenario POST /api/memes', () => {
     await expect(first.json()).resolves.toMatchObject({
       meme: {
         id: 'meme-minted',
-        title: 'generated story',
+        title: 'generated meme',
         imageUrl: 'https://media.example.test/one.png',
         source: {
           provider: 'giphy',
@@ -42,12 +42,12 @@ describe('ConnectedScenario POST /api/memes', () => {
       },
     })
 
-    const second = await postMeme(scenario, { title: 'second story' })
+    const second = await postMeme(scenario, { title: 'second meme' })
     expect(second.status).toBe(200)
     await expect(second.json()).resolves.toMatchObject({
       meme: {
         id: 'meme-minted-2',
-        title: 'second story',
+        title: 'second meme',
         imageUrl: snapshot.imageUrl,
         source: null,
       },
@@ -58,35 +58,35 @@ describe('ConnectedScenario POST /api/memes', () => {
     expect(minted).toHaveLength(1)
     expect(mintedTwo).toHaveLength(1)
     expect(minted[0]).not.toBe(scenario.mintedMeme)
-    expect(minted[0]?.title).toBe('generated story')
+    expect(minted[0]?.title).toBe('generated meme')
     expect(scenario.mintedMeme).toEqual(snapshot)
 
     const mintedDetail = await scenario.handle(
-      new Request('https://story.test/api/memes/meme-minted'),
+      new Request('https://scenario.test/api/memes/meme-minted'),
     )
     const mintedTwoDetail = await scenario.handle(
-      new Request('https://story.test/api/memes/meme-minted-2'),
+      new Request('https://scenario.test/api/memes/meme-minted-2'),
     )
-    await expect(mintedDetail.json()).resolves.toMatchObject({ meme: { title: 'generated story' } })
-    await expect(mintedTwoDetail.json()).resolves.toMatchObject({ meme: { title: 'second story' } })
+    await expect(mintedDetail.json()).resolves.toMatchObject({ meme: { title: 'generated meme' } })
+    await expect(mintedTwoDetail.json()).resolves.toMatchObject({ meme: { title: 'second meme' } })
 
     const removed = await scenario.handle(
-      new Request('https://story.test/api/memes/meme-minted', { method: 'DELETE' }),
+      new Request('https://scenario.test/api/memes/meme-minted', { method: 'DELETE' }),
     )
     expect(removed.status).toBe(200)
     expect(scenario.memes.filter((meme) => meme.id === 'meme-minted')).toHaveLength(0)
     expect(scenario.memes.filter((meme) => meme.id === 'meme-minted-2')).toHaveLength(1)
     const stillThere = await scenario.handle(
-      new Request('https://story.test/api/memes/meme-minted-2'),
+      new Request('https://scenario.test/api/memes/meme-minted-2'),
     )
-    await expect(stillThere.json()).resolves.toMatchObject({ meme: { title: 'second story' } })
+    await expect(stillThere.json()).resolves.toMatchObject({ meme: { title: 'second meme' } })
 
     const cursorPage = await scenario.handle(
-      new Request('https://story.test/api/memes?cursor=page-2'),
+      new Request('https://scenario.test/api/memes?cursor=page-2'),
     )
     const cursorBody = (await cursorPage.json()) as { memes: Array<{ id: string; title: string }> }
     expect(cursorBody.memes).toHaveLength(1)
-    expect(cursorBody.memes[0]).toMatchObject({ id: snapshot.id, title: 'story mint' })
+    expect(cursorBody.memes[0]).toMatchObject({ id: snapshot.id, title: 'scenario mint' })
   })
 
   it('keeps a supplied id and skips a taken suffix', async () => {

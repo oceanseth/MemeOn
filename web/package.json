@@ -7,8 +7,6 @@
     "dev": "vite",
     "build": "pnpm run check-tiers && pnpm run typecheck && vite build && node scripts/check-layers.mjs dist && node scripts/check-chunks.mjs dist && mkdir -p dist/.well-known && cp dist/skill.md dist/.well-known/skill.md",
     "preview": "vite preview",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
     "export:og-frames": "node scripts/export-og-frames.mjs",
     "lint:ds": "oxlint src",
     "test:lint-rules": "node --test lint/memeon.test.mjs",
@@ -31,9 +29,8 @@
     "test:proxy": "pnpm run build && node scripts/vite-proxy.test.mjs",
     "test:unit": "vitest run --project=unit",
     "test:runtime": "vitest run --project=runtime",
-    "test:stories": "vitest run --project=storybook",
     "test": "vitest run --project=unit --project=runtime",
-    "check": "pnpm run lint:ds && pnpm run test:lint-rules && pnpm run check-docs && pnpm run check-tiers && pnpm run check-copy && pnpm run check-card-media && pnpm run check-contrast && pnpm run check-tokens && pnpm run test:check-docs && pnpm run test:check-tiers && pnpm run test:check-copy && pnpm run test:check-card-media && pnpm run test:check-chunks && pnpm run test:check-layers && pnpm run test:check-contrast && pnpm run test:check-tokens && pnpm run test:shadcn-postadd && pnpm run test:proxy && pnpm run test:unit && pnpm run test:runtime && pnpm run test:stories"
+    "check": "pnpm run lint:ds && pnpm run test:lint-rules && pnpm run check-docs && pnpm run check-tiers && pnpm run check-copy && pnpm run check-card-media && pnpm run check-contrast && pnpm run check-tokens && pnpm run test:check-docs && pnpm run test:check-tiers && pnpm run test:check-copy && pnpm run test:check-card-media && pnpm run test:check-chunks && pnpm run test:check-layers && pnpm run test:check-contrast && pnpm run test:check-tokens && pnpm run test:shadcn-postadd && pnpm run test:proxy && pnpm run test:unit && pnpm run test:runtime"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -51,24 +48,15 @@
     "xstate": "^5.32.6"
   },
   "devDependencies": {
-    "@chromatic-com/storybook": "^5.3.1",
     "@shadcn/lint": "0.1.0",
-    "@storybook/addon-a11y": "^10.6.0",
-    "@storybook/addon-docs": "^10.6.0",
-    "@storybook/addon-vitest": "^10.6.0",
-    "@storybook/react-vite": "^10.6.0",
     "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/browser-playwright": "4.1.10",
     "@vitest/coverage-v8": "4.1.10",
-    "mockdate": "^3.0.5",
-    "msw": "^2.15.0",
-    "msw-storybook-addon": "^3.0.0",
     "oxlint": "1.83.0",
     "playwright": "1.63.0",
-    "storybook": "^10.6.0",
     "tailwindcss": "^4.3.3",
     "typescript": "~5.9.3",
     "vite": "^7.2.2",
@@ -76,10 +64,5 @@
   },
   "optionalDependencies": {
     "@rollup/rollup-darwin-arm64": "^4.53.2"
-  },
-  "msw": {
-    "workerDirectory": [
-      "public"
-    ]
   }
 }

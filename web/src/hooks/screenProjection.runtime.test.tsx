@@ -9,7 +9,7 @@ import {
   meLou,
   memeplexEmpty,
   paperMeme,
-} from '../../.storybook/fixtures'
+} from '../test/fixtures'
 import { memeDetailCopy } from '../copy/memeDetail'
 import { profileCopy } from '../copy/profile'
 import { tradesCopy } from '../copy/trades'

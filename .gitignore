@@ -5,7 +5,6 @@ node_modules/
 
 # Frontend build
 web/dist/
-web/storybook-static/
 
 # API build artifacts
 api/dist/

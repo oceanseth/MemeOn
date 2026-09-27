@@ -3,8 +3,8 @@
  * rather than respelling them, so "Log out" reads the same everywhere.
  *
  * Plain data only: `copy/` imports nothing but `copy/` and the two formatting helpers
- * (`lib/plural`, `lib/braincells`). It is read by hooks, `lib/*Model.ts` builders, tests and
- * stories. Tier components never import it — strings reach them as props.
+ * (`lib/plural`, `lib/braincells`). It is read by hooks, `lib/*Model.ts` builders and tests.
+ * Tier components never import it — strings reach them as props.
  */
 const brand = 'MemeOn' as const
 

@@ -1,6 +1,6 @@
 import { createActor } from 'xstate'
 import { describe, expect, it, vi } from 'vitest'
-import { listedHolo, meLou, paperMeme } from '../../.storybook/fixtures'
+import { listedHolo, meLou, paperMeme } from '../test/fixtures'
 import { memeDetailCopy as copy } from '../copy/memeDetail'
 import { memeDetailMachine } from '../stores/memeDetailMachine'
 import {

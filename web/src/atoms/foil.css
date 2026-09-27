@@ -1,6 +1,6 @@
 /* The cascade contract `src/index.css` declares, restated because a layer's rank is fixed the first
    time its name is seen and this file can still reach a stylesheet ahead of `index.css` (an async
-   CSS chunk of its own, a story, a second entry). `main.tsx` imports `index.css` first so the app
+   CSS chunk of its own, a second entry). `main.tsx` imports `index.css` first so the app
    bundle already opens with this order; the restatement is what keeps every other bundle honest,
    and re-declaring an order that already exists is a no-op. `properties` leads the list because
    that is where Tailwind emits its own `@layer properties` block — the `@supports` fallback that

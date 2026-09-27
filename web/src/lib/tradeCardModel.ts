@@ -202,7 +202,7 @@ export function buildTradeCardModel({
   busyTradeId?: string | null
   /** which of that trade's actions is in flight, so only it reads as running */
   busyAction?: TradeAction | null
-  /** injectable clock so stories and tests are deterministic */
+  /** injectable clock: the instant the card's age is measured from */
   now?: number
 }): TradeCardModel {
   const mine = trade.fromId === meSub

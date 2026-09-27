@@ -240,12 +240,6 @@ const METALS = ['gold', 'silver', 'bronze']
 const PAIRS = [
   ...SURFACES.map((surface) => ['--color-foreground', surface]),
   ...SURFACES.map((surface) => ['--color-muted-foreground', surface]),
-  /* the shadcn surface pairs a dropped-in registry file reaches for; each resolves to the ink
-     above, and the pair is audited so the alias can never drift away from it */
-  ['--color-card-foreground', '--color-card'],
-  ['--color-popover-foreground', '--color-popover'],
-  ['--color-accent-foreground', '--color-accent'],
-  ['--color-secondary-foreground', '--color-secondary'],
   ['--color-primary-foreground', '--color-primary'],
   ['--color-brand-foreground', '--color-brand'],
   ['--color-destructive-foreground', '--color-destructive'],
@@ -334,9 +328,7 @@ const sources = existsSync(SRC)
   ? readdirSync(SRC, { recursive: true, withFileTypes: true })
       .filter(
         (entry) =>
-          entry.isFile() &&
-          /\.(tsx?|css)$/.test(entry.name) &&
-          !/\.(test|stories)\./.test(entry.name),
+          entry.isFile() && /\.(tsx?|css)$/.test(entry.name) && !/\.test\./.test(entry.name),
       )
       .map((entry) => join(entry.parentPath ?? entry.path, entry.name))
   : []

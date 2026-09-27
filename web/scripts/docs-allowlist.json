@@ -2,7 +2,7 @@
   "allow": [
     {
       "name": "hooks/useXScreen.ts",
-      "file": "web/src/Anatomy.mdx",
+      "file": "web/src/Anatomy.md",
       "why": "The naming pattern, not a file: every screen has its own `useBinderScreen.ts`, `useTradesScreen.ts`, … and the tree's vocabulary for the set is `useXScreen`."
     },
     {

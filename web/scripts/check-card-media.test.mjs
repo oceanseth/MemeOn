@@ -57,14 +57,12 @@ test('passes when IO, glow mutation and the card handles stay on their owners', 
   })
 })
 
-test('skips tests and stories that mock IntersectionObserver', () => {
+test('skips tests that mock IntersectionObserver', () => {
   withSrc(
     {
       ...LEGAL,
       'lib/cardMedia.runtime.test.tsx':
         'class Fake implements IntersectionObserver { observe() { new IntersectionObserver(() => {}) } }\n',
-      'molecules/meme-card.stories.tsx':
-        'export const Video = { play: () => new IntersectionObserver(() => {}) }\n',
       'hooks/market-regressions.runtime.test.tsx':
         "vi.stubGlobal('IntersectionObserver', class {})\n",
     },

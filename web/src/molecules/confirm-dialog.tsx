@@ -28,7 +28,7 @@ const confirmInlines = (message: ConfirmDialogModel['message']) =>
  * reader reads the stakes with the name. Render it always; the model controls visibility.
  *
  * It rides `DialogFrame` rather than the `alert-dialog` atom on purpose: Base UI's AlertDialog
- * refuses the outside press, and this model's contract (six screens, the focus-restore story) is
+ * refuses the outside press, and this model's contract (six screens rely on it) is
  * that Escape and a press on the scrim both cancel.
  *
  *   <ConfirmDialog model={confirmDialog} />

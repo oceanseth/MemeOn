@@ -1,7 +1,3 @@
-import { Meta } from "@storybook/addon-docs/blocks"
-
-<Meta title="Anatomy" />
-
 # UI anatomy
 
 Five tiers. Everything below **Views** is a pure function of its props.
@@ -9,8 +5,7 @@ Five tiers. Everything below **Views** is a pure function of its props.
 `src/` is organized as atoms → molecules → organisms → screens → views.
 Everything below `views/` is a pure function of props: no state hooks, no
 stores, no fetch. State lives in `hooks/` (one `useXScreen()` per screen,
-exporting `XScreenModel`) and `stores/`. Every component has a sibling
-`*.stories.tsx` titled `"<Tier>/<Name>"`. Read this file before adding
+exporting `XScreenModel`) and `stores/`. Read this file before adding
 or moving a component. `pnpm --filter web run check-tiers` runs recursively and must pass;
 `pnpm run build` runs it before type-checking and Vite.
 
@@ -26,7 +21,7 @@ Beside the tiers, four folders are the engine side:
 
 | Folder | What lives there |
 |---|---|
-| `src/copy/` | **Every user-facing string**, one plain-data module per surface (`settings.ts`, …) plus `shared.ts` for labels that recur. Keys name the role (`intro`, `account.logOut`), never the content; dynamic strings are small pure functions (`account.name(user.name)`, `` shown: (n) => `${plural(n, 'card')} shown` ``). `copy/` imports nothing but `copy/` and the formatting helpers `lib/plural`, `lib/braincells`, and `lib/humanize`, so a noun stays beside its sentence and a large count reads `25k`. Hooks and `lib/*Model.ts` builders read it; tests and stories assert **through the same constant**, so a copy change touches one file. Tier components never import it — strings reach them as props. |
+| `src/copy/` | **Every user-facing string**, one plain-data module per surface (`settings.ts`, …) plus `shared.ts` for labels that recur. Keys name the role (`intro`, `account.logOut`), never the content; dynamic strings are small pure functions (`account.name(user.name)`, `` shown: (n) => `${plural(n, 'card')} shown` ``). `copy/` imports nothing but `copy/` and the formatting helpers `lib/plural`, `lib/braincells`, and `lib/humanize`, so a noun stays beside its sentence and a large count reads `25k`. Hooks and `lib/*Model.ts` builders read it; tests assert **through the same constant**, so a copy change touches one file. Tier components never import it — strings reach them as props. |
 | `src/hooks/` | One `useXScreen()` per screen (exports `XScreenModel`), plus `useAuth`, `useTheme`, `useProjectedActor`, `useDocumentTitle`, `useMountEffect`. App shell composes `useAppShellQuests` / `useAppShellAlerts` (one actor, one `useMountEffect` in the composer). `ProfileScreen` uses `useProfileScreen` (`showBinderHero` selects identity Card vs `/binder/:sub` non-owner hero). |
 | `src/stores/` | XState machines (`*Machine.ts`), plain `AuthStore` / `ThemeStore` (`subscribe` / `getSnapshot`), `createStores` + `StoresContext` |
 | `src/lib/` | Everything with no React tree: the API client, auth, presence, formatting (`braincells`, `plural`), `cn()`, class maps (`lib/binderChrome.ts`; same family as `cn()` / `atoms/foil.ts` `tierFrameClasses`), the imperative `cardMedia`, and the **model builders** (`*Model.ts`) that turn API records into the prop bags molecules and atoms render (`memeCardModel`, `tradeCardModel`, `questBarModel`, `appShellModel`, …). Create-meme also keeps its signed upload PUT (`createMemeUpload`), the video-status poller (`createMemeVideoPoll`), pending-video resume (`lib/createMemeModel/lifecycle.ts`), and one-concern mode actions (`lib/createMemeModel/giphyActions.ts`, `lib/createMemeModel/urlActions.ts`, `lib/createMemeModel/imageEdit.ts`, `lib/createMemeModel/remixActions.ts`, `lib/createMemeModel/generateActions.ts`, `lib/createMemeModel/uploadActions.ts`, `lib/createMemeModel/mintActions.ts`, hosted by `lib/createMemeModel/actionHost.ts`) here so `useCreateMemeScreen` stays orchestration-only. Marketplace keeps its URL/query/filter codec (`marketplaceQuery`) here so `useMarketplaceScreen` stays orchestration-only. Tab-scoped sessionStorage is `lib/sessionBus.ts`. Hooks call the builders; components only import their types. |
@@ -110,9 +105,9 @@ records the split (entry source-map membership, plus those import specifiers).
 | `stores/*Machine.ts` (one per flow) | XState source of truth for that screen | matching `useXScreen()` |
 | `hooks/useProjectedActor` | route-local snapshot via `useSelector`; XState actor mount lifetime | all stateful screen hooks |
 | `hooks/useXScreen.ts` | view-model: projected snapshot + callbacks + derived flags; picks the screen's strings out of `copy/<surface>.ts` (never spells them, never leaves that to the screen) | matching `XView` → `XScreen` |
-| `copy/<surface>.ts` | the strings themselves, as data; `copy/shared.ts` for the ones every surface shares | hooks, `lib/*Model.ts`, tests, stories |
+| `copy/<surface>.ts` | the strings themselves, as data; `copy/shared.ts` for the ones every surface shares | hooks, `lib/*Model.ts`, tests |
 | `hooks/useAuth.ts` | `user`, `loading`, `error`, `refresh`, `logout` | `RequireAuth`, chrome, screens |
-| `lib/*Model.ts` | pure builders from API records to component prop bags (`buildMemeCardModel`, `buildTradeCardModel`, `buildQuestBarModel`, …); the dialog models carry their `DialogOpenerRef` via `lib/dialogOpener` | screen hooks, stories (fixtures), the components as types only |
+| `lib/*Model.ts` | pure builders from API records to component prop bags (`buildMemeCardModel`, `buildTradeCardModel`, `buildQuestBarModel`, …); the dialog models carry their `DialogOpenerRef` via `lib/dialogOpener` | screen hooks, the components as types only |
 | `lib/cardMedia.ts` | the meme card's one imperative seam: a shared IntersectionObserver, `video.play()`, the paused rail sheen; exports the stable `cardMediaRef` the card model hands to `MemeCard`. Play-on-screen is the Play videos preference, not a per-card button | `lib/memeCardModel` |
 | `hooks/useHeroVideo` + `lib/heroVideoModel` | the landing film: whether autoplay is spent (reduced motion, Data Saver, 2g/3g — a live `useSyncExternalStore` probe), confirmed playback (the element's play event), muted; the element is kept for `play()` behind a ref callback so the model stays a plain props bag | `useLandingScreen` → `LandingScreen` → `HeroVideo` |
 | `hooks/useMarketplaceCatalog` + `lib/marketplaceQuery` | marketplace catalogue IO: URL codec, 250ms search debounce, cursor paging, IntersectionObserver sentinel, filter/sort URL sync; labels from `copy/marketplace` | `useMarketplaceScreen` → `MarketplaceScreen` |
@@ -131,10 +126,10 @@ global store bag. Actor startup/disposal follows StrictMode's setup/cleanup repl
 The app auth bag has its own ownership lifetime. `createStores()` and the
 `AuthStore` constructor neither start nor subscribe. `main.tsx` builds the one
 app bag at module level and applies the persisted theme before the first
-render; `Root` and Storybook's `FreshStores` retain the bag on committed
-mount; imperative scenarios and story setup retain before use. The first `retain()` connects `AuthStore` and `ThemeStore` (`subscribe` / `getSnapshot`), binds theme to the current avatar, then starts the auth actor. A child `useAuthRuntime`
+render; `Root` retains the bag on committed mount; imperative scenarios
+retain before use. The first `retain()` connects `AuthStore` and `ThemeStore` (`subscribe` / `getSnapshot`), binds theme to the current avatar, then starts the auth actor. A child `useAuthRuntime`
 can queue its initial refresh before the parent's retain; the actor processes
-that event on startup. Retaining an idle story bag alone does not fetch auth.
+that event on startup. Retaining an idle bag alone does not fetch auth.
 Repeated retains cancel deferred disposal without adding owners or subscriptions.
 Only a winning disposal microtask disconnects and stops, so StrictMode can reuse
 the committed bag while discarded or suspended renders acquire no resources.
@@ -143,30 +138,32 @@ to settle any pending refresh.
 
 ## Making a change
 
-Where each kind of request lands. Most touch two files plus a story; none should
+Where each kind of request lands. Most touch two files; none should
 touch four.
 
 | You want to… | Edit | Then |
 |---|---|---|
-| Change copy (a title, caption, button label, error string) | `copy/<surface>.ts` — the one place the string is spelled | nothing: the builder, its unit test and the story `play` all read the same constant. If a surface still spells its strings inline (see `scripts/copy-baseline.json`), move them into `copy/` first and run `pnpm --filter web run check-copy -- --update` |
-| Add a string | a role-named key in `copy/<surface>.ts` (a function when it takes a value: `name: (n) => …`); reuse `copy/shared.ts` for a label another surface already has | the builder picks it, the story asserts through it — never by respelling. A story that overrides one part of the model spreads the built model: `{ ...model.connections, rows: […] }` |
+| Change copy (a title, caption, button label, error string) | `copy/<surface>.ts` — the one place the string is spelled | nothing: the builder and its unit test read the same constant. If a surface still spells its strings inline (see `scripts/copy-baseline.json`), move them into `copy/` first and run `pnpm --filter web run check-copy -- --update` |
+| Add a string | a role-named key in `copy/<surface>.ts` (a function when it takes a value: `name: (n) => …`); reuse `copy/shared.ts` for a label another surface already has | the builder picks it, its test asserts through it — never by respelling |
 | Change how something looks, set a length, change a token | Tokens: `web/src/index.css`. A length is a grid step (`max-w-140`) or a named token on that sheet (`@theme` cuts / `:root` shorthands). Measures are `max-w-prose` / `max-w-notice` / `max-w-aside`. Appearance: the component's `cva` variants. What is allowed: `web/.oxlintrc.json` (`@shadcn/lint`; `shadcn/no-arbitrary-values` is `"error"` with **no** layout-arbitrary exception) — run `pnpm --filter web run lint:ds`. | `pnpm --filter web run check-contrast` for a colour, `pnpm --filter web run check-tokens` for a token |
-| Pause off-screen foil / start card video | `lib/cardMedia.ts` — shared IntersectionObserver (rootMargin: '200px'), `video.play()`/pause(), inline `--glow-play-state`. `atoms/foil.css` only declares and reads the property. `MemeCard` molecule (`molecules/meme-card.tsx`) only applies `model.cardRef` (`cardMediaRef`). Play-on-screen is the Play videos preference (account menu / Settings), not a button on the card. Do not construct an observer in the card; do not wrap it in `useMountEffect` or a view hook. Leave marketplace sentinel in `useMarketplaceCatalog.ts` (rootMargin: '900px'). Do not merge `useHeroVideo`. | `pnpm --filter web run check-card-media`. Keep `applyCardVisibility` as the testable unit (`lib/cardMedia.runtime.test.tsx`). Stories `Video` and `VideoReducedMotion` stay under Molecules/MemeCard. |
-| Add a state a screen can be in | the machine in `stores/`, the derived flags in the hook, a **Screen story** for the new state first | the view story that reaches it through the connected scenario |
-| Add a new component | its tier folder, pure props → markup, `data-slot` on the root, a sibling `*.stories.tsx` | `pnpm --filter web run check-tiers` |
+| Pause off-screen foil / start card video | `lib/cardMedia.ts` — shared IntersectionObserver (rootMargin: '200px'), `video.play()`/pause(), inline `--glow-play-state`. `atoms/foil.css` only declares and reads the property. `MemeCard` molecule (`molecules/meme-card.tsx`) only applies `model.cardRef` (`cardMediaRef`). Play-on-screen is the Play videos preference (account menu / Settings), not a button on the card. Do not construct an observer in the card; do not wrap it in `useMountEffect` or a view hook. Leave marketplace sentinel in `useMarketplaceCatalog.ts` (rootMargin: '900px'). Do not merge `useHeroVideo`. | `pnpm --filter web run check-card-media`. Keep `applyCardVisibility` as the testable unit (`lib/cardMedia.runtime.test.tsx`). |
+| Add a state a screen can be in | the machine in `stores/`, the derived flags in the hook | a unit or runtime test that pins it; verify it in the running app (`pnpm run dev:web`) |
+| Add a new component | its tier folder, pure props → markup, `data-slot` on the root | `pnpm --filter web run check-tiers` |
 | Add a shadcn / registry primitive | from web/, `pnpm dlx shadcn add <item>` (never init, never npx) | `scripts/shadcn-postadd.mjs` (`node scripts/shadcn-postadd.mjs`). Registry files import stock cn; this app's merge is `lib/cn.ts` (`createCn` with the material class group and containers `card-narrow`, `prose`, `notice`, `aside`). A second copy typechecks and skips the merge. The CLI also emits a lucide-react import because `components.json` still sets iconLibrary to lucide; do not flip iconLibrary without a throwaway-branch `pnpm dlx shadcn add` proof. Never add lucide-react to a workspace package.json. `pnpm --filter web run test:shadcn-postadd` fails any `web/src` file that still has that import, and fails if the package is listed in a workspace manifest or the lockfile. |
-| Add a route | a `use*Screen` hook + `*Screen` + `*View` (+ stories), then a `<Route>` in `views/AppView.tsx` (`lazy()` if it is behind `RequireAuth`) | `useDocumentTitle` in the view |
+| Add a route | a `use*Screen` hook + `*Screen` + `*View`, then a `<Route>` in `views/AppView.tsx` (`lazy()` if it is behind `RequireAuth`) | `useDocumentTitle` in the view |
 | Need a mount-time side effect (subscribe, title, retain) | `hooks/useMountEffect.ts` — never `useEffect` / `useLayoutEffect` (`memeon/no-use-effect`) | derived state, an event handler, a query, or a keyed remount |
 | Persist a value across a route change (OAuth, invite, Discord link, remix-video resume) | `lib/sessionBus.ts` | the caller that reads or writes that key |
-| Change what the API returns | `lib/types.ts`, the machine that fetches it, the builder that reads it | `.storybook/fixtures.ts` and `msw-handlers.ts` / `connected-scenario.ts` |
+| Change what the API returns | `lib/types.ts`, the machine that fetches it, the builder that reads it | `test/fixtures.ts` and `test/connected-scenario.ts` |
 
 `pnpm run check` is the whole gate (`lint:ds` first, then docs, tiers, copy, card-media, contrast, tokens,
-the script tests, proxy, unit, runtime, stories). `check-copy` is a ratchet: it counts copy-like quoted literals
+the script tests, proxy, unit, runtime). `check-copy` is a ratchet: it counts copy-like quoted literals
 and JSX text nodes still spelled in `hooks/`, `screens/`, `views/`, `molecules/`, `organisms/`,
 the `lib/*Model.ts` builders, and `lib/createMemeModel/` against `scripts/copy-baseline.json`. `copy/` is
-uncounted; stories and tests are skipped; `atoms/` and `stores/` are not walked. A file may only match or
+uncounted; tests are skipped; `atoms/` and `stores/` are not walked. A file may only match or
 fall below its number (`--list` names the strings, `--update` locks a drop in; it refuses to raise
-anything). `pnpm run storybook` (port 6006, MSW-backed) is where a state is verified.
+anything).
+
+A state is verified in the running app (`pnpm run dev:web`) and pinned by unit and runtime tests.
 
 ## Soft Press additions (mo-263)
 
@@ -199,7 +196,7 @@ Layered onto the tiers and rules above, not a replacement for them:
   goes with it — a phone app has none — the footer is then a desktop-only door to the legal pages.
   `organisms/app-shell.css`
   carries the tab-bar clearance and hairline, the scroll-driven header hairline and the
-  view-transition names. Shell-wrapping stories render with `layout: 'fullscreen'`.
+  view-transition names.
 - `focus-ring` (an `@utility` in `index.css`) is the one focus contract every interactive atom,
   row and menu item composes; `focus-ring-within` is its `:has(:focus-visible)` sibling.
 - `hooks/useDocumentTitle.ts` sets `document.title` per route from the view (the hook layer, not the
@@ -211,14 +208,9 @@ Layered onto the tiers and rules above, not a replacement for them:
   model feeds in tens as `data-progress`). The panel lists every quest, the meter, the claim pill
   and Later; nothing waits behind a further disclosure. Claim uses `actionsRef.close()` before the
   pack dialog.
-- The token sheet lives outside the tiers, at `src/Tokens.stories.tsx` (titled `Anatomy/Tokens`):
-  every semantic colour, both static ramps, the seven tier chips, the materials, the radius steps
-  and the type scale, painted from nothing but the utilities `index.css` emits, each specimen
-  probed via its `data-slot`.
 - The two auth hand-off routes (`/auth/callback`, `/auth/mobile`) are one pure `AuthStatusScreen`
   fed by `useAuthCallbackScreen` and `useMobileAuthForwardScreen`; both cross-origin navigations
-  (`navigateToAuthorization`, `forwardToDeepLink`) go through `lib/authNavigation.ts`, which
-  Storybook aliases to a recorder so the stories can assert the URL instead of leaving the iframe.
+  (`navigateToAuthorization`, `forwardToDeepLink`) go through `lib/authNavigation.ts`.
   The callback is `useMountEffect` plus one in-flight `completeMaskyLogin` Promise per Masky code
   in `lib/auth.ts`, not a ran ref. The mobile forward is one `useMountEffect` that calls
   `forwardToDeepLink`.
@@ -254,13 +246,10 @@ Probe these instead of a class name or copy string:
   `useMemo` / `useCallback` / `useId` below views even though `scripts/check-tiers.mjs` does not
   yet ban them.
 - The model type is exported by the hook, not the screen.
-- A new state starts as a Screen story.
-- Every component has a sibling `*.stories.tsx` titled `"<Tier>/<Name>"`.
-- Views opt out of autodocs (`!autodocs`) and wrap with `MemoryRouter`.
 - Do not put `useState` or a store subscription below `views/`.
-- Model builders live in `lib/*Model.ts`, not in a tier folder: hooks call them, stories use them
-  as fixtures, and a component imports only the model's *type*.
-- Strings live in `copy/`, spelled once. Builders read them; tests and stories assert through the
+- Model builders live in `lib/*Model.ts`, not in a tier folder: hooks call them, and a component
+  imports only the model's *type*.
+- Strings live in `copy/`, spelled once. Builders read them; tests assert through the
   constant. No tier imports `copy/`, and `copy/` imports nothing but `copy/`, `lib/plural` and
   `lib/braincells`.
 - Presentation is Tailwind utilities on the component, in `@layer utilities`. Only effects no
@@ -275,17 +264,17 @@ Probe these instead of a class name or copy string:
 ## Talking about it
 
 Name the tier and the piece: *"the `FoilCard` atom"*, *"the `MemeCard` molecule"*, *"the `GiftDialog` molecule"*,
-*"the `CreateMemeScreen` › `Error` story"*, *"`useMarketplaceScreen` should hide the grid on empty"*.
+*"`CreateMemeScreen` in its `error` phase"*, *"`useMarketplaceScreen` should hide the grid on empty"*.
 
 ## Checker exceptions
 
 The checker recursively classifies every `src/**/*.tsx` and `src/**/*.jsx`
-file other than stories and tests. Components in a tier need a sibling story;
-components elsewhere fail unless their exact source-relative path is listed
-below. This is an allowlist, not a folder exemption: a new `.tsx` file beside
-one of these paths must join a tier. JSX-free `.ts` domain modules outside
+file other than tests. Components outside a tier fail unless their exact
+source-relative path is listed below. This is an allowlist, not a folder
+exemption: a new `.tsx` file beside one of these paths must join a tier.
+JSX-free `.ts` domain modules outside
 the tiers remain outside the checker, except `hooks/**/*.ts` and
-`lib/**/*Model.ts` (stories and tests skipped; a `.tsx` in those folders still
+`lib/**/*Model.ts` (tests skipped; a `.tsx` in those folders still
 fails as a component outside a tier). `scripts/check-tiers.mjs` walks
 `hooks/useTradesScreen.ts` and `lib/confirmDialogModel.ts` (and every other
 file of those shapes) and fails a value import of `createElement` or
@@ -294,8 +283,7 @@ import from `atoms/` / `molecules/` / `organisms/` / `screens/` / `views/`.
 Type-only imports stay legal. `document.createElement` is not this rule, and
 the walk does not cover all of `lib/` (`lib/createMemeModel/shared.ts` still
 value-imports foil). STATE_HOOKS and the copy-import ban do not apply to
-hooks. Tier-local `.ts` helpers are checked for state and import boundaries
-but do not need stories.
+hooks. Tier-local `.ts` helpers are checked for state and import boundaries.
 
 | Path | Why it stays |
 |---|---|

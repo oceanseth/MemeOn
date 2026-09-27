@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { FIXED_NOW, readSale, unreadFriend, unreadSale } from '../../.storybook/fixtures'
+import { FIXED_NOW, readSale, unreadFriend, unreadSale } from '../test/fixtures'
 import { alertsBellCopy as copy } from '../copy/alertsBell'
 import { buildAlertsBellModel, formatWhen } from './alertsBellModel'
 
