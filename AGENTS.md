@@ -14,20 +14,20 @@ When you hit one of these situations, use the resolution — do not re-discover 
 | Who merges? | **Anyone may merge green PRs to `dev`.** After merge, smoke-test **dev.memeon.ai** before the next bead. Promote **`dev` → `production`** only via PR that **Strong alone** can approve. | Strong 2026-08-01 |
 | Bead run order | **Serial** for PRs to `dev`. (The `ox/ui` parallel-worktree exception ended when the stack merged to `dev` on 2026-09-12.) | Strong 2026-08-01; lou 2026-09-12 |
 | Local web UI / agent-browser | Always **`pnpm run dev:web`** (Vite on :5173). View and interact with **agent-browser** (`/Users/lou/.local/bin/agent-browser`). Auth: `agent-browser --state ./localstorage.json open http://localhost:5173`. Do not use `pnpm run dev` as the web command. API is proxied to :3001; if a flow needs `/api`, start `pnpm run dev:api` separately. | lou 2026-09-08; pnpm 2026-09-12 |
-| Codex agents / context boundaries | *(local-only)* [`.codex/config.toml`](.codex/config.toml): subagent V2, 10 concurrent subagents, hooks on, inherited services/apps off. Use the 18 domain roles in [docs/CODEX_AGENTS.md](docs/CODEX_AGENTS.md), fresh bounded contexts and shell + `agent-browser`; restart Codex to reload. | Lou 2026-09-08; [docs/CODEX_CONFIG.md](docs/CODEX_CONFIG.md) |
-| Beads local handoff | *(local-only)* Use [`scripts/bd`](scripts/bd) and [the local workflow](docs/BEADS_LOCAL_WORKFLOW.md). New implementation uses authored readiness and verified closure; thread/session actors are stable and existing claims remain untouched. | mo-6bv 2026-09-09 |
+| Codex agents / context boundaries | *(local-only)* [`.codex/config.toml`](.codex/config.toml): subagent V2, 10 concurrent subagents, hooks on, inherited services/apps off. Use the domain roles in `.codex/agents/`, fresh bounded contexts and shell + `agent-browser`; restart Codex to reload. | Lou 2026-09-08 |
+| Beads local handoff | *(local-only)* Use [`scripts/bd`](scripts/bd); `bd prime` prints the workflow. New implementation uses authored readiness and verified closure; thread/session actors are stable and existing claims remain untouched. | mo-6bv 2026-09-09 |
 | Change React UI | Read [web/src/Anatomy.md](web/src/Anatomy.md) first — its **Making a change** table says which file a copy / style / state / route / token change lands in. Tiers `atoms/ → molecules/ → organisms/ → screens/ → views/` are pure props → markup; state lives in `hooks/` + `stores/`; prop-bag builders in `lib/*Model.ts`. Gate: `pnpm run check` (or `pnpm --filter web run check-tiers` for the structure alone). | lou 2026-09-12 |
 | Change UI copy (title, caption, label, error string) | Edit **`web/src/copy/<surface>.ts`** only; builders and unit tests read the same constant. Surfaces not yet moved are listed in `web/scripts/copy-baseline.json` — move the strings into `copy/` first, then `pnpm --filter web run check-copy -- --update`. The ratchet fails a PR that spells new copy as quoted literals or JSX text nodes in `hooks/`, `screens/`, `views/`, `molecules/`, `organisms/`, `lib/*Model.ts`, or `lib/createMemeModel/`. | lou 2026-09-13 (mo-1f9) |
 | Spacing / width / radius / colour / type in React UI | Tokens: `web/src/index.css` `@theme`. Appearance: the component's `cva` variants. What is allowed: `web/.oxlintrc.json` (`@shadcn/lint`) — run `pnpm --filter web run lint:ds`. | mo-6ru 2026-09-16 |
 | React `useEffect` / `useLayoutEffect` | Never call them. Derive state, handle the event, use a query, or `useMountEffect`. Gate: `memeon/no-use-effect` via `pnpm --filter web run lint:ds`. The only wrapper is `web/src/hooks/useMountEffect.ts`. | lou 2026-09-19 |
 | lucide-react / lucide | Never install. Workspace override sets the package to `-`. `pnpm --filter web run test:shadcn-postadd` fails a package.json or lockfile that names it. | lou 2026-09-20 |
 | ox/ui overhaul / Soft Press redesign | **Shipped to `dev` 2026-09-12** (stacked PRs #17→#45, then pnpm/Turborepo #46). `ox/ui` is retired; do not restart or branch from it. The Paper design file is the visual authority for design-to-app work; the shipped tokens are `web/src/index.css`. | lou 2026-09-12 |
-| Local deploy / AWS CLI from laptop? | **Do not deploy from local.** Project AWS is not authenticated for local agents. Deploys use **GitHub secrets** only. | Strong 2026-07-28 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
-| Local API testing env? | Local / `local-server` should hit **dev or local** resources, never production. | Strong 2026-07-28 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
-| `api/src/env.ts` defaults look like production | Documented footgun only. **mo-100.13 deferred/closed** (Strong 2026-08-01): CI injects env; local never deploys. Do not open a PR for this unless policy changes. | Strong 2026-08-01 → [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) |
-| Repo checkout path | Canonical clone: **`/Users/lou/gts/strong/MemeOn`**; per-epic worktrees are its siblings (`memeon-wt-<node>`, see [docs/WORKTREES.md](docs/WORKTREES.md)). | Host layout 2026-09-16 |
+| Local deploy / AWS CLI from laptop? | **Do not deploy from local.** Project AWS is not authenticated for local agents. Deploys use **GitHub secrets** only. | Strong 2026-07-28 |
+| Local API testing env? | Local / `local-server` should hit **dev or local** resources, never production. | Strong 2026-07-28 |
+| `api/src/env.ts` defaults look like production | Documented footgun only. **mo-100.13 deferred/closed** (Strong 2026-08-01): CI injects env; local never deploys. Do not open a PR for this unless policy changes. | Strong 2026-08-01 |
+| Repo checkout path | Canonical clone: **`/Users/lou/gts/strong/MemeOn`**; per-epic worktrees are its siblings (`memeon-wt-<node>`). | Host layout 2026-09-16 |
 | Terraform vs live prod | README: prod has been mutated via AWS CLI; terraform in-repo is documentation-ish. **Re-import before apply.** | [README.md](README.md) Environments / infra notes |
-| Static-analysis fix track | Epic **`mo-100`** in beads (`bd list` / `bd show mo-100`). **One bead → one PR.** Workflow: **`memeon-bead-pr`**. | `.beads/`, `.grok/workflows/memeon-bead-pr.rhai` |
+| Static-analysis fix track | Epic **`mo-100`** in beads (`bd list` / `bd show mo-100`). **One bead → one PR.** | `.beads/` |
 | Planner / implementer / verifier | **Never the same agent role for a bead.** Planner (read-only) → implementer (code) → verifier (adversarial) → separate PR opener. | oxferd 2026-07-28 |
 | Strong’s fix priority | **Full-catalog `listMemes` on hot paths first** (`mo-100.1`). Other listed issues still real/simple; money races + SSRF stay P0 integrity. | Strong 2026-07-28 |
 | Discord search `listMemes` | Fixed in **mo-100.1** (PR #5): binder-first + semantic + paged lexical; no unbounded `listMemes` on Discord path. | mo-100.1 2026-08-01 |
@@ -35,24 +35,20 @@ When you hit one of these situations, use the resolution — do not re-discover 
 | Agent roles on this track | **goosey** orchestrates + status pings this thread. **whales** = heavy implement/verify muscle. Serial beads still apply — do not parallelize beads. | oxferd 2026-08-01 |
 | Who can call `POST /api/admin/frames`? | Only subs listed in Lambda env **`ADMIN_SUBS`** (comma-separated). Empty = fail-closed (403 everyone). Offline frame gen: `api/scripts/generate-frames.ts`. | mo-100.6 |
 | Outbound URL fetch (OG / resolve-image) | Use **`safeFetch` / `assertPublicUrl`** (`api/src/safeFetch.ts`) — never raw `fetch` with `redirect: 'follow'` to user URLs. | mo-100.5 |
-| Duplicate code (DRY) gate | `pnpm run check:dup` — jscpd over `api`, `web`, `shared`, `mobile/src`, `discord`. Scope, ignores and the fail threshold live in `.jscpd.json`; CI runs it as the `duplicate code (jscpd)` job in `web-check.yml`, and the *(local-only)* pre-commit hook (`scripts/hooks/pre-commit.sh`) runs the same scan so clones are fixed before the commit lands. | lou 2026-09-20 |
-| Format / Biome | `pnpm exec biome check` (or `pnpm run check:biome` / `pnpm run format`). Pre-commit is tracked `.githooks/pre-commit` (staged `--write`), invoked from *(local-only)* `scripts/hooks/pre-commit.sh`. oxlint stays the DS / `memeon/no-use-effect` gate (`pnpm --filter web run lint:ds`). | ox/biome 2026-09-21 |
+| Duplicate code (DRY) gate | `pnpm run check:dup` — jscpd over `api`, `web`, `shared`, `mobile/src`, `discord`. Scope, ignores and the fail threshold live in `.jscpd.json`; CI runs it as the `duplicate code (jscpd)` job in `web-check.yml`. | lou 2026-09-20 |
+| Format / Biome | `pnpm exec biome check` (or `pnpm run check:biome` / `pnpm run format`). Pre-commit is tracked `.githooks/pre-commit` (staged `--write`). oxlint stays the DS / `memeon/no-use-effect` gate (`pnpm --filter web run lint:ds`). | ox/biome 2026-09-21 |
 | Where do long docs live? | `docs/` for runbooks; `shared/`, `api/`, `web/` for code; this file only for the resolver table + pointers. | oxferd 2026-07-28 |
 
 ## Pointers
 
-Rows marked *(local-only)* — and every path under `docs/`, `scripts/`, `.beads/`, `.codex/`, `.grok/` — exist on Lou's checkout only (git-excluded). A fresh clone has `README.md`, this file, `web/src/Anatomy.md` and the code; those three are kept self-sufficient.
+Rows marked *(local-only)* — and every path under `docs/`, `scripts/`, `.beads/`, `.codex/` — exist on Lou's checkout only (git-excluded). A fresh clone has `README.md`, this file, `web/src/Anatomy.md` and the code; those three are kept self-sufficient.
 
 | Path | What |
 | --- | --- |
-| [docs/ENV_AND_DEPLOY.md](docs/ENV_AND_DEPLOY.md) | Env matrix, CI deploy path, no local deploy |
-| [docs/STATIC_ANALYSIS_TRACK.md](docs/STATIC_ANALYSIS_TRACK.md) | Epic mo-100 bead map + workflow FSM |
 | [README.md](README.md) | Product layout, auth, environments table |
-| `.grok/workflows/memeon-bead-pr.rhai` | Approved bead→PR pipeline (planner ≠ implementer ≠ verifier) |
 | `bd show mo-100` | Epic + children for the fix track |
 | `bd show mo-9dg` | *(local-only)* ox/ui headless molecularize + XState/MobX + Storybook |
 | [web/src/Anatomy.md](web/src/Anatomy.md) | React UI map: tiers, engines, where state and copy live, how to make a change |
-| [docs/OX_UI_HANDOFF.md](docs/OX_UI_HANDOFF.md) | *(local-only)* ox/ui history up to the dev merge |
 
 ## How to append
 
