@@ -14,6 +14,7 @@ import {
 } from '@/atoms/popover'
 import { PortalAnchor } from '@/atoms/portal-anchor'
 import { Progress } from '@/atoms/progress'
+import { SkeletonCard } from '@/atoms/skeleton'
 import { cn } from '@/lib/cn'
 import type { QuestBarModel } from '../lib/questBarModel'
 import { portalAnchor } from '../lib/portalAnchor'
@@ -74,7 +75,10 @@ const CHIP = cn(
 const CHIP_LINK = cn('no-underline', 'focus-ring rounded-sm')
 
 /** The card grid with the starter pack's tighter tracks; under 561px only the gap tightens. */
-const PACK_GRID = cn('m-0 grid list-none grid-cols-(--grid-quest) gap-5 p-0 max-sm:gap-3')
+/* `items-start`: fitted frames differ in height, so a card is never stretched to its row */
+const PACK_GRID = cn(
+  'm-0 grid list-none grid-cols-(--grid-quest) items-start gap-5 p-0 max-sm:gap-3',
+)
 
 export interface QuestBarProps {
   /** The ladder, or nothing: without it the pill is the plain balance. */
@@ -271,6 +275,9 @@ export function QuestBar({ model, balance }: QuestBarProps) {
             <div className={PACK_GRID} data-slot="pack-grid">
               {model.pack.cards.map((card) => (
                 <MemeCard key={card.id} model={card} />
+              ))}
+              {model.pack.waitingCards.map((id) => (
+                <SkeletonCard key={id} />
               ))}
             </div>
           )}

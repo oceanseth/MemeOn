@@ -9,6 +9,7 @@ import { useMountEffect } from './useMountEffect'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
 import { MEME_CARD_META_HEIGHT, masonrySkeletonItems } from '../lib/masonry'
 import { useMasonryLayout, type MasonryGridModel } from './useMasonryLayout'
+import { useMemeMediaSizes } from './useMemeMediaSizes'
 import { buildSortChipsModel, type SortChipsModel } from '../lib/sortChipsModel'
 import type { CheckboxRootProps } from '@base-ui/react/checkbox'
 import { useCallback } from 'react'
@@ -186,6 +187,7 @@ export function useBinderScreen(): BinderScreenModel {
     ? copy.emptyState.firstRun
     : copy.emptyState.allPrivate(privateCount)
 
+  useMemeMediaSizes(visible)
   const cards = visible.map((meme) => {
     const memeCard = buildMemeCardModel(meme)
     const shares = meme.myShares ?? 0

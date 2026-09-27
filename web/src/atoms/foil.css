@@ -16,8 +16,9 @@
      `foil-frame foil-media`                  on the image box (`FoilMedia`).
 
    Every card in the app uses `presentation="collectible"`: a backing sheet, a per-tier material
-   rail and an inset art window. The only compact (default) frame is the create-meme preview, a
-   flat 3px border in the tier's `--tier-<key>-frame` token (`index.css`).
+   rail and, set into it, an art window cut to the meme's own ratio with the art filling it edge to
+   edge. The only compact (default) frame is the create-meme preview, a flat 3px border in the
+   tier's `--tier-<key>-frame` token (`index.css`).
 
    `sheen` drives the rail sweep; `sheen` and `sparkle` also pick the forced-colors ladder rung.
    Do not restore `.glow-border` / `--glow-width` / `.tier-card-inner`.
@@ -233,8 +234,8 @@
     --collectible-background-position: 0 0, 9px 5px, 4px 13px, 0 0, 0 0;
   }
 
-  /* The frame no longer fixes a 4:5 ratio: the art box below carries `--meme-aspect`
-     (set inline by `MemeCard` from the model) and every layer here shrink-wraps it.
+  /* The frame has no ratio of its own: the art box below carries `--meme-aspect` (set inline by
+     `MemeCard` from the model) and every layer here shrink-wraps it.
      `lib/masonry.ts` mirrors this chrome as MEDIA_CHROME_X/Y (50 / 38): change the
      padding, rail or window borders and those constants move with them. */
   .foil-media[data-presentation="collectible"].foil-frame {
@@ -328,14 +329,15 @@
   }
 
   /* The art window's fill: the grid card's detail link, the detail hero's enlarge trigger and the
-     landing hero's inert span all host the same backdrop + vignette + inset art stack.
-     The art box owns the card's ratio: the meme's clamped `w/h`, 4:5 until a model sets it. */
+     landing hero's inert span. The fill owns the card's ratio — the art's own `w/h` (`--meme-aspect`,
+     set inline from the model) — so the window is exactly as big as the art and the art covers it
+     edge to edge: no inset, no matte, nothing behind it to show. `muted` is only the plate a
+     frame shows for the instant before its first frame paints. */
   :is([data-slot="collectible-art-link"], [data-slot="collectible-art-enlarge"]) {
     position: relative;
     display: block;
     width: 100%;
-    aspect-ratio: var(--meme-aspect, 4 / 5);
-    isolation: isolate;
+    aspect-ratio: var(--meme-aspect, 1);
     overflow: hidden;
     background: var(--color-muted);
   }
@@ -345,28 +347,9 @@
     outline: none;
   }
 
-  :is([data-slot="collectible-art-link"], [data-slot="collectible-art-enlarge"])::after {
-    content: "";
-    position: absolute;
-    z-index: 0;
-    inset: 0;
-    pointer-events: none;
-    background: color-mix(in oklab, var(--color-muted) 28%, transparent);
-    box-shadow: 0 0 28px oklch(0.08 0.02 280 / 0.35) inset;
-  }
-
-  /* contain (unknown or clamped dims): an 8px matte over the blurred backdrop copy */
   :is([data-slot="collectible-art-link"], [data-slot="collectible-art-enlarge"])
     > [data-slot="meme-art"] {
     position: absolute;
-    z-index: 1;
-    inset: 8px;
-    width: calc(100% - 16px);
-    height: calc(100% - 16px);
-  }
-
-  /* cover: the window ratio is the art's own, so it fills the window edge to edge, no crop */
-  [data-art-fit="cover"] [data-slot="meme-art"] {
     inset: 0;
     width: 100%;
     height: 100%;

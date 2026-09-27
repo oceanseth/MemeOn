@@ -8,6 +8,7 @@ import { Heading } from '@/atoms/heading'
 import { MemeCard } from '@/molecules/meme-card'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
+import { SkeletonCard } from '@/atoms/skeleton'
 import { Spinner } from '@/atoms/spinner'
 import { cn } from '../lib/cn'
 import type { InviteScreenModel } from '../hooks/useInviteScreen'
@@ -52,6 +53,7 @@ export function InviteScreen({
   selfActions,
   inviter,
   cards,
+  waitingCards,
   acceptButtonProps,
   acceptIcon,
 }: InviteScreenModel) {
@@ -172,6 +174,11 @@ export function InviteScreen({
             {cards.map((card) => (
               <li key={card.id} className={binderCardSlotClasses}>
                 <MemeCard model={card.memeCard} />
+              </li>
+            ))}
+            {waitingCards.map((id) => (
+              <li key={id} className={binderCardSlotClasses} aria-hidden="true">
+                <SkeletonCard />
               </li>
             ))}
           </ul>

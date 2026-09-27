@@ -20,6 +20,7 @@ import {
 } from '../stores/marketplaceMachine'
 import { useMarketplaceCatalog } from './useMarketplaceCatalog'
 import { useMasonryLayout, type MasonryGridModel } from './useMasonryLayout'
+import { useMemeMediaSizes } from './useMemeMediaSizes'
 import { MEME_CARD_META_HEIGHT, masonrySkeletonItems } from '../lib/masonry'
 import { usePlayVideos } from './usePlayVideos'
 
@@ -113,9 +114,12 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
   })
 
   const { playVideos } = usePlayVideos()
+  // a card's frame needs its meme's size; the memes with none stored are measured here
+  const mediaSizes = useMemeMediaSizes(context.memes)
   const cards = useMemo(
     () => context.memes.map((meme) => buildMemeCardModelForPlayback(meme, playVideos)),
-    [context.memes, playVideos],
+    // mediaSizes: the builder reads the measured sizes, which move without the memes moving
+    [context.memes, playVideos, mediaSizes],
   )
 
   const showLoading = phase === 'loading'

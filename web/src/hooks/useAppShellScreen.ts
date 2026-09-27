@@ -10,6 +10,7 @@ import { useStores } from '../stores/StoresContext'
 import { useAppShellAlerts } from './useAppShellAlerts'
 import { useAppShellQuests } from './useAppShellQuests'
 import { useAuth } from './useAuth'
+import { useMemeMediaSizes } from './useMemeMediaSizes'
 import { useMountEffect } from './useMountEffect'
 import { usePlayVideos } from './usePlayVideos'
 import { useTheme } from './useTheme'
@@ -36,6 +37,8 @@ export function useAppShellScreen(): AppShellScreenModel {
   const [snapshot, send, actor] = useProjectedActor(appShellMachine)
   const ctx = snapshot.context
   const phase = snapshot.value as AppShellPhase
+  // a claimed pack's cards are framed to their memes' sizes: measure the ones with none stored
+  useMemeMediaSizes(ctx.packMemes ?? [])
   const { loadAlerts, onOpenAlerts } = useAppShellAlerts({
     send,
     actor,
