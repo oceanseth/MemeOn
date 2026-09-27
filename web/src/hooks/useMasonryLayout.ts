@@ -40,7 +40,11 @@ export function useMasonryLayout(
   const containerRef = useCallback<RefCallback<HTMLElement>>((el) => {
     observerRef.current?.disconnect()
     observerRef.current = null
-    if (!el || typeof ResizeObserver === 'undefined') return
+    if (!el) return
+    // measured on attach, so the first layout lands in the commit that mounted the wrapper
+    // instead of waiting on the observer's first callback
+    setWidth(Math.floor(el.clientWidth))
+    if (typeof ResizeObserver === 'undefined') return
     const observer = new ResizeObserver((entries) => {
       const next = entries[0]?.contentRect.width ?? 0
       // whole pixels only: sub-pixel resize noise must not thrash the layout
