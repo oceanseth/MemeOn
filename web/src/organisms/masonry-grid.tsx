@@ -9,9 +9,11 @@ import './masonry-grid.css'
  * `content-visibility` must not sit on the card itself — it would clip the foil bloom, which
  * the `box-content` padding / negative-margin pair contains without moving the slot's box:
  * the padding box grows outward, the content box stays the slot's exact width × height.
+ * `grid-cols-1` is the `minmax(0, 1fr)` track: an implicit `auto` track would grow to the
+ * card's min-content, which is the whole of its one-line title.
  */
 const slotClasses = cn(
-  'absolute box-content grid',
+  'absolute box-content grid grid-cols-1',
   'skip-render',
   'pointer-events-none p-7.5 -m-7.5 *:pointer-events-auto',
 )
