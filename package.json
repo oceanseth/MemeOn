@@ -18,8 +18,6 @@
     "check": "turbo run check --filter=web",
     "typecheck": "turbo run typecheck --filter=web --filter=memeon-api --filter=mobile",
     "test": "turbo run test --filter=web",
-    "storybook": "turbo run storybook --filter=web",
-    "build-storybook": "turbo run build-storybook --filter=web",
     "mobile:export": "pnpm --filter mobile export:ios",
     "check:dup": "jscpd",
     "check:biome": "biome check",

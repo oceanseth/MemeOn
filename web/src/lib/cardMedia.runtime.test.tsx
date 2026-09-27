@@ -3,9 +3,9 @@ import type { MouseEvent } from 'react'
 import { applyCardVisibility, cardMediaRef, toggleCardMedia } from './cardMedia'
 
 /**
- * The viewport observer replaced `autoPlay` on the card, so on-screen playback is behaviour no
- * story can assert: whether a card has scrolled into view, and whether `play()` resolved, are both
- * decided after the story's play function has run. These drive it directly instead.
+ * The viewport observer replaced `autoPlay` on the card, so on-screen playback is decided after
+ * render: whether a card has scrolled into view, and whether `play()` resolved. These drive it
+ * directly.
  */
 interface Card {
   card: HTMLElement

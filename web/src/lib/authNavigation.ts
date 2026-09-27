@@ -1,5 +1,4 @@
-/* The two navigations that leave the SPA for another origin. Storybook aliases this module to
-   `.storybook/mocks/authNavigation.ts`, which records the URL instead of moving the iframe. */
+/* The two navigations that leave the SPA for another origin. */
 
 /** Bounce to Masky's authorize page. */
 export function navigateToAuthorization(url: string): void {

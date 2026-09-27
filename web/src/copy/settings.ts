@@ -26,7 +26,7 @@ export const settingsCopy = {
       service: 'Discord',
       notLinked: 'Not linked',
       connect: 'Connect Discord',
-      /** The linked row, the day `Me` reports one; today only the story reaches it. */
+      /** The linked row, the day `Me` reports one; nothing reads it today. */
       linkedAs: (handle: string) => `Linked as ${handle}`,
       open: 'Open Discord page',
     },

@@ -84,7 +84,7 @@ export function buildMemeCardModelForPlayback(meme: Meme, playVideos: boolean): 
   return buildCard(meme, prefersReducedMotion(), playVideos)
 }
 
-/** The same card with the motion branch forced, so stories and tests can render it. */
+/** The same card with the motion branch forced, so a test can reach it. */
 export function buildReducedMotionMemeCardModel(meme: Meme): MemeCardModel {
   return buildCard(meme, true, false)
 }

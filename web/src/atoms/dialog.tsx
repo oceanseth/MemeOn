@@ -102,10 +102,7 @@ type DialogCloseShown = {
 
 type DialogCloseHidden = {
   showCloseButton: false
-  /**
-   * Storybook merges meta closeLabel with `showCloseButton: false`. The button is not rendered,
-   * so this cannot name anything. `?: never` rejects WithoutCloseButton / Danger / Dark.
-   */
+  /** accepted and ignored: the button is not rendered, so this names nothing */
   closeLabel?: string | undefined
   /** same optional lock as the shown arm, so it is not forwarded onto the popup */
   closeDisabled?: boolean | undefined

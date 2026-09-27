@@ -1,4 +1,4 @@
-import { memeValue, tierFor } from '../../shared/tiers'
+import { memeValue, tierFor } from '@memeon/shared/tiers'
 import type {
   Alert,
   FriendEntry,
@@ -9,7 +9,7 @@ import type {
   Memeplex,
   QuestStep,
   Trade,
-} from '../src/lib/types'
+} from '../lib/types'
 import { devMemeMedia } from './dev-meme-media'
 
 export const FIXED_NOW = '2026-09-08T00:00:00.000Z'
@@ -42,7 +42,7 @@ function meme(partial: Pick<Meme, 'id' | 'title' | 'reshares'> & Partial<Meme>):
   }
 }
 
-/** Stable story ids/titles; art synced from dev.memeon.ai via sync-storybook-memes.mjs */
+/** Stable fixture ids/titles; art recorded from dev.memeon.ai in `dev-meme-media.ts` */
 export const paperMeme = meme({
   id: 'meme-paper',
   title: 'fresh paper',

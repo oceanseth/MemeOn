@@ -57,7 +57,7 @@ export interface AvatarMenuModel {
     onCheckedChange: (checked: boolean) => void
   }
   logOut: { label: string; onSelect: () => void }
-  /** stories only: mount the menu open. The app leaves Base UI to own the open state. */
+  /** mounts the menu open. The app never sets it: Base UI owns the open state. */
   defaultOpen?: boolean | undefined
 }
 

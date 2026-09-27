@@ -26,6 +26,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  /* Bare ".storybook" is a file pattern (the segment contains "."), so it matches nothing. */
-  "include": ["src", "../shared", ".storybook/**/*"]
+  "include": ["src", "../shared"]
 }

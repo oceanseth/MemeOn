@@ -14,8 +14,8 @@
  *    a utility `index.css` emits.
  * 3. **A component that is nowhere.** `atoms/Button` has to be exported by a file in
  *    `src/atoms|molecules|organisms`, and in the three documents that describe the tree
- *    (README.md, DESIGN.md, Anatomy.mdx) a bare `` `Name` `` has to be declared or imported
- *    somewhere in `web/src`, `web/.storybook`, `shared`, `api/src` or `mobile/src`.
+ *    (README.md, DESIGN.md, Anatomy.md) a bare `` `Name` `` has to be declared or imported
+ *    somewhere in `web/src`, `shared`, `api/src` or `mobile/src`.
  * 4. **A script that does not exist.** `pnpm --filter web run check-tokens` has to be a script in
  *    that workspace's package.json.
  * 5. **The wrong package manager.** This is a pnpm workspace (`packageManager` in the root
@@ -46,7 +46,7 @@ const DOCUMENTS = [
   'DESIGN.md',
   'PRODUCT.md',
   'docs/**/*.md',
-  'web/src/Anatomy.mdx',
+  'web/src/Anatomy.md',
   'web/public/skill.md',
   'mobile/README.md',
   'mobile/AGENTS.md',
@@ -54,7 +54,7 @@ const DOCUMENTS = [
   'discord/README.md',
 ]
 
-const SKIP = new Set(['node_modules', '.git', 'dist', 'storybook-static', '.turbo', 'coverage'])
+const SKIP = new Set(['node_modules', '.git', 'dist', '.turbo', 'coverage'])
 const walk = (dir, test, found = []) => {
   if (!existsSync(dir)) return found
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -128,20 +128,19 @@ const exportsOf = (file) => {
   return names
 }
 
-const isSource = (name) => /\.tsx?$/.test(name) && !/\.(stories|test)\.tsx?$/.test(name)
+const isSource = (name) => /\.tsx?$/.test(name) && !/\.test\.tsx?$/.test(name)
 const tierFiles = ['atoms', 'molecules', 'organisms'].flatMap((tier) =>
   walk(join(WEB, 'src', tier), isSource),
 )
 const tierExports = new Set(tierFiles.flatMap(exportsOf))
 
 /**
- * Every name the code *has*: declared or imported anywhere under `web/src`, `web/.storybook`,
- * `shared`, `api/src` or `mobile/src`. A document may name a component the app imports
- * (`MemoryRouter`) or one it declares without exporting (`Root`); what it may not do is name one
- * that is nowhere at all.
+ * Every name the code *has*: declared or imported anywhere under `web/src`, `shared`, `api/src`
+ * or `mobile/src`. A document may name a component the app imports (`MemoryRouter`) or one it
+ * declares without exporting (`Root`); what it may not do is name one that is nowhere at all.
  */
 const identifiers = new Set()
-for (const dir of ['web/src', 'web/.storybook', 'shared', 'api/src', 'mobile/src']) {
+for (const dir of ['web/src', 'shared', 'api/src', 'mobile/src']) {
   for (const file of walk(join(ROOT, dir), (name) => /\.tsx?$/.test(name))) {
     const source = read(file)
     for (const [, name] of source.matchAll(
@@ -215,7 +214,7 @@ const allows = (file, name) => allowed.some((entry) => entry.name === name && en
 
 /**
  * A path in a document is read the way a reader reads it: from the document's own directory
- * outward, one parent at a time, to the repo root. `Anatomy.mdx` (in `web/src/`) writes
+ * outward, one parent at a time, to the repo root. `Anatomy.md` (in `web/src/`) writes
  * `atoms/button.tsx`, `scripts/copy-baseline.json` and `web/src/index.css`, and all three resolve;
  * `AGENTS.md` (at the root) writes `docs/WORKTREES.md`.
  *
@@ -258,10 +257,10 @@ const pathish = (text, bases) => {
 const TEMPLATE = /[<>{}$*]|…/
 /**
  * Two kinds of path are real without being in the tree, and neither is this script's business:
- * a build output (`web/dist`, `api/lambda.zip`, `storybook-static`), which its own build makes,
- * and anything under `.beads/`, the local issue database bd generates and git excludes.
+ * a build output (`web/dist`, `api/lambda.zip`), which its own build makes, and anything under
+ * `.beads/`, the local issue database bd generates and git excludes.
  */
-const GENERATED = /(^|\/)(dist|storybook-static|node_modules|coverage|\.beads)(\/|$)|\.zip$/
+const GENERATED = /(^|\/)(dist|node_modules|coverage|\.beads)(\/|$)|\.zip$/
 
 const exists = (candidate, bases) => {
   const cleaned = candidate.replace(/[.,;:)]+$/, '')
@@ -397,7 +396,7 @@ const STOCK = new Set([
 ])
 
 /** The documents that describe the component tree, where a capitalised backtick names a component. */
-const TREE_DOCUMENTS = new Set(['README.md', 'DESIGN.md', 'web/src/Anatomy.mdx'])
+const TREE_DOCUMENTS = new Set(['README.md', 'DESIGN.md', 'web/src/Anatomy.md'])
 
 /** Names the language owns, not this app. */
 const GLOBALS = new Set([
@@ -511,9 +510,7 @@ for (const pattern of DOCUMENTS) {
           !basenames.has(bare) &&
           !identifiers.has(bare)
         ) {
-          say(
-            `\`${bare}\` is declared nowhere in web/src, web/.storybook, shared, api/src or mobile/src`,
-          )
+          say(`\`${bare}\` is declared nowhere in web/src, shared, api/src or mobile/src`)
         }
       }
 
