@@ -18,7 +18,7 @@
    Every card in the app uses `presentation="collectible"`: a backing sheet, a per-tier material
    rail and, set into it, an art window cut to the meme's own ratio with the art filling it edge to
    edge. The only compact (default) frame is the create-meme preview, a flat 3px border in the
-   tier's `--tier-<key>-frame` token (`index.css`).
+   tier's `--tier-<key>-frame` token (`index.css`), which shrink-wraps its art the same way.
 
    `sheen` drives the rail sweep; `sheen` and `sparkle` also pick the forced-colors ladder rung.
    Do not restore `.glow-border` / `--glow-width` / `.tier-card-inner`.
@@ -77,6 +77,22 @@
     position: relative;
     display: block;
     overflow: hidden;
+  }
+
+  /* The compact frame fits its art snug too: the media keeps its own ratio inside the grid's
+     1:2 … 2:1 clamp (`lib/memeCardModel.ts`), covering the frame to its border and centre-cropping
+     past the clamp. The frame is the container the clamp is measured against. */
+  .foil-media[data-presentation="default"] {
+    container-type: inline-size;
+  }
+
+  .foil-media[data-presentation="default"] > [data-slot="meme-art"] {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 50cqw;
+    max-height: 200cqw;
+    object-fit: cover;
   }
 
   /* Grid cards are small physical collectibles: a white backing sheet, a broad material rail and

@@ -17,7 +17,7 @@ export type LandingLoginButtonProps = Pick<
 
 export type LandingHeroImageProps = Pick<
   ImgHTMLAttributes<HTMLImageElement>,
-  'src' | 'alt' | 'loading' | 'aria-hidden'
+  'src' | 'alt' | 'loading'
 >
 
 export type LandingErrorNoticeProps = Pick<HTMLAttributes<HTMLParagraphElement>, 'role'>
@@ -31,7 +31,8 @@ export interface LandingHeroCardModel {
   resharesLabel: string
   rarityLabel: string
   imageProps: LandingHeroImageProps
-  backdropImageProps: LandingHeroImageProps
+  /** the art window's ratio: the image's own, so the art covers the window edge to edge */
+  aspect: number
   cardRef: RefCallback<HTMLElement>
 }
 
@@ -60,6 +61,8 @@ export interface LandingFaqItemModel {
 const copy = landingCopy
 const BRAINCELL_IMAGE_SRC = '/api/brand/braincell.png'
 const HERO_IMAGE_SRC = '/brand/hero-cat.webp'
+/** `public/brand/hero-cat.webp` is 1254 × 1254 */
+const HERO_IMAGE_ASPECT = 1254 / 1254
 /** Every minted meme is one hundred shares (`api`); the landing quotes it. */
 const SHARES_PER_CARD = 100
 
@@ -74,12 +77,7 @@ export function buildLandingHeroCards(): LandingHeroCardModel[] {
     resharesLabel: copy.tier.reshares(tier.minReshares),
     rarityLabel: tier.rarity,
     imageProps: { src: HERO_IMAGE_SRC, alt: '', loading: 'eager' },
-    backdropImageProps: {
-      src: HERO_IMAGE_SRC,
-      alt: '',
-      loading: 'eager',
-      'aria-hidden': true,
-    },
+    aspect: HERO_IMAGE_ASPECT,
     cardRef: cardMediaRef,
   }))
 }

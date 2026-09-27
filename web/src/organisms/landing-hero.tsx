@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { Alert } from '@/atoms/alert'
 import { Button } from '@/atoms/button'
 import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
@@ -110,6 +110,7 @@ export function LandingHero({
             tierKey={card.tierKey}
             presentation="collectible"
             rarityLadder
+            style={{ '--meme-aspect': card.aspect } as CSSProperties}
           >
             {/* The caption rides the top edge: a fan opens at the top and closes at the foot,
                 so that is the one edge of every seat the hand leaves in view. */}
@@ -129,13 +130,8 @@ export function LandingHero({
               presentation="collectible"
               seal={<TierSeal tierKey={card.tierKey} label={card.tierLabel} />}
             >
-              <span data-slot="collectible-art-link" className="block size-full">
-                <img
-                  data-slot="meme-art-backdrop"
-                  className="absolute inset-0 z-0 block size-full scale-110 object-cover opacity-45 blur-lg saturate-125"
-                  {...card.backdropImageProps}
-                />
-                <img data-slot="meme-art" className="block object-contain" {...card.imageProps} />
+              <span data-slot="collectible-art-link">
+                <img data-slot="meme-art" className="block object-cover" {...card.imageProps} />
               </span>
             </FoilMedia>
           </FoilCard>
