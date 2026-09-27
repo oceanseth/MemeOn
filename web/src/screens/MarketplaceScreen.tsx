@@ -11,19 +11,15 @@ import {
 } from '@/atoms/empty'
 import { Icon } from '@/atoms/icon'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/atoms/input-group'
+import { MasonryGrid, MasonrySkeletonGrid } from '@/organisms/masonry-grid'
 import { MemeCard } from '@/molecules/meme-card'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Select } from '@/atoms/select'
-import { SkeletonCard } from '@/atoms/skeleton'
 import { Toggle } from '@/atoms/toggle'
 import { ToggleGroup, ToggleGroupItem } from '@/atoms/toggle-group'
 import { Toolbar, ToolbarStart } from '@/atoms/toolbar'
 import type { MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
-import {
-  binderGridClasses as cardGrid,
-  binderCardSlotClasses as cardSlot,
-} from '../lib/binderChrome'
 import { cn } from '../lib/cn'
 
 /* The class strings below are this screen's own layout, one token per `cn` argument: a multi-word
@@ -79,7 +75,6 @@ export function MarketplaceScreen({
   showError,
   showGrid,
   showMore,
-  skeletonCount,
   errorMessage,
   retryButtonProps,
   retryLabel,
@@ -88,6 +83,7 @@ export function MarketplaceScreen({
   loadMoreError,
   endOfListLabel,
   sentinelRef,
+  masonry,
 }: MarketplaceScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
@@ -163,11 +159,7 @@ export function MarketplaceScreen({
         {resultsLabel}
       </div>
       {showLoading ? (
-        <div className={cardGrid} aria-hidden="true">
-          {Array.from({ length: skeletonCount }, (_, slot) => (
-            <SkeletonCard key={slot} />
-          ))}
-        </div>
+        <MasonrySkeletonGrid model={masonry} />
       ) : showError ? (
         <Empty variant="error">
           <EmptyHeader>
@@ -196,13 +188,11 @@ export function MarketplaceScreen({
         </Empty>
       ) : showGrid ? (
         <>
-          <div data-slot="market-grid" className={cardGrid} role="list">
-            {cards.map((card) => (
-              <div key={card.id} className={cardSlot} role="listitem">
-                <MemeCard model={card} />
-              </div>
-            ))}
-          </div>
+          <MasonryGrid
+            data-slot="market-grid"
+            model={masonry}
+            items={cards.map((card) => ({ node: <MemeCard model={card} /> }))}
+          />
           {showMore && (
             <div ref={sentinelRef} data-slot="load-more" className="mt-4.5">
               <EmptyContent>

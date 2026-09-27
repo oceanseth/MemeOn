@@ -19,6 +19,8 @@ import {
   type MarketplacePhase,
 } from '../stores/marketplaceMachine'
 import { useMarketplaceCatalog } from './useMarketplaceCatalog'
+import { useMasonryLayout, type MasonryGridModel } from './useMasonryLayout'
+import { MEME_CARD_META_HEIGHT, masonrySkeletonItems } from '../lib/masonry'
 import { usePlayVideos } from './usePlayVideos'
 
 const SKELETON_COUNT = 8
@@ -62,12 +64,13 @@ export interface MarketplaceScreenModel {
   statusProps: { role: 'status'; 'aria-live': 'polite' }
   resultsLabel: string
   clearFiltersProps: { onClick: () => void } | null
+  /** slots for the loading skeletons and the card grid alike, index-aligned with `cards` */
+  masonry: MasonryGridModel
   showLoading: boolean
   showEmpty: boolean
   showError: boolean
   showGrid: boolean
   showMore: boolean
-  skeletonCount: number
   errorMessage: string
   retryButtonProps: { onClick: () => void; disabled: boolean }
   retryLabel: string
@@ -119,6 +122,14 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
   const showEmpty = phase === 'empty'
   const showError = phase === 'error'
   const showGrid = phase === 'ready'
+  const masonryItems = useMemo(
+    () =>
+      showLoading
+        ? masonrySkeletonItems(SKELETON_COUNT)
+        : cards.map((card) => ({ id: card.id, aspect: card.aspect })),
+    [showLoading, cards],
+  )
+  const masonry = useMasonryLayout(masonryItems, MEME_CARD_META_HEIGHT)
   const showMore = showGrid && !!context.nextCursor
   const refreshing = context.busy === 'refresh'
   const filterLabels = activeFilterLabels(context)
@@ -191,12 +202,12 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
     statusProps: { role: 'status', 'aria-live': 'polite' },
     resultsLabel,
     clearFiltersProps: narrowed ? { onClick: onClearFilters } : null,
+    masonry,
     showLoading,
     showEmpty,
     showError,
     showGrid,
     showMore,
-    skeletonCount: SKELETON_COUNT,
     errorMessage: copy.loadError,
     retryButtonProps: { onClick: fetchFromStart, disabled: refreshing },
     retryLabel: refreshing ? copy.retrying : copy.retry,

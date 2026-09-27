@@ -17,6 +17,7 @@ import { humanize } from '@memeon/shared/humanize'
 import { memeValue, TIERS, tierFor, tierIndexFor } from '@memeon/shared/tiers'
 import type { Meme, Trade, TradeSide } from './types'
 import { SafeFetchError, assertPublicUrl, safeFetch } from './safeFetch'
+import { measureImageUrl } from './imageSize'
 
 // ---------- health ----------
 
@@ -295,6 +296,9 @@ authed('POST /api/memes', async (req) => {
           author: typeof rawSource.author === 'string' ? rawSource.author.slice(0, 100) : null,
         }
       : null
+  // intrinsic dims of the still, measured server-side (never trusted from the client);
+  // masonry wants them but a measuring failure must not fail the mint
+  const dims = await measureImageUrl(imageUrl)
   const meme: Meme = {
     id: randomUUID().slice(0, 12),
     title,
@@ -314,6 +318,9 @@ authed('POST /api/memes', async (req) => {
     remixOf,
     private: false,
     source,
+    // undefined fields are dropped at the Dynamo marshaller (removeUndefinedValues)
+    width: dims?.width,
+    height: dims?.height,
   }
   await db.putMeme(meme)
   await vectors.indexMeme(meme).catch(() => {})
@@ -1182,6 +1189,9 @@ authed('POST /api/resolve-image', async (req) => {
       return json(200, {
         imageUrl: gif.stillUrl,
         videoUrl: gif.mp4Url,
+        // advisory for previews only — POST /api/memes measures server-side regardless
+        width: gif.width,
+        height: gif.height,
         resolvedFrom: 'giphy',
         source: {
           provider: 'giphy',

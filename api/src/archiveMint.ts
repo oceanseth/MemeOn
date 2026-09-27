@@ -29,6 +29,9 @@ export async function mintArchiveGif(gif: GiphyResult, tag: string): Promise<boo
     remixOf: null,
     private: false,
     source: { provider: 'giphy', id: gif.id, url: gif.url, author: gif.author },
+    // giphy's original dims — the still shares the clip's aspect, which is all masonry needs
+    width: gif.width ?? undefined,
+    height: gif.height ?? undefined,
   }
   await db.putMeme(meme)
   await indexMeme(meme).catch(() => {})

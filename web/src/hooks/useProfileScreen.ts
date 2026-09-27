@@ -9,6 +9,8 @@ import { useProjectedActor } from './useProjectedActor'
 import { BINDER_PAGE_SIZE } from '../stores/binderMachine'
 import { profileMachine, type ProfileData, type ProfileTab } from '../stores/profileMachine'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
+import { MEME_CARD_META_HEIGHT, masonrySkeletonItems } from '../lib/masonry'
+import { useMasonryLayout, type MasonryGridModel } from './useMasonryLayout'
 import type { ButtonVariant } from '@/atoms/button'
 import type { IconName } from '@/atoms/icon'
 import type { ButtonHTMLAttributes } from 'react'
@@ -81,6 +83,8 @@ export interface ProfileScreenModel {
   createdTabLabel: string
   binderTabLabel: string
   cards: readonly ProfileCardModel[]
+  /** slots for the loading skeletons and the shelf grid alike, index-aligned with `cards` */
+  masonry: MasonryGridModel
   /** Grid count label ("Showing 6 of 12"). */
   gridCountLabel: string
   showMore: boolean
@@ -104,6 +108,7 @@ export type ProfileShelfModel = Pick<
   | 'createdTabLabel'
   | 'binderTabLabel'
   | 'cards'
+  | 'masonry'
   | 'gridCountLabel'
   | 'showMore'
   | 'showMoreLabel'
@@ -363,6 +368,25 @@ export function useProfileScreen({
      whenever it is on screen; follow steps back to the raised pill beside it (primary-action bucket) */
   const friendIsPrimary = friendStatus === null || friendStatus === 'incoming'
 
+  const showLoadingState = !err && !data
+  const cards = visible.map((meme) => ({
+    id: `${tab}-${meme.id}`,
+    memeCard: buildMemeCardModel(meme),
+    // "holds N/100" on others' binders, "N/100 shares" on yours
+    sharesLabel:
+      meme.shares === undefined
+        ? null
+        : isSelf
+          ? copy.cards.yourShares(meme.shares)
+          : copy.cards.holds(meme.shares),
+  }))
+  const masonry = useMasonryLayout(
+    showLoadingState
+      ? masonrySkeletonItems(4)
+      : cards.map((card) => ({ id: card.id, aspect: card.memeCard.aspect })),
+    MEME_CARD_META_HEIGHT,
+  )
+
   return {
     showErr: !!err,
     errTitle:
@@ -445,17 +469,8 @@ export function useProfileScreen({
     binderCount,
     tabsListLabel: copy.tabs.section,
     ...buildProfileTabLabels(createdCount, binderCount),
-    cards: visible.map((meme) => ({
-      id: `${tab}-${meme.id}`,
-      memeCard: buildMemeCardModel(meme),
-      // "holds N/100" on others' binders, "N/100 shares" on yours
-      sharesLabel:
-        meme.shares === undefined
-          ? null
-          : isSelf
-            ? copy.cards.yourShares(meme.shares)
-            : copy.cards.holds(meme.shares),
-    })),
+    cards,
+    masonry,
     gridCountLabel: copy.grid.count(visible.length, memes.length),
     showMore: memes.length > visible.length,
     showMoreLabel: copy.grid.showMore(Math.min(BINDER_PAGE_SIZE, memes.length - visible.length)),

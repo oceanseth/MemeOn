@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { tierFor } from '@memeon/shared/tiers'
 import { memeCardCopy as copy } from '../copy/memeCard'
-import { buildMemeCardModel, buildReducedMotionMemeCardModel } from './memeCardModel'
+import { buildMemeCardModel, buildReducedMotionMemeCardModel, memeFrameAspect } from './memeCardModel'
 import type { Meme } from './types'
 
 const imageMeme: Meme = {
@@ -40,9 +40,8 @@ describe('buildMemeCardModel', () => {
     expect(model.listing).toEqual({
       shares: 10,
       pricePerShare: 3,
-      // Two footer lines, no pill on the art
-      forSaleLabel: copy.forSale,
-      sharesLabel: copy.shares(10),
+      // One compact right-side badge; the full sentence lives in the sr-only label
+      badgeLabel: copy.forSaleBadge(10),
       sharesA11yLabel: copy.sharesForSaleAt(10, 3),
     })
   })
@@ -127,9 +126,6 @@ describe('buildMemeCardModel', () => {
   })
 
   it('speaks one share in the singular', () => {
-    expect(copy.shares(1)).toBe('1 share')
-    expect(copy.shares(2)).toBe('2 shares')
-    expect(copy.shares(10)).toBe('10 shares')
     expect(copy.sharesForSaleAt(1, 3)).toBe('1 share for sale at 3 braincells each')
     expect(copy.sharesForSaleAt(10, 3)).toBe('10 shares for sale at 3 braincells each')
 
@@ -141,9 +137,40 @@ describe('buildMemeCardModel', () => {
     expect(model.listing).toEqual({
       shares: 1,
       pricePerShare: 3,
-      forSaleLabel: copy.forSale,
-      sharesLabel: copy.shares(1),
+      badgeLabel: copy.forSaleBadge(1),
       sharesA11yLabel: copy.sharesForSaleAt(1, 3),
     })
+  })
+})
+
+describe('memeFrameAspect', () => {
+  it('takes the exact ratio and covers inside the clamp', () => {
+    expect(memeFrameAspect(480, 270)).toEqual({ aspect: 480 / 270, artFit: 'cover' })
+    expect(memeFrameAspect(640, 640)).toEqual({ aspect: 1, artFit: 'cover' })
+    // the clamp bounds themselves still fill exactly
+    expect(memeFrameAspect(200, 400)).toEqual({ aspect: 0.5, artFit: 'cover' })
+    expect(memeFrameAspect(400, 200)).toEqual({ aspect: 2, artFit: 'cover' })
+  })
+
+  it('clamps extreme ratios and falls back to contain', () => {
+    expect(memeFrameAspect(100, 400)).toEqual({ aspect: 0.5, artFit: 'contain' })
+    expect(memeFrameAspect(900, 200)).toEqual({ aspect: 2, artFit: 'contain' })
+  })
+
+  it('renders unknown or degenerate dims as a 1:1 contain frame', () => {
+    expect(memeFrameAspect(undefined, undefined)).toEqual({ aspect: 1, artFit: 'contain' })
+    expect(memeFrameAspect(480, undefined)).toEqual({ aspect: 1, artFit: 'contain' })
+    expect(memeFrameAspect(undefined, 270)).toEqual({ aspect: 1, artFit: 'contain' })
+    expect(memeFrameAspect(0, 0)).toEqual({ aspect: 1, artFit: 'contain' })
+    expect(memeFrameAspect(0, 100)).toEqual({ aspect: 1, artFit: 'contain' })
+  })
+
+  it('is what the built card model carries', () => {
+    const model = buildMemeCardModel({ ...imageMeme, width: 320, height: 568 })
+    expect(model.aspect).toBeCloseTo(320 / 568)
+    expect(model.artFit).toBe('cover')
+    const legacy = buildMemeCardModel(imageMeme)
+    expect(legacy.aspect).toBe(1)
+    expect(legacy.artFit).toBe('contain')
   })
 })
