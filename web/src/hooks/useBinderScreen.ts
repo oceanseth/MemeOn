@@ -85,8 +85,9 @@ const copy = binderCopy
 const SORT_STATUS: Record<SortKey, readonly [descending: string, ascending: string]> =
   copy.status.sort
 
-/** `BinderScreen`'s fixed card footer: 2 note margin + 24 note row + 4 meter padding + 6 meter. */
-export const BINDER_FOOTER_HEIGHT = 36
+/** `BinderScreen`'s fixed card footer: 2 note margin + 24 note row + 4 meter padding + 6 meter,
+ *  and the meta column's 4 gap ahead of each of the two rows. */
+export const BINDER_FOOTER_HEIGHT = 44
 
 const SKELETON_COUNT = 6
 
