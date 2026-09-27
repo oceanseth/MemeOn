@@ -28,7 +28,7 @@ export interface AuthStatusScreenModel {
   fallback: {
     /** "Taking longer than usual?" — `null` hides the line */
     prompt: string | null
-    /** the companion retry, ultraviolet, never the page's primary */
+    /** the companion retry, brand, never the page's primary */
     retry: { label: string; onClick: () => void } | null
     /** always present: the underlined text link home */
     home: { label: string; to: string }

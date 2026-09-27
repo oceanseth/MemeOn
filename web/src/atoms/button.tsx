@@ -22,13 +22,13 @@ const buttonVariants = cva(
       variant: {
         /** the neutral raised pill: cancel, share, load more, a tab that is off */
         default: RAISED,
-        /** the one bubblegum action per task or card */
+        /** the one primary action per task or card */
         primary: [RAISED, 'bg-primary text-primary-foreground'],
-        /** the ultraviolet companion: a second action on a card that must not spend the bubblegum */
+        /** the brand companion: a second action on a card that must not spend the primary */
         brand: [RAISED, 'bg-brand text-brand-foreground'],
         /** tinted, not the strong red: delete, revoke, decline */
         destructive: [RAISED, 'bg-error text-error-foreground'],
-        /** the toolbar Mint: bubblegum under the shell cut, neutral once the header owns primary */
+        /** the toolbar Mint: primary under the shell cut, neutral once the header owns primary */
         mint: [RAISED, 'bg-primary text-primary-foreground xl:bg-accent xl:text-foreground'],
         /** no plate; a tint on hover and the pressed well when it is on */
         ghost: 'hover:bg-accent aria-pressed:material-pressed',

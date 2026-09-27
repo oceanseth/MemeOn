@@ -56,7 +56,7 @@ export function AuthStatusScreen({
                 <p className="m-0 text-base text-muted-foreground">{fallback.prompt}</p>
               )}
               <div className="flex flex-wrap items-center justify-center gap-4">
-                {/* ultraviolet, not bubblegum: a retry is the companion action, never the page's primary */}
+                {/* brand, not primary: a retry is the companion action, never the page's primary */}
                 <Button variant="brand" onClick={fallback.retry.onClick}>
                   {fallback.retry.label}
                 </Button>
