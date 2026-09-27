@@ -61,8 +61,8 @@ export interface DialogFrameProps {
  *   </DialogFrame>
  *
  * 1. The popup is portalled into a `PortalAnchor` at this component's own place in the tree rather
- *    than into `<body>`, so the dialog stays inside the screen it belongs to and a consumer's
- *    `within(canvasElement)` query still finds it.
+ *    than into `<body>`, so the dialog stays inside the screen it belongs to and a query scoped
+ *    to that screen still finds it.
  * 2. The content is mounted only while `open`, instead of being left to Base UI's own unmount.
  *    Base UI keeps a closed popup in the DOM for its exit animation, and this frame wants none —
  *    `open` is the whole truth, so a dismissal is gone in the same commit that reports it, exactly

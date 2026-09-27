@@ -1,6 +1,5 @@
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover'
 import { cva, type VariantProps } from 'class-variance-authority'
-import type { ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
 import type { Styled } from '@/atoms/field'
 
@@ -141,31 +140,12 @@ export function PopoverContent({
   )
 }
 
-export function PopoverHeader({ className, ...props }: ComponentProps<'div'>) {
-  return (
-    <div data-slot="popover-header" className={cn('flex flex-col gap-0.5', className)} {...props} />
-  )
-}
-
 /** Base UI renders an `<h2>`; the UI face and label step, not the display ladder a bare h2 wears. */
 export function PopoverTitle({ className, ...props }: Styled<PopoverPrimitive.Title.Props>) {
   return (
     <PopoverPrimitive.Title
       data-slot="popover-title"
       className={cn('m-0 font-sans text-base font-semibold text-foreground', className)}
-      {...props}
-    />
-  )
-}
-
-export function PopoverDescription({
-  className,
-  ...props
-}: Styled<PopoverPrimitive.Description.Props>) {
-  return (
-    <PopoverPrimitive.Description
-      data-slot="popover-description"
-      className={cn('m-0 text-sm text-muted-foreground', className)}
       {...props}
     />
   )

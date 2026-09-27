@@ -3,7 +3,6 @@ import { useRender } from '@base-ui/react/use-render'
 import { cva, type VariantProps } from 'class-variance-authority'
 import type { ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
-import { Separator } from '@/atoms/separator'
 
 /**
  * A stack of rows. No `role="list"` (the registry's): a list must hold `listitem`s, and a row
@@ -14,17 +13,6 @@ export function ItemGroup({ className, ...props }: ComponentProps<'div'>) {
     <div
       data-slot="item-group"
       className={cn('group/item-group flex w-full flex-col gap-2', className)}
-      {...props}
-    />
-  )
-}
-
-export function ItemSeparator({ className, ...props }: ComponentProps<typeof Separator>) {
-  return (
-    <Separator
-      data-slot="item-separator"
-      orientation="horizontal"
-      className={cn('my-1', className)}
       {...props}
     />
   )
@@ -232,25 +220,5 @@ export function ItemDescription({ className, ...props }: ComponentProps<'p'>) {
 export function ItemActions({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div data-slot="item-actions" className={cn('flex items-center gap-2', className)} {...props} />
-  )
-}
-
-export function ItemHeader({ className, ...props }: ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="item-header"
-      className={cn('flex basis-full items-center justify-between gap-2', className)}
-      {...props}
-    />
-  )
-}
-
-export function ItemFooter({ className, ...props }: ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="item-footer"
-      className={cn('flex basis-full items-center justify-between gap-2', className)}
-      {...props}
-    />
   )
 }

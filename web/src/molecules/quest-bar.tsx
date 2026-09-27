@@ -107,7 +107,7 @@ export function QuestBar({ model, balance }: QuestBarProps) {
     <>
       {live ? (
         <div className="relative" data-slot="questbar">
-          <Popover defaultOpen={model.defaultOpen} actionsRef={popoverActions}>
+          <Popover actionsRef={popoverActions}>
             <PopoverTrigger
               render={<button type="button" className={PILL_TRIGGER} />}
               data-slot="quest-trigger"

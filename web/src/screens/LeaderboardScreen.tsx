@@ -15,7 +15,7 @@ import { Icon } from '@/atoms/icon'
 
 const skeletonRows = [0, 1, 2, 3, 4]
 
-/** Braincell count colour: bubblegum ramp flips with theme. */
+/** Braincell count colour: the gold pair flips with theme. */
 const COUNT = 'font-sans font-semibold text-braincell'
 
 /**

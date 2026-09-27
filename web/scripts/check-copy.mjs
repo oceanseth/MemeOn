@@ -40,7 +40,7 @@ if (!existsSync(src)) {
 }
 
 const toSourcePath = (file) => relative(src, file).split(sep).join('/')
-const isTestLike = (name) => /\.(test|spec|stories|runtime)\./.test(name)
+const isTestLike = (name) => /\.(test|spec|runtime)\./.test(name)
 const inScope = (sourcePath) => {
   if (!/\.tsx?$/.test(sourcePath) || isTestLike(sourcePath)) return false
   if (sourcePath.startsWith('hooks/')) return true

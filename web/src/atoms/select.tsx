@@ -178,26 +178,6 @@ export function SelectContent({
   )
 }
 
-export function SelectGroup({ className, ...props }: Styled<BaseSelect.Group.Props>) {
-  return (
-    <BaseSelect.Group
-      data-slot="select-group"
-      className={cn('scroll-my-1 p-1', className)}
-      {...props}
-    />
-  )
-}
-
-export function SelectLabel({ className, ...props }: Styled<BaseSelect.GroupLabel.Props>) {
-  return (
-    <BaseSelect.GroupLabel
-      data-slot="select-label"
-      className={cn('px-3 py-1 text-sm text-muted-foreground', className)}
-      {...props}
-    />
-  )
-}
-
 /** A 44px row; the check sits in a fixed lane on the left so labels line up. */
 export function SelectItem({ className, children, ...props }: Styled<BaseSelect.Item.Props>) {
   return (
@@ -219,16 +199,6 @@ export function SelectItem({ className, children, ...props }: Styled<BaseSelect.
       </span>
       <BaseSelect.ItemText className="min-w-0 flex-1">{children}</BaseSelect.ItemText>
     </BaseSelect.Item>
-  )
-}
-
-export function SelectSeparator({ className, ...props }: Styled<BaseSelect.Separator.Props>) {
-  return (
-    <BaseSelect.Separator
-      data-slot="select-separator"
-      className={cn('pointer-events-none -mx-1 my-1 h-px bg-border', className)}
-      {...props}
-    />
   )
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { paperMeme, questStepsFresh, questStepsPackDone } from '../../.storybook/fixtures'
+import { paperMeme, questStepsFresh, questStepsPackDone } from '../test/fixtures'
 import { questBarCopy as copy } from '../copy/questBar'
 import { buildQuestBarModel } from './questBarModel'
 

@@ -1,6 +1,4 @@
-import { memeValue, tierFor } from '../../shared/tiers'
-import type { MasonryGridModel } from '../src/hooks/useMasonryLayout'
-import { layoutMasonry, masonryGeometry, MEME_CARD_META_HEIGHT } from '../src/lib/masonry'
+import { memeValue, tierFor } from '@memeon/shared/tiers'
 import type {
   Alert,
   FriendEntry,
@@ -11,7 +9,7 @@ import type {
   Memeplex,
   QuestStep,
   Trade,
-} from '../src/lib/types'
+} from '../lib/types'
 import { devMemeMedia } from './dev-meme-media'
 
 export const FIXED_NOW = '2026-09-08T00:00:00.000Z'
@@ -44,7 +42,7 @@ function meme(partial: Pick<Meme, 'id' | 'title' | 'reshares'> & Partial<Meme>):
   }
 }
 
-/** Stable story ids/titles; art synced from dev.memeon.ai via sync-storybook-memes.mjs */
+/** Stable fixture ids/titles; art recorded from dev.memeon.ai in `dev-meme-media.ts` */
 export const paperMeme = meme({
   id: 'meme-paper',
   title: 'fresh paper',
@@ -57,51 +55,11 @@ export const silverMeme = meme({
   reshares: 12,
   imageUrl: media.silver.imageUrl,
 })
-export const holoMeme = meme({
+const holoMeme = meme({
   id: 'meme-holo',
   title: 'holo hit',
   reshares: 60,
   imageUrl: media.holo.imageUrl,
-})
-export const chromeMeme = meme({
-  id: 'meme-chrome',
-  title: media.chrome.title,
-  reshares: media.chrome.reshares,
-  imageUrl: media.chrome.imageUrl,
-  creatorId: media.chrome.creatorId,
-  creatorName: media.chrome.creatorName,
-  ownerId: media.chrome.ownerId,
-  ownerName: media.chrome.ownerName,
-})
-export const goldMeme = meme({
-  id: 'meme-gold',
-  title: media.gold.title,
-  reshares: media.gold.reshares,
-  imageUrl: media.gold.imageUrl,
-  creatorId: media.gold.creatorId,
-  creatorName: media.gold.creatorName,
-  ownerId: media.gold.ownerId,
-  ownerName: media.gold.ownerName,
-})
-export const prismaticMeme = meme({
-  id: 'meme-prismatic',
-  title: media.prismatic.title,
-  reshares: media.prismatic.reshares,
-  imageUrl: media.prismatic.imageUrl,
-  creatorId: media.prismatic.creatorId,
-  creatorName: media.prismatic.creatorName,
-  ownerId: media.prismatic.ownerId,
-  ownerName: media.prismatic.ownerName,
-})
-export const shinyMeme = meme({
-  id: 'meme-shiny',
-  title: media.shiny.title,
-  reshares: media.shiny.reshares,
-  imageUrl: media.shiny.imageUrl,
-  creatorId: media.shiny.creatorId,
-  creatorName: media.shiny.creatorName,
-  ownerId: media.shiny.ownerId,
-  ownerName: media.shiny.ownerName,
 })
 export const listedHolo = meme({
   id: 'meme-listed',
@@ -261,8 +219,6 @@ export const giphyDog: GiphyResult = {
 
 export const giphyCategories = ['reactions', 'animals', 'memes']
 
-export const tierFrames: Record<string, string> = devMemeMedia.frames
-
 export const invitePal = {
   inviter: {
     sub: friendAccepted.sub,
@@ -312,35 +268,3 @@ export const leaderboardRows: LeaderRow[] = [
     braincells: meLou.coins,
   },
 ]
-
-/** Static masonry model for stories: the layout the hook would produce at a fixed width. */
-export function masonryModelAt(
-  width: number,
-  items: readonly { id: string; aspect: number }[],
-  chromeHeight: number = MEME_CARD_META_HEIGHT,
-): MasonryGridModel {
-  const geometry = masonryGeometry(width)
-  const layout = layoutMasonry({
-    aspects: items.map((item) => item.aspect),
-    ...geometry,
-    chromeHeight,
-  })
-  return {
-    containerRef: () => {},
-    canvasWidth: geometry.columns * geometry.columnWidth + (geometry.columns - 1) * geometry.gap,
-    height: layout.height,
-    slots: layout.items.map((item, index) => ({
-      key: items[index]?.id ?? String(index),
-      x: item.x,
-      y: item.y,
-      width: item.width,
-      height: item.height,
-    })),
-  }
-}
-
-/** The `{ id, aspect }` list a card grid feeds its masonry layout. */
-export const masonryItemsFor = (
-  models: readonly { id: string; aspect: number }[],
-): { id: string; aspect: number }[] =>
-  models.map((model) => ({ id: model.id, aspect: model.aspect }))

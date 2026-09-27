@@ -4,7 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/cn'
 
 /**
- * A link inside prose. `inline` is the ultraviolet underline every body link wears; `strong`
+ * A link inside prose. `inline` is the link-coloured underline every body link wears; `strong`
  * adds weight for a link that is the sentence's point; `quiet` is ink for a way out beside a
  * primary control. Rendered as a router `Link` through `render`, or an `<a>` by default.
  */

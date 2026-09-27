@@ -1,7 +1,7 @@
 import { act } from 'react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { inviteLou, meLou } from '../../.storybook/fixtures'
+import { inviteLou, meLou } from '../test/fixtures'
 import { inviteCopy } from '../copy/invite'
 import { StoresProvider } from '../stores/StoresContext'
 import { button, click } from '../test/dom'

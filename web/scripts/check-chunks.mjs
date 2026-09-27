@@ -217,7 +217,7 @@ if (!landingFound) {
 }
 
 const sourceRel = (file) => toPosix(relative(src, file))
-const isSkipped = (name) => /\.(test|spec|stories)\./.test(name)
+const isSkipped = (name) => /\.(test|spec)\./.test(name)
 const walk = (dir) =>
   existsSync(dir)
     ? readdirSync(dir).flatMap((entry) => {

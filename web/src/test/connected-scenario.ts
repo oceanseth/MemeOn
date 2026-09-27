@@ -20,11 +20,11 @@ import {
   unreadFriend,
   unreadSale,
 } from './fixtures'
-import { clearSession, setMaskyAccessToken, setSessionToken } from '../src/lib/api'
-import type { FriendEntry, Me, Meme, Trade } from '../src/lib/types'
-import type { ProfileData } from '../src/stores/profileMachine'
-import { authMachine } from '../src/stores/authMachine'
-import { createStores } from '../src/stores/createStores'
+import { clearSession, setMaskyAccessToken, setSessionToken } from '../lib/api'
+import type { FriendEntry, Me, Meme, Trade } from '../lib/types'
+import type { ProfileData } from '../stores/profileMachine'
+import { authMachine } from '../stores/authMachine'
+import { createStores } from '../stores/createStores'
 import { UnexpectedRequestLedger } from './request-accounting'
 
 export interface RecordedRequest {
@@ -57,7 +57,7 @@ function clone<T>(value: T): T {
   return structuredClone(value)
 }
 
-// Unsuffixed id stays so GenerateAndMint can keep /m/meme-minted.
+// The first mint takes the unsuffixed id, so its route stays /m/meme-minted.
 function allocateMintedId(memes: readonly Meme[]): string {
   const taken = new Set(memes.map((meme) => meme.id))
   if (!taken.has('meme-minted')) return 'meme-minted'
@@ -113,12 +113,6 @@ export class ConnectedScenario {
   readonly id: string
   readonly requests: RecordedRequest[] = []
   private readonly unexpectedLedger = new UnexpectedRequestLedger()
-  readonly copied: string[] = []
-  readonly shared: ShareData[] = []
-  readonly authorizationNavigations: string[] = []
-  readonly deepLinkForwards: string[] = []
-  readonly checkpoints: string[] = []
-  readonly presenceSubscriptions: string[] = []
   readonly intersectionObservers: Array<(entries: IntersectionObserverEntry[]) => void> = []
   readonly options: ConnectedScenarioOptions
   readonly stores
@@ -171,7 +165,7 @@ export class ConnectedScenario {
   freshKey = 'mo_live_story_secret'
   generatedImage = 'https://media.example.test/generated.png'
   uploadedImage = 'https://media.example.test/uploaded.png'
-  mintedMeme = { ...clone(paperMeme), id: 'meme-minted', title: 'story mint' }
+  mintedMeme = { ...clone(paperMeme), id: 'meme-minted', title: 'scenario mint' }
   online = new Set<string>([friendAccepted.sub])
   private releases = new Map<string, () => void>()
   private waits = new Map<string, Promise<void>>()
@@ -211,8 +205,8 @@ export class ConnectedScenario {
     clearSession()
     sessionStorage.clear()
     if (this.user) {
-      setSessionToken(`story-session-${this.id}`)
-      setMaskyAccessToken(`story-masky-${this.id}`)
+      setSessionToken(`scenario-session-${this.id}`)
+      setMaskyAccessToken(`scenario-masky-${this.id}`)
     }
     await this.stores.auth.refresh()
   }
@@ -294,7 +288,7 @@ export class ConnectedScenario {
     if (method === 'GET' && path === '/api/auth/masky/config') {
       return json({
         authorizeUrl: 'https://masky.example.test/authorize',
-        clientId: 'memeon-storybook',
+        clientId: 'memeon-test',
         scopes: 'openid profile',
       })
     }
@@ -504,15 +498,15 @@ export class ConnectedScenario {
     if (method === 'POST' && path === '/api/aigen/image-edit')
       return json({ imageUrl: this.generatedImage })
     if (method === 'POST' && path === '/api/aigen/video')
-      return json({ generationId: 'video-story' })
-    if (method === 'GET' && path === '/api/aigen/video/video-story')
+      return json({ generationId: 'video-scenario' })
+    if (method === 'GET' && path === '/api/aigen/video/video-scenario')
       return json({
         status: 'video',
         videoUrl: 'https://media.example.test/generated.mp4',
       })
     if (method === 'POST' && path === '/api/uploads')
       return json({
-        uploadUrl: 'https://uploads.example.test/story',
+        uploadUrl: 'https://uploads.example.test/scenario',
         publicUrl: this.uploadedImage,
       })
     if (method === 'PUT' && url.origin === 'https://uploads.example.test')
@@ -520,17 +514,6 @@ export class ConnectedScenario {
 
     return this.unexpectedLedger.record(request.method, request.path, request.body)
   }
-}
-
-let activeScenario: ConnectedScenario | null = null
-
-export function setActiveScenario(scenario: ConnectedScenario | null): void {
-  activeScenario = scenario
-}
-
-export function getActiveScenario(): ConnectedScenario {
-  if (!activeScenario) throw new Error('No connected Storybook scenario is active')
-  return activeScenario
 }
 
 export function createConnectedScenario(

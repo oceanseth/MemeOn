@@ -6,7 +6,7 @@ import { ThemeStore } from './themeStore'
 export type AppStores = ReturnType<typeof createStores>
 
 /**
- * Inert app / story store bag. A committed mount or imperative owner must
+ * Inert app store bag. A committed mount or imperative owner must
  * retain it before use. Retaining also cancels a queued disposal during
  * StrictMode replay; it is not reference counting or a restart after disposal.
  *

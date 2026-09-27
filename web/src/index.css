@@ -94,28 +94,22 @@
   --color-background: light-dark(oklch(97.5% 0.008 285), oklch(17% 0.022 285));
   --color-foreground: light-dark(oklch(22% 0.035 285), oklch(95% 0.01 285));
   --color-card: light-dark(oklch(99.5% 0.002 285), oklch(23% 0.027 285));
-  --color-card-foreground: var(--color-foreground);
   --color-popover: var(--color-card);
-  --color-popover-foreground: var(--color-foreground);
   --color-accent: light-dark(oklch(98.5% 0.006 285), oklch(27% 0.03 285));
-  --color-accent-foreground: var(--color-foreground);
-  --color-secondary: var(--color-accent);
-  --color-secondary-foreground: var(--color-foreground);
   --color-muted: light-dark(oklch(92.5% 0.016 285), oklch(13.5% 0.018 285));
   --color-muted-foreground: light-dark(oklch(45% 0.03 285), oklch(79% 0.03 285));
 
-  /* hairlines, the field edge, the focus ring (bubblegum in light, sky in dark), the anchor */
+  /* hairlines, then the focus ring and the anchor: indigo, the hue of the logo's ground (277) */
   --color-border: light-dark(oklch(86% 0.02 285), oklch(40% 0.04 285));
-  --color-input: var(--color-border);
-  --color-ring: light-dark(oklch(48% 0.184 345), oklch(72% 0.137 235));
-  /* dark arm is ultraviolet-200, not 300: 300 reads Lc -58 on the dark canvas */
-  --color-link: light-dark(var(--ramp-ultraviolet-700), var(--ramp-ultraviolet-200));
+  --color-ring: light-dark(oklch(48% 0.2 277), oklch(72% 0.13 277));
+  /* dark arm is 84%, not 76%: 76% reads Lc -58 on the dark canvas */
+  --color-link: light-dark(oklch(48% 0.22 277), oklch(84% 0.07 277));
 
-  /* actions. Primary is bubblegum in light and sky in dark — ONE per task/card; brand is the
-     ultraviolet companion in both. Both pastels carry ink, so the foregrounds match in each arm. */
-  --color-primary: light-dark(oklch(80% 0.131 345), oklch(80% 0.107 235));
+  /* actions. Primary is indigo in both arms — ONE per task/card; brand is its paler companion.
+     Both pastels carry ink, so the foregrounds match in each arm. */
+  --color-primary: light-dark(oklch(78% 0.105 277), oklch(80% 0.095 277));
   --color-primary-foreground: oklch(22% 0.035 285);
-  --color-brand: oklch(80% 0.094 285);
+  --color-brand: oklch(86% 0.06 277);
   --color-brand-foreground: oklch(22% 0.035 285);
 
   /* status: a tinted fill and the text that sits on it */
@@ -134,15 +128,16 @@
   /* the dialog backdrop, the braincell count, and the two forced-colours system colours
      (`forced-colors:outline-fc-highlight`; check-contrast never measures them) */
   --color-overlay: light-dark(oklch(30% 0.05 285 / 45%), oklch(0% 0 0 / 65%));
-  /* dark arm is bubblegum-200, not 300: 300 reads Lc -55 on the dark card */
-  --color-braincell: light-dark(var(--ramp-bubblegum-700), var(--ramp-bubblegum-200));
+  /* gold, the indigo's complement: the one contrast in the chrome, and what value is counted in */
+  --color-braincell: light-dark(oklch(52% 0.1 85), oklch(86% 0.14 90));
   --color-fc-highlight: Highlight;
   --color-fc-text: CanvasText;
 
-  /* Tier chips: a fill and the label that sits on it, per tier. Bubblegum is reserved for Shiny
-     and for actions. Prismatic's chip is really `--gradient-tier-prismatic-chip` (`:root`); this
-     colour is its first stop, the fallback a plain `bg-tier-prismatic-chip` paints. Only
-     `TierChip`, `foil.css` and the Tokens sheet name these; the frames are `:root` vars. */
+  /* Tier chips: a fill and the label that sits on it, per tier. The primary indigo is reserved for
+     Shiny and for actions; bubblegum appears in Prismatic alone. Prismatic's chip is really
+     `--gradient-tier-prismatic-chip` (`:root`); this colour is its first stop, the fallback a
+     plain `bg-tier-prismatic-chip` paints. Only `TierChip` and `foil.css` name these; the frames
+     are `:root` vars. */
   --color-tier-paper-chip: var(--color-muted);
   --color-tier-paper-chip-text: var(--color-muted-foreground);
   --color-tier-silver-chip: var(--color-border);
@@ -290,8 +285,6 @@
     /* The two ramps the semantic tokens draw from; static, they do not flip. Vars, not tokens: only
        the steps a token references exist, and none is a utility. */
     --ramp-bubblegum-200: oklch(84% 0.1 345);
-    --ramp-bubblegum-300: oklch(76% 0.164 345);
-    --ramp-bubblegum-700: oklch(48% 0.184 345);
     --ramp-bubblegum-800: oklch(37% 0.142 345);
     --ramp-ultraviolet-100: oklch(91% 0.041 285);
     --ramp-ultraviolet-200: oklch(84% 0.074 285);

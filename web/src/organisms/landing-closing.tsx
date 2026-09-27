@@ -11,7 +11,7 @@ export type LandingClosingProps = Pick<
   | 'closingLoginLabel'
   | 'closingLoginButtonProps'
 > & {
-  /** Screen-local marketplace Link (or story stand-in). Not built in a hook. */
+  /** Screen-local marketplace Link. Not built in a hook. */
   marketplaceCta: ReactNode
 }
 

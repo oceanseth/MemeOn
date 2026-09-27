@@ -16,10 +16,9 @@
  *   - a state-library import below views/
  *   - a value import of createElement / Fragment from react, React.createElement / jsxs,
  *     JSX, or a value import from a markup tier, in hooks/ .ts files or lib/ *Model.ts
- *     files (recursive; stories/tests skipped; .tsx in those folders is already
+ *     files (recursive; tests skipped; .tsx in those folders is already
  *     "component outside a tier folder"; type-only tier imports stay legal;
  *     document.createElement is not this rule; the walk does not cover all of lib/)
- *   - a component in a tier folder without a sibling story
  *   - a .tsx or .jsx component outside a tier folder, except the listed
  *     source-relative integration files below
  *
@@ -34,7 +33,7 @@ import { scriptKindFor, staticModuleSpecifier } from './lib/ts-ast.mjs'
 
 const TIERS = ['atoms', 'molecules', 'organisms', 'screens', 'views']
 const ENGINES = ['hooks', 'stores']
-// User-facing strings. Read by hooks/, lib/ builders, stories and tests; never by a tier.
+// User-facing strings. Read by hooks/, lib/ builders and tests; never by a tier.
 const COPY = 'copy'
 // The formatting primitives copy/ may call, so a noun stays beside its sentence
 // (`${plural(n, 'card')} shown`, `25k`). Pure functions with no React and no strings of their own.
@@ -96,15 +95,12 @@ if (!existsSync(src)) {
 }
 
 const toSourcePath = (file) => relative(src, file).split(sep).join('/')
-const isStoryFile = (name) => /\.stories\.(tsx|jsx)$/.test(name)
 const isTestFile = (name) => /\.(test|spec)\.(ts|tsx|jsx)$/.test(name)
-const isComponentFile = (name) =>
-  /\.(tsx|jsx)$/.test(name) && !isStoryFile(name) && !isTestFile(name)
-const isTierSourceFile = (name) =>
-  /\.(ts|tsx|jsx)$/.test(name) && !isStoryFile(name) && !isTestFile(name)
-/** hooks/*.ts and lib/*Model.ts (nested) — data only. Skip tests/stories; skip .tsx. */
+const isComponentFile = (name) => /\.(tsx|jsx)$/.test(name) && !isTestFile(name)
+const isTierSourceFile = (name) => /\.(ts|tsx|jsx)$/.test(name) && !isTestFile(name)
+/** hooks/*.ts and lib/*Model.ts (nested) — data only. Skip tests; skip .tsx. */
 const isEngineDataFile = (sourcePath, name) => {
-  if (isTestFile(name) || isStoryFile(name) || !/\.ts$/.test(name)) return false
+  if (isTestFile(name) || !/\.ts$/.test(name)) return false
   const [top] = sourcePath.split('/')
   if (top === 'hooks') return true
   return top === 'lib' && name.endsWith('Model.ts')
@@ -214,7 +210,6 @@ const walk = (dir) =>
 const problems = []
 const report = (file, message) => problems.push(`${toSourcePath(file)}: ${message}`)
 let components = 0
-let stories = 0
 const tierSources = []
 const engineSources = []
 
@@ -586,10 +581,6 @@ for (const file of walk(src)) {
   const [topLevel] = sourcePath.split('/')
   const tier = TIERS.includes(topLevel) ? topLevel : undefined
 
-  if (tier && isStoryFile(name)) {
-    stories += 1
-    continue
-  }
   if (isTestFile(name) || EXCEPTIONS.has(sourcePath)) continue
 
   if (!tier) {
@@ -600,11 +591,7 @@ for (const file of walk(src)) {
   }
 
   if (!isTierSourceFile(name)) continue
-  if (isComponentFile(name)) {
-    components += 1
-    const story = join(dirname(file), name.replace(/\.(tsx|jsx)$/, '.stories.$1'))
-    if (!existsSync(story)) report(file, `no sibling ${basename(story)}`)
-  }
+  if (isComponentFile(name)) components += 1
   tierSources.push({ file, tier })
 }
 
@@ -637,7 +624,7 @@ if (typeof ts.createSourceFile !== 'function' || typeof ts.createProgram !== 'fu
 }
 
 const where = relative(process.cwd(), src) || '.'
-const summary = `${components} components, ${stories} story files`
+const summary = `${components} components`
 
 if (problems.length > 0) {
   console.error(

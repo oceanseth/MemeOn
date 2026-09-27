@@ -12,7 +12,7 @@ export class UnexpectedRequestLedger {
     this.requests.push(request)
     return Response.json(
       {
-        error: `Unexpected connected-story request: ${request.method} ${request.path}`,
+        error: `Unexpected connected-scenario request: ${request.method} ${request.path}`,
       },
       { status: 599 },
     )
@@ -22,7 +22,7 @@ export class UnexpectedRequestLedger {
     if (this.requests.length === 0) return
     throw new Error(
       this.requests
-        .map((request) => `Unexpected connected-story request: ${request.method} ${request.path}`)
+        .map((request) => `Unexpected connected-scenario request: ${request.method} ${request.path}`)
         .join('\n'),
     )
   }

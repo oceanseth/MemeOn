@@ -364,7 +364,7 @@ export function useProfileScreen({
           },
         ]
   const visible = memes.slice(0, visibleLimit)
-  /* the friend button is the meaningful relationship move, so it takes the card's one bubblegum
+  /* the friend button is the meaningful relationship move, so it takes the card's one primary
      whenever it is on screen; follow steps back to the raised pill beside it (primary-action bucket) */
   const friendIsPrimary = friendStatus === null || friendStatus === 'incoming'
 

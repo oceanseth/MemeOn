@@ -6,12 +6,12 @@ describe('UnexpectedRequestLedger', () => {
     expect(() => new UnexpectedRequestLedger().assertEmpty()).not.toThrow()
   })
 
-  it('reports every unexpected request from the current story', async () => {
+  it('reports every unexpected request from the current scenario', async () => {
     const ledger = new UnexpectedRequestLedger()
     const response = ledger.record('get', '/api/unexpected')
     expect(response.status).toBe(599)
     await expect(response.json()).resolves.toEqual({
-      error: 'Unexpected connected-story request: GET /api/unexpected',
+      error: 'Unexpected connected-scenario request: GET /api/unexpected',
     })
     ledger.record('post', '/api/other', { id: 1 })
     expect(ledger.requests).toEqual([
@@ -19,8 +19,8 @@ describe('UnexpectedRequestLedger', () => {
       { method: 'POST', path: '/api/other', body: { id: 1 } },
     ])
     expect(() => ledger.assertEmpty()).toThrow(
-      'Unexpected connected-story request: GET /api/unexpected\n' +
-        'Unexpected connected-story request: POST /api/other',
+      'Unexpected connected-scenario request: GET /api/unexpected\n' +
+        'Unexpected connected-scenario request: POST /api/other',
     )
   })
 })

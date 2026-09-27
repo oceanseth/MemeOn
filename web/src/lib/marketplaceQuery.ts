@@ -52,7 +52,7 @@ export interface BuildMarketFilterTabsInput {
   onListedChange: (listed: boolean) => void
 }
 
-/** Exported so the screen's stories build the same row the hook does, state by state. */
+/** Exported so a test builds the same row the hook does, state by state. */
 export function buildMarketFilterTabs({
   type,
   listed,

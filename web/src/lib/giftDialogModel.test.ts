@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { giftablePaper, giftableSilver, listedHolo } from '../../.storybook/fixtures'
+import { giftablePaper, giftableSilver, listedHolo } from '../test/fixtures'
 import { giftDialogCopy as copy } from '../copy/giftDialog'
 import { buildGiftDialogModel, clampGiftShares } from './giftDialogModel'
 

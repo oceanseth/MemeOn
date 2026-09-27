@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { proposedTrade } from '../../.storybook/fixtures'
+import { proposedTrade } from '../test/fixtures'
 import { tradesCopy } from '../copy/trades'
 import { braincells } from './braincells'
 import { buildTradeCardModel } from './tradeCardModel'

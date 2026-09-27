@@ -91,8 +91,6 @@ export interface QuestBarModel {
   errorProps: Pick<HTMLAttributes<HTMLSpanElement>, 'role'>
   /** Always present, never conditional: the frame owns focus restoration and needs to outlive a dismissal. */
   pack: QuestPackModel
-  /** stories only: mount the ladder's popover open. The app leaves Base UI to own the open state. */
-  defaultOpen?: boolean | undefined
 }
 
 export function buildQuestBarModel({

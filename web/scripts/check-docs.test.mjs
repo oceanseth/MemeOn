@@ -8,9 +8,9 @@ import test from 'node:test'
 const checker = resolve(import.meta.dirname, 'check-docs.mjs')
 
 /**
- * A miniature repo: a root package.json, a web workspace with one token sheet, one atom and one
- * story, and whatever documents the case wants. The checker runs against it exactly as it runs
- * against this repo, so a rule that fires here fires there.
+ * A miniature repo: a root package.json, a web workspace with one token sheet and one atom, and
+ * whatever documents the case wants. The checker runs against it exactly as it runs against this
+ * repo, so a rule that fires here fires there.
  */
 const TREE = {
   'package.json': JSON.stringify({
@@ -36,7 +36,6 @@ const TREE = {
   ].join('\n'),
   'web/src/atoms/button.tsx':
     'export function Button() {\n  return <button className="bg-primary rounded-lg focus-ring" />\n}\n',
-  'web/src/atoms/button.stories.tsx': 'export const Default = {}\n',
   'web/scripts/docs-allowlist.json': JSON.stringify({ allow: [] }),
 }
 
@@ -65,8 +64,8 @@ test('passes when every name a document writes exists', () => {
         'Tokens are `--color-primary` and `--radius-lg`. `Button` is the export.',
         'Gate: `pnpm --filter web run lint:ds`, then `pnpm run check`.',
       ].join('\n'),
-      'web/src/Anatomy.mdx':
-        'One atom: `Button`, in `atoms/button.tsx`, with a sibling `button.stories.tsx`.\n',
+      'web/src/Anatomy.md':
+        'One atom: `Button`, in `atoms/button.tsx`; the file is `button.tsx`.\n',
     },
     ({ status, output }) => {
       assert.equal(status, 0, output)
@@ -85,9 +84,9 @@ test('fails on a dead path', () => {
 })
 
 test('fails on a dead markdown link', () => {
-  withRepo({ 'README.md': 'See [the anatomy](web/src/Anatomy.mdx).\n' }, ({ status, output }) => {
+  withRepo({ 'README.md': 'See [the anatomy](web/src/Anatomy.md).\n' }, ({ status, output }) => {
     assert.equal(status, 1, output)
-    assert.match(output, /link target `web\/src\/Anatomy\.mdx` does not exist/)
+    assert.match(output, /link target `web\/src\/Anatomy\.md` does not exist/)
   })
 })
 
@@ -119,7 +118,7 @@ test('fails on a component no tier file exports', () => {
   withRepo(
     {
       'README.md': 'The notice is `atoms/Notice`.\n',
-      'web/src/Anatomy.mdx': 'Atoms: `Button`, `Notice`.\n',
+      'web/src/Anatomy.md': 'Atoms: `Button`, `Notice`.\n',
     },
     ({ status, output }) => {
       assert.equal(status, 1, output)
@@ -204,7 +203,7 @@ test('a path into a tree this checkout does not carry is not a claim', () => {
 test('a relative path resolves from the document outward', () => {
   withRepo(
     {
-      'web/src/Anatomy.mdx':
+      'web/src/Anatomy.md':
         '`atoms/button.tsx` · `scripts/docs-allowlist.json` · `web/src/index.css`\n',
     },
     ({ status, output }) => assert.equal(status, 0, output),

@@ -73,7 +73,6 @@ const tabsTriggerVariants = cva(
 )
 
 type TabsListVariants = VariantProps<typeof tabsListVariants>
-export type TabsListVariant = NonNullable<TabsListVariants['variant']>
 
 export function TabsList({
   className,
@@ -98,16 +97,6 @@ export function TabsTrigger({ className, ...props }: Styled<TabsPrimitive.Tab.Pr
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(tabsTriggerVariants(), className)}
-      {...props}
-    />
-  )
-}
-
-export function TabsContent({ className, ...props }: Styled<TabsPrimitive.Panel.Props>) {
-  return (
-    <TabsPrimitive.Panel
-      data-slot="tabs-content"
-      className={cn('flex-1 outline-none focus-ring', className)}
       {...props}
     />
   )

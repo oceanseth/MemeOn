@@ -304,7 +304,7 @@ test('refuses to raise the baseline when JsxText would grow a file', () => {
   )
 })
 
-test('counts quoted literals and JsxText in molecules/, views/, and organisms/; skips stories and runtime tests', () => {
+test('counts quoted literals and JsxText in molecules/, views/, and organisms/; skips runtime tests', () => {
   withSrc(
     {
       'molecules/quest-bar.tsx': [
@@ -312,20 +312,17 @@ test('counts quoted literals and JsxText in molecules/, views/, and organisms/; 
         'export const QuestBar = () => <h2>Starter pack opened!</h2>',
         '',
       ].join('\n'),
-      'molecules/quest-bar.stories.tsx': "export const title = 'Never counted: molecule stories'\n",
       'views/AppView.tsx': [
         "export const title = 'My Binder'",
         'export const AppView = () => <p>Checking your session…</p>',
         '',
       ].join('\n'),
-      'views/AppView.stories.tsx': "export const title = 'Never counted: view stories'\n",
       'views/AppView.runtime.test.tsx': "export const title = 'Never counted: runtime tests'\n",
       'organisms/app-shell.tsx': [
         "export const label = 'Main'",
         'export const AppShell = () => <a>Skip to content</a>',
         '',
       ].join('\n'),
-      'organisms/app-shell.stories.tsx': "export const title = 'Never counted: organism stories'\n",
     },
     ({ check, baseline }) => {
       writeFileSync(
@@ -349,7 +346,6 @@ test('counts quoted literals and JsxText in molecules/, views/, and organisms/; 
       assert.match(listed.output, /Checking your session/)
       assert.match(listed.output, /organisms\/app-shell\.tsx \(2\)/)
       assert.match(listed.output, /Skip to content/)
-      assert.doesNotMatch(listed.output, /stories/)
       assert.doesNotMatch(listed.output, /Never counted/)
     },
   )
@@ -501,13 +497,12 @@ test('reads copy-baseline.json beside the checker when --baseline= is omitted', 
 })
 
 test('Anatomy check-copy paragraph names the ratchet engines and JSX text, not JsxText', () => {
-  const anatomy = readFileSync(resolve(import.meta.dirname, '../src/Anatomy.mdx'), 'utf8')
+  const anatomy = readFileSync(resolve(import.meta.dirname, '../src/Anatomy.md'), 'utf8')
   const start = anatomy.indexOf('`check-copy` is a ratchet:')
-  assert.ok(start >= 0, 'Anatomy.mdx is missing the check-copy ratchet paragraph')
+  assert.ok(start >= 0, 'Anatomy.md is missing the check-copy ratchet paragraph')
   const rest = anatomy.slice(start)
-  const end = rest.indexOf('`pnpm run storybook`')
-  assert.ok(end >= 0, 'check-copy paragraph must end before the storybook sentence')
-  const paragraph = rest.slice(0, end)
+  const end = rest.search(/\n[ \t]*\n/)
+  const paragraph = end >= 0 ? rest.slice(0, end) : rest
   for (const engine of [
     '`hooks/`',
     '`screens/`',
