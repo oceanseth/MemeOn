@@ -165,7 +165,7 @@ test('flags a user-agent dialog, on the global or bare', () => {
     ({ status, output }) => {
       assert.equal(status, 1, output)
       assert.match(output, /window\.confirm\(\)/)
-      assert.match(output, /alert\(\)/)
+      assert.match(output, /alert\(\) opens[^\n]*Use molecules\/confirm-dialog/)
     },
   )
 })

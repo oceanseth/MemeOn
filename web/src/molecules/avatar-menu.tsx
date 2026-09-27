@@ -57,8 +57,6 @@ export interface AvatarMenuModel {
     onCheckedChange: (checked: boolean) => void
   }
   logOut: { label: string; onSelect: () => void }
-  /** mounts the menu open. The app never sets it: Base UI owns the open state. */
-  defaultOpen?: boolean | undefined
 }
 
 /** One menu per page — it lives in the header — so one anchor id is enough (see AlertsBell). */
@@ -74,7 +72,7 @@ const ANCHOR_ID = 'avatar-menu-anchor'
  */
 export function AvatarMenu({ model }: { model: AvatarMenuModel }) {
   return (
-    <DropdownMenu modal={false} defaultOpen={model.defaultOpen}>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger
         render={<Button variant="ghost" size="icon-sm" />}
         data-slot="avatar-menu-trigger"

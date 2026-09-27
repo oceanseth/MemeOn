@@ -17,7 +17,6 @@ import { buildFriendsScreenModel, type FriendsScreenModel } from '../lib/friends
 
 export type { FriendsPhase }
 export type { FriendLinkModel, FriendsScreenModel } from '../lib/friendsModel'
-export { buildFriendLinkModel } from '../lib/friendsModel'
 
 /** Success banners clear themselves so they stop stacking up for the whole session. */
 const MSG_TTL_MS = 6000

@@ -225,9 +225,9 @@ const isSystemColor = (name) => typeof name === 'string' && name.startsWith('--c
  * own fill (the Notice, the field error) and, where a screen paints it off that fill, on the
  * surface it lands on (a developers key row on accent, a quest step on muted, a detail badge on
  * card); link is the anchor colour on the page, a card, a raised row and a well; braincell is the
- * leaderboard count on card and accent; destructive is the field's error line on a card and the
- * dropdown's destructive row on the popover (it is the alerts fill *and* an ink, so it is audited
- * as both); each tier's chip label sits on its chip, Prismatic's on both stops of its gradient; and
+ * leaderboard count on card and accent; destructive is the dropdown's destructive row on the
+ * popover (it is the alerts fill *and* an ink, so it is audited as both); each tier's chip label
+ * sits on its chip, Prismatic's on both stops of its gradient; and
  * each podium metal is the medal glyph's stroke on a Top Brains tile — `--color-card`, plus
  * `--color-accent` for the framed first tile and for any tile under the pointer. A background is a
  * token name, or `{ tint, over }`: a translucent state tint composited on the lightest surface it
@@ -255,7 +255,6 @@ const PAIRS = [
   ['--color-link', '--color-muted'],
   ['--color-braincell', '--color-card'],
   ['--color-braincell', '--color-accent'],
-  ['--color-destructive', '--color-card'],
   ['--color-destructive', '--color-popover'],
   ...TIERS.map((tier) => [`--color-tier-${tier}-chip-text`, `--color-tier-${tier}-chip`]),
   ['--color-tier-prismatic-chip-text', '--tier-prismatic-chip-end'],
@@ -392,8 +391,8 @@ const unaudited = inks.filter(
  *
  * A token that some pair *stands on* is a surface, and a surface painted as ink gets told so by
  * name: the palette guarantees a surface against inks, never the reverse. A colour can honestly be
- * both — `--color-destructive` is the alerts badge fill and the field-error line — but it earns the
- * second job by carrying its own pair, not by being spelled the same.
+ * both — `--color-destructive` is the alerts badge fill and the dropdown's destructive row — but
+ * it earns the second job by carrying its own pair, not by being spelled the same.
  */
 const INK_UTILITY = /\b(?:text|stroke|fill)-([a-z][a-z0-9-]*)/g
 const INK_PROPERTY = /(?:^|[;{\s])color:\s*var\(\s*(--[\w-]+)\s*\)/g

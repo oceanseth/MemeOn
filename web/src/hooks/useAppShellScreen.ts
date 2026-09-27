@@ -15,7 +15,6 @@ import { usePlayVideos } from './usePlayVideos'
 import { useTheme } from './useTheme'
 
 export {
-  buildAppShellScreenModel,
   routeFamily,
   type AppShellScreenModel,
   type RouteFamily,

@@ -102,8 +102,8 @@ type DialogCloseShown = {
 
 type DialogCloseHidden = {
   showCloseButton: false
-  /** accepted and ignored: the button is not rendered, so this names nothing */
-  closeLabel?: string | undefined
+  /** no button is rendered, so there is nothing to name */
+  closeLabel?: undefined
   /** same optional lock as the shown arm, so it is not forwarded onto the popup */
   closeDisabled?: boolean | undefined
 }

@@ -32,8 +32,8 @@ export type ProgressProps = Styled<ProgressPrimitive.Root.Props> &
   VariantProps<typeof progressIndicatorVariants>
 
 /**
- * Base UI owns the `progressbar` role and the `aria-value*` wiring; children (`ProgressLabel`,
- * `ProgressValue`) sit on the row above the track, which the root always renders.
+ * Base UI owns the `progressbar` role and the `aria-value*` wiring; children sit on the row above
+ * the track, which the root always renders.
  */
 export function Progress({ className, children, value, variant, ...props }: ProgressProps) {
   return (
@@ -74,26 +74,6 @@ export function ProgressIndicator({
       data-slot="progress-indicator"
       data-variant={variant ?? 'default'}
       className={cn(progressIndicatorVariants({ variant }), className)}
-      {...props}
-    />
-  )
-}
-
-export function ProgressLabel({ className, ...props }: Styled<ProgressPrimitive.Label.Props>) {
-  return (
-    <ProgressPrimitive.Label
-      data-slot="progress-label"
-      className={cn('text-sm font-semibold text-foreground', className)}
-      {...props}
-    />
-  )
-}
-
-export function ProgressValue({ className, ...props }: Styled<ProgressPrimitive.Value.Props>) {
-  return (
-    <ProgressPrimitive.Value
-      data-slot="progress-value"
-      className={cn('ml-auto text-sm text-muted-foreground', className)}
       {...props}
     />
   )
