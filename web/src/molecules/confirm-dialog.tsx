@@ -27,7 +27,7 @@ const confirmInlines = (message: ConfirmDialogModel['message']) =>
  * The app's confirmation modal: an `alertdialog` whose message is its description, so a screen
  * reader reads the stakes with the name. Render it always; the model controls visibility.
  *
- * It rides `DialogFrame` rather than the `alert-dialog` atom on purpose: Base UI's AlertDialog
+ * It rides `DialogFrame` rather than Base UI's AlertDialog on purpose: that primitive
  * refuses the outside press, and this model's contract (six screens rely on it) is
  * that Escape and a press on the scrim both cancel.
  *

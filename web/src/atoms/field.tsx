@@ -1,10 +1,5 @@
 import { Field as BaseField } from '@base-ui/react/field'
-import type {
-  FieldDescriptionProps,
-  FieldErrorProps,
-  FieldLabelProps,
-  FieldRootProps,
-} from '@base-ui/react/field'
+import type { FieldDescriptionProps, FieldLabelProps, FieldRootProps } from '@base-ui/react/field'
 import { Fieldset as BaseFieldset } from '@base-ui/react/fieldset'
 import type { FieldsetLegendProps, FieldsetRootProps } from '@base-ui/react/fieldset'
 import { cva, type VariantProps } from 'class-variance-authority'
@@ -17,7 +12,7 @@ export type Styled<P> = Omit<P, 'className'> & {
   className?: string | undefined
 }
 
-/** Label, control, description and error wired together by Base UI (`for`, `aria-describedby`, `data-invalid`). */
+/** Label, control and description wired together by Base UI (`for`, `aria-describedby`, `data-invalid`). */
 export function Field({ className, ...props }: Styled<FieldRootProps>) {
   return (
     <BaseField.Root
@@ -45,17 +40,6 @@ export function FieldDescription({ className, ...props }: Styled<FieldDescriptio
     <BaseField.Description
       data-slot="field-description"
       className={cn(descriptionChrome, className)}
-      {...props}
-    />
-  )
-}
-
-/** Renders only while the field is invalid (`match`); Base UI describes the control with it. */
-export function FieldError({ className, ...props }: Styled<FieldErrorProps>) {
-  return (
-    <BaseField.Error
-      data-slot="field-error"
-      className={cn('mt-1 block text-sm font-normal text-destructive', className)}
       {...props}
     />
   )

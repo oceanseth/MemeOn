@@ -113,12 +113,6 @@ export class ConnectedScenario {
   readonly id: string
   readonly requests: RecordedRequest[] = []
   private readonly unexpectedLedger = new UnexpectedRequestLedger()
-  readonly copied: string[] = []
-  readonly shared: ShareData[] = []
-  readonly authorizationNavigations: string[] = []
-  readonly deepLinkForwards: string[] = []
-  readonly checkpoints: string[] = []
-  readonly presenceSubscriptions: string[] = []
   readonly intersectionObservers: Array<(entries: IntersectionObserverEntry[]) => void> = []
   readonly options: ConnectedScenarioOptions
   readonly stores

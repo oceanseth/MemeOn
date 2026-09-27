@@ -1,9 +1,7 @@
 import { Menu as MenuPrimitive } from '@base-ui/react/menu'
 import { cva, type VariantProps } from 'class-variance-authority'
-import type { ComponentProps } from 'react'
 import { cn } from '@/lib/cn'
 import type { Styled } from '@/atoms/field'
-import { Icon } from '@/atoms/icon'
 
 /** House tick, duplicated in the three primitives so they do not share a check atom. Chrome matches Icon. */
 function HouseTick() {
@@ -189,52 +187,6 @@ export function DropdownMenuItem({ className, inset, variant, ...props }: Dropdo
   )
 }
 
-export function DropdownMenuSub(props: MenuPrimitive.SubmenuRoot.Props) {
-  return <MenuPrimitive.SubmenuRoot data-slot="dropdown-menu-sub" {...props} />
-}
-
-export function DropdownMenuSubTrigger({
-  className,
-  inset,
-  children,
-  ...props
-}: Styled<MenuPrimitive.SubmenuTrigger.Props> & {
-  inset?: boolean | undefined
-}) {
-  return (
-    <MenuPrimitive.SubmenuTrigger
-      data-slot="dropdown-menu-sub-trigger"
-      data-inset={inset || undefined}
-      className={cn(dropdownMenuItemVariants({ inset }), 'data-popup-open:bg-accent', className)}
-      {...props}
-    >
-      {children}
-      <Icon name="chevron-down" size={16} className="ml-auto -rotate-90 rtl:rotate-90" />
-    </MenuPrimitive.SubmenuTrigger>
-  )
-}
-
-export function DropdownMenuSubContent({
-  className,
-  align = 'start',
-  alignOffset = -8,
-  side = 'right',
-  sideOffset = 0,
-  ...props
-}: DropdownMenuContentProps) {
-  return (
-    <DropdownMenuContent
-      data-slot="dropdown-menu-sub-content"
-      className={cn('w-auto min-w-40', className)}
-      align={align}
-      alignOffset={alignOffset}
-      side={side}
-      sideOffset={sideOffset}
-      {...props}
-    />
-  )
-}
-
 /** The check sits at the end of the row, as base-nova places it. */
 const INDICATOR = 'pointer-events-none absolute right-3 flex size-4 items-center justify-center'
 
@@ -298,16 +250,6 @@ export function DropdownMenuSeparator({
     <MenuPrimitive.Separator
       data-slot="dropdown-menu-separator"
       className={cn('-mx-2 my-1.5 h-px bg-border', className)}
-      {...props}
-    />
-  )
-}
-
-export function DropdownMenuShortcut({ className, ...props }: ComponentProps<'span'>) {
-  return (
-    <span
-      data-slot="dropdown-menu-shortcut"
-      className={cn('ml-auto text-sm tracking-widest text-muted-foreground', className)}
       {...props}
     />
   )

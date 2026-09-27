@@ -64,16 +64,6 @@ export function InputGroupAddon({
   )
 }
 
-export function InputGroupText({ className, ...props }: ComponentPropsWithoutRef<'span'>) {
-  return (
-    <span
-      data-slot="input-group-text"
-      className={cn('flex items-center gap-2 text-base text-muted-foreground', className)}
-      {...props}
-    />
-  )
-}
-
 /** The well's control without its own chrome: the group paints the material, ring and rings. */
 export function InputGroupInput({ className, ...props }: ComponentPropsWithoutRef<typeof Input>) {
   return (

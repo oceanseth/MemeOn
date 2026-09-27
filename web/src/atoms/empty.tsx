@@ -66,33 +66,6 @@ export function EmptyHeader({ className, ...props }: ComponentPropsWithoutRef<'d
   )
 }
 
-/** `default` is a glyph (an emoji at the hero step); `icon` is a lucide glyph on a muted tile. */
-export const emptyMediaVariants = cva('flex shrink-0 items-center justify-center', {
-  variants: {
-    variant: {
-      default: 'text-6xl leading-none',
-      icon: 'size-12 rounded-md bg-muted text-foreground',
-    },
-  },
-  defaultVariants: { variant: 'default' },
-})
-
-export function EmptyMedia({
-  className,
-  variant,
-  ...props
-}: ComponentPropsWithoutRef<'div'> & VariantProps<typeof emptyMediaVariants>) {
-  return (
-    <div
-      data-slot="empty-media"
-      data-variant={variant ?? 'default'}
-      aria-hidden="true"
-      className={cn(emptyMediaVariants({ variant }), className)}
-      {...props}
-    />
-  )
-}
-
 /** An `h3` at the card-title step in the display face; `render={<h2 />}` where the outline needs it. */
 export function EmptyTitle({
   className,

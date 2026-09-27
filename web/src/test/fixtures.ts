@@ -55,51 +55,11 @@ export const silverMeme = meme({
   reshares: 12,
   imageUrl: media.silver.imageUrl,
 })
-export const holoMeme = meme({
+const holoMeme = meme({
   id: 'meme-holo',
   title: 'holo hit',
   reshares: 60,
   imageUrl: media.holo.imageUrl,
-})
-export const chromeMeme = meme({
-  id: 'meme-chrome',
-  title: media.chrome.title,
-  reshares: media.chrome.reshares,
-  imageUrl: media.chrome.imageUrl,
-  creatorId: media.chrome.creatorId,
-  creatorName: media.chrome.creatorName,
-  ownerId: media.chrome.ownerId,
-  ownerName: media.chrome.ownerName,
-})
-export const goldMeme = meme({
-  id: 'meme-gold',
-  title: media.gold.title,
-  reshares: media.gold.reshares,
-  imageUrl: media.gold.imageUrl,
-  creatorId: media.gold.creatorId,
-  creatorName: media.gold.creatorName,
-  ownerId: media.gold.ownerId,
-  ownerName: media.gold.ownerName,
-})
-export const prismaticMeme = meme({
-  id: 'meme-prismatic',
-  title: media.prismatic.title,
-  reshares: media.prismatic.reshares,
-  imageUrl: media.prismatic.imageUrl,
-  creatorId: media.prismatic.creatorId,
-  creatorName: media.prismatic.creatorName,
-  ownerId: media.prismatic.ownerId,
-  ownerName: media.prismatic.ownerName,
-})
-export const shinyMeme = meme({
-  id: 'meme-shiny',
-  title: media.shiny.title,
-  reshares: media.shiny.reshares,
-  imageUrl: media.shiny.imageUrl,
-  creatorId: media.shiny.creatorId,
-  creatorName: media.shiny.creatorName,
-  ownerId: media.shiny.ownerId,
-  ownerName: media.shiny.ownerName,
 })
 export const listedHolo = meme({
   id: 'meme-listed',
@@ -258,8 +218,6 @@ export const giphyDog: GiphyResult = {
 }
 
 export const giphyCategories = ['reactions', 'animals', 'memes']
-
-export const tierFrames: Record<string, string> = devMemeMedia.frames
 
 export const invitePal = {
   inviter: {

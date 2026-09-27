@@ -192,7 +192,6 @@ export function buildTradeCardModel({
   onRespond,
   busyTradeId = null,
   busyAction = null,
-  now = Date.now(),
 }: {
   trade: Trade
   meSub: string
@@ -202,8 +201,6 @@ export function buildTradeCardModel({
   busyTradeId?: string | null
   /** which of that trade's actions is in flight, so only it reads as running */
   busyAction?: TradeAction | null
-  /** injectable clock: the instant the card's age is measured from */
-  now?: number
 }): TradeCardModel {
   const mine = trade.fromId === meSub
   const locked = busyTradeId !== null
@@ -271,7 +268,7 @@ export function buildTradeCardModel({
         ? copy.waiting.onThem
         : copy.waiting.onYou
       : STATUS_LINE[trade.status],
-    createdLabel: relativeAge(trade.createdAt, now),
+    createdLabel: relativeAge(trade.createdAt, Date.now()),
     createdAtIso: trade.createdAt,
     createdTitle: new Date(trade.createdAt).toLocaleString(),
     give: buildSideSummary(giveSide, copy.sides.give, memeNames),
