@@ -252,7 +252,7 @@ export function MemeDetailScreen({
                 <CardTitle size="card-title">{detail.signedOut.title}</CardTitle>
                 <p className={caption}>{detail.signedOut.body}</p>
                 <div className={panelRow}>
-                  {/* the single bubblegum on a public card */}
+                  {/* the single primary on a public card */}
                   <Button
                     variant="primary"
                     className="max-sm:w-full"
@@ -285,7 +285,7 @@ export function MemeDetailScreen({
                   className="min-w-50 flex-1 max-sm:w-full max-sm:flex-none"
                   {...detail.shareInputProps}
                 />
-                {/* the ultraviolet companion: the card's one bubblegum belongs to the buy control */}
+                {/* the brand companion: the card's one primary belongs to the buy control */}
                 <Button variant="brand" className="max-sm:flex-1" {...detail.copyButtonProps}>
                   {detail.copyDone ? (
                     <>

@@ -40,7 +40,7 @@ const IDENTITY = cn(
 
 const META = cn('block truncate text-xs font-medium text-muted-foreground')
 
-/* The action cluster: raised companion first, the row's one bubblegum second, the quiet exit last.
+/* The action cluster: raised companion first, the row's one primary second, the quiet exit last.
    On a phone the two pills share the 310px row and the text action keeps its own 44px target. */
 const ROW_PILL = 'max-sm:flex-1'
 

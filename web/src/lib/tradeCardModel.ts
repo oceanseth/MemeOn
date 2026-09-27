@@ -49,7 +49,7 @@ export interface TradeActionModel {
   kind: TradeAction
   label: string
   /**
-   * Which button the row wears: the constructive answer is the card's one bubblegum, declining is
+   * Which button the row wears: the constructive answer is the card's one primary, declining is
    * the neutral raised pill beside it, and withdrawing your own live offer is destructive.
    */
   variant: 'primary' | 'default' | 'destructive'

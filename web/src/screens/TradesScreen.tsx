@@ -67,7 +67,7 @@ export function TradesScreen({
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
       <PageHead title={pageTitle}>
-        {/* while the composer is open its own submit is the page's one bubblegum action */}
+        {/* while the composer is open its own submit is the page's one primary action */}
         <Button variant={compose ? 'default' : 'primary'} {...newTradeButtonProps}>
           {newTradeButtonLabel}
         </Button>
