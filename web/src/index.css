@@ -780,6 +780,18 @@
   contain-intrinsic-size: auto 360px;
 }
 
+/* The enlarged meme, shown whole: the largest box of its own ratio (`--meme-aspect`) the media
+   dialog can hold, so the dialog hugs the meme. Across: the viewport less a 4-step margin and the
+   dialog's 6-step padding each side. Down: the dialog's max height less that padding, the 4-step
+   gap and the one-line title (`text-3xl`). */
+@utility meme-fit {
+  --meme-fit-w: calc(100vw - var(--spacing) * 20);
+  --meme-fit-h: calc(var(--dialog-max-h) - var(--spacing) * 16 - var(--text-3xl--line-height));
+  aspect-ratio: var(--meme-aspect, 1);
+  width: min(var(--meme-fit-w), var(--meme-fit-h) * var(--meme-aspect, 1));
+  height: auto;
+}
+
 /* The page gutter, never under a notch. */
 @utility px-page-safe {
   padding-inline: max(calc(var(--spacing) * 5), env(safe-area-inset-left))

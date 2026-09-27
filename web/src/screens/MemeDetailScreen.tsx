@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { Alert } from '@/atoms/alert'
 import { Badge } from '@/atoms/badge'
 import { Button, buttonVariants } from '@/atoms/button'
@@ -219,16 +219,21 @@ export function MemeDetailScreen({
                   footer={<TierLadder model={detail.tierLadder} hype={detail.tierHype} />}
                 />
                 <DialogContent size="media" showCloseButton={false}>
-                  <DialogHeader className="shrink-0">
-                    <DialogTitle>{detail.title}</DialogTitle>
+                  {/* one line, and no wider than the meme: `meme-fit` counts on both */}
+                  <DialogHeader className="w-0 min-w-full shrink-0">
+                    <DialogTitle>
+                      <span className="block truncate">{detail.title}</span>
+                    </DialogTitle>
                   </DialogHeader>
+                  {/* the meme whole, at its own ratio, as large as the viewport allows; the
+                      dialog hugs it, so nothing frames it but the dialog's own padding */}
                   <div
                     data-slot="detail-enlarged-media"
-                    className="flex min-h-0 flex-1 items-center justify-center"
+                    style={{ '--meme-aspect': detail.card.aspect } as CSSProperties}
                   >
                     {detail.card.media.kind === 'video' ? (
                       <video
-                        className="size-full object-contain"
+                        className="block meme-fit object-cover"
                         src={detail.card.media.videoProps.src}
                         poster={detail.card.media.videoProps.poster}
                         aria-label={detail.title}
@@ -240,7 +245,7 @@ export function MemeDetailScreen({
                       />
                     ) : (
                       <img
-                        className="size-full object-contain"
+                        className="block meme-fit object-cover"
                         src={detail.card.media.imageProps.src}
                         alt={detail.title}
                       />
