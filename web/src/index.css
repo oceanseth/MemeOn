@@ -90,13 +90,16 @@
    `scripts/check-contrast.mjs` reads both arms of every text/surface pair back out of this block
    and fails under APCA Lc 60. */
 @theme static {
-  /* surfaces: the page, the card, the raised control fill, the pressed well */
-  --color-background: light-dark(oklch(97.5% 0.008 285), oklch(17% 0.022 285));
+  /* surfaces: the page, the card, the raised control fill, the pressed well. The dark canvas is
+     near-black — chroma 0.012, not the surfaces' 0.022+, so the page reads black-with-a-cast and
+     the cards keep the indigo; `body` breathes one soft glow over it (`--canvas-glow`, :root). */
+  --color-background: light-dark(oklch(97.5% 0.008 285), oklch(11.5% 0.012 285));
   --color-foreground: light-dark(oklch(22% 0.035 285), oklch(95% 0.01 285));
   --color-card: light-dark(oklch(99.5% 0.002 285), oklch(23% 0.027 285));
   --color-popover: var(--color-card);
   --color-accent: light-dark(oklch(98.5% 0.006 285), oklch(27% 0.03 285));
-  --color-muted: light-dark(oklch(92.5% 0.016 285), oklch(13.5% 0.018 285));
+  /* the pressed well: always below the canvas, so a recess still reads sunken on the near-black page */
+  --color-muted: light-dark(oklch(92.5% 0.016 285), oklch(8.5% 0.012 285));
   --color-muted-foreground: light-dark(oklch(45% 0.03 285), oklch(79% 0.03 285));
 
   /* hairlines, then the focus ring and the anchor: indigo, the hue of the logo's ground (277) */
@@ -293,6 +296,10 @@
     --ramp-ultraviolet-700: oklch(48% 0.252 285);
     --ramp-ultraviolet-800: oklch(37% 0.195 285);
     --ramp-ultraviolet-900: oklch(28% 0.147 285);
+    /* The dark canvas' one light source: an indigo bloom (277, the logo's ground) bleeding down
+       from above the viewport, drawn by `body` below. The light arm is the same stop at zero
+       alpha, so the gradient paints nothing there and the flip cannot flash a hue. */
+    --canvas-glow: light-dark(oklch(56% 0.14 277 / 0%), oklch(56% 0.14 277 / 13%));
     /* The relief pair every material is built from; read only by the shadows below. Not
        `--shadow`: Tailwind's own `shadow` utility reads that name. */
     --relief-highlight: light-dark(oklch(100% 0 0 / 82%), oklch(60% 0.05 285 / 25%));
@@ -413,7 +420,14 @@
      low-data route (an empty trade list, a new account's friends page) still puts the footer on
      the fold instead of stranding 400px of empty page. */
   body {
-    background: var(--color-background);
+    background-color: var(--color-background);
+    /* the glow: one soft indigo bloom from above the fold onto the near-black canvas (the light
+       arm's stop is transparent, so light mode still paints one flat colour). Fixed, so the light
+       source stays put while the page scrolls; engines that drop `fixed` (iOS) let it scroll
+       away, which a 13%-alpha bloom survives. */
+    background-image: radial-gradient(90rem 44rem at 50% -14rem, var(--canvas-glow), transparent 62%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     color: var(--color-foreground);
     font-family: var(--font-sans);
     font-size: var(--text-base);
