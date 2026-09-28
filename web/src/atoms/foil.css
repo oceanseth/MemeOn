@@ -252,19 +252,19 @@
 
   /* The frame has no ratio of its own: the art box below carries `--meme-aspect` (set inline by
      `MemeCard` from the model) and every layer here shrink-wraps it.
-     `lib/masonry.ts` mirrors this chrome as MEDIA_CHROME_X/Y (50 / 38): change the
+     `lib/masonry.ts` mirrors this chrome as MEDIA_CHROME_X/Y (37 / 28): change the
      padding, rail or window borders and those constants move with them. */
   .foil-media[data-presentation="collectible"].foil-frame {
     display: block;
     overflow: visible;
     border: 0;
-    padding: 4px 16px 4px 4px;
+    padding: 3px 12px 3px 3px;
     background: transparent;
   }
 
   .foil-media[data-presentation="collectible"] [data-slot="collectible-backing"] {
     position: absolute;
-    inset: 0 12px 0 0;
+    inset: 0 9px 0 0;
     border: 1px solid color-mix(in oklab, var(--collectible-keyline) 28%, white);
     border-radius: var(--radius-lg);
     background: linear-gradient(145deg, oklch(1 0 0), oklch(0.91 0.012 260)), var(--color-card);
@@ -275,13 +275,24 @@
       0 0 26px var(--collectible-bloom);
   }
 
+  /* On a feed the cards sit flat: the grid thumb (`data-size="default"`, `MemeCard`) keeps the
+     backing sheet's own relief but drops the cast shadow and the bloom — dozens of glows on one
+     page read as noise. The landing hero and the detail hero keep the full lift. */
+  [data-slot="meme-card"][data-size="default"]
+    .foil-media[data-presentation="collectible"]
+    [data-slot="collectible-backing"] {
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 0.9) inset,
+      0 -2px 3px oklch(0.15 0.03 270 / 0.22) inset;
+  }
+
   .foil-media[data-presentation="collectible"] [data-slot="collectible-rail"] {
     position: relative;
     display: block;
     height: 100%;
-    padding: 12px;
+    padding: 8px;
     border: 1px solid var(--collectible-keyline);
-    border-radius: calc(var(--radius-lg) - 4px);
+    border-radius: calc(var(--radius-lg) - 3px);
     background-image: var(--collectible-grain), var(--collectible-rail);
     background-position: var(--collectible-background-position, 0 0, 0 0);
     background-size: var(--collectible-background-size, auto, 100% 100%);

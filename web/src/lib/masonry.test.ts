@@ -35,8 +35,8 @@ describe('masonryGeometry', () => {
 
 describe('masonryCardHeight', () => {
   it('is window height plus frame chrome plus the grid chrome rows', () => {
-    // a square window at 248: (248 − 50) / 1 = 198 art + 38 frame + 56 meta
-    expect(masonryCardHeight(1, MASONRY_COLUMN_WIDTH, 56)).toBe(198 + 38 + 56)
+    // a square window at 248: (248 − 37) / 1 = 211 art + 28 frame + 82 meta
+    expect(masonryCardHeight(1, MASONRY_COLUMN_WIDTH, 82)).toBe(211 + 28 + 82)
   })
 })
 
