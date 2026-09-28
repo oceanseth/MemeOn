@@ -2,7 +2,6 @@ import type { CSSProperties, ReactNode } from 'react'
 import { Alert } from '@/atoms/alert'
 import { Button } from '@/atoms/button'
 import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
-import { TierSeal } from '@/atoms/tier-seal'
 import { cn } from '../lib/cn'
 import type { LandingScreenModel } from '../hooks/useLandingScreen'
 import './landing-hero.css'
@@ -126,10 +125,7 @@ export function LandingHero({
               </p>
               <p className="m-0 text-xs text-muted-foreground">{card.rarityLabel}</p>
             </div>
-            <FoilMedia
-              presentation="collectible"
-              seal={<TierSeal tierKey={card.tierKey} label={card.tierLabel} />}
-            >
+            <FoilMedia presentation="collectible">
               <span data-slot="collectible-art-link">
                 <img data-slot="meme-art" className="block object-cover" {...card.imageProps} />
               </span>

@@ -120,7 +120,7 @@
   }
 
   /* On a phone the seats sit too close for three captions to clear each other: only the centre
-     seat keeps its caption. Every seal still names its tier. */
+     seat keeps its caption. */
   [data-slot="hero-card"]:not([data-seat="0"]) [data-slot="hero-card-meta"] {
     @variant max-md {
       visibility: hidden;

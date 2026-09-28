@@ -27,7 +27,6 @@ export interface LandingHeroCardModel {
   /** The card's seat on the hero stage: 0 at the centre, negative to the left (`data-seat`). */
   seat: number
   tierName: string
-  tierLabel: string
   resharesLabel: string
   rarityLabel: string
   imageProps: LandingHeroImageProps
@@ -81,7 +80,6 @@ export function buildLandingHeroCards(): LandingHeroCardModel[] {
     tierKey: tier.key,
     seat,
     tierName: tier.name,
-    tierLabel: `${tier.name} · ${tier.rarity}`,
     resharesLabel: copy.tier.reshares(tier.minReshares),
     rarityLabel: tier.rarity,
     imageProps: { src: HERO_IMAGE_SRC, alt: '', loading: 'eager' },
