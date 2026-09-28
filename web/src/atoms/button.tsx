@@ -28,8 +28,8 @@ const buttonVariants = cva(
         brand: [RAISED, 'bg-brand text-brand-foreground'],
         /** tinted, not the strong red: delete, revoke, decline */
         destructive: [RAISED, 'bg-error text-error-foreground'],
-        /** the toolbar Mint: primary under the shell cut, neutral once the header owns primary */
-        mint: [RAISED, 'bg-primary text-primary-foreground xl:bg-accent xl:text-foreground'],
+        /** the toolbar Mint: primary at every width */
+        mint: [RAISED, 'bg-primary text-primary-foreground'],
         /** no plate; a tint on hover and the pressed well when it is on */
         ghost: 'hover:bg-accent aria-pressed:material-pressed',
         /** the translucent plate a control wears over moving pictures */
