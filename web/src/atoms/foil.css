@@ -110,8 +110,6 @@
       repeating-linear-gradient(103deg, oklch(1 0 0 / 0.08) 0 1px, transparent 1px 5px);
     --collectible-keyline: oklch(0.42 0.03 75 / 0.72);
     --collectible-bloom: oklch(0.55 0.03 80 / 0.18);
-    --collectible-seal: oklch(0.9 0.02 80);
-    --collectible-seal-ink: oklch(0.36 0.04 70);
     background: transparent;
   }
 
@@ -132,8 +130,6 @@
     );
     --collectible-keyline: oklch(0.28 0.02 260 / 0.86);
     --collectible-bloom: oklch(0.77 0.025 250 / 0.26);
-    --collectible-seal: oklch(0.84 0.02 250);
-    --collectible-seal-ink: oklch(0.24 0.025 265);
   }
 
   .foil-card[data-presentation="collectible"].tier-holo {
@@ -152,8 +148,6 @@
       repeating-linear-gradient(125deg, transparent 0 7px, oklch(1 0 0 / 0.16) 8px 9px);
     --collectible-keyline: oklch(0.32 0.16 285 / 0.9);
     --collectible-bloom: oklch(0.7 0.21 295 / 0.4);
-    --collectible-seal: oklch(0.64 0.2 285);
-    --collectible-seal-ink: oklch(0.97 0.02 250);
     --collectible-background-size: 23px 23px, 37px 37px, 13px 13px, 100% 100%;
     --collectible-background-position: 0 0, 7px 11px, 0 0, 0 0;
   }
@@ -177,8 +171,6 @@
     );
     --collectible-keyline: oklch(0.1 0.015 270 / 0.95);
     --collectible-bloom: oklch(0.9 0.02 245 / 0.32);
-    --collectible-seal: oklch(0.2 0.02 270);
-    --collectible-seal-ink: oklch(0.96 0.01 245);
   }
 
   .foil-card[data-presentation="collectible"].tier-gold {
@@ -196,8 +188,6 @@
       radial-gradient(circle at 30% 60%, oklch(1 0 0 / 0.4) 0 1px, transparent 2px);
     --collectible-keyline: oklch(0.35 0.12 68 / 0.95);
     --collectible-bloom: oklch(0.82 0.17 88 / 0.42);
-    --collectible-seal: oklch(0.73 0.16 78);
-    --collectible-seal-ink: oklch(0.22 0.055 62);
   }
 
   .foil-card[data-presentation="collectible"].tier-prismatic {
@@ -220,8 +210,6 @@
       );
     --collectible-keyline: oklch(0.3 0.17 285 / 0.95);
     --collectible-bloom: oklch(0.7 0.25 320 / 0.46);
-    --collectible-seal: oklch(0.72 0.23 322);
-    --collectible-seal-ink: oklch(0.98 0.015 250);
     --collectible-background-size: 220% 220%, 72px 72px, 100% 100%;
     --collectible-background-position: 18% 42%, 0 0, 0 0;
   }
@@ -244,8 +232,6 @@
       repeating-linear-gradient(128deg, transparent 0 7px, oklch(1 0 0 / 0.28) 8px 9px);
     --collectible-keyline: oklch(0.94 0.11 235 / 0.98);
     --collectible-bloom: oklch(0.76 0.25 315 / 0.66);
-    --collectible-seal: oklch(0.89 0.2 335);
-    --collectible-seal-ink: oklch(0.25 0.12 300);
     --collectible-background-size: 17px 17px, 29px 29px, 37px 37px, 11px 11px, 100% 100%;
     --collectible-background-position: 0 0, 9px 5px, 4px 13px, 0 0, 0 0;
   }
@@ -382,47 +368,6 @@
     height: 100%;
   }
 
-  [data-slot="tier-seal"] {
-    position: absolute;
-    z-index: 4;
-    top: 11px;
-    right: 4px;
-    display: inline-flex;
-    width: 32px;
-    height: 32px;
-    align-items: center;
-    justify-content: center;
-    transform: rotate(5deg);
-    border: 3px solid oklch(0.98 0.008 260);
-    border-radius: var(--radius-sm);
-    background: var(--collectible-seal);
-    color: var(--collectible-seal-ink);
-    box-shadow:
-      0 0 0 1px var(--collectible-keyline),
-      0 4px 9px oklch(0.12 0.03 280 / 0.38);
-  }
-
-  [data-slot="tier-seal"] svg {
-    width: 22px;
-    height: 22px;
-  }
-
-  [data-slot="tier-seal"] [data-slot="tier-seal-crown"] {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .tier-shiny [data-slot="tier-seal"] {
-    border-color: oklch(0.98 0.07 200);
-    box-shadow:
-      0 0 0 1px var(--collectible-keyline),
-      0 4px 12px oklch(0.12 0.03 280 / 0.42),
-      0 0 20px var(--collectible-bloom);
-  }
-
   /* Freeze, never delete: the rail stays painted, so a tier is still legible without the sweep. */
   @media (prefers-reduced-motion: reduce) {
     .sheen .foil-media[data-presentation="collectible"] [data-slot="collectible-rail"]::after {
@@ -438,8 +383,7 @@
       box-shadow: none;
     }
 
-    .foil-media[data-presentation="collectible"] [data-slot="collectible-window"],
-    [data-slot="tier-seal"] {
+    .foil-media[data-presentation="collectible"] [data-slot="collectible-window"] {
       border-color: CanvasText;
       background: Canvas;
       color: CanvasText;

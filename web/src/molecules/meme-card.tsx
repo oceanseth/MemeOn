@@ -5,7 +5,6 @@ import { cn } from '@/lib/cn'
 import type { MemeCardModel } from '../lib/memeCardModel'
 import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
 import { Icon } from '@/atoms/icon'
-import { TierSeal } from '@/atoms/tier-seal'
 import { DialogTrigger } from '@/atoms/dialog'
 
 /* The card is a masonry citizen: its art window carries the meme's own ratio (`--meme-aspect`,
@@ -159,10 +158,7 @@ export function MemeCard({
       data-media-autoplay={model.mediaAutoplay}
     >
       <div data-slot="meme-card-inner" className={INNER}>
-        <FoilMedia
-          presentation="collectible"
-          seal={<TierSeal tierKey={model.tierKey} label={model.tierLabel} />}
-        >
+        <FoilMedia presentation="collectible">
           {enlargeLabel ? (
             <DialogTrigger
               data-slot="collectible-art-enlarge"

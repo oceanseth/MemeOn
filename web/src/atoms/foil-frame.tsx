@@ -1,4 +1,4 @@
-import { createElement, forwardRef, type HTMLAttributes, type ReactNode } from 'react'
+import { createElement, forwardRef, type HTMLAttributes } from 'react'
 import { cn } from '@/lib/cn'
 import { tierFrameClasses } from '@/atoms/foil'
 import './foil.css'
@@ -31,14 +31,11 @@ export const FoilCard = forwardRef<HTMLElement, FoilCardProps>(function FoilCard
 export interface FoilMediaProps extends HTMLAttributes<HTMLSpanElement> {
   /** The grid card's layered backing, material rail and inset art window. */
   presentation?: 'default' | 'collectible' | undefined
-  /** Corner seal rendered outside the source-media safe rectangle. */
-  seal?: ReactNode | undefined
 }
 
 /** Inner media box. Extra layout via `className`; callers do not spell the foil frame classes. */
 export function FoilMedia({
   presentation = 'default',
-  seal,
   className,
   children,
   ...rest
@@ -61,7 +58,6 @@ export function FoilMedia({
           <span data-slot="collectible-rail">
             <span data-slot="collectible-window">{children}</span>
           </span>
-          {seal}
         </>
       ) : (
         children
