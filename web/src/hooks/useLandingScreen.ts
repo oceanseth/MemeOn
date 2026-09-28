@@ -24,8 +24,8 @@ export type LandingErrorNoticeProps = Pick<HTMLAttributes<HTMLParagraphElement>,
 
 export interface LandingHeroCardModel {
   tierKey: string
-  /** The card's seat in the hero fan: 0 at the centre, negative to the left (`data-fan`). */
-  fan: number
+  /** The card's seat on the hero stage: 0 at the centre, negative to the left (`data-seat`). */
+  seat: number
   tierName: string
   tierLabel: string
   resharesLabel: string
@@ -66,12 +66,20 @@ const HERO_IMAGE_ASPECT = 1254 / 1254
 /** Every minted meme is one hundred shares (`api`); the landing quotes it. */
 const SHARES_PER_CARD = 100
 
-/** The ladder in order, seated so the middle tier is the centre of the fan. */
+/** The top of the ladder on stage: the best tier at the centre seat, its runners-up beside it —
+ *  third-best left, second-best right — drifting on the float loop (`landing-hero.css`). The
+ *  lower four tiers stay off the hero; the ladder itself is still quoted by the stats row. */
 export function buildLandingHeroCards(): LandingHeroCardModel[] {
-  const centre = Math.floor((TIERS.length - 1) / 2)
-  return TIERS.map((tier, index) => ({
+  const [third, second, top] = TIERS.slice(-3)
+  if (!third || !second || !top) throw new Error('TIERS holds fewer than three tiers')
+  const seated = [
+    { tier: third, seat: -1 },
+    { tier: top, seat: 0 },
+    { tier: second, seat: 1 },
+  ]
+  return seated.map(({ tier, seat }) => ({
     tierKey: tier.key,
-    fan: index - centre,
+    seat,
     tierName: tier.name,
     tierLabel: `${tier.name} · ${tier.rarity}`,
     resharesLabel: copy.tier.reshares(tier.minReshares),

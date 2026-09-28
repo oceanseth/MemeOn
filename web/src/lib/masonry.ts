@@ -20,19 +20,19 @@ export const MASONRY_NARROW_WIDTH = 640
 
 /**
  * The collectible frame's fixed chrome between the card's outer edge and the art window's
- * content box (`atoms/foil.css`): horizontally 4+16 `foil-media` padding + 2×(1 border + 12
- * padding) rail + 2×2 window border = 50; vertically 4+4 padding + 26 rail + 4 border = 38.
+ * content box (`atoms/foil.css`): horizontally 3+12 `foil-media` padding + 2×(1 border + 8
+ * padding) rail + 2×2 window border = 37; vertically 3+3 padding + 18 rail + 4 border = 28.
  * The window content box is the art, at the meme's clamped ratio, so a card's height is arithmetic.
  */
-export const MEDIA_CHROME_X = 50
-export const MEDIA_CHROME_Y = 38
+export const MEDIA_CHROME_X = 37
+export const MEDIA_CHROME_Y = 28
 
 /**
  * The card's fixed meta rows under the art window (`molecules/meme-card.tsx`, size default):
- * 12 top padding + 24 one-line title + 4 gap + 16 kicker row. Screens with a card footer add
- * their own constant on top when they pass `chromeHeight`.
+ * 12 top padding + 26 one-line title + 4 gap + 16 kicker row + 4 gap + 20 value row. Screens
+ * with a card footer add their own constant on top when they pass `chromeHeight`.
  */
-export const MEME_CARD_META_HEIGHT = 56
+export const MEME_CARD_META_HEIGHT = 82
 
 /** Deterministic aspect mix for loading placeholders, cycled to the skeleton count. */
 export const MASONRY_SKELETON_ASPECTS = [1, 0.75, 1.33, 0.56] as const

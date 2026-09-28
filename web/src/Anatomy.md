@@ -232,7 +232,7 @@ Probe these instead of a class name or copy string:
 | Leaderboard | `podium-head`, `leaderboard`, `your-rank`, `person-row` |
 | Invite | `invite-hero` |
 | Settings | `settings-sections`, `settings-account`, `settings-appearance`, `settings-connections`, `connection-row` (`data-linked`) |
-| Landing | `landing-hero`, `hero-stats`, `hero-cards`, `hero-card` (`data-fan`), `hero-card-meta`, `landing-how`, `landing-film`, `landing-faq`, `landing-closing` |
+| Landing | `landing-hero`, `hero-stats`, `hero-cards`, `hero-card` (`data-seat`), `hero-card-meta`, `landing-how`, `landing-film`, `landing-faq`, `landing-closing` |
 | Create Meme | `mint-modes`, `create-meme-generate-panel`, `create-meme-remix-panel`, `create-meme-giphy-panel`, `create-meme-url-panel`, `create-meme-upload-panel`, `approval-card`, `busy-card`, `preview-placeholder` |
 | Legal (Privacy, Terms) | `legal-toc`, `legal-section` |
 | Auth (`screens/AuthStatusScreen.tsx`) | `auth-status` (`data-phase`), `auth-ring`, `auth-timeout`, `auth-web-fallback` |

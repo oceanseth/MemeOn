@@ -24,6 +24,8 @@ export const sharedCopy = {
   checkingSession: 'Checking your session…',
   copied: 'Copied',
   avatarFallback: '?',
+  /** The search well's keyboard hint, by platform chord (`lib/searchHotkey`). */
+  searchHotkey: { command: '⌘K', control: 'Ctrl K' },
   browseMarketplace: 'Browse the marketplace',
   backToBrand: 'Back to MemeOn',
   checkConnection: 'Check your connection and try again.',

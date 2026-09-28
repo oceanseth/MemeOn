@@ -6,6 +6,7 @@ import { Card } from '@/atoms/card'
 import { Checkbox } from '@/atoms/checkbox'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
 import { Heading } from '@/atoms/heading'
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupKbd } from '@/atoms/input-group'
 import { MasonryGrid, MasonrySkeletonGrid } from '@/organisms/masonry-grid'
 import { MemeCard } from '@/molecules/meme-card'
 import { PageContainer } from '@/atoms/page-container'
@@ -23,6 +24,9 @@ const binderCardFooterClasses = cn(
   'mt-0.5 flex h-6 items-center justify-between gap-2 overflow-hidden text-xs font-medium text-foreground',
 )
 
+/** The search well shares the toolbar: a full row on narrow screens, the middle lane at `xl`. */
+const binderSearchWell = 'w-full min-w-0 xl:w-auto xl:max-w-95 xl:flex-1'
+
 /* reward rail lives in AppShell QuestBar — claim is a one-shot shell mutation, not duplicated here */
 
 /** Own binder as a function of its model. Every engine state is one set of args. */
@@ -37,6 +41,8 @@ export function BinderScreen({
   showPrivateToggle,
   privateToggleLabel,
   privateToggleProps,
+  queryInputProps,
+  searchHotkey,
   sortChips,
   createLinkProps,
   createLabel,
@@ -87,6 +93,23 @@ export function BinderScreen({
           <span className="mt-1 block text-sm text-muted-foreground" {...statusProps}>
             {statusMessage}
           </span>
+        </div>
+        {/* the ref is the ⌘K hotkey's handle on this page's search */}
+        <div className={binderSearchWell} ref={searchHotkey.slotRef}>
+          <InputGroup>
+            <InputGroupAddon>
+              <Icon name="magnifying-glass" size={20} />
+            </InputGroupAddon>
+            <InputGroupInput type="search" {...queryInputProps} />
+            {/* decoration for fine pointers; the input's aria-keyshortcuts speaks for it */}
+            <InputGroupAddon
+              align="inline-end"
+              aria-hidden="true"
+              className="pointer-coarse:hidden"
+            >
+              <InputGroupKbd>{searchHotkey.label}</InputGroupKbd>
+            </InputGroupAddon>
+          </InputGroup>
         </div>
         <div
           className="flex flex-wrap items-center gap-3 max-xl:w-full"
