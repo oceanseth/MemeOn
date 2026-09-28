@@ -18,6 +18,8 @@ import {
   type MarketplaceInput,
   type MarketplacePhase,
 } from '../stores/marketplaceMachine'
+import { sharedCopy } from '../copy/shared'
+import { prefersCommandKey, searchHotkeySlotRef } from '../lib/searchHotkey'
 import { useMarketplaceCatalog } from './useMarketplaceCatalog'
 import { useMasonryLayout, type MasonryGridModel } from './useMasonryLayout'
 import { useMemeMediaSizes } from './useMemeMediaSizes'
@@ -45,8 +47,11 @@ export interface MarketplaceScreenModel {
     value: string
     placeholder: string
     'aria-label': string
+    'aria-keyshortcuts': string
     onChange: ChangeEventHandler<HTMLInputElement>
   }
+  /** The ⌘K / Ctrl K affordance: the chip in the well and the well ref the hotkey focuses. */
+  searchHotkey: { label: string; slotRef: RefCallback<HTMLElement> }
   filterTabs: MarketFilterTabsModel
   tierSelectProps: {
     value: string
@@ -171,7 +176,12 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
       value: context.q,
       placeholder: copy.search.placeholder,
       'aria-label': copy.search.label,
+      'aria-keyshortcuts': prefersCommandKey ? 'Meta+K' : 'Control+K',
       onChange: onQueryChange,
+    },
+    searchHotkey: {
+      label: prefersCommandKey ? sharedCopy.searchHotkey.command : sharedCopy.searchHotkey.control,
+      slotRef: searchHotkeySlotRef,
     },
     filterTabs: buildMarketFilterTabs({
       type: context.type,

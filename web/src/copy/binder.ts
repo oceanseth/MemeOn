@@ -26,6 +26,8 @@ export const binderCopy = {
     shownOf: (visible: number, total: number) =>
       `${humanize(visible)} of ${humanize(total)} ${pluralWord(total, 'card')} shown`,
     shown: (visible: number) => `${humanize(visible)} ${pluralWord(visible, 'card')} shown`,
+    /** the active search as it reads in the status line */
+    query: (query: string) => `“${query}”`,
     value: (value: number) => humanize(value),
     privateIncluded: 'private included',
     /** How the active sort reads: plain words, never the chip's emoji. `[descending, ascending]`. */
@@ -48,8 +50,13 @@ export const binderCopy = {
     minted: 'you minted this',
     private: 'private',
   },
+  search: {
+    placeholder: 'Search your memes',
+    label: 'Search your memes by title',
+  },
   emptyState: {
     firstRun: 'Your binder is empty. Mint your first meme and start the grind to Shiny.',
+    noMatches: 'Nothing in your binder matches that search.',
     allPrivate: (count: number) =>
       `All ${count} of your memes are private. Turn on "Show private" to see them.`,
     /** Words only: `BinderScreen` draws the plus (`circle-plus`) on the `create` empty action. */

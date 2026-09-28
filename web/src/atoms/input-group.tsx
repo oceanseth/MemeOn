@@ -64,6 +64,22 @@ export function InputGroupAddon({
   )
 }
 
+/** The well's keyboard hint: a quiet chord chip for an end addon (`⌘K`). Decoration for fine
+ *  pointers — the input's own `aria-keyshortcuts` is what assistive tech announces, so callers
+ *  hide the addon (`aria-hidden`, `pointer-coarse:hidden`) without losing the shortcut. */
+export function InputGroupKbd({ className, ...props }: ComponentPropsWithoutRef<'kbd'>) {
+  return (
+    <kbd
+      data-slot="input-group-kbd"
+      className={cn(
+        'rounded-sm border border-border px-1.5 py-0.5 font-sans text-xs text-muted-foreground select-none',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
 /** The well's control without its own chrome: the group paints the material, ring and rings. */
 export function InputGroupInput({ className, ...props }: ComponentPropsWithoutRef<typeof Input>) {
   return (
