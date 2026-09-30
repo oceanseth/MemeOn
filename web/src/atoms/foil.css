@@ -1,6 +1,6 @@
 /* The cascade contract `src/index.css` declares, restated because a layer's rank is fixed the first
    time its name is seen and this file can still reach a stylesheet ahead of `index.css` (an async
-   CSS chunk of its own, a story, a second entry). `main.tsx` imports `index.css` first so the app
+   CSS chunk of its own, a second entry). `main.tsx` imports `index.css` first so the app
    bundle already opens with this order; the restatement is what keeps every other bundle honest,
    and re-declaring an order that already exists is a no-op. `properties` leads the list because
    that is where Tailwind emits its own `@layer properties` block — the `@supports` fallback that
@@ -16,8 +16,9 @@
      `foil-frame foil-media`                  on the image box (`FoilMedia`).
 
    Every card in the app uses `presentation="collectible"`: a backing sheet, a per-tier material
-   rail and an inset art window. The only compact (default) frame is the create-meme preview, a
-   flat 3px border in the tier's `--tier-<key>-frame` token (`index.css`).
+   rail and, set into it, an art window cut to the meme's own ratio with the art filling it edge to
+   edge. The only compact (default) frame is the create-meme preview, a flat 3px border in the
+   tier's `--tier-<key>-frame` token (`index.css`), which shrink-wraps its art the same way.
 
    `sheen` drives the rail sweep; `sheen` and `sparkle` also pick the forced-colors ladder rung.
    Do not restore `.glow-border` / `--glow-width` / `.tier-card-inner`.
@@ -78,6 +79,22 @@
     overflow: hidden;
   }
 
+  /* The compact frame fits its art snug too: the media keeps its own ratio inside the grid's
+     1:2 … 2:1 clamp (`lib/memeCardModel.ts`), covering the frame to its border and centre-cropping
+     past the clamp. The frame is the container the clamp is measured against. */
+  .foil-media[data-presentation="default"] {
+    container-type: inline-size;
+  }
+
+  .foil-media[data-presentation="default"] > [data-slot="meme-art"] {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 50cqw;
+    max-height: 200cqw;
+    object-fit: cover;
+  }
+
   /* Grid cards are small physical collectibles: a white backing sheet, a broad material rail and
      an inset art window. The rail is intentionally much wider than the legacy 3px frame and the
      asymmetric cuts keep its silhouette from collapsing back into a rounded rectangle. */
@@ -93,8 +110,6 @@
       repeating-linear-gradient(103deg, oklch(1 0 0 / 0.08) 0 1px, transparent 1px 5px);
     --collectible-keyline: oklch(0.42 0.03 75 / 0.72);
     --collectible-bloom: oklch(0.55 0.03 80 / 0.18);
-    --collectible-seal: oklch(0.9 0.02 80);
-    --collectible-seal-ink: oklch(0.36 0.04 70);
     background: transparent;
   }
 
@@ -115,8 +130,6 @@
     );
     --collectible-keyline: oklch(0.28 0.02 260 / 0.86);
     --collectible-bloom: oklch(0.77 0.025 250 / 0.26);
-    --collectible-seal: oklch(0.84 0.02 250);
-    --collectible-seal-ink: oklch(0.24 0.025 265);
   }
 
   .foil-card[data-presentation="collectible"].tier-holo {
@@ -135,8 +148,6 @@
       repeating-linear-gradient(125deg, transparent 0 7px, oklch(1 0 0 / 0.16) 8px 9px);
     --collectible-keyline: oklch(0.32 0.16 285 / 0.9);
     --collectible-bloom: oklch(0.7 0.21 295 / 0.4);
-    --collectible-seal: oklch(0.64 0.2 285);
-    --collectible-seal-ink: oklch(0.97 0.02 250);
     --collectible-background-size: 23px 23px, 37px 37px, 13px 13px, 100% 100%;
     --collectible-background-position: 0 0, 7px 11px, 0 0, 0 0;
   }
@@ -160,8 +171,6 @@
     );
     --collectible-keyline: oklch(0.1 0.015 270 / 0.95);
     --collectible-bloom: oklch(0.9 0.02 245 / 0.32);
-    --collectible-seal: oklch(0.2 0.02 270);
-    --collectible-seal-ink: oklch(0.96 0.01 245);
   }
 
   .foil-card[data-presentation="collectible"].tier-gold {
@@ -179,8 +188,6 @@
       radial-gradient(circle at 30% 60%, oklch(1 0 0 / 0.4) 0 1px, transparent 2px);
     --collectible-keyline: oklch(0.35 0.12 68 / 0.95);
     --collectible-bloom: oklch(0.82 0.17 88 / 0.42);
-    --collectible-seal: oklch(0.73 0.16 78);
-    --collectible-seal-ink: oklch(0.22 0.055 62);
   }
 
   .foil-card[data-presentation="collectible"].tier-prismatic {
@@ -203,8 +210,6 @@
       );
     --collectible-keyline: oklch(0.3 0.17 285 / 0.95);
     --collectible-bloom: oklch(0.7 0.25 320 / 0.46);
-    --collectible-seal: oklch(0.72 0.23 322);
-    --collectible-seal-ink: oklch(0.98 0.015 250);
     --collectible-background-size: 220% 220%, 72px 72px, 100% 100%;
     --collectible-background-position: 18% 42%, 0 0, 0 0;
   }
@@ -227,24 +232,25 @@
       repeating-linear-gradient(128deg, transparent 0 7px, oklch(1 0 0 / 0.28) 8px 9px);
     --collectible-keyline: oklch(0.94 0.11 235 / 0.98);
     --collectible-bloom: oklch(0.76 0.25 315 / 0.66);
-    --collectible-seal: oklch(0.89 0.2 335);
-    --collectible-seal-ink: oklch(0.25 0.12 300);
     --collectible-background-size: 17px 17px, 29px 29px, 37px 37px, 11px 11px, 100% 100%;
     --collectible-background-position: 0 0, 9px 5px, 4px 13px, 0 0, 0 0;
   }
 
+  /* The frame has no ratio of its own: the art box below carries `--meme-aspect` (set inline by
+     `MemeCard` from the model) and every layer here shrink-wraps it.
+     `lib/masonry.ts` mirrors this chrome as MEDIA_CHROME_X/Y (37 / 28): change the
+     padding, rail or window borders and those constants move with them. */
   .foil-media[data-presentation="collectible"].foil-frame {
     display: block;
-    aspect-ratio: 4 / 5;
     overflow: visible;
     border: 0;
-    padding: 4px 16px 4px 4px;
+    padding: 3px 12px 3px 3px;
     background: transparent;
   }
 
   .foil-media[data-presentation="collectible"] [data-slot="collectible-backing"] {
     position: absolute;
-    inset: 0 12px 0 0;
+    inset: 0 9px 0 0;
     border: 1px solid color-mix(in oklab, var(--collectible-keyline) 28%, white);
     border-radius: var(--radius-lg);
     background: linear-gradient(145deg, oklch(1 0 0), oklch(0.91 0.012 260)), var(--color-card);
@@ -255,13 +261,24 @@
       0 0 26px var(--collectible-bloom);
   }
 
+  /* On a feed the cards sit flat: the grid thumb (`data-size="default"`, `MemeCard`) keeps the
+     backing sheet's own relief but drops the cast shadow and the bloom — dozens of glows on one
+     page read as noise. The landing hero and the detail hero keep the full lift. */
+  [data-slot="meme-card"][data-size="default"]
+    .foil-media[data-presentation="collectible"]
+    [data-slot="collectible-backing"] {
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 0.9) inset,
+      0 -2px 3px oklch(0.15 0.03 270 / 0.22) inset;
+  }
+
   .foil-media[data-presentation="collectible"] [data-slot="collectible-rail"] {
     position: relative;
     display: block;
     height: 100%;
-    padding: 12px;
+    padding: 8px;
     border: 1px solid var(--collectible-keyline);
-    border-radius: calc(var(--radius-lg) - 4px);
+    border-radius: calc(var(--radius-lg) - 3px);
     background-image: var(--collectible-grain), var(--collectible-rail);
     background-position: var(--collectible-background-position, 0 0, 0 0);
     background-size: var(--collectible-background-size, auto, 100% 100%);
@@ -324,70 +341,31 @@
       0 3px 8px oklch(0.1 0.03 280 / 0.38) inset;
   }
 
-  [data-slot="collectible-art-link"] {
+  /* The art window's fill: the grid card's detail link, the detail hero's enlarge trigger and the
+     landing hero's inert span. The fill owns the card's ratio — the art's own `w/h` (`--meme-aspect`,
+     set inline from the model) — so the window is exactly as big as the art and the art covers it
+     edge to edge: no inset, no matte, nothing behind it to show. `muted` is only the plate a
+     frame shows for the instant before its first frame paints. */
+  :is([data-slot="collectible-art-link"], [data-slot="collectible-art-enlarge"]) {
     position: relative;
-    isolation: isolate;
+    display: block;
+    width: 100%;
+    aspect-ratio: var(--meme-aspect, 1);
     overflow: hidden;
     background: var(--color-muted);
   }
 
-  [data-slot="collectible-art-link"]::after {
-    content: "";
+  /* the card draws the ring (`focus-ring-within`); the trigger's own would only be clipped by the window */
+  [data-slot="collectible-art-enlarge"]:focus-visible {
+    outline: none;
+  }
+
+  :is([data-slot="collectible-art-link"], [data-slot="collectible-art-enlarge"])
+    > [data-slot="meme-art"] {
     position: absolute;
-    z-index: 0;
     inset: 0;
-    pointer-events: none;
-    background: color-mix(in oklab, var(--color-muted) 28%, transparent);
-    box-shadow: 0 0 28px oklch(0.08 0.02 280 / 0.35) inset;
-  }
-
-  [data-slot="collectible-art-link"] > [data-slot="meme-art"] {
-    position: absolute;
-    z-index: 1;
-    inset: 8px;
-    width: calc(100% - 16px);
-    height: calc(100% - 16px);
-  }
-
-  [data-slot="tier-seal"] {
-    position: absolute;
-    z-index: 4;
-    top: 11px;
-    right: 4px;
-    display: inline-flex;
-    width: 32px;
-    height: 32px;
-    align-items: center;
-    justify-content: center;
-    transform: rotate(5deg);
-    border: 3px solid oklch(0.98 0.008 260);
-    border-radius: var(--radius-sm);
-    background: var(--collectible-seal);
-    color: var(--collectible-seal-ink);
-    box-shadow:
-      0 0 0 1px var(--collectible-keyline),
-      0 4px 9px oklch(0.12 0.03 280 / 0.38);
-  }
-
-  [data-slot="tier-seal"] svg {
-    width: 22px;
-    height: 22px;
-  }
-
-  [data-slot="tier-seal"] [data-slot="tier-seal-crown"] {
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  .tier-shiny [data-slot="tier-seal"] {
-    border-color: oklch(0.98 0.07 200);
-    box-shadow:
-      0 0 0 1px var(--collectible-keyline),
-      0 4px 12px oklch(0.12 0.03 280 / 0.42),
-      0 0 20px var(--collectible-bloom);
+    width: 100%;
+    height: 100%;
   }
 
   /* Freeze, never delete: the rail stays painted, so a tier is still legible without the sweep. */
@@ -405,8 +383,7 @@
       box-shadow: none;
     }
 
-    .foil-media[data-presentation="collectible"] [data-slot="collectible-window"],
-    [data-slot="tier-seal"] {
+    .foil-media[data-presentation="collectible"] [data-slot="collectible-window"] {
       border-color: CanvasText;
       background: Canvas;
       color: CanvasText;

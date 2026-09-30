@@ -1,15 +1,20 @@
 import { useProjectedActor } from './useProjectedActor'
 import { binderCopy } from '../copy/binder'
+import { sharedCopy } from '../copy/shared'
 import { apiFetch } from '../lib/api'
+import { prefersCommandKey, searchHotkeySlotRef } from '../lib/searchHotkey'
 import type { Meme } from '../lib/types'
 import { sortMemes, type SortDir, type SortKey } from '../lib/sorting'
 import { binderMachine, BINDER_PAGE_SIZE, type BinderPhase } from '../stores/binderMachine'
 import { useAuth } from './useAuth'
 import { useMountEffect } from './useMountEffect'
 import { buildMemeCardModel, type MemeCardModel } from '../lib/memeCardModel'
+import { MEME_CARD_META_HEIGHT, masonrySkeletonItems } from '../lib/masonry'
+import { useMasonryLayout, type MasonryGridModel } from './useMasonryLayout'
+import { useMemeMediaSizes } from './useMemeMediaSizes'
 import { buildSortChipsModel, type SortChipsModel } from '../lib/sortChipsModel'
 import type { CheckboxRootProps } from '@base-ui/react/checkbox'
-import { useCallback } from 'react'
+import { useCallback, type ChangeEventHandler, type RefCallback } from 'react'
 import { useSearchParams, type LinkProps } from 'react-router-dom'
 
 export type { BinderPhase }
@@ -43,10 +48,21 @@ export interface BinderScreenModel {
   privateCount: number
   privateToggleLabel: string
   privateToggleProps: Pick<CheckboxRootProps, 'checked' | 'onCheckedChange'>
+  queryInputProps: {
+    value: string
+    placeholder: string
+    'aria-label': string
+    'aria-keyshortcuts': string
+    onChange: ChangeEventHandler<HTMLInputElement>
+  }
+  /** The ⌘K / Ctrl K affordance: the chip in the well and the well ref the hotkey focuses. */
+  searchHotkey: { label: string; slotRef: RefCallback<HTMLElement> }
   sortChips: SortChipsModel
   createLinkProps: Pick<LinkProps, 'to'>
   createLabel: string
   cards: readonly BinderCardModel[]
+  /** slots for the loading skeletons and the card grid alike, index-aligned with `cards` */
+  masonry: MasonryGridModel
   /** the centred "Show N more" control under the grid; null once every card is on screen */
   showMore: { label: string; onClick: () => void } | null
   showLoading: boolean
@@ -80,6 +96,12 @@ const copy = binderCopy
 /** How the active sort reads in the status line: plain words, never the chip's emoji. */
 const SORT_STATUS: Record<SortKey, readonly [descending: string, ascending: string]> =
   copy.status.sort
+
+/** `BinderScreen`'s fixed card footer: 2 note margin + 24 note row + 4 meter padding + 6 meter,
+ *  and the meta column's 4 gap ahead of each of the two rows. */
+export const BINDER_FOOTER_HEIGHT = 44
+
+const SKELETON_COUNT = 6
 
 const SORT_KEYS: readonly string[] = ['new', 'views', 'reshares', 'value']
 const isSortKey = (value: string | null): value is SortKey =>
@@ -115,10 +137,17 @@ export function useBinderScreen(): BinderScreenModel {
       })
     }
     if (params.get('private') === '1') send({ type: 'SET_SHOW_PRIVATE', showPrivate: true })
+    const q = params.get('q')
+    if (q) send({ type: 'SET_QUERY', q })
     load()
   })
 
-  const writeUrl = (next: { sortKey: SortKey; sortDir: SortDir; showPrivate: boolean }): void => {
+  const writeUrl = (next: {
+    sortKey: SortKey
+    sortDir: SortDir
+    showPrivate: boolean
+    q: string
+  }): void => {
     const out = new URLSearchParams(params)
     if (next.sortKey === 'new' && next.sortDir === 'desc') out.delete('sort')
     else out.set('sort', next.sortKey)
@@ -126,16 +155,31 @@ export function useBinderScreen(): BinderScreenModel {
     else out.set('dir', next.sortDir)
     if (next.showPrivate) out.set('private', '1')
     else out.delete('private')
+    if (next.q) out.set('q', next.q)
+    else out.delete('q')
     setParams(out, { replace: true })
   }
 
   const setShowPrivate = (showPrivate: boolean): void => {
     send({ type: 'SET_SHOW_PRIVATE', showPrivate })
-    writeUrl({ sortKey: ctx.sortKey, sortDir: ctx.sortDir, showPrivate })
+    writeUrl({ sortKey: ctx.sortKey, sortDir: ctx.sortDir, showPrivate, q: ctx.q })
   }
 
+  // The whole binder is already in hand, so the search is a plain client-side title match:
+  // trimmed and case-blind, no debounce — there is no IO to save.
+  const onQueryChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+    const q = event.currentTarget.value
+    send({ type: 'SET_QUERY', q })
+    writeUrl({ sortKey: ctx.sortKey, sortDir: ctx.sortDir, showPrivate: ctx.showPrivate, q })
+  }
+
+  const needle = ctx.q.trim().toLowerCase()
   const matching = sortMemes(
-    ctx.memes.filter((m) => ctx.showPrivate || !m.private),
+    ctx.memes.filter(
+      (m) =>
+        (ctx.showPrivate || !m.private) &&
+        (needle === '' || m.title.toLowerCase().includes(needle)),
+    ),
     ctx.sortKey,
     ctx.sortDir,
   )
@@ -165,6 +209,7 @@ export function useBinderScreen(): BinderScreenModel {
             : hidden > 0
               ? copy.status.shownOf(visible.length, matching.length)
               : copy.status.shown(visible.length),
+          needle ? copy.status.query(ctx.q.trim()) : null,
           SORT_STATUS[ctx.sortKey][ctx.sortDir === 'desc' ? 0 : 1],
           showGrid ? copy.status.value(visibleValue) : null,
           ctx.showPrivate && privateCount > 0 ? copy.status.privateIncluded : null,
@@ -174,7 +219,42 @@ export function useBinderScreen(): BinderScreenModel {
 
   const emptyMessage = firstRun
     ? copy.emptyState.firstRun
-    : copy.emptyState.allPrivate(privateCount)
+    : needle
+      ? copy.emptyState.noMatches
+      : copy.emptyState.allPrivate(privateCount)
+
+  useMemeMediaSizes(visible)
+  const cards = visible.map((meme) => {
+    const memeCard = buildMemeCardModel(meme)
+    const shares = meme.myShares ?? 0
+    const sharesLabel = copy.card.shares(shares)
+    return {
+      id: meme.id,
+      memeCard,
+      ariaLabel: [
+        meme.title,
+        memeCard.tierLabel,
+        sharesLabel,
+        meme.isCreator ? copy.card.minted : null,
+        meme.private ? copy.card.private : null,
+      ]
+        .filter(Boolean)
+        .join(copy.separator),
+      sharesLabel,
+      sharesPct: Math.max(0, Math.min(100, shares)),
+      showCreator: !!meme.isCreator,
+      showPrivate: !!meme.private,
+      mintedLabel: copy.card.minted,
+      privateLabel: copy.card.private,
+    }
+  })
+
+  const masonry = useMasonryLayout(
+    showLoading
+      ? masonrySkeletonItems(SKELETON_COUNT)
+      : cards.map((card) => ({ id: card.id, aspect: card.memeCard.aspect })),
+    MEME_CARD_META_HEIGHT + BINDER_FOOTER_HEIGHT,
+  )
 
   return {
     phase,
@@ -198,40 +278,29 @@ export function useBinderScreen(): BinderScreenModel {
       checked: ctx.showPrivate,
       onCheckedChange: (checked) => setShowPrivate(checked),
     },
+    queryInputProps: {
+      value: ctx.q,
+      placeholder: copy.search.placeholder,
+      'aria-label': copy.search.label,
+      'aria-keyshortcuts': prefersCommandKey ? 'Meta+K' : 'Control+K',
+      onChange: onQueryChange,
+    },
+    searchHotkey: {
+      label: prefersCommandKey ? sharedCopy.searchHotkey.command : sharedCopy.searchHotkey.control,
+      slotRef: searchHotkeySlotRef,
+    },
     sortChips: buildSortChipsModel({
       sortKey: ctx.sortKey,
       dir: ctx.sortDir,
       onChange: (sortKey, sortDir) => {
         send({ type: 'SET_SORT', sortKey, sortDir })
-        writeUrl({ sortKey, sortDir, showPrivate: ctx.showPrivate })
+        writeUrl({ sortKey, sortDir, showPrivate: ctx.showPrivate, q: ctx.q })
       },
     }),
     createLinkProps: { to: '/binder/new' },
     createLabel: copy.collection.mint,
-    cards: visible.map((meme) => {
-      const memeCard = buildMemeCardModel(meme)
-      const shares = meme.myShares ?? 0
-      const sharesLabel = copy.card.shares(shares)
-      return {
-        id: meme.id,
-        memeCard,
-        ariaLabel: [
-          meme.title,
-          memeCard.tierLabel,
-          sharesLabel,
-          meme.isCreator ? copy.card.minted : null,
-          meme.private ? copy.card.private : null,
-        ]
-          .filter(Boolean)
-          .join(copy.separator),
-        sharesLabel,
-        sharesPct: Math.max(0, Math.min(100, shares)),
-        showCreator: !!meme.isCreator,
-        showPrivate: !!meme.private,
-        mintedLabel: copy.card.minted,
-        privateLabel: copy.card.private,
-      }
-    }),
+    cards,
+    masonry,
     showMore:
       showGrid && hidden > 0
         ? {
@@ -250,7 +319,10 @@ export function useBinderScreen(): BinderScreenModel {
             label: copy.emptyState.mintFirst,
             linkProps: { to: '/binder/new' },
           }
-        : {
+        : needle
+          ? // a search miss explains itself; "Show private" would answer a question nobody asked
+            null
+          : {
             kind: 'showPrivate',
             label: copy.collection.showPrivate(privateCount),
             onClick: () => setShowPrivate(true),

@@ -1,6 +1,6 @@
 import type { ChangeEventHandler, HTMLAttributes, MouseEventHandler } from 'react'
 import { memeplexPanelCopy as copy } from '../copy/memeplexPanel'
-import { buildMemeCardModel, type MemeCardModel } from './memeCardModel'
+import { buildMemeCardModel, splitMeasured, type MemeCardModel } from './memeCardModel'
 import type { Meme, Memeplex } from './types'
 
 export interface MemeplexPanelModel {
@@ -12,7 +12,11 @@ export interface MemeplexPanelModel {
   linkLabel: string
   ancestors: readonly { id: string; title: string; linkProps: { to: string } }[]
   showOriginalLabel: boolean
+  /** the remixes and related cards, in order, up to the first still being measured */
   family: readonly MemeCardModel[]
+  /** ids of the cards after that, which wait as skeletons (`splitMeasured`) */
+  familyWaiting: readonly string[]
+  hasFamily: boolean
   canEdit: boolean
   pickerProps: {
     value: string
@@ -80,6 +84,7 @@ export function buildMemeplexPanelModel({
   onAdd: (memeId: string) => void
 }): MemeplexPanelModel {
   const family = plex ? [...plex.remixes, ...plex.related] : []
+  const cards = splitMeasured(family.map(buildMemeCardModel), (card) => card.aspect)
   const linked = new Set([
     meme.id,
     ...(plex?.ancestors.map((relative) => relative.id) ?? []),
@@ -103,7 +108,9 @@ export function buildMemeplexPanelModel({
       linkProps: { to: `/m/${ancestor.id}` },
     })),
     showOriginalLabel: !!plex?.original && plex.ancestors[0]?.id === plex.original.id,
-    family: family.map(buildMemeCardModel),
+    family: cards.placed,
+    familyWaiting: cards.waiting.map((card) => card.id),
+    hasFamily: family.length > 0,
     canEdit,
     pickerProps: {
       value: pick,

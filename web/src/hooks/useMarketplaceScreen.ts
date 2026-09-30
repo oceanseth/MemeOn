@@ -18,7 +18,12 @@ import {
   type MarketplaceInput,
   type MarketplacePhase,
 } from '../stores/marketplaceMachine'
+import { sharedCopy } from '../copy/shared'
+import { prefersCommandKey, searchHotkeySlotRef } from '../lib/searchHotkey'
 import { useMarketplaceCatalog } from './useMarketplaceCatalog'
+import { useMasonryLayout, type MasonryGridModel } from './useMasonryLayout'
+import { useMemeMediaSizes } from './useMemeMediaSizes'
+import { MEME_CARD_META_HEIGHT, masonrySkeletonItems } from '../lib/masonry'
 import { usePlayVideos } from './usePlayVideos'
 
 const SKELETON_COUNT = 8
@@ -42,8 +47,11 @@ export interface MarketplaceScreenModel {
     value: string
     placeholder: string
     'aria-label': string
+    'aria-keyshortcuts': string
     onChange: ChangeEventHandler<HTMLInputElement>
   }
+  /** The ⌘K / Ctrl K affordance: the chip in the well and the well ref the hotkey focuses. */
+  searchHotkey: { label: string; slotRef: RefCallback<HTMLElement> }
   filterTabs: MarketFilterTabsModel
   tierSelectProps: {
     value: string
@@ -62,12 +70,13 @@ export interface MarketplaceScreenModel {
   statusProps: { role: 'status'; 'aria-live': 'polite' }
   resultsLabel: string
   clearFiltersProps: { onClick: () => void } | null
+  /** slots for the loading skeletons and the card grid alike, index-aligned with `cards` */
+  masonry: MasonryGridModel
   showLoading: boolean
   showEmpty: boolean
   showError: boolean
   showGrid: boolean
   showMore: boolean
-  skeletonCount: number
   errorMessage: string
   retryButtonProps: { onClick: () => void; disabled: boolean }
   retryLabel: string
@@ -110,15 +119,26 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
   })
 
   const { playVideos } = usePlayVideos()
+  // a card's frame needs its meme's size; the memes with none stored are measured here
+  const mediaSizes = useMemeMediaSizes(context.memes)
   const cards = useMemo(
     () => context.memes.map((meme) => buildMemeCardModelForPlayback(meme, playVideos)),
-    [context.memes, playVideos],
+    // mediaSizes: the builder reads the measured sizes, which move without the memes moving
+    [context.memes, playVideos, mediaSizes],
   )
 
   const showLoading = phase === 'loading'
   const showEmpty = phase === 'empty'
   const showError = phase === 'error'
   const showGrid = phase === 'ready'
+  const masonryItems = useMemo(
+    () =>
+      showLoading
+        ? masonrySkeletonItems(SKELETON_COUNT)
+        : cards.map((card) => ({ id: card.id, aspect: card.aspect })),
+    [showLoading, cards],
+  )
+  const masonry = useMasonryLayout(masonryItems, MEME_CARD_META_HEIGHT)
   const showMore = showGrid && !!context.nextCursor
   const refreshing = context.busy === 'refresh'
   const filterLabels = activeFilterLabels(context)
@@ -156,7 +176,12 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
       value: context.q,
       placeholder: copy.search.placeholder,
       'aria-label': copy.search.label,
+      'aria-keyshortcuts': prefersCommandKey ? 'Meta+K' : 'Control+K',
       onChange: onQueryChange,
+    },
+    searchHotkey: {
+      label: prefersCommandKey ? sharedCopy.searchHotkey.command : sharedCopy.searchHotkey.control,
+      slotRef: searchHotkeySlotRef,
     },
     filterTabs: buildMarketFilterTabs({
       type: context.type,
@@ -191,12 +216,12 @@ export function useMarketplaceScreen(): MarketplaceScreenModel {
     statusProps: { role: 'status', 'aria-live': 'polite' },
     resultsLabel,
     clearFiltersProps: narrowed ? { onClick: onClearFilters } : null,
+    masonry,
     showLoading,
     showEmpty,
     showError,
     showGrid,
     showMore,
-    skeletonCount: SKELETON_COUNT,
     errorMessage: copy.loadError,
     retryButtonProps: { onClick: fetchFromStart, disabled: refreshing },
     retryLabel: refreshing ? copy.retrying : copy.retry,

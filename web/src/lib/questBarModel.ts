@@ -2,7 +2,7 @@ import type { ButtonHTMLAttributes, HTMLAttributes } from 'react'
 import type { LinkProps } from 'react-router-dom'
 import { questBarCopy as copy } from '../copy/questBar'
 import { trackDialogOpener, type DialogOpenerRef } from './dialogOpener'
-import { buildMemeCardModel, type MemeCardModel } from './memeCardModel'
+import { buildMemeCardModel, splitMeasured, type MemeCardModel } from './memeCardModel'
 import type { Meme, QuestKey, QuestStep } from './types'
 
 const QUEST_LINKS: Partial<Record<QuestKey, string>> = {
@@ -61,7 +61,10 @@ export interface QuestPackModel {
   id: string
   titleId: string
   description: string
+  /** the pack's cards, in order, up to the first still being measured */
   cards: MemeCardModel[]
+  /** ids of the cards after that, which wait as skeletons (`splitMeasured`) */
+  waitingCards: string[]
   showCards: boolean
   /** accessible name for the ✕; it is one of the dialog's two exits */
   closeLabel: string
@@ -91,8 +94,6 @@ export interface QuestBarModel {
   errorProps: Pick<HTMLAttributes<HTMLSpanElement>, 'role'>
   /** Always present, never conditional: the frame owns focus restoration and needs to outlive a dismissal. */
   pack: QuestPackModel
-  /** stories only: mount the ladder's popover open. The app leaves Base UI to own the open state. */
-  defaultOpen?: boolean | undefined
 }
 
 export function buildQuestBarModel({
@@ -117,6 +118,7 @@ export function buildQuestBarModel({
   const nextIndex = steps.findIndex((step) => !step.done)
   const nextStep = nextIndex < 0 ? null : steps[nextIndex]!
   const packOpen = packMemes !== null
+  const packCards = splitMeasured((packMemes ?? []).map(buildMemeCardModel), (card) => card.aspect)
   const done = steps.filter((step) => step.done).length
 
   return {
@@ -176,7 +178,8 @@ export function buildQuestBarModel({
         packMemes && packMemes.length > 0
           ? copy.pack.withMemes(packReward)
           : copy.pack.emptyVault(packReward),
-      cards: (packMemes ?? []).map(buildMemeCardModel),
+      cards: packCards.placed,
+      waitingCards: packCards.waiting.map((card) => card.id),
       showCards: (packMemes?.length ?? 0) > 0,
       closeLabel: copy.pack.close,
       binderLinkProps: { to: '/binder', onClick: onDismissPack },

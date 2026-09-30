@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { Alert } from '@/atoms/alert'
 import { Badge } from '@/atoms/badge'
 import { Button, buttonVariants } from '@/atoms/button'
@@ -105,7 +105,7 @@ function TierLadder({ model, hype }: { model: DetailTierLadderModel; hype: strin
     <div data-slot="tier-progression" className="mt-3">
       <div className="flex flex-wrap items-baseline justify-between gap-x-3">
         <span className="text-sm font-semibold text-success-foreground">{model.currentLabel}</span>
-        <span className="text-xs font-medium text-muted-foreground tabular-nums">
+        <span className="text-xs font-medium text-muted-foreground">
           {model.nextLabel}
         </span>
       </div>
@@ -193,57 +193,71 @@ export function MemeDetailScreen({
         </div>
         <div className={detailGrid}>
           <div data-slot="detail-hero" className={cn('self-start', heroPlacement)}>
-            {/* MemeCard lg with tier line + meter in footer so they sit inside the card padding */}
-            <Dialog>
-              <MemeCard
-                model={detail.card}
-                size="lg"
-                titleAs="h1"
-                enlargeLabel={detail.enlargeLabel}
-                subTitle={
-                  <p
-                    data-slot="detail-tier-line"
-                    className={cn(heroTierLine, isPublic ? 'text-link' : 'text-success-foreground')}
-                  >
-                    {detail.tierLine}
-                  </p>
-                }
-                footer={<TierLadder model={detail.tierLadder} hype={detail.tierHype} />}
-              />
-              <DialogContent size="media" showCloseButton={false}>
-                <DialogHeader className="shrink-0">
-                  <DialogTitle>{detail.title}</DialogTitle>
-                </DialogHeader>
-                <div
-                  data-slot="detail-enlarged-media"
-                  className="flex min-h-0 flex-1 items-center justify-center"
-                >
-                  {detail.card.media.kind === 'video' ? (
-                    <video
-                      className="size-full object-contain"
-                      src={detail.card.media.videoProps.src}
-                      poster={detail.card.media.videoProps.poster}
-                      aria-label={detail.title}
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                      preload="metadata"
-                    />
-                  ) : (
-                    <img
-                      className="size-full object-contain"
-                      src={detail.card.media.imageProps.src}
-                      alt={detail.title}
-                    />
-                  )}
-                </div>
-                <DialogClose
-                  aria-label={detail.closeViewerLabel}
-                  className="absolute inset-0 size-full cursor-zoom-out"
+            {/* MemeCard lg with tier line + meter in footer so they sit inside the card padding.
+                Its frame is the meme's own ratio, so until that is measured the hero is the
+                loading skeleton it replaces — it never appears at one size and jumps to another. */}
+            {detail.card.aspect === null ? (
+              <Skeleton data-slot="detail-hero-waiting" className="aspect-square" />
+            ) : (
+              <Dialog>
+                <MemeCard
+                  model={detail.card}
+                  size="lg"
+                  titleAs="h1"
+                  enlargeLabel={detail.enlargeLabel}
+                  subTitle={
+                    <p
+                      data-slot="detail-tier-line"
+                      className={cn(
+                        heroTierLine,
+                        isPublic ? 'text-link' : 'text-success-foreground',
+                      )}
+                    >
+                      {detail.tierLine}
+                    </p>
+                  }
+                  footer={<TierLadder model={detail.tierLadder} hype={detail.tierHype} />}
                 />
-              </DialogContent>
-            </Dialog>
+                <DialogContent size="media" showCloseButton={false}>
+                  {/* one line, and no wider than the meme: `meme-fit` counts on both */}
+                  <DialogHeader className="w-0 min-w-full shrink-0">
+                    <DialogTitle>
+                      <span className="block truncate">{detail.title}</span>
+                    </DialogTitle>
+                  </DialogHeader>
+                  {/* the meme whole, at its own ratio, as large as the viewport allows; the
+                      dialog hugs it, so nothing frames it but the dialog's own padding */}
+                  <div
+                    data-slot="detail-enlarged-media"
+                    style={{ '--meme-aspect': detail.card.aspect } as CSSProperties}
+                  >
+                    {detail.card.media.kind === 'video' ? (
+                      <video
+                        className="block meme-fit object-cover"
+                        src={detail.card.media.videoProps.src}
+                        poster={detail.card.media.videoProps.poster}
+                        aria-label={detail.title}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                      />
+                    ) : (
+                      <img
+                        className="block meme-fit object-cover"
+                        src={detail.card.media.imageProps.src}
+                        alt={detail.title}
+                      />
+                    )}
+                  </div>
+                  <DialogClose
+                    aria-label={detail.closeViewerLabel}
+                    className="absolute inset-0 size-full cursor-default"
+                  />
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
 
           <div data-slot="detail-rail" className={cn(rail, railPlacement)}>
@@ -252,7 +266,7 @@ export function MemeDetailScreen({
                 <CardTitle size="card-title">{detail.signedOut.title}</CardTitle>
                 <p className={caption}>{detail.signedOut.body}</p>
                 <div className={panelRow}>
-                  {/* the single bubblegum on a public card */}
+                  {/* the single primary on a public card */}
                   <Button
                     variant="primary"
                     className="max-sm:w-full"
@@ -285,7 +299,7 @@ export function MemeDetailScreen({
                   className="min-w-50 flex-1 max-sm:w-full max-sm:flex-none"
                   {...detail.shareInputProps}
                 />
-                {/* the ultraviolet companion: the card's one bubblegum belongs to the buy control */}
+                {/* the brand companion: the card's one primary belongs to the buy control */}
                 <Button variant="brand" className="max-sm:flex-1" {...detail.copyButtonProps}>
                   {detail.copyDone ? (
                     <>
@@ -408,7 +422,7 @@ export function MemeDetailScreen({
                             source.label
                           )}
                         </span>
-                        <span className="ml-auto inline-flex shrink-0 items-center gap-0.5 text-muted-foreground tabular-nums">
+                        <span className="ml-auto inline-flex shrink-0 items-center gap-0.5 text-muted-foreground">
                           <span aria-hidden="true">
                             <Icon name="eye" size={14} />
                           </span>{' '}
@@ -428,7 +442,7 @@ export function MemeDetailScreen({
               </CardTitle>
               <div className={rowList}>
                 {detail.capTable.map((holder) => (
-                  <div key={holder.userId} className={cn(personRow, 'tabular-nums')}>
+                  <div key={holder.userId} className={personRow}>
                     <span className="truncate font-semibold">{holder.label}</span>
                     <span className="ml-auto shrink-0">{holder.sharesLabel}</span>
                   </div>

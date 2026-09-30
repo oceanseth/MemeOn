@@ -36,17 +36,6 @@
       "cache": false,
       "persistent": true,
       "passThroughEnv": ["*"]
-    },
-    "storybook": {
-      "cache": false,
-      "persistent": true,
-      "passThroughEnv": ["*"]
-    },
-    "build-storybook": {
-      "dependsOn": ["^build-storybook"],
-      "outputs": ["storybook-static/**"],
-      "inputs": ["$TURBO_DEFAULT$", ".env", ".env.*"],
-      "env": ["VITE_*"]
     }
   }
 }

@@ -15,7 +15,7 @@ export function LandingHow({ howTitle, howSteps }: LandingHowProps) {
         {howSteps.map((step) => (
           <li key={step.step} className={CARD}>
             {/* step number in link colour — focus token misses contrast on dark surfaces */}
-            <span className="block text-sm font-semibold text-link tabular-nums">{step.step}</span>
+            <span className="block text-sm font-semibold text-link">{step.step}</span>
             <Heading as="h3" size="card-title" className="mt-3">
               {step.title}
             </Heading>

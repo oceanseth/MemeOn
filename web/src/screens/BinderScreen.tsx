@@ -6,28 +6,26 @@ import { Card } from '@/atoms/card'
 import { Checkbox } from '@/atoms/checkbox'
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
 import { Heading } from '@/atoms/heading'
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupKbd } from '@/atoms/input-group'
+import { MasonryGrid, MasonrySkeletonGrid } from '@/organisms/masonry-grid'
 import { MemeCard } from '@/molecules/meme-card'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Progress } from '@/atoms/progress'
-import { SkeletonCard } from '@/atoms/skeleton'
 import { Toolbar } from '@/atoms/toolbar'
 import type { BinderScreenModel } from '../hooks/useBinderScreen'
-import { binderCardSlotClasses, binderGridClasses } from '../lib/binderChrome'
 import { cn } from '../lib/cn'
 import { SortChips } from '@/molecules/sort-chips'
 import { Icon } from '@/atoms/icon'
 
-/** Skeleton tiles hold the grid geometry while the binder loads, so nothing jumps on arrival. */
-const SKELETON_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6'] as const
-
-/** The creator/private row under a binder card: the atom's own footer rhythm, one line lower. It is
- *  always there, at the badge's 24px, so a card that has nothing to say here is still the same
- *  height as one that does — a grid's rows must match across rows, not only within one. */
+/** The creator/private row under a binder card. One fixed 24px line — masonry card heights are
+ *  arithmetic (`useBinderScreen` counts this row and the meter into its chrome constant). */
 const binderCardFooterClasses = cn(
-  'mt-0.5 flex min-h-6 items-start justify-between gap-2 text-xs font-medium text-foreground tabular-nums',
-  '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
+  'mt-0.5 flex h-6 items-center justify-between gap-2 overflow-hidden text-xs font-medium text-foreground',
 )
+
+/** The search well shares the toolbar: a full row on narrow screens, the middle lane at `xl`. */
+const binderSearchWell = 'w-full min-w-0 xl:w-auto xl:max-w-95 xl:flex-1'
 
 /* reward rail lives in AppShell QuestBar — claim is a one-shot shell mutation, not duplicated here */
 
@@ -43,10 +41,13 @@ export function BinderScreen({
   showPrivateToggle,
   privateToggleLabel,
   privateToggleProps,
+  queryInputProps,
+  searchHotkey,
   sortChips,
   createLinkProps,
   createLabel,
   cards,
+  masonry,
   showMore,
   showLoading,
   showEmpty,
@@ -78,7 +79,7 @@ export function BinderScreen({
             >
               {identity.name}
             </p>
-            <p className="m-0 mt-2 text-sm font-medium text-muted-foreground tabular-nums">
+            <p className="m-0 mt-2 text-sm font-medium text-muted-foreground">
               {identity.statsLabel}
             </p>
           </div>
@@ -89,9 +90,26 @@ export function BinderScreen({
         <div className="min-w-0">
           <Heading as="h3">{collectionHeading}</Heading>
           {/* mounted in every state, text swapped: a live region inserted with its content is missed */}
-          <span className="mt-1 block text-sm text-muted-foreground tabular-nums" {...statusProps}>
+          <span className="mt-1 block text-sm text-muted-foreground" {...statusProps}>
             {statusMessage}
           </span>
+        </div>
+        {/* the ref is the ⌘K hotkey's handle on this page's search */}
+        <div className={binderSearchWell} ref={searchHotkey.slotRef}>
+          <InputGroup>
+            <InputGroupAddon>
+              <Icon name="magnifying-glass" size={20} />
+            </InputGroupAddon>
+            <InputGroupInput type="search" {...queryInputProps} />
+            {/* decoration for fine pointers; the input's aria-keyshortcuts speaks for it */}
+            <InputGroupAddon
+              align="inline-end"
+              aria-hidden="true"
+              className="pointer-coarse:hidden"
+            >
+              <InputGroupKbd>{searchHotkey.label}</InputGroupKbd>
+            </InputGroupAddon>
+          </InputGroup>
         </div>
         <div
           className="flex flex-wrap items-center gap-3 max-xl:w-full"
@@ -103,7 +121,6 @@ export function BinderScreen({
             <Checkbox label={privateToggleLabel} variant="pill" {...privateToggleProps} />
           )}
           <SortChips model={sortChips} />
-          {/* Mint is bubblegum under the shell cut and neutral once the header owns primary */}
           <Link
             className={cn(buttonVariants({ variant: 'mint' }), 'max-xl:w-full')}
             {...createLinkProps}
@@ -117,13 +134,7 @@ export function BinderScreen({
       </Toolbar>
 
       {showLoading ? (
-        <ul className={binderGridClasses} aria-hidden="true">
-          {SKELETON_KEYS.map((key) => (
-            <li key={key}>
-              <SkeletonCard />
-            </li>
-          ))}
-        </ul>
+        <MasonrySkeletonGrid model={masonry} />
       ) : showError ? (
         <Empty variant="error">
           <EmptyHeader>
@@ -160,19 +171,21 @@ export function BinderScreen({
           )}
         </Empty>
       ) : showGrid ? (
-        <ul className={binderGridClasses}>
-          {cards.map((card) => (
-            <li key={card.id} className={binderCardSlotClasses} aria-label={card.ariaLabel}>
+        <MasonryGrid
+          model={masonry}
+          items={cards.map((card) => ({
+            ariaLabel: card.ariaLabel,
+            node: (
               <MemeCard
                 model={card.memeCard}
-                /* one footer row: shares count on the right */
+                /* the meta row's right lane: shares count in place of the listing badge */
                 footerRight={
                   <span className="font-semibold text-foreground">{card.sharesLabel}</span>
                 }
                 footer={
                   <>
                     <span data-slot="binder-card-note" className={binderCardFooterClasses}>
-                      <span className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
+                      <span className="flex items-center gap-1.5 whitespace-nowrap text-muted-foreground">
                         {card.showCreator && <span>{card.mintedLabel}</span>}
                         {card.showPrivate && (
                           <Badge>
@@ -185,17 +198,16 @@ export function BinderScreen({
                       </span>
                     </span>
                     {/* the ownership groove: how much of this meme the binder holds. `mt-auto` pins it
-                       to the card's bottom edge, so whatever slack a stretched row leaves sits above
-                       the meter rather than under it. */}
+                       to the card's bottom edge, so rounding slack sits above the meter, not under it. */}
                     <div data-slot="binder-meter" className="mt-auto pt-1">
                       <Progress value={card.sharesPct} variant="braincell" aria-hidden="true" />
                     </div>
                   </>
                 }
               />
-            </li>
-          ))}
-        </ul>
+            ),
+          }))}
+        />
       ) : null}
 
       {showMore && (

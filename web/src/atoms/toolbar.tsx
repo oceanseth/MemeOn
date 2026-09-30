@@ -48,14 +48,3 @@ export function ToolbarStart({ className, ...props }: ComponentProps<'div'>) {
     />
   )
 }
-
-/** The trailing slot: pushed to the end of the row, its controls justified there too. */
-export function ToolbarEnd({ className, ...props }: ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="toolbar-end"
-      className={cn('ml-auto flex flex-wrap items-center justify-end gap-2.5', className)}
-      {...props}
-    />
-  )
-}

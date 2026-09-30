@@ -15,17 +15,10 @@ export {
   type PendingVideoRecord,
   type PendingVideoRestore,
 } from './lifecycle'
-export {
-  boundTags,
-  MAX_IMAGE_BYTES,
-  MAX_VIDEO_BYTES,
-  overCapMessage,
-  TAGS_MAX,
-} from './shared'
+export { boundTags, MAX_IMAGE_BYTES, TAGS_MAX } from './shared'
 export type {
   CreateMemeCardModel,
   CreateMemeModeButtonModel,
-  CreateMemeScreenActions,
   CreateMemeScreenModel,
   CreateMemeSelectModel,
   GiphyCellModel,

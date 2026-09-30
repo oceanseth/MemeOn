@@ -7,6 +7,7 @@ import { Input } from '@/atoms/input'
 import { LiveRegion } from '@/atoms/live-region'
 import { MemeCard } from '@/molecules/meme-card'
 import { Select } from '@/atoms/select'
+import { SkeletonCard } from '@/atoms/skeleton'
 import { Toolbar, ToolbarStart } from '@/atoms/toolbar'
 import { cn } from '../lib/cn'
 import type { MemeplexPanelModel } from '../lib/memeplexPanelModel'
@@ -43,14 +44,19 @@ export function MemeplexPanel({ model }: { model: MemeplexPanelModel }) {
         </p>
       )}
 
-      {model.family.length > 0 ? (
-        /* tighter tracks than the market grid; the ≤560 rule still takes it 2-up */
+      {model.hasFamily ? (
+        /* tighter tracks than the market feed; the ≤560 rule still takes it 2-up.
+           `items-start`: fitted frames differ in height, so cards must not stretch, and a card
+           landing after its measurement never moves one already shown */
         <div
           data-slot="memeplex-grid"
-          className="mt-3 grid grid-cols-(--grid-memeplex) gap-3 max-sm:grid-cols-2"
+          className="mt-3 grid grid-cols-(--grid-memeplex) items-start gap-3 max-sm:grid-cols-2"
         >
           {model.family.map((card) => (
             <MemeCard key={card.id} model={card} />
+          ))}
+          {model.familyWaiting.map((id) => (
+            <SkeletonCard key={id} />
           ))}
         </div>
       ) : model.error ? null : (

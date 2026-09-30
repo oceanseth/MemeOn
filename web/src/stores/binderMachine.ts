@@ -11,6 +11,8 @@ export const BINDER_PAGE_SIZE = 12
 export interface BinderContext {
   memes: Meme[]
   showPrivate: boolean
+  /** the search well's text, verbatim; the hook matches it against titles, trimmed and case-blind */
+  q: string
   sortKey: SortKey
   sortDir: SortDir
   /** how many of the filtered cards the grid is currently allowed to paint */
@@ -23,6 +25,7 @@ export type BinderEvent =
   | { type: 'FAIL'; err: string }
   | { type: 'RETRY' }
   | { type: 'SET_SHOW_PRIVATE'; showPrivate: boolean }
+  | { type: 'SET_QUERY'; q: string }
   | { type: 'SET_SORT'; sortKey: SortKey; sortDir: SortDir }
   | { type: 'SHOW_MORE' }
 
@@ -35,6 +38,7 @@ export const binderMachine = createListPhaseMachine<BinderContext, BinderEvent>(
   context: {
     memes: [],
     showPrivate: false,
+    q: '',
     sortKey: 'new',
     sortDir: 'desc',
     visibleLimit: BINDER_PAGE_SIZE,
@@ -50,6 +54,12 @@ export const binderMachine = createListPhaseMachine<BinderContext, BinderEvent>(
       actions: assign({
         showPrivate: ({ event }: { event: Extract<BinderEvent, { type: 'SET_SHOW_PRIVATE' }> }) =>
           event.showPrivate,
+        visibleLimit: BINDER_PAGE_SIZE,
+      }),
+    },
+    SET_QUERY: {
+      actions: assign({
+        q: ({ event }: { event: Extract<BinderEvent, { type: 'SET_QUERY' }> }) => event.q,
         visibleLimit: BINDER_PAGE_SIZE,
       }),
     },

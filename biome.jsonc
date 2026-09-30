@@ -12,7 +12,6 @@
       "**",
       "!!**/node_modules",
       "!!**/dist",
-      "!!**/storybook-static",
       "!!**/.turbo",
       "!!**/coverage",
       "!!**/.hermes",
@@ -23,13 +22,10 @@
       "!!**/mobile/android",
       "!!**/mobile/.expo",
       "!!**/ui/dist",
-      "!!**/ui/storybook-static",
       "!!**/videos",
       "!**/pnpm-lock.yaml",
       // Copy ratchet baseline: never rewrite this file.
-      "!**/web/scripts/copy-baseline.json",
-      // MSW generated worker.
-      "!**/web/public/mockServiceWorker.js"
+      "!**/web/scripts/copy-baseline.json"
     ]
   },
   "formatter": {

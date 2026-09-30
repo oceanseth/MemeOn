@@ -31,6 +31,10 @@ export interface Meme {
   remixOf?: string | null
   /** hidden from marketplace/feed/others (sole-owner soft delete) */
   private?: boolean
+  /** intrinsic pixel width of `imageUrl` (server-measured; absent on legacy memes) */
+  width?: number
+  /** intrinsic pixel height of `imageUrl` (server-measured; absent on legacy memes) */
+  height?: number
   /** external origin attribution (e.g. seeded from Giphy) */
   source?: {
     provider: string

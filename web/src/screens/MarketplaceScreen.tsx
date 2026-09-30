@@ -10,20 +10,16 @@ import {
   PageState,
 } from '@/atoms/empty'
 import { Icon } from '@/atoms/icon'
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/atoms/input-group'
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupKbd } from '@/atoms/input-group'
+import { MasonryGrid, MasonrySkeletonGrid } from '@/organisms/masonry-grid'
 import { MemeCard } from '@/molecules/meme-card'
 import { PageContainer } from '@/atoms/page-container'
 import { PageHead } from '@/atoms/page-head'
 import { Select } from '@/atoms/select'
-import { SkeletonCard } from '@/atoms/skeleton'
 import { Toggle } from '@/atoms/toggle'
 import { ToggleGroup, ToggleGroupItem } from '@/atoms/toggle-group'
-import { Toolbar, ToolbarStart } from '@/atoms/toolbar'
+import { Toolbar } from '@/atoms/toolbar'
 import type { MarketplaceScreenModel } from '../hooks/useMarketplaceScreen'
-import {
-  binderGridClasses as cardGrid,
-  binderCardSlotClasses as cardSlot,
-} from '../lib/binderChrome'
 import { cn } from '../lib/cn'
 
 /* The class strings below are this screen's own layout, one token per `cn` argument: a multi-word
@@ -33,18 +29,32 @@ import { cn } from '../lib/cn'
  * The control plate docks under the topbar while the grid scrolls. It bleeds only into the page
  * container's own gutter (`-mx-5 px-5`). A phone has no vertical budget to pin filters,
  * so ≤720 the whole treatment is absent.
+ * The gap to the grid is split: 8px of glass under the chips (`pb-2`) and 10px of unpainted
+ * margin (`mb-2.5`), so a first-row card's hover lift (4px up, 1% larger: about 7px at the
+ * widest track) rises into clear page rather than under the plate's glass.
  */
 const marketControls = cn(
-  'flex flex-col gap-3.5 pt-0 pb-3.5',
+  'flex flex-col gap-3.5 pt-0 pb-2 mb-2.5',
   /* it docks under the sticky bar (`--topbar-h`, the same 64 at every width) */
   'lg:docked lg:-mx-5 lg:px-5',
 )
 
-/** The search well grows into the toolbar's slack and stops at the reading width. */
-const searchWell = 'min-w-0 flex-1 lg:max-w-135'
+/** One row on the desktop plate: search, then the filters, then Mint — never wrapping. */
+const marketToolbar = 'lg:flex-nowrap'
+
+/** The search well stops short so the filters share its row. */
+const searchWell = 'min-w-0 flex-1 lg:max-w-95'
 
 const marketDisclosures = 'flex w-full gap-3 lg:hidden'
-const marketFilters = 'flex flex-col gap-2 max-lg:data-[collapsed=true]:hidden'
+
+/** Phone: a full-width panel behind the disclosure pill. Desktop: the row's middle lane, its
+ *  controls kept whole (`*:shrink-0`) and scrolling sideways when they outgrow it; the
+ *  padding/negative-margin pair keeps the focus ring clear of the scroll clip. */
+const marketFilters = cn(
+  'flex w-full flex-wrap items-center gap-2.5',
+  'max-lg:data-[collapsed=true]:hidden',
+  'lg:-my-1.5 lg:w-auto lg:min-w-0 lg:flex-1 lg:flex-nowrap lg:overflow-x-auto lg:py-1.5 lg:*:shrink-0',
+)
 
 /** Header already owns Mint from the shell cut; the page CTA is desktop-only. */
 const mintLink = cn(buttonVariants({ variant: 'mint' }), 'max-lg:hidden lg:w-51.5')
@@ -62,6 +72,7 @@ export function MarketplaceScreen({
   errorHeading,
   cards,
   queryInputProps,
+  searchHotkey,
   filterTabs,
   tierSelectProps,
   createLinkProps,
@@ -76,7 +87,6 @@ export function MarketplaceScreen({
   showError,
   showGrid,
   showMore,
-  skeletonCount,
   errorMessage,
   retryButtonProps,
   retryLabel,
@@ -85,20 +95,29 @@ export function MarketplaceScreen({
   loadMoreError,
   endOfListLabel,
   sentinelRef,
+  masonry,
 }: MarketplaceScreenModel) {
   return (
     <PageContainer as="main" id="main" tabIndex={-1}>
       <PageHead level="h1" title={pageTitle} className="mb-3.5" />
       <div data-slot="market-controls" className={marketControls}>
-        <Toolbar data-slot="market-toolbar">
-          {/* the well's own width lives on the wrapper: `max-w-135` is a `--container-*` name
-              the lint's grammar does not read, and widths are the toolbar's business anyway */}
-          <div className={searchWell}>
+        <Toolbar data-slot="market-toolbar" className={marketToolbar}>
+          {/* the well's own width lives on the wrapper: `max-w-95` is layout, the toolbar's
+              business; the ref is the ⌘K hotkey's handle on this page's search */}
+          <div className={searchWell} ref={searchHotkey.slotRef}>
             <InputGroup>
               <InputGroupAddon>
                 <Icon name="magnifying-glass" size={20} />
               </InputGroupAddon>
               <InputGroupInput type="search" {...queryInputProps} />
+              {/* decoration for fine pointers; the input's aria-keyshortcuts speaks for it */}
+              <InputGroupAddon
+                align="inline-end"
+                aria-hidden="true"
+                className="pointer-coarse:hidden"
+              >
+                <InputGroupKbd>{searchHotkey.label}</InputGroupKbd>
+              </InputGroupAddon>
             </InputGroup>
           </div>
           {/* the phone's two disclosure pills: "you are here" on the left, the panel toggle right.
@@ -121,26 +140,17 @@ export function MarketplaceScreen({
               {filtersToggleLabel}
             </Button>
           </div>
-          <Link {...createLinkProps} className={mintLink}>
-            <span aria-hidden="true">
-              <Icon name="circle-plus" size={16} />
-            </span>
-            {mintLabel}
-          </Link>
-        </Toolbar>
-        {/* on phones the filter rows collapse behind the disclosure so the grid starts on the first screenful */}
-        <div data-slot="market-filters" className={marketFilters} {...filtersPanelProps}>
-          {/* media, listed, and tier filters — the pressed item is the active filter */}
-          <Toolbar>
-            <ToolbarStart>
-              <ToggleGroup {...filterTabs.mediaGroupProps}>
-                {filterTabs.media.map((tab) => (
-                  <ToggleGroupItem key={tab.key} value={tab.key}>
-                    {tab.label}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-            </ToolbarStart>
+          {/* media, listed, and tier filters — the pressed item is the active filter. On phones
+              they collapse behind the disclosure so the grid starts on the first screenful; on
+              the desktop they share the search row and scroll sideways when they outgrow it. */}
+          <div data-slot="market-filters" className={marketFilters} {...filtersPanelProps}>
+            <ToggleGroup {...filterTabs.mediaGroupProps}>
+              {filterTabs.media.map((tab) => (
+                <ToggleGroupItem key={tab.key} value={tab.key}>
+                  {tab.label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
             <Toggle
               pressed={filterTabs.listed.pressed}
               onPressedChange={filterTabs.listed.onPressedChange}
@@ -153,18 +163,20 @@ export function MarketplaceScreen({
                 {clearFiltersLabel}
               </Button>
             )}
-          </Toolbar>
-        </div>
+          </div>
+          <Link {...createLinkProps} className={mintLink}>
+            <span aria-hidden="true">
+              <Icon name="circle-plus" size={16} />
+            </span>
+            {mintLabel}
+          </Link>
+        </Toolbar>
       </div>
       <div data-slot="market-summary" className="sr-only" {...statusProps}>
         {resultsLabel}
       </div>
       {showLoading ? (
-        <div className={cardGrid} aria-hidden="true">
-          {Array.from({ length: skeletonCount }, (_, slot) => (
-            <SkeletonCard key={slot} />
-          ))}
-        </div>
+        <MasonrySkeletonGrid model={masonry} />
       ) : showError ? (
         <Empty variant="error">
           <EmptyHeader>
@@ -193,13 +205,11 @@ export function MarketplaceScreen({
         </Empty>
       ) : showGrid ? (
         <>
-          <div data-slot="market-grid" className={cardGrid} role="list">
-            {cards.map((card) => (
-              <div key={card.id} className={cardSlot} role="listitem">
-                <MemeCard model={card} />
-              </div>
-            ))}
-          </div>
+          <MasonryGrid
+            data-slot="market-grid"
+            model={masonry}
+            items={cards.map((card) => ({ node: <MemeCard model={card} /> }))}
+          />
           {showMore && (
             <div ref={sentinelRef} data-slot="load-more" className="mt-4.5">
               <EmptyContent>

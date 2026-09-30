@@ -111,10 +111,6 @@ export function CardAction({ className, ...props }: HTMLAttributes<HTMLDivElemen
   )
 }
 
-export function CardContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div data-slot="card-content" className={cn('not-first:mt-4', className)} {...props} />
-}
-
 export function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div

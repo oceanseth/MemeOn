@@ -47,16 +47,6 @@ export function AlertTitle({ className, ...props }: ComponentPropsWithoutRef<'di
   return <div data-slot="alert-title" className={cn('block font-semibold', className)} {...props} />
 }
 
-export function AlertDescription({ className, ...props }: ComponentPropsWithoutRef<'div'>) {
-  return (
-    <div
-      data-slot="alert-description"
-      className={cn('block text-base text-pretty', className)}
-      {...props}
-    />
-  )
-}
-
 /** The action row under the message. */
 export function AlertAction({ className, ...props }: ComponentPropsWithoutRef<'div'>) {
   return (

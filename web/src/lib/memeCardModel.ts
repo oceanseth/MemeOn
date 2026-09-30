@@ -2,17 +2,49 @@ import type { ImgHTMLAttributes, RefCallback, VideoHTMLAttributes } from 'react'
 import { memeCardCopy as copy } from '../copy/memeCard'
 import { cardMediaRef } from './cardMedia'
 import { humanize } from './humanize'
+import { isMediaSize, memeMediaSize, type MediaMeasure } from './memeMediaSize'
 import { memeReshareCount } from './memeMetrics'
 import { getPlayVideosSnapshot } from './playbackPreference'
 import type { Meme } from './types'
 
+/** Grid frame ratio clamp: 1:2 tall … 2:1 wide. Past it the frame stops and the art centre-crops. */
+export const MEME_ASPECT_MIN = 0.5
+export const MEME_ASPECT_MAX = 2
+
+/**
+ * The art window's ratio for a meme's media size. The window takes the media's own `w/h`, so the
+ * art covers it edge to edge and crops nothing. A grid (`'grid'`) stops the frame at the clamp and
+ * the art centre-crops past it; the detail hero (`'whole'`) shows every meme whole, unclamped. A
+ * failed measurement is a square the art covers; `null` means the size is not known yet, and a
+ * grid holds that card back until it is (`memeMediaSize`).
+ */
+export function memeFrameAspect(
+  size: MediaMeasure | undefined,
+  fit: 'grid' | 'whole' = 'grid',
+): number | null {
+  if (size === undefined) return null
+  if (size === 'failed' || !isMediaSize(size.width, size.height)) return 1
+  const ratio = size.width / size.height
+  return fit === 'whole' ? ratio : Math.min(MEME_ASPECT_MAX, Math.max(MEME_ASPECT_MIN, ratio))
+}
+
+/**
+ * Fixed grids place cards in feed order, so a card still being measured holds back every card
+ * after it: the grid shows the measured run and one skeleton per card still waiting. A later
+ * card landing never moves one already shown (those grids align their rows to the top).
+ */
+export function splitMeasured<T>(
+  items: readonly T[],
+  aspectOf: (item: T) => number | null,
+): { placed: T[]; waiting: T[] } {
+  const firstWaiting = items.findIndex((item) => aspectOf(item) === null)
+  const cut = firstWaiting === -1 ? items.length : firstWaiting
+  return { placed: items.slice(0, cut), waiting: items.slice(cut) }
+}
+
 export type MemeCardMediaModel =
   | {
       kind: 'video'
-      backdropImageProps: Pick<
-        ImgHTMLAttributes<HTMLImageElement>,
-        'src' | 'alt' | 'aria-hidden' | 'loading'
-      >
       videoProps: Pick<
         VideoHTMLAttributes<HTMLVideoElement>,
         'src' | 'muted' | 'loop' | 'playsInline' | 'autoPlay' | 'preload' | 'poster' | 'aria-label'
@@ -20,21 +52,15 @@ export type MemeCardMediaModel =
     }
   | {
       kind: 'image'
-      backdropImageProps: Pick<
-        ImgHTMLAttributes<HTMLImageElement>,
-        'src' | 'alt' | 'aria-hidden' | 'loading'
-      >
       imageProps: Pick<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt' | 'loading'>
     }
 
 export interface MemeCardListingModel {
   shares: number
   pricePerShare: number
-  /** Footer second line — lowercase listing state, no pill. */
-  forSaleLabel: string
-  /** first line of the same slot: `12 shares` */
-  sharesLabel: string
-  /** both lines plus the price, which the card itself no longer prints */
+  /** the one short right-side badge: `12 for sale` */
+  badgeLabel: string
+  /** the badge plus the price, which the card itself no longer prints */
   sharesA11yLabel: string
 }
 
@@ -50,6 +76,11 @@ export interface MemeCardModel {
   tierLabel: string
   detailLinkProps: { to: string; 'aria-label': string }
   media: MemeCardMediaModel
+  /**
+   * `width / height` of the art window, which the art covers edge to edge: the media's own ratio
+   * clamped to the grid's range, 1 when it could not be measured, `null` while it is being measured
+   */
+  aspect: number | null
   /** null when the record carries no view count — never borrowed from another metric */
   viewsLabel: string | null
   resharesLabel: string
@@ -84,7 +115,7 @@ export function buildMemeCardModelForPlayback(meme: Meme, playVideos: boolean): 
   return buildCard(meme, prefersReducedMotion(), playVideos)
 }
 
-/** The same card with the motion branch forced, so stories and tests can render it. */
+/** The same card with the motion branch forced, so a test can reach it. */
 export function buildReducedMotionMemeCardModel(meme: Meme): MemeCardModel {
   return buildCard(meme, true, false)
 }
@@ -94,12 +125,6 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
     meme.mediaType === 'video' && meme.videoUrl
       ? {
           kind: 'video',
-          backdropImageProps: {
-            src: meme.imageUrl,
-            alt: '',
-            'aria-hidden': true,
-            loading: 'lazy',
-          },
           videoProps: {
             src: meme.videoUrl,
             muted: true,
@@ -114,12 +139,6 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
         }
       : {
           kind: 'image',
-          backdropImageProps: {
-            src: meme.imageUrl,
-            alt: '',
-            'aria-hidden': true,
-            loading: 'lazy',
-          },
           imageProps: {
             src: meme.imageUrl,
             // the card's <article> and the link already carry the title; a third read is noise
@@ -138,11 +157,12 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
       ? {
           shares: meme.listing.shares,
           pricePerShare: meme.listing.pricePerShare,
-          forSaleLabel: copy.forSale,
-          sharesLabel: copy.shares(meme.listing.shares),
+          badgeLabel: copy.forSaleBadge(meme.listing.shares),
           sharesA11yLabel: copy.sharesForSaleAt(meme.listing.shares, meme.listing.pricePerShare),
         }
       : null
+
+  const aspect = memeFrameAspect(memeMediaSize(meme))
 
   return {
     id: meme.id,
@@ -156,6 +176,7 @@ function buildCard(meme: Meme, reducedMotion: boolean, playVideos: boolean): Mem
       'aria-label': copy.open(meme.title),
     },
     media,
+    aspect,
     viewsLabel,
     resharesLabel,
     valueLabel,

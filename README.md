@@ -37,10 +37,11 @@ Tier frame art is generated with the Masky image API (`api/scripts/generate-fram
   Settings (theme, connections), Developers (API keys), Discord link, invite landing,
   public `/u/:sub` and `/binder/:sub`, meme detail with cap table, listing, buying,
   share link, and click-to-enlarge artwork. The enlarged viewer fits the full image
-  or video to the viewport; click anywhere or press Escape to dismiss. Enlarged
-  videos play muted without controls so the entire viewer remains click-to-close.
-  Structure and rules: [`web/src/Anatomy.mdx`](web/src/Anatomy.mdx)
-  (also the "Anatomy" page in Storybook). See [Web UI](#web-ui) below.
+  or video to the viewport with the default cursor; click anywhere or press Escape
+  to dismiss. Enlarged videos play muted without controls so the entire viewer
+  remains click-to-close.
+  Structure and rules: [`web/src/Anatomy.md`](web/src/Anatomy.md).
+  See [Web UI](#web-ui) below.
 - `api/` – Lambda (esbuild-bundled) + Express dev bridge. DynamoDB single-table,
   Masky OAuth + aigen proxy, session JWTs, og pipeline (jimp), alerts, and the
   mobile feed layer (likes/dislikes/follows, friend-prioritized `/api/feed`,
@@ -102,10 +103,10 @@ The root workspace includes `web`, `api`, `mobile`, and `shared`. Use
 Lambda package, and `pnpm run mobile:export` when an Expo iOS bundle export is needed.
 Use Node 22.13 or newer; `.nvmrc` pins the development version.
 
-Turborepo runs workspace tasks, caching `build` and `build-storybook` outputs
-and typecheck results. Use `pnpm run dev:web`, `pnpm run dev:api`, or
-`pnpm run dev:mobile` for one app; `pnpm run check`, `pnpm run typecheck`, and
-`pnpm run build-storybook` for their respective checks. Add an app dependency
+Turborepo runs workspace tasks, caching `build` outputs and typecheck
+results. Use `pnpm run dev:web`, `pnpm run dev:api`, or
+`pnpm run dev:mobile` for one app; `pnpm run check` and `pnpm run typecheck`
+for their respective checks. Add an app dependency
 with `pnpm --filter <workspace> add <package>`. CI uses
 `pnpm install --frozen-lockfile` from the repository root.
 
@@ -115,20 +116,19 @@ Mint a test session: `AWS_REGION=us-west-2 pnpm --filter memeon-api exec tsx scr
 
 ## Web UI
 
-`web/` is a headless, tiered React app. Read [`web/src/Anatomy.mdx`](web/src/Anatomy.mdx)
+`web/` is a headless, tiered React app. Read [`web/src/Anatomy.md`](web/src/Anatomy.md)
 before touching it; the short version:
 
 | | |
 | --- | --- |
-| Tiers | `atoms → molecules → organisms → screens → views` under `web/src/`. Everything below `views/` is pure props → markup with a `data-slot` on its root and a sibling `*.stories.tsx`. |
+| Tiers | `atoms → molecules → organisms → screens → views` under `web/src/`. Everything below `views/` is pure props → markup with a `data-slot` on its root. |
 | State | `hooks/useXScreen()` per screen (exports the screen's model type and builds its copy). XState machines + useSyncExternalStore (via @xstate/react useSelector and the two plain stores). Prop-bag builders (`lib/*Model.ts`) sit between API records and components. |
 | Styling | Tailwind v4, no config file, shadcn conventions on Base UI. Tokens: `web/src/index.css` `@theme`. Appearance: the component's `cva` variants. What is allowed: `web/.oxlintrc.json` (`@shadcn/lint`) — run `pnpm --filter web run lint:ds`. Co-located `.css` only for effects a utility cannot express (`atoms/foil.css`, …), each restating the layer order. |
 | Behaviour primitives | Base UI (`@base-ui/react`) for dialogs, menus, popovers, select, toggles; painted with utilities, state read from `data-*` attributes. |
-| Storybook | `pnpm run storybook` (port 6006, MSW-backed connected scenarios in `web/.storybook/`). Every component has a story; view stories drive real hooks against mocked `/api`. `Anatomy/Tokens` renders the whole token sheet. |
-| Gates | `pnpm run check` = `lint:ds` (every `@shadcn/lint` rule at error, plus `memeon/no-use-effect` and `memeon/no-native-chrome`), `check-tiers` (tier/import/state rules), `check-copy` (strings outside `web/src/copy/` may only shrink), `check-contrast` (APCA on every text/surface pair, both arms), `check-tokens` (no dead `@theme` token, no `cn.ts` drift), `check-docs` (every path, token, component and script a repo document names), `check-layers` (cascade order in `dist`), proxy, unit, runtime (Playwright) and story tests. `pnpm run build` runs `check-tiers`, `tsc`, Vite and `check-layers`. Unused code: `pnpm exec knip`. |
+| Gates | `pnpm run check` = `lint:ds` (every `@shadcn/lint` rule at error, plus `memeon/no-use-effect` and `memeon/no-native-chrome`), `check-tiers` (tier/import/state rules), `check-copy` (strings outside `web/src/copy/` may only shrink), `check-contrast` (APCA on every text/surface pair, both arms), `check-tokens` (no dead `@theme` token, no `cn.ts` drift), `check-docs` (every path, token, component and script a repo document names), `check-layers` (cascade order in `dist`), proxy, unit and runtime (Playwright) tests. `pnpm run build` runs `check-tiers`, `tsc`, Vite and `check-layers`. Unused code: `pnpm exec knip`. |
 | Shared code | `shared/tiers.ts` is imported as `@memeon/shared/tiers` (a `workspace:*` package). |
 
-The "Making a change" table in `Anatomy.mdx` says which file a copy, style, state,
+The "Making a change" table in `Anatomy.md` says which file a copy, style, state,
 route or token change lands in.
 
 ## Firebase

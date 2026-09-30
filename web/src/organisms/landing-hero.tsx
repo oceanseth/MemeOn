@@ -1,8 +1,7 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { Alert } from '@/atoms/alert'
 import { Button } from '@/atoms/button'
 import { FoilCard, FoilMedia } from '@/atoms/foil-frame'
-import { TierSeal } from '@/atoms/tier-seal'
 import { cn } from '../lib/cn'
 import type { LandingScreenModel } from '../hooks/useLandingScreen'
 import './landing-hero.css'
@@ -33,8 +32,9 @@ export type LandingHeroProps = Pick<
 
 /**
  * Rounded hero panel: a centred stack of title, lede, the ladder's three figures and the call to
- * action, with the complete rarity ladder fanned beneath it as a hand of collectible cards
- * (`landing-hero.css` owns the fan; each card carries its seat as `data-fan`).
+ * action, with the ladder's top three tiers drifting beneath it as collectible cards on a
+ * seamless float loop (`landing-hero.css` owns the stage; each card carries its seat as
+ * `data-seat`).
  */
 export function LandingHero({
   heroTitle,
@@ -75,7 +75,7 @@ export function LandingHero({
               )}
             >
               <dt className="text-xs text-muted-foreground">{stat.label}</dt>
-              <dd className="m-0 font-display text-3xl text-foreground tabular-nums max-md:text-xl">
+              <dd className="m-0 font-display text-3xl text-foreground max-md:text-xl">
                 {stat.value}
               </dd>
             </div>
@@ -98,7 +98,7 @@ export function LandingHero({
         )}
       </div>
 
-      {/* No `p-0` here: the sheet's bottom padding is what keeps the outer seats inside the panel. */}
+      {/* No `p-0` here: the sheet's bottom padding is what keeps the drift inside the panel. */}
       <ol data-slot="hero-cards" className="mt-10 list-none max-md:mt-8">
         {heroCards.map((card) => (
           <FoilCard
@@ -106,13 +106,13 @@ export function LandingHero({
             ref={card.cardRef}
             key={card.tierKey}
             data-slot="hero-card"
-            data-fan={card.fan}
+            data-seat={card.seat}
             tierKey={card.tierKey}
             presentation="collectible"
             rarityLadder
+            style={{ '--meme-aspect': card.aspect } as CSSProperties}
           >
-            {/* The caption rides the top edge: a fan opens at the top and closes at the foot,
-                so that is the one edge of every seat the hand leaves in view. */}
+            {/* The caption rides the top edge, clear of the neighbouring seats' mild overlap. */}
             <div data-slot="hero-card-meta" className="px-1 pb-2">
               <p
                 data-slot="hero-tier-name"
@@ -120,22 +120,14 @@ export function LandingHero({
               >
                 {card.tierName}
               </p>
-              <p className="m-0 text-xs font-semibold text-foreground tabular-nums">
+              <p className="m-0 text-xs font-semibold text-foreground">
                 {card.resharesLabel}
               </p>
               <p className="m-0 text-xs text-muted-foreground">{card.rarityLabel}</p>
             </div>
-            <FoilMedia
-              presentation="collectible"
-              seal={<TierSeal tierKey={card.tierKey} label={card.tierLabel} />}
-            >
-              <span data-slot="collectible-art-link" className="block size-full">
-                <img
-                  data-slot="meme-art-backdrop"
-                  className="absolute inset-0 z-0 block size-full scale-110 object-cover opacity-45 blur-lg saturate-125"
-                  {...card.backdropImageProps}
-                />
-                <img data-slot="meme-art" className="block object-contain" {...card.imageProps} />
+            <FoilMedia presentation="collectible">
+              <span data-slot="collectible-art-link">
+                <img data-slot="meme-art" className="block object-cover" {...card.imageProps} />
               </span>
             </FoilMedia>
           </FoilCard>

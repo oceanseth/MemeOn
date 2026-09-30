@@ -14,6 +14,7 @@ import {
 } from '@/atoms/popover'
 import { PortalAnchor } from '@/atoms/portal-anchor'
 import { Progress } from '@/atoms/progress'
+import { SkeletonCard } from '@/atoms/skeleton'
 import { cn } from '@/lib/cn'
 import type { QuestBarModel } from '../lib/questBarModel'
 import { portalAnchor } from '../lib/portalAnchor'
@@ -42,7 +43,7 @@ const ANCHOR_ID = 'quest-pop-anchor'
  */
 const PILL = cn(
   'inline-flex h-10 shrink-0 items-center gap-1 rounded-full px-4',
-  'text-base font-semibold whitespace-nowrap text-foreground tabular-nums',
+  'text-base font-semibold whitespace-nowrap text-foreground',
   'max-xl:h-9 max-xl:px-3 max-xl:text-sm',
 )
 const PILL_STATIC = cn(PILL, 'material-raised')
@@ -74,7 +75,10 @@ const CHIP = cn(
 const CHIP_LINK = cn('no-underline', 'focus-ring rounded-sm')
 
 /** The card grid with the starter pack's tighter tracks; under 561px only the gap tightens. */
-const PACK_GRID = cn('m-0 grid list-none grid-cols-(--grid-quest) gap-5 p-0 max-sm:gap-3')
+/* `items-start`: fitted frames differ in height, so a card is never stretched to its row */
+const PACK_GRID = cn(
+  'm-0 grid list-none grid-cols-(--grid-quest) items-start gap-5 p-0 max-sm:gap-3',
+)
 
 export interface QuestBarProps {
   /** The ladder, or nothing: without it the pill is the plain balance. */
@@ -107,7 +111,7 @@ export function QuestBar({ model, balance }: QuestBarProps) {
     <>
       {live ? (
         <div className="relative" data-slot="questbar">
-          <Popover defaultOpen={model.defaultOpen} actionsRef={popoverActions}>
+          <Popover actionsRef={popoverActions}>
             <PopoverTrigger
               render={<button type="button" className={PILL_TRIGGER} />}
               data-slot="quest-trigger"
@@ -147,7 +151,7 @@ export function QuestBar({ model, balance }: QuestBarProps) {
                     />
                     <span className="truncate">{model.title}</span>
                     <span
-                      className="text-sm font-medium text-muted-foreground tabular-nums"
+                      className="text-sm font-medium text-muted-foreground"
                       data-slot="questbar-count"
                     >
                       {model.completionLabel}
@@ -201,7 +205,7 @@ export function QuestBar({ model, balance }: QuestBarProps) {
                         <span className="sr-only">{chip.statusLabel} </span>
                         <span className="min-w-0 flex-1">{chip.title}</span>
                         <em
-                          className="inline-flex items-center gap-1 text-sm not-italic tabular-nums"
+                          className="inline-flex items-center gap-1 text-sm"
                           aria-hidden="true"
                         >
                           <Icon name="brain" size={14} />
@@ -271,6 +275,9 @@ export function QuestBar({ model, balance }: QuestBarProps) {
             <div className={PACK_GRID} data-slot="pack-grid">
               {model.pack.cards.map((card) => (
                 <MemeCard key={card.id} model={card} />
+              ))}
+              {model.pack.waitingCards.map((id) => (
+                <SkeletonCard key={id} />
               ))}
             </div>
           )}

@@ -88,7 +88,7 @@ const UA_ELEMENTS = new Map([
 ])
 
 const UA_DIALOGS = new Map([
-  ['alert', 'atoms/alert-dialog'],
+  ['alert', 'molecules/confirm-dialog'],
   ['confirm', 'molecules/confirm-dialog'],
   ['prompt', 'atoms/dialog'],
 ])

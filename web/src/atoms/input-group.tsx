@@ -64,11 +64,17 @@ export function InputGroupAddon({
   )
 }
 
-export function InputGroupText({ className, ...props }: ComponentPropsWithoutRef<'span'>) {
+/** The well's keyboard hint: a quiet chord chip for an end addon (`⌘K`). Decoration for fine
+ *  pointers — the input's own `aria-keyshortcuts` is what assistive tech announces, so callers
+ *  hide the addon (`aria-hidden`, `pointer-coarse:hidden`) without losing the shortcut. */
+export function InputGroupKbd({ className, ...props }: ComponentPropsWithoutRef<'kbd'>) {
   return (
-    <span
-      data-slot="input-group-text"
-      className={cn('flex items-center gap-2 text-base text-muted-foreground', className)}
+    <kbd
+      data-slot="input-group-kbd"
+      className={cn(
+        'rounded-sm border border-border px-1.5 py-0.5 font-sans text-xs text-muted-foreground select-none',
+        className,
+      )}
       {...props}
     />
   )

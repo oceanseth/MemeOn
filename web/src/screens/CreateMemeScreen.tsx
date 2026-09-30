@@ -58,11 +58,10 @@ function ModeChip({ model, icon }: { model: CreateMemeModeButtonModel; icon: Rea
 }
 
 /* The mint preview's box model, spelled out here because the meme has no id, no link and no
-   `MemeCardModel` until it is minted. FoilCard hosts the paper frame; the raised surface stays here. */
+   `MemeCardModel` until it is minted. FoilCard hosts the paper frame, which sizes the art to its
+   own ratio exactly as a grid card does (`atoms/foil.css`); the raised surface stays here. */
 const PREVIEW_CARD = cn('group relative isolate rounded-lg material-card p-2 @container')
 const PREVIEW_INNER = cn('relative flex h-full flex-col')
-/* same plate the marketplace card uses: a square, the whole meme contained */
-const PREVIEW_ART = 'block aspect-square w-full bg-muted object-contain'
 const PREVIEW_META = 'flex flex-col px-1.5 pt-3.5 pb-1.5'
 /** Preview title one step above the grid card size. */
 const PREVIEW_TITLE = cn(
@@ -78,7 +77,7 @@ const PREVIEW_PLACEHOLDER = cn(
   'text-sm font-medium text-muted-foreground',
 )
 const PREVIEW_SUB = cn(
-  'mt-3 flex items-center justify-between gap-2 text-sm font-semibold text-muted-foreground tabular-nums',
+  'mt-3 flex items-center justify-between gap-2 text-sm font-semibold text-muted-foreground',
   '@max-card-narrow:flex-wrap @max-card-narrow:gap-y-0.5',
 )
 
@@ -89,9 +88,9 @@ function PreviewCard({ card }: { card: CreateMemeCardModel }) {
       <div data-slot="meme-card-inner" className={PREVIEW_INNER}>
         <FoilMedia>
           {card.media.kind === 'video' ? (
-            <video data-slot="meme-art" className={PREVIEW_ART} {...card.media.videoProps} />
+            <video data-slot="meme-art" {...card.media.videoProps} />
           ) : (
-            <img data-slot="meme-art" className={PREVIEW_ART} {...card.media.imageProps} />
+            <img data-slot="meme-art" {...card.media.imageProps} />
           )}
         </FoilMedia>
         <div data-slot="meme-meta" className={PREVIEW_META}>

@@ -58,8 +58,8 @@ export const dialogContentVariants = cva(
         sm: 'max-w-(--dialog-max-w-sm)',
         /** every other modal */
         md: 'max-w-(--dialog-max-w-md)',
-        /** viewport-fitted artwork, with room for the title and close button */
-        media: 'mx-4 h-(--dialog-max-h) w-auto max-w-none sm:mx-8',
+        /** hugs its artwork: the content sizes itself to the viewport (`meme-fit` in `index.css`) */
+        media: 'w-fit max-w-none',
       },
       variant: {
         default: '',
@@ -102,11 +102,8 @@ type DialogCloseShown = {
 
 type DialogCloseHidden = {
   showCloseButton: false
-  /**
-   * Storybook merges meta closeLabel with `showCloseButton: false`. The button is not rendered,
-   * so this cannot name anything. `?: never` rejects WithoutCloseButton / Danger / Dark.
-   */
-  closeLabel?: string | undefined
+  /** no button is rendered, so there is nothing to name */
+  closeLabel?: undefined
   /** same optional lock as the shown arm, so it is not forwarded onto the popup */
   closeDisabled?: boolean | undefined
 }
@@ -193,7 +190,7 @@ export function DialogTitle({ className, ...props }: Styled<DialogPrimitive.Titl
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn('m-0 font-display text-3xl font-normal text-foreground text-pretty', className)}
+      className={cn('m-0 font-display text-3xl font-normal text-foreground text-balance', className)}
       {...props}
     />
   )

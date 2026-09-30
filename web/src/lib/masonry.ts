@@ -1,0 +1,219 @@
+/**
+ * Pure masonry arithmetic. Cards are placed in feed order into the column whose *content*
+ * height (sum of card heights, gaps excluded) is shortest — Giphy's placement rule, verified
+ * against giphy.com 2026-09-26; counting gaps mis-places items in mixed-height feeds. Gaps
+ * re-enter only when computing a card's `y`. Placement is append-only: laying out more items
+ * never moves the ones already placed; only a column-count change re-lays out everything.
+ *
+ * A card's height follows from its meme's ratio, so a card is placed only once that ratio is
+ * known (`lib/memeMediaSize.ts` measures the memes whose record carries no size). The feed places
+ * its longest run of known ratios and waits on the rest as skeletons; a ratio landing extends the
+ * run by appending, so nothing already placed moves (`placeMasonryFeed`).
+ */
+
+/** Grid geometry (decision: fixed 248px columns, 16px gaps, centred; <640px two fluid columns). */
+export const MASONRY_COLUMN_WIDTH = 248
+export const MASONRY_GAP = 16
+export const MASONRY_NARROW_GAP = 12
+/** below this container width the grid is two fluid columns */
+export const MASONRY_NARROW_WIDTH = 640
+
+/**
+ * The collectible frame's fixed chrome between the card's outer edge and the art window's
+ * content box (`atoms/foil.css`): horizontally 3+12 `foil-media` padding + 2×(1 border + 8
+ * padding) rail + 2×2 window border = 37; vertically 3+3 padding + 18 rail + 4 border = 28.
+ * The window content box is the art, at the meme's clamped ratio, so a card's height is arithmetic.
+ */
+export const MEDIA_CHROME_X = 37
+export const MEDIA_CHROME_Y = 28
+
+/**
+ * The card's fixed meta rows under the art window (`molecules/meme-card.tsx`, size default):
+ * 12 top padding + 26 one-line title + 4 gap + 16 kicker row + 4 gap + 20 value row. Screens
+ * with a card footer add their own constant on top when they pass `chromeHeight`.
+ */
+export const MEME_CARD_META_HEIGHT = 82
+
+/** Deterministic aspect mix for loading placeholders, cycled to the skeleton count. */
+export const MASONRY_SKELETON_ASPECTS = [1, 0.75, 1.33, 0.56] as const
+
+/** `count` placeholder items cycling the skeleton mix, so loading looks like the feed. */
+export const masonrySkeletonItems = (count: number): { id: string; aspect: number }[] =>
+  Array.from({ length: count }, (_, index) => ({
+    id: `skeleton-${index}`,
+    aspect: MASONRY_SKELETON_ASPECTS[index % MASONRY_SKELETON_ASPECTS.length] as number,
+  }))
+
+export interface MasonryGeometry {
+  columns: number
+  columnWidth: number
+  gap: number
+}
+
+/** Column count and width for a container: `max(2, ⌊(w + gap) / (248 + gap)⌋)`, centred. */
+export function masonryGeometry(containerWidth: number): MasonryGeometry {
+  if (containerWidth < MASONRY_NARROW_WIDTH) {
+    return {
+      columns: 2,
+      columnWidth: (containerWidth - MASONRY_NARROW_GAP) / 2,
+      gap: MASONRY_NARROW_GAP,
+    }
+  }
+  return {
+    columns: Math.max(
+      2,
+      Math.floor((containerWidth + MASONRY_GAP) / (MASONRY_COLUMN_WIDTH + MASONRY_GAP)),
+    ),
+    columnWidth: MASONRY_COLUMN_WIDTH,
+    gap: MASONRY_GAP,
+  }
+}
+
+/** A card's full height: aspect-derived art window + frame chrome + the grid's meta/footer rows. */
+export function masonryCardHeight(
+  aspect: number,
+  columnWidth: number,
+  chromeHeight: number,
+): number {
+  return (columnWidth - MEDIA_CHROME_X) / aspect + MEDIA_CHROME_Y + chromeHeight
+}
+
+export interface MasonryPlacement {
+  column: number
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+export interface MasonryLayout extends MasonryGeometry {
+  items: MasonryPlacement[]
+  /** container height: the deepest column's bottom edge */
+  height: number
+  /** per-column running *content* heights — gaps excluded, matching the choice rule */
+  columnContentHeights: number[]
+  /** per-column item counts, for the gap arithmetic on append */
+  columnCounts: number[]
+  chromeHeight: number
+}
+
+export interface LayoutMasonryInput extends MasonryGeometry {
+  aspects: readonly number[]
+  /** fixed per-grid height under the art: frame-to-card meta rows plus any screen footer */
+  chromeHeight: number
+}
+
+/** Lay a feed out from scratch. */
+export function layoutMasonry(input: LayoutMasonryInput): MasonryLayout {
+  const empty: MasonryLayout = {
+    columns: input.columns,
+    columnWidth: input.columnWidth,
+    gap: input.gap,
+    chromeHeight: input.chromeHeight,
+    items: [],
+    height: 0,
+    columnContentHeights: Array.from({ length: input.columns }, () => 0),
+    columnCounts: Array.from({ length: input.columns }, () => 0),
+  }
+  return appendMasonry(empty, input.aspects)
+}
+
+/** Place more items against the existing column state; prior placements never move. */
+export function appendMasonry(prev: MasonryLayout, aspects: readonly number[]): MasonryLayout {
+  const contentHeights = [...prev.columnContentHeights]
+  const counts = [...prev.columnCounts]
+  const items = [...prev.items]
+  for (const aspect of aspects) {
+    // shortest column by content height alone; ties go to the leftmost
+    let column = 0
+    for (let c = 1; c < prev.columns; c++) {
+      if ((contentHeights[c] ?? 0) < (contentHeights[column] ?? 0)) column = c
+    }
+    const height = masonryCardHeight(aspect, prev.columnWidth, prev.chromeHeight)
+    const y = (contentHeights[column] ?? 0) + (counts[column] ?? 0) * prev.gap
+    items.push({
+      column,
+      x: column * (prev.columnWidth + prev.gap),
+      y,
+      width: prev.columnWidth,
+      height,
+    })
+    contentHeights[column] = (contentHeights[column] ?? 0) + height
+    counts[column] = (counts[column] ?? 0) + 1
+  }
+  let bottom = 0
+  for (let c = 0; c < prev.columns; c++) {
+    const count = counts[c] ?? 0
+    if (count === 0) continue
+    bottom = Math.max(bottom, (contentHeights[c] ?? 0) + (count - 1) * prev.gap)
+  }
+  return {
+    ...prev,
+    items,
+    height: bottom,
+    columnContentHeights: contentHeights,
+    columnCounts: counts,
+  }
+}
+
+export interface MasonryFeedItem {
+  id: string
+  /** the card's frame ratio; `null` while it is still being measured */
+  aspect: number | null
+}
+
+/** What a grid keeps between renders: the placed run and the geometry it was placed at. */
+export interface MasonryFeedPlacement {
+  key: string
+  ids: readonly string[]
+  layout: MasonryLayout
+}
+
+export interface MasonryFeedLayout {
+  placement: MasonryFeedPlacement
+  /** the placed run, then one skeleton per card still waiting, in feed order */
+  layout: MasonryLayout
+  /** how many of `layout.items` are placed cards; the rest are waiting skeletons */
+  placed: number
+}
+
+/**
+ * The placement gate. Places the longest run of the feed, from its start, whose ratios are all
+ * known, appending to `prev` when that is the same geometry and its ids are a prefix of the run —
+ * so a ratio landing late extends the run without moving a card. The cards after the run are laid
+ * out as skeletons (`MASONRY_SKELETON_ASPECTS` by feed index) after it, and are not kept.
+ */
+export function placeMasonryFeed(
+  prev: MasonryFeedPlacement | null,
+  items: readonly MasonryFeedItem[],
+  geometry: MasonryGeometry,
+  chromeHeight: number,
+): MasonryFeedLayout {
+  const waitingAt = items.findIndex((item) => item.aspect === null)
+  const placed = waitingAt === -1 ? items.length : waitingAt
+  const run = items.slice(0, placed)
+  const ids = run.map((item) => item.id)
+  const aspects = run.map((item) => item.aspect as number)
+  const key = `${geometry.columns}:${geometry.columnWidth}:${geometry.gap}:${chromeHeight}`
+  const appendable =
+    prev !== null &&
+    prev.key === key &&
+    prev.ids.length <= ids.length &&
+    prev.ids.every((id, index) => id === ids[index])
+  const layout = appendable
+    ? ids.length === prev.ids.length
+      ? prev.layout
+      : appendMasonry(prev.layout, aspects.slice(prev.ids.length))
+    : layoutMasonry({ aspects, ...geometry, chromeHeight })
+  const waiting = items
+    .slice(placed)
+    .map(
+      (_, index) =>
+        MASONRY_SKELETON_ASPECTS[(placed + index) % MASONRY_SKELETON_ASPECTS.length] as number,
+    )
+  return {
+    placement: { key, ids, layout },
+    layout: waiting.length > 0 ? appendMasonry(layout, waiting) : layout,
+    placed,
+  }
+}

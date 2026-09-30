@@ -4,13 +4,11 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
 import { configDefaults } from 'vitest/config'
 const dirname =
   typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url))
 
-// More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 const proxy = {
   '/api': {
     target: 'http://localhost:3001',
@@ -29,9 +27,6 @@ export default defineConfig({
     alias: {
       '@': path.resolve(dirname, 'src'),
     },
-  },
-  optimizeDeps: {
-    include: ['msw-storybook-addon/csf3'],
   },
   server: {
     port: 5173,
@@ -55,12 +50,7 @@ export default defineConfig({
         test: {
           name: 'unit',
           environment: 'node',
-          include: [
-            'src/**/*.test.ts',
-            'src/**/*.test.tsx',
-            '.storybook/**/*.test.ts',
-            '.storybook/**/*.test.tsx',
-          ],
+          include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
           // *.test.tsx also matches *.runtime.test.tsx; those stay on project runtime.
           exclude: [...configDefaults.exclude, '**/*.runtime.test.tsx'],
         },
@@ -78,31 +68,6 @@ export default defineConfig({
               contextOptions: { reducedMotion: 'reduce' },
             }),
             instances: [{ browser: 'chromium' }],
-          },
-        },
-      },
-      {
-        extends: true,
-        plugins: [
-          // The plugin will run tests for the stories defined in your Storybook config
-          // See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
-          storybookTest({
-            configDir: path.join(dirname, '.storybook'),
-          }),
-        ],
-        test: {
-          name: 'storybook',
-          browser: {
-            enabled: true,
-            headless: true,
-            provider: playwright({
-              contextOptions: { reducedMotion: 'reduce' },
-            }),
-            instances: [
-              {
-                browser: 'chromium',
-              },
-            ],
           },
         },
       },

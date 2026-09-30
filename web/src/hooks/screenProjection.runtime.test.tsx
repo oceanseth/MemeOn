@@ -9,7 +9,7 @@ import {
   meLou,
   memeplexEmpty,
   paperMeme,
-} from '../../.storybook/fixtures'
+} from '../test/fixtures'
 import { memeDetailCopy } from '../copy/memeDetail'
 import { profileCopy } from '../copy/profile'
 import { tradesCopy } from '../copy/trades'
@@ -141,9 +141,9 @@ it('AppShell projects alert-open events', async () => {
   expect(probe.text()).toBe('loggedIn:true')
 })
 
-it('Landing projects its static seven-card hero', async () => {
+it('Landing projects its static three-card hero', async () => {
   const probe = await mountHook(useLandingScreen, (m) => `${m.phase}:${m.heroCards.length}`)
-  expect(probe.text()).toBe('ready:7')
+  expect(probe.text()).toBe('ready:3')
   expect(requests.some((request) => request.path === '/api/frames')).toBe(false)
 })
 

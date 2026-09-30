@@ -50,7 +50,7 @@ export function SideSummary({ model }: { model: TradeSideSummaryModel }) {
           </Item>
         ))}
         {model.braincellsLabel && (
-          <div className="inline-flex items-center gap-1 text-sm font-medium text-foreground tabular-nums">
+          <div className="inline-flex items-center gap-1 text-sm font-medium text-foreground">
             <span aria-hidden="true">
               <Icon name="brain" size={15} />
             </span>{' '}

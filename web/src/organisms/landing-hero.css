@@ -1,6 +1,6 @@
 /* The cascade contract `src/index.css` declares, restated because a layer's rank is fixed the first
    time its name is seen and this file can still reach a stylesheet ahead of `index.css` (an async
-   CSS chunk of its own, a story, a second entry). `main.tsx` imports `index.css` first so the app
+   CSS chunk of its own, a second entry). `main.tsx` imports `index.css` first so the app
    bundle already opens with this order; the restatement is what keeps every other bundle honest,
    and re-declaring an order that already exists is a no-op. `properties` leads the list because
    that is where Tailwind emits its own `@layer properties` block — the `@supports` fallback that
@@ -15,129 +15,131 @@
 
 @layer components {
   /*
-   * The hero's deck: the seven tier collectibles fanned like a hand of cards. Every card is pinned
-   * to the centre of the box and swung out by its seat (`data-fan`, −3…3, the model's `fan`):
-   * about a third of a card sideways per seat, an arc's worth downward (the drop grows with the
-   * square of the seat), seven degrees of tilt per seat, all about a pivot just below the card's
-   * foot so the fan opens the way a held one does. The centre card stays in flow and gives the
-   * box its height; the six absolute ones only need the drop below it. The whole hand leans
-   * back five degrees under a perspective, so the far edge reads a touch smaller.
+   * The hero's stage: the ladder's top three tiers adrift. Every card is pinned to the centre of
+   * the box and swung out by its seat (`data-seat`, −1/0/1, the model's `seat`): 0.92 of a card
+   * sideways per seat — so the neighbours tuck just under the centre card's edge — and 4.5° of
+   * tilt per seat. The centre card stays in flow and gives the box its height; the two absolute
+   * ones only need the drift's reach below it.
    *
-   * The recipe is physiohub.io's hero deck, measured: 290px cards stepped 88px / 18px / 8deg per
-   * seat about `50% 108%`, centre on top, under `perspective(1200px) rotateX(5deg)`.
+   * The drift is fieldwork-ui's motion-view `float` preset, measured off its canvas renderer and
+   * re-cut as one keyframe track: per loop the card traces a narrow ellipse — x on a cosine
+   * (±0.036 of the card), y on a sine (±0.116 of the card) — and leans into the bob with a ±2.6°
+   * sine tilt. One 4-second seamless loop; the seats run 1.2 rad apart in phase (the preset's
+   * per-image offset, −dur/5.24 per seat), so the deck breathes as one current, never in unison.
    *
-   * A sheet, not utilities: the transform is a calc over a data attribute, the lean is a
-   * `perspective()` no utility carries, and the hover lift has to ride on top of the swing.
+   * A sheet, not utilities: the seat transform is a calc over a data attribute, and the keyframes
+   * have to re-state that transform so the drift rides on top of the swing. The hover lift is the
+   * separate `scale` property, which composes with the animated `transform` instead of fighting
+   * it.
    */
+  @keyframes hero-drift {
+    0%,
+    100% {
+      transform: translate(calc(var(--seat-x) + var(--drift-x)), 0) rotate(var(--seat-r));
+    }
+    25% {
+      transform: translate(var(--seat-x), var(--drift-y))
+        rotate(calc(var(--seat-r) + var(--drift-rot)));
+    }
+    50% {
+      transform: translate(calc(var(--seat-x) - var(--drift-x)), 0) rotate(var(--seat-r));
+    }
+    75% {
+      transform: translate(var(--seat-x), calc(var(--drift-y) * -1))
+        rotate(calc(var(--seat-r) - var(--drift-rot)));
+    }
+  }
+
   [data-slot="hero-cards"] {
-    --fan-w: 224px;
-    --fan-dx: 70px;
-    --fan-dy: 6px;
-    --fan-rot: 7deg;
-    --fan-drop: 120px;
+    --seat-w: 260px;
+    --seat-dx: calc(var(--seat-w) * 0.92);
+    --seat-rot: 4.5deg;
+    --drift-x: calc(var(--seat-w) * 0.036);
+    --drift-y: calc(var(--seat-w) * 0.116);
+    --drift-rot: 2.6deg;
+    --drift-dur: 4s;
     position: relative;
-    padding-bottom: var(--fan-drop);
-    transform: perspective(1200px) rotateX(5deg);
+    padding-bottom: calc(var(--drift-y) + 16px);
 
     @variant max-xl {
-      --fan-w: 176px;
-      --fan-dx: 54px;
-      --fan-dy: 5px;
-      --fan-drop: 96px;
+      --seat-w: 204px;
     }
 
-    /* The phone shows the middle of the hand; the outer seats run into the panel's clip. */
+    /* The phone leads with the centre card; the outer seats run into the panel's clip. */
     @variant max-md {
-      --fan-w: 136px;
-      --fan-dx: 30px;
-      --fan-dy: 4px;
-      --fan-rot: 6deg;
-      --fan-drop: 72px;
+      --seat-w: 148px;
+      --seat-dx: calc(var(--seat-w) * 0.8);
     }
   }
 
   [data-slot="hero-card"] {
-    --fan-i: 0;
-    --fan-lift: 0px;
+    --seat-i: 0;
+    --seat-x: calc(var(--seat-i) * var(--seat-dx));
+    --seat-r: calc(var(--seat-i) * var(--seat-rot));
     position: absolute;
     top: 0;
     left: 50%;
-    width: var(--fan-w);
-    margin-left: calc(var(--fan-w) / -2);
-    transform-origin: 50% 108%;
-    transform: translateX(calc(var(--fan-i) * var(--fan-dx)))
-      translateY(calc(var(--fan-i) * var(--fan-i) * var(--fan-dy) + var(--fan-lift)))
-      rotate(calc(var(--fan-i) * var(--fan-rot)));
-    transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    width: var(--seat-w);
+    margin-left: calc(var(--seat-w) / -2);
+    /* what the drift keyframes re-state, and what remains when reduced motion stills them */
+    transform: translate(var(--seat-x), 0) rotate(var(--seat-r));
+    animation: hero-drift var(--drift-dur) ease-in-out infinite;
+    animation-delay: calc((var(--seat-i) + 1) * var(--drift-dur) / -5.24);
+    transition: scale 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
-  /* The centre seat holds the box open; the rest hang off it, nearer seats on top. */
-  [data-slot="hero-card"][data-fan="0"] {
+  /* The centre seat holds the box open; the two runners-up hang off it, under its edges. */
+  [data-slot="hero-card"][data-seat="0"] {
     position: relative;
     left: auto;
-    z-index: 7;
+    z-index: 3;
     margin-right: auto;
     margin-left: auto;
   }
 
-  [data-slot="hero-card"][data-fan="-1"] {
-    --fan-i: -1;
-    z-index: 6;
+  [data-slot="hero-card"][data-seat="-1"] {
+    --seat-i: -1;
+    z-index: 2;
   }
-  [data-slot="hero-card"][data-fan="1"] {
-    --fan-i: 1;
-    z-index: 6;
-  }
-  [data-slot="hero-card"][data-fan="-2"] {
-    --fan-i: -2;
-    z-index: 5;
-  }
-  [data-slot="hero-card"][data-fan="2"] {
-    --fan-i: 2;
-    z-index: 5;
-  }
-  [data-slot="hero-card"][data-fan="-3"] {
-    --fan-i: -3;
-    z-index: 4;
-  }
-  [data-slot="hero-card"][data-fan="3"] {
-    --fan-i: 3;
-    z-index: 4;
+  [data-slot="hero-card"][data-seat="1"] {
+    --seat-i: 1;
+    z-index: 2;
   }
 
-  /* Each caption sits in the corner its seat keeps clear: the nearer neighbour covers a left
-     seat's right side and a right seat's left side, and the centre seat is covered by nothing. */
+  /* Each caption sits in the corner its seat keeps clear of the centre card's overlap. */
   [data-slot="hero-card-meta"] {
     text-align: center;
   }
 
-  [data-slot="hero-card"][data-fan^="-"] [data-slot="hero-card-meta"] {
+  [data-slot="hero-card"][data-seat="-1"] [data-slot="hero-card-meta"] {
     text-align: left;
   }
 
-  [data-slot="hero-card"]:is([data-fan="1"], [data-fan="2"], [data-fan="3"])
-    [data-slot="hero-card-meta"] {
+  [data-slot="hero-card"][data-seat="1"] [data-slot="hero-card-meta"] {
     text-align: right;
   }
 
-  /* On a phone the seats sit too close for seven captions to clear each other, and the deck is
-     the point there: only the centre seat keeps its caption. Every seal still names its tier. */
-  [data-slot="hero-card"]:not([data-fan="0"]) [data-slot="hero-card-meta"] {
+  /* On a phone the seats sit too close for three captions to clear each other: only the centre
+     seat keeps its caption. */
+  [data-slot="hero-card"]:not([data-seat="0"]) [data-slot="hero-card-meta"] {
     @variant max-md {
       visibility: hidden;
     }
   }
 
-  /* A pointer draws the card it is over up out of the hand, so every tier can be read whole. */
+  /* A pointer draws the card it is over out of the deck, so every tier can be read whole.
+     `scale`, not `transform`: the drift owns `transform` and the two compose. */
   @media (hover: hover) {
     [data-slot="hero-card"]:hover {
-      --fan-lift: -16px;
-      z-index: 8;
+      z-index: 4;
+      scale: 1.05;
     }
   }
 
+  /* Still, never gone: the seats keep their swing and tilt; only the drift stops. */
   @media (prefers-reduced-motion: reduce) {
     [data-slot="hero-card"] {
+      animation: none;
       transition: none;
     }
   }
