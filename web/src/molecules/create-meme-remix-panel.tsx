@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Button } from '@/atoms/button'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/atoms/empty'
-import { Field, FieldLabel, Hint } from '@/atoms/field'
+import { Field, FieldDescription, FieldLabel, Hint } from '@/atoms/field'
 import { Select } from '@/atoms/select'
 import { Spinner } from '@/atoms/spinner'
 import { Textarea } from '@/atoms/textarea'
@@ -27,6 +27,7 @@ export type CreateMemeRemixPanelProps = Pick<
   | 'remixPromptLabel'
   | 'remixPromptTextareaProps'
   | 'remixPromptPlaceholder'
+  | 'remixPromptHelpText'
   | 'showEditedFrameApproval'
   | 'approvalTitle'
   | 'approvalBody'
@@ -44,6 +45,7 @@ export type CreateMemeRemixPanelProps = Pick<
 > & {
   /** Composer owns the router `Link` so this panel never imports `react-router-dom`. */
   sourceLink: ReactNode
+  remixPromptHelpId: string
 }
 
 /** Remix a card already on the binder. Source title link is a slot from the composer. */
@@ -61,6 +63,8 @@ export function CreateMemeRemixPanel({
   remixPromptLabel,
   remixPromptTextareaProps,
   remixPromptPlaceholder,
+  remixPromptHelpText,
+  remixPromptHelpId,
   showEditedFrameApproval,
   approvalTitle,
   approvalBody,
@@ -106,6 +110,9 @@ export function CreateMemeRemixPanel({
       <Field>
         <FieldLabel>{remixPromptLabel}</FieldLabel>
         <Textarea {...remixPromptTextareaProps} rows={3} placeholder={remixPromptPlaceholder} />
+        {remixPromptHelpText && (
+          <FieldDescription id={remixPromptHelpId}>{remixPromptHelpText}</FieldDescription>
+        )}
       </Field>
       {showEditedFrameApproval && (
         /* wrapper keeps the named slot the atom would otherwise own.
