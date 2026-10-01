@@ -233,6 +233,8 @@ export interface BuildMemeDetailModelInput {
   context: MemeDetailContext
   meme: Meme
   user: Me | null
+  /** The session check is still running: hold the signed-out panel back rather than flash it. */
+  authLoading: boolean
   shareUrl: string
   holderNameCache: Map<string, string>
   actions: MemeDetailModelActions
@@ -304,6 +306,7 @@ export function buildMemeDetailModel({
   context,
   meme,
   user,
+  authLoading,
   shareUrl,
   holderNameCache,
   actions,
@@ -419,26 +422,27 @@ export function buildMemeDetailModel({
         )
       : null
 
-  const signedOut: DetailSignedOutModel | null = user
-    ? null
-    : {
-        title: copy.signedOut.title,
-        /* Listing price lives on the hero card footer — don't repeat it in this panel. */
-        body: copy.signedOut.body,
-        loginLabel: context.loggingIn ? copy.signedOut.redirecting : copy.signedOut.login,
-        loginButtonProps: {
-          onClick: actions.onLogin,
-          disabled: context.loggingIn,
-          'aria-busy': context.loggingIn,
-          'aria-label': context.loggingIn
-            ? copy.signedOut.redirectingLabel
-            : copy.signedOut.loginLabel,
-        },
-        browseLinkProps: { to: '/marketplace' },
-        browseLabel: copy.signedOut.browse,
-        error: context.loginErr,
-        errorProps: { role: 'alert' },
-      }
+  const signedOut: DetailSignedOutModel | null =
+    user || authLoading
+      ? null
+      : {
+          title: copy.signedOut.title,
+          /* Listing price lives on the hero card footer — don't repeat it in this panel. */
+          body: copy.signedOut.body,
+          loginLabel: context.loggingIn ? copy.signedOut.redirecting : copy.signedOut.login,
+          loginButtonProps: {
+            onClick: actions.onLogin,
+            disabled: context.loggingIn,
+            'aria-busy': context.loggingIn,
+            'aria-label': context.loggingIn
+              ? copy.signedOut.redirectingLabel
+              : copy.signedOut.loginLabel,
+          },
+          browseLinkProps: { to: '/marketplace' },
+          browseLabel: copy.signedOut.browse,
+          error: context.loginErr,
+          errorProps: { role: 'alert' },
+        }
 
   return {
     id: meme.id,

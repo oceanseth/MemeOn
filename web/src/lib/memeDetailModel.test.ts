@@ -52,12 +52,14 @@ function detail({
   copyFailed,
   meme = paperMeme,
   user = null,
+  authLoading = false,
   buyShares,
 }: {
   copied?: boolean
   copyFailed?: boolean
   meme?: Meme
   user?: Me | null
+  authLoading?: boolean
   buyShares?: number
 } = {}) {
   const context = {
@@ -73,6 +75,7 @@ function detail({
     context,
     meme,
     user,
+    authLoading,
     shareUrl: `https://memeon.ai/m/${meme.id}`,
     holderNameCache: new Map(),
     actions: actions(),
@@ -92,6 +95,14 @@ describe('buildMemeDetailModel copy state', () => {
     const failed = detail({ copyFailed: true })
     expect(failed.copyDone).toBe(false)
     expect(failed.copyButtonLabel).toBe(copy.share.copyFailed)
+  })
+})
+
+describe('buildMemeDetailModel signed-out panel', () => {
+  it('shows the panel only once the session check has settled without a user', () => {
+    expect(detail().signedOut).not.toBeNull()
+    expect(detail({ authLoading: true }).signedOut).toBeNull()
+    expect(detail({ user: meLou }).signedOut).toBeNull()
   })
 })
 
@@ -143,6 +154,7 @@ describe('buildMemeDetailModel label formatters', () => {
       context,
       meme: { ...paperMeme, tags: ['cat', 'foil'] },
       user: meLou,
+      authLoading: false,
       shareUrl: `https://memeon.ai/m/${paperMeme.id}`,
       holderNameCache: new Map(),
       actions: actions(),

@@ -168,7 +168,7 @@ export interface LandingScreenModel {
 }
 
 export function useLandingScreen(): LandingScreenModel {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const heroVideo = useHeroVideo()
   const [snapshot, send] = useProjectedActor(interactiveLandingMachine)
   const ctx = snapshot.context
@@ -184,7 +184,9 @@ export function useLandingScreen(): LandingScreenModel {
     phase,
     err: loginErrorCopy(ctx.err),
     showMarketplaceCta: !!user,
-    showLoginButton: !user,
+    /* Held back while the session check runs: a logged-in visitor must not see the login
+       button flash before it swaps to the marketplace CTA. */
+    showLoginButton: !user && !loading,
     showErr: !!ctx.err,
     loginLabel: ctx.busy ? copy.login.busyLabel : copy.login.label,
     loginAside: copy.hero.loginAside,
