@@ -6,6 +6,10 @@ import { Jimp } from 'jimp'
 export const MEME_OG_WIDTH = 960
 export const MEME_OG_HEIGHT = 1200
 
+// The art window takes the media's own ratio, clamped like the web grid (1:2..2:1).
+const CARD_ASPECT_MIN = 0.5
+const CARD_ASPECT_MAX = 2
+
 export interface Rect {
   x: number
   y: number
@@ -124,6 +128,30 @@ export function validateOgFrameManifest(value: unknown): OgFrameManifest {
   return manifest
 }
 
+let cachedManifest: Promise<OgFrameManifest> | null = null
+
+/** The bundled frame manifest alone, read once per process (card geometry for meta tags). */
+export function loadOgFrameManifest(): Promise<OgFrameManifest> {
+  if (!cachedManifest) {
+    cachedManifest = (async () => {
+      let lastError: unknown
+      for (const directory of frameDirectoryCandidates()) {
+        try {
+          const raw = await readFile(path.join(directory, 'manifest.json'), 'utf8')
+          return validateOgFrameManifest(JSON.parse(raw))
+        } catch (error) {
+          lastError = error
+        }
+      }
+      throw new Error('bundled OG frame assets are unavailable', { cause: lastError })
+    })()
+    cachedManifest.catch(() => {
+      cachedManifest = null
+    })
+  }
+  return cachedManifest
+}
+
 export async function loadOgFrameBundle(tierKey: string): Promise<OgFrameBundle> {
   let lastError: unknown
   for (const directory of frameDirectoryCandidates()) {
@@ -148,12 +176,72 @@ export async function loadOgFrameBundle(tierKey: string): Promise<OgFrameBundle>
   throw new Error('bundled OG frame assets are unavailable', { cause: lastError })
 }
 
-function containSize(source: JimpImage, bounds: Rect): { width: number; height: number } {
-  const scale = Math.min(bounds.width / source.bitmap.width, bounds.height / source.bitmap.height)
-  return {
-    width: Math.max(1, Math.round(source.bitmap.width * scale)),
-    height: Math.max(1, Math.round(source.bitmap.height * scale)),
+export interface CardGeometry {
+  width: number
+  height: number
+  aperture: RoundedRect
+}
+
+/**
+ * Card dimensions for one meme: the aperture takes the art's own (clamped)
+ * ratio and the master frame's chrome margins wrap around it unchanged.
+ */
+export function collectibleCardGeometry(
+  manifest: OgFrameManifest,
+  artWidth: number,
+  artHeight: number,
+): CardGeometry {
+  const aperture = manifest.aperture
+  const margins = {
+    left: aperture.x,
+    top: aperture.y,
+    right: manifest.canvas.width - (aperture.x + aperture.width),
+    bottom: manifest.canvas.height - (aperture.y + aperture.height),
   }
+  const raw = artWidth > 0 && artHeight > 0 ? artWidth / artHeight : 1
+  const ratio = Math.min(CARD_ASPECT_MAX, Math.max(CARD_ASPECT_MIN, raw))
+  // The longest aperture side matches the master frame's, so a meme at the
+  // master's own ratio still yields the familiar 960x1200 card exactly.
+  const fit = Math.max(aperture.width, aperture.height)
+  const apertureWidth = ratio >= 1 ? fit : Math.round(fit * ratio)
+  const apertureHeight = ratio >= 1 ? Math.round(fit / ratio) : fit
+  return {
+    width: margins.left + apertureWidth + margins.right,
+    height: margins.top + apertureHeight + margins.bottom,
+    aperture: {
+      x: margins.left,
+      y: margins.top,
+      width: apertureWidth,
+      height: apertureHeight,
+      radius: aperture.radius,
+    },
+  }
+}
+
+// 9-slice insets for reshaping the master frame overlay: the corner rounding
+// copies verbatim, the bands between the corners stretch.
+const FRAME_SLICE = { left: 220, top: 250, right: 290, bottom: 220 }
+
+function reshapeFrame(frame: JimpImage, width: number, height: number): JimpImage {
+  if (frame.bitmap.width === width && frame.bitmap.height === height) return frame
+  const out = new Jimp({ width, height, color: 0x00000000 }) as unknown as JimpImage
+  const sx = [0, FRAME_SLICE.left, frame.bitmap.width - FRAME_SLICE.right, frame.bitmap.width]
+  const sy = [0, FRAME_SLICE.top, frame.bitmap.height - FRAME_SLICE.bottom, frame.bitmap.height]
+  const dx = [0, FRAME_SLICE.left, width - FRAME_SLICE.right, width]
+  const dy = [0, FRAME_SLICE.top, height - FRAME_SLICE.bottom, height]
+  for (let column = 0; column < 3; column++) {
+    for (let row = 0; row < 3; row++) {
+      const sourceW = sx[column + 1] - sx[column]
+      const sourceH = sy[row + 1] - sy[row]
+      const destW = dx[column + 1] - dx[column]
+      const destH = dy[row + 1] - dy[row]
+      if (destW <= 0 || destH <= 0 || sourceW <= 0 || sourceH <= 0) continue
+      const piece = frame.clone().crop({ x: sx[column], y: sy[row], w: sourceW, h: sourceH })
+      if (destW !== sourceW || destH !== sourceH) piece.resize({ w: destW, h: destH })
+      out.composite(piece, dx[column], dy[row])
+    }
+  }
+  return out
 }
 
 function insideRoundedRect(x: number, y: number, width: number, height: number, radius: number) {
@@ -220,7 +308,12 @@ function drawPlayBadge(image: JimpImage): void {
   )
 }
 
-/** Compose one collectible portrait card without network, storage, or environment access. */
+/**
+ * Compose one collectible card without network, storage, or environment
+ * access. The card takes the art's own (clamped) ratio — the frame chrome
+ * wraps the art snug, matching the site's grid, and the art fills the
+ * aperture edge to edge (center-cropped only past the ratio clamp).
+ */
 export async function composeCollectibleOgCard({
   art: artBuffer,
   frame: frameBuffer,
@@ -233,48 +326,25 @@ export async function composeCollectibleOgCard({
     throw new Error('OG frame overlay must be 960x1200')
   }
 
+  const geometry = collectibleCardGeometry(manifest, art.bitmap.width, art.bitmap.height)
   const canvas = new Jimp({
-    width: MEME_OG_WIDTH,
-    height: MEME_OG_HEIGHT,
+    width: geometry.width,
+    height: geometry.height,
     color: CANVAS_COLOR,
   }) as unknown as JimpImage
-  const aperture = manifest.aperture
+  const aperture = geometry.aperture
   const window = new Jimp({
     width: aperture.width,
     height: aperture.height,
     color: APERTURE_COLOR,
   }) as unknown as JimpImage
 
-  const matte = art.clone()
-  matte.cover({ w: aperture.width, h: aperture.height })
-  matte.blur(24)
-  matte.opacity(0.45)
-  window.composite(matte, 0, 0)
-  const dim = new Jimp({
-    width: aperture.width,
-    height: aperture.height,
-    color: 0x15172247,
-  }) as unknown as JimpImage
-  window.composite(dim, 0, 0)
-
-  const safe = manifest.sourceSafeRect
-  const safeLocal = {
-    x: safe.x - aperture.x,
-    y: safe.y - aperture.y,
-    width: safe.width,
-    height: safe.height,
-  }
-  const contained = containSize(art, safeLocal)
-  art.resize({ w: contained.width, h: contained.height })
-  window.composite(
-    art,
-    safeLocal.x + Math.round((safeLocal.width - contained.width) / 2),
-    safeLocal.y + Math.round((safeLocal.height - contained.height) / 2),
-  )
+  art.cover({ w: aperture.width, h: aperture.height })
+  window.composite(art, 0, 0)
   if (mediaType === 'video') drawPlayBadge(window)
   clipRounded(window, aperture.radius)
 
   canvas.composite(window, aperture.x, aperture.y)
-  canvas.composite(frame, 0, 0)
+  canvas.composite(reshapeFrame(frame, geometry.width, geometry.height), 0, 0)
   return canvas.getBuffer('image/png')
 }

@@ -279,6 +279,8 @@
     padding: 8px;
     border: 1px solid var(--collectible-keyline);
     border-radius: calc(var(--radius-lg) - 3px);
+    /* Square-edged decorations (the sheen sweep) must not paint past the rounded corner. */
+    overflow: clip;
     background-image: var(--collectible-grain), var(--collectible-rail);
     background-position: var(--collectible-background-position, 0 0, 0 0);
     background-size: var(--collectible-background-size, auto, 100% 100%);
@@ -286,20 +288,6 @@
       0 1px 1px oklch(1 0 0 / 0.72) inset,
       0 -2px 2px oklch(0.12 0.03 280 / 0.32) inset,
       0 0 0 2px oklch(1 0 0 / 0.34) inset;
-  }
-
-  .foil-media[data-presentation="collectible"] [data-slot="collectible-rail"]::before {
-    content: "";
-    position: absolute;
-    z-index: 2;
-    top: 3px;
-    right: 3px;
-    width: 30px;
-    height: 30px;
-    pointer-events: none;
-    background: linear-gradient(135deg, oklch(1 0 0 / 0.72), oklch(1 0 0 / 0.08));
-    clip-path: polygon(0 0, 100% 0, 100% 100%);
-    mix-blend-mode: screen;
   }
 
   .foil-media[data-presentation="collectible"] [data-slot="collectible-rail"]::after {

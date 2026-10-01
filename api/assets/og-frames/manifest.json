@@ -17,22 +17,22 @@
   "backing": {
     "x": 60,
     "y": 75,
-    "width": 816,
+    "width": 822,
     "height": 1050,
     "radius": 48
   },
   "aperture": {
-    "x": 98,
-    "y": 113,
-    "width": 740,
-    "height": 974,
+    "x": 88,
+    "y": 103,
+    "width": 766,
+    "height": 994,
     "radius": 28
   },
   "sourceSafeRect": {
-    "x": 114,
-    "y": 129,
-    "width": 708,
-    "height": 942
+    "x": 104,
+    "y": 119,
+    "width": 734,
+    "height": 962
   },
   "tiers": {
     "paper": "paper.png",
@@ -45,32 +45,32 @@
   },
   "files": {
     "paper": {
-      "bytes": 703557,
-      "sha256": "357908393d567d38a414284d67a79a7386f9aa99ce8d919cf1818093cc90bfc2"
+      "bytes": 710858,
+      "sha256": "571e25b933edc66f4d266c50d04aca50a5d02a20e24236d21125839a71bdfa5b"
     },
     "silver": {
-      "bytes": 504943,
-      "sha256": "0ed22982650f595ae76ede1b864dc76388189941a746ff3b9badf8407729fd86"
+      "bytes": 504352,
+      "sha256": "ea25a34ae688da26dfd19e2d3c1b6acf9a6fac43574a9d4e09c29181b146e12d"
     },
     "holo": {
-      "bytes": 493227,
-      "sha256": "e6ab13335af9d9784bd16b561acb1cbf706e1915d305277eed5d0e7b32309a63"
+      "bytes": 517155,
+      "sha256": "cd688644107f3cd0655d343b82ec581861e3bd478dc4026532d26c1c122bda3e"
     },
     "chrome": {
-      "bytes": 478098,
-      "sha256": "a89122a3659b1016bfd8bb41100f8b9669a30ec95d619f1dd5f335d5fc883159"
+      "bytes": 513017,
+      "sha256": "fb9a1cb1149d95b0f614a1706bf58cdc281c430a0245b50f15a71465292a519c"
     },
     "gold": {
-      "bytes": 611760,
-      "sha256": "926010f4d6d3904e2fd976a7ea561bd06416980ef9d35c3961f0931d1fd21d47"
+      "bytes": 643567,
+      "sha256": "f6a5539d2b3dfb772054aec79942b8e31712ee0780bc5a7380d33eb4ef127f11"
     },
     "prismatic": {
-      "bytes": 424384,
-      "sha256": "40bf8281df205415ee8cb651a53126d7d3e04d5dcde773a8b1ddb8fa059e7a08"
+      "bytes": 455294,
+      "sha256": "2a311f5550a13c0136f73d1a10403267d749e4dde37c690ceb02971771207183"
     },
     "shiny": {
-      "bytes": 547248,
-      "sha256": "e8052eef6f7daa130651ca19cc054213dc211f262c2052ae603db3c349fef025"
+      "bytes": 556595,
+      "sha256": "571c4ae7733529d5577d93ac7fc6df6aa1ae12680b7e30ca0bf117a60c2f443b"
     }
   },
   "render": {

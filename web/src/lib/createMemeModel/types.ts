@@ -152,6 +152,8 @@ export interface CreateMemeScreenModel {
   giphyRemixButtonLabel: string
   remixPromptLabel: string
   remixPromptPlaceholder: string
+  /** Quotes-contract help under the remix prompt; null when the prompt drives a video restyle. */
+  remixPromptHelpText: string | null
   generatePromptPlaceholder: string
   generatePromptHelpText: string
   remixButtonLabel: string
@@ -177,6 +179,7 @@ export interface CreateMemeScreenModel {
     tags: string
     url: string
     prompt: string
+    remixPrompt: string
     uploadImage: string
     uploadVideo: string
   }

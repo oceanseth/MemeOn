@@ -175,6 +175,7 @@ export function CreateMemeScreen({
   giphyRemixButtonLabel,
   remixPromptLabel,
   remixPromptPlaceholder,
+  remixPromptHelpText,
   generatePromptPlaceholder,
   generatePromptHelpText,
   remixButtonLabel,
@@ -362,6 +363,8 @@ export function CreateMemeScreen({
                 videoRemixStyleLabel={videoRemixStyleLabel}
                 videoModeSelectProps={videoModeSelectProps}
                 remixPromptLabel={remixPromptLabel}
+                remixPromptHelpText={remixPromptHelpText}
+                remixPromptHelpId={helpIds.remixPrompt}
                 remixPromptTextareaProps={remixPromptTextareaProps}
                 remixPromptPlaceholder={remixPromptPlaceholder}
                 showEditedFrameApproval={showEditedFrameApproval}

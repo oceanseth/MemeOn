@@ -1,12 +1,11 @@
+import type { CSSProperties } from 'react'
 import { createRoot } from 'react-dom/client'
 import { FoilCard, FoilMedia } from '../src/atoms/foil-frame'
-import { TierSeal } from '../src/atoms/tier-seal'
 import '../src/index.css'
 
 const TIER_KEYS = ['paper', 'silver', 'holo', 'chrome', 'gold', 'prismatic', 'shiny'] as const
 const tierParam = new URLSearchParams(window.location.search).get('tier') ?? 'paper'
 const tierKey = TIER_KEYS.includes(tierParam as (typeof TIER_KEYS)[number]) ? tierParam : 'paper'
-const tierName = `${tierKey.slice(0, 1).toUpperCase()}${tierKey.slice(1)}`
 
 const exportStyles = document.createElement('style')
 exportStyles.textContent = `
@@ -29,7 +28,8 @@ exportStyles.textContent = `
     top: 37.5px;
     width: 420px;
   }
-  [data-slot="og-export-frame"] [data-slot="collectible-window"] {
+  [data-slot="og-export-frame"] [data-slot="collectible-window"],
+  [data-slot="og-export-frame"] [data-slot="collectible-art-link"] {
     background: transparent !important;
     box-shadow: 0 0 0 1px oklch(1 0 0 / 0.44);
   }
@@ -40,10 +40,14 @@ document.documentElement.dataset.theme = 'dark'
 createRoot(document.getElementById('root')!).render(
   <div data-slot="og-export-stage">
     <FoilCard tierKey={tierKey} presentation="collectible" rarityLadder data-slot="og-export-frame">
-      <FoilMedia
-        presentation="collectible"
-        seal={<TierSeal tierKey={tierKey} label={`${tierName} tier`} />}
-      />
+      <FoilMedia presentation="collectible">
+        {/* Stand-in for the art fill: the window wraps this ratio (the master aperture, 383x497 css,
+            picked so the whole card lands exactly on the 480x600 stage). */}
+        <span
+          data-slot="collectible-art-link"
+          style={{ '--meme-aspect': '383 / 497' } as CSSProperties}
+        />
+      </FoilMedia>
     </FoilCard>
   </div>,
 )
