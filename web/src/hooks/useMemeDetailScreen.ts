@@ -47,7 +47,7 @@ function numberFromInput(event: React.ChangeEvent<HTMLInputElement>): number {
 export function useMemeDetailScreen(): MemeDetailScreenModel {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { user, refresh } = useAuth()
+  const { user, loading: authLoading, refresh } = useAuth()
   const { auth } = useStores()
   const [snapshot, send, actor] = useProjectedActor(memeDetailMachine, {
     input: { id: id ?? null },
@@ -257,6 +257,7 @@ export function useMemeDetailScreen(): MemeDetailScreenModel {
       context,
       meme,
       user,
+      authLoading,
       shareUrl,
       holderNameCache: holderNameCache.current,
       actions: {
