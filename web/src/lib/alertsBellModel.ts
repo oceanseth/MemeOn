@@ -32,12 +32,13 @@ const TYPE_MARKS: Record<Alert['type'], IconName> = {
 }
 
 /**
- * Where a row goes. A trade alert carries no meme and no person: its subject is the proposal, and
- * the Trades screen is the only place to read one and answer it.
+ * Where a row goes. A meme always wins: a gift alert is typed `trade` but its subject is the meme
+ * whose shares arrived. Only a memeless trade alert — a proposal, an answer — goes to the Trades
+ * screen, the one place to read one and answer it.
  */
 function alertTarget(alert: Alert): string | null {
-  if (alert.type === 'trade') return '/trade'
   if (alert.memeId) return `/m/${alert.memeId}`
+  if (alert.type === 'trade') return '/trade'
   if (alert.subjectSub) return `/u/${encodeURIComponent(alert.subjectSub)}`
   return null
 }
