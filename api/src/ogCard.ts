@@ -9,9 +9,6 @@ export const MEME_OG_HEIGHT = 1200
 // The art window takes the media's own ratio, clamped like the web grid (1:2..2:1).
 const CARD_ASPECT_MIN = 0.5
 const CARD_ASPECT_MAX = 2
-// Longest aperture side; the master portrait frame's aperture height, so a
-// classic portrait meme still yields the familiar 960x1200 card.
-const APERTURE_FIT = 974
 
 export interface Rect {
   x: number
@@ -203,8 +200,11 @@ export function collectibleCardGeometry(
   }
   const raw = artWidth > 0 && artHeight > 0 ? artWidth / artHeight : 1
   const ratio = Math.min(CARD_ASPECT_MAX, Math.max(CARD_ASPECT_MIN, raw))
-  const apertureWidth = ratio >= 1 ? APERTURE_FIT : Math.round(APERTURE_FIT * ratio)
-  const apertureHeight = ratio >= 1 ? Math.round(APERTURE_FIT / ratio) : APERTURE_FIT
+  // The longest aperture side matches the master frame's, so a meme at the
+  // master's own ratio still yields the familiar 960x1200 card exactly.
+  const fit = Math.max(aperture.width, aperture.height)
+  const apertureWidth = ratio >= 1 ? fit : Math.round(fit * ratio)
+  const apertureHeight = ratio >= 1 ? Math.round(fit / ratio) : fit
   return {
     width: margins.left + apertureWidth + margins.right,
     height: margins.top + apertureHeight + margins.bottom,
@@ -218,8 +218,8 @@ export function collectibleCardGeometry(
   }
 }
 
-// 9-slice insets for reshaping the master frame overlay: corners (rounding,
-// star badge top-right) copy verbatim, the bands between them stretch.
+// 9-slice insets for reshaping the master frame overlay: the corner rounding
+// copies verbatim, the bands between the corners stretch.
 const FRAME_SLICE = { left: 220, top: 250, right: 290, bottom: 220 }
 
 function reshapeFrame(frame: JimpImage, width: number, height: number): JimpImage {
