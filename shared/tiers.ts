@@ -30,7 +30,7 @@ export const TIERS: Tier[] = [
     minReshares: 0,
     baseValue: 0,
     color: '#a8b0bd',
-    hype: 'Fresh off the press. Every legend starts as a humble shitpost.',
+    hype: 'Fresh off the press.',
   },
   {
     key: 'silver',
