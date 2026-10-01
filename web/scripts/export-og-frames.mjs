@@ -18,8 +18,8 @@ const TIERS = ['paper', 'silver', 'holo', 'chrome', 'gold', 'prismatic', 'shiny'
 const CSS_STAGE = { width: 480, height: 600 }
 const DEVICE_SCALE_FACTOR = 2
 const EXPECTED_FRAME = { x: 60, y: 75, width: 840, height: 1050 }
-const EXPECTED_APERTURE = { x: 98, y: 113, width: 740, height: 974, radius: 28 }
-const EXPECTED_SAFE_RECT = { x: 114, y: 129, width: 708, height: 942 }
+const EXPECTED_APERTURE = { x: 88, y: 103, width: 766, height: 994, radius: 28 }
+const EXPECTED_SAFE_RECT = { x: 104, y: 119, width: 734, height: 962 }
 
 const roundScaled = (value) => Math.round(value * DEVICE_SCALE_FACTOR)
 const scaledRect = (rect) => ({
