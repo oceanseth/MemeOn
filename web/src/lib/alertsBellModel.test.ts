@@ -49,7 +49,7 @@ describe('buildAlertsBellModel', () => {
 
   it('sends a trade alert to the Trades screen, where the proposal can be answered', () => {
     const onOpenChange = vi.fn()
-    /* the API writes trade alerts with neither a meme nor a person to link */
+    /* the API writes proposal alerts with neither a meme nor a person to link */
     const proposed = {
       ...unreadFriend,
       type: 'trade' as const,
@@ -60,6 +60,18 @@ describe('buildAlertsBellModel', () => {
     expect(model.rows[0]?.linkProps?.to).toBe('/trade')
     model.rows[0]?.linkProps?.onClick?.({} as never)
     expect(onOpenChange).toHaveBeenCalledWith(false)
+  })
+
+  it('sends a gift alert to the meme whose shares arrived, not the Trades screen', () => {
+    /* gifts are typed `trade` but carry the meme — the meme page is their subject */
+    const gifted = {
+      ...unreadFriend,
+      type: 'trade' as const,
+      message: '🎁 pal gifted you 1 share of "What Are You?"!',
+      memeId: 'meme-gifted',
+    }
+    const model = buildAlertsBellModel({ alerts: [gifted], open: true, onOpenChange: vi.fn() })
+    expect(model.rows[0]?.linkProps?.to).toBe('/m/meme-gifted')
   })
 
   it('reports recency in the unit a notification list needs', () => {
