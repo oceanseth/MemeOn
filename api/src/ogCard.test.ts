@@ -2,8 +2,10 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { Jimp } from 'jimp'
 import {
+  collectibleCardGeometry,
   composeCollectibleOgCard,
   loadOgFrameBundle,
+  loadOgFrameManifest,
   MEME_OG_HEIGHT,
   MEME_OG_WIDTH,
   validateOgFrameManifest,
@@ -19,9 +21,9 @@ function rgba(value: number) {
   }
 }
 
-test('collectible card keeps a wide source complete inside the portrait aperture', async () => {
-  const art = new Jimp({ width: 400, height: 100, color: 0x00aa44ff })
-  for (let y = 0; y < 100; y += 1) {
+test('the card takes a landscape source ratio and the art fills the aperture edge to edge', async () => {
+  const art = new Jimp({ width: 400, height: 200, color: 0x00aa44ff })
+  for (let y = 0; y < 200; y += 1) {
     for (let x = 0; x < 50; x += 1) art.setPixelColor(0xff2200ff, x, y)
     for (let x = 350; x < 400; x += 1) art.setPixelColor(0x2255ffff, x, y)
   }
@@ -35,27 +37,70 @@ test('collectible card keeps a wide source complete inside the portrait aperture
   })
   const card = await Jimp.read(output)
 
-  assert.equal(card.bitmap.width, MEME_OG_WIDTH)
-  assert.equal(card.bitmap.height, MEME_OG_HEIGHT)
+  const geometry = collectibleCardGeometry(manifest, 400, 200)
+  assert.equal(card.bitmap.width, geometry.width)
+  assert.equal(card.bitmap.height, geometry.height)
+  assert.ok(geometry.width > geometry.height, 'a 2:1 source yields a landscape card')
   assert.equal(card.getPixelColor(10, 10), 0xff00ffff, 'frame overlay stays above the card')
 
-  const sourceCenterY = 600
-  const left = rgba(card.getPixelColor(145, sourceCenterY))
-  const right = rgba(card.getPixelColor(778, sourceCenterY))
-  assert.ok(left.r > 180 && left.b < 80, 'left edge of the source remains visible')
-  assert.ok(right.b > 180 && right.r < 100, 'right edge of the source remains visible')
-  assert.equal(card.getPixelColor(480, sourceCenterY), 0x00aa44ff, 'foreground stays unmodified')
+  const aperture = geometry.aperture
+  const centerY = aperture.y + Math.round(aperture.height / 2)
+  const left = rgba(card.getPixelColor(aperture.x + 8, centerY))
+  const right = rgba(card.getPixelColor(aperture.x + aperture.width - 9, centerY))
+  assert.ok(left.r > 180 && left.b < 80, 'left edge of the source reaches the aperture edge')
+  assert.ok(right.b > 180 && right.r < 100, 'right edge of the source reaches the aperture edge')
+  assert.equal(
+    card.getPixelColor(aperture.x + Math.round(aperture.width / 2), centerY),
+    0x00aa44ff,
+    'foreground stays unmodified',
+  )
 
   assert.equal(
-    card.getPixelColor(manifest.aperture.x, manifest.aperture.y),
+    card.getPixelColor(aperture.x, aperture.y),
     0x0b0d14ff,
-    'the blurred matte is clipped to the rounded aperture',
+    'the art is clipped to the rounded aperture',
   )
-  const matte = rgba(card.getPixelColor(480, 180))
-  assert.ok(
-    matte.g > 50 && matte.g < 90,
-    'the web-strength matte stays visible without going bright',
+})
+
+test('a source past the ratio clamp center-crops inside a clamped card', async () => {
+  const art = new Jimp({ width: 400, height: 100, color: 0x00aa44ff })
+  for (let y = 0; y < 100; y += 1) {
+    for (let x = 0; x < 50; x += 1) art.setPixelColor(0xff2200ff, x, y)
+  }
+  const frame = new Jimp({ width: 960, height: 1200, color: 0x00000000 })
+  const output = await composeCollectibleOgCard({
+    art: await art.getBuffer('image/png'),
+    frame: await frame.getBuffer('image/png'),
+    manifest,
+  })
+  const card = await Jimp.read(output)
+  const clamped = collectibleCardGeometry(manifest, 400, 100)
+  assert.deepEqual(
+    { width: card.bitmap.width, height: card.bitmap.height },
+    { width: clamped.width, height: clamped.height },
   )
+  assert.deepEqual(clamped, collectibleCardGeometry(manifest, 800, 100), 'ratio clamps at 2:1')
+  const aperture = clamped.aperture
+  assert.equal(
+    card.getPixelColor(
+      aperture.x + Math.round(aperture.width / 2),
+      aperture.y + Math.round(aperture.height / 2),
+    ),
+    0x00aa44ff,
+    'the center of the source survives the crop',
+  )
+})
+
+test('a classic portrait source reproduces the master 960x1200 card', async () => {
+  const bundledManifest = await loadOgFrameManifest()
+  const geometry = collectibleCardGeometry(
+    bundledManifest,
+    bundledManifest.aperture.width,
+    bundledManifest.aperture.height,
+  )
+  assert.equal(geometry.width, MEME_OG_WIDTH)
+  assert.equal(geometry.height, MEME_OG_HEIGHT)
+  assert.deepEqual(geometry.aperture, bundledManifest.aperture)
 })
 
 test('video cards render an unmistakable play badge inside the frame', async () => {
@@ -68,7 +113,14 @@ test('video cards render an unmistakable play badge inside the frame', async () 
     mediaType: 'video',
   })
   const card = await Jimp.read(output)
-  assert.equal(card.getPixelColor(480, 600), 0xffffffff)
+  const { aperture } = collectibleCardGeometry(manifest, 400, 300)
+  assert.equal(
+    card.getPixelColor(
+      aperture.x + Math.round(aperture.width / 2),
+      aperture.y + Math.round(aperture.height / 2),
+    ),
+    0xffffffff,
+  )
 })
 
 test('bundled frame resolution works outside the repository cwd and unknown tiers use paper', async () => {

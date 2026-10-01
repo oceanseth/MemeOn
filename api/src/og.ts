@@ -6,17 +6,17 @@ import { safeFetch } from './safeFetch'
 import { assetAgeSeconds, assetExists, assetUrl, putAsset, putAssetShortCache } from './s3'
 import { getSharedSecret } from './ssm'
 import {
+  collectibleCardGeometry,
   composeCollectibleOgCard,
   loadOgFrameBundle,
-  MEME_OG_HEIGHT,
-  MEME_OG_WIDTH,
+  loadOgFrameManifest,
   type OgFrameBundle,
 } from './ogCard'
 import { humanize } from '@memeon/shared/humanize'
 import { TIERS, tierFor } from '@memeon/shared/tiers'
 import type { Meme } from './types'
 
-export const MEME_OG_CACHE_VERSION = 'v6-collectible'
+export const MEME_OG_CACHE_VERSION = 'v7-collectible'
 export const memeOgKey = (memeId: string, tierKey: string) =>
   `og/${MEME_OG_CACHE_VERSION}/${memeId}-${tierKey}.png`
 
@@ -135,6 +135,7 @@ export function memeOgMetaBlock(
   meme: Meme,
   ogImageUrl: string,
   gifUrl: string | null = null,
+  cardSize: { width: number; height: number } | null = null,
 ): { title: string; block: string } {
   const tier = tierFor(meme.reshares)
   const title = `${meme.title} — ${tier.name.toUpperCase()} ${tier.rarity}`
@@ -142,10 +143,15 @@ export function memeOgMetaBlock(
   const pageUrl = `${env.siteOrigin}/m/${meme.id}`
   const video = !gifUrl && meme.mediaType === 'video' && meme.videoUrl
   // gif embed (Discord): the raw animated gif replaces the branded card and the
-  // player so the client loops it; its dimensions aren't the card's, so omit them
+  // player so the client loops it; its dimensions aren't the card's, so omit them.
+  // The card's own dimensions follow the art's ratio, so they're only advertised
+  // when the meme's measured size is known (legacy memes: crawlers measure the png).
+  const cardDims = cardSize
+    ? `\n<meta property="og:image:width" content="${cardSize.width}">\n<meta property="og:image:height" content="${cardSize.height}">`
+    : ''
   const image = gifUrl
     ? `<meta property="og:image" content="${esc(gifUrl)}">\n<meta property="og:image:type" content="image/gif">`
-    : `<meta property="og:image" content="${esc(ogImageUrl)}">\n<meta property="og:image:type" content="image/png">\n<meta property="og:image:width" content="${MEME_OG_WIDTH}">\n<meta property="og:image:height" content="${MEME_OG_HEIGHT}">`
+    : `<meta property="og:image" content="${esc(ogImageUrl)}">\n<meta property="og:image:type" content="image/png">${cardDims}`
   const block = `<meta property="og:site_name" content="MemeOn">
 <meta property="og:type" content="website">
 <meta property="og:url" content="${esc(pageUrl)}">
@@ -193,7 +199,13 @@ export async function memePageHtml(
     opts.loopingGif && meme.mediaType === 'video' && meme.videoUrl
       ? giphyGifUrl(meme.videoUrl)
       : null
-  const { title, block } = memeOgMetaBlock(meme, ogImageUrl, gifUrl)
+  const cardSize =
+    meme.width && meme.height
+      ? await loadOgFrameManifest()
+          .then((manifest) => collectibleCardGeometry(manifest, meme.width!, meme.height!))
+          .catch(() => null)
+      : null
+  const { title, block } = memeOgMetaBlock(meme, ogImageUrl, gifUrl, cardSize)
   const index = await fetchIndexHtml()
   if (index) {
     return (

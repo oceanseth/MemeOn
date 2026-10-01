@@ -31,14 +31,24 @@ const meme: Meme = {
   uniqueRefs: 3,
 }
 
-test('meme metadata advertises the portrait collectible dimensions', () => {
-  const metadata = memeOgMetaBlock(meme, 'https://assets.example/card.png')
-  assert.match(metadata.block, /og:image:width" content="960"/)
-  assert.match(metadata.block, /og:image:height" content="1200"/)
+test('meme metadata advertises the card size that follows the art ratio', () => {
+  const metadata = memeOgMetaBlock(meme, 'https://assets.example/card.png', null, {
+    width: 1194,
+    height: 713,
+  })
+  assert.match(metadata.block, /og:image:width" content="1194"/)
+  assert.match(metadata.block, /og:image:height" content="713"/)
   assert.match(metadata.block, /og:image:type" content="image\/png"/)
   assert.doesNotMatch(metadata.block, /content="630"/)
   assert.match(metadata.title, /edge-to-edge <meme>/)
   assert.match(metadata.block, /edge-to-edge &lt;meme&gt;/)
+})
+
+test('meme metadata omits dimensions when the art size is unknown', () => {
+  const metadata = memeOgMetaBlock(meme, 'https://assets.example/card.png')
+  assert.doesNotMatch(metadata.block, /og:image:width/)
+  assert.doesNotMatch(metadata.block, /og:image:height/)
+  assert.match(metadata.block, /og:image:type" content="image\/png"/)
 })
 
 test('Giphy looping embeds stay raw GIFs without collectible dimensions', () => {
@@ -102,8 +112,8 @@ test('immutable cache hits do not fetch or compose and use the new namespace', a
   const result = await ensureOgImageWithDependencies(meme, dependencies)
   assert.equal(result, `https://assets.example/${memeOgKey(meme.id, 'gold')}`)
   assert.deepEqual(calls, [`exists:${memeOgKey(meme.id, 'gold')}`])
-  assert.match(result, /og\/v6-collectible\//)
-  assert.doesNotMatch(result, /og\/v5\//)
+  assert.match(result, /og\/v7-collectible\//)
+  assert.doesNotMatch(result, /og\/v6-collectible\//)
 })
 
 test('cache misses compose the bundled tier over safely fetched source bytes', async () => {
