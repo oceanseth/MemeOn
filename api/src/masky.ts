@@ -107,8 +107,9 @@ async function maskyFetch<T>(token: string, path: string, init: RequestInit = {}
 
 /**
  * Text the user put in "double quotes" (straight or curly) is a promise that it appears verbatim
- * in the image. The default model garbles lettering, so quoted prompts route to Masky's
- * `ideogram` typography model, which renders exact quoted text. Empty quotes don't count.
+ * in the image. The default models garble lettering, so quoted prompts route to Masky's
+ * typography models — `ideogram` for generate, `qwen` for edit — which render exact quoted
+ * text. Empty quotes don't count.
  */
 export function hasQuotedText(prompt: string): boolean {
   return /"[^"]*\S[^"]*"|“[^”]*\S[^”]*”/.test(prompt)
@@ -131,10 +132,11 @@ export function editImage(
   token: string,
   prompt: string,
   imageUrls: string[],
+  model?: 'qwen',
 ): Promise<{ imageUrl: string }> {
   return maskyFetch(token, '/images/edit', {
     method: 'POST',
-    body: JSON.stringify({ prompt, imageUrls: imageUrls.slice(0, 5) }),
+    body: JSON.stringify({ prompt, imageUrls: imageUrls.slice(0, 5), ...(model ? { model } : {}) }),
   })
 }
 

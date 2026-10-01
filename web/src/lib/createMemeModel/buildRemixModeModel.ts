@@ -1,6 +1,6 @@
 import { createMemeCopy as copy } from '../../copy/createMeme'
 import type { CreateMemeContext } from '../../stores/createMemeMachine'
-import { isRemixOutput, isVideoRemixStyle } from './shared'
+import { HELP_IDS, isRemixOutput, isVideoRemixStyle } from './shared'
 import type { CreateMemeScreenActions, CreateMemeScreenModel } from './types'
 
 const REMIX_OUTPUT_ITEMS = [
@@ -30,6 +30,7 @@ type RemixModeSlice = Pick<
   | 'rerunEditLabel'
   | 'remixPromptLabel'
   | 'remixPromptPlaceholder'
+  | 'remixPromptHelpText'
   | 'remixButtonLabel'
   | 'showVideoRemixStyle'
   | 'showEditedFrameApproval'
@@ -50,6 +51,15 @@ export function buildRemixModeModel(
   showEditedFrameApproval: boolean,
 ): RemixModeSlice {
   const remixPromptIsPrecise = ctx.remixOutput === 'video' && ctx.videoMode === 'edit'
+  // The quotes contract holds wherever the prompt drives an image edit — every remix
+  // path except restyling a whole video (mirrors onRemix's branch order).
+  const promptDrivesImageEdit =
+    ctx.remixOutput === 'image' ||
+    !(
+      ctx.videoMode === 'restyle' &&
+      ctx.remixSource?.mediaType === 'video' &&
+      ctx.remixSource?.videoUrl
+    )
 
   return {
     showRemixPanel: ctx.mode === 'remix',
@@ -78,6 +88,7 @@ export function buildRemixModeModel(
     remixPromptLabel: remixPromptIsPrecise
       ? copy.remix.promptLabelPrecise
       : copy.remix.promptLabelEdit,
+    remixPromptHelpText: promptDrivesImageEdit ? copy.remix.promptHelp : null,
     remixPromptPlaceholder:
       ctx.remixOutput === 'video'
         ? ctx.videoMode === 'edit'
@@ -104,6 +115,7 @@ export function buildRemixModeModel(
     },
     remixPromptTextareaProps: {
       value: ctx.prompt,
+      'aria-describedby': HELP_IDS.remixPrompt,
       onChange: (event) => actions.setPrompt(event.currentTarget.value),
     },
     motionPromptTextareaProps: {

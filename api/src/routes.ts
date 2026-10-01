@@ -507,7 +507,10 @@ authed('POST /api/aigen/image-edit', async (req) => {
     ? req.body.imageUrls.filter((u): u is string => typeof u === 'string')
     : []
   if (imageUrls.length === 0) throw new HttpError(400, 'imageUrls required')
-  const out = await masky.editImage(maskyToken(req), prompt, imageUrls)
+  // qwen (Masky's typography edit model) takes at most 2 reference images;
+  // with more, keeping the references beats keeping the lettering.
+  const model = masky.hasQuotedText(prompt) && imageUrls.length <= 2 ? 'qwen' : undefined
+  const out = await masky.editImage(maskyToken(req), prompt, imageUrls, model)
   return json(200, out)
 })
 

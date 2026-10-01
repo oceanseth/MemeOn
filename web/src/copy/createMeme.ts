@@ -141,10 +141,12 @@ export const createMemeCopy = {
     },
     promptLabelPrecise: 'What to change (runs on your Masky credits)',
     promptLabelEdit: 'Edit prompt (runs on your Masky credits)',
+    promptHelp:
+      'Put exact text in "double quotes" and it appears in the art verbatim — words the model picks itself come out as AI scribbles.',
     placeholder: {
       editFrame: 'add a claude icon to the tshirt he is wearing',
       restyle: 'make the whole scene look like a vaporwave painting',
-      image: 'same scene but everyone is a skeleton and it is raining',
+      image: 'same scene but everyone is a skeleton and the sign says "no bones about it"',
     },
     remixVideo: 'Remix into video',
     remixImage: 'Remix image',

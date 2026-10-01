@@ -19,6 +19,7 @@ export const HELP_IDS = {
   tags: 'create-tags-help',
   url: 'create-url-help',
   prompt: 'create-prompt-help',
+  remixPrompt: 'create-remix-prompt-help',
   uploadImage: 'create-image-help',
   uploadVideo: 'create-video-help',
 } as const
