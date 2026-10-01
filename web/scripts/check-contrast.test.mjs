@@ -44,18 +44,18 @@ const stylesheet = (overrides = {}) => {
       'light-dark(var(--ramp-ultraviolet-200), var(--ramp-ultraviolet-700))',
   }
   const tokens = {
-    '--color-background': 'light-dark(oklch(97.5% 0.008 285), oklch(17% 0.022 285))',
+    '--color-background': 'light-dark(oklch(97.5% 0.008 285), oklch(11.5% 0.012 285))',
     '--color-foreground': 'light-dark(oklch(22% 0.035 285), oklch(95% 0.01 285))',
     '--color-card': 'light-dark(oklch(99.5% 0.002 285), oklch(23% 0.027 285))',
-    '--color-popover': 'light-dark(oklch(99.5% 0.002 285), oklch(23% 0.027 285))',
+    '--color-popover': 'var(--color-card)',
     '--color-accent': 'light-dark(oklch(98.5% 0.006 285), oklch(27% 0.03 285))',
-    '--color-muted': 'light-dark(oklch(92.5% 0.016 285), oklch(13.5% 0.018 285))',
+    '--color-muted': 'light-dark(oklch(92.5% 0.016 285), oklch(8.5% 0.012 285))',
     '--color-muted-foreground': 'light-dark(oklch(45% 0.03 285), oklch(79% 0.03 285))',
     '--color-border': 'light-dark(oklch(86% 0.02 285), oklch(40% 0.04 285))',
-    '--color-link': 'light-dark(var(--ramp-ultraviolet-700), var(--ramp-ultraviolet-200))',
-    '--color-primary': 'light-dark(oklch(80% 0.131 345), oklch(80% 0.107 235))',
+    '--color-link': 'light-dark(oklch(48% 0.22 277), oklch(84% 0.07 277))',
+    '--color-primary': 'light-dark(oklch(78% 0.105 277), oklch(80% 0.095 277))',
     '--color-primary-foreground': 'oklch(22% 0.035 285)',
-    '--color-brand': 'oklch(80% 0.094 285)',
+    '--color-brand': 'oklch(86% 0.06 277)',
     '--color-brand-foreground': 'oklch(22% 0.035 285)',
     '--color-success': 'light-dark(oklch(93% 0.07 150), oklch(29% 0.07 150))',
     '--color-success-foreground': 'light-dark(oklch(36% 0.094 150), oklch(85% 0.12 150))',
@@ -67,7 +67,7 @@ const stylesheet = (overrides = {}) => {
     '--color-info-foreground': 'light-dark(oklch(40% 0.087 240), oklch(85% 0.08 235))',
     '--color-destructive': 'var(--color-error-foreground)',
     '--color-destructive-foreground': 'light-dark(oklch(97.5% 0.008 285), oklch(22% 0.035 285))',
-    '--color-braincell': 'light-dark(var(--ramp-bubblegum-700), var(--ramp-bubblegum-200))',
+    '--color-braincell': 'light-dark(oklch(52% 0.1 85), oklch(86% 0.14 90))',
     '--color-tier-paper-chip': 'var(--color-muted)',
     '--color-tier-paper-chip-text': 'var(--color-muted-foreground)',
     '--color-tier-silver-chip': 'var(--color-border)',
@@ -361,7 +361,7 @@ test('fails only the theme-color gate when a meta disagrees with --color-backgro
       assert.doesNotMatch(result.output, /painted as text or a glyph stroke and never audited/)
     },
     undefined,
-    themeHtml('#000000', '#0e0e19'),
+    themeHtml('#000000', '#050509'),
   )
 })
 
