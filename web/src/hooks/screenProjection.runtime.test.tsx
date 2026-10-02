@@ -3,13 +3,7 @@ import { createRoot, type Root } from 'react-dom/client'
 import { MemoryRouter, Route, Routes, useNavigate, type NavigateFunction } from 'react-router-dom'
 import { createActor, fromPromise } from 'xstate'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import {
-  friendAccepted,
-  invitePal,
-  meLou,
-  memeplexEmpty,
-  paperMeme,
-} from '../test/fixtures'
+import { friendAccepted, invitePal, meLou, memeplexEmpty, paperMeme } from '../test/fixtures'
 import { memeDetailCopy } from '../copy/memeDetail'
 import { profileCopy } from '../copy/profile'
 import { tradesCopy } from '../copy/trades'
@@ -145,6 +139,29 @@ it('Landing projects its static three-card hero', async () => {
   const probe = await mountHook(useLandingScreen, (m) => `${m.phase}:${m.heroCards.length}`)
   expect(probe.text()).toBe('ready:3')
   expect(requests.some((request) => request.path === '/api/frames')).toBe(false)
+})
+
+it('Landing holds the login button until the session check settles', async () => {
+  stores.dispose()
+  const sessionCheck = deferred<typeof meLou | null>()
+  stores = createStores(
+    createActor(
+      authMachine.provide({
+        actors: { loadMe: fromPromise(() => sessionCheck.promise) },
+      }),
+    ),
+  )
+  stores.retain()
+  const settled = stores.auth.refresh()
+  const probe = await mountHook(
+    useLandingScreen,
+    (m) => `${m.showLoginButton}:${m.showMarketplaceCta}`,
+  )
+  // neither call to action while auth is in flight: no login-button flash for a logged-in visitor
+  expect(probe.text()).toBe('false:false')
+  sessionCheck.resolve(null)
+  await act(() => settled)
+  expect(probe.text()).toBe('true:false')
 })
 
 it('CreateMeme projects editable draft events', async () => {
