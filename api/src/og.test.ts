@@ -148,3 +148,25 @@ test('cache misses compose the bundled tier over safely fetched source bytes', a
   await ensureOgImageWithDependencies(meme, dependencies)
   assert.deepEqual(events.sort(), ['compose', `fetch:${meme.imageUrl}`, 'frame:gold', 'put'])
 })
+
+test('webp memes composite their png twin, never the webp itself', async () => {
+  const fetched: string[] = []
+  const webpMeme: Meme = {
+    ...meme,
+    imageUrl: 'https://media.example/meme.webp',
+    ogImageUrl: 'https://assets.example/twin.png',
+  }
+  const dependencies: MemeOgDependencies = {
+    assetExists: async () => false,
+    assetUrl: (key) => `https://assets.example/${key}`,
+    fetchArt: async (url) => {
+      fetched.push(url)
+      return Buffer.from('source')
+    },
+    loadFrame: async (tierKey) => ({ frame: Buffer.from('frame'), manifest, tierKey }),
+    compose: async () => Buffer.from('png'),
+    putAsset: async (key) => `https://assets.example/${key}`,
+  }
+  await ensureOgImageWithDependencies(webpMeme, dependencies)
+  assert.deepEqual(fetched, ['https://assets.example/twin.png'])
+})

@@ -35,6 +35,8 @@ export interface Meme {
   width?: number
   /** intrinsic pixel height of `imageUrl` (server-measured; absent on legacy memes) */
   height?: number
+  /** png/jpg rendition for og compositing when `imageUrl` is webp (jimp has no webp decoder) */
+  ogImageUrl?: string | null
   /** external origin attribution (e.g. seeded from Giphy) */
   source?: {
     provider: string
