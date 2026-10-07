@@ -269,9 +269,19 @@ authed('POST /api/memes', async (req) => {
   // titles must fit the og card's banner: hard 20-char cap
   const title = requireString(req.body, 'title', 20)
   const imageUrl = requireString(req.body, 'imageUrl', 2000)
-  // webp can't be composited into og cards (no decoder); catch it at mint
-  if (/\.webp($|\?)/i.test(imageUrl)) {
-    throw new HttpError(400, 'webp images are not supported yet — use a png, jpg, or gif')
+  // webp (possibly animated) is welcome as the meme itself, but the og-card
+  // compositor (jimp) can't decode it — the client mints a still png twin
+  // alongside, and only the og pipeline ever reads it
+  const isWebp = /\.webp($|\?)/i.test(imageUrl)
+  const ogImageUrl =
+    typeof req.body.ogImageUrl === 'string' && req.body.ogImageUrl.trim()
+      ? req.body.ogImageUrl.trim().slice(0, 2000)
+      : null
+  if (isWebp && !ogImageUrl) {
+    throw new HttpError(400, 'webp art needs ogImageUrl — a png rendition for the share card')
+  }
+  if (ogImageUrl && /\.webp($|\?)/i.test(ogImageUrl)) {
+    throw new HttpError(400, 'ogImageUrl must not be webp')
   }
   const mediaType = req.body.mediaType === 'video' ? 'video' : 'image'
   const videoUrl = typeof req.body.videoUrl === 'string' ? req.body.videoUrl : null
@@ -297,14 +307,17 @@ authed('POST /api/memes', async (req) => {
         }
       : null
   // intrinsic dims of the still, measured server-side (never trusted from the client);
-  // masonry wants them but a measuring failure must not fail the mint
-  const dims = await measureImageUrl(imageUrl)
+  // masonry wants them but a measuring failure must not fail the mint. The header
+  // parser reads png/gif/jpeg only, so webp memes measure their png twin instead
+  // (a first-frame render at intrinsic size — same dimensions).
+  const dims = await measureImageUrl(isWebp && ogImageUrl ? ogImageUrl : imageUrl)
   const meme: Meme = {
     id: randomUUID().slice(0, 12),
     title,
     description,
     mediaType,
     imageUrl,
+    ogImageUrl: isWebp ? ogImageUrl : null,
     videoUrl,
     tags,
     creatorId: req.user.sub,

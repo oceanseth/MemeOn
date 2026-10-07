@@ -90,7 +90,8 @@ export async function ensureOgImageWithDependencies(
   if (await dependencies.assetExists(key)) return dependencies.assetUrl(key)
 
   const [art, bundle] = await Promise.all([
-    dependencies.fetchArt(meme.imageUrl),
+    // webp memes carry a png twin minted for exactly this: jimp can't decode webp
+    dependencies.fetchArt(meme.ogImageUrl || meme.imageUrl),
     dependencies.loadFrame(tier.key),
   ])
   const png = await dependencies.compose({
@@ -428,7 +429,7 @@ export async function ensureBinderOgImage(
       canvas.composite(sleeve, x, y)
       if (!meme) continue
       try {
-        const art = await fetchImage(meme.imageUrl)
+        const art = await fetchImage(meme.ogImageUrl || meme.imageUrl)
         art.cover({ w: SLOT.w - 10, h: SLOT.h - 10 })
         canvas.composite(art, x + 5, y + 5)
       } catch {
