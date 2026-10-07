@@ -1,6 +1,7 @@
 import { createMemeCopy } from '../../copy/createMeme'
 import { post } from '../api'
 import { mintDeskError } from '../createMemeMintError'
+import { ogPngTwin } from '../ogPngTwin'
 import type { Meme } from '../types'
 import type { CreateMemeActionHost } from './actionHost'
 
@@ -16,6 +17,8 @@ export async function onMint(host: CreateMemeActionHost): Promise<void> {
     const body = {
       title: live.title,
       imageUrl: live.imageUrl,
+      // webp art needs a png twin for the server's og-card compositor
+      ogImageUrl: await ogPngTwin(live.imageUrl),
       mediaType: isVideo ? 'video' : 'image',
       videoUrl: isVideo ? live.videoUrl : null,
       remixOf: live.mode === 'remix' ? live.remixId : null,

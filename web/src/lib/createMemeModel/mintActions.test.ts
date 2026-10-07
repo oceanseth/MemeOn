@@ -38,6 +38,7 @@ function mintHost(ctx: CreateMemeContext): CreateMemeActionHost & { events: Crea
 const MINT_BODY_KEYS = [
   'title',
   'imageUrl',
+  'ogImageUrl',
   'mediaType',
   'videoUrl',
   'remixOf',
@@ -86,12 +87,54 @@ describe('onMint', () => {
     expect(body).toEqual({
       title: 'burning office',
       imageUrl: '/thumb.png',
+      ogImageUrl: null,
       mediaType: 'image',
       videoUrl: null,
       remixOf: null,
       source,
       tags: ['chaos', 'cats'],
     })
+  })
+
+  it('mints webp art as-is with an uploaded png twin riding along as ogImageUrl', async () => {
+    vi.stubGlobal(
+      'createImageBitmap',
+      vi.fn(async () => ({ width: 4, height: 3 })),
+    )
+    vi.stubGlobal(
+      'OffscreenCanvas',
+      class {
+        getContext(): { drawImage: () => void } {
+          return { drawImage: vi.fn() }
+        }
+        convertToBlob({ type }: { type: string }): Promise<Blob> {
+          return Promise.resolve(new Blob(['png'], { type }))
+        }
+      },
+    )
+    let body: Record<string, unknown> | undefined
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>((input, init) => {
+        const url = String(input)
+        if (url === 'https://cdn.test/art.webp')
+          return Promise.resolve(new Response(new Blob(['webp'], { type: 'image/webp' })))
+        if (url === '/api/uploads')
+          return Promise.resolve(
+            Response.json({ uploadUrl: 'https://s3.test/put', publicUrl: '/twin.png' }),
+          )
+        if (url === 'https://s3.test/put')
+          return Promise.resolve(new Response(null, { status: 200 }))
+        if (url === '/api/memes') {
+          body = JSON.parse(String(init?.body)) as Record<string, unknown>
+          return Promise.resolve(Response.json({ meme: { id: 'meme-1' } }))
+        }
+        throw new Error(`Unexpected fetch: ${url}`)
+      }),
+    )
+    await onMint(mintHost({ ...baseCtx, imageUrl: 'https://cdn.test/art.webp' }))
+    expect(body?.imageUrl).toBe('https://cdn.test/art.webp')
+    expect(body?.ogImageUrl).toBe('/twin.png')
   })
 
   it('sends mediaType video and the videoUrl when New video is the mode', async () => {
