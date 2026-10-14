@@ -228,6 +228,12 @@ export interface CreateMemeScreenModel {
   uploadImageLabel: string
   videoFileDropProps: CreateMemeFileDropModel
   uploadVideoLabel: string
+  /** the async clipboard reader exists in this browser, so the Paste button renders */
+  showClipboardPaste: boolean
+  /** a silent probe saw an image waiting; the button advertises it instead of sitting quiet */
+  clipboardDetected: boolean
+  clipboardPasteLabel: string
+  clipboardPasteButtonProps: ButtonProps
   generatePromptTextareaProps: TextareaProps
   generateButtonProps: ButtonProps
   mintButtonProps: ButtonProps
@@ -267,6 +273,7 @@ export interface CreateMemeScreenActions {
   applyUrlEdit: MaybeAsyncAction
   uploadImage: (file: File) => void | Promise<void>
   uploadVideo: (file: File) => void | Promise<void>
+  pasteClipboard: MaybeAsyncAction
   remix: MaybeAsyncAction
   animateEdited: MaybeAsyncAction
   generate: MaybeAsyncAction
