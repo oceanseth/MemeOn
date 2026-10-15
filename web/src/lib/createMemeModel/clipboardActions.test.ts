@@ -22,14 +22,16 @@ function pasted(name: string, type: string): File {
   return { name, size: 12, type } as File
 }
 
-function clipboardHost(): CreateMemeActionHost & { events: CreateMemeEvent[] } {
+function clipboardHost(
+  mode = baseCreateMemeContext.mode,
+): CreateMemeActionHost & { events: CreateMemeEvent[] } {
   const events: CreateMemeEvent[] = []
   const record = (event: CreateMemeEvent) => {
     events.push(event)
   }
   return {
     events,
-    getCtx: () => baseCreateMemeContext,
+    getCtx: () => ({ ...baseCreateMemeContext, mode }),
     send: record,
     beginBusy: (busy) => {
       record({ type: 'SUBMIT', busy })
@@ -96,8 +98,21 @@ describe('create-meme clipboard paste', () => {
     expect(host.events).toEqual([{ type: 'FAIL', err: createMemeCopy.errors.clipboardReadFailed }])
   })
 
-  it('routes a pasted image to the image well and consumes the event', () => {
-    const host = clipboardHost()
+  it('hops a paste landing on another tab over to the upload tab, then routes the image', () => {
+    const host = clipboardHost('generate')
+    const file = pasted('screenshot.png', 'image/png')
+
+    expect(onPasteCapture(host, transfer([file]), false)).toBe(true)
+
+    expect(uploadCreateMemeFile).toHaveBeenCalledWith(file)
+    expect(host.events.slice(0, 2)).toEqual([
+      { type: 'SELECT_MODE', mode: 'upload' },
+      { type: 'SET_FILE_NAME', kind: 'image', name: 'screenshot.png' },
+    ])
+  })
+
+  it('stays put when the paste already lands on the upload tab', () => {
+    const host = clipboardHost('upload')
     const file = pasted('screenshot.png', 'image/png')
 
     expect(onPasteCapture(host, transfer([file]), false)).toBe(true)
@@ -107,12 +122,15 @@ describe('create-meme clipboard paste', () => {
   })
 
   it('routes a pasted video file to the video well', () => {
-    const host = clipboardHost()
+    const host = clipboardHost('giphy')
     const file = pasted('clip.mp4', 'video/mp4')
 
     expect(onPasteCapture(host, transfer([file]), false)).toBe(true)
 
-    expect(host.events[0]).toEqual({ type: 'SET_FILE_NAME', kind: 'video', name: 'clip.mp4' })
+    expect(host.events.slice(0, 2)).toEqual([
+      { type: 'SELECT_MODE', mode: 'upload' },
+      { type: 'SET_FILE_NAME', kind: 'video', name: 'clip.mp4' },
+    ])
   })
 
   it('starts only the image when a paste somehow carries both wells', () => {

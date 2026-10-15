@@ -157,11 +157,12 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         })
     }
 
-    /* the upload desk takes a Ctrl+V from anywhere on the page, so the listener is the
-       document's; whether it applies is read off the live snapshot at paste time */
+    /* a Ctrl+V works on every tab of the desk, so the listener is the document's; a file paste
+       hops to the upload tab inside the capture, and whether a paste applies at all is read off
+       the live snapshot at paste time */
     const onPaste = (event: ClipboardEvent) => {
       const snapshot = actor.getSnapshot()
-      if (snapshot.context.mode !== 'upload' || snapshot.context.busy) return
+      if (snapshot.context.busy) return
       if (snapshot.value === 'success') return
       if (onPasteCapture(host, event.clipboardData, takesTextPaste(event.target))) {
         event.preventDefault()
