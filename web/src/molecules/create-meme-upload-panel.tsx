@@ -1,5 +1,7 @@
+import { Button } from '@/atoms/button'
 import { Field, FieldDescription, FieldLabel } from '@/atoms/field'
 import { FileDrop } from '@/atoms/file-drop'
+import { Icon } from '@/atoms/icon'
 import type { CreateMemeScreenModel } from '../lib/createMemeModel'
 
 /**
@@ -17,12 +19,16 @@ export type CreateMemeUploadPanelProps = Pick<
   | 'uploadVideoLabel'
   | 'uploadVideoHelpText'
   | 'videoFileDropProps'
+  | 'showClipboardPaste'
+  | 'clipboardDetected'
+  | 'clipboardPasteLabel'
+  | 'clipboardPasteButtonProps'
 > & {
   uploadImageHelpId: string
   uploadVideoHelpId: string
 }
 
-/** Image and optional video file wells. */
+/** Image and optional video file wells, plus the clipboard route into the image well. */
 export function CreateMemeUploadPanel({
   uploadImageLabel,
   uploadImageHelpText,
@@ -32,12 +38,31 @@ export function CreateMemeUploadPanel({
   uploadVideoHelpText,
   videoFileDropProps,
   uploadVideoHelpId,
+  showClipboardPaste,
+  clipboardDetected,
+  clipboardPasteLabel,
+  clipboardPasteButtonProps,
 }: CreateMemeUploadPanelProps) {
   return (
     <div data-slot="create-meme-upload-panel" className="contents">
       <Field>
         <FieldLabel>{uploadImageLabel}</FieldLabel>
         <FileDrop {...imageFileDropProps} />
+        {/* the detected state earns the brand plate, never the one primary — that is Mint */}
+        {showClipboardPaste && (
+          <Button
+            data-slot="clipboard-paste"
+            size="sm"
+            variant={clipboardDetected ? 'brand' : 'default'}
+            className="self-start"
+            {...clipboardPasteButtonProps}
+          >
+            <span aria-hidden="true">
+              <Icon name="download" size={16} />
+            </span>{' '}
+            {clipboardPasteLabel}
+          </Button>
+        )}
         <FieldDescription className={CAPTION_OFFSET} id={uploadImageHelpId}>
           {uploadImageHelpText}
         </FieldDescription>

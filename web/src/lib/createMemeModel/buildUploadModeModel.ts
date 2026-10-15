@@ -1,5 +1,6 @@
 import { createMemeCopy as copy } from '../../copy/createMeme'
 import type { CreateMemeContext } from '../../stores/createMemeMachine'
+import { supportsClipboardRead } from '../clipboardImage'
 import { HELP_IDS, MAX_IMAGE_BYTES, MAX_VIDEO_BYTES, megabyteLabel } from './shared'
 import type { CreateMemeScreenActions, CreateMemeScreenModel } from './types'
 
@@ -12,6 +13,10 @@ type UploadModeSlice = Pick<
   | 'uploadImageLabel'
   | 'videoFileDropProps'
   | 'uploadVideoLabel'
+  | 'showClipboardPaste'
+  | 'clipboardDetected'
+  | 'clipboardPasteLabel'
+  | 'clipboardPasteButtonProps'
 >
 
 export function buildUploadModeModel(
@@ -33,6 +38,16 @@ export function buildUploadModeModel(
       onFile: (file) => void actions.uploadImage(file),
     },
     uploadImageLabel: copy.upload.imageLabel,
+    showClipboardPaste: supportsClipboardRead(),
+    clipboardDetected: ctx.clipboardHint,
+    clipboardPasteLabel: ctx.clipboardHint
+      ? copy.upload.clipboardDetected
+      : copy.upload.pasteClipboard,
+    clipboardPasteButtonProps: {
+      type: 'button',
+      disabled: isBusy,
+      onClick: () => void actions.pasteClipboard(),
+    },
     videoFileDropProps: {
       accept: 'video/mp4,video/quicktime,video/webm',
       chooseLabel: copy.upload.chooseVideo,

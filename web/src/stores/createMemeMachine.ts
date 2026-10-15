@@ -67,6 +67,8 @@ export interface CreateMemeContext {
      to name the file the moment it is picked, including the one that turns out to be too big. */
   imageFileName: string | null
   videoFileName: string | null
+  /** a silent probe saw an image waiting on the clipboard; the paste button advertises it */
+  clipboardHint: boolean
   busy: string | null
   /** live "1m04s" counter for the running job, never part of the busy sentence */
   busyElapsed: string | null
@@ -99,6 +101,7 @@ export type CreateMemeEvent =
     }
   | { type: 'SET_VIDEO_URL'; videoUrl: string; fileName?: string }
   | { type: 'SET_FILE_NAME'; kind: 'image' | 'video'; name: string }
+  | { type: 'SET_CLIPBOARD_HINT'; hint: boolean }
   | { type: 'SET_REMIX_OUTPUT'; remixOutput: RemixOutput }
   | { type: 'SET_VIDEO_MODE'; videoMode: VideoRemixStyle }
   | { type: 'SET_MOTION_PROMPT'; motionPrompt: string }
@@ -167,6 +170,7 @@ export function freshCreateMemeDefaults(): Omit<
     videoUrl: '',
     imageFileName: null,
     videoFileName: null,
+    clipboardHint: false,
     busy: null,
     busyElapsed: null,
     err: null,
@@ -265,6 +269,9 @@ export const createMemeMachine = setup({
         videoFileName: ({ context, event }) =>
           event.kind === 'video' ? event.name : context.videoFileName,
       }),
+    },
+    SET_CLIPBOARD_HINT: {
+      actions: assign({ clipboardHint: ({ event }) => event.hint }),
     },
     SET_REMIX_OUTPUT: {
       actions: assign({ remixOutput: ({ event }) => event.remixOutput }),
