@@ -23,9 +23,10 @@ export async function onClipboardPaste(host: CreateMemeActionHost): Promise<void
 }
 
 /**
- * A Ctrl+V on the upload desk: route the pasted file to its well. Returns whether the paste was
- * consumed, so the hook knows to `preventDefault`. An image wins over a video when a paste
- * somehow carries both — the two wells share one upload id and starting both would retire one.
+ * A Ctrl+V anywhere on the mint desk: route the pasted file to its well. Returns whether the
+ * paste was consumed, so the hook knows to `preventDefault`. An image wins over a video when a
+ * paste somehow carries both — the two wells share one upload id and starting both would retire
+ * one. Files belong to the upload tab, so a paste landing on any other tab hops there first.
  */
 export function onPasteCapture(
   host: CreateMemeActionHost,
@@ -40,6 +41,7 @@ export function onPasteCapture(
   /* text and an image copied together (a web-page selection): a paste aimed at a text field is
      still a text paste */
   if (targetTakesText && data.types.includes('text/plain')) return false
+  if (host.getCtx().mode !== 'upload') host.send({ type: 'SELECT_MODE', mode: 'upload' })
   if (image) void onImageFile(host, image)
   else if (video) void onVideoFile(host, video)
   return true
