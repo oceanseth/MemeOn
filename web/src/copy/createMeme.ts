@@ -55,6 +55,9 @@ export const createMemeCopy = {
     mintFailed: "The card didn't mint. Try again.",
     creditsExhausted: 'Not enough Masky credits.',
     uploadFailed: "That file didn't upload. Try a smaller file, or try again.",
+    clipboardEmpty: 'No image on the clipboard — copy an image first, or drop a file here.',
+    clipboardReadFailed:
+      "Couldn't read the clipboard — allow clipboard access, or drop the file here.",
     /** The storage PUT answered with a status the user then reads in the alert. */
     uploadRejected: (status: number) =>
       `That file didn't upload (${status}). Try a smaller file, or try again.`,
@@ -170,6 +173,12 @@ export const createMemeCopy = {
     chooseImage: 'Choose an image',
     chooseVideo: 'Choose a video',
     dropHint: 'or drop one here',
+    /* the clipboard route: the quiet button, and what it becomes once a silent probe has seen an
+       image waiting — the proactive "clipboard detected" state */
+    pasteClipboard: 'Paste from clipboard',
+    clipboardDetected: 'Clipboard image detected — paste it',
+    /** a pasted image arrives with no name of its own; the picker row still has to name it */
+    pastedFileName: (ext: string) => `pasted-image.${ext}`,
   },
   url: {
     fieldLabel: 'Image or page URL',

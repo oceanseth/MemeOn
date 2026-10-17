@@ -32,8 +32,7 @@ import { Icon } from '@/atoms/icon'
 const focusOutcome = (node: HTMLHeadingElement | null): void => node?.focus()
 
 /** Form and preview columns; preview stacks below the form under 1000px. */
-const LAYOUT =
-  'grid grid-cols-1 items-start gap-5 2xl:grid-cols-(--grid-create) 2xl:gap-8'
+const LAYOUT = 'grid grid-cols-1 items-start gap-5 2xl:grid-cols-(--grid-create) 2xl:gap-8'
 /** the preview column sticks to the top of the scroll once the two columns split */
 const RAIL = 'flex flex-col gap-4 2xl:sticky 2xl:top-(--topbar-dock)'
 const FORM_GRID = cn('flex flex-col gap-3.5')
@@ -240,6 +239,10 @@ export function CreateMemeScreen({
   applyUrlEditButtonProps,
   imageFileDropProps,
   videoFileDropProps,
+  showClipboardPaste,
+  clipboardDetected,
+  clipboardPasteLabel,
+  clipboardPasteButtonProps,
   generatePromptTextareaProps,
   generateButtonProps,
   mintButtonProps,
@@ -437,6 +440,10 @@ export function CreateMemeScreen({
                 uploadVideoHelpText={uploadVideoHelpText}
                 videoFileDropProps={videoFileDropProps}
                 uploadVideoHelpId={helpIds.uploadVideo}
+                showClipboardPaste={showClipboardPaste}
+                clipboardDetected={clipboardDetected}
+                clipboardPasteLabel={clipboardPasteLabel}
+                clipboardPasteButtonProps={clipboardPasteButtonProps}
               />
             ) : showGeneratePanel ? (
               <CreateMemeGeneratePanel

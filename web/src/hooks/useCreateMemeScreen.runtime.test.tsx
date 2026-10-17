@@ -52,6 +52,50 @@ describe('CreateMemeRoute settling requests', () => {
     expect(host.textContent).not.toContain(copy.busy.generatingImage)
   })
 
+  it('hops a Ctrl+V on the generate tab over to upload and lands the pasted image', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>((input, init) => {
+        const path = pathOf(input)
+        if (path === '/api/uploads') {
+          return Promise.resolve(
+            Response.json({ uploadUrl: '/put/pasted', publicUrl: '/pasted.png' }),
+          )
+        }
+        if (path === '/put/pasted' && init?.method === 'PUT') {
+          return Promise.resolve(new Response('', { status: 200 }))
+        }
+        throw new Error(`Unexpected request: ${path}`)
+      }),
+    )
+    await renderAt()
+    expect(button(copy.modes.generate).getAttribute('aria-pressed')).toBe('true')
+
+    const data = new DataTransfer()
+    data.items.add(new File(['png-bytes'], 'pasted.png', { type: 'image/png' }))
+    await act(async () => {
+      document.dispatchEvent(
+        new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }),
+      )
+      await settle()
+    })
+    for (
+      let attempt = 0;
+      attempt < 20 && !host.querySelector('img[data-slot="meme-art"]');
+      attempt += 1
+    ) {
+      await act(async () => {
+        await settle()
+      })
+    }
+
+    expect(button(copy.modes.upload).getAttribute('aria-pressed')).toBe('true')
+    expect(
+      host.querySelector<HTMLImageElement>('img[data-slot="meme-art"]')?.getAttribute('src'),
+    ).toBe('/pasted.png')
+    expect(host.textContent).toContain('pasted.png')
+  })
+
   it('clears busy, shows the error with a next step, and permits retry after a mode switch', async () => {
     const image = deferred<Response>()
     stubImageFetch(image)

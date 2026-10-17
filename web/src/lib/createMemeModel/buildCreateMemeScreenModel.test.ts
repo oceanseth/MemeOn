@@ -40,6 +40,7 @@ function actions(): CreateMemeScreenActions {
     applyUrlEdit: vi.fn(),
     uploadImage: vi.fn(),
     uploadVideo: vi.fn(),
+    pasteClipboard: vi.fn(),
     remix: vi.fn(),
     animateEdited: vi.fn(),
     generate: vi.fn(),
@@ -294,6 +295,45 @@ describe('buildCreateMemeScreenModel', () => {
     model.videoFileDropProps.onFile(video)
     expect(calls.uploadImage).toHaveBeenCalledWith(image)
     expect(calls.uploadVideo).toHaveBeenCalledWith(video)
+  })
+
+  it('offers the clipboard route only where the reader exists, and advertises a seen image', () => {
+    /* jsdom has no async clipboard: the button stays off the desk rather than dead on it */
+    const without = buildCreateMemeScreenModel(
+      'upload',
+      { ...baseContext, mode: 'upload' },
+      actions(),
+    )
+    expect(without.showClipboardPaste).toBe(false)
+
+    vi.stubGlobal('navigator', { clipboard: { read: vi.fn() } })
+    try {
+      const calls = actions()
+      const quiet = buildCreateMemeScreenModel('upload', { ...baseContext, mode: 'upload' }, calls)
+      expect(quiet.showClipboardPaste).toBe(true)
+      expect(quiet.clipboardDetected).toBe(false)
+      expect(quiet.clipboardPasteLabel).toBe(copy.upload.pasteClipboard)
+      expect(quiet.clipboardPasteButtonProps.disabled).toBe(false)
+      quiet.clipboardPasteButtonProps.onClick?.(clickEvent())
+      expect(calls.pasteClipboard).toHaveBeenCalledOnce()
+
+      const detected = buildCreateMemeScreenModel(
+        'upload',
+        { ...baseContext, mode: 'upload', clipboardHint: true },
+        actions(),
+      )
+      expect(detected.clipboardDetected).toBe(true)
+      expect(detected.clipboardPasteLabel).toBe(copy.upload.clipboardDetected)
+
+      const busy = buildCreateMemeScreenModel(
+        'submitting',
+        { ...baseContext, mode: 'upload', busy: copy.busy.uploadingImage },
+        actions(),
+      )
+      expect(busy.clipboardPasteButtonProps.disabled).toBe(true)
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 
   it('derives disabled actions and live-region ARIA from prompt, media, and busy state', () => {

@@ -20,7 +20,9 @@ import {
   takePendingVideoRestore,
   type CreateMemeScreenModel,
 } from '../lib/createMemeModel'
+import { probeClipboardImage, supportsClipboardRead, takesTextPaste } from '../lib/clipboardImage'
 import type { CreateMemeActionHost } from '../lib/createMemeModel/actionHost'
+import { onClipboardPaste, onPasteCapture } from '../lib/createMemeModel/clipboardActions'
 import { onAnimateEdited, onGenerate } from '../lib/createMemeModel/generateActions'
 import { loadGiphyCategories, onGiphySearch } from '../lib/createMemeModel/giphyActions'
 import { applyGiphyEdit, applyUrlEdit } from '../lib/createMemeModel/imageEdit'
@@ -108,6 +110,17 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     getOwner: () => lifetimeRef.current,
   }
 
+  /* silent: reads only behind an already-granted permission, so no prompt ever fires uninvited */
+  const refreshClipboardHint = useCallback(() => {
+    if (!supportsClipboardRead()) return
+    void probeClipboardImage().then((hint) => {
+      if (!lifetimeRef.current?.active) return
+      if (actor.getSnapshot().context.clipboardHint !== hint) {
+        send({ type: 'SET_CLIPBOARD_HINT', hint })
+      }
+    })
+  }, [actor, send])
+
   useMountEffect(() => {
     const owner: CreationLifetime = { active: true }
     lifetimeRef.current = owner
@@ -144,9 +157,27 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
         })
     }
 
+    /* a Ctrl+V works on every tab of the desk, so the listener is the document's; a file paste
+       hops to the upload tab inside the capture, and whether a paste applies at all is read off
+       the live snapshot at paste time */
+    const onPaste = (event: ClipboardEvent) => {
+      const snapshot = actor.getSnapshot()
+      if (snapshot.context.busy) return
+      if (snapshot.value === 'success') return
+      if (onPasteCapture(host, event.clipboardData, takesTextPaste(event.target))) {
+        event.preventDefault()
+      }
+    }
+    document.addEventListener('paste', onPaste)
+    /* what the clipboard holds changes while the tab is away; re-probe each time it comes back */
+    window.addEventListener('focus', refreshClipboardHint)
+    refreshClipboardHint()
+
     return () => {
       owner.active = false
       if (lifetimeRef.current === owner) lifetimeRef.current = null
+      document.removeEventListener('paste', onPaste)
+      window.removeEventListener('focus', refreshClipboardHint)
       stopElapsed()
       persister.dispose()
       if (draftPersisterRef.current === persister) draftPersisterRef.current = null
@@ -157,6 +188,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
   const onSelectMode = (mode: CreateMemeMode) => {
     send({ type: 'SELECT_MODE', mode })
     if (mode === 'giphy') loadGiphyCategories(host)
+    if (mode === 'upload') refreshClipboardHint()
   }
 
   const onCopyShareLink = async () => {
@@ -204,6 +236,7 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     applyUrlEdit: () => applyUrlEdit(host),
     uploadImage: (file) => onImageFile(host, file),
     uploadVideo: (file) => onVideoFile(host, file),
+    pasteClipboard: () => onClipboardPaste(host),
     remix: () => onRemix(host),
     animateEdited: () => onAnimateEdited(host),
     generate: () => onGenerate(host),
