@@ -15,9 +15,9 @@ resource "aws_apigatewayv2_api" "http_api" {
 }
 
 resource "aws_apigatewayv2_integration" "lambda" {
-  api_id           = aws_apigatewayv2_api.http_api.id
-  integration_type = "AWS_PROXY"
-  integration_uri  = aws_lambda_function.api.invoke_arn
+  api_id                 = aws_apigatewayv2_api.http_api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.api.invoke_arn
   payload_format_version = "2.0"
   timeout_milliseconds   = 29000
 }
@@ -55,6 +55,13 @@ resource "aws_apigatewayv2_route" "meme_share" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
 }
 
+# access logs: request-level trace for every request, including 4xx/throttles
+# that never reach the Lambda (CLI-applied to the live stage 2026-10-08)
+resource "aws_cloudwatch_log_group" "apigw_access" {
+  name              = "/aws/apigateway/memeon-api-access"
+  retention_in_days = 30
+}
+
 resource "aws_apigatewayv2_stage" "prod" {
   api_id      = aws_apigatewayv2_api.http_api.id
   name        = "$default"
@@ -63,6 +70,23 @@ resource "aws_apigatewayv2_stage" "prod" {
   default_route_settings {
     throttling_burst_limit = 50
     throttling_rate_limit  = 25
+  }
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.apigw_access.arn
+    format = jsonencode({
+      requestId        = "$context.requestId"
+      ip               = "$context.identity.sourceIp"
+      requestTime      = "$context.requestTime"
+      method           = "$context.httpMethod"
+      routeKey         = "$context.routeKey"
+      path             = "$context.path"
+      status           = "$context.status"
+      protocol         = "$context.protocol"
+      responseLength   = "$context.responseLength"
+      integrationError = "$context.integrationErrorMessage"
+      error            = "$context.error.message"
+    })
   }
 }
 

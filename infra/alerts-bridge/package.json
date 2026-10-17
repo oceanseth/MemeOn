@@ -1,0 +1,16 @@
+{
+  "name": "memeon-alerts-bridge",
+  "private": true,
+  "type": "module",
+  "description": "SNS (CloudWatch alarm) -> Buzz #memeon-alerts relay bridge",
+  "scripts": {
+    "bundle": "esbuild index.mjs --bundle --platform=node --target=node20 --format=esm --outfile=dist/index.mjs --external:@aws-sdk/* --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\""
+  },
+  "dependencies": {
+    "ws": "^8",
+    "@noble/curves": "^2"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24"
+  }
+}

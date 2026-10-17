@@ -81,8 +81,8 @@ data "aws_iam_policy_document" "lambda_permissions" {
   }
 
   statement {
-    effect    = "Allow"
-    actions   = ["ssm:GetParameter"]
+    effect  = "Allow"
+    actions = ["ssm:GetParameter"]
     resources = [
       "arn:aws:ssm:us-west-2:${data.aws_caller_identity.current.account_id}:parameter/memeon/dev/*",
       "arn:aws:ssm:us-west-2:${data.aws_caller_identity.current.account_id}:parameter/memeon/shared/*",
@@ -188,6 +188,13 @@ resource "aws_apigatewayv2_route" "meme_share" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
 }
 
+# access logs: request-level trace incl. 4xx/throttles that never reach the
+# Lambda (CLI-applied to the live stage 2026-10-08)
+resource "aws_cloudwatch_log_group" "apigw_access" {
+  name              = "/aws/apigateway/memeon-api-dev-access"
+  retention_in_days = 14
+}
+
 resource "aws_apigatewayv2_stage" "default" {
   api_id      = aws_apigatewayv2_api.http_api.id
   name        = "$default"
@@ -197,6 +204,53 @@ resource "aws_apigatewayv2_stage" "default" {
     throttling_burst_limit = 50
     throttling_rate_limit  = 25
   }
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.apigw_access.arn
+    format = jsonencode({
+      requestId        = "$context.requestId"
+      ip               = "$context.identity.sourceIp"
+      requestTime      = "$context.requestTime"
+      method           = "$context.httpMethod"
+      routeKey         = "$context.routeKey"
+      path             = "$context.path"
+      status           = "$context.status"
+      protocol         = "$context.protocol"
+      responseLength   = "$context.responseLength"
+      integrationError = "$context.integrationErrorMessage"
+      error            = "$context.error.message"
+    })
+  }
+}
+
+# ERROR-level lines page through the shared memeon-alerts pipeline (SNS topic
+# + Buzz bridge live in the prod stack — see ../alerting.tf)
+resource "aws_cloudwatch_log_metric_filter" "api_errors" {
+  name           = "memeon-api-dev-error-level"
+  log_group_name = aws_cloudwatch_log_group.api.name
+  pattern        = "{ $.level = \"ERROR\" }"
+
+  metric_transformation {
+    name          = "MemeonApiDevErrors"
+    namespace     = "Memeon"
+    value         = "1"
+    default_value = "0"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "api_errors" {
+  alarm_name          = "memeon-api-dev-errors"
+  alarm_description   = "dev Lambda logged an ERROR-level line"
+  namespace           = "Memeon"
+  metric_name         = "MemeonApiDevErrors"
+  statistic           = "Sum"
+  period              = 60
+  evaluation_periods  = 1
+  threshold           = 1
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = ["arn:aws:sns:us-west-2:${data.aws_caller_identity.current.account_id}:memeon-alerts"]
+  ok_actions          = ["arn:aws:sns:us-west-2:${data.aws_caller_identity.current.account_id}:memeon-alerts"]
 }
 
 resource "aws_lambda_permission" "apigateway" {

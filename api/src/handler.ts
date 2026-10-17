@@ -21,6 +21,7 @@ export async function dispatch(input: {
 
   const match = matchRoute(method, input.path)
   if (!match) {
+    logClientError(404, 'no route', { method, path: input.path })
     return withCors(json(404, { error: `no route for ${method} ${input.path}` }))
   }
 
@@ -47,7 +48,10 @@ export async function dispatch(input: {
         if (owner) user = { sub: owner.sub, name: owner.name, picture: owner.picture }
       }
     }
-    if (!user) return withCors(json(401, { error: 'login required' }))
+    if (!user) {
+      logClientError(401, 'login required', { method, path: input.path })
+      return withCors(json(401, { error: 'login required' }))
+    }
   }
 
   const req: Req = {
@@ -64,7 +68,14 @@ export async function dispatch(input: {
   try {
     return withCors(await match.handler(req))
   } catch (err) {
-    if (err instanceof HttpError) return withCors(json(err.statusCode, { error: err.message }))
+    if (err instanceof HttpError) {
+      logClientError(err.statusCode, err.message, {
+        method,
+        path: input.path,
+        sub: user?.sub || undefined,
+      })
+      return withCors(json(err.statusCode, { error: err.message }))
+    }
     // upstream (masky) errors carry a status — surface their message instead of a blind 500
     const upstream = err as Error & { status?: number }
     if (typeof upstream?.status === 'number' && upstream.status >= 400) {
@@ -74,6 +85,16 @@ export async function dispatch(input: {
     console.error('unhandled route error', { path: input.path, err })
     return withCors(json(500, { error: 'internal error' }))
   }
+}
+
+// every 4xx leaves a WARN-level trace in CloudWatch (JSON log format: filter on
+// $.level = "WARN"); 5xx paths below log at ERROR, which is what pages.
+function logClientError(
+  status: number,
+  message: string,
+  ctx: { method: string; path: string; sub?: string },
+) {
+  console.warn('client error', { status, ...ctx, error: message })
 }
 
 function withCors(res: {
