@@ -1,0 +1,41 @@
+name: Chrome extension checks
+on:
+  pull_request:
+    paths:
+      - 'extension/**'
+      - 'web/**'
+      - 'shared/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/extension-check.yml'
+      - '.github/actions/setup/**'
+permissions:
+  contents: read
+concurrency:
+  group: chrome-extension-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  extension:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+        with:
+          browsers: 'true'
+      - run: pnpm exec biome check extension
+      - run: node --test extension/tests/*.test.mjs
+      - run: node extension/scripts/build.mjs
+      - run: node extension/tests/browser.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: memeon-chrome-extension
+          path: extension/dist/production/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: extension-browser-evidence
+          path: |
+            extension/test-results/*.png
+            extension/test-results/vite.log
