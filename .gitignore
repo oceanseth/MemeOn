@@ -37,3 +37,7 @@ mobile/android/
 
 # jimp fonts staged for lambda packaging
 api/fonts/
+
+# Chrome extension packages and browser test artifacts
+extension/dist/
+extension/test-results/

@@ -49,6 +49,9 @@ Tier frame art is generated with the Masky image API (`api/scripts/generate-fram
 - `mobile/` – Expo React Native app in the pnpm workspace:
   infinite swipe feed, invest view, creator profiles. See `mobile/README.md`
   for App Store / Play publishing via EAS.
+- `extension/` � [MemeOn! Chrome extension](extension/README.md): hover an image on
+  another site, press Alt+Shift+M, and open it in the mint desk with your current
+  MemeOn account. Includes an unpacked build and Chromium integration tests.
 - `infra/terraform/` – production stack (memeon.ai). **Note:** no state is kept in
   this repo; prod changes since the original apply were made with the AWS CLI and
   these files were updated to match as documentation. Re-import before applying.
