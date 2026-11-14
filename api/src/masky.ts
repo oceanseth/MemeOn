@@ -145,8 +145,6 @@ export function generateVideo(
   body: {
     prompt: string
     image?: string
-    srcVideo?: string
-    model?: string
     resolution?: string
     aspectRatio?: string
   },
@@ -157,14 +155,31 @@ export function generateVideo(
   })
 }
 
-export function videoStatus(
-  token: string,
-  generationId: string,
-): Promise<{
+export interface VideoStatus {
+  /** 'video' once the clip is ready, 'error' when the render failed, anything else = still going */
   status: string
   videoUrl?: string
-  model?: string
   errorMessage?: string
-}> {
-  return maskyFetch(token, `/videos/${generationId}`)
+}
+
+/**
+ * Masky's status names changed when it merged its video endpoints (a finished render is `ready`
+ * and a failure carries `error`); older renders still answer `video` / `errorMessage`. Both land
+ * on the one shape the web poll reads, so a Masky rename can't leave a finished clip unseen.
+ */
+export function normalizeVideoStatus(raw: Record<string, unknown>): VideoStatus {
+  const str = (value: unknown) => (typeof value === 'string' && value ? value : undefined)
+  const status = str(raw.status) ?? 'rendering'
+  const videoUrl = str(raw.videoUrl)
+  if ((status === 'ready' || status === 'video') && videoUrl) return { status: 'video', videoUrl }
+  if (status === 'error') {
+    return { status: 'error', errorMessage: str(raw.errorMessage) ?? str(raw.error) }
+  }
+  return { status: status === 'ready' || status === 'video' ? 'rendering' : status }
+}
+
+export async function videoStatus(token: string, generationId: string): Promise<VideoStatus> {
+  return normalizeVideoStatus(
+    await maskyFetch<Record<string, unknown>>(token, `/videos/${generationId}`),
+  )
 }

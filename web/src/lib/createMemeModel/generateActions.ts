@@ -63,16 +63,10 @@ export async function onAnimateEdited(host: CreateMemeActionHost): Promise<void>
   if (!live.editedFrame) return
   host.beginBusy(copy.busy.animatingFrame)
   try {
-    const isVideoSource = live.remixSource?.mediaType === 'video' && live.remixSource.videoUrl
     const started = await post<{ generationId: string }>('/api/aigen/video', {
       /* prompt text for the generation API, never shown: not copy */
-      prompt: isVideoSource
-        ? live.motionPrompt.trim()
-          ? copy.prompts.motionWithEdit(live.motionPrompt.trim())
-          : copy.prompts.motionFromReference
-        : live.motionPrompt.trim() || copy.prompts.motionDefault,
+      prompt: live.motionPrompt.trim() || copy.prompts.motionDefault,
       image: live.editedFrame,
-      ...(isVideoSource ? { srcVideo: live.remixSource!.videoUrl } : {}),
     })
     assertActive(owner)
     const videoUrl = await host.pollVideo(started.generationId, Date.now(), owner)

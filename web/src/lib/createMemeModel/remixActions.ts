@@ -38,10 +38,19 @@ export async function onRemix(host: CreateMemeActionHost): Promise<void> {
       live.remixSource.videoUrl
     ) {
       host.send({ type: 'BUSY', busy: copy.busy.restyleVideo })
-      host.send({ type: 'SET_IMAGE_URL', imageUrl: live.remixSource.imageUrl })
-      const started = await post<{ generationId: string }>('/api/aigen/video', {
+      /* Masky renders a clip from a frame, not from another clip: restyle the frame, then animate it */
+      const sourceImage = await remixSourceImage(live.remixSource)
+      assertActive(owner)
+      const restyled = await post<{ imageUrl: string }>('/api/aigen/image-edit', {
         prompt: live.prompt,
-        srcVideo: live.remixSource.videoUrl,
+        imageUrls: [sourceImage],
+      })
+      assertActive(owner)
+      host.send({ type: 'SET_IMAGE_URL', imageUrl: restyled.imageUrl })
+      const started = await post<{ generationId: string }>('/api/aigen/video', {
+        /* prompt text for the generation API, never shown: not copy */
+        prompt: copy.prompts.motionDefault,
+        image: restyled.imageUrl,
       })
       assertActive(owner)
       host.send({ type: 'BUSY', busy: copy.busy.renderingRemix })

@@ -502,14 +502,9 @@ authed('POST /api/aigen/image', async (req) => {
 authed('POST /api/aigen/video', async (req) => {
   const prompt = requireString(req.body, 'prompt')
   const image = typeof req.body.image === 'string' ? req.body.image : undefined
-  const srcVideo = typeof req.body.srcVideo === 'string' ? req.body.srcVideo : undefined
-  const out = await masky.generateVideo(maskyToken(req), {
-    prompt,
-    image,
-    srcVideo,
-    // resolution is cinematic-only; video-to-video (ensemble) rejects it
-    ...(srcVideo ? {} : { resolution: '720p' }),
-  })
+  // No source clip rides along: Masky's `srcVideo` is now a character swap that needs one of the
+  // user's avatars and bills at the swap rate. A remix animates its edited frame instead.
+  const out = await masky.generateVideo(maskyToken(req), { prompt, image, resolution: '720p' })
   return json(202, out)
 })
 
