@@ -156,7 +156,8 @@ export const createMemeCopy = {
     approvalTitle: 'Edit applied — happy with this frame?',
     approvalBody:
       'Keep it, then animate it or run another edit — check the card preview before you spend render credits.',
-    motionLabel: 'Motion (optional — how the animated clip should move)',
+    motionLabel:
+      'Motion (optional): describe how the clip should move. It animates from this frame, not from the original clip.',
     motionPlaceholder: 'he sprays himself in the face with the hose, same scene, short loop',
     animateIt: 'Looks good — animate it',
     rerunEdit: 'Re-run the edit',
