@@ -228,10 +228,6 @@ export const createMemeCopy = {
   prompts: {
     keepIdentical: ', keep everything else identical',
     videoThumbnailSuffix: ' — single dramatic still frame, meme thumbnail',
-    motionFromReference:
-      'same video and motion as the source, with the change from the reference image applied',
     motionDefault: 'subtle natural motion true to the scene, same style, short loop',
-    motionWithEdit: (edit: string) =>
-      `same video and motion as the source, with the change from the reference image applied — ${edit}`,
   },
 } as const
