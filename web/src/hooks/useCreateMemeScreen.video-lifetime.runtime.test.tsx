@@ -6,6 +6,13 @@ import { PENDING_VIDEO_KEY } from '../lib/sessionBus'
 import { createMemeScreenHost } from '../test/createMemeScreenHost'
 import { bodyOf, deferred, pathOf, settle } from '../test/runtime'
 
+/* these sources are video memes whose files do not exist: the frame a remix would grab from one
+   settles on a media event, not on the microtasks this file steps through. The grab has its own
+   tests; here the edit takes the poster. */
+vi.mock('../lib/createMemeModel/remixFrame', () => ({
+  remixSourceImage: async (source: { imageUrl: string }) => source.imageUrl,
+}))
+
 const screen = createMemeScreenHost('lifetime')
 let host: HTMLDivElement
 const { renderAt, button, click, change } = screen
