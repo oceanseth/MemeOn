@@ -204,3 +204,21 @@ describe('createMemeMachine remix source missing', () => {
     expect(actor.getSnapshot().context.busy).toBeNull()
   })
 })
+
+describe('createMemeMachine motion suggestion', () => {
+  it('fills an empty motion field with the suggestion', () => {
+    const actor = startedMachine('source-1')
+    actor.send({ type: 'SET_MOTION_SUGGESTION', motion: 'he waves' })
+    expect(actor.getSnapshot().context).toMatchObject({
+      motionPrompt: 'he waves',
+      motionSuggestion: 'he waves',
+    })
+  })
+
+  it('never overwrites what the user already typed', () => {
+    const actor = startedMachine('source-1')
+    actor.send({ type: 'SET_MOTION_PROMPT', motionPrompt: 'she spins' })
+    actor.send({ type: 'SET_MOTION_SUGGESTION', motion: 'he waves' })
+    expect(actor.getSnapshot().context.motionPrompt).toBe('she spins')
+  })
+})

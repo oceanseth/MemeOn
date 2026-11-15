@@ -134,6 +134,8 @@ export interface CreateMemeScreenModel {
   approvalBody: string
   motionLabel: string
   motionPromptPlaceholder: string
+  /** shown only while the field still holds the on-device model's suggestion untouched */
+  motionHelpText: string | null
   animateEditedLabel: string
   rerunEditLabel: string
   giphyCategories: string[]

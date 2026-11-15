@@ -401,6 +401,14 @@ describe('buildCreateMemeScreenModel', () => {
     /* the approval panel owns the only remix control while the question is open */
     expect(awaiting.showEditedFrameApproval).toBe(true)
     expect(awaiting.showRemixButton).toBe(false)
+    /* the suggestion line shows only while the field still holds the model's words untouched */
+    expect(awaiting.motionHelpText).toBeNull()
+    const suggested = { ...frameOnly, motionSuggestion: 'he waves', motionPrompt: 'he waves' }
+    expect(buildCreateMemeScreenModel('remix', suggested, actions()).motionHelpText).toBe(
+      copy.remix.motionSuggested,
+    )
+    const rewritten = { ...suggested, motionPrompt: 'he waves twice' }
+    expect(buildCreateMemeScreenModel('remix', rewritten, actions()).motionHelpText).toBeNull()
 
     const animated = buildCreateMemeScreenModel(
       'remix',

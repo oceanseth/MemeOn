@@ -159,6 +159,8 @@ export const createMemeCopy = {
     motionLabel:
       'Motion (optional): describe how the clip should move. It animates from this frame, not from the original clip.',
     motionPlaceholder: 'he sprays himself in the face with the hose, same scene, short loop',
+    motionSuggested:
+      'Suggested from the original clip by your browser’s built-in AI. Edit it to change how the clip moves.',
     animateIt: 'Looks good — animate it',
     rerunEdit: 'Re-run the edit',
   },

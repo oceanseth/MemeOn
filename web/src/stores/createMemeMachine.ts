@@ -55,6 +55,8 @@ export interface CreateMemeContext {
   remixOutput: RemixOutput
   videoMode: VideoRemixStyle
   motionPrompt: string
+  /** what the browser's on-device model made of the source clip; null where it has none */
+  motionSuggestion: string | null
   editedFrame: string | null
   title: string
   tags: string
@@ -105,6 +107,7 @@ export type CreateMemeEvent =
   | { type: 'SET_REMIX_OUTPUT'; remixOutput: RemixOutput }
   | { type: 'SET_VIDEO_MODE'; videoMode: VideoRemixStyle }
   | { type: 'SET_MOTION_PROMPT'; motionPrompt: string }
+  | { type: 'SET_MOTION_SUGGESTION'; motion: string }
   | { type: 'SET_GIPHY_QUERY'; query: string }
   | { type: 'PICK_GIPHY'; pick: GiphyResult }
   | { type: 'SET_REMIX_SOURCE'; meme: Meme }
@@ -165,6 +168,7 @@ export function freshCreateMemeDefaults(): Omit<
     remixOutput: 'image',
     videoMode: 'edit',
     motionPrompt: '',
+    motionSuggestion: null,
     editedFrame: null,
     urlDraft: '',
     videoUrl: '',
@@ -281,6 +285,14 @@ export const createMemeMachine = setup({
     },
     SET_MOTION_PROMPT: {
       actions: assign({ motionPrompt: ({ event }) => event.motionPrompt }),
+    },
+    /* a suggestion fills an empty field and nothing else: words already typed are the user's */
+    SET_MOTION_SUGGESTION: {
+      actions: assign({
+        motionSuggestion: ({ event }) => event.motion,
+        motionPrompt: ({ context, event }) =>
+          context.motionPrompt.trim() ? context.motionPrompt : event.motion,
+      }),
     },
     SET_GIPHY_QUERY: {
       actions: assign({ giphyQuery: ({ event }) => event.query }),

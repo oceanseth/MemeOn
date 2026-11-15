@@ -27,6 +27,7 @@ import { onAnimateEdited, onGenerate } from '../lib/createMemeModel/generateActi
 import { loadGiphyCategories, onGiphySearch } from '../lib/createMemeModel/giphyActions'
 import { applyGiphyEdit, applyUrlEdit } from '../lib/createMemeModel/imageEdit'
 import { onMint } from '../lib/createMemeModel/mintActions'
+import { prefillMotion } from '../lib/createMemeModel/motionActions'
 import { onRemix } from '../lib/createMemeModel/remixActions'
 import { onImageFile, onVideoFile } from '../lib/createMemeModel/uploadActions'
 import { onResolvePageUrl } from '../lib/createMemeModel/urlActions'
@@ -129,7 +130,9 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
     if (remixId) {
       apiFetch<{ meme: Meme }>(`/api/memes/${remixId}`)
         .then((r) => {
-          if (owner.active) send({ type: 'SET_REMIX_SOURCE', meme: r.meme })
+          if (!owner.active) return
+          send({ type: 'SET_REMIX_SOURCE', meme: r.meme })
+          prefillMotion(host)
         })
         .catch(() => {
           if (owner.active) send({ type: 'REMIX_SOURCE_MISSING' })
@@ -221,7 +224,10 @@ export function useCreateMemeScreen(): CreateMemeScreenModel {
       send({ type: 'SET_PROMPT', prompt })
       scheduleDraft()
     },
-    setRemixOutput: (remixOutput) => send({ type: 'SET_REMIX_OUTPUT', remixOutput }),
+    setRemixOutput: (remixOutput) => {
+      send({ type: 'SET_REMIX_OUTPUT', remixOutput })
+      prefillMotion(host)
+    },
     setVideoMode: (videoMode) => send({ type: 'SET_VIDEO_MODE', videoMode }),
     setMotionPrompt: (motionPrompt) => {
       send({ type: 'SET_MOTION_PROMPT', motionPrompt })
