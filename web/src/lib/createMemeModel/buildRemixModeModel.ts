@@ -26,6 +26,7 @@ type RemixModeSlice = Pick<
   | 'approvalBody'
   | 'motionLabel'
   | 'motionPromptPlaceholder'
+  | 'motionHelpText'
   | 'animateEditedLabel'
   | 'rerunEditLabel'
   | 'remixPromptLabel'
@@ -83,6 +84,10 @@ export function buildRemixModeModel(
     approvalBody: copy.remix.approvalBody,
     motionLabel: copy.remix.motionLabel,
     motionPromptPlaceholder: copy.remix.motionPlaceholder,
+    motionHelpText:
+      ctx.motionSuggestion && ctx.motionPrompt === ctx.motionSuggestion
+        ? copy.remix.motionSuggested
+        : null,
     animateEditedLabel: copy.remix.animateIt,
     rerunEditLabel: copy.remix.rerunEdit,
     remixPromptLabel: remixPromptIsPrecise

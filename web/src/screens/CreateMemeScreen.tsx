@@ -156,6 +156,7 @@ export function CreateMemeScreen({
   approvalBody,
   motionLabel,
   motionPromptPlaceholder,
+  motionHelpText,
   animateEditedLabel,
   rerunEditLabel,
   giphyResults,
@@ -376,6 +377,7 @@ export function CreateMemeScreen({
                 motionLabel={motionLabel}
                 motionPromptTextareaProps={motionPromptTextareaProps}
                 motionPromptPlaceholder={motionPromptPlaceholder}
+                motionHelpText={motionHelpText}
                 animateEditedButtonProps={animateEditedButtonProps}
                 animateEditedLabel={animateEditedLabel}
                 rerunEditButtonProps={rerunEditButtonProps}

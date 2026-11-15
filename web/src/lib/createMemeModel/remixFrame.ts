@@ -1,3 +1,4 @@
+import { corsFresh } from '../corsFresh'
 import { uploadCreateMemeFile } from '../createMemeUpload'
 import { grabVideoFrame } from '../extractPoster'
 import type { Meme } from '../types'
@@ -34,21 +35,6 @@ function posterMatches(source: Meme, videoRatio: number): boolean {
   if (!source.width || !source.height) return false
   const posterRatio = source.width / source.height
   return Math.abs(posterRatio - videoRatio) / videoRatio <= SAME_SHAPE_TOLERANCE
-}
-
-/**
- * The card's own `<video>` loads this file without CORS, and a browser that cached that answer
- * replays it to the CORS request, which then fails. A distinct query string is a distinct cache
- * entry, so the frame grab always gets an answer made for it.
- */
-function corsFresh(videoUrl: string): string {
-  try {
-    const url = new URL(videoUrl)
-    url.searchParams.set('frame', '1')
-    return url.toString()
-  } catch {
-    return videoUrl
-  }
 }
 
 /** Test seam: forget every uploaded frame. */

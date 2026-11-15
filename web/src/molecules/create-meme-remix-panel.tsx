@@ -34,6 +34,7 @@ export type CreateMemeRemixPanelProps = Pick<
   | 'motionLabel'
   | 'motionPromptTextareaProps'
   | 'motionPromptPlaceholder'
+  | 'motionHelpText'
   | 'animateEditedButtonProps'
   | 'animateEditedLabel'
   | 'rerunEditButtonProps'
@@ -71,6 +72,7 @@ export function CreateMemeRemixPanel({
   motionLabel,
   motionPromptTextareaProps,
   motionPromptPlaceholder,
+  motionHelpText,
   animateEditedButtonProps,
   animateEditedLabel,
   rerunEditButtonProps,
@@ -135,6 +137,7 @@ export function CreateMemeRemixPanel({
                 rows={3}
                 placeholder={motionPromptPlaceholder}
               />
+              {motionHelpText && <FieldDescription>{motionHelpText}</FieldDescription>}
             </Field>
             <Toolbar>
               <Button variant="primary" {...animateEditedButtonProps}>
